@@ -1,0 +1,69 @@
+const express = require('express')
+var router = express.Router()
+var controller = require('../controllers/index')
+const { verifyTokenFn } = require('../utils/jwt')
+const {uploadAvatar , uploadLeadFile} = require('../utils/uploadfiles')
+
+router.post('/upload',verifyTokenFn, uploadAvatar.single('image'),controller.companyAdmin.upload);
+router.get('/showProfile',verifyTokenFn, controller.companyAdmin.showProfile)
+router.put('/updateProfile',verifyTokenFn, controller.companyAdmin.updateUserProfile)
+router.put('/changePassword',verifyTokenFn, controller.companyAdmin.changePassword)
+router.post('/forgotPassword',controller.companyAdmin.forgotPassword)
+router.post('/resetPassword',controller.companyAdmin.resetPassword)
+
+//-------------------------------------Users-------------------------------------------------
+router.post('/addUser' , verifyTokenFn, controller.companyAdmin.addUser)
+router.get('/usersList',verifyTokenFn, controller.companyAdmin.usersList)
+router.get('/showUserById' , verifyTokenFn, controller.companyAdmin.showUserById)
+router.put('/updateUser' , verifyTokenFn, controller.companyAdmin.updateUser)
+router.put('/deleteUser' , verifyTokenFn, controller.companyAdmin.deleteUser)
+router.put('/lockUserAccount' , verifyTokenFn, controller.companyAdmin.lockUserAccount)
+
+//---------------------------------------modules------------------------------------------
+
+router.get('/moduleList',verifyTokenFn, controller.companyAdmin.moduleList)
+
+
+//-------------------------------------Roles-------------------------------------------------
+router.get('/rolesList',verifyTokenFn, controller.companyAdmin.rolesList)
+router.post('/createRole',verifyTokenFn, controller.companyAdmin.createRole)
+router.put('/updateRole' , verifyTokenFn, controller.companyAdmin.updateRole)
+router.post('/assignRoleToUser',verifyTokenFn, controller.companyAdmin.assignRoleToUser)
+router.get('/usersListByRoleId',verifyTokenFn, controller.companyAdmin.usersListByRoleId)
+router.get('/userWiseRoleList',verifyTokenFn, controller.companyAdmin.userWiseRoleList)
+
+//-------------------------------------Slabss-------------------------------------------------
+router.get('/slabList',verifyTokenFn, controller.companyAdmin.slabList)
+router.post('/createSlab',verifyTokenFn, controller.companyAdmin.createSlab)
+//router.post('/assignQuotationToUser',verifyTokenFn, controller.companyAdmin.assignQuotationToUser)
+router.put('/updateSlab',verifyTokenFn, controller.companyAdmin.updateSlab)
+router.put('/deleteSlab',verifyTokenFn, controller.companyAdmin.deleteSlab)
+
+//-------------------------------------sales-------------------------------------------------
+// router.get('/salesReportList',verifyTokenFn, controller.companyAdmin.salesReportList)
+// router.get('/salesReportByUserId',verifyTokenFn, controller.companyAdmin.salesReportByUserId)
+
+//-------------------------------------leads--------------------------------------------
+router.post('/createLead',verifyTokenFn, controller.companyAdmin.createLead)
+router.get('/leadsList',verifyTokenFn, controller.companyAdmin.leadsList)
+router.put('/updateLead',verifyTokenFn, controller.companyAdmin.updateLead)
+router.put('/deleteLead',verifyTokenFn, controller.companyAdmin.deleteLead)
+router.get('/showleadsById',verifyTokenFn, controller.companyAdmin.showleadsById)
+router.post('/assignLeadToUser',verifyTokenFn, controller.companyAdmin.assignLeadToUser)
+router.post('/uploadLeadFile',verifyTokenFn,uploadLeadFile.single('file'), controller.companyAdmin.uploadLeadFile)
+router.get('/userWiseLeadList',verifyTokenFn, controller.companyAdmin.userWiseLeadList)
+
+//--------------------------------------Targets--------------------------------------------
+
+router.post('/convertLeadToTarget',verifyTokenFn, controller.companyAdmin.convertLeadToTarget)
+router.get('/targetList',verifyTokenFn, controller.companyAdmin.targetList)
+router.post('/addfollowUpNotes' , verifyTokenFn, controller.companyAdmin.addfollowUpNotes)
+router.get('/notesList',verifyTokenFn, controller.companyAdmin.notesList)
+
+//----------------------------------------Reports------------------------------------------
+
+router.get('/leadReport',verifyTokenFn, controller.companyAdmin.leadReport)
+router.get('/leadConversionReport',verifyTokenFn, controller.companyAdmin.leadConversionReport)
+
+
+module.exports = router;
