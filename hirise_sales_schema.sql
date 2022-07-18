@@ -5,7 +5,7 @@
 -- Dumped from database version 14.2
 -- Dumped by pg_dump version 14.2
 
--- Started on 2022-07-15 20:20:15
+-- Started on 2022-07-18 18:23:43
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -198,12 +198,12 @@ ALTER TABLE public.quotations OWNER TO postgres;
 CREATE TABLE public.roles (
     id character varying NOT NULL,
     role_name character varying,
-    role_type character varying,
     module_ids character varying,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    company_id character varying
+    company_id character varying,
+    reporter character varying
 );
 
 
@@ -542,7 +542,7 @@ ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) NOT VALID;
 
 
--- Completed on 2022-07-15 20:20:16
+-- Completed on 2022-07-18 18:23:44
 
 --
 -- PostgreSQL database dump complete

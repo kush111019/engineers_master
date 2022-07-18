@@ -67,7 +67,7 @@ let create = async (bodyData, cId, res) => {
                 email: saveuser.rows[0].email_address
             }
             let token = await issueJWT(payload)
-            link = `localhost:3003/api/v1/user/setPassword/${token}`
+            link = `localhost:3000/auth/reset-password/${token}`
             await resetPasswordMail(emailAddress, link);
             return res.json({
                 status: 201,
@@ -123,7 +123,7 @@ let createAdmin = async (bodyData, cId, res) => {
                 email: saveuser.rows[0].email_address
             }
             let token = await issueJWT(payload)
-            link = `localhost:3003/api/v1/companyAdmin/setPassword/${token}`
+            link = `localhost:3000/auth/reset-password/${token}`
             await resetPasswordMail(emailAddress, link);
             return res.json({
                 status: 201,

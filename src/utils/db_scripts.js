@@ -1,7 +1,7 @@
 
 const db_sql = {
 
-    "Q1"   : `select company_name, company_address from companies where company_name = '{var1}'`,
+    "Q1"   : `select id, company_name, company_address from companies where company_name = '{var1}'`,
     "Q2"   : `insert into companies(id,company_name,company_logo,company_address) 
               values('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
     "Q3"   : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,phone_number,encrypted_password,role_id,is_verified) 
@@ -20,13 +20,13 @@ const db_sql = {
     "Q15"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where deleted_at is null`,
     "Q16"  : `select id, company_name , company_logo, company_address from companies where id = '{var1}' and deleted_at is null`,
     "Q17"  : `update users set full_name='{var1}',avatar = '{var2}' ,updated_at = '{var3}' where email_address='{var4}' RETURNING * `, 
-    "Q18"  : `insert into roles(id,role_name,role_type,company_id) values('{var1}','Admin','company_admin','{var2}') RETURNING *`, 
-    "Q19"  : `select role_name,role_type from roles where id = '{var1}' and deleted_at is null` ,
-    "Q20"  : `insert into roles(id,role_name,role_type,company_id) values('{var1}','{var2}','{var3}','{var4}') RETURNING *`, 
-    "Q21"  : `select id, role_name,role_type from roles where company_id = '{var1}' and deleted_at is null` ,
+    "Q18"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','Admin','','{var2}') RETURNING *`, 
+    "Q19"  : `select id, role_name, reporter from roles where id = '{var1}' and deleted_at is null` ,
+    "Q20"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','{var2}','{var3}','{var4}') RETURNING *`, 
+    "Q21"  : `select id, role_name, reporter from roles where company_id = '{var1}' and deleted_at is null` ,
     "Q22"  : `update users set role_id = '{var2}', percentage_distribution = '{var3}', updated_at = '{var4}' where id = '{var1}' and deleted_at is null RETURNING *`,
     "Q23"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where company_id = '{var1}' and deleted_at is null`,
-    "Q24"  : `select role_name , role_type from roles where id = '{var1}' and deleted_at is null`,
+    "Q24"  : `select id, role_name ,  reporter from roles where reporter = '{var1}' and deleted_at is null`,
     "Q25"  : `select id, min_amount, max_amount, percentage, is_max from slabs where company_id ='{var1}' and deleted_at is null`,
     "Q26"  : `insert into quotations(id,target_amount, target_time,company_id) values('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
     "Q27"  : `insert into assigned_quotations(id,user_id, quotation_id) values ('{var1}','{var2}','{var3}') returning *`,
@@ -44,7 +44,7 @@ const db_sql = {
     "Q39"  : `update users set email_address = '{var1}', full_name ='{var2}', mobile_number = '{var3}', phone_number = '{var4}', address = '{var5}', role_id = '{var6}' , updated_at = '{var8}' where id = '{var7}' and deleted_at is null RETURNING * `,
     "Q40"  : `update users set deleted_at = '{var8}' where id = '{var2}' and deleted_at is null RETURNING * `,
     "Q41"  : `select id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where id = '{var1}' and deleted_at is null`,
-    "Q42"  : `update roles set role_name = '{var1}', role_type = '{var2}',updated_at = '{var4}' where id = '{var3}' and deleted_at is null returning *`,
+    "Q42"  : `update roles set role_name = '{var1}', reporter = '{var2}',updated_at = '{var4}' where id = '{var3}' and deleted_at is null returning *`,
     "Q43"  : `update permissions set permission_to_create= '{var1}', permission_to_view = '{var2}', permission_to_update = '{var3}', permission_to_delete = '{var4}',updated_at = '{var6}' where role_id = '{var5}' and module_id = '{var7}' and deleted_at is null `,
     "Q44"  : `update roles set deleted_at = '{var2}' where id = '{var1}' and deleted_at is null returning *`,
     "Q45"  : `update permissions set deleted_at = '{var2}' where role_id = '{var1}' and deleted_at is null `,
@@ -58,7 +58,7 @@ const db_sql = {
     "Q53"  : `select id,full_name, designation,email_address, website, phone_number, lead_value,company, description, address, city_name,state_name,country_name,zip_code from leads where user_id ='{var1}' and deleted_at is null `,
     "Q54"  : `update leads set assigned_to = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null returning *`,
     "Q55"  : `insert into leads(id,user_id, company_id, full_name, designation,email_address, website, phone_number, lead_value,company, description, address, city_name,state_name,country_name,zip_code) values ('{var1}','{var2}','{var3}',$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
-    "Q56"  : `select r.id, r.role_name, r.role_type, u.id as user_id , u.full_name, u.percentage_distribution from roles as r
+    "Q56"  : `select r.id, r.role_name, u.id as user_id , u.full_name, u.percentage_distribution from roles as r
               inner join users as u on r.company_id = u.company_id where r.company_id = '{var1}' and 
               r.deleted_at is null and u.deleted_at is null` ,
     "Q57"  : `select l.id as lead_id, u.id as user_id,u.full_name as user_name,l.full_name as client_name, l.designation,l.email_address,
@@ -73,6 +73,7 @@ const db_sql = {
     "Q61"  : `insert into follow_up_notes (id, target_id, company_id, user_id, notes) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,
     "Q62"  : `select notes, created_at from follow_up_notes where target_id = '{var1}' and deleted_at is null`,
     "Q63"  : `select id,full_name,email_address,phone_number, lead_value,company, description, created_at from leads where company_id ='{var1}' and deleted_at is null and ((created_at BETWEEN '{var2}' AND '{var3}') or (lead_value BETWEEN '{var4}' and '{var5}')) `,
+    "Q64"  : `update permissions set user_id = '{var2}' where role_id = '{var1}' and deleted_at is null returning *`
 
 };
 

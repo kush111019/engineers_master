@@ -620,26 +620,28 @@ module.exports.createRole = async (req, res) => {
         userEmail = req.user.email
         let {
             roleName,
-            roleType,
-            modulePermissions
+            reporter,
+            modulePermissions,
+            isAdmin
         } = req.body
 
         let roleId = uuid.v4()
 
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
-
+        console.log(findAdmin.rows);
         if (findAdmin.rows.length > 0) {
 
             s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s2)
+            console.log(checkPermission.rows);
             if (checkPermission.rows[0].permission_to_create) {
 
 
                 await connection.query('BEGIN')
-                s3 = dbScript(db_sql['Q20'], { var1: roleId, var2: roleName, var3: roleType, var4: findAdmin.rows[0].company_id })
+                s3 = dbScript(db_sql['Q20'], { var1: roleId, var2: roleName, var3: reporter, var4: findAdmin.rows[0].company_id  })
                 let createRole = await connection.query(s3)
-
+                
                 for (data of modulePermissions) {
                     let permissionId = uuid.v4()
                     s4 = dbScript(db_sql['Q32'], { var1: permissionId, var2: createRole.rows[0].id, var3: data.moduleId, var4: data.permissionToCreate, var5: data.permissionToUpdate, var6: data.permissionToDelete, var7: data.permissionToView, var8: findAdmin.rows[0].id })
@@ -691,7 +693,7 @@ module.exports.updateRole = async (req, res) => {
         let {
             roleId,
             roleName,
-            roleType,
+            reporter,
             modulePermissions
         } = req.body
 
@@ -705,7 +707,7 @@ module.exports.updateRole = async (req, res) => {
             if (checkPermission.rows[0].permission_to_update) {
                 _dt = new Date().toISOString();
                 await connection.query('BEGIN')
-                s3 = dbScript(db_sql['Q42'], { var1: roleName, var2: roleType, var3: roleId, var4: _dt })
+                s3 = dbScript(db_sql['Q42'], { var1: roleName, var2: reporter, var3: roleId, var4: _dt })
                 let updateRole = await connection.query(s3)
                 for (data of modulePermissions) {
                     s4 = dbScript(db_sql['Q43'], { var1: data.permissionToCreate, var2: data.permissionToView, var3: data.permissionToUpdate, var4: data.permissionToDelete, var5: roleId, var6: _dt, var7: data.moduleId })
@@ -927,7 +929,7 @@ module.exports.userWiseRoleList = async (req, res) => {
             message: error.message,
         })
     }
-}   
+} 
 
 //-------------------------------------Quots-------------------------------------------------
 module.exports.slabList = async (req, res) => {
@@ -1363,8 +1365,11 @@ module.exports.addUser = async (req, res) => {
                 await connection.query('BEGIN')
                 s3 = dbScript(db_sql['Q3'], { var1: id, var2: name, var3: findAdmin.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: phoneNumber, var8: encryptedPassword, var9: roleId, var10: address })
                 let addUser = await connection.query(s3)
+                _dt = new Date().toISOString();
+                s4 = dbScript(db_sql['Q64'], {var1 : roleId , var2:addUser.rows[0].id , var3 :_dt })
+                let addPermission = await connection.query(s4)
                 await connection.query('COMMIT')
-                if (addUser.rowCount > 0) {
+                if (addUser.rowCount > 0 && addPermission.rowCount > 0 ) {
                     const payload = {
                         id: addUser.rows[0].id,
                         email: addUser.rows[0].email_address

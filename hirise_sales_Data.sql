@@ -5,7 +5,7 @@
 -- Dumped from database version 14.2
 -- Dumped by pg_dump version 14.2
 
--- Started on 2022-07-15 20:20:57
+-- Started on 2022-07-18 18:24:59
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -19,7 +19,63 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 3434 (class 0 OID 123194)
+-- TOC entry 3406 (class 1262 OID 123133)
+-- Name: hirise_sales1; Type: DATABASE; Schema: -; Owner: postgres
+--
+
+CREATE DATABASE hirise_sales1 WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'English_United States.1252';
+
+
+ALTER DATABASE hirise_sales1 OWNER TO postgres;
+
+\connect hirise_sales1
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 3388 (class 0 OID 123134)
+-- Dependencies: 209
+-- Data for Name: companies; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.companies (id, company_name, company_logo, company_address, created_at, updated_at, deleted_at) VALUES ('39c2af6a-3234-451f-95ff-947d8954c747', 'Enginner Master Solution Pvt. ltd', 'http:/localhost:3003/avatar/EMS logo.png', 'MPSDEC IT park indore', '2022-06-15 08:31:10.640186-07', NULL, NULL);
+INSERT INTO public.companies (id, company_name, company_logo, company_address, created_at, updated_at, deleted_at) VALUES ('1b115934-21db-48cf-b134-c9c8e6297786', 'Autarky finance ', 'http:/localhost:3003/avatar/EMS logo.png', 'MPSDEC IT park indore', '2022-07-14 04:49:00.417365-07', NULL, NULL);
+INSERT INTO public.companies (id, company_name, company_logo, company_address, created_at, updated_at, deleted_at) VALUES ('fbaee8cb-a2ed-4fff-956f-2ec074abc439', 'Engineer master pvt. ltd.', 'http:/localhost:3003/comapnyLogo/favicon.png', 'MPSDEC IT park indore', '2022-07-18 06:52:13.77785-07', NULL, NULL);
+
+
+--
+-- TOC entry 3392 (class 0 OID 123174)
+-- Dependencies: 213
+-- Data for Name: quotations; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.quotations (id, target_time, target_amount, company_id, created_at, updated_at, deleted_at) VALUES ('f1c94f59-0fda-473d-9378-3f8e32425fbf', 'Quaterly', '1000000', '39c2af6a-3234-451f-95ff-947d8954c747', '2022-06-16 08:54:36.496028-07', NULL, '2022-06-16 23:46:38.818-07');
+
+
+--
+-- TOC entry 3389 (class 0 OID 123144)
+-- Dependencies: 210
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.users (id, full_name, company_id, avatar, email_address, mobile_number, encrypted_password, is_verified, verification_code, created_at, updated_at, deleted_at, role_id, phone_number, address, is_locked, percentage_distribution) VALUES ('31a09e64-9754-4c12-83cf-e4c657c5dd69', 'Kapil karda', 'fbaee8cb-a2ed-4fff-956f-2ec074abc439', '', 'kapil@yopmail.com', '8897564897', 'kapil@123#', true, NULL, '2022-07-18 06:52:13.788087-07', '2022-07-17 23:53:09.715-07', NULL, '9e13a763-4ab0-4f04-9a51-0efe446ffc11', ' 0731 498 0457', NULL, false, NULL);
+INSERT INTO public.users (id, full_name, company_id, avatar, email_address, mobile_number, encrypted_password, is_verified, verification_code, created_at, updated_at, deleted_at, role_id, phone_number, address, is_locked, percentage_distribution) VALUES ('e4c6d400-fee4-4355-857b-b00a96a828eb', 'Mahendra Patidar', 'fbaee8cb-a2ed-4fff-956f-2ec074abc439', '', 'mahendra@yopmail.com', '9754258352', 'mahendra@1234#', true, NULL, '2022-07-18 07:19:52.777692-07', '2022-07-18 00:21:11.663-07', NULL, '7374e843-a0a4-4cb5-806a-4e323b9326ca', '0731451556', NULL, false, NULL);
+INSERT INTO public.users (id, full_name, company_id, avatar, email_address, mobile_number, encrypted_password, is_verified, verification_code, created_at, updated_at, deleted_at, role_id, phone_number, address, is_locked, percentage_distribution) VALUES ('40b73380-267a-49f9-bbee-47563bfbf507', 'Rahul Chouhan', 'fbaee8cb-a2ed-4fff-956f-2ec074abc439', '', 'rahul@yopmail.com', '9754258352', '', false, NULL, '2022-07-18 08:25:41.946396-07', NULL, NULL, '79baf3d7-5fb1-4708-b926-6fc954c664ae', '0731451556', NULL, false, NULL);
+INSERT INTO public.users (id, full_name, company_id, avatar, email_address, mobile_number, encrypted_password, is_verified, verification_code, created_at, updated_at, deleted_at, role_id, phone_number, address, is_locked, percentage_distribution) VALUES ('6b15adad-56da-4d7f-9c13-06e5e59d777f', 'Shubham Mandloi', 'fbaee8cb-a2ed-4fff-956f-2ec074abc439', '', 'shubham@yopmail.com', '9754258352', 'shubham@1234#', true, NULL, '2022-07-18 10:30:23.863898-07', '2022-07-18 04:10:39.841-07', NULL, 'd722698f-aec5-4263-8695-4d113b485d28', '0731451556', NULL, false, NULL);
+INSERT INTO public.users (id, full_name, company_id, avatar, email_address, mobile_number, encrypted_password, is_verified, verification_code, created_at, updated_at, deleted_at, role_id, phone_number, address, is_locked, percentage_distribution) VALUES ('aab65398-6fd3-470f-8c99-a28a0a8c388d', 'Rushabh kawachale', 'fbaee8cb-a2ed-4fff-956f-2ec074abc439', '', 'rushabh@yopmail.com', '9754258352', '', false, NULL, '2022-07-18 11:13:44.453869-07', NULL, NULL, '972be62f-234d-4c9f-b695-77494e8a960b', '0731451556', NULL, false, NULL);
+
+
+--
+-- TOC entry 3394 (class 0 OID 123194)
 -- Dependencies: 215
 -- Data for Name: assigned_quotations; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -27,26 +83,7 @@ SET row_security = off;
 
 
 --
--- TOC entry 3428 (class 0 OID 123134)
--- Dependencies: 209
--- Data for Name: companies; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.companies (id, company_name, company_logo, company_address, created_at, updated_at, deleted_at) VALUES ('39c2af6a-3234-451f-95ff-947d8954c747', 'Enginner Master Solution Pvt. ltd', 'http:/localhost:3003/avatar/EMS logo.png', 'MPSDEC IT park indore', '2022-06-15 08:31:10.640186-07', NULL, NULL);
-INSERT INTO public.companies (id, company_name, company_logo, company_address, created_at, updated_at, deleted_at) VALUES ('1b115934-21db-48cf-b134-c9c8e6297786', 'Autarky finance ', 'http:/localhost:3003/avatar/EMS logo.png', 'MPSDEC IT park indore', '2022-07-14 04:49:00.417365-07', NULL, NULL);
-
-
---
--- TOC entry 3440 (class 0 OID 196860)
--- Dependencies: 221
--- Data for Name: follow_up_notes; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.follow_up_notes (id, target_id, company_id, user_id, notes, created_at, updated_at, deleted_at) VALUES ('8aef1c91-692e-4c90-97c6-e590ca1bdbc5', '3a8b1eb7-01b8-4938-9143-3ec660b240b9', '1b115934-21db-48cf-b134-c9c8e6297786', '84fdc2db-1448-4726-8729-70098484eb67', 'we have to complete this target immidietly ', '2022-07-14 12:01:09.128538-07', NULL, NULL);
-
-
---
--- TOC entry 3438 (class 0 OID 139479)
+-- TOC entry 3398 (class 0 OID 139479)
 -- Dependencies: 219
 -- Data for Name: leads; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -58,58 +95,63 @@ INSERT INTO public.leads (id, user_id, company_id, assigned_to, full_name, desig
 
 
 --
--- TOC entry 3430 (class 0 OID 123154)
+-- TOC entry 3399 (class 0 OID 196809)
+-- Dependencies: 220
+-- Data for Name: targets; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.targets (id, lead_id, supporters, finishing_date, amount, description, created_at, updated_at, deleted_at, company_id) VALUES ('3a8b1eb7-01b8-4938-9143-3ec660b240b9', '06ae589b-7ad2-4279-89c5-ead67f7b76af', '["84fdc2db-1448-4726-8729-70098484eb67","84fdc2db-1448-4726-8729-70098484eb67"]', '10/08/2022', '2000000', 'will get lead of very good amount from here', '2022-07-14 07:18:29.515187-07', NULL, NULL, '1b115934-21db-48cf-b134-c9c8e6297786');
+INSERT INTO public.targets (id, lead_id, supporters, finishing_date, amount, description, created_at, updated_at, deleted_at, company_id) VALUES ('45cc450b-0eb2-4928-9ce2-e2f3c25bdd44', '6a959041-c97b-470c-879b-9cbb69c83e1d', '["84fdc2db-1448-4726-8729-70098484eb67"]', '10/08/2022', '1000000', 'please complete it on time', '2022-07-14 11:13:27.807441-07', NULL, NULL, '1b115934-21db-48cf-b134-c9c8e6297786');
+
+
+--
+-- TOC entry 3400 (class 0 OID 196860)
+-- Dependencies: 221
+-- Data for Name: follow_up_notes; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 3390 (class 0 OID 123154)
 -- Dependencies: 211
 -- Data for Name: modules; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id) VALUES ('fdcc5371-385e-424f-a63a-230cd8edb3f9', 'users', 'company users', '2022-06-15 09:22:13.899462-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747');
+INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id) VALUES ('bc87b1d9-f43f-4921-a3c0-ff8a9bf05693', 'users', 'company users', '2022-07-18 06:56:56.355553-07', NULL, NULL, 'fbaee8cb-a2ed-4fff-956f-2ec074abc439');
 
 
 --
--- TOC entry 3437 (class 0 OID 131267)
--- Dependencies: 218
--- Data for Name: permissions; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.permissions (id, role_id, module_id, module_name, permission_to_view, permission_to_create, permission_to_update, permission_to_delete, created_at, updated_at, deleted_at, user_id) VALUES ('a948d716-c3c2-4a5f-82b6-2c9ef224cc69', 'd0fa24ce-25e7-47e2-8872-3bff947ea4d0', '', NULL, true, true, true, true, '2022-06-14 08:23:08.68669-07', NULL, NULL, 'a948d716-c3c2-4a5f-82b6-2c9ef224cc69');
-INSERT INTO public.permissions (id, role_id, module_id, module_name, permission_to_view, permission_to_create, permission_to_update, permission_to_delete, created_at, updated_at, deleted_at, user_id) VALUES ('1011e6fe-e33a-4d96-877a-fbf3d80a39f5', '36f2749b-7f48-453b-8d0a-abbcb1ea3b79', '', NULL, true, true, true, true, '2022-06-15 08:31:10.647115-07', NULL, NULL, '1011e6fe-e33a-4d96-877a-fbf3d80a39f5');
-INSERT INTO public.permissions (id, role_id, module_id, module_name, permission_to_view, permission_to_create, permission_to_update, permission_to_delete, created_at, updated_at, deleted_at, user_id) VALUES ('f11753f6-c7f7-447a-87fe-52b6847712de', 'b221c231-4f2a-415b-b0d6-07dc0b0fd093', '', NULL, true, true, true, true, '2022-06-15 09:24:19.362022-07', NULL, NULL, 'undefined');
-INSERT INTO public.permissions (id, role_id, module_id, module_name, permission_to_view, permission_to_create, permission_to_update, permission_to_delete, created_at, updated_at, deleted_at, user_id) VALUES ('db42f06e-40ae-4730-9040-b7114d8a659c', '0298f2af-34e7-4500-bbfb-4079742f9609', 'fdcc5371-385e-424f-a63a-230cd8edb3f9', NULL, false, true, true, false, '2022-06-15 09:23:20.599123-07', '2022-06-15 05:56:21.143-07', NULL, NULL);
-INSERT INTO public.permissions (id, role_id, module_id, module_name, permission_to_view, permission_to_create, permission_to_update, permission_to_delete, created_at, updated_at, deleted_at, user_id) VALUES ('6c0799ba-3a0e-46b5-a9f0-473c499ee3d5', '7ab6a161-69b1-42de-aeeb-b9ab3b7cfa8c', 'fdcc5371-385e-424f-a63a-230cd8edb3f9', NULL, true, true, true, false, '2022-06-16 05:39:36.517848-07', '2022-06-15 22:56:05.526-07', NULL, '1011e6fe-e33a-4d96-877a-fbf3d80a39f5');
-INSERT INTO public.permissions (id, role_id, module_id, module_name, permission_to_view, permission_to_create, permission_to_update, permission_to_delete, created_at, updated_at, deleted_at, user_id) VALUES ('84fdc2db-1448-4726-8729-70098484eb67', '943bec2a-64a5-4037-8e06-57a1153b4cae', '', NULL, true, true, true, true, '2022-07-14 04:49:00.427782-07', NULL, NULL, '84fdc2db-1448-4726-8729-70098484eb67');
-
-
---
--- TOC entry 3432 (class 0 OID 123174)
--- Dependencies: 213
--- Data for Name: quotations; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.quotations (id, target_time, target_amount, company_id, created_at, updated_at, deleted_at) VALUES ('f1c94f59-0fda-473d-9378-3f8e32425fbf', 'Quaterly', '1000000', '39c2af6a-3234-451f-95ff-947d8954c747', '2022-06-16 08:54:36.496028-07', NULL, '2022-06-16 23:46:38.818-07');
-
-
---
--- TOC entry 3431 (class 0 OID 123164)
+-- TOC entry 3391 (class 0 OID 123164)
 -- Dependencies: 212
 -- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.roles (id, role_name, role_type, module_ids, created_at, updated_at, deleted_at, company_id) VALUES ('fbf38f9d-1695-4b8e-bdf7-fa383b1ddc4f', 'Admin', 'company_admin', NULL, '2022-06-10 10:46:44.73775-07', NULL, NULL, '69d1eb9b-4789-4811-9048-a5ef92c3919e');
-INSERT INTO public.roles (id, role_name, role_type, module_ids, created_at, updated_at, deleted_at, company_id) VALUES ('3e6b9eed-8243-4911-a94a-85203d7529f4', 'Admin', 'company_admin', NULL, '2022-06-13 05:02:59.726585-07', NULL, NULL, 'a224cfda-e6a4-4e32-8f30-bb0bd5a3d9e0');
-INSERT INTO public.roles (id, role_name, role_type, module_ids, created_at, updated_at, deleted_at, company_id) VALUES ('a224cfda-e6a4-4e32-8f30-bb0bd5a3d9e0', 'undefined', 'undefined', NULL, '2022-06-13 06:18:50.059902-07', NULL, NULL, 'undefined');
-INSERT INTO public.roles (id, role_name, role_type, module_ids, created_at, updated_at, deleted_at, company_id) VALUES ('886ccfe1-dddc-4bc0-864f-6671b5cff0a0', 'Vp of sales', 'VP', NULL, '2022-06-13 06:23:48.313566-07', NULL, NULL, 'a224cfda-e6a4-4e32-8f30-bb0bd5a3d9e0');
-INSERT INTO public.roles (id, role_name, role_type, module_ids, created_at, updated_at, deleted_at, company_id) VALUES ('e238a67b-dda4-439b-a123-ac1a243ef7b5', 'Sales Manager', 'Sales', NULL, '2022-06-14 05:19:29.868709-07', NULL, NULL, 'a224cfda-e6a4-4e32-8f30-bb0bd5a3d9e0');
-INSERT INTO public.roles (id, role_name, role_type, module_ids, created_at, updated_at, deleted_at, company_id) VALUES ('d0fa24ce-25e7-47e2-8872-3bff947ea4d0', 'Admin', 'company_admin', NULL, '2022-06-14 08:23:08.68669-07', NULL, NULL, '212398e8-dfd1-4684-b017-9e458fe30ecd');
-INSERT INTO public.roles (id, role_name, role_type, module_ids, created_at, updated_at, deleted_at, company_id) VALUES ('36f2749b-7f48-453b-8d0a-abbcb1ea3b79', 'Admin', 'company_admin', NULL, '2022-06-15 08:31:10.647115-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747');
-INSERT INTO public.roles (id, role_name, role_type, module_ids, created_at, updated_at, deleted_at, company_id) VALUES ('b221c231-4f2a-415b-b0d6-07dc0b0fd093', 'Admin', 'company_admin', NULL, '2022-06-15 09:24:19.362022-07', NULL, NULL, '9e458852-4c3c-4ece-bd7e-c55d0b8aeb4d');
-INSERT INTO public.roles (id, role_name, role_type, module_ids, created_at, updated_at, deleted_at, company_id) VALUES ('0298f2af-34e7-4500-bbfb-4079742f9609', 'VP', 'VP of sales', NULL, '2022-06-15 09:23:20.599123-07', '2022-06-15 05:56:21.143-07', NULL, '39c2af6a-3234-451f-95ff-947d8954c747');
-INSERT INTO public.roles (id, role_name, role_type, module_ids, created_at, updated_at, deleted_at, company_id) VALUES ('7ab6a161-69b1-42de-aeeb-b9ab3b7cfa8c', 'SSR', 'sales representative', NULL, '2022-06-16 05:39:36.517848-07', '2022-06-15 22:56:05.526-07', NULL, '39c2af6a-3234-451f-95ff-947d8954c747');
-INSERT INTO public.roles (id, role_name, role_type, module_ids, created_at, updated_at, deleted_at, company_id) VALUES ('943bec2a-64a5-4037-8e06-57a1153b4cae', 'Admin', 'company_admin', NULL, '2022-07-14 04:49:00.427782-07', NULL, NULL, '1b115934-21db-48cf-b134-c9c8e6297786');
+INSERT INTO public.roles (id, role_name, module_ids, created_at, updated_at, deleted_at, company_id, reporter) VALUES ('7374e843-a0a4-4cb5-806a-4e323b9326ca', 'VP', NULL, '2022-07-18 07:19:04.55859-07', NULL, NULL, 'fbaee8cb-a2ed-4fff-956f-2ec074abc439', '31a09e64-9754-4c12-83cf-e4c657c5dd69');
+INSERT INTO public.roles (id, role_name, module_ids, created_at, updated_at, deleted_at, company_id, reporter) VALUES ('79baf3d7-5fb1-4708-b926-6fc954c664ae', 'Manager', NULL, '2022-07-18 08:24:34.624693-07', NULL, NULL, 'fbaee8cb-a2ed-4fff-956f-2ec074abc439', 'e4c6d400-fee4-4355-857b-b00a96a828eb');
+INSERT INTO public.roles (id, role_name, module_ids, created_at, updated_at, deleted_at, company_id, reporter) VALUES ('d722698f-aec5-4263-8695-4d113b485d28', 'HR', NULL, '2022-07-18 10:28:04.717918-07', NULL, NULL, 'fbaee8cb-a2ed-4fff-956f-2ec074abc439', 'e4c6d400-fee4-4355-857b-b00a96a828eb');
+INSERT INTO public.roles (id, role_name, module_ids, created_at, updated_at, deleted_at, company_id, reporter) VALUES ('972be62f-234d-4c9f-b695-77494e8a960b', 'BDE', NULL, '2022-07-18 11:12:20.991027-07', NULL, NULL, 'fbaee8cb-a2ed-4fff-956f-2ec074abc439', '6b15adad-56da-4d7f-9c13-06e5e59d777f');
+INSERT INTO public.roles (id, role_name, module_ids, created_at, updated_at, deleted_at, company_id, reporter) VALUES ('9e13a763-4ab0-4f04-9a51-0efe446ffc11', 'Admin', NULL, '2022-07-18 06:52:13.788087-07', NULL, NULL, 'fbaee8cb-a2ed-4fff-956f-2ec074abc439', '');
+INSERT INTO public.roles (id, role_name, module_ids, created_at, updated_at, deleted_at, company_id, reporter) VALUES ('e93e00fa-976f-495c-af06-99cd682b5bb2', 'suporter', NULL, '2022-07-18 12:52:25.255944-07', NULL, NULL, 'fbaee8cb-a2ed-4fff-956f-2ec074abc439', '79baf3d7-5fb1-4708-b926-6fc954c664ae');
 
 
 --
--- TOC entry 3435 (class 0 OID 123204)
+-- TOC entry 3397 (class 0 OID 131267)
+-- Dependencies: 218
+-- Data for Name: permissions; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.permissions (id, role_id, module_id, module_name, permission_to_view, permission_to_create, permission_to_update, permission_to_delete, created_at, updated_at, deleted_at, user_id) VALUES ('0ee4b012-5b60-4d7b-b2a3-42cad300cf11', '9e13a763-4ab0-4f04-9a51-0efe446ffc11', '', NULL, true, true, true, true, '2022-07-18 06:52:13.788087-07', NULL, NULL, '31a09e64-9754-4c12-83cf-e4c657c5dd69');
+INSERT INTO public.permissions (id, role_id, module_id, module_name, permission_to_view, permission_to_create, permission_to_update, permission_to_delete, created_at, updated_at, deleted_at, user_id) VALUES ('e3ba1edc-7248-41a9-9472-3c23b14d9017', '7374e843-a0a4-4cb5-806a-4e323b9326ca', 'bc87b1d9-f43f-4921-a3c0-ff8a9bf05693', NULL, true, true, true, false, '2022-07-18 07:19:04.55859-07', NULL, NULL, 'e4c6d400-fee4-4355-857b-b00a96a828eb');
+INSERT INTO public.permissions (id, role_id, module_id, module_name, permission_to_view, permission_to_create, permission_to_update, permission_to_delete, created_at, updated_at, deleted_at, user_id) VALUES ('355cbe2c-6f65-4205-81cc-0e95e071b9d5', '79baf3d7-5fb1-4708-b926-6fc954c664ae', 'bc87b1d9-f43f-4921-a3c0-ff8a9bf05693', NULL, true, true, true, false, '2022-07-18 08:24:34.624693-07', NULL, NULL, '40b73380-267a-49f9-bbee-47563bfbf507');
+INSERT INTO public.permissions (id, role_id, module_id, module_name, permission_to_view, permission_to_create, permission_to_update, permission_to_delete, created_at, updated_at, deleted_at, user_id) VALUES ('a0367cf9-64f9-4abc-8101-f624c2fdf86e', 'd722698f-aec5-4263-8695-4d113b485d28', 'bc87b1d9-f43f-4921-a3c0-ff8a9bf05693', NULL, true, true, true, false, '2022-07-18 10:28:04.717918-07', NULL, NULL, '6b15adad-56da-4d7f-9c13-06e5e59d777f');
+INSERT INTO public.permissions (id, role_id, module_id, module_name, permission_to_view, permission_to_create, permission_to_update, permission_to_delete, created_at, updated_at, deleted_at, user_id) VALUES ('6113742a-9c0f-4819-9b9a-70dcf1550dfa', '972be62f-234d-4c9f-b695-77494e8a960b', 'bc87b1d9-f43f-4921-a3c0-ff8a9bf05693', NULL, true, true, true, false, '2022-07-18 11:12:20.991027-07', NULL, NULL, 'aab65398-6fd3-470f-8c99-a28a0a8c388d');
+INSERT INTO public.permissions (id, role_id, module_id, module_name, permission_to_view, permission_to_create, permission_to_update, permission_to_delete, created_at, updated_at, deleted_at, user_id) VALUES ('f17513e3-7ce0-4bcf-bbab-eab4d0984264', 'e93e00fa-976f-495c-af06-99cd682b5bb2', 'bc87b1d9-f43f-4921-a3c0-ff8a9bf05693', NULL, true, true, true, false, '2022-07-18 12:52:25.255944-07', NULL, NULL, '6b15adad-56da-4d7f-9c13-06e5e59d777f');
+
+
+--
+-- TOC entry 3395 (class 0 OID 123204)
 -- Dependencies: 216
 -- Data for Name: sales_entries; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -117,7 +159,7 @@ INSERT INTO public.roles (id, role_name, role_type, module_ids, created_at, upda
 
 
 --
--- TOC entry 3433 (class 0 OID 123184)
+-- TOC entry 3393 (class 0 OID 123184)
 -- Dependencies: 214
 -- Data for Name: slabs; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -128,7 +170,7 @@ INSERT INTO public.slabs (id, min_amount, max_amount, percentage, company_id, is
 
 
 --
--- TOC entry 3436 (class 0 OID 123244)
+-- TOC entry 3396 (class 0 OID 123244)
 -- Dependencies: 217
 -- Data for Name: super_admin; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -136,28 +178,7 @@ INSERT INTO public.slabs (id, min_amount, max_amount, percentage, company_id, is
 INSERT INTO public.super_admin (id, name, email, encrypted_password, created_at, deleted_at) VALUES ('ae58c6b5-1bea-41c0-883b-53a9c3069af3', 'superadmin', 'superadmin@hirise.com', '4ff3e8922e53309578d694c2dafb41d744af5c4004716f178552449149cd502e9c7022d18cdef4bbe796652d0862f019653e96796ad5d05bffb0f44baaa33528', '2022-06-14 10:28:06.656036-07', NULL);
 
 
---
--- TOC entry 3439 (class 0 OID 196809)
--- Dependencies: 220
--- Data for Name: targets; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.targets (id, lead_id, supporters, finishing_date, amount, description, created_at, updated_at, deleted_at, company_id) VALUES ('3a8b1eb7-01b8-4938-9143-3ec660b240b9', '06ae589b-7ad2-4279-89c5-ead67f7b76af', '["84fdc2db-1448-4726-8729-70098484eb67","84fdc2db-1448-4726-8729-70098484eb67"]', '10/08/2022', '2000000', 'will get lead of very good amount from here', '2022-07-14 07:18:29.515187-07', NULL, NULL, '1b115934-21db-48cf-b134-c9c8e6297786');
-INSERT INTO public.targets (id, lead_id, supporters, finishing_date, amount, description, created_at, updated_at, deleted_at, company_id) VALUES ('45cc450b-0eb2-4928-9ce2-e2f3c25bdd44', '6a959041-c97b-470c-879b-9cbb69c83e1d', '["84fdc2db-1448-4726-8729-70098484eb67"]', '10/08/2022', '1000000', 'please complete it on time', '2022-07-14 11:13:27.807441-07', NULL, NULL, '1b115934-21db-48cf-b134-c9c8e6297786');
-
-
---
--- TOC entry 3429 (class 0 OID 123144)
--- Dependencies: 210
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-INSERT INTO public.users (id, full_name, company_id, avatar, email_address, mobile_number, encrypted_password, is_verified, verification_code, created_at, updated_at, deleted_at, role_id, phone_number, address, is_locked, percentage_distribution) VALUES ('1011e6fe-e33a-4d96-877a-fbf3d80a39f5', 'Kapil karda', '39c2af6a-3234-451f-95ff-947d8954c747', '', 'kapi.ems@yopmail.com', '8897564897', 'Ems@123#', true, NULL, '2022-06-15 08:31:10.647115-07', '2022-06-15 01:33:15.239-07', NULL, '36f2749b-7f48-453b-8d0a-abbcb1ea3b79', ' 0731 498 0457', NULL, false, NULL);
-INSERT INTO public.users (id, full_name, company_id, avatar, email_address, mobile_number, encrypted_password, is_verified, verification_code, created_at, updated_at, deleted_at, role_id, phone_number, address, is_locked, percentage_distribution) VALUES ('327dd6e1-3c39-43a3-b1f0-cc34dbd73b6a', 'Jitendra Patidar', '39c2af6a-3234-451f-95ff-947d8954c747', '', 'jitendra.ems@yopmail.com', '9755486518', 'test@123#', true, NULL, '2022-06-15 09:42:08.347829-07', '2022-07-11 22:37:40.825-07', NULL, '886ccfe1-dddc-4bc0-864f-6671b5cff0a0', '0731 456985', 'Indore, MadhyaPradesh', false, '5%');
-INSERT INTO public.users (id, full_name, company_id, avatar, email_address, mobile_number, encrypted_password, is_verified, verification_code, created_at, updated_at, deleted_at, role_id, phone_number, address, is_locked, percentage_distribution) VALUES ('84fdc2db-1448-4726-8729-70098484eb67', 'Rahul Chouhan', '1b115934-21db-48cf-b134-c9c8e6297786', '', 'rahul@yopmail.com', '8897564897', 'Rahul@123#', true, NULL, '2022-07-14 04:49:00.427782-07', '2022-07-13 21:55:02.027-07', NULL, '943bec2a-64a5-4037-8e06-57a1153b4cae', ' 0731 498 0457', NULL, false, NULL);
-
-
--- Completed on 2022-07-15 20:20:58
+-- Completed on 2022-07-18 18:24:59
 
 --
 -- PostgreSQL database dump complete
