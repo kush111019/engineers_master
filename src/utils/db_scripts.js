@@ -23,7 +23,9 @@ const db_sql = {
     "Q18"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','Admin','','{var2}') RETURNING *`, 
     "Q19"  : `select id, role_name, reporter from roles where id = '{var1}' and deleted_at is null` ,
     "Q20"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','{var2}','{var3}','{var4}') RETURNING *`, 
-    "Q21"  : `select id, role_name, reporter from roles where company_id = '{var1}' and deleted_at is null` ,
+    "Q21"  : `select r.id, r.role_name, r.reporter as reporter_id , u.full_name as reporter_name 
+              from roles as r join users as u on r.reporter = u.id where r.company_id = '{var1}'
+              and r.deleted_at is null and u.deleted_at is null` ,
     "Q22"  : `update users set role_id = '{var2}', percentage_distribution = '{var3}', updated_at = '{var4}' where id = '{var1}' and deleted_at is null RETURNING *`,
     "Q23"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where company_id = '{var1}' and deleted_at is null`,
     "Q24"  : `select id, role_name ,  reporter from roles where reporter = '{var1}' and deleted_at is null`,
