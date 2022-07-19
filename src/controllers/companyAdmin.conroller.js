@@ -54,7 +54,7 @@ let createAdmin = async (bodyData, cId, res) => {
                 email: saveuser.rows[0].email_address
             }
             let token = await issueJWT(payload)
-            link = `http://localhost:3000/auth/reset-password/${token}`
+            link = `http://143.198.102.134:8082/auth/reset-password/${token}`
             await resetPasswordMail(emailAddress, link);
             return res.json({
                 status: 201,
