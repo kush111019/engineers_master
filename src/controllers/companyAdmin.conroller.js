@@ -224,7 +224,7 @@ module.exports.login = async (req, res) => {
 
             } else {
                 res.json({
-                    status: 200,
+                    status: 400,
                     success: false,
                     message: "Incorrect password"
                 })
@@ -261,7 +261,7 @@ module.exports.showProfile = async (req, res) => {
             })
         } else {
             res.json({
-                status: 400,
+                status: 200,
                 success: false,
                 message: "User not found",
                 data: ""
@@ -293,7 +293,7 @@ module.exports.changePassword = async (req, res) => {
                 await connection.query('COMMIT')
                 if (updatePass.rowCount > 0) {
                     res.send({
-                        status: 200,
+                        status: 201,
                         success: true,
                         message: "Password Changed Successfully!",
                     });
@@ -425,7 +425,7 @@ module.exports.forgotPassword = async (req, res) => {
 
         } else {
             res.json({
-                status: 200,
+                status: 400,
                 success: false,
                 message: "This User Is Not Exits",
                 data: ""
@@ -526,7 +526,7 @@ module.exports.moduleList = async (req, res) => {
                     })
                 } else {
                     res.json({
-                        status: 400,
+                        status: 200,
                         success: false,
                         message: "Empty module list",
                         data: []
@@ -583,7 +583,7 @@ module.exports.rolesList = async (req, res) => {
                     })
                 } else {
                     res.json({
-                        status: 400,
+                        status: 200,
                         success: false,
                         message: "Empty Roles list",
                         data: []
@@ -716,7 +716,7 @@ module.exports.updateRole = async (req, res) => {
 
                 if (updateRole.rowCount > 0 && updatePermission.rowCount > 0) {
                     res.json({
-                        status: 201,
+                        status: 200,
                         success: true,
                         message: "role updated successfully"
                     })
@@ -776,7 +776,7 @@ module.exports.deleteRole = async (req, res) => {
                 await connection.query('COMMIT')
                 if (updateRole.rowCount > 0 && updatePermission.rowCount > 0) {
                     res.json({
-                        status: 201,
+                        status: 200,
                         success: true,
                         message: "role deleted successfully"
                     })
@@ -1439,7 +1439,7 @@ module.exports.showUserById = async (req, res) => {
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: "Empty user data",
                         data: []
                     })
@@ -1494,7 +1494,7 @@ module.exports.usersListByRoleId = async (req, res) => {
                     })
                 } else {
                     res.json({
-                        status: 400,
+                        status: 200,
                         success: false,
                         message: "Empty users list",
                         data: []
@@ -1547,7 +1547,7 @@ module.exports.usersList = async (req, res) => {
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: "Empty Users list",
                         data: []
                     })
@@ -1851,7 +1851,7 @@ module.exports.leadsList = async (req, res) => {
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: 'empty leads List',
                         data: []
                     })
@@ -2033,7 +2033,7 @@ module.exports.showleadsById = async (req, res) => {
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: 'empty leads List',
                         data: []
                     })
@@ -2234,7 +2234,7 @@ module.exports.userWiseLeadList = async (req, res) => {
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: "Empty Roles list",
                         data: []
                     })
@@ -2264,7 +2264,7 @@ module.exports.userWiseLeadList = async (req, res) => {
     }
 } 
 
-//----------------------------------------Targets-----------------------------------------------------
+//----------------------------------------Targets-----------------------------------------------
 
 module.exports.convertLeadToTarget = async (req, res) => {
     try {
@@ -2381,7 +2381,7 @@ module.exports.targetList = async (req, res) => {
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: "Empty target list",
                         data: []
                     })
@@ -2490,7 +2490,7 @@ module.exports.notesList = async (req, res) => {
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: 'empty Notes List',
                         data: []
                     })
@@ -2560,7 +2560,7 @@ module.exports.leadReport = async (req, res) => {
                 }else{
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: "Empty Leads report",
                         data : []
                     })
@@ -2629,7 +2629,7 @@ module.exports.leadConversionReport = async (req, res) => {
                 }else{
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: "Empty target conversion report",
                         data : []
                     })
