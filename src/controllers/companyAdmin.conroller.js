@@ -576,7 +576,7 @@ module.exports.rolesList = async (req, res) => {
 
                 if (RolesList.rows.length > 0) {
                     res.json({
-                        status: 201,
+                        status: 200,
                         success: true,
                         message: "role list",
                         data: RolesList.rows
