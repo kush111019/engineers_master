@@ -458,7 +458,7 @@ module.exports.resetPassword = async (req, res) => {
                 await connection.query('COMMIT')
                 if (updateuser.rowCount == 1) {
                     res.json({
-                        status: 201,
+                        status: 200,
                         success: true,
                         message: "Password Changed Successfully",
                         data: ""
