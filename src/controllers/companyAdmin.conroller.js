@@ -153,9 +153,7 @@ module.exports.setPasswordForLogin = async (req, res) => {
         let {
             password
         } = req.body
-        console.log(req.body);
         let user = await verifyTokenFn(req)
-        console.log(user);
         if (user) {
             s1 = dbScript(db_sql['Q4'], { var1: user.email })
             let checkuser = await connection.query(s1);
@@ -567,19 +565,40 @@ module.exports.rolesList = async (req, res) => {
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-
+            let list = []
             s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s2)
             if (checkPermission.rows[0].permission_to_view) {
                 s3 = dbScript(db_sql['Q21'], { var1: findAdmin.rows[0].company_id })
                 let RolesList = await connection.query(s3)
+                for (let data of RolesList.rows) {
+                    if (data.reporter != '') {
+                        s4 = dbScript(db_sql['Q41'], { var1: data.reporter })
+                        let userList = await connection.query(s4)
+                        if (userList.rowCount > 0) {
+                            list.push({
+                                role_id: data.id,
+                                role_name: data.role_name,
+                                reporter_id: userList.rows[0].id,
+                                reporter_name: userList.rows[0].full_name
+                            })
+                        } 
+                    } else {
+                        list.push({
+                            role_id: data.id,
+                            role_name: data.role_name,
+                            reporter_id: "",
+                            reporter_name: ""
 
-                if (RolesList.rows.length > 0) {
+                        })
+                    }
+                }
+                if (list.length > 0) {
                     res.json({
                         status: 200,
                         success: true,
                         message: "role list",
-                        data: RolesList.rows
+                        data: list
                     })
                 } else {
                     res.json({
@@ -628,19 +647,17 @@ module.exports.createRole = async (req, res) => {
 
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
-        console.log(findAdmin.rows);
         if (findAdmin.rows.length > 0) {
 
             s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s2)
-            console.log(checkPermission.rows);
             if (checkPermission.rows[0].permission_to_create) {
 
 
                 await connection.query('BEGIN')
-                s3 = dbScript(db_sql['Q20'], { var1: roleId, var2: roleName, var3: reporter, var4: findAdmin.rows[0].company_id  })
+                s3 = dbScript(db_sql['Q20'], { var1: roleId, var2: roleName, var3: reporter, var4: findAdmin.rows[0].company_id })
                 let createRole = await connection.query(s3)
-                
+
                 for (data of modulePermissions) {
                     let permissionId = uuid.v4()
                     s4 = dbScript(db_sql['Q32'], { var1: permissionId, var2: createRole.rows[0].id, var3: data.moduleId, var4: data.permissionToCreate, var5: data.permissionToUpdate, var6: data.permissionToDelete, var7: data.permissionToView, var8: findAdmin.rows[0].id })
@@ -928,7 +945,7 @@ module.exports.userWiseRoleList = async (req, res) => {
             message: error.message,
         })
     }
-} 
+}
 
 //-------------------------------------Quots-------------------------------------------------
 module.exports.slabList = async (req, res) => {
@@ -991,7 +1008,6 @@ module.exports.createSlab = async (req, res) => {
         let {
             slabs
         } = req.body
-        console.log(req.body);
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
 
@@ -1365,10 +1381,10 @@ module.exports.addUser = async (req, res) => {
                 s3 = dbScript(db_sql['Q3'], { var1: id, var2: name, var3: findAdmin.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: phoneNumber, var8: encryptedPassword, var9: roleId, var10: address })
                 let addUser = await connection.query(s3)
                 _dt = new Date().toISOString();
-                s4 = dbScript(db_sql['Q64'], {var1 : roleId , var2:addUser.rows[0].id , var3 :_dt })
+                s4 = dbScript(db_sql['Q64'], { var1: roleId, var2: addUser.rows[0].id, var3: _dt })
                 let addPermission = await connection.query(s4)
                 await connection.query('COMMIT')
-                if (addUser.rowCount > 0 && addPermission.rowCount > 0 ) {
+                if (addUser.rowCount > 0 && addPermission.rowCount > 0) {
                     const payload = {
                         id: addUser.rows[0].id,
                         email: addUser.rows[0].email_address
@@ -1785,7 +1801,6 @@ module.exports.createLead = async (req, res) => {
                 id = uuid.v4()
                 await connection.query('BEGIN')
                 s3 = dbScript(db_sql['Q48'], { var1: id, var2: findAdmin.rows[0].id, var3: findAdmin.rows[0].company_id, var4: fullName, var5: designation, var6: emailAddress, var7: website, var8: phoneNumber, var9: leadValue, var10: companyName, var11: description, var12: address, var13: cityName, var14: stateName, var15: countryName, var16: zipCode })
-                console.log(s3);
                 let createLead = await connection.query(s3)
                 await connection.query('COMMIT')
                 if (createLead.rowCount > 0) {
@@ -1840,7 +1855,6 @@ module.exports.leadsList = async (req, res) => {
             if (checkPermission.rows[0].permission_to_view) {
                 s3 = dbScript(db_sql['Q49'], { var1: findAdmin.rows[0].company_id })
                 let findLeads = await connection.query(s3)
-
                 if (findLeads.rows.length > 0) {
                     res.json({
                         status: 200,
@@ -2021,7 +2035,6 @@ module.exports.showleadsById = async (req, res) => {
 
             if (checkPermission.rows[0].permission_to_view) {
                 s3 = dbScript(db_sql['Q53'], { var1: userId })
-                console.log(s3);
                 let findLeads = await connection.query(s3)
                 if (findLeads.rows.length > 0) {
                     res.json({
@@ -2135,49 +2148,49 @@ module.exports.uploadLeadFile = async (req, res) => {
             let checkPermission = await connection.query(s2)
 
             if (checkPermission.rows[0].permission_to_update) {
-                    let promise = new Promise((resolve, reject) => {
-                        let stream = fs.createReadStream(file.path);
-                        let csvData = [];
-                        //.on('data') is triggered when a record is parsed,
-                        // so we will get the record (data) in the handler function.
-                        // Each record is pushed to csvData array.
-                        //on('end') is triggered after the parsing is done,
-                        // at the time that we have all records.
-                        let csvStream = fastcsv.parse().on("data", (data) => {
-                            csvData.push(data)
-                        }).on("end", () => {
-                            // remove the first line: header
-                            csvData.shift();
-                            // connect to the PostgreSQL database
-                            // insert csvData into DB 
-                            csvData.forEach(row => {
-                                //unique id for every row 
-                                id = uuid.v4()
-                                s3 = dbScript(db_sql['Q55'], { var1: id, var2: findAdmin.rows[0].id,var3: findAdmin.rows[0].company_id })
-                                connection.query(s3, row, (err, res) => {
-                                    if (err) {
-                                        throw err
-                                    }
-                                });
+                let promise = new Promise((resolve, reject) => {
+                    let stream = fs.createReadStream(file.path);
+                    let csvData = [];
+                    //.on('data') is triggered when a record is parsed,
+                    // so we will get the record (data) in the handler function.
+                    // Each record is pushed to csvData array.
+                    //on('end') is triggered after the parsing is done,
+                    // at the time that we have all records.
+                    let csvStream = fastcsv.parse().on("data", (data) => {
+                        csvData.push(data)
+                    }).on("end", () => {
+                        // remove the first line: header
+                        csvData.shift();
+                        // connect to the PostgreSQL database
+                        // insert csvData into DB 
+                        csvData.forEach(row => {
+                            //unique id for every row 
+                            id = uuid.v4()
+                            s3 = dbScript(db_sql['Q55'], { var1: id, var2: findAdmin.rows[0].id, var3: findAdmin.rows[0].company_id })
+                            connection.query(s3, row, (err, res) => {
+                                if (err) {
+                                    throw err
+                                }
                             });
-                        })
-                        let exportedData = stream.pipe(csvStream);
-                        if (exportedData) {
-                            resolve(file);
-                        } else {
-                            reject(false)
+                        });
+                    })
+                    let exportedData = stream.pipe(csvStream);
+                    if (exportedData) {
+                        resolve(file);
+                    } else {
+                        reject(false)
+                    }
+                })
+                promise.then((file) => {
+                    fs.unlink(file.path, (err) => {
+                        if (err) {
+                            throw err
                         }
                     })
-                    promise.then((file) => {
-                        fs.unlink(file.path, (err) => {
-                            if (err) {
-                                throw err
-                            }
-                        })
-                    }).catch(err => {
-                        throw err
-                    })
-                
+                }).catch(err => {
+                    throw err
+                })
+
                 res.json({
                     status: 201,
                     success: true,
@@ -2223,7 +2236,6 @@ module.exports.userWiseLeadList = async (req, res) => {
 
                 s3 = dbScript(db_sql['Q57'], { var1: findAdmin.rows[0].company_id })
                 let leadList = await connection.query(s3)
-
                 if (leadList.rows.length > 0) {
                     res.json({
                         status: 200,
@@ -2262,14 +2274,14 @@ module.exports.userWiseLeadList = async (req, res) => {
             message: error.message,
         })
     }
-} 
+}
 
 //----------------------------------------Targets-----------------------------------------------
 
 module.exports.convertLeadToTarget = async (req, res) => {
     try {
         userEmail = req.user.email
-        let { supporters , finishingDate , leadId, targetAmount, description } = req.body
+        let { supporters, finishingDate, leadId, targetAmount, description } = req.body
         let supportersList = JSON.stringify(supporters)
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -2282,30 +2294,27 @@ module.exports.convertLeadToTarget = async (req, res) => {
 
                 s2 = dbScript(db_sql['Q58'], { var1: leadId })
                 let findLead = await connection.query(s2)
-                console.log(findLead);
-                if(findLead.rowCount > 0){
+                if (findLead.rowCount > 0) {
                     id = uuid.v4()
                     await connection.query('BEGIN')
-                    s3 = dbScript(db_sql['Q59'], { var0 : id, var1: leadId , var2 : supportersList , var3 : finishingDate, var4 : targetAmount, var5 : description, var6:findAdmin.rows[0].company_id })
+                    s3 = dbScript(db_sql['Q59'], { var0: id, var1: leadId, var2: supportersList, var3: finishingDate, var4: targetAmount, var5: description, var6: findAdmin.rows[0].company_id })
                     let addTarget = await connection.query(s3)
-                    console.log(s3);
-                    console.log(addTarget);
                     await connection.query('COMMIT')
-                    if(addTarget.rowCount > 0){
+                    if (addTarget.rowCount > 0) {
                         res.json({
                             status: 201,
                             success: true,
                             message: "target created successfully"
                         })
-                    }else{
+                    } else {
                         await connection.query('ROLLBACK')
                         res.json({
                             status: 400,
                             success: false,
                             message: "something went wrong"
-                    })
+                        })
                     }
-                }else {
+                } else {
                     res.json({
                         status: 400,
                         success: false,
@@ -2409,12 +2418,12 @@ module.exports.targetList = async (req, res) => {
             message: error.message,
         })
     }
-} 
+}
 
 module.exports.addfollowUpNotes = async (req, res) => {
     try {
         userEmail = req.user.email
-        let { notes, targetId } = req.body 
+        let { notes, targetId } = req.body
 
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -2425,23 +2434,22 @@ module.exports.addfollowUpNotes = async (req, res) => {
             let checkPermission = await connection.query(s2)
             if (checkPermission.rows[0].permission_to_create) {
                 let id = uuid.v4()
-                s2 = dbScript(db_sql['Q61'], { var1:id , var2: targetId, var3 : findAdmin.rows[0].company_id, var4 : findAdmin.rows[0].id, var5 : notes })
-                console.log(s2);
+                s2 = dbScript(db_sql['Q61'], { var1: id, var2: targetId, var3: findAdmin.rows[0].company_id, var4: findAdmin.rows[0].id, var5: notes })
                 let addNotes = await connection.query(s2)
-                if(addNotes.rowCount > 0){
+                if (addNotes.rowCount > 0) {
                     res.json({
                         status: 201,
                         success: true,
                         message: "notes created"
                     })
 
-                }else{
+                } else {
                     res.json({
                         status: 400,
                         success: false,
                         message: "Something went wrong"
                     })
-                }  
+                }
             } else {
                 res.json({
                     status: 403,
@@ -2534,35 +2542,34 @@ module.exports.leadReport = async (req, res) => {
 
             if (checkPermission.rows[0].permission_to_view) {
 
-                s3 = dbScript(db_sql['Q63'], { var1: findAdmin.rows[0].company_id , var2:fromDate , var3 : toDate, var4 : fromAmount, var5:toAmount })
+                s3 = dbScript(db_sql['Q63'], { var1: findAdmin.rows[0].company_id, var2: fromDate, var3: toDate, var4: fromAmount, var5: toAmount })
                 let findLeads = await connection.query(s3)
-                console.log(s3);
-                if(findLeads.rowCount > 0){
+                if (findLeads.rowCount > 0) {
                     let leadData = []
-                    for(data of findLeads.rows){
+                    for (data of findLeads.rows) {
                         leadData.push({
                             id: data.id,
-                            clientName : data.full_name,
-                            leadValue : data.lead_value,
-                            description : data.description,
-                            date : data.created_at
+                            clientName: data.full_name,
+                            leadValue: data.lead_value,
+                            description: data.description,
+                            date: data.created_at
                         })
                     }
                     res.json({
                         status: 200,
                         success: true,
                         message: "Leads report",
-                        data : {
-                            leadCount : findLeads.rowCount,
-                            leadData : leadData
+                        data: {
+                            leadCount: findLeads.rowCount,
+                            leadData: leadData
                         }
                     })
-                }else{
+                } else {
                     res.json({
                         status: 200,
                         success: false,
                         message: "Empty Leads report",
-                        data : []
+                        data: []
                     })
                 }
             } else {
@@ -2578,7 +2585,7 @@ module.exports.leadReport = async (req, res) => {
                 success: false,
                 message: "Admin not found"
             })
-        }  
+        }
     } catch (error) {
         res.json({
             status: 400,
@@ -2603,35 +2610,35 @@ module.exports.leadConversionReport = async (req, res) => {
 
             if (checkPermission.rows[0].permission_to_view) {
 
-                s3 = dbScript(db_sql['Q60'], { var1: findAdmin.rows[0].company_id , var2:fromDate , var3 : toDate, var4 : fromAmount, var5:toAmount })
+                s3 = dbScript(db_sql['Q60'], { var1: findAdmin.rows[0].company_id, var2: fromDate, var3: toDate, var4: fromAmount, var5: toAmount })
                 let findtargets = await connection.query(s3)
 
-                if(findtargets.rowCount > 0){
+                if (findtargets.rowCount > 0) {
                     let targetData = []
-                    for(data of findtargets.rows){
+                    for (data of findtargets.rows) {
                         targetData.push({
                             id: data.id,
-                            targetDate : data.finishing_date,
-                            amount : data.amount,
-                            description : data.description,
-                            date : data.created_at
+                            targetDate: data.finishing_date,
+                            amount: data.amount,
+                            description: data.description,
+                            date: data.created_at
                         })
                     }
                     res.json({
                         status: 200,
                         success: true,
                         message: "target conversion report",
-                        data : {
-                            targetCount : findtargets.rowCount,
-                            targetData : targetData
+                        data: {
+                            targetCount: findtargets.rowCount,
+                            targetData: targetData
                         }
                     })
-                }else{
+                } else {
                     res.json({
                         status: 200,
                         success: false,
                         message: "Empty target conversion report",
-                        data : []
+                        data: []
                     })
                 }
             } else {
@@ -2647,7 +2654,7 @@ module.exports.leadConversionReport = async (req, res) => {
                 success: false,
                 message: "Admin not found"
             })
-        }  
+        }
     } catch (error) {
         res.json({
             status: 400,

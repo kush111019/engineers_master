@@ -23,9 +23,7 @@ const db_sql = {
     "Q18"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','Admin','','{var2}') RETURNING *`, 
     "Q19"  : `select id, role_name, reporter from roles where id = '{var1}' and deleted_at is null` ,
     "Q20"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','{var2}','{var3}','{var4}') RETURNING *`, 
-    "Q21"  : `select r.id, r.role_name, r.reporter as reporter_id , u.full_name as reporter_name 
-              from roles as r join users as u on r.company_id = u.company_id where r.company_id = '{var1}'
-              and r.deleted_at is null and u.deleted_at is null` ,
+    "Q21"  : `select id, role_name, reporter from roles where company_id = '{var1}' and deleted_at is null ` ,
     "Q22"  : `update users set role_id = '{var2}', percentage_distribution = '{var3}', updated_at = '{var4}' where id = '{var1}' and deleted_at is null RETURNING *`,
     "Q23"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where company_id = '{var1}' and deleted_at is null`,
     "Q24"  : `select id, role_name ,  reporter from roles where reporter = '{var1}' and deleted_at is null`,
@@ -60,12 +58,12 @@ const db_sql = {
     "Q53"  : `select id,full_name, designation,email_address, website, phone_number, lead_value,company, description, address, city_name,state_name,country_name,zip_code from leads where user_id ='{var1}' and deleted_at is null `,
     "Q54"  : `update leads set assigned_to = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null returning *`,
     "Q55"  : `insert into leads(id,user_id, company_id, full_name, designation,email_address, website, phone_number, lead_value,company, description, address, city_name,state_name,country_name,zip_code) values ('{var1}','{var2}','{var3}',$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
-    "Q56"  : `select r.id, r.role_name, u.id as user_id , u.full_name, u.percentage_distribution from roles as r
-              inner join users as u on r.company_id = u.company_id where r.company_id = '{var1}' and 
-              r.deleted_at is null and u.deleted_at is null` ,
+    "Q56"  : `select r.id, r.role_name, u.id as user_id , u.full_name, u.percentage_distribution
+              from roles as r inner join users as u on r.id = u.role_id 
+              where r.company_id = '{var1}' and r.deleted_at is null and u.deleted_at is null` ,
     "Q57"  : `select l.id as lead_id, u.id as user_id,u.full_name as user_name,l.full_name as client_name, l.designation,l.email_address,
               l.website, l.phone_number, l.lead_value,l.company, l.description, l.address,l.city_name,
-              l.state_name,l.country_name,l.zip_code from leads as l inner join users as u on l.company_id = u.company_id 
+              l.state_name,l.country_name,l.zip_code from leads as l inner join users as u on l.user_id = u.id 
               where l.company_id = '39c2af6a-3234-451f-95ff-947d8954c747' and 
               l.deleted_at is null and u.deleted_at is null`,
     "Q58"  : `select id,full_name, designation,email_address, website, phone_number, lead_value,company, description, address, city_name,state_name,country_name,zip_code from leads where id ='{var1}' and deleted_at is null `,
