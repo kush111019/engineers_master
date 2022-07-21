@@ -21,9 +21,9 @@ const db_sql = {
     "Q16"  : `select id, company_name , company_logo, company_address from companies where id = '{var1}' and deleted_at is null`,
     "Q17"  : `update users set full_name='{var1}',avatar = '{var2}' ,updated_at = '{var3}' where email_address='{var4}' RETURNING * `, 
     "Q18"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','Admin','','{var2}') RETURNING *`, 
-    "Q19"  : `select id, role_name, reporter from roles where id = '{var1}' and deleted_at is null` ,
+    "Q19"  : `select id, role_name, reporter,supporter from roles where id = '{var1}' and deleted_at is null` ,
     "Q20"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','{var2}','{var3}','{var4}') RETURNING *`, 
-    "Q21"  : `select id, role_name, reporter from roles where company_id = '{var1}' and deleted_at is null ` ,
+    "Q21"  : `select id, role_name, reporter , supporter from roles where company_id = '{var1}' and deleted_at is null ` ,
     "Q22"  : `update users set role_id = '{var2}', percentage_distribution = '{var3}', updated_at = '{var4}' where id = '{var1}' and deleted_at is null RETURNING *`,
     "Q23"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where company_id = '{var1}' and deleted_at is null`,
     "Q24"  : `select id, role_name ,  reporter from roles where reporter = '{var1}' and deleted_at is null`,
@@ -68,12 +68,13 @@ const db_sql = {
               l.deleted_at is null and u.deleted_at is null`,
     "Q58"  : `select id,full_name, designation,email_address, website, phone_number, lead_value,company, description, address, city_name,state_name,country_name,zip_code from leads where id ='{var1}' and deleted_at is null `,
     "Q59"  : `insert into targets (id, lead_id, supporters, finishing_date, amount, description, company_id) values('{var0}','{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') returning *`,
-    "Q60"  : `select id, supporters, lead_id, finishing_date, amount, description, created_at from targets where company_id = '{var1}' and deleted_at is null and ((created_at BETWEEN '{var2}' AND '{var3}') or (amount BETWEEN '{var4}' and '{var5}')) `,
+    "Q60"  : `select id, supporters, lead_id, finishing_date, amount, description, created_at from targets where company_id = '{var1}' and deleted_at is null`,
 
     "Q61"  : `insert into follow_up_notes (id, target_id, company_id, user_id, notes) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,
     "Q62"  : `select notes, created_at from follow_up_notes where target_id = '{var1}' and deleted_at is null`,
     "Q63"  : `select id,full_name,email_address,phone_number, lead_value,company, description, created_at from leads where company_id ='{var1}' and deleted_at is null and ((created_at BETWEEN '{var2}' AND '{var3}') or (lead_value BETWEEN '{var4}' and '{var5}')) `,
-    "Q64"  : `update permissions set user_id = '{var2}' where role_id = '{var1}' and deleted_at is null returning *`
+    "Q64"  : `update permissions set user_id = '{var2}' where role_id = '{var1}' and deleted_at is null returning *`,
+    "Q65"  : `update roles set supporter = '{var1}' , updated_at = '{var2}' where id = '{var3}' returning * `
 
 };
 

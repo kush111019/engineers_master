@@ -558,7 +558,9 @@ module.exports.moduleList = async (req, res) => {
 
 //-------------------------------------Roles-------------------------------------------------
 module.exports.rolesList = async (req, res) => {
+
     try {
+
         userEmail = req.user.email
 
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
@@ -569,26 +571,37 @@ module.exports.rolesList = async (req, res) => {
             s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s2)
             if (checkPermission.rows[0].permission_to_view) {
+
                 s3 = dbScript(db_sql['Q21'], { var1: findAdmin.rows[0].company_id })
                 let RolesList = await connection.query(s3)
+
                 for (let data of RolesList.rows) {
-                    if (data.reporter != '') {
-                        s4 = dbScript(db_sql['Q41'], { var1: data.reporter })
+                    if (data.reporter != '' ) {
+
+                        s4 = dbScript(db_sql['Q34'], { var1: data.reporter })
                         let userList = await connection.query(s4)
+
                         if (userList.rowCount > 0) {
+
+                            s5 = dbScript(db_sql['Q19'], { var1: userList.rows[0].role_id })
+                            let reporterRole = await connection.query(s5)
+
                             list.push({
-                                role_id: data.id,
-                                role_name: data.role_name,
-                                reporter_id: userList.rows[0].id,
-                                reporter_name: userList.rows[0].full_name
+                                roleId: data.id,
+                                roleName: data.role_name,
+                                reporterId: userList.rows[0].id,
+                                reporterRole : reporterRole.rows[0].role_name,
+                                reporterName: userList.rows[0].full_name 
                             })
                         } 
+
                     } else {
                         list.push({
-                            role_id: data.id,
-                            role_name: data.role_name,
-                            reporter_id: "",
-                            reporter_name: ""
+                            roleId: data.id,
+                            roleName: data.role_name,
+                            reporterId: "",
+                            reporterRole : "",
+                            reporterName: ""
 
                         })
                     }
@@ -639,11 +652,13 @@ module.exports.createRole = async (req, res) => {
         let {
             roleName,
             reporter,
-            modulePermissions,
-            isAdmin
+            supporter,
+            modulePermissions
         } = req.body
 
         let roleId = uuid.v4()
+
+        console.log(req.body,"body");
 
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -653,30 +668,53 @@ module.exports.createRole = async (req, res) => {
             let checkPermission = await connection.query(s2)
             if (checkPermission.rows[0].permission_to_create) {
 
+                if (supporter == "" || supporter == null || supporter == undefined) {
 
-                await connection.query('BEGIN')
-                s3 = dbScript(db_sql['Q20'], { var1: roleId, var2: roleName, var3: reporter, var4: findAdmin.rows[0].company_id })
-                let createRole = await connection.query(s3)
+                    await connection.query('BEGIN')
+                    s3 = dbScript(db_sql['Q20'], { var1: roleId, var2: roleName, var3: reporter, var4: findAdmin.rows[0].company_id })
+                    let createRole = await connection.query(s3)
 
-                for (data of modulePermissions) {
-                    let permissionId = uuid.v4()
-                    s4 = dbScript(db_sql['Q32'], { var1: permissionId, var2: createRole.rows[0].id, var3: data.moduleId, var4: data.permissionToCreate, var5: data.permissionToUpdate, var6: data.permissionToDelete, var7: data.permissionToView, var8: findAdmin.rows[0].id })
-                    addPermission = await connection.query(s4)
-                    await connection.query('COMMIT')
-                }
-                if (createRole.rowCount > 0 && addPermission.rowCount > 0) {
-                    res.json({
-                        status: 201,
-                        success: true,
-                        message: "role created successfully"
-                    })
+                    for (data of modulePermissions) {
+                        let permissionId = uuid.v4()
+                        s4 = dbScript(db_sql['Q32'], { var1: permissionId, var2: createRole.rows[0].id, var3: data.moduleId, var4: data.permissionToCreate, var5: data.permissionToUpdate, var6: data.permissionToDelete, var7: data.permissionToView, var8: findAdmin.rows[0].id })
+                        addPermission = await connection.query(s4)
+                        await connection.query('COMMIT')
+                    }
+                    if (createRole.rowCount > 0 && addPermission.rowCount > 0) {
+                        res.json({
+                            status: 201,
+                            success: true,
+                            message: "role created successfully"
+                        })
+
+                    } else {
+                        await connection.query('ROLLBACK')
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "something went wrong"
+                        })
+                    }
                 } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "something went wrong"
-                    })
+                    await connection.query('BEGIN')
+                    _dt = new Date().toISOString();
+                    s5 = dbScript(db_sql['Q65'], { var1: supporter, var2: _dt, var3: reporter })
+                    let updateSupporter = await connection.query(s5)
+                    await connection.query('COMMIT')
+                    if (updateSupporter.rowCount > 0) {
+                        res.json({
+                            status: 201,
+                            success: true,
+                            message: "supporter added successfully"
+                        })
+                    } else {
+                        await connection.query('ROLLBACK')
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "something went wrong"
+                        })
+                    }
                 }
 
             } else {
