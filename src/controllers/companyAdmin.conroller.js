@@ -513,7 +513,6 @@ module.exports.moduleList = async (req, res) => {
             if (checkPermission.rows[0].permission_to_view) {
 
                 s3 = dbScript(db_sql['Q8'], { var1: findAdmin.rows[0].company_id })
-                console.log(s3,"s3");
                 let moduleList = await connection.query(s3)
 
                 if (moduleList.rows.length > 0) {
@@ -559,9 +558,7 @@ module.exports.moduleList = async (req, res) => {
 
 //-------------------------------------Roles-------------------------------------------------
 module.exports.rolesList = async (req, res) => {
-
     try {
-
         userEmail = req.user.email
 
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
@@ -595,8 +592,6 @@ module.exports.rolesList = async (req, res) => {
 
                         s4 = dbScript(db_sql['Q34'], { var1: data.reporter })
                         let userList = await connection.query(s4)
-                        console.log(s4);
-                        console.log(userList.rows);
                         if (userList.rowCount > 0) {
 
                             s5 = dbScript(db_sql['Q19'], { var1: userList.rows[0].role_id })
@@ -606,10 +601,8 @@ module.exports.rolesList = async (req, res) => {
                                     roleName: data.role_name,
                                     reporterId: reporterRole.rows[0].id,
                                     reporterRole : reporterRole.rows[0].role_name,
-                                    reporterName: userList.rows[0].full_name ,
                                     modulePermissions : modulePermissions
                                 })
-                                console.log(list,"list array");
                         }
                     } else {
                         list.push({
@@ -673,7 +666,6 @@ module.exports.createRole = async (req, res) => {
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0) {
             s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
-            console.log(s2);
             let checkPermission = await connection.query(s2)
             if (checkPermission.rows[0].permission_to_create) {
 
@@ -2712,3 +2704,69 @@ module.exports.leadConversionReport = async (req, res) => {
     }
 }
 
+// ---------------------------------------Deal Management---------------------------------------
+
+module.exports.createDeal = async (req, res) => {
+    try {
+        userEmail = req.user.email
+        let {
+            leadName,
+            leadSource,
+            qualification,
+            is_qualified,
+            targetAmount,
+            productMatch,
+            targetClosingDate
+        } = req.body
+        s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+
+            s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
+            let checkPermission = await connection.query(s2)
+            if (checkPermission.rows[0].permission_to_create) {
+                
+                id = uuid.v4()
+                await connection.query('BEGIN')
+                s3 = dbScript(db_sql['Q67'], { var1: id, var2: findAdmin.rows[0].id, var3: findAdmin.rows[0].company_id, var4: leadName, var5: leadSource, var6: qualification, var7: is_qualified, var8: targetAmount, var9: productMatch, var10: targetClosingDate })
+                let createDeal = await connection.query(s3)
+                await connection.query('COMMIT')
+                if (createDeal.rowCount > 0) {
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Deal created successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "something went wrong"
+                    })
+                }
+
+            } else {
+                res.json({
+                    status: 403,
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}

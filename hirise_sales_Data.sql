@@ -5,7 +5,7 @@
 -- Dumped from database version 14.2
 -- Dumped by pg_dump version 14.2
 
--- Started on 2022-07-22 17:37:01
+-- Started on 2022-07-22 19:51:23
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -19,7 +19,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 3387 (class 0 OID 123134)
+-- TOC entry 3391 (class 0 OID 123134)
 -- Dependencies: 209
 -- Data for Name: companies; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -30,7 +30,7 @@ INSERT INTO public.companies (id, company_name, company_logo, company_address, c
 
 
 --
--- TOC entry 3391 (class 0 OID 123174)
+-- TOC entry 3395 (class 0 OID 123174)
 -- Dependencies: 213
 -- Data for Name: quotations; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -39,7 +39,7 @@ INSERT INTO public.quotations (id, target_time, target_amount, company_id, creat
 
 
 --
--- TOC entry 3388 (class 0 OID 123144)
+-- TOC entry 3392 (class 0 OID 123144)
 -- Dependencies: 210
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -50,7 +50,7 @@ INSERT INTO public.users (id, full_name, company_id, avatar, email_address, mobi
 
 
 --
--- TOC entry 3393 (class 0 OID 123194)
+-- TOC entry 3397 (class 0 OID 123194)
 -- Dependencies: 215
 -- Data for Name: assigned_quotations; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -58,7 +58,16 @@ INSERT INTO public.users (id, full_name, company_id, avatar, email_address, mobi
 
 
 --
--- TOC entry 3397 (class 0 OID 139479)
+-- TOC entry 3404 (class 0 OID 221391)
+-- Dependencies: 222
+-- Data for Name: deals; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.deals (id, user_id, company_id, lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at, created_at, updated_at, deleted_at) VALUES ('8ca8af6b-0610-4fb3-8d41-2c6d22233f95', '31a09e64-9754-4c12-83cf-e4c657c5dd69', '39c2af6a-3234-451f-95ff-947d8954c747', 'ClickIpo', 'LinkedIn', '', false, '100000', 'multiple products are matching', '15/08/2022', NULL, '2022-07-22 14:17:52.699998-07', NULL, NULL);
+
+
+--
+-- TOC entry 3401 (class 0 OID 139479)
 -- Dependencies: 219
 -- Data for Name: leads; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -70,7 +79,7 @@ INSERT INTO public.leads (id, user_id, company_id, assigned_to, full_name, desig
 
 
 --
--- TOC entry 3398 (class 0 OID 196809)
+-- TOC entry 3402 (class 0 OID 196809)
 -- Dependencies: 220
 -- Data for Name: targets; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -80,7 +89,7 @@ INSERT INTO public.targets (id, lead_id, supporters, finishing_date, amount, des
 
 
 --
--- TOC entry 3399 (class 0 OID 196860)
+-- TOC entry 3403 (class 0 OID 196860)
 -- Dependencies: 221
 -- Data for Name: follow_up_notes; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -88,22 +97,22 @@ INSERT INTO public.targets (id, lead_id, supporters, finishing_date, amount, des
 
 
 --
--- TOC entry 3389 (class 0 OID 123154)
+-- TOC entry 3393 (class 0 OID 123154)
 -- Dependencies: 211
 -- Data for Name: modules; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id) VALUES ('85d5a1aa-8eed-439e-be9c-17f7bf4c3f43', 'users', 'company users', '2022-07-22 05:05:23.144657-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747');
-INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id) VALUES ('d3009aa6-05c8-46dc-8dc2-b4af0688a352', 'Deal management', 'Deals Module', '2022-07-22 05:06:16.398801-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747');
-INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id) VALUES ('17ac6db2-17a1-4010-8598-2364db8e9634', 'Slab Configuration', 'Slab Module', '2022-07-22 05:07:22.069156-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747');
-INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id) VALUES ('a8252ca9-e471-4a1d-848d-aef386a4d71c', 'Role wise Config', 'Roles Config Module', '2022-07-22 05:07:58.117159-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747');
-INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id) VALUES ('2ec14d7f-daa4-4908-83b6-fe1023b17ca8', 'Reports ', 'Reports  Module', '2022-07-22 05:08:20.455432-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747');
-INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id) VALUES ('f40d0d01-d77a-4eca-9d0f-0a1e22606a62', 'Role', 'Roles Module', '2022-07-22 05:10:23.097926-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747');
-INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id) VALUES ('f674eb9a-975a-47c6-aa2b-20a86ecf896b', 'Sales management', 'Sales Module', '2022-07-22 06:03:55.606843-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747');
+INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id, is_create, is_update, is_read, is_delete, is_assign) VALUES ('85d5a1aa-8eed-439e-be9c-17f7bf4c3f43', 'users', 'company users', '2022-07-22 05:05:23.144657-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747', true, true, true, true, false);
+INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id, is_create, is_update, is_read, is_delete, is_assign) VALUES ('d3009aa6-05c8-46dc-8dc2-b4af0688a352', 'Deal management', 'Deals Module', '2022-07-22 05:06:16.398801-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747', true, true, true, true, false);
+INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id, is_create, is_update, is_read, is_delete, is_assign) VALUES ('17ac6db2-17a1-4010-8598-2364db8e9634', 'Slab Configuration', 'Slab Module', '2022-07-22 05:07:22.069156-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747', false, true, true, false, false);
+INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id, is_create, is_update, is_read, is_delete, is_assign) VALUES ('a8252ca9-e471-4a1d-848d-aef386a4d71c', 'Role wise Config', 'Roles Config Module', '2022-07-22 05:07:58.117159-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747', false, true, true, false, false);
+INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id, is_create, is_update, is_read, is_delete, is_assign) VALUES ('2ec14d7f-daa4-4908-83b6-fe1023b17ca8', 'Reports ', 'Reports  Module', '2022-07-22 05:08:20.455432-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747', false, false, true, false, false);
+INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id, is_create, is_update, is_read, is_delete, is_assign) VALUES ('f40d0d01-d77a-4eca-9d0f-0a1e22606a62', 'Role', 'Roles Module', '2022-07-22 05:10:23.097926-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747', true, true, true, false, false);
+INSERT INTO public.modules (id, module_name, module_type, created_at, updated_at, deleted_at, company_id, is_create, is_update, is_read, is_delete, is_assign) VALUES ('f674eb9a-975a-47c6-aa2b-20a86ecf896b', 'Sales management', 'Sales Module', '2022-07-22 06:03:55.606843-07', NULL, NULL, '39c2af6a-3234-451f-95ff-947d8954c747', true, true, true, true, false);
 
 
 --
--- TOC entry 3390 (class 0 OID 123164)
+-- TOC entry 3394 (class 0 OID 123164)
 -- Dependencies: 212
 -- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -117,7 +126,7 @@ INSERT INTO public.roles (id, role_name, module_ids, created_at, updated_at, del
 
 
 --
--- TOC entry 3396 (class 0 OID 131267)
+-- TOC entry 3400 (class 0 OID 131267)
 -- Dependencies: 218
 -- Data for Name: permissions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -139,7 +148,7 @@ INSERT INTO public.permissions (id, role_id, module_id, module_name, permission_
 
 
 --
--- TOC entry 3394 (class 0 OID 123204)
+-- TOC entry 3398 (class 0 OID 123204)
 -- Dependencies: 216
 -- Data for Name: sales_entries; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -147,7 +156,7 @@ INSERT INTO public.permissions (id, role_id, module_id, module_name, permission_
 
 
 --
--- TOC entry 3392 (class 0 OID 123184)
+-- TOC entry 3396 (class 0 OID 123184)
 -- Dependencies: 214
 -- Data for Name: slabs; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -158,7 +167,7 @@ INSERT INTO public.slabs (id, min_amount, max_amount, percentage, company_id, is
 
 
 --
--- TOC entry 3395 (class 0 OID 123244)
+-- TOC entry 3399 (class 0 OID 123244)
 -- Dependencies: 217
 -- Data for Name: super_admin; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -166,7 +175,7 @@ INSERT INTO public.slabs (id, min_amount, max_amount, percentage, company_id, is
 INSERT INTO public.super_admin (id, name, email, encrypted_password, created_at, deleted_at) VALUES ('ae58c6b5-1bea-41c0-883b-53a9c3069af3', 'superadmin', 'superadmin@hirise.com', '4ff3e8922e53309578d694c2dafb41d744af5c4004716f178552449149cd502e9c7022d18cdef4bbe796652d0862f019653e96796ad5d05bffb0f44baaa33528', '2022-06-14 10:28:06.656036-07', NULL);
 
 
--- Completed on 2022-07-22 17:37:02
+-- Completed on 2022-07-22 19:51:24
 
 --
 -- PostgreSQL database dump complete

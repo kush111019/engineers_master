@@ -65,5 +65,8 @@ router.get('/notesList',verifyTokenFn, controller.companyAdmin.notesList)
 router.get('/leadReport',verifyTokenFn, controller.companyAdmin.leadReport)
 router.get('/leadConversionReport',verifyTokenFn, controller.companyAdmin.leadConversionReport)
 
+//------------------------------------Deal Management---------------------------------------
+
+router.post('/createDeal',verifyTokenFn, controller.companyAdmin.createDeal)
 
 module.exports = router;

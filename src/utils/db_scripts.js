@@ -10,7 +10,7 @@ const db_sql = {
     "Q5"   : `update users set is_verified = 'true', verification_code = null, updated_at = '{var1}' where email_address = '{var2}'RETURNING *` ,  
     "Q6"   : `select id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where email_address = '{var1}' and deleted_at is null ` , 
     "Q7"   : `update users set encrypted_password='{var2}' ,is_verified = true,updated_at = '{var3}' where email_address = '{var1}' RETURNING *`, 
-    "Q8"   : `select id, module_name,module_type from modules where company_id = '{var1}' and deleted_at is null` ,
+    "Q8"   : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where company_id = '{var1}' and deleted_at is null` ,
     "Q9"   : `insert into modules(id,module_name,module_type) values('{var1}','{var2}','{var3}') RETURNING *`,  
     "Q10"  : `update modules set encrypted_password='{var2}' ,updated_at = '{var3}' where email_address = '{var1}' RETURNING *`, 
     "Q11"  : `SELECT * FROM super_admin WHERE email='{var1}' and deleted_at is null`,
@@ -34,7 +34,7 @@ const db_sql = {
     "Q29"  : `select id, quotation_id, from_percentage, to_percentage , amount_percentage, is_mandatory from slabs where company_id = '{var1}' and deleted_at is null`,
     "Q30"  : `update quotations set target_amount = '{var1}', target_time = '{var2}' where id = '{var3}' and deleted_at is null returning *`,
     "Q31"  : `update slabs set min_amount = '{var1}', max_amount = '{var2}', percentage = '{var3}', is_max = '{var4}' , updated_at = '{var6}'  where id = '{var5}' and deleted_at is null returning *`,
-    "Q32"  : `insert into permissions(id, role_id, module_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view, user_id ) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}', '{var8}') returning *`,
+    "Q32"  : `insert into permissions(id, role_id, module_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') returning *`,
     "Q33"  : `insert into permissions(id, role_id, module_id,user_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view ) values('{var1}','{var2}','{var3}','{var4}',true, true,true,true) returning *`,
     "Q34"  : `select id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where role_id = '{var1}' and deleted_at is null `,
     "Q35"  : `select permission_to_view, permission_to_create, permission_to_update, permission_to_delete from permissions where user_id = '{var1}' `,
@@ -75,7 +75,8 @@ const db_sql = {
     "Q63"  : `select id,full_name,email_address,phone_number, lead_value,company, description, created_at from leads where company_id ='{var1}' and deleted_at is null and ((created_at BETWEEN '{var2}' AND '{var3}') or (lead_value BETWEEN '{var4}' and '{var5}')) `,
     "Q64"  : `update permissions set user_id = '{var2}' where role_id = '{var1}' and deleted_at is null returning *`,
     "Q65"  : `update roles set module_ids = '{var1}' , updated_at = '{var2}' where id = '{var3}' returning * `,
-    "Q66"  : `select permission_to_view, permission_to_create, permission_to_update, permission_to_delete from permissions where role_id = '{var1}' and module_id = '{var2}' and deleted_at is null `
+    "Q66"  : `select permission_to_view, permission_to_create, permission_to_update, permission_to_delete from permissions where role_id = '{var1}' and module_id = '{var2}' and deleted_at is null `,
+    "Q67"  : `insert into deals(id, user_id,company_id,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}') returning *`
 };
 
 
