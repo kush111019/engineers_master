@@ -513,6 +513,7 @@ module.exports.moduleList = async (req, res) => {
             if (checkPermission.rows[0].permission_to_view) {
 
                 s3 = dbScript(db_sql['Q8'], { var1: findAdmin.rows[0].company_id })
+                console.log(s3,"s3");
                 let moduleList = await connection.query(s3)
 
                 if (moduleList.rows.length > 0) {
@@ -589,11 +590,12 @@ module.exports.rolesList = async (req, res) => {
                             list.push({
                                 roleId: data.id,
                                 roleName: data.role_name,
-                                reporterId: userList.rows[0].id,
+                                reporterId: reporterRole.rows[0].id,
                                 reporterRole : reporterRole.rows[0].role_name,
                                 reporterName: userList.rows[0].full_name 
                             })
                         } 
+                    
 
                     } else {
                         list.push({
@@ -601,8 +603,7 @@ module.exports.rolesList = async (req, res) => {
                             roleName: data.role_name,
                             reporterId: "",
                             reporterRole : "",
-                            reporterName: ""
-
+                            reporterName: "",
                         })
                     }
                 }
@@ -650,15 +651,8 @@ module.exports.createRole = async (req, res) => {
     try {
         userEmail = req.user.email
         let {
-            roleName,
-            reporter,
-            supporter,
-            modulePermissions
+            roles
         } = req.body
-
-        let roleId = uuid.v4()
-
-        console.log(req.body,"body");
 
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -668,53 +662,47 @@ module.exports.createRole = async (req, res) => {
             let checkPermission = await connection.query(s2)
             if (checkPermission.rows[0].permission_to_create) {
 
-                if (supporter == "" || supporter == null || supporter == undefined) {
+                for (let data of roles) {
 
                     await connection.query('BEGIN')
-                    s3 = dbScript(db_sql['Q20'], { var1: roleId, var2: roleName, var3: reporter, var4: findAdmin.rows[0].company_id })
-                    let createRole = await connection.query(s3)
+                    let roleId = uuid.v4()
+                    s3 = dbScript(db_sql['Q20'], { var1: roleId, var2: data.roleName, var3: data.reporter, var4: findAdmin.rows[0].company_id })
 
-                    for (data of modulePermissions) {
+                    createRole = await connection.query(s3)
+                    
+                    let moduleIds = []
+                    for (let moduleData of data.modulePermissions) {
+
+                        moduleIds.push(moduleData.moduleId)
+
                         let permissionId = uuid.v4()
-                        s4 = dbScript(db_sql['Q32'], { var1: permissionId, var2: createRole.rows[0].id, var3: data.moduleId, var4: data.permissionToCreate, var5: data.permissionToUpdate, var6: data.permissionToDelete, var7: data.permissionToView, var8: findAdmin.rows[0].id })
-                        addPermission = await connection.query(s4)
-                        await connection.query('COMMIT')
-                    }
-                    if (createRole.rowCount > 0 && addPermission.rowCount > 0) {
-                        res.json({
-                            status: 201,
-                            success: true,
-                            message: "role created successfully"
-                        })
+                        s4 = dbScript(db_sql['Q32'], { var1: permissionId, var2: createRole.rows[0].id, var3: moduleData.moduleId, var4: moduleData.permissionToCreate, var5: moduleData.permissionToUpdate, var6: moduleData.permissionToDelete, var7: moduleData.permissionToView, var8: findAdmin.rows[0].id })
 
-                    } else {
-                        await connection.query('ROLLBACK')
-                        res.json({
-                            status: 400,
-                            success: false,
-                            message: "something went wrong"
-                        })
+                        addPermission = await connection.query(s4)
                     }
-                } else {
-                    await connection.query('BEGIN')
-                    _dt = new Date().toISOString();
-                    s5 = dbScript(db_sql['Q65'], { var1: supporter, var2: _dt, var3: reporter })
-                    let updateSupporter = await connection.query(s5)
+
+                    let _dt = new Date().toISOString();
+                    s5 = dbScript(db_sql['Q65'], { var1: moduleIds, var2: _dt, var3: createRole.rows[0].id })
+                    updateRole = await connection.query(s5)
+
                     await connection.query('COMMIT')
-                    if (updateSupporter.rowCount > 0) {
-                        res.json({
-                            status: 201,
-                            success: true,
-                            message: "supporter added successfully"
-                        })
-                    } else {
-                        await connection.query('ROLLBACK')
-                        res.json({
-                            status: 400,
-                            success: false,
-                            message: "something went wrong"
-                        })
-                    }
+                    
+                }
+
+                if (createRole.rowCount > 0 && addPermission.rowCount > 0 && updateRole.rowCount > 0 ) {
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "role created successfully"
+                    })
+
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "something went wrong"
+                    })
                 }
 
             } else {
@@ -745,36 +733,42 @@ module.exports.updateRole = async (req, res) => {
     try {
         userEmail = req.user.email
         let {
-            roleId,
-            roleName,
-            reporter,
-            modulePermissions
+            roles
         } = req.body
 
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
-
         if (findAdmin.rows.length > 0) {
 
             s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s2)
             if (checkPermission.rows[0].permission_to_update) {
-                _dt = new Date().toISOString();
-                await connection.query('BEGIN')
-                s3 = dbScript(db_sql['Q42'], { var1: roleName, var2: reporter, var3: roleId, var4: _dt })
-                let updateRole = await connection.query(s3)
-                for (data of modulePermissions) {
-                    s4 = dbScript(db_sql['Q43'], { var1: data.permissionToCreate, var2: data.permissionToView, var3: data.permissionToUpdate, var4: data.permissionToDelete, var5: roleId, var6: _dt, var7: data.moduleId })
-                    updatePermission = await connection.query(s4)
+
+                for (let data of roles) {
+
+                    await connection.query('BEGIN')
+                    _dt = new Date().toISOString();
+                    s3 =  dbScript(db_sql['Q42'], { var1: data.roleName, var2: data.reporter, var3: data.roleId, var4: _dt })
+
+                    updateRole = await connection.query(s3)
+
+                    for (let moduleData of data.modulePermissions) {
+
+                        s4 =dbScript(db_sql['Q43'], { var1: moduleData.permissionToCreate, var2: moduleData.permissionToView, var3: moduleData.permissionToUpdate, var4: moduleData.permissionToDelete, var5: data.roleId, var6: _dt, var7: moduleData.moduleId })
+                        updatePermission = await connection.query(s4)
+                    }
+
                     await connection.query('COMMIT')
+                    
                 }
 
-                if (updateRole.rowCount > 0 && updatePermission.rowCount > 0) {
+                if (updateRole.rowCount > 0 && updatePermission.rowCount > 0  ) {
                     res.json({
                         status: 200,
                         success: true,
                         message: "role updated successfully"
                     })
+
                 } else {
                     await connection.query('ROLLBACK')
                     res.json({
@@ -783,6 +777,7 @@ module.exports.updateRole = async (req, res) => {
                         message: "something went wrong"
                     })
                 }
+
             } else {
                 res.json({
                     status: 400,

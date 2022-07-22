@@ -74,7 +74,7 @@ const db_sql = {
     "Q62"  : `select notes, created_at from follow_up_notes where target_id = '{var1}' and deleted_at is null`,
     "Q63"  : `select id,full_name,email_address,phone_number, lead_value,company, description, created_at from leads where company_id ='{var1}' and deleted_at is null and ((created_at BETWEEN '{var2}' AND '{var3}') or (lead_value BETWEEN '{var4}' and '{var5}')) `,
     "Q64"  : `update permissions set user_id = '{var2}' where role_id = '{var1}' and deleted_at is null returning *`,
-    "Q65"  : `update roles set supporter = '{var1}' , updated_at = '{var2}' where id = '{var3}' returning * `
+    "Q65"  : `update roles set module_ids = '{var1}' , updated_at = '{var2}' where id = '{var3}' returning * `
 
 };
 

@@ -5,7 +5,7 @@
 -- Dumped from database version 14.2
 -- Dumped by pg_dump version 14.2
 
--- Started on 2022-07-21 19:35:29
+-- Started on 2022-07-22 14:42:44
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -19,7 +19,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 3433 (class 1262 OID 123133)
+-- TOC entry 3432 (class 1262 OID 123133)
 -- Name: hirise_sales1; Type: DATABASE; Schema: -; Owner: postgres
 --
 
@@ -436,7 +436,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 3280 (class 2606 OID 123234)
+-- TOC entry 3279 (class 2606 OID 123234)
 -- Name: assigned_quotations assigned_quotations_quotation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -445,7 +445,7 @@ ALTER TABLE ONLY public.assigned_quotations
 
 
 --
--- TOC entry 3281 (class 2606 OID 123239)
+-- TOC entry 3280 (class 2606 OID 123239)
 -- Name: assigned_quotations assigned_quotations_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -454,7 +454,7 @@ ALTER TABLE ONLY public.assigned_quotations
 
 
 --
--- TOC entry 3285 (class 2606 OID 196830)
+-- TOC entry 3284 (class 2606 OID 196830)
 -- Name: targets company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -463,7 +463,7 @@ ALTER TABLE ONLY public.targets
 
 
 --
--- TOC entry 3287 (class 2606 OID 196875)
+-- TOC entry 3286 (class 2606 OID 196875)
 -- Name: follow_up_notes company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -481,7 +481,7 @@ ALTER TABLE ONLY public.modules
 
 
 --
--- TOC entry 3283 (class 2606 OID 131277)
+-- TOC entry 3282 (class 2606 OID 131277)
 -- Name: permissions permissions_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -490,16 +490,7 @@ ALTER TABLE ONLY public.permissions
 
 
 --
--- TOC entry 3279 (class 2606 OID 123229)
--- Name: roles roles_module_ids_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.roles
-    ADD CONSTRAINT roles_module_ids_fkey FOREIGN KEY (module_ids) REFERENCES public.modules(id) NOT VALID;
-
-
---
--- TOC entry 3282 (class 2606 OID 123224)
+-- TOC entry 3281 (class 2606 OID 123224)
 -- Name: sales_entries sales_entries_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -508,7 +499,7 @@ ALTER TABLE ONLY public.sales_entries
 
 
 --
--- TOC entry 3286 (class 2606 OID 196870)
+-- TOC entry 3285 (class 2606 OID 196870)
 -- Name: follow_up_notes target_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -517,7 +508,7 @@ ALTER TABLE ONLY public.follow_up_notes
 
 
 --
--- TOC entry 3284 (class 2606 OID 196819)
+-- TOC entry 3283 (class 2606 OID 196819)
 -- Name: targets targets_lead_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -526,7 +517,7 @@ ALTER TABLE ONLY public.targets
 
 
 --
--- TOC entry 3288 (class 2606 OID 196880)
+-- TOC entry 3287 (class 2606 OID 196880)
 -- Name: follow_up_notes user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -543,7 +534,7 @@ ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) NOT VALID;
 
 
--- Completed on 2022-07-21 19:35:31
+-- Completed on 2022-07-22 14:42:45
 
 --
 -- PostgreSQL database dump complete
