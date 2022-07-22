@@ -5,30 +5,7 @@
 -- Dumped from database version 14.2
 -- Dumped by pg_dump version 14.2
 
--- Started on 2022-07-22 14:42:44
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
---
--- TOC entry 3432 (class 1262 OID 123133)
--- Name: hirise_sales1; Type: DATABASE; Schema: -; Owner: postgres
---
-
-CREATE DATABASE hirise_sales1 WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'English_United States.1252';
-
-
-ALTER DATABASE hirise_sales1 OWNER TO postgres;
-
-\connect hirise_sales1
+-- Started on 2022-07-22 17:36:30
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -534,7 +511,7 @@ ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) NOT VALID;
 
 
--- Completed on 2022-07-22 14:42:45
+-- Completed on 2022-07-22 17:36:30
 
 --
 -- PostgreSQL database dump complete
