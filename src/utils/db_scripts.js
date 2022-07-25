@@ -81,6 +81,7 @@ const db_sql = {
     "Q69"  : `select id, company_name from deal_companies where company_name = '{var1}' and deleted_at is null`,
     "Q70"  : `select id,deal_company_id lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date from deals where company_id = '{var1}' and deleted_at is null`,
     "Q71"  : `update deals set closed_at = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
+    "Q72"  : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where module_name = '{var1}' and deleted_at is null` ,
 };
 
 
