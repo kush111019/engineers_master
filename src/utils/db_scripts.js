@@ -4,7 +4,7 @@ const db_sql = {
     "Q1"   : `select id, company_name, company_address from companies where company_name = '{var1}'`,
     "Q2"   : `insert into companies(id,company_name,company_logo,company_address) 
               values('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
-    "Q3"   : `insert into users(id,full_name,company_id,avatar,email_address,address,mobile_number,phone_number,encrypted_password,role_id,address,is_verified) 
+    "Q3"   : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,phone_number,encrypted_password,role_id,address,is_verified) 
               values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}',false) RETURNING *`,          
     "Q4"   : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id from users where email_address = '{var1}' and deleted_at is null` ,
     "Q5"   : `update users set is_verified = 'true', verification_code = null, updated_at = '{var1}' where email_address = '{var2}'RETURNING *` ,  

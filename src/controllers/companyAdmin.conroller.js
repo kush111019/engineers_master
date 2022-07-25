@@ -890,6 +890,7 @@ module.exports.deleteRole = async (req, res) => {
                     s3= dbScript(db_sql['Q24'], {var1 : roleId})
                     let roleData = await connection.query(s3)
                     for(data of roleData.rows){
+                        
                         s4 = dbScript(db_sql['Q44'], { var1: data.id, var2: _dt })
                         updateRole = await connection.query(s4)
     
