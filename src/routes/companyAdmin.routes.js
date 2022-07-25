@@ -70,5 +70,7 @@ router.get('/leadConversionReport',verifyTokenFn, controller.companyAdmin.leadCo
 router.post('/createDeal',verifyTokenFn, controller.companyAdmin.createDeal)
 router.post('/closeDeal',verifyTokenFn, controller.companyAdmin.closeDeal)
 router.get('/dealList',verifyTokenFn, controller.companyAdmin.dealList)
+router.put('/editDeal',verifyTokenFn, controller.companyAdmin.editDeal)
+router.get('/dealLogsList',verifyTokenFn, controller.companyAdmin.dealLogsList)
 
 module.exports = router;
