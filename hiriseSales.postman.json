@@ -654,6 +654,33 @@
               "response": [
                 
               ]
+            },
+            {
+              "name": "delete role",
+              "id": "f3624748-aecd-4df1-a721-7692166754eb",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"roleId\" : \"780592fb-a16b-4d80-aac4-a3f6106c673d\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/deleteRole"
+              },
+              "response": [
+                
+              ]
             }
           ],
           "id": "be4c4a53-8120-493b-954f-2bf30454478a"
@@ -1566,6 +1593,63 @@
                   }
                 ],
                 "url": "{{companyAdmin}}/dealList"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "edit deal",
+              "id": "845f7bfd-ec1e-42ff-af67-7ad968455887",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"dealId\" : \"cb5ff625-12ca-45ef-9e6f-bb1b08e2dae2\",\r\n    \"leadName\" : \"Autarky\",\r\n    \"leadSource\" : \"facebook\",\r\n    \"qualification\" : \"yes\",\r\n    \"is_qualified\" : true ,\r\n    \"targetAmount\" : \"500000\",\r\n    \"productMatch\" : \"multiple products are matching\",\r\n    \"targetClosingDate\" : \"15/08/2022\" \r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/editDeal"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "deal Logs List",
+              "id": "30d9aaeb-971e-496c-9c72-661ff160697a",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"dealId\" : \"cb5ff625-12ca-45ef-9e6f-bb1b08e2dae2\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/dealLogsList"
               },
               "response": [
                 
