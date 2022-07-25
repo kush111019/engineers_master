@@ -25,30 +25,29 @@ let verifyTokenFn = async (req) => {
 
 let createAdmin = async (bodyData, cId, res) => {
     let id = uuid.v4()
-    let module_id = ""
     let {
         name,
         avatar,
         emailAddress,
         mobileNumber,
+        companyAddress,
         phoneNumber,
         encryptedPassword
     } = bodyData
     s3 = dbScript(db_sql['Q4'], { var1: emailAddress })
     let findUser = await connection.query(s3)
-    if (findUser.rows.length == 0) {
+    if (findUser.rowCount == 0) {
         // await connection.query('BEGIN')
         let roleId = uuid.v4()
         s4 = dbScript(db_sql['Q18'], { var1: roleId, var2: cId })
         let createRole = await connection.query(s4)
 
         let role_id = createRole.rows[0].id
-        s5 = dbScript(db_sql['Q3'], { var1: id, var2: name, var3: cId, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: phoneNumber, var8: encryptedPassword, var9: role_id })
+        s5 = dbScript(db_sql['Q3'], { var1: id, var2: name, var3: cId, var4: avatar, var5: emailAddress,var6:companyAddress, var6: mobileNumber, var7: phoneNumber, var8: encryptedPassword, var9: role_id })
         let saveuser = await connection.query(s5)
        
         s6 = dbScript(db_sql['Q8'], {})
         let findModules = await connection.query(s6)
-        console.log(findModules.rows,"modules lsit");
         let moduleArr = []
         for (data of findModules.rows){
             moduleArr.push(data.id)
@@ -57,7 +56,6 @@ let createAdmin = async (bodyData, cId, res) => {
             var addPermission = await connection.query(s7)
             
         }
-        console.log(moduleArr,"module list");
         _dt = new Date().toISOString();
         s8 = dbScript(db_sql['Q65'], { var1: JSON.stringify(moduleArr), var2 : _dt, var3: role_id })
         let updateModule = await connection.query(s8)
@@ -69,7 +67,7 @@ let createAdmin = async (bodyData, cId, res) => {
                 email: saveuser.rows[0].email_address
             }
             let token = await issueJWT(payload)
-            link = `http://143.198.102.134:8082/auth/reset-password/${token}`
+            link = `http://143.198.102.134:8080/auth/reset-password/${token}`
             await resetPasswordMail(emailAddress, link);
             return res.json({
                 status: 201,
@@ -100,7 +98,7 @@ let createAdmin = async (bodyData, cId, res) => {
 module.exports.uploadLogo = async (req, res) => {
     try {
         let file = req.file
-        let path = `http:/localhost:3003/comapnyLogo/${file.originalname}`;
+        let path = `http://143.198.102.134:3003/comapnyLogo/${file.originalname}`;
         res.json({
             status: 201,
             success: true,
@@ -366,7 +364,7 @@ module.exports.changePassword = async (req, res) => {
 module.exports.upload = async (req, res) => {
     try {
         let file = req.file
-        let path = `http:/localhost:3003/avatar/${file.originalname}`;
+        let path = `http://143.198.102.134:3003/avatar/${file.originalname}`;
         res.json({
             success: true,
             status: 201,
@@ -387,7 +385,11 @@ module.exports.updateUserProfile = async (req, res) => {
         let userMail = req.user.email
         let {
             name,
-            avatar
+            avatar,
+            emailAddress,
+            mobileNumber,
+            phoneNumber,
+            address
         } = req.body
 
         s1 = dbScript(db_sql['Q4'], { var1: userMail })
@@ -396,7 +398,7 @@ module.exports.updateUserProfile = async (req, res) => {
         if (findUser.rows.length > 0) {
             await connection.query('BEGIN')
             _dt = new Date().toISOString();
-            s2 = dbScript(db_sql['Q17'], { var1: name, var2: avatar, var3: _dt, var4: userMail })
+            s2 = dbScript(db_sql['Q17'], { var1: name, var2: avatar,var3:emailAddress, var4:phoneNumber,var5:mobileNumber,var6:address ,var7: _dt, var8: userMail })
             let updateUser = await connection.query(s2)
             await connection.query('COMMIT')
             if (updateUser.rowCount > 0) {
@@ -861,7 +863,8 @@ module.exports.deleteRole = async (req, res) => {
     try {
         userEmail = req.user.email
         let {
-            roleId
+            roleId,
+            status
         } = req.body
 
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
@@ -874,18 +877,38 @@ module.exports.deleteRole = async (req, res) => {
             s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2 : findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_delete) {
+
                 _dt = new Date().toISOString();
 
                 await connection.query('BEGIN')
 
-                s4 = dbScript(db_sql['Q44'], { var1: roleId, var2: _dt })
-                let updateRole = await connection.query(s4)
+                let updateRole ;
+                let updatePermission;
 
-                s5 = dbScript(db_sql['Q45'], { var1: roleId,  var2: _dt })
-                let updatePermission = await connection.query(s5)
+                if(status == "child"){
 
+                    s3= dbScript(db_sql['Q24'], {var1 : roleId})
+                    let roleData = await connection.query(s3)
+                    for(data of roleData.rows){
+                        s4 = dbScript(db_sql['Q44'], { var1: data.id, var2: _dt })
+                        updateRole = await connection.query(s4)
+    
+                        s5 = dbScript(db_sql['Q45'], { var1: data.id,  var2: _dt })
+                        updatePermission = await connection.query(s5)
+                    }
+                   
+                }else{
+                    s4 = dbScript(db_sql['Q44'], { var1: roleId, var2: _dt })
+                    updateRole = await connection.query(s4)
+
+                    s4 = dbScript(db_sql['Q77'], { var1: roleId, var2: _dt })
+                    updateChildRole = await connection.query(s4)
+
+                    s5 = dbScript(db_sql['Q45'], { var1: roleId,  var2: _dt })
+                    updatePermission = await connection.query(s5)
+                }
                 await connection.query('COMMIT')
-                
+
                 if (updateRole.rowCount > 0 && updatePermission.rowCount > 0) {
                     res.json({
                         status: 200,
@@ -998,7 +1021,7 @@ module.exports.userWiseRoleList = async (req, res) => {
         let moduleName = 'Role'
         if (findAdmin.rows.length > 0) {
             s2 = dbScript(db_sql['Q72'], {var1 : moduleName})
-            let findModule = await connection.query(s3)
+            let findModule = await connection.query(s2)
             s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2 : findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
@@ -1468,7 +1491,6 @@ module.exports.addUser = async (req, res) => {
             name,
             emailAddress,
             mobileNumber,
-            phoneNumber,
             address,
             roleId,
             avatar,
@@ -1481,48 +1503,61 @@ module.exports.addUser = async (req, res) => {
 
         let moduleName = 'users'
         if (findAdmin.rows.length > 0) {
-            s2 = dbScript(db_sql['Q72'], {var1 : moduleName})
-            let findModule = await connection.query(s2)
-            s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2 : findModule.rows[0].id })
-            let checkPermission = await connection.query(s3)
-            if (checkPermission.rows[0].permission_to_create) {
-                await connection.query('BEGIN')
-                s4 = dbScript(db_sql['Q3'], { var1: id, var2: name, var3: findAdmin.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: phoneNumber, var8: encryptedPassword, var9: roleId, var10: address })
-                let addUser = await connection.query(s4)
-                _dt = new Date().toISOString();
-                s5 = dbScript(db_sql['Q64'], { var1: roleId, var2: addUser.rows[0].id, var3: _dt })
-                let addPermission = await connection.query(s5)
-                await connection.query('COMMIT')
-                if (addUser.rowCount > 0 && addPermission.rowCount > 0) {
-                    const payload = {
-                        id: addUser.rows[0].id,
-                        email: addUser.rows[0].email_address
+            s3 = dbScript(db_sql['Q4'], { var1: emailAddress })
+            let findUser = await connection.query(s3)
+            if(findUser.rowCount == 0) {
+                s2 = dbScript(db_sql['Q72'], {var1 : moduleName})
+                let findModule = await connection.query(s2)
+                s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2 : findModule.rows[0].id })
+                let checkPermission = await connection.query(s3)
+                if (checkPermission.rows[0].permission_to_create) {
+                    await connection.query('BEGIN')
+                    s4 = dbScript(db_sql['Q76'], { var1: id, var2: name, var3: findAdmin.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber,var7: encryptedPassword, var8: roleId, var9: address })
+                    let addUser = await connection.query(s4)
+                    _dt = new Date().toISOString();
+                    s5 = dbScript(db_sql['Q64'], { var1: roleId, var2: addUser.rows[0].id, var3: _dt })
+                    let addPermission = await connection.query(s5)
+                    await connection.query('COMMIT')
+                    if (addUser.rowCount > 0 && addPermission.rowCount > 0) {
+                        const payload = {
+                            id: addUser.rows[0].id,
+                            email: addUser.rows[0].email_address
+                        }
+                        let token = await issueJWT(payload)
+                        link = `http://143.198.102.134:8080/auth/reset-password/${token}`
+                        await resetPasswordMail(emailAddress, link);
+                        res.json({
+                            status: 201,
+                            success: true,
+                            message: "user created successfully"
+                        })
+    
+                    } else {
+                        await connection.query('ROLLBACK')
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "something went wrong"
+                        })
+    
                     }
-                    let token = await issueJWT(payload)
-                    link = `http://143.198.102.134:8082/auth/reset-password/${token}`
-                    await resetPasswordMail(emailAddress, link);
-                    res.json({
-                        status: 201,
-                        success: true,
-                        message: "user created successfully"
-                    })
-
                 } else {
                     await connection.query('ROLLBACK')
                     res.json({
-                        status: 400,
+                        status: 403,
                         success: false,
-                        message: "something went wrong"
+                        message: "UnAthorised"
                     })
-
                 }
-            } else {
+            }else{
+                await connection.query('ROLLBACK')
                 res.json({
-                    status: 403,
+                    status: 400,
                     success: false,
-                    message: "UnAthorised"
+                    message: "user already exists"
                 })
             }
+           
         } else {
             res.json({
                 status: 400,
@@ -1715,7 +1750,6 @@ module.exports.updateUser = async (req, res) => {
             emailAddress,
             name,
             mobileNumber,
-            phoneNumber,
             address,
             roleId
         } = req.body
@@ -1732,7 +1766,7 @@ module.exports.updateUser = async (req, res) => {
 
                 _dt = new Date().toISOString();
                 await connection.query('BEGIN')
-                s4 = dbScript(db_sql['Q39'], { var1: emailAddress, var2: name, var3: mobileNumber, var4: phoneNumber, var5: address, var6: roleId, var7: userId, var8: _dt })
+                s4 = dbScript(db_sql['Q39'], { var1: emailAddress, var2: name, var3: mobileNumber, var4: address, var5: roleId, var6: userId, var7: _dt })
                 let updateUser = await connection.query(s4)
                 await connection.query('COMMIT')
                 if (updateUser.rowCount > 0) {
@@ -1850,7 +1884,7 @@ module.exports.deleteUser = async (req, res) => {
             if (checkPermission.rows[0].permission_to_delete) {
                 _dt = new Date().toISOString();
                 await connection.query('BEGIN')
-                s4 = dbScript(db_sql['Q40'], { var1: _dt, var2: userId })
+                s4 = dbScript(db_sql['Q40'], { var1:_dt, var2: userId })
                 let updateUser = await connection.query(s4)
                 await connection.query('COMMIT')
                 if (updateUser.rowCount > 0) {
