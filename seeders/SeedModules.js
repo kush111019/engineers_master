@@ -14,7 +14,7 @@ let id = uuid.v4()
 console.log(id,"id");
 console.log("running seed");
 
-connection.query(`insert into modules (id,module_name,module_type , company_id) values('${id}','Sales management','Sales Module', 'fbaee8cb-a2ed-4fff-956f-2ec074abc439')`, err => {
+connection.query(`insert into modules (id,module_name,module_type ) values('${id}','Sales management','Sales Module')`, err => {
     if(err){
         throw err
     }
