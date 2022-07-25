@@ -31,6 +31,7 @@ router.put('/updateRole' , verifyTokenFn, controller.companyAdmin.updateRole)
 router.post('/assignRoleToUser',verifyTokenFn, controller.companyAdmin.assignRoleToUser)
 router.get('/usersListByRoleId',verifyTokenFn, controller.companyAdmin.usersListByRoleId)
 router.get('/userWiseRoleList',verifyTokenFn, controller.companyAdmin.userWiseRoleList)
+router.put('/deleteRole' , verifyTokenFn, controller.companyAdmin.deleteRole)
 
 //-------------------------------------Slabss-------------------------------------------------
 router.get('/slabList',verifyTokenFn, controller.companyAdmin.slabList)
@@ -65,5 +66,12 @@ router.get('/notesList',verifyTokenFn, controller.companyAdmin.notesList)
 router.get('/leadReport',verifyTokenFn, controller.companyAdmin.leadReport)
 router.get('/leadConversionReport',verifyTokenFn, controller.companyAdmin.leadConversionReport)
 
+//------------------------------------Deal Management---------------------------------------
+
+router.post('/createDeal',verifyTokenFn, controller.companyAdmin.createDeal)
+router.post('/closeDeal',verifyTokenFn, controller.companyAdmin.closeDeal)
+router.get('/dealList',verifyTokenFn, controller.companyAdmin.dealList)
+router.put('/editDeal',verifyTokenFn, controller.companyAdmin.editDeal)
+router.get('/dealLogsList',verifyTokenFn, controller.companyAdmin.dealLogsList)
 
 module.exports = router;
