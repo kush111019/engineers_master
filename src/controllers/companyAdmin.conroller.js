@@ -875,12 +875,17 @@ module.exports.deleteRole = async (req, res) => {
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_delete) {
                 _dt = new Date().toISOString();
+
                 await connection.query('BEGIN')
+
                 s4 = dbScript(db_sql['Q44'], { var1: roleId, var2: _dt })
                 let updateRole = await connection.query(s4)
-                s5 = dbScript(db_sql['Q45'], { var1: roleId, var2: _dt })
+
+                s5 = dbScript(db_sql['Q45'], { var1: roleId,  var2: _dt })
                 let updatePermission = await connection.query(s5)
+
                 await connection.query('COMMIT')
+                
                 if (updateRole.rowCount > 0 && updatePermission.rowCount > 0) {
                     res.json({
                         status: 200,

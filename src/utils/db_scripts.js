@@ -47,7 +47,7 @@ const db_sql = {
     "Q42"  : `update roles set role_name = '{var1}', reporter = '{var2}',updated_at = '{var4}' where id = '{var3}' and deleted_at is null returning *`,
     "Q43"  : `update permissions set permission_to_create= '{var1}', permission_to_view = '{var2}', permission_to_update = '{var3}', permission_to_delete = '{var4}',updated_at = '{var6}' where role_id = '{var5}' and module_id = '{var7}' and deleted_at is null `,
     "Q44"  : `update roles set deleted_at = '{var2}' where id = '{var1}' and deleted_at is null returning *`,
-    "Q45"  : `update permissions set deleted_at = '{var2}' where role_id = '{var1}' and deleted_at is null `,
+    "Q45"  : `update permissions set deleted_at = '{var2}' where role_id = '{var1}' and deleted_at is null returning * `,
     "Q46"  : `update quotations set deleted_at = '{var1}' where id = '{var2}' and deleted_at is null`,
     "Q47"  : `update slabs set deleted_at = '{var1}' where id = '{var2}' and deleted_at is null`,
     "Q48"  : `insert into leads(id, user_id,company_id,full_name, designation,email_address, website, phone_number, lead_value,company, description, address, city_name,state_name,country_name,zip_code) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}','{var15}','{var16}') returning *`  ,

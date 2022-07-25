@@ -31,6 +31,7 @@ router.put('/updateRole' , verifyTokenFn, controller.companyAdmin.updateRole)
 router.post('/assignRoleToUser',verifyTokenFn, controller.companyAdmin.assignRoleToUser)
 router.get('/usersListByRoleId',verifyTokenFn, controller.companyAdmin.usersListByRoleId)
 router.get('/userWiseRoleList',verifyTokenFn, controller.companyAdmin.userWiseRoleList)
+router.put('/deleteRole' , verifyTokenFn, controller.companyAdmin.deleteRole)
 
 //-------------------------------------Slabss-------------------------------------------------
 router.get('/slabList',verifyTokenFn, controller.companyAdmin.slabList)
