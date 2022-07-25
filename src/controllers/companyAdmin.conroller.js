@@ -1472,7 +1472,7 @@ module.exports.addUser = async (req, res) => {
                         email: addUser.rows[0].email_address
                     }
                     let token = await issueJWT(payload)
-                    link = `localhost:3003/api/v1/companyAdmin/setPassword/${token}`
+                    link = `http://143.198.102.134:8082/auth/reset-password/${token}`
                     await resetPasswordMail(emailAddress, link);
                     res.json({
                         status: 201,
