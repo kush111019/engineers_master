@@ -76,9 +76,9 @@ const db_sql = {
     "Q64"  : `update permissions set user_id = '{var2}' where role_id = '{var1}' and deleted_at is null returning *`,
     "Q65"  : `update roles set module_ids = '{var1}' , updated_at = '{var2}' where id = '{var3}' returning * `,
     "Q66"  : `select permission_to_view, permission_to_create, permission_to_update, permission_to_delete from permissions where role_id = '{var1}' and module_id = '{var2}' and deleted_at is null `,
-    "Q67"  : `insert into deals(id, user_id,deal_company_id,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, company_id) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}') returning *`,
-    "Q68"  : `insert into deal_companies(id, company_name) values('{var1}','{var2}') returning *`,
-    "Q69"  : `select id, company_name from deal_companies where company_name = '{var1}' and deleted_at is null`,
+    "Q67"  : `insert into deals(id, user_id,deal_company_id,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, company_id) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}') returning *`,
+    "Q68"  : `insert into deal_companies(id, deal_company_name, company_id) values('{var1}','{var2}','{var3}') returning *`,
+    "Q69"  : `select id, deal_company_name from deal_companies where deal_company_name = '{var1}' and deleted_at is null`,
     "Q70"  : `select id,deal_company_id ,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date from deals where company_id = '{var1}' and deleted_at is null`,
     "Q71"  : `update deals set closed_at = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
     "Q72"  : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where module_name = '{var1}' and deleted_at is null` ,
@@ -88,7 +88,8 @@ const db_sql = {
     "Q76"  : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,encrypted_password,role_id,address,is_verified) 
               values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}',false) RETURNING *`, 
     "Q77"  : `update roles set deleted_at = '{var2}' where reporter = '{var1}' and deleted_at is null returning *`,  
-    "Q78"  : `update permissions set deleted_at = '{var2}' where role_id = '{var1}' and deleted_at is null returning * `    
+    "Q78"  : `update permissions set deleted_at = '{var2}' where role_id = '{var1}' and deleted_at is null returning * `   ,
+    "Q79"  : `select id, deal_company_name from deal_companies where company_id = '{var1}' and deleted_at is null`, 
  };
 
 
