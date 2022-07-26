@@ -795,7 +795,7 @@ module.exports.updateRole = async (req, res) => {
                 s4 = dbScript(db_sql['Q42'], { var1: roleName, var2: reporter, var3: roleId, var4: _dt })
 
                 let updateRole = await connection.query(s4)
-                
+
                 for (let moduleData of modulePermissions) {
 
                     s5 = dbScript(db_sql['Q43'], { var1: moduleData.permissionToCreate, var2: moduleData.permissionToView, var3: moduleData.permissionToUpdate, var4: moduleData.permissionToDelete, var5: roleId, var6: _dt, var7: moduleData.moduleId })
@@ -2819,6 +2819,7 @@ module.exports.createDeal = async (req, res) => {
     try {
         let userEmail = req.user.email
         let {
+            companyId,
             leadName,
             leadSource,
             qualification,
@@ -2840,8 +2841,9 @@ module.exports.createDeal = async (req, res) => {
             if (checkPermission.rows[0].permission_to_create) {
                 await connection.query('BEGIN')
                 let compId = ''
-                s4 = dbScript(db_sql['Q69'], { var1: leadName })
+                s4 = dbScript(db_sql['Q69'], { var1: companyId })
                 let findDealCom = await connection.query(s4)
+                
                 if (findDealCom.rowCount == 0) {
                     let comId = uuid.v4()
                     s5 = dbScript(db_sql['Q68'], { var1: comId, var2: leadName , var3: findAdmin.rows[0].company_id})

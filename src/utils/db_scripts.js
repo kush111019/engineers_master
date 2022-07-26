@@ -78,7 +78,7 @@ const db_sql = {
     "Q66"  : `select permission_to_view, permission_to_create, permission_to_update, permission_to_delete from permissions where role_id = '{var1}' and module_id = '{var2}' and deleted_at is null `,
     "Q67"  : `insert into deals(id, user_id,deal_company_id,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, company_id) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}') returning *`,
     "Q68"  : `insert into deal_companies(id, deal_company_name, company_id) values('{var1}','{var2}','{var3}') returning *`,
-    "Q69"  : `select id, deal_company_name from deal_companies where deal_company_name = '{var1}' and deleted_at is null`,
+    "Q69"  : `select id, deal_company_name from deal_companies where id = '{var1}' and deleted_at is null`,
     "Q70"  : `select id,deal_company_id ,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at from deals where company_id = '{var1}' and deleted_at is null`,
     "Q71"  : `update deals set closed_at = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
     "Q72"  : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where module_name = '{var1}' and deleted_at is null` ,
