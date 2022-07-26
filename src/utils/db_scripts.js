@@ -90,6 +90,7 @@ const db_sql = {
     "Q77"  : `update roles set deleted_at = '{var2}' where reporter = '{var1}' and deleted_at is null returning *`,  
     "Q78"  : `update permissions set deleted_at = '{var2}' where role_id = '{var1}' and deleted_at is null returning * `   ,
     "Q79"  : `select id, deal_company_name from deal_companies where company_id = '{var1}' and deleted_at is null`, 
+    "Q80"  : `update deals set  deleted_at = '{var1}' where id = '{var2}' and deleted_at is null returning *`
  };
 
 
