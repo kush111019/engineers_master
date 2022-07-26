@@ -628,12 +628,7 @@ module.exports.rolesList = async (req, res) => {
                                 })
                             }
                         }
-
-                        s6 = dbScript(db_sql['Q34'], { var1: data.reporter })
-                        let userList = await connection.query(s6)
-                        if (userList.rowCount > 0) {
-
-                            s7 = dbScript(db_sql['Q19'], { var1: userList.rows[0].role_id })
+                            s7 = dbScript(db_sql['Q19'], { var1: data.reporter })
                             let reporterRole = await connection.query(s7)
                                 list.push({
                                     roleId: data.id,
@@ -642,15 +637,6 @@ module.exports.rolesList = async (req, res) => {
                                     reporterRole : reporterRole.rows[0].role_name,
                                     modulePermissions : modulePermissions
                                 })
-                            
-                        }else{
-                            list.push({
-                                roleId: data.id,
-                                roleName: data.role_name,
-                                reporterId: "",
-                                reporterRole : "",
-                            })
-                        }
                     } else {
                         list.push({
                             roleId: data.id,
@@ -3060,7 +3046,6 @@ module.exports.editDeal = async (req, res) => {
                 s4 = dbScript(db_sql['Q73'], { var1: leadName, var2: leadSource, var3: qualification, var4: is_qualified, var5: targetAmount, var6: productMatch, var7: targetClosingDate, var8: _dt, var9: dealId })
 
                 let updateDeal = await connection.query(s4)
-                console.log(updateDeal.rows,"update");
                 if (updateDeal.rowCount > 0) {
 
                     let id = uuid.v4()
@@ -3068,7 +3053,6 @@ module.exports.editDeal = async (req, res) => {
                     s5 = dbScript(db_sql['Q74'], { var1: id, var2: updateDeal.rows[0].id, var3: updateDeal.rows[0].lead_name, var4: updateDeal.rows[0].lead_source, var5: updateDeal.rows[0].qualification, var6: updateDeal.rows[0].is_qualified, var7: updateDeal.rows[0].target_amount, var8: updateDeal.rows[0].product_match, var9: updateDeal.rows[0].target_closing_date })
 
                     var createLog = await connection.query(s5)
-                    console.log(createLog.rows,"logs");
                     await connection.query('COMMIT')
 
                     if (createLog.rowCount > 0) {
