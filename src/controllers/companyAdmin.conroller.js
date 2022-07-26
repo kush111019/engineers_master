@@ -2843,7 +2843,7 @@ module.exports.createDeal = async (req, res) => {
                 let compId = ''
                 s4 = dbScript(db_sql['Q69'], { var1: companyId })
                 let findDealCom = await connection.query(s4)
-                
+
                 if (findDealCom.rowCount == 0) {
                     let comId = uuid.v4()
                     s5 = dbScript(db_sql['Q68'], { var1: comId, var2: leadName , var3: findAdmin.rows[0].company_id})
@@ -3107,7 +3107,7 @@ module.exports.editDeal = async (req, res) => {
 module.exports.dealLogsList = async (req, res) => {
 
     try {
-        let {dealId} = req.body
+        let {dealId} = req.query
         let userEmail = req.user.email
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
