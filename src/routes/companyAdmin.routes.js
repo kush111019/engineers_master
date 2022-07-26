@@ -74,5 +74,6 @@ router.get('/dealList',verifyTokenFn, controller.companyAdmin.dealList)
 router.put('/editDeal',verifyTokenFn, controller.companyAdmin.editDeal)
 router.get('/dealLogsList',verifyTokenFn, controller.companyAdmin.dealLogsList)
 router.get('/dealCompanyList',verifyTokenFn, controller.companyAdmin.dealCompanyList)
+router.put('/deleteDeal',verifyTokenFn, controller.companyAdmin.deleteDeal)
 
 module.exports = router;

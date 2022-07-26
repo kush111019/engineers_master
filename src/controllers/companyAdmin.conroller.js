@@ -2843,7 +2843,7 @@ module.exports.createDeal = async (req, res) => {
                 let compId = ''
                 s4 = dbScript(db_sql['Q69'], { var1: companyId })
                 let findDealCom = await connection.query(s4)
-                
+
                 if (findDealCom.rowCount == 0) {
                     let comId = uuid.v4()
                     s5 = dbScript(db_sql['Q68'], { var1: comId, var2: leadName , var3: findAdmin.rows[0].company_id})
@@ -3107,7 +3107,7 @@ module.exports.editDeal = async (req, res) => {
 module.exports.dealLogsList = async (req, res) => {
 
     try {
-        let {dealId} = req.body
+        let {dealId} = req.query
         let userEmail = req.user.email
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -3211,6 +3211,70 @@ module.exports.dealCompanyList = async (req, res) => {
             })
         }
     } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.deleteDeal = async (req, res) => {
+    try {
+        userEmail = req.user.email
+        let {
+            dealId
+        } = req.body
+        s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        let moduleName = 'Deal management'
+        if (findAdmin.rows.length > 0) {
+            s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_update) {
+
+                await connection.query('BEGIN')
+
+                _dt = new Date().toISOString();
+                s4 = dbScript(db_sql['Q80'], { var1: _dt, var2: dealId })
+                let deleteDeal = await connection.query(s4)
+
+                await connection.query('COMMIT')
+
+                if (deleteDeal.rowCount > 0) {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Deal deleted successfully"
+                        })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "something went wrong"
+                    })
+                }
+                
+            } else {
+                res.json({
+                    status: 403,
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,
