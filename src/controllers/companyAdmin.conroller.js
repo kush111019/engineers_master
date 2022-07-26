@@ -2832,7 +2832,7 @@ module.exports.leadConversionReport = async (req, res) => {
 
 module.exports.createDeal = async (req, res) => {
     try {
-        userEmail = req.user.email
+        let userEmail = req.user.email
         let {
             leadName,
             leadSource,
@@ -2842,6 +2842,7 @@ module.exports.createDeal = async (req, res) => {
             productMatch,
             targetClosingDate
         } = req.body
+
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
 
@@ -2858,7 +2859,7 @@ module.exports.createDeal = async (req, res) => {
                 let findDealCom = await connection.query(s4)
                 if (findDealCom.rowCount == 0) {
                     let comId = uuid.v4()
-                    s5 = dbScript(db_sql['Q68'], { var1: comId, var2: leadName })
+                    s5 = dbScript(db_sql['Q68'], { var1: comId, var2: leadName , var3: findAdmin.rows[0].company_id})
                     let addDealCom = await connection.query(s5)
                     if (addDealCom.rowCount > 0) {
                         compId = addDealCom.rows[0].id
@@ -2914,7 +2915,7 @@ module.exports.createDeal = async (req, res) => {
 
 module.exports.closeDeal = async (req, res) => {
     try {
-        userEmail = req.user.email
+        let userEmail = req.user.email
         let {
             dealId
         } = req.body
@@ -3059,7 +3060,7 @@ module.exports.editDeal = async (req, res) => {
                 s4 = dbScript(db_sql['Q73'], { var1: leadName, var2: leadSource, var3: qualification, var4: is_qualified, var5: targetAmount, var6: productMatch, var7: targetClosingDate, var8: _dt, var9: dealId })
 
                 let updateDeal = await connection.query(s4)
-
+                console.log(updateDeal.rows,"update");
                 if (updateDeal.rowCount > 0) {
 
                     let id = uuid.v4()
@@ -3067,7 +3068,7 @@ module.exports.editDeal = async (req, res) => {
                     s5 = dbScript(db_sql['Q74'], { var1: id, var2: updateDeal.rows[0].id, var3: updateDeal.rows[0].lead_name, var4: updateDeal.rows[0].lead_source, var5: updateDeal.rows[0].qualification, var6: updateDeal.rows[0].is_qualified, var7: updateDeal.rows[0].target_amount, var8: updateDeal.rows[0].product_match, var9: updateDeal.rows[0].target_closing_date })
 
                     var createLog = await connection.query(s5)
-
+                    console.log(createLog.rows,"logs");
                     await connection.query('COMMIT')
 
                     if (createLog.rowCount > 0) {
@@ -3149,6 +3150,64 @@ module.exports.dealLogsList = async (req, res) => {
                         status: 200,
                         success: false,
                         message: 'empty deals log List',
+                        data: []
+                    })
+                }
+            } else {
+                res.json({
+                    status: 403,
+                    success: false,
+                    message: "UnAthorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+
+module.exports.dealCompanyList = async (req, res) => {
+
+    try {
+        
+        let userEmail = req.user.email
+        s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        let moduleName = 'Deal management'
+        if (findAdmin.rows.length > 0) {
+            s2 = dbScript(db_sql['Q72'], {var1 : moduleName})
+            let findModule = await connection.query(s2)
+            s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2 : findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_view) {
+
+                s4 = dbScript(db_sql['Q79'], { var1: findAdmin.rows[0].company_id })
+                let dealList = await connection.query(s4)
+
+                if (dealList.rows.length > 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: 'deal Company List',
+                        data: dealList.rows
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: 'empty deal Company List',
                         data: []
                     })
                 }
