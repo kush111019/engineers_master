@@ -774,38 +774,37 @@ module.exports.updateRole = async (req, res) => {
     try {
         userEmail = req.user.email
         let {
-            roles
+            roleId,
+            roleName,
+            reporter,
+            modulePermissions
         } = req.body
 
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
         let moduleName = 'Role'
         if (findAdmin.rows.length > 0) {
-            s2 = dbScript(db_sql['Q72'], {var1 : moduleName})
+            s2 = dbScript(db_sql['Q72'], { var1: moduleName })
             let findModule = await connection.query(s2)
-            s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2 : findModule.rows[0].id })
+            s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_update) {
 
-                for (let data of roles) {
+                await connection.query('BEGIN')
+                _dt = new Date().toISOString();
+                s4 = dbScript(db_sql['Q42'], { var1: roleName, var2: reporter, var3: roleId, var4: _dt })
 
-                    await connection.query('BEGIN')
-                    _dt = new Date().toISOString();
-                    s4 =  dbScript(db_sql['Q42'], { var1: data.roleName, var2: data.reporter, var3: data.roleId, var4: _dt })
+                let updateRole = await connection.query(s4)
 
-                    updateRole = await connection.query(s4)
+                for (let moduleData of modulePermissions) {
 
-                    for (let moduleData of data.modulePermissions) {
-
-                        s5 =dbScript(db_sql['Q43'], { var1: moduleData.permissionToCreate, var2: moduleData.permissionToView, var3: moduleData.permissionToUpdate, var4: moduleData.permissionToDelete, var5: data.roleId, var6: _dt, var7: moduleData.moduleId })
-                        updatePermission = await connection.query(s5)
-                    }
-
-                    await connection.query('COMMIT')
-                    
+                    s5 = dbScript(db_sql['Q43'], { var1: moduleData.permissionToCreate, var2: moduleData.permissionToView, var3: moduleData.permissionToUpdate, var4: moduleData.permissionToDelete, var5: data.roleId, var6: _dt, var7: moduleData.moduleId })
+                    updatePermission = await connection.query(s5)
                 }
 
-                if (updateRole.rowCount > 0 && updatePermission.rowCount > 0  ) {
+                await connection.query('COMMIT')
+
+                if (updateRole.rowCount > 0 && updatePermission.rowCount > 0) {
                     res.json({
                         status: 200,
                         success: true,
