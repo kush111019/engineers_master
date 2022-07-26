@@ -212,19 +212,22 @@ module.exports.login = async (req, res) => {
         let admin = await connection.query(s1)
         if (admin.rows.length > 0) {
 
+            s2 = dbScript(db_sql['Q14'], { var1: admin.rows[0].company_id })
+            let company = await connection.query(s2)
+
             if (admin.rows[0].encrypted_password == password) {
-                s2 = dbScript(db_sql['Q19'], { var1: admin.rows[0].role_id })
-                let checkRole = await connection.query(s2)
+                s3 = dbScript(db_sql['Q19'], { var1: admin.rows[0].role_id })
+                let checkRole = await connection.query(s3)
 
                 let moduleId = JSON.parse(checkRole.rows[0].module_ids)
                 let modulePemissions = []
                 for (data of moduleId) {
 
-                    s3 = dbScript(db_sql['Q9'], { var1: data })
-                    let modules = await connection.query(s3)
+                    s4 = dbScript(db_sql['Q9'], { var1: data })
+                    let modules = await connection.query(s4)
 
-                    s4 = dbScript(db_sql['Q66'], { var1: checkRole.rows[0].id, var2: data })
-                    let findModulePermissions = await connection.query(s4)
+                    s5 = dbScript(db_sql['Q66'], { var1: checkRole.rows[0].id, var2: data })
+                    let findModulePermissions = await connection.query(s5)
 
                     modulePemissions.push({
                         moduleId: data,
@@ -238,7 +241,8 @@ module.exports.login = async (req, res) => {
                     email: admin.rows[0].email_address,
                 }
                 let jwtToken = await issueJWT(payload);
-
+                let profileImage = (checkRole.rows[0].role_name == "Admin") ? company.rows[0].company_logo : admin.rows[0].avatar
+                
                 res.send({
                     status: 200,
                     success: true,
@@ -247,6 +251,7 @@ module.exports.login = async (req, res) => {
                         token: jwtToken,
                         name: admin.rows[0].full_name,
                         role: checkRole.rows[0].role_name,
+                        profileImage : profileImage,
                         modulePermissions: modulePemissions
 
                     }
