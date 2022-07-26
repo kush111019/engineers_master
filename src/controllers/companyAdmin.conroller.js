@@ -795,10 +795,10 @@ module.exports.updateRole = async (req, res) => {
                 s4 = dbScript(db_sql['Q42'], { var1: roleName, var2: reporter, var3: roleId, var4: _dt })
 
                 let updateRole = await connection.query(s4)
-
+                
                 for (let moduleData of modulePermissions) {
 
-                    s5 = dbScript(db_sql['Q43'], { var1: moduleData.permissionToCreate, var2: moduleData.permissionToView, var3: moduleData.permissionToUpdate, var4: moduleData.permissionToDelete, var5: data.roleId, var6: _dt, var7: moduleData.moduleId })
+                    s5 = dbScript(db_sql['Q43'], { var1: moduleData.permissionToCreate, var2: moduleData.permissionToView, var3: moduleData.permissionToUpdate, var4: moduleData.permissionToDelete, var5: roleId, var6: _dt, var7: moduleData.moduleId })
                     updatePermission = await connection.query(s5)
                 }
 
