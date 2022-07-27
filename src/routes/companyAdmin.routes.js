@@ -50,7 +50,6 @@ router.get('/leadsList',verifyTokenFn, controller.companyAdmin.leadsList)
 router.put('/updateLead',verifyTokenFn, controller.companyAdmin.updateLead)
 router.put('/deleteLead',verifyTokenFn, controller.companyAdmin.deleteLead)
 router.get('/showleadsById',verifyTokenFn, controller.companyAdmin.showleadsById)
-router.post('/assignLeadToUser',verifyTokenFn, controller.companyAdmin.assignLeadToUser)
 router.post('/uploadLeadFile',verifyTokenFn,uploadLeadFile.single('file'), controller.companyAdmin.uploadLeadFile)
 router.get('/userWiseLeadList',verifyTokenFn, controller.companyAdmin.userWiseLeadList)
 
@@ -75,5 +74,7 @@ router.put('/editDeal',verifyTokenFn, controller.companyAdmin.editDeal)
 router.get('/dealLogsList',verifyTokenFn, controller.companyAdmin.dealLogsList)
 router.get('/dealCompanyList',verifyTokenFn, controller.companyAdmin.dealCompanyList)
 router.put('/deleteDeal',verifyTokenFn, controller.companyAdmin.deleteDeal)
+
+router.post('/assignDealSupporter',verifyTokenFn, controller.companyAdmin.assignDealSupporter)
 
 module.exports = router;
