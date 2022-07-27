@@ -14,7 +14,7 @@ const db_sql = {
     "Q9"   : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where id = '{var1}' and deleted_at is null`,  
     "Q10"  : `update modules set encrypted_password='{var2}' ,updated_at = '{var3}' where email_address = '{var1}' RETURNING *`, 
     "Q11"  : `SELECT * FROM super_admin WHERE email='{var1}' and deleted_at is null`,
-    "Q12"  : `select email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where id = '{var1}' and deleted_at is null ` ,
+    "Q12"  : `select id, email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where id = '{var1}' and deleted_at is null ` ,
     "Q13"  : `select * from companies where deleted_at is null`,
     "Q14"  : `select id, company_name, company_address, company_logo from companies where id = '{var1}' and deleted_at is null`,
     "Q15"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where deleted_at is null`,
@@ -56,7 +56,7 @@ const db_sql = {
     "Q51"  : `update leads set deleted_at = '{var2}' where id = '{var1}' and deleted_at is null returning *`,
     "Q52"  : `update users set is_locked = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null and is_locked = false RETURNING * `,
     "Q53"  : `select id,full_name, designation,email_address, website, phone_number, lead_value,company, description, address, city_name,state_name,country_name,zip_code from leads where user_id ='{var1}' and deleted_at is null `,
-    "Q54"  : `update leads set assigned_to = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null returning *`,
+    "Q54"  : `update deals set supporter = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null returning *`,
     "Q55"  : `insert into leads(id,user_id, company_id, full_name, designation,email_address, website, phone_number, lead_value,company, description, address, city_name,state_name,country_name,zip_code) values ('{var1}','{var2}','{var3}',$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
     "Q56"  : `select r.id, r.role_name, u.id as user_id , u.full_name, u.percentage_distribution
               from roles as r inner join users as u on r.id = u.role_id 
@@ -70,8 +70,8 @@ const db_sql = {
     "Q59"  : `insert into targets (id, lead_id, supporters, finishing_date, amount, description, company_id) values('{var0}','{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') returning *`,
     "Q60"  : `select id, supporters, lead_id, finishing_date, amount, description, created_at from targets where company_id = '{var1}' and deleted_at is null`,
 
-    "Q61"  : `insert into follow_up_notes (id, target_id, company_id, user_id, notes) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,
-    "Q62"  : `select notes, created_at from follow_up_notes where target_id = '{var1}' and deleted_at is null`,
+    "Q61"  : `insert into follow_up_notes (id, deal_id, company_id, user_id, notes) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,
+    "Q62"  : `select notes, created_at from follow_up_notes where deal_id = '{var1}' and deleted_at is null`,
     "Q63"  : `select id,full_name,email_address,phone_number, lead_value,company, description, created_at from leads where company_id ='{var1}' and deleted_at is null and ((created_at BETWEEN '{var2}' AND '{var3}') or (lead_value BETWEEN '{var4}' and '{var5}')) `,
     "Q64"  : `update permissions set user_id = '{var2}' where role_id = '{var1}' and deleted_at is null returning *`,
     "Q65"  : `update roles set module_ids = '{var1}' , updated_at = '{var2}' where id = '{var3}' returning * `,
@@ -79,7 +79,7 @@ const db_sql = {
     "Q67"  : `insert into deals(id, user_id,deal_company_id,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, company_id) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}') returning *`,
     "Q68"  : `insert into deal_companies(id, deal_company_name, company_id) values('{var1}','{var2}','{var3}') returning *`,
     "Q69"  : `select id, deal_company_name from deal_companies where id = '{var1}' and deleted_at is null`,
-    "Q70"  : `select id,deal_company_id ,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at from deals where company_id = '{var1}' and deleted_at is null`,
+    "Q70"  : `select id,deal_company_id ,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id, supporter from deals where company_id = '{var1}' and deleted_at is null`,
     "Q71"  : `update deals set closed_at = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
     "Q72"  : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where module_name = '{var1}' and deleted_at is null` ,
     "Q73"  : `update deals set lead_name = '{var1}', lead_source = '{var2}', qualification = '{var3}', is_qualified = '{var4}', target_amount = '{var5}', product_match = '{var6}', target_closing_date = '{var7}', updated_at = '{var8}' where id = '{var9}' and deleted_at is null returning *`,
@@ -89,7 +89,7 @@ const db_sql = {
               values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}',false) RETURNING *`, 
     "Q77"  : `update roles set deleted_at = '{var2}' where reporter = '{var1}' and deleted_at is null returning *`,  
     "Q78"  : `update permissions set deleted_at = '{var2}' where role_id = '{var1}' and deleted_at is null returning * `   ,
-    "Q79"  : `select id, deal_company_name from deal_companies where company_id = '{var1}' and deleted_at is null`, 
+    "Q79"  : `select id, deal_company_name from deal_companies where company_id = '{var1}' and replace(deal_company_name, ' ', '') ILIKE '%{var2}%' and deleted_at is null`, 
     "Q80"  : `update deals set  deleted_at = '{var1}' where id = '{var2}' and deleted_at is null returning *`
  };
 
