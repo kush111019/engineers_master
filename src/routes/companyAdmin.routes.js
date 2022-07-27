@@ -77,4 +77,9 @@ router.put('/deleteDeal',verifyTokenFn, controller.companyAdmin.deleteDeal)
 
 router.post('/assignDealSupporter',verifyTokenFn, controller.companyAdmin.assignDealSupporter)
 
+router.post('/createDealSlab',verifyTokenFn, controller.companyAdmin.createDealSlab)
+router.put('/updateDealSlab',verifyTokenFn, controller.companyAdmin.updateDealSlab)
+router.get('/dealSlabList',verifyTokenFn, controller.companyAdmin.dealSlabList)
+router.put('/deleteDealSlab',verifyTokenFn, controller.companyAdmin.deleteDealSlab)
+
 module.exports = router;
