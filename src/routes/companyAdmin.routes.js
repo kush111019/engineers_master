@@ -82,4 +82,9 @@ router.put('/updateDealSlab',verifyTokenFn, controller.companyAdmin.updateDealSl
 router.get('/dealSlabList',verifyTokenFn, controller.companyAdmin.dealSlabList)
 router.put('/deleteDealSlab',verifyTokenFn, controller.companyAdmin.deleteDealSlab)
 
+router.get('/dealListforSales',verifyTokenFn, controller.companyAdmin.dealListforSales)
+
+router.post('/createSalesConversion',verifyTokenFn, controller.companyAdmin.createSalesConversion)
+router.get('/salesConversionList',verifyTokenFn, controller.companyAdmin.salesConversionList)
+
 module.exports = router;
