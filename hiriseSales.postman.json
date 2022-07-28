@@ -18,7 +18,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"token\" : \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkOTllYjdmLTkwMzEtNDBmNS04Y2JjLTZkNTc4Y2MyNGVkYSIsImVtYWlsIjoibWFoZW5kcmEudGVzbGFAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTUxMDI5NTgsImV4cCI6MTY4NjYzODk1OH0.Ou4qZ1Cc-KGMan3oPLVj_g3bo-X8AXIAUNJHP1j-USY\",\r\n    \"password\" : \"test@1234#\"\r\n}",
+              "raw": "{\r\n    \"token\" : \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZiMTVhZGFkLTU2ZGEtNGQ3Zi05YzEzLTA2ZTVlNTlkNzc3ZiIsImVtYWlsIjoic2h1YmhhbUB5b3BtYWlsLmNvbSIsImlhdCI6MTY1ODE0MDIyMywiZXhwIjoxNjU4MjI2NjIzfQ.h-d2a7Q-ngD7KG8EcJOHqA8gZb0amJ5NpL_4IjL5XiA\",\r\n    \"password\" : \"shubham@1234#\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -41,7 +41,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"emailAddress\" : \"mahendra.tesla@yopmail.com\",\r\n    \"password\" : \"test@1234#\"\r\n}",
+              "raw": "{\r\n    \"emailAddress\" : \"mahendra@yopmail.com\",\r\n    \"password\" : \"mahendra@1234#\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -62,7 +62,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE2NjNkNDhlLTVlNGQtNDAzZC1hMGExLTA4YTIxZjFkM2IxYyIsImVtYWlsIjoidXNlcjIuc3R5bGVjYWJiaWVAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTQ3NTQyMDgsImV4cCI6MTY4NjI5MDIwOH0.cE0F-iIzdwklIILFSP6vSYkZW8NMMz6b135AI9L2aj8",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjBkNzc0ZGNkLWZlMjItNDJiYy1iNTRhLTU5NjM5Yzc0M2U0OCIsImVtYWlsIjoic2FnYXJAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTgxMjI2ODcsImV4cCI6MTY1ODIwOTA4N30.mlXXa8soDEMLce9chTIYhTSRx97gsD2yUhFfARu4fjM",
                 "type": "text"
               }
             ],
@@ -411,11 +411,11 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTc2MTQyMTAsImV4cCI6MTY4OTE1MDIxMH0.wP00DSNfLs5-zIf48IGn3PHIWOZEPY8ociXUr2IykRM",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
-                "url": "{{companyAdmin}}/slabList"
+                "url": "http://localhost:3003/api/v1/companyAdmin/slabList"
               },
               "response": [
                 
@@ -429,7 +429,7 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTc2MDM5NjAsImV4cCI6MTY4OTEzOTk2MH0.KAuzQ6Z8Sv-IP2HyWat4yrNMxHBPMWFX9LH2B4G6Xlo",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
@@ -442,7 +442,7 @@
                     }
                   }
                 },
-                "url": "{{companyAdmin}}/createSlab"
+                "url": "http://143.198.102.134:3003/api/v1/companyAdmin/createSlab"
               },
               "response": [
                 
@@ -456,7 +456,7 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTU0NDQwMjMsImV4cCI6MTY4Njk4MDAyM30.KN_Zm-XtS9FWqE8319yIMDR_mTdsKmaxg7SjInn8Y30",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
@@ -483,7 +483,7 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTU0NDQwMjMsImV4cCI6MTY4Njk4MDAyM30.KN_Zm-XtS9FWqE8319yIMDR_mTdsKmaxg7SjInn8Y30",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
@@ -516,11 +516,29 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTUyODU1NjAsImV4cCI6MTY4NjgyMTU2MH0.xX97xs_DYFDhTjecesXbm-RIm3fFV_RdAYXdUCxCmIM",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
                 "url": "{{companyAdmin}}/rolesList"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "module list",
+              "id": "8261ace2-d423-46bb-a2b3-555ffc80b182",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{companyAdmin}}/moduleList"
               },
               "response": [
                 
@@ -534,20 +552,20 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTUyODIwMDgsImV4cCI6MTY4NjgxODAwOH0.uGh3c_LrKnYTnADmLJtbAiLvr-g8oSwBymW0U201McM",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"roleName\" : \"VP\",\r\n    \"roleType\" : \"VP of sales\",\r\n    \"modulePermissions\" : [\r\n        {\r\n            \"moduleId\" : \"fdcc5371-385e-424f-a63a-230cd8edb3f9\",\r\n            \"permissionToCreate\" : true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToView\" : true,\r\n            \"permissionToDelete\" : false\r\n        }\r\n    ]\r\n    \r\n}",
+                  "raw": "\r\n        {\r\n            \"roleName\" : \"sales Manager 1\",\r\n            \"reporter\" : \"f05798f8-69d4-4470-a664-7ee957dc7e5b\",\r\n            \"modulePermissions\" : [\r\n                {\r\n                    \"moduleId\" : \"85d5a1aa-8eed-439e-be9c-17f7bf4c3f43\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"f40d0d01-d77a-4eca-9d0f-0a1e22606a62\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                }\r\n            ]\r\n     \r\n        }",
                   "options": {
                     "raw": {
                       "language": "json"
                     }
                   }
                 },
-                "url": "{{companyAdmin}}/createRole"
+                "url": "http://localhost:3003/api/v1/companyAdmin/createRole"
               },
               "response": [
                 
@@ -561,13 +579,13 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTUyODU1NjAsImV4cCI6MTY4NjgyMTU2MH0.xX97xs_DYFDhTjecesXbm-RIm3fFV_RdAYXdUCxCmIM",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"roleId\" : \"7ab6a161-69b1-42de-aeeb-b9ab3b7cfa8c\",\r\n    \"roleName\" : \"SSR\",\r\n    \"roleType\" : \"sales representative\",\r\n    \"modulePermissions\" : [\r\n        {\r\n            \"moduleId\" : \"fdcc5371-385e-424f-a63a-230cd8edb3f9\",\r\n            \"permissionToCreate\" : true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToView\" : true,\r\n            \"permissionToDelete\" : false\r\n        }\r\n    ]\r\n    \r\n}",
+                  "raw": "\r\n        {   \r\n            \"roleId\" : \"86542f76-5673-4abf-bbfb-774771ade140\",\r\n            \"roleName\" : \"VP\",\r\n            \"reporter\" : \"462c1f53-e83c-41c1-82b0-654dcfa74c44\",\r\n            \"modulePermissions\": [\r\n                {\r\n                    \"moduleId\": \"85d5a1aa-8eed-439e-be9c-17f7bf4c3f43\",\r\n                    \"permissionToCreate\": false,\r\n                    \"permissionToUpdate\": false,\r\n                    \"permissionToView\": true,\r\n                    \"permissionToDelete\": false\r\n                },\r\n                {\r\n                    \"moduleId\": \"d3009aa6-05c8-46dc-8dc2-b4af0688a352\",\r\n                    \"permissionToCreate\": false,\r\n                    \"permissionToUpdate\": false,\r\n                    \"permissionToView\": true,\r\n                    \"permissionToDelete\": false\r\n                },\r\n                {\r\n                    \"moduleId\": \"17ac6db2-17a1-4010-8598-2364db8e9634\",\r\n                    \"permissionToCreate\": false,\r\n                    \"permissionToUpdate\": false,\r\n                    \"permissionToView\": true,\r\n                    \"permissionToDelete\": false\r\n                },\r\n                {\r\n                    \"moduleId\": \"a8252ca9-e471-4a1d-848d-aef386a4d71c\",\r\n                    \"permissionToCreate\": false,\r\n                    \"permissionToUpdate\": false,\r\n                    \"permissionToView\": true,\r\n                    \"permissionToDelete\": false\r\n                },\r\n                {\r\n                    \"moduleId\": \"2ec14d7f-daa4-4908-83b6-fe1023b17ca8\",\r\n                    \"permissionToCreate\": false,\r\n                    \"permissionToUpdate\": false,\r\n                    \"permissionToView\": true,\r\n                    \"permissionToDelete\": false\r\n                },\r\n                {\r\n                    \"moduleId\": \"f40d0d01-d77a-4eca-9d0f-0a1e22606a62\",\r\n                    \"permissionToCreate\": false,\r\n                    \"permissionToUpdate\": false,\r\n                    \"permissionToView\": true,\r\n                    \"permissionToDelete\": false\r\n                },\r\n                {\r\n                    \"moduleId\": \"f674eb9a-975a-47c6-aa2b-20a86ecf896b\",\r\n                    \"permissionToCreate\": false,\r\n                    \"permissionToUpdate\": false,\r\n                    \"permissionToView\": true,\r\n                    \"permissionToDelete\": false\r\n                }\r\n            ]\r\n            \r\n            \r\n        }",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -588,13 +606,13 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTc2MTQyMTAsImV4cCI6MTY4OTE1MDIxMH0.wP00DSNfLs5-zIf48IGn3PHIWOZEPY8ociXUr2IykRM",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"roleConfig\" : \r\n    [\r\n        {\r\n        \"userId\" : \"327dd6e1-3c39-43a3-b1f0-cc34dbd73b6a\",\r\n        \"roleId\" : \"886ccfe1-dddc-4bc0-864f-6671b5cff0a0\",\r\n        \"percentageDistribution\" : \"5%\"\r\n        }\r\n    ]\r\n}",
+                  "raw": "{\r\n    \"roleConfig\" : \r\n    [\r\n        {\r\n        \"userId\" : \"2ab7830d-c9c0-4c94-b566-b11cd7784415\",\r\n        \"roleId\" : \"26e240f2-c8cd-4552-b80c-fb06fa86a22e\",\r\n        \"percentageDistribution\" : \"5%\"\r\n        }\r\n    ]\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -610,16 +628,55 @@
             {
               "name": "user Wise Role List",
               "id": "361f7541-6f10-4b2e-9980-68d3fb169c5a",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
               "request": {
                 "method": "GET",
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTc2MTQyMTAsImV4cCI6MTY4OTE1MDIxMH0.wP00DSNfLs5-zIf48IGn3PHIWOZEPY8ociXUr2IykRM",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
                 "url": "{{companyAdmin}}/userWiseRoleList"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "delete role",
+              "id": "f3624748-aecd-4df1-a721-7692166754eb",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"roleId\" : \"fabb6903-ea72-4209-88b5-eda7f8318f6c\",\r\n    \"status\" : \"all\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/deleteRole"
               },
               "response": [
                 
@@ -639,11 +696,11 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTU0NDQwMjMsImV4cCI6MTY4Njk4MDAyM30.KN_Zm-XtS9FWqE8319yIMDR_mTdsKmaxg7SjInn8Y30",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
-                "url": "{{companyAdmin}}/leadsList"
+                "url": "http://localhost:3003/api/v1/companyAdmin/leadsList"
               },
               "response": [
                 
@@ -660,7 +717,7 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTc2MTQyMTAsImV4cCI6MTY4OTE1MDIxMH0.wP00DSNfLs5-zIf48IGn3PHIWOZEPY8ociXUr2IykRM",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
@@ -687,20 +744,20 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTU0NDQwMjMsImV4cCI6MTY4Njk4MDAyM30.KN_Zm-XtS9FWqE8319yIMDR_mTdsKmaxg7SjInn8Y30",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"fullName\" : \"Sukanta Ganguly\",\r\n    \"designation\":\"CEO\",\r\n    \"emailAddress\":\"sg@yopmail.com\",\r\n    \"website\":\"htttp://www.clickIpo.com\",\r\n    \"phoneNumber\":\"+818 4451 265\",\r\n    \"leadValue\":\"1500000\",\r\n    \"companyName\":\"Click Ipo\",\r\n    \"description\":\"will get lead of very good amount from here\",\r\n    \"address\":\"14, stark street\",\r\n    \"cityName\":\"california\",\r\n    \"stateName\":\"california\",\r\n    \"countryName\":\"USA\",\r\n    \"zipCode\":\"90211\"\r\n}",
+                  "raw": "{\r\n    \"fullName\" : \"yash\",\r\n    \"designation\":\"sales\",\r\n    \"emailAddress\":\"yash@yopmail.com\",\r\n    \"website\":\"\",\r\n    \"phoneNumber\":\"+818 4451 265\",\r\n    \"leadValue\":\"1211320\",\r\n    \"companyName\":\"CIS\",\r\n    \"description\":\"dshfjd\",\r\n    \"address\":\"14, stark street\",\r\n    \"cityName\":\"indore\",\r\n    \"stateName\":\"india\",\r\n    \"countryName\":\"USA\",\r\n    \"zipCode\":\"90211\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
                     }
                   }
                 },
-                "url": "{{companyAdmin}}/createLead"
+                "url": "http://143.198.102.134:3003/api/v1/companyAdmin/createLead"
               },
               "response": [
                 
@@ -714,7 +771,7 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTU0NDQwMjMsImV4cCI6MTY4Njk4MDAyM30.KN_Zm-XtS9FWqE8319yIMDR_mTdsKmaxg7SjInn8Y30",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
@@ -741,7 +798,7 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTU0NDQwMjMsImV4cCI6MTY4Njk4MDAyM30.KN_Zm-XtS9FWqE8319yIMDR_mTdsKmaxg7SjInn8Y30",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
@@ -768,7 +825,7 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTc2MTQyMTAsImV4cCI6MTY4OTE1MDIxMH0.wP00DSNfLs5-zIf48IGn3PHIWOZEPY8ociXUr2IykRM",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
@@ -795,7 +852,7 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTc2MTQyMTAsImV4cCI6MTY4OTE1MDIxMH0.wP00DSNfLs5-zIf48IGn3PHIWOZEPY8ociXUr2IykRM",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
@@ -829,7 +886,7 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTc2MTQyMTAsImV4cCI6MTY4OTE1MDIxMH0.wP00DSNfLs5-zIf48IGn3PHIWOZEPY8ociXUr2IykRM",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
@@ -868,7 +925,7 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTUyODU1NjAsImV4cCI6MTY4NjgyMTU2MH0.xX97xs_DYFDhTjecesXbm-RIm3fFV_RdAYXdUCxCmIM",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
@@ -889,13 +946,13 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTUyODU1NjAsImV4cCI6MTY4NjgyMTU2MH0.xX97xs_DYFDhTjecesXbm-RIm3fFV_RdAYXdUCxCmIM",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"userId\" : \"327dd6e1-3c39-43a3-b1f0-cc34dbd73b6a\"\r\n}",
+                  "raw": "{\r\n    \"userId\" : \"82166b5f-9a51-408d-b33a-d8e7d5519d9a\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -919,20 +976,20 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE5NDhkNzE2LWMzYzItNGE1Zi04MmI2LTJjOWVmMjI0Y2M2OSIsImVtYWlsIjoiYWtzaGF5LmZlZWRmbGVldEB5b3BtYWlsLmNvbSIsImlhdCI6MTY1NTE5NTEyNSwiZXhwIjoxNjg2NzMxMTI1fQ.m5Tjd7qVhkqXWWcUv6FDhNu4ni3LJGPt1YeKg3UF4ms",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"roleId\" : \"\"\r\n}",
+                  "raw": "{\r\n    \"roleId\" : \"0993e1ad-e760-4d24-8c55-643bea2d3122\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
                     }
                   }
                 },
-                "url": "{{companyAdmin}}/userListByRoleId"
+                "url": "{{companyAdmin}}/usersListByRoleId"
               },
               "response": [
                 
@@ -946,13 +1003,13 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTUyODU1NjAsImV4cCI6MTY4NjgyMTU2MH0.xX97xs_DYFDhTjecesXbm-RIm3fFV_RdAYXdUCxCmIM",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"name\" : \"Mahendra Patidar\",\r\n    \"avatar\" : \"\",\r\n    \"emailAddress\" : \"mahendra.ems@yopmail.com\",\r\n    \"mobileNumber\" : \"9754258352\",\r\n    \"phoneNumber\" : \"0731451556\",\r\n    \"address\" : \"Indore, Madhya Pradesh\",\r\n    \"roleId\" : \"0298f2af-34e7-4500-bbfb-4079742f9609\",\r\n    \"encryptedPassword\" : \"\"\r\n}",
+                  "raw": "{\r\n    \"name\" : \"ankit\",\r\n    \"avatar\" : \"\",\r\n    \"emailAddress\" : \"ankit@yopmail.com\",\r\n    \"address\" : \"Indore Mp\",\r\n    \"mobileNumber\" : \"9754258352\",\r\n    \"roleId\" : \"41f4a073-2532-4649-89e4-3252b8cbdfa2\",\r\n    \"encryptedPassword\" : \"\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -973,13 +1030,13 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTUyODU1NjAsImV4cCI6MTY4NjgyMTU2MH0.xX97xs_DYFDhTjecesXbm-RIm3fFV_RdAYXdUCxCmIM",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"userId\" : \"327dd6e1-3c39-43a3-b1f0-cc34dbd73b6a\",\r\n    \"name\" : \"Jitendra Patidar\",\r\n    \"avatar\" : \"http:/localhost:3003/avatar/user.jpg\",\r\n    \"emailAddress\" : \"jitendra.ems@yopmail.com\",\r\n    \"mobileNumber\" : \"9755486518\",\r\n    \"phoneNumber\" : \"0731 456985\",\r\n    \"address\" : \"Indore, MadhyaPradesh\",\r\n    \"roleId\" : \"0298f2af-34e7-4500-bbfb-4079742f9609\"\r\n}",
+                  "raw": "{\r\n    \"userId\" : \"ad79d198-e5f0-495d-a661-4c9e7549f365\",\r\n    \"name\" : \"ankit Patidar\",\r\n    \"avatar\" : \"http:/localhost:3003/avatar/user.jpg\",\r\n    \"emailAddress\" : \"ankit@yopmail.com\",\r\n    \"mobileNumber\" : \"9755486518\",\r\n    \"address\" : \"Indore, MadhyaPradesh\",\r\n    \"roleId\" : \"0298f2af-34e7-4500-bbfb-4079742f9609\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -993,6 +1050,33 @@
               ]
             },
             {
+              "name": "delete user",
+              "id": "092ec8a7-35e0-4ea8-909a-8613735d61a1",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"userId\" : \"ad79d198-e5f0-495d-a661-4c9e7549f365\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/deleteUser"
+              },
+              "response": [
+                
+              ]
+            },
+            {
               "name": "lock User Account",
               "id": "056048e8-27a1-4bc8-87e3-49d8ff9bbad1",
               "request": {
@@ -1000,7 +1084,7 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTc2MDM5NjAsImV4cCI6MTY4OTEzOTk2MH0.KAuzQ6Z8Sv-IP2HyWat4yrNMxHBPMWFX9LH2B4G6Xlo",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
@@ -1059,14 +1143,14 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"companyName\" : \"Autarky finance \",\r\n    \"companyLogo\" : \"http:/localhost:3003/avatar/EMS logo.png\",\r\n    \"companyAddress\" : \"MPSDEC IT park indore\",\r\n    \"name\" : \"Rahul Chouhan\",\r\n    \"avatar\" : \"\",\r\n    \"emailAddress\" : \"rahul@yopmail.com\",\r\n    \"mobileNumber\" : \"8897564897\",\r\n    \"phoneNumber\" : \" 0731 498 0457\",\r\n    \"encryptedPassword\" : \"Rahul@123#\"\r\n}",
+                  "raw": "{\r\n    \"companyName\" : \"TCS\",\r\n    \"companyLogo\" : \"http:/localhost:3003/comapnyLogo/favicon.png\",\r\n    \"companyAddress\" : \"Crystal IT park indore\",\r\n    \"name\" : \"Ram\",\r\n    \"avatar\" : \"\",\r\n    \"emailAddress\" : \"ram@yopmail.com\",\r\n    \"mobileNumber\" : \"8897564897\",\r\n    \"phoneNumber\" : \" 0731 498 0457\",\r\n    \"encryptedPassword\" : \"Test@123#\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
                     }
                   }
                 },
-                "url": "localhost:3003/api/v1/auth/signUp"
+                "url": "http://143.198.102.134:3003/api/v1/auth/signUp"
               },
               "response": [
                 
@@ -1082,14 +1166,14 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"token\" : \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijg0ZmRjMmRiLTE0NDgtNDcyNi04NzI5LTcwMDk4NDg0ZWI2NyIsImVtYWlsIjoicmFodWxAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTc3NzQxNDAsImV4cCI6MTY4OTMxMDE0MH0.2k7h_jN9WnmzNCyY3zHkY2WHP1tj43lP6nDg2GsBADA\",\r\n    \"password\" : \"Rahul@123#\"\r\n}",
+                  "raw": "{\r\n    \"token\" : \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkNzlkMTk4LWU1ZjAtNDk1ZC1hNjYxLTRjOWU3NTQ5ZjM2NSIsImVtYWlsIjoiYW5raXRAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTg3NjI2NTEsImV4cCI6MTY1ODg0OTA1MX0.HtgDRSsZbMsBWMcP_hbSJFOnk4A6UW060goiTq0jdRU\",\r\n    \"password\" : \"ankit@123#\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
                     }
                   }
                 },
-                "url": "localhost:3003/api/v1/auth/setPassword"
+                "url": "http://localhost:3003/api/v1/auth/setPassword"
               },
               "response": [
                 
@@ -1105,14 +1189,14 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"emailAddress\" : \"rahul@yopmail.com\",\r\n    \"password\" : \"Rahul@123#\"\r\n}",
+                  "raw": "{\r\n    \"emailAddress\" : \"test1@yopmail.com\",\r\n    \"password\" : \"Test@123#\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
                     }
                   }
                 },
-                "url": "localhost:3003/api/v1/auth/login"
+                "url": "http://localhost:3003/api/v1/auth/login"
               },
               "response": [
                 
@@ -1126,7 +1210,7 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijg0ZmRjMmRiLTE0NDgtNDcyNi04NzI5LTcwMDk4NDg0ZWI2NyIsImVtYWlsIjoicmFodWxAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTc3NzQ1MTgsImV4cCI6MTY4OTMxMDUxOH0.9UG1hD6I12N9jeibT14nCiHzDVLoJ_jmIu4mPhMqIQw",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
@@ -1144,13 +1228,13 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"oldPassword\" : \"\",\r\n    \"newPassword\" : \"\"\r\n}",
+                  "raw": "{\r\n    \"oldPassword\" : \"praveen@123#\",\r\n    \"newPassword\" : \"Praveen@123#\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1171,7 +1255,7 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMTFlNmZlLWUzM2EtNGQ5Ni04NzdhLWZiZjNkODBhMzlmNSIsImVtYWlsIjoia2FwaS5lbXNAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTUyODU1NjAsImV4cCI6MTY4NjgyMTU2MH0.xX97xs_DYFDhTjecesXbm-RIm3fFV_RdAYXdUCxCmIM",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
@@ -1181,7 +1265,7 @@
                     {
                       "key": "image",
                       "type": "file",
-                      "src": "/C:/Users/kkard/Downloads/user.jpg"
+                      "src": "/C:/Users/kkard/Downloads/EMS logo.png"
                     }
                   ]
                 },
@@ -1199,13 +1283,13 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MTQ0NWVjLWJlN2QtNGExZS04N2VjLWE5NTkwMDViOWMxYSIsImVtYWlsIjoiZWxvbi50ZXNsYUB5b3BtYWlsLmNvbSIsImlhdCI6MTY1NTA5NzUzNiwiZXhwIjoxNjg2NjMzNTM2fQ.SMmND_lHdMeL9TG_Ichu0zgXD98_d5sqH_TvnPXVbU0",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"name\" : \"Elon Musk\",\r\n    \"avatar\" : \"http:/localhost:3003/avatar/car.jpg\"\r\n}",
+                  "raw": "{\r\n    \"name\" : \"praveen chouhan\",\r\n    \"avatar\" : \"http:/localhost:3003/avatar/car.jpg\" ,\r\n    \"emailAddress\" : \"praveen@yopmail.com\",\r\n    \"mobileNumber\" : \"8897564897\",\r\n    \"address\" : \"Crystal IT park indore\",\r\n    \"phoneNumber\" : \"0731 498 0457\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1227,16 +1311,28 @@
             {
               "name": "Target List",
               "id": "15933cd9-d72d-4743-9cd3-d9b5c9fc285d",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
               "request": {
                 "method": "GET",
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijg0ZmRjMmRiLTE0NDgtNDcyNi04NzI5LTcwMDk4NDg0ZWI2NyIsImVtYWlsIjoicmFodWxAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTc3NzQ1MTgsImV4cCI6MTY4OTMxMDUxOH0.9UG1hD6I12N9jeibT14nCiHzDVLoJ_jmIu4mPhMqIQw",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
-                "url": "{{companyAdmin}}/targetList"
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "http://localhost:3003/api/v1/companyAdmin/targetList"
               },
               "response": [
                 
@@ -1250,20 +1346,20 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijg0ZmRjMmRiLTE0NDgtNDcyNi04NzI5LTcwMDk4NDg0ZWI2NyIsImVtYWlsIjoicmFodWxAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTc3NzQ1MTgsImV4cCI6MTY4OTMxMDUxOH0.9UG1hD6I12N9jeibT14nCiHzDVLoJ_jmIu4mPhMqIQw",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"leadId\" : \"6a959041-c97b-470c-879b-9cbb69c83e1d\",\r\n    \"supporters\" : [\"84fdc2db-1448-4726-8729-70098484eb67\"],\r\n    \"finishingDate\" : \"10/08/2022\",\r\n    \"targetAmount\" : \"1000000\",\r\n    \"description\" : \"please complete it on time\"\r\n}",
+                  "raw": "{\r\n    \"leadId\" : \"373786a6-61c5-47bb-b39d-1c2c8d0f1116\",\r\n    \"supporters\" : [\"\"],\r\n    \"finishingDate\" : \"10/08/2022\",\r\n    \"targetAmount\" : \"1000000\",\r\n    \"description\" : \"please complete it on time\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
                     }
                   }
                 },
-                "url": "{{companyAdmin}}/convertLeadToTarget"
+                "url": "http://143.198.102.134:3003/api/v1/companyAdmin/convertLeadToTarget"
               },
               "response": [
                 
@@ -1277,7 +1373,7 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijg0ZmRjMmRiLTE0NDgtNDcyNi04NzI5LTcwMDk4NDg0ZWI2NyIsImVtYWlsIjoicmFodWxAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTc3OTk3MTMsImV4cCI6MTY4OTMzNTcxM30.XV6n6jDZXwfGBd3PBwK-EXIWZcX62c5kEJcfdhTZyOk",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
@@ -1307,7 +1403,7 @@
                 "header": [
                   {
                     "key": "Authorization",
-                    "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijg0ZmRjMmRiLTE0NDgtNDcyNi04NzI5LTcwMDk4NDg0ZWI2NyIsImVtYWlsIjoicmFodWxAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTc3NzQ1MTgsImV4cCI6MTY4OTMxMDUxOH0.9UG1hD6I12N9jeibT14nCiHzDVLoJ_jmIu4mPhMqIQw",
+                    "value": "{{token}}",
                     "type": "text"
                   }
                 ],
@@ -1338,9 +1434,41 @@
               "request": {
                 "method": "GET",
                 "header": [
-                  
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
                 ],
-                "url": null
+                "url": {
+                  "raw": "{{companyAdmin}}/leadReport?fromDate=2022-06-17&toDate=2022-07-13&fromAmount=1200000&toAmount=1500000",
+                  "host": [
+                    "{{companyAdmin}}"
+                  ],
+                  "path": [
+                    "leadReport"
+                  ],
+                  "query": [
+                    {
+                      "key": "fromDate",
+                      "value": "2022-06-17",
+                      "description": "compulsary"
+                    },
+                    {
+                      "key": "toDate",
+                      "value": "2022-07-13",
+                      "description": "compulsary"
+                    },
+                    {
+                      "key": "fromAmount",
+                      "value": "1200000"
+                    },
+                    {
+                      "key": "toAmount",
+                      "value": "1500000"
+                    }
+                  ]
+                }
               },
               "response": [
                 
@@ -1352,9 +1480,41 @@
               "request": {
                 "method": "GET",
                 "header": [
-                  
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
                 ],
-                "url": null
+                "url": {
+                  "raw": "{{companyAdmin}}/leadConversionReport?fromDate=2022-07-13&toDate=2022-07-15&fromAmount=1200000&toAmount=1500000",
+                  "host": [
+                    "{{companyAdmin}}"
+                  ],
+                  "path": [
+                    "leadConversionReport"
+                  ],
+                  "query": [
+                    {
+                      "key": "fromDate",
+                      "value": "2022-07-13",
+                      "description": "compulsary"
+                    },
+                    {
+                      "key": "toDate",
+                      "value": "2022-07-15",
+                      "description": "compulsary"
+                    },
+                    {
+                      "key": "fromAmount",
+                      "value": "1200000"
+                    },
+                    {
+                      "key": "toAmount",
+                      "value": "1500000"
+                    }
+                  ]
+                }
               },
               "response": [
                 
@@ -1362,6 +1522,200 @@
             }
           ],
           "id": "95d2a8e4-19fc-4b4d-9193-10c05e5fd2cf"
+        },
+        {
+          "name": "Deals",
+          "item": [
+            {
+              "name": "create Deal",
+              "id": "315b4727-338c-460d-a174-3956915f1b74",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{   \r\n    \"companyId\" : \"\",\r\n    \"leadName\" : \"Autarky\",\r\n    \"leadSource\" : \"twitter\",\r\n    \"qualification\" : \"qualifications \",\r\n    \"is_qualified\" : false ,\r\n    \"targetAmount\" : \"1500000\",\r\n    \"productMatch\" : \"more than 20 products are matching\",\r\n    \"targetClosingDate\" : \"10/12/2022\" \r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/createDeal"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "close Deal",
+              "id": "2a61054a-78ca-4657-9631-28f4cfd42084",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"dealId\" : \"fe4c6fd5-dff5-4ac8-b1b7-8413dde663b6\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/closeDeal"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "deal List",
+              "id": "fedae41d-a7cf-4eb2-be95-9c08c90c0f25",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{companyAdmin}}/dealList"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "edit deal",
+              "id": "845f7bfd-ec1e-42ff-af67-7ad968455887",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"dealId\" : \"5ea58b10-4d58-4a4a-b0d1-6d9edbef3ad3\",\r\n    \"leadName\" : \"ClickIpo web\",\r\n    \"leadSource\" : \"linkedIn\",\r\n    \"qualification\" : \"all qualifications needed\",\r\n    \"is_qualified\" : true ,\r\n    \"targetAmount\" : \"1500000\",\r\n    \"productMatch\" : \"more than 10 products are matching\",\r\n    \"targetClosingDate\" : \"11/12/2022\" \r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/editDeal"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "deal Logs List",
+              "id": "30d9aaeb-971e-496c-9c72-661ff160697a",
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{companyAdmin}}/dealLogsList?dealId=cb5ff625-12ca-45ef-9e6f-bb1b08e2dae2",
+                  "host": [
+                    "{{companyAdmin}}"
+                  ],
+                  "path": [
+                    "dealLogsList"
+                  ],
+                  "query": [
+                    {
+                      "key": "dealId",
+                      "value": "cb5ff625-12ca-45ef-9e6f-bb1b08e2dae2"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "deal Company List",
+              "id": "ab533a40-6282-486b-afc0-4b60c4a1ce94",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{companyAdmin}}/dealCompanyList"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "delete Deal",
+              "id": "8f1bd878-e0f9-4e3f-93a1-8f1d6c5cbe7f",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"dealId\" : \"5084a443-0618-4cc1-b012-75ea42d92eed\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/deleteDeal"
+              },
+              "response": [
+                
+              ]
+            }
+          ],
+          "id": "e04828c5-0fe8-4ad8-b90b-c1ed91d6ccda"
         }
       ],
       "id": "099c859e-d51e-4d9a-bec9-429528871e05"

@@ -11,9 +11,10 @@ var connection = new Pool({
 
 connection.connect()
 let id = uuid.v4()
+console.log(id,"id");
 console.log("running seed");
 
-connection.query(`insert into modules (id,module_name,module_type , company_id) values('${id}','users','company users', 'fbaee8cb-a2ed-4fff-956f-2ec074abc439')`, err => {
+connection.query(`insert into modules (id,module_name,module_type ) values('${id}','Sales management','Sales Module')`, err => {
     if(err){
         throw err
     }

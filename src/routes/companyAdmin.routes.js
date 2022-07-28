@@ -31,6 +31,7 @@ router.put('/updateRole' , verifyTokenFn, controller.companyAdmin.updateRole)
 router.post('/assignRoleToUser',verifyTokenFn, controller.companyAdmin.assignRoleToUser)
 router.get('/usersListByRoleId',verifyTokenFn, controller.companyAdmin.usersListByRoleId)
 router.get('/userWiseRoleList',verifyTokenFn, controller.companyAdmin.userWiseRoleList)
+router.put('/deleteRole' , verifyTokenFn, controller.companyAdmin.deleteRole)
 
 //-------------------------------------Slabss-------------------------------------------------
 router.get('/slabList',verifyTokenFn, controller.companyAdmin.slabList)
@@ -49,7 +50,6 @@ router.get('/leadsList',verifyTokenFn, controller.companyAdmin.leadsList)
 router.put('/updateLead',verifyTokenFn, controller.companyAdmin.updateLead)
 router.put('/deleteLead',verifyTokenFn, controller.companyAdmin.deleteLead)
 router.get('/showleadsById',verifyTokenFn, controller.companyAdmin.showleadsById)
-router.post('/assignLeadToUser',verifyTokenFn, controller.companyAdmin.assignLeadToUser)
 router.post('/uploadLeadFile',verifyTokenFn,uploadLeadFile.single('file'), controller.companyAdmin.uploadLeadFile)
 router.get('/userWiseLeadList',verifyTokenFn, controller.companyAdmin.userWiseLeadList)
 
@@ -65,5 +65,26 @@ router.get('/notesList',verifyTokenFn, controller.companyAdmin.notesList)
 router.get('/leadReport',verifyTokenFn, controller.companyAdmin.leadReport)
 router.get('/leadConversionReport',verifyTokenFn, controller.companyAdmin.leadConversionReport)
 
+//------------------------------------Deal Management---------------------------------------
+
+router.post('/createDeal',verifyTokenFn, controller.companyAdmin.createDeal)
+router.post('/closeDeal',verifyTokenFn, controller.companyAdmin.closeDeal)
+router.get('/dealList',verifyTokenFn, controller.companyAdmin.dealList)
+router.put('/editDeal',verifyTokenFn, controller.companyAdmin.editDeal)
+router.get('/dealLogsList',verifyTokenFn, controller.companyAdmin.dealLogsList)
+router.get('/dealCompanyList',verifyTokenFn, controller.companyAdmin.dealCompanyList)
+router.put('/deleteDeal',verifyTokenFn, controller.companyAdmin.deleteDeal)
+
+router.post('/assignDealSupporter',verifyTokenFn, controller.companyAdmin.assignDealSupporter)
+
+router.post('/commisionSplit',verifyTokenFn, controller.companyAdmin.commisionSplit)
+router.put('/updatecommisionSplit',verifyTokenFn, controller.companyAdmin.updatecommisionSplit)
+router.get('/commisionSplitList',verifyTokenFn, controller.companyAdmin.commisionSplitList)
+router.put('/deleteCommisionSplit',verifyTokenFn, controller.companyAdmin.deleteCommisionSplit)
+
+router.get('/dealListforSales',verifyTokenFn, controller.companyAdmin.dealListforSales)
+
+router.post('/createSalesConversion',verifyTokenFn, controller.companyAdmin.createSalesConversion)
+router.get('/salesConversionList',verifyTokenFn, controller.companyAdmin.salesConversionList)
 
 module.exports = router;
