@@ -3687,7 +3687,7 @@ module.exports.createSalesConversion = async (req, res) => {
 
                     let s6 = dbScript(db_sql['Q90'], { var1: dealCloserId, var2: dealSlabId,  })
                     updateCloser = await connection.query(s6)
-
+                    
                     let id = uuid.v4()
                     let s7 = dbScript(db_sql['Q91'], { var1 : id, var2: dealSlabId, var3 : dealSupporterId , var4: updateCloser.rows[0].supporter_percentage, var5: findAdmin.rows[0].company_id  })
 
@@ -3695,7 +3695,7 @@ module.exports.createSalesConversion = async (req, res) => {
                 }
                 await connection.query('COMMIT')
 
-                if (createSalesConversion.rowCount > 0 && updateCloser.rowCount>0, addSupporter.rowCount>0) {
+                if (createSalesConversion.rowCount > 0 &&  addSupporter.rowCount>0) {
                     res.json({
                         status: 201,
                         success: true,
