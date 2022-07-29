@@ -3309,7 +3309,7 @@ module.exports.notesList = async (req, res) => {
 
 //-------------------------------------sales_config----------------------------------------
 
-module.exports.commisionSplit = async (req, res) => {
+module.exports.commissionSplit = async (req, res) => {
     try {
         userEmail = req.user.email
         let {
@@ -3373,11 +3373,11 @@ module.exports.commisionSplit = async (req, res) => {
     }
 }
 
-module.exports.updatecommisionSplit = async (req, res) => {
+module.exports.updatecommissionSplit = async (req, res) => {
     try {
         let userEmail = req.user.email
         let {
-            slabId,
+            commissionId,
             closerPercentage,
             supporterPercentage
         } = req.body
@@ -3395,13 +3395,13 @@ module.exports.updatecommisionSplit = async (req, res) => {
 
                 await connection.query('BEGIN')
                 _dt = new Date().toISOString();
-                s4 = dbScript(db_sql['Q82'], { var1: closerPercentage, var2: supporterPercentage, var3: slabId, var4: _dt })
+                s4 = dbScript(db_sql['Q82'], { var1: closerPercentage, var2: supporterPercentage, var3: commissionId, var4: _dt })
 
-                var updateCommision = await connection.query(s4)
+                var updatecommission = await connection.query(s4)
 
                 await connection.query('COMMIT')
 
-                if (updateCommision.rowCount > 0) {
+                if (updatecommission.rowCount > 0) {
                     res.json({
                         status: 200,
                         success: true,
@@ -3442,7 +3442,7 @@ module.exports.updatecommisionSplit = async (req, res) => {
     }
 }
 
-module.exports.commisionSplitList = async (req, res) => {
+module.exports.commissionSplitList = async (req, res) => {
     try {
         let userEmail = req.user.email
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
@@ -3500,11 +3500,11 @@ module.exports.commisionSplitList = async (req, res) => {
     }
 }
 
-module.exports.deleteCommisionSplit = async (req, res) => {
+module.exports.deletecommissionSplit = async (req, res) => {
     try {
         let userEmail = req.user.email
         let {
-            slabId
+            commissionId
         } = req.body
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -3518,7 +3518,7 @@ module.exports.deleteCommisionSplit = async (req, res) => {
             if (checkPermission.rows[0].permission_to_delete) {
                 await connection.query('BEGIN')
                 _dt = new Date().toISOString();
-                s4 = dbScript(db_sql['Q84'], { var1: _dt, var2: slabId })
+                s4 = dbScript(db_sql['Q84'], { var1: _dt, var2: commissionId })
                 var deleteSlab = await connection.query(s4)
                 await connection.query('COMMIT')
 
@@ -3644,7 +3644,7 @@ module.exports.createSalesConversion = async (req, res) => {
         let {
             dealId,
             dealCloserId,
-            dealCommisionId,
+            dealcommissionId,
             supporters,
             is_overwrite,
             closerPercentage
@@ -3664,29 +3664,29 @@ module.exports.createSalesConversion = async (req, res) => {
                 await connection.query('BEGIN')
 
                 let id = uuid.v4()
-                let s5 = dbScript(db_sql['Q86'], { var1: id, var2: dealId, var3: dealCommisionId, var4: is_overwrite, var5: findAdmin.rows[0].company_id })
+                let s5 = dbScript(db_sql['Q86'], { var1: id, var2: dealId, var3: dealcommissionId, var4: is_overwrite, var5: findAdmin.rows[0].company_id })
                 let createSalesConversion = await connection.query(s5)
 
-                let s6 = dbScript(db_sql['Q89'],{ var1: dealCommisionId, var2: findAdmin.rows[0].company_id})
-                let findSalesCommision = await connection.query(s6)
+                let s6 = dbScript(db_sql['Q89'],{ var1: dealcommissionId, var2: findAdmin.rows[0].company_id})
+                let findSalescommission = await connection.query(s6)
 
-                let closer_percentage = is_overwrite ? closerPercentage : findSalesCommision.rows[0].closer_percentage
+                let closer_percentage = is_overwrite ? closerPercentage : findSalescommission.rows[0].closer_percentage
 
                 let closerId = uuid.v4()
-                s7 = dbScript(db_sql['Q93'], {var1 : closerId, var2: dealCloserId, var3: closer_percentage, var4: dealCommisionId, var5 : createSalesConversion.rows[0].id, var6 : findAdmin.rows[0].company_id })
+                s7 = dbScript(db_sql['Q93'], {var1 : closerId, var2: dealCloserId, var3: closer_percentage, var4: dealcommissionId, var5 : createSalesConversion.rows[0].id, var6 : findAdmin.rows[0].company_id })
                 let addSalesCloser = await connection.query(s7)
 
                 for(supporterData of supporters ){
 
                     let supporterId = uuid.v4()
-                    s8 = dbScript(db_sql['Q91'], {var1 : supporterId, var2: dealCommisionId, var3: supporterData.id, var4: supporterData.percentage, var5 : createSalesConversion.rows[0].id, var6 : findAdmin.rows[0].company_id })
+                    s8 = dbScript(db_sql['Q91'], {var1 : supporterId, var2: dealcommissionId, var3: supporterData.id, var4: supporterData.percentage, var5 : createSalesConversion.rows[0].id, var6 : findAdmin.rows[0].company_id })
                     addSalesSupporter = await connection.query(s8)
 
                 }
 
                 await connection.query('COMMIT')
 
-                if (createSalesConversion.rowCount > 0 &&  findSalesCommision.rowCount>0 && addSalesCloser.rowCount > 0 && addSalesSupporter.rowCount > 0) {
+                if (createSalesConversion.rowCount > 0 &&  findSalescommission.rowCount>0 && addSalesCloser.rowCount > 0 && addSalesSupporter.rowCount > 0) {
                     res.json({
                         status: 201,
                         success: true,
@@ -3775,7 +3775,7 @@ module.exports.salesConversionList = async (req, res) => {
                     closer.id = data.id
                     closer.dealId = data.deal_id
                     closer.dealName = dealname.rows[0].lead_name
-                    closer.commisionId = data.deal_commision_id
+                    closer.commissionId = data.deal_commision_id
                     closer.is_overwrite = data.is_overwrite
                     closer.closerId = data.closer_id 
                     closer.closerName = closerName.rows[0].full_name
