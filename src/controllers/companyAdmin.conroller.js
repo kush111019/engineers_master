@@ -3644,7 +3644,7 @@ module.exports.createSalesConversion = async (req, res) => {
         let {
             dealId,
             dealCloserId,
-            dealcommissionId,
+            dealCommissionId,
             supporters,
             is_overwrite,
             closerPercentage
@@ -3664,22 +3664,22 @@ module.exports.createSalesConversion = async (req, res) => {
                 await connection.query('BEGIN')
 
                 let id = uuid.v4()
-                let s5 = dbScript(db_sql['Q86'], { var1: id, var2: dealId, var3: dealcommissionId, var4: is_overwrite, var5: findAdmin.rows[0].company_id })
+                let s5 = dbScript(db_sql['Q86'], { var1: id, var2: dealId, var3: dealCommissionId, var4: is_overwrite, var5: findAdmin.rows[0].company_id })
                 let createSalesConversion = await connection.query(s5)
 
-                let s6 = dbScript(db_sql['Q89'],{ var1: dealcommissionId, var2: findAdmin.rows[0].company_id})
+                let s6 = dbScript(db_sql['Q89'],{ var1: dealCommissionId, var2: findAdmin.rows[0].company_id})
                 let findSalescommission = await connection.query(s6)
 
                 let closer_percentage = is_overwrite ? closerPercentage : findSalescommission.rows[0].closer_percentage
 
                 let closerId = uuid.v4()
-                s7 = dbScript(db_sql['Q93'], {var1 : closerId, var2: dealCloserId, var3: closer_percentage, var4: dealcommissionId, var5 : createSalesConversion.rows[0].id, var6 : findAdmin.rows[0].company_id })
+                s7 = dbScript(db_sql['Q93'], {var1 : closerId, var2: dealCloserId, var3: closer_percentage, var4: dealCommissionId, var5 : createSalesConversion.rows[0].id, var6 : findAdmin.rows[0].company_id })
                 let addSalesCloser = await connection.query(s7)
 
                 for(supporterData of supporters ){
 
                     let supporterId = uuid.v4()
-                    s8 = dbScript(db_sql['Q91'], {var1 : supporterId, var2: dealcommissionId, var3: supporterData.id, var4: supporterData.percentage, var5 : createSalesConversion.rows[0].id, var6 : findAdmin.rows[0].company_id })
+                    s8 = dbScript(db_sql['Q91'], {var1 : supporterId, var2: dealCommissionId, var3: supporterData.id, var4: supporterData.percentage, var5 : createSalesConversion.rows[0].id, var6 : findAdmin.rows[0].company_id })
                     addSalesSupporter = await connection.query(s8)
 
                 }
