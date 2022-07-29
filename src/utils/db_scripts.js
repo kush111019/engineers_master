@@ -106,7 +106,12 @@ const db_sql = {
     "Q92"  : `select id, supporter_id, supporter_percentage from sales_supporter where commision_id = '{var1}' and deleted_at is null `,
     "Q93"  : `insert into sales_closer(id, closer_id, closer_percentage, commision_id, sales_conversion_id, company_id) values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') returning *`,
     "Q94"  : `select id, supporter_id, supporter_percentage from sales_supporter where sales_conversion_id = '{var1}' and deleted_at is null `,
-
+    "Q95"  : `update sales_conversion set deleted_at = '{var1}' where id = '{var2}' and company_id = '{var3}' and deleted_at is null returning * `,
+    "Q96"  : `update sales_supporter set deleted_at = '{var1}' where sales_conversion_id = '{var2}' and company_id = '{var3}' and deleted_at is null returning * `,
+    "Q97"  : `update sales_closer set deleted_at = '{var1}' where sales_conversion_id = '{var2}' and company_id = '{var3}' and deleted_at is null returning * `,
+    "Q98"  : `update sales_conversion set deal_id = '{var1}', deal_commision_id = '{var2}', is_overwrite = '{var3}', updated_at = '{var4}' where id = '{var5}' and company_id = '{var6}' and deleted_at is null returning *`,
+    "Q99"  : `update sales_closer set closer_id = '{var1}', closer_percentage = '{var2}', commision_id = '{var3}', updated_at = '{var4}' where sales_conversion_id = '{var5}' and company_id = '{var6}' and deleted_at is null returning *`,
+    "Q100" : `delete from sales_supporter where sales_conversion_id = '{var1}' and company_id = '{var2}' and deleted_at is null returning *`
 
  };
 
