@@ -77,10 +77,10 @@ router.put('/deleteDeal',verifyTokenFn, controller.companyAdmin.deleteDeal)
 
 router.post('/assignDealSupporter',verifyTokenFn, controller.companyAdmin.assignDealSupporter)
 
-router.post('/commisionSplit',verifyTokenFn, controller.companyAdmin.commisionSplit)
-router.put('/updatecommisionSplit',verifyTokenFn, controller.companyAdmin.updatecommisionSplit)
-router.get('/commisionSplitList',verifyTokenFn, controller.companyAdmin.commisionSplitList)
-router.put('/deleteCommisionSplit',verifyTokenFn, controller.companyAdmin.deleteCommisionSplit)
+router.post('/commissionSplit',verifyTokenFn, controller.companyAdmin.commissionSplit)
+router.put('/updatecommissionSplit',verifyTokenFn, controller.companyAdmin.updatecommissionSplit)
+router.get('/commissionSplitList',verifyTokenFn, controller.companyAdmin.commissionSplitList)
+router.put('/deletecommissionSplit',verifyTokenFn, controller.companyAdmin.deletecommissionSplit)
 
 router.get('/dealListforSales',verifyTokenFn, controller.companyAdmin.dealListforSales)
 
