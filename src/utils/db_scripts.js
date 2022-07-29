@@ -93,16 +93,20 @@ const db_sql = {
     "Q80"  : `update deals set  deleted_at = '{var1}' where id = '{var2}' and deleted_at is null returning *`,
     "Q81"  : `insert into sales_commision(id, closer_percentage,  supporter_percentage, company_id) values('{var1}','{var2}','{var3}','{var4}') returning * `,
     "Q82"  : `update sales_commision set closer_percentage = '{var1}', supporter_percentage = '{var2}' , updated_at = '{var4}'  where  id = '{var3}' and deleted_at is null returning *`,
-    "Q83"  : `select id, closer_id, closer_percentage, supporter_percentage from sales_commision where company_id ='{var1}' and deleted_at is null`,
+    "Q83"  : `select id, closer_percentage, supporter_percentage from sales_commision where company_id ='{var1}' and deleted_at is null`,
     "Q84"  : `update sales_commision set deleted_at = '{var1}' where id = '{var2}'  and deleted_at is null returning *`,
     "Q85"  : `select id,deal_company_id ,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id, supporter from deals where company_id = '{var1}' and closed_at is null and deleted_at is null`,
-    "Q86"  : `insert into sales_conversion (id, deal_id, deal_slab_id, closer_id, is_overwrite, company_id ) values ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}','{var6}') returning *`,
-    "Q87"  : `select deal_id, deal_slab_id, is_overwrite,closer_id from sales_conversion where company_id = '{var1}' and deleted_at is null`,
+    "Q86"  : `insert into sales_conversion (id, deal_id, deal_commision_id, is_overwrite, company_id ) values ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}') returning *`,
+    "Q87"  : `select sc.id, sc.deal_id, sc.deal_commision_id, sc.is_overwrite, c.closer_id, c.closer_percentage from sales_conversion as sc inner join sales_closer as c on sc.id = c.sales_conversion_id
+              where sc.company_id = '{var1}' and sc.deleted_at is null and c.deleted_at is null`,
     "Q88"  : `select id,deal_company_id ,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id, supporter from deals where id = '{var1}' and deleted_at is null`,
-    "Q89"  : `select id, closer_id, closer_percentage, supporter_percentage from sales_commision where company_id ='{var1}' and closer_id = '{var2}' and deleted_at is null`,
+    "Q89"  : `select id, closer_percentage, supporter_percentage from sales_commision where id ='{var1}' and company_id = '{var2}' and deleted_at is null`,
     "Q90"  : `update sales_commision set closer_id = '{var1}' where id = '{var2}' and deleted_at is null returning *`,
-    "Q91"  : `insert into sales_supporter(id, commision_id ,supporter_id, supporter_percentage, company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,
-    "Q92"  : `select id, supporter_id, supporter_percentage from sales_supporter where commision_id = '{var1}' and deleted_at is null `
+    "Q91"  : `insert into sales_supporter(id, commision_id ,supporter_id, supporter_percentage, sales_conversion_id, company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') returning *`,
+    "Q92"  : `select id, supporter_id, supporter_percentage from sales_supporter where commision_id = '{var1}' and deleted_at is null `,
+    "Q93"  : `insert into sales_closer(id, closer_id, closer_percentage, commision_id, sales_conversion_id, company_id) values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') returning *`,
+    "Q94"  : `select id, supporter_id, supporter_percentage from sales_supporter where sales_conversion_id = '{var1}' and deleted_at is null `,
+
 
  };
 
