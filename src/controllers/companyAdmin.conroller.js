@@ -3690,7 +3690,7 @@ module.exports.createSalesConversion = async (req, res) => {
                     res.json({
                         status: 201,
                         success: true,
-                        message: "Sales conversion Successfully"
+                        message: "Sales conversion created Successfully"
                     })
                 } else {
                     await connection.query('ROLLBACK')
@@ -3743,8 +3743,6 @@ module.exports.salesConversionList = async (req, res) => {
 
                 s4 = dbScript(db_sql['Q87'], { var1: findAdmin.rows[0].company_id })
                 let salesConversionList = await connection.query(s4)
-                console.log(s4);
-                console.log(salesConversionList.rows);
                 
                 let conversionList = []
 
@@ -3764,7 +3762,6 @@ module.exports.salesConversionList = async (req, res) => {
                     for(supporterData of supporter.rows){
                         s8 = dbScript(db_sql['Q12'], { var1 : supporterData.supporter_id})
                         let supporterName = await connection.query(s8)
-                        console.log(supporterName.rows);
                         supporters.push({
                             id : supporterData.supporter_id ,
                             name : supporterName.rows[0].full_name,
@@ -3829,12 +3826,13 @@ module.exports.updateSalesConversion = async (req, res)=> {
     try {
         let userEmail = req.user.email
         let {
+            salesConversionId,
             dealId,
+            dealCommissionId,
             dealCloserId,
-            dealSupporterId,
-            dealSlabId,
+            supporters,
             is_overwrite,
-            slabSupporters
+            closerPercentage
         } = req.body
 
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
@@ -3849,6 +3847,123 @@ module.exports.updateSalesConversion = async (req, res)=> {
             if (checkPermission.rows[0].permission_to_create) {
 
                 await connection.query('BEGIN')
+
+                _dt = new Date().toISOString();
+
+                let s5 = dbScript(db_sql['Q98'], { var1: dealId, var2: dealCommissionId, var3: is_overwrite, var4: _dt, var5:salesConversionId,  var6: findAdmin.rows[0].company_id })
+                let updateSalesConversion = await connection.query(s5)
+
+                let s6 = dbScript(db_sql['Q89'],{ var1: dealCommissionId, var2: findAdmin.rows[0].company_id})
+                let findSalescommission = await connection.query(s6)
+
+                let closer_percentage = is_overwrite ? closerPercentage : findSalescommission.rows[0].closer_percentage
+
+                s7 = dbScript(db_sql['Q99'], {var1 : dealCloserId, var2: closer_percentage, var3: dealCommissionId, var4: _dt , var5 : salesConversionId, var6 : findAdmin.rows[0].company_id })
+                let updateSalesCloser = await connection.query(s7)
+
+                s8 = dbScript(db_sql['Q100'],{var1 : salesConversionId, var2 : findAdmin.rows[0].company_id })
+                let updateSupporter = await connection.query(s8)
+
+                
+                for(supporterData of supporters ){
+                    console.log(supporterData); 
+
+                    let supporterId = uuid.v4()
+                    s9 = dbScript(db_sql['Q91'], {var1 : supporterId, var2: dealCommissionId, var3: supporterData.id, var4: supporterData.percentage, var5 : salesConversionId, var6 : findAdmin.rows[0].company_id })
+                    updateSalesSupporter = await connection.query(s9)
+
+                }
+
+                await connection.query('COMMIT')
+
+                if (updateSalesConversion.rowCount > 0 &&  findSalescommission.rowCount>0 && updateSalesCloser.rowCount > 0 && updateSalesSupporter.rowCount > 0) {
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Sales conversion updated Successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "something went wrong"
+                    })
+                }
+
+            } else {
+                res.json({
+                    status: 403,
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+
+}
+
+module.exports.deleteSalesConversion = async (req, res) => {
+
+    try {
+        let userEmail = req.user.email
+        let {
+            salesConversionId
+        } = req.body
+
+        s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        let moduleName = 'Sales management'
+        if (findAdmin.rows.length > 0) {
+            s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_update) {
+
+                await connection.query('BEGIN')
+
+                _dt = new Date().toISOString();
+                s4 = dbScript(db_sql['Q95'], { var1: _dt, var2: salesConversionId, var3: findAdmin.rows[0].company_id })
+                let deleteSalesConversion = await connection.query(s4)
+
+                s5 = dbScript(db_sql['Q96'], { var1: _dt, var2: salesConversionId, var3: findAdmin.rows[0].company_id })
+                let deleteSalesSupporter = await connection.query(s5)
+
+                s5 = dbScript(db_sql['Q97'], { var1: _dt, var2: salesConversionId, var3: findAdmin.rows[0].company_id })
+                let deleteSalesCloser = await connection.query(s5)
+
+                await connection.query('COMMIT')
+
+                if (deleteSalesConversion.rowCount > 0 && deleteSalesSupporter.rowCount > 0, deleteSalesCloser.rowCount > 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "sales conversion deleted Successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "something went wrong"
+                    })
+
+                }
 
             } else {
                 res.json({

@@ -77,14 +77,20 @@ router.put('/deleteDeal',verifyTokenFn, controller.companyAdmin.deleteDeal)
 
 router.post('/assignDealSupporter',verifyTokenFn, controller.companyAdmin.assignDealSupporter)
 
+//------------------------------------Commisions-----------------------------------------
 router.post('/commissionSplit',verifyTokenFn, controller.companyAdmin.commissionSplit)
 router.put('/updatecommissionSplit',verifyTokenFn, controller.companyAdmin.updatecommissionSplit)
 router.get('/commissionSplitList',verifyTokenFn, controller.companyAdmin.commissionSplitList)
 router.put('/deletecommissionSplit',verifyTokenFn, controller.companyAdmin.deletecommissionSplit)
 
+//----------------------------------------sales conversion --------------------------------
 router.get('/dealListforSales',verifyTokenFn, controller.companyAdmin.dealListforSales)
 
 router.post('/createSalesConversion',verifyTokenFn, controller.companyAdmin.createSalesConversion)
 router.get('/salesConversionList',verifyTokenFn, controller.companyAdmin.salesConversionList)
+router.put('/updateSalesConversion',verifyTokenFn, controller.companyAdmin.updateSalesConversion)
+router.put('/deleteSalesConversion',verifyTokenFn, controller.companyAdmin.deleteSalesConversion)
+
+
 
 module.exports = router;
