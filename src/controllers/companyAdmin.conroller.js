@@ -3041,7 +3041,6 @@ module.exports.updateSalesConversion = async (req, res) => {
 
 
                 for (supporterData of supporters) {
-                    console.log(supporterData);
 
                     let supporterId = uuid.v4()
                     s9 = dbScript(db_sql['Q91'], { var1: supporterId, var2: dealCommissionId, var3: supporterData.id, var4: supporterData.percentage, var5: salesConversionId, var6: findAdmin.rows[0].company_id })
@@ -3192,7 +3191,7 @@ module.exports.salesConversionReport = async (req, res) => {
 
                         let { sortBy, sortType, searchKeyword } = req.query
 
-                        s4 = dbScript(db_sql['Q101'], { var1: findAdmin.rows[0].company_id, var2: fromDate, var3: toDate, var4: limit })
+                        s4 = dbScript(db_sql['Q101'], { var1: findAdmin.rows[0].company_id, var2: fromDate, var3: toDate, var4: limit, var5: offSet, var6: sortBy, var7: sortType, var8: searchKeyword  })
                         var salesConversionList = await connection.query(s4)
 
                     } else {
@@ -3219,7 +3218,6 @@ module.exports.salesConversionReport = async (req, res) => {
                 let conversionList = []
 
                 for (data of salesConversionList.rows) {
-                    console.log(data);
                     let closer = {}
                     let supporters = []
 
