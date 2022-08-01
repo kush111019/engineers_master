@@ -216,47 +216,54 @@ module.exports.login = async (req, res) => {
             let company = await connection.query(s2)
 
             if (admin.rows[0].encrypted_password == password) {
-                s3 = dbScript(db_sql['Q19'], { var1: admin.rows[0].role_id })
-                let checkRole = await connection.query(s3)
+                if (admin.rows[0].is_verified) {
+                    s3 = dbScript(db_sql['Q19'], { var1: admin.rows[0].role_id })
+                    let checkRole = await connection.query(s3)
 
-                let moduleId = JSON.parse(checkRole.rows[0].module_ids)
-                let modulePemissions = []
-                for (data of moduleId) {
+                    let moduleId = JSON.parse(checkRole.rows[0].module_ids)
+                    let modulePemissions = []
+                    for (data of moduleId) {
 
-                    s4 = dbScript(db_sql['Q9'], { var1: data })
-                    let modules = await connection.query(s4)
+                        s4 = dbScript(db_sql['Q9'], { var1: data })
+                        let modules = await connection.query(s4)
 
-                    s5 = dbScript(db_sql['Q66'], { var1: checkRole.rows[0].id, var2: data })
-                    let findModulePermissions = await connection.query(s5)
+                        s5 = dbScript(db_sql['Q66'], { var1: checkRole.rows[0].id, var2: data })
+                        let findModulePermissions = await connection.query(s5)
 
-                    modulePemissions.push({
-                        moduleId: data,
-                        moduleName: modules.rows[0].module_name,
-                        permissions: findModulePermissions.rows
+                        modulePemissions.push({
+                            moduleId: data,
+                            moduleName: modules.rows[0].module_name,
+                            permissions: findModulePermissions.rows
+                        })
+                    }
+
+                    let payload = {
+                        id: admin.rows[0].id,
+                        email: admin.rows[0].email_address,
+                    }
+                    let jwtToken = await issueJWT(payload);
+                    let profileImage = (checkRole.rows[0].role_name == "Admin") ? company.rows[0].company_logo : admin.rows[0].avatar
+
+                    res.send({
+                        status: 200,
+                        success: true,
+                        message: "Login successfull",
+                        data: {
+                            token: jwtToken,
+                            name: admin.rows[0].full_name,
+                            role: checkRole.rows[0].role_name,
+                            profileImage: profileImage,
+                            modulePermissions: modulePemissions
+
+                        }
+                    });
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Please Set Password before login"
                     })
                 }
-
-                let payload = {
-                    id: admin.rows[0].id,
-                    email: admin.rows[0].email_address,
-                }
-                let jwtToken = await issueJWT(payload);
-                let profileImage = (checkRole.rows[0].role_name == "Admin") ? company.rows[0].company_logo : admin.rows[0].avatar
-
-                res.send({
-                    status: 200,
-                    success: true,
-                    message: "Login successfull",
-                    data: {
-                        token: jwtToken,
-                        name: admin.rows[0].full_name,
-                        role: checkRole.rows[0].role_name,
-                        profileImage: profileImage,
-                        modulePermissions: modulePemissions
-
-                    }
-                });
-
             } else {
                 res.json({
                     status: 400,
