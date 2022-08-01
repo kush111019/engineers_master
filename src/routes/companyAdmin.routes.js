@@ -47,11 +47,8 @@ router.put('/deleteSlab',verifyTokenFn, controller.companyAdmin.deleteSlab)
 
 router.post('/addfollowUpNotes' , verifyTokenFn, controller.companyAdmin.addfollowUpNotes)
 router.get('/notesList',verifyTokenFn, controller.companyAdmin.notesList)
+router.put('/deleteNotes',verifyTokenFn, controller.companyAdmin.deleteNotes)
 
-//----------------------------------------Reports------------------------------------------
-
-router.get('/leadReport',verifyTokenFn, controller.companyAdmin.leadReport)
-router.get('/leadConversionReport',verifyTokenFn, controller.companyAdmin.leadConversionReport)
 
 //------------------------------------Deal Management---------------------------------------
 
@@ -76,6 +73,10 @@ router.post('/createSalesConversion',verifyTokenFn, controller.companyAdmin.crea
 router.get('/salesConversionList',verifyTokenFn, controller.companyAdmin.salesConversionList)
 router.put('/updateSalesConversion',verifyTokenFn, controller.companyAdmin.updateSalesConversion)
 router.put('/deleteSalesConversion',verifyTokenFn, controller.companyAdmin.deleteSalesConversion)
+
+//----------------------------------------Reports------------------------------------------
+router.get('/salesConversionReport',verifyTokenFn, controller.companyAdmin.salesConversionReport)
+
 
 
 
