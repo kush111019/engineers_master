@@ -7,7 +7,6 @@ const db_sql = {
     "Q3"   : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,phone_number,encrypted_password,role_id,address,is_verified) 
               values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}',false) RETURNING *`,          
     "Q4"   : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified from users where email_address = '{var1}' and deleted_at is null` ,
-    "Q5"   : `update users set is_verified = 'true', verification_code = null, updated_at = '{var1}' where email_address = '{var2}'RETURNING *` ,  
     "Q6"   : `select id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where email_address = '{var1}' and deleted_at is null ` , 
     "Q7"   : `update users set encrypted_password='{var2}' ,is_verified = true,updated_at = '{var3}' where email_address = '{var1}' RETURNING *`, 
     "Q8"   : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where deleted_at is null` ,

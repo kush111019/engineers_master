@@ -945,69 +945,69 @@ module.exports.deleteRole = async (req, res) => {
     }
 }
 
-module.exports.assignRoleToUser = async (req, res) => {
-    try {
-        let AdminEmail = req.user.email
-        let {
-            roleConfig
-        } = req.body
+// module.exports.assignRoleToUser = async (req, res) => {
+//     try {
+//         let AdminEmail = req.user.email
+//         let {
+//             roleConfig
+//         } = req.body
 
-        s1 = dbScript(db_sql['Q4'], { var1: AdminEmail })
-        let findAdmin = await connection.query(s1)
+//         s1 = dbScript(db_sql['Q4'], { var1: AdminEmail })
+//         let findAdmin = await connection.query(s1)
 
-        let moduleName = 'Role'
-        if (findAdmin.rows.length > 0) {
-            s2 = dbScript(db_sql['Q72'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
-            let checkPermission = await connection.query(s3)
-            if (checkPermission.rows[0].permission_to_update) {
-                for (data of roleConfig) {
-                    await connection.query('BEGIN')
-                    _dt = new Date().toISOString();
-                    s4 = dbScript(db_sql['Q22'], { var1: data.userId, var2: data.roleId, var3: data.percentageDistribution, var4: _dt })
-                    var assignRole = await connection.query(s4)
-                    await connection.query('COMMIT')
-                }
-                if (assignRole.rowCount > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "role assigned  successfully"
-                    })
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
-                    })
-                }
-            } else {
-                res.json({
-                    status: 403,
-                    success: false,
-                    message: "UnAthorised"
-                })
-            }
+//         let moduleName = 'Role'
+//         if (findAdmin.rows.length > 0) {
+//             s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+//             let findModule = await connection.query(s2)
+//             s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+//             let checkPermission = await connection.query(s3)
+//             if (checkPermission.rows[0].permission_to_update) {
+//                 for (data of roleConfig) {
+//                     await connection.query('BEGIN')
+//                     _dt = new Date().toISOString();
+//                     s4 = dbScript(db_sql['Q22'], { var1: data.userId, var2: data.roleId, var3: data.percentageDistribution, var4: _dt })
+//                     var assignRole = await connection.query(s4)
+//                     await connection.query('COMMIT')
+//                 }
+//                 if (assignRole.rowCount > 0) {
+//                     res.json({
+//                         status: 200,
+//                         success: true,
+//                         message: "role assigned  successfully"
+//                     })
+//                 } else {
+//                     await connection.query('ROLLBACK')
+//                     res.json({
+//                         status: 400,
+//                         success: false,
+//                         message: "Something went wrong"
+//                     })
+//                 }
+//             } else {
+//                 res.json({
+//                     status: 403,
+//                     success: false,
+//                     message: "UnAthorised"
+//                 })
+//             }
 
-        } else {
-            res.json({
-                status: 403,
-                success: false,
-                message: "Admin not found"
-            })
-        }
+//         } else {
+//             res.json({
+//                 status: 403,
+//                 success: false,
+//                 message: "Admin not found"
+//             })
+//         }
 
-    } catch (error) {
-        await connection.query('ROLLBACK')
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
+//     } catch (error) {
+//         await connection.query('ROLLBACK')
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }
 
 module.exports.userWiseRoleList = async (req, res) => {
     try {
