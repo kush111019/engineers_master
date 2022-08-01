@@ -36,27 +36,15 @@ router.put('/deleteRole' , verifyTokenFn, controller.companyAdmin.deleteRole)
 //-------------------------------------Slabss-------------------------------------------------
 router.get('/slabList',verifyTokenFn, controller.companyAdmin.slabList)
 router.post('/createSlab',verifyTokenFn, controller.companyAdmin.createSlab)
-//router.post('/assignQuotationToUser',verifyTokenFn, controller.companyAdmin.assignQuotationToUser)
 router.put('/updateSlab',verifyTokenFn, controller.companyAdmin.updateSlab)
 router.put('/deleteSlab',verifyTokenFn, controller.companyAdmin.deleteSlab)
 
-//-------------------------------------sales-------------------------------------------------
-// router.get('/salesReportList',verifyTokenFn, controller.companyAdmin.salesReportList)
-// router.get('/salesReportByUserId',verifyTokenFn, controller.companyAdmin.salesReportByUserId)
 
-//-------------------------------------leads--------------------------------------------
-router.post('/createLead',verifyTokenFn, controller.companyAdmin.createLead)
-router.get('/leadsList',verifyTokenFn, controller.companyAdmin.leadsList)
-router.put('/updateLead',verifyTokenFn, controller.companyAdmin.updateLead)
-router.put('/deleteLead',verifyTokenFn, controller.companyAdmin.deleteLead)
-router.get('/showleadsById',verifyTokenFn, controller.companyAdmin.showleadsById)
-router.post('/uploadLeadFile',verifyTokenFn,uploadLeadFile.single('file'), controller.companyAdmin.uploadLeadFile)
-router.get('/userWiseLeadList',verifyTokenFn, controller.companyAdmin.userWiseLeadList)
+// router.post('/uploadLeadFile',verifyTokenFn,uploadLeadFile.single('file'), controller.companyAdmin.uploadLeadFile)
+
 
 //--------------------------------------Targets--------------------------------------------
 
-router.post('/convertLeadToTarget',verifyTokenFn, controller.companyAdmin.convertLeadToTarget)
-router.get('/targetList',verifyTokenFn, controller.companyAdmin.targetList)
 router.post('/addfollowUpNotes' , verifyTokenFn, controller.companyAdmin.addfollowUpNotes)
 router.get('/notesList',verifyTokenFn, controller.companyAdmin.notesList)
 
@@ -74,8 +62,6 @@ router.put('/editDeal',verifyTokenFn, controller.companyAdmin.editDeal)
 router.get('/dealLogsList',verifyTokenFn, controller.companyAdmin.dealLogsList)
 router.get('/dealCompanyList',verifyTokenFn, controller.companyAdmin.dealCompanyList)
 router.put('/deleteDeal',verifyTokenFn, controller.companyAdmin.deleteDeal)
-
-router.post('/assignDealSupporter',verifyTokenFn, controller.companyAdmin.assignDealSupporter)
 
 //------------------------------------Commisions-----------------------------------------
 router.post('/commissionSplit',verifyTokenFn, controller.companyAdmin.commissionSplit)

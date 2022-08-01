@@ -1060,174 +1060,6 @@ module.exports.userWiseRoleList = async (req, res) => {
     }
 }
 
-
-
-//-----------------------------------------Users-------------------------------------------------
-// module.exports.salesEntry = async (req, res) => {
-//     try {
-//         let userEmail = req.user.email
-//         let {
-//             clientName,
-//             clientEmail,
-//             clientContact,
-//             amount,
-//             description
-//         } = req.body
-
-//         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
-//         let findAdmin = await connection.query(s1)
-
-//         if (findAdmin.rows.length > 0) {
-//             s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
-//             let checkPermission = await connection.query(s2)
-
-//             if (checkPermission.rows[0].permission_to_create) {
-//                 await connection.query('BEGIN')
-//                 s3 = dbScript(db_sql['Q36'], { var1: id, var2: findAdmin.rows[0].id, var3: clientName, var4: clientEmail, var5: clientContact, var6: amount, var7: description })
-//                 let addSalesEntry = await connection.query(s3)
-//                 await connection.query('COMMIT')
-//                 if (addSalesEntry.rowCount > 0) {
-//                     res.json({
-//                         status: 201,
-//                         success: true,
-//                         message: "sales entry created successfully"
-//                     })
-//                 } else {
-//                     await connection.query('ROLLBACK')
-//                     res.json({
-//                         status: 400,
-//                         success: false,
-//                         message: "something went wrong"
-//                     })
-//                 }
-
-//             } else {
-//                 res.json({
-//                     status: 403,
-//                     success: false,
-//                     message: "UnAthorised"
-//                 })
-//             }
-//         } else {
-//             res.json({
-//                 status: 400,
-//                 success: false,
-//                 message: "Admin not found"
-//             })
-//         }
-
-//     } catch (error) {
-//         await connection.query('ROLLBACK')
-//         res.json({
-//             status: 400,
-//             success: false,
-//             message: error.message,
-//         })
-//     }
-// }
-
-// module.exports.salesReportByUserId = async (req, res) => {
-//     try {
-//         let userEmail = req.user.email
-//         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
-//         let findAdmin = await connection.query(s1)
-
-//         if (findAdmin.rows.length > 0) {
-//             s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
-//             let checkPermission = await connection.query(s2)
-
-//             if (checkPermission.rows[0].permission_to_view) {
-//                 s3 = dbScript(db_sql['Q37'], { var1: findAdmin.rows[0].id })
-//                 let salesReport = await connection.query(s3)
-//                 if (salesReport.rowCount > 0) {
-//                     res.json({
-//                         status: 200,
-//                         success: true,
-//                         message: "sales report",
-//                         data: salesReport.rows
-//                     })
-//                 } else {
-//                     res.json({
-//                         status: 200,
-//                         success: true,
-//                         message: "Empty sales report",
-//                         data: []
-//                     })
-//                 }
-//             } else {
-//                 res.json({
-//                     status: 403,
-//                     success: false,
-//                     message: "UnAthorised"
-//                 })
-//             }
-//         } else {
-//             res.json({
-//                 status: 400,
-//                 success: false,
-//                 message: "Admin not found"
-//             })
-//         }
-//     } catch (error) {
-//         res.json({
-//             status: 400,
-//             success: false,
-//             message: error.message,
-//         })
-//     }
-// }
-
-// module.exports.salesReportList = async (req, res) => {
-//     try {
-//         let userEmail = req.user.email
-//         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
-//         let findAdmin = await connection.query(s1)
-
-//         if (findAdmin.rows.length > 0) {
-//             s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
-//             let checkPermission = await connection.query(s2)
-
-//             if (checkPermission.rows[0].permission_to_view) {
-//                 s3 = dbScript(db_sql['Q38'], { var1: findAdmin.rows[0].company_id })
-//                 let salesReport = await connection.query(s3)
-//                 if (salesReport.rowCount > 0) {
-//                     res.json({
-//                         status: 200,
-//                         success: true,
-//                         message: "sales report",
-//                         data: salesReport.rows
-//                     })
-//                 } else {
-//                     res.json({
-//                         status: 200,
-//                         success: true,
-//                         message: "Empty sales report",
-//                         data: []
-//                     })
-//                 }
-//             } else {
-//                 res.json({
-//                     status: 403,
-//                     success: false,
-//                     message: "UnAthorised"
-//                 })
-//             }
-//         } else {
-//             res.json({
-//                 status: 400,
-//                 success: false,
-//                 message: "Admin not found"
-//             })
-//         }
-//     } catch (error) {
-//         res.json({
-//             status: 400,
-//             success: false,
-//             message: error.message,
-//         })
-//     }
-// }
-
 //-------------------------------------Users-------------------------------------------------
 
 module.exports.addUser = async (req, res) => {
@@ -1671,600 +1503,94 @@ module.exports.deleteUser = async (req, res) => {
     }
 }
 
-//----------------------------------leads------------------------------------------------
+// module.exports.uploadLeadFile = async (req, res) => {
+//     try {
+//         let AdminEmail = req.user.email
+//         let file = req.file
 
-module.exports.createLead = async (req, res) => {
-    try {
-        userEmail = req.user.email
-        let {
-            fullName,
-            designation,
-            emailAddress,
-            website,
-            phoneNumber,
-            leadValue,
-            companyName,
-            description,
-            address,
-            cityName,
-            stateName,
-            countryName,
-            zipCode,
-        } = req.body
-        s1 = dbScript(db_sql['Q4'], { var1: userEmail })
-        let findAdmin = await connection.query(s1)
+//         s1 = dbScript(db_sql['Q4'], { var1: AdminEmail })
+//         let findAdmin = await connection.query(s1)
 
-        let moduleName = 'users'
-        if (findAdmin.rows.length > 0) {
-            s2 = dbScript(db_sql['Q72'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
-            let checkPermission = await connection.query(s3)
-            if (checkPermission.rows[0].permission_to_create) {
-                id = uuid.v4()
-                await connection.query('BEGIN')
+//         if (findAdmin.rows.length > 0) {
+//             s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
+//             let checkPermission = await connection.query(s2)
 
-                s4 = dbScript(db_sql['Q48'], { var1: id, var2: findAdmin.rows[0].id, var3: findAdmin.rows[0].company_id, var4: fullName, var5: designation, var6: emailAddress, var7: website, var8: phoneNumber, var9: leadValue, var10: companyName, var11: description, var12: address, var13: cityName, var14: stateName, var15: countryName, var16: zipCode })
+//             if (checkPermission.rows[0].permission_to_update) {
+//                 let promise = new Promise((resolve, reject) => {
+//                     let stream = fs.createReadStream(file.path);
+//                     let csvData = [];
+//                     //.on('data') is triggered when a record is parsed,
+//                     // so we will get the record (data) in the handler function.
+//                     // Each record is pushed to csvData array.
+//                     //on('end') is triggered after the parsing is done,
+//                     // at the time that we have all records.
+//                     let csvStream = fastcsv.parse().on("data", (data) => {
+//                         csvData.push(data)
+//                     }).on("end", () => {
+//                         // remove the first line: header
+//                         csvData.shift();
+//                         // connect to the PostgreSQL database
+//                         // insert csvData into DB 
+//                         csvData.forEach(row => {
+//                             //unique id for every row 
+//                             id = uuid.v4()
+//                             s3 = dbScript(db_sql['Q55'], { var1: id, var2: findAdmin.rows[0].id, var3: findAdmin.rows[0].company_id })
+//                             connection.query(s3, row, (err, res) => {
+//                                 if (err) {
+//                                     throw err
+//                                 }
+//                             });
+//                         });
+//                     })
+//                     let exportedData = stream.pipe(csvStream);
+//                     if (exportedData) {
+//                         resolve(file);
+//                     } else {
+//                         reject(false)
+//                     }
+//                 })
+//                 promise.then((file) => {
+//                     fs.unlink(file.path, (err) => {
+//                         if (err) {
+//                             throw err
+//                         }
+//                     })
+//                 }).catch(err => {
+//                     throw err
+//                 })
 
-                let createLead = await connection.query(s4)
-                await connection.query('COMMIT')
-                if (createLead.rowCount > 0) {
-                    res.json({
-                        status: 201,
-                        success: true,
-                        message: "lead created successfully"
-                    })
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "something went wrong"
-                    })
-                }
+//                 res.json({
+//                     status: 201,
+//                     success: true,
+//                     message: "Leads exported to DB"
+//                 })
 
-            } else {
-                res.json({
-                    status: 403,
-                    success: false,
-                    message: "Unathorised"
-                })
-            }
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Admin not found"
-            })
-        }
-    } catch (error) {
-        await connection.query('ROLLBACK')
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
+//             } else {
+//                 res.json({
+//                     status: 403,
+//                     success: false,
+//                     message: "UnAthorised"
+//                 })
+//             }
 
-module.exports.leadsList = async (req, res) => {
-    try {
-        let userEmail = req.user.email
-        s1 = dbScript(db_sql['Q4'], { var1: userEmail })
-        let findAdmin = await connection.query(s1)
-
-        if (findAdmin.rows.length > 0) {
-            s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s2)
-
-            if (checkPermission.rows[0].permission_to_view) {
-                s3 = dbScript(db_sql['Q49'], { var1: findAdmin.rows[0].company_id })
-                let findLeads = await connection.query(s3)
-                if (findLeads.rows.length > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: 'leads List',
-                        data: findLeads.rows
-                    })
-                } else {
-                    res.json({
-                        status: 200,
-                        success: false,
-                        message: 'empty leads List',
-                        data: []
-                    })
-                }
-            } else {
-                res.json({
-                    status: 403,
-                    success: false,
-                    message: "UnAthorised"
-                })
-            }
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Admin not found"
-            })
-        }
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
-
-module.exports.updateLead = async (req, res) => {
-    try {
-        userEmail = req.user.email
-        let {
-            leadId,
-            fullName,
-            designation,
-            emailAddress,
-            website,
-            phoneNumber,
-            leadValue,
-            companyName,
-            description,
-            address,
-            cityName,
-            stateName,
-            countryName,
-            zipCode,
-        } = req.body
-        s1 = dbScript(db_sql['Q4'], { var1: userEmail })
-        let findAdmin = await connection.query(s1)
-
-        if (findAdmin.rows.length > 0) {
-
-            s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s2)
-            if (checkPermission.rows[0].permission_to_update) {
-                await connection.query('BEGIN')
-                _dt = new Date().toISOString();
-                s3 = dbScript(db_sql['Q50'], { var1: leadId, var2: fullName, var3: designation, var4: emailAddress, var5: website, var6: phoneNumber, var7: leadValue, var8: companyName, var9: description, var10: address, var11: cityName, var12: stateName, var13: countryName, var14: zipCode, var15: _dt })
-                let createLead = await connection.query(s3)
-                await connection.query('COMMIT')
-                if (createLead.rowCount > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "lead updated successfully"
-                    })
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "something went wrong"
-                    })
-                }
-
-            } else {
-                res.json({
-                    status: 403,
-                    success: false,
-                    message: "Unathorised"
-                })
-            }
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Admin not found"
-            })
-        }
-    } catch (error) {
-        await connection.query('ROLLBACK')
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
-
-module.exports.deleteLead = async (req, res) => {
-    try {
-        userEmail = req.user.email
-        let {
-            leadId,
-        } = req.body
-        s1 = dbScript(db_sql['Q4'], { var1: userEmail })
-        let findAdmin = await connection.query(s1)
-
-        if (findAdmin.rows.length > 0) {
-
-            s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s2)
-            if (checkPermission.rows[0].permission_to_delete) {
-                await connection.query('BEGIN')
-                _dt = new Date().toISOString();
-                s3 = dbScript(db_sql['Q51'], { var1: leadId, var2: _dt })
-                let deleteLead = await connection.query(s3)
-                await connection.query('COMMIT')
-                if (deleteLead.rowCount > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "lead deleted successfully"
-                    })
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "something went wrong"
-                    })
-                }
-
-            } else {
-                res.json({
-                    status: 403,
-                    success: false,
-                    message: "Unathorised"
-                })
-            }
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Admin not found"
-            })
-        }
-    } catch (error) {
-        await connection.query('ROLLBACK')
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
-
-module.exports.showleadsById = async (req, res) => {
-    try {
-        let userEmail = req.user.email
-        let { userId } = req.body;
-        s1 = dbScript(db_sql['Q4'], { var1: userEmail })
-        let findAdmin = await connection.query(s1)
-
-        if (findAdmin.rows.length > 0) {
-            s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s2)
-
-            if (checkPermission.rows[0].permission_to_view) {
-                s3 = dbScript(db_sql['Q53'], { var1: userId })
-                let findLeads = await connection.query(s3)
-                if (findLeads.rows.length > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: 'leads List',
-                        data: findLeads.rows
-                    })
-                } else {
-                    res.json({
-                        status: 200,
-                        success: false,
-                        message: 'empty leads List',
-                        data: []
-                    })
-                }
-            } else {
-                res.json({
-                    status: 403,
-                    success: false,
-                    message: "UnAthorised"
-                })
-            }
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Admin not found"
-            })
-        }
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
-
-module.exports.uploadLeadFile = async (req, res) => {
-    try {
-        let AdminEmail = req.user.email
-        let file = req.file
-
-        s1 = dbScript(db_sql['Q4'], { var1: AdminEmail })
-        let findAdmin = await connection.query(s1)
-
-        if (findAdmin.rows.length > 0) {
-            s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s2)
-
-            if (checkPermission.rows[0].permission_to_update) {
-                let promise = new Promise((resolve, reject) => {
-                    let stream = fs.createReadStream(file.path);
-                    let csvData = [];
-                    //.on('data') is triggered when a record is parsed,
-                    // so we will get the record (data) in the handler function.
-                    // Each record is pushed to csvData array.
-                    //on('end') is triggered after the parsing is done,
-                    // at the time that we have all records.
-                    let csvStream = fastcsv.parse().on("data", (data) => {
-                        csvData.push(data)
-                    }).on("end", () => {
-                        // remove the first line: header
-                        csvData.shift();
-                        // connect to the PostgreSQL database
-                        // insert csvData into DB 
-                        csvData.forEach(row => {
-                            //unique id for every row 
-                            id = uuid.v4()
-                            s3 = dbScript(db_sql['Q55'], { var1: id, var2: findAdmin.rows[0].id, var3: findAdmin.rows[0].company_id })
-                            connection.query(s3, row, (err, res) => {
-                                if (err) {
-                                    throw err
-                                }
-                            });
-                        });
-                    })
-                    let exportedData = stream.pipe(csvStream);
-                    if (exportedData) {
-                        resolve(file);
-                    } else {
-                        reject(false)
-                    }
-                })
-                promise.then((file) => {
-                    fs.unlink(file.path, (err) => {
-                        if (err) {
-                            throw err
-                        }
-                    })
-                }).catch(err => {
-                    throw err
-                })
-
-                res.json({
-                    status: 201,
-                    success: true,
-                    message: "Leads exported to DB"
-                })
-
-            } else {
-                res.json({
-                    status: 403,
-                    success: false,
-                    message: "UnAthorised"
-                })
-            }
-
-        } else {
-            res.json({
-                status: 403,
-                success: false,
-                message: "Admin not found"
-            })
-        }
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
-
-module.exports.userWiseLeadList = async (req, res) => {
-    try {
-        userEmail = req.user.email
-
-        s1 = dbScript(db_sql['Q4'], { var1: userEmail })
-        let findAdmin = await connection.query(s1)
-
-        if (findAdmin.rows.length > 0) {
-
-            s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s2)
-            if (checkPermission.rows[0].permission_to_view) {
-
-                s3 = dbScript(db_sql['Q57'], { var1: findAdmin.rows[0].company_id })
-                let leadList = await connection.query(s3)
-                if (leadList.rows.length > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "lead list",
-                        data: leadList.rows
-                    })
-                } else {
-                    res.json({
-                        status: 200,
-                        success: false,
-                        message: "Empty Roles list",
-                        data: []
-                    })
-                }
-
-            } else {
-                res.json({
-                    status: 403,
-                    success: false,
-                    message: "UnAthorised"
-                })
-            }
-
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Admin not found"
-            })
-        }
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
-
-//----------------------------------------Targets-----------------------------------------------
-
-module.exports.convertLeadToTarget = async (req, res) => {
-    try {
-        userEmail = req.user.email
-        let { supporters, finishingDate, leadId, targetAmount, description } = req.body
-        let supportersList = JSON.stringify(supporters)
-        s1 = dbScript(db_sql['Q4'], { var1: userEmail })
-        let findAdmin = await connection.query(s1)
-
-        if (findAdmin.rows.length > 0) {
-
-            s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s2)
-            if (checkPermission.rows[0].permission_to_create) {
-
-                s2 = dbScript(db_sql['Q58'], { var1: leadId })
-                let findLead = await connection.query(s2)
-                if (findLead.rowCount > 0) {
-                    id = uuid.v4()
-                    await connection.query('BEGIN')
-                    s3 = dbScript(db_sql['Q59'], { var0: id, var1: leadId, var2: supportersList, var3: finishingDate, var4: targetAmount, var5: description, var6: findAdmin.rows[0].company_id })
-                    let addTarget = await connection.query(s3)
-                    await connection.query('COMMIT')
-                    if (addTarget.rowCount > 0) {
-                        res.json({
-                            status: 201,
-                            success: true,
-                            message: "target created successfully"
-                        })
-                    } else {
-                        await connection.query('ROLLBACK')
-                        res.json({
-                            status: 400,
-                            success: false,
-                            message: "something went wrong"
-                        })
-                    }
-                } else {
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "lead not found"
-                    })
-                }
-            } else {
-                res.json({
-                    status: 403,
-                    success: false,
-                    message: "UnAthorised"
-                })
-            }
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Admin not found"
-            })
-        }
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
-
-module.exports.targetList = async (req, res) => {
-    try {
-        userEmail = req.user.email
-
-        s1 = dbScript(db_sql['Q4'], { var1: userEmail })
-        let findAdmin = await connection.query(s1)
-
-        if (findAdmin.rows.length > 0) {
-
-            s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s2)
-            if (checkPermission.rows[0].permission_to_view) {
-
-                s3 = dbScript(db_sql['Q60'], { var1: findAdmin.rows[0].company_id })
-                let targetList = await connection.query(s3)
-                let targetArr = []
-                for (data of targetList.rows) {
-
-                    s4 = dbScript(db_sql['Q58'], { var1: data.lead_id })
-                    let leadData = await connection.query(s4)
-                    if (leadData.rowCount > 0) {
-                        data.lead_id = leadData.rows[0]
-                    }
-
-                    let supporters = JSON.parse(data.supporters)
-                    let supporterDataArr = []
-                    for (let users of supporters) {
-                        s5 = dbScript(db_sql['Q12'], { var1: users })
-                        let supporterData = await connection.query(s5)
-                        if (supporterData.rowCount > 0) {
-                            supporterDataArr.push(supporterData.rows[0])
-                        }
-                    }
-                    data.supporters = supporterDataArr
-                    targetArr.push(data)
-                }
-                if (targetArr.length > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Target list",
-                        data: targetArr
-                    })
-                } else {
-                    res.json({
-                        status: 200,
-                        success: false,
-                        message: "Empty target list",
-                        data: []
-                    })
-                }
-
-            } else {
-                res.json({
-                    status: 403,
-                    success: false,
-                    message: "UnAthorised"
-                })
-            }
-
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Admin not found"
-            })
-        }
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
+//         } else {
+//             res.json({
+//                 status: 403,
+//                 success: false,
+//                 message: "Admin not found"
+//             })
+//         }
+//     } catch (error) {
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }
 
 //-----------------------------------------Slab-----------------------------------------
+
 
 module.exports.createSlab = async (req, res) => {
     try {
@@ -2827,11 +2153,6 @@ module.exports.dealList = async (req, res) => {
                         let createdBy = await connection.query(s5)
                         data.createdBy = createdBy.rows[0].full_name
 
-                        s6 = dbScript(db_sql['Q12'], { var1: data.supporter })
-                        let supporter = await connection.query(s6)
-                        data.supporterId = (supporter.rows.length > 0) ? supporter.rows[0].id : ''
-                        data.supporter = (supporter.rows.length > 0) ? supporter.rows[0].full_name : ''
-
                         dealArr.push(data)
                     }
                 }
@@ -3129,68 +2450,6 @@ module.exports.deleteDeal = async (req, res) => {
                 message: "Admin not found"
             })
         }
-    } catch (error) {
-        await connection.query('ROLLBACK')
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
-
-module.exports.assignDealSupporter = async (req, res) => {
-    try {
-        let AdminEmail = req.user.email
-        let {
-            userId,
-            dealId
-        } = req.body
-
-        s1 = dbScript(db_sql['Q4'], { var1: AdminEmail })
-        let findAdmin = await connection.query(s1)
-
-        if (findAdmin.rows.length > 0) {
-            s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s2)
-            if (checkPermission.rows[0].permission_to_update) {
-
-                await connection.query('BEGIN')
-                _dt = new Date().toISOString();
-                s3 = dbScript(db_sql['Q54'], { var1: userId, var2: dealId, var3: _dt })
-                var assignsupporter = await connection.query(s3)
-                await connection.query('COMMIT')
-
-                if (assignsupporter.rowCount > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "supporter assigned  successfully"
-                    })
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
-                    })
-                }
-            } else {
-                res.json({
-                    status: 403,
-                    success: false,
-                    message: "UnAthorised"
-                })
-            }
-
-        } else {
-            res.json({
-                status: 403,
-                success: false,
-                message: "Admin not found"
-            })
-        }
-
     } catch (error) {
         await connection.query('ROLLBACK')
         res.json({
@@ -3590,11 +2849,6 @@ module.exports.dealListforSales = async (req, res) => {
                         let createdBy = await connection.query(s5)
                         data.createdBy = createdBy.rows[0].full_name
 
-                        s6 = dbScript(db_sql['Q12'], { var1: data.supporter })
-                        let supporter = await connection.query(s6)
-                        data.supporterId = (supporter.rows.length > 0) ? supporter.rows[0].id : ''
-                        data.supporter = (supporter.rows.length > 0) ? supporter.rows[0].full_name : ''
-
                         dealArr.push(data)
                     }
                 }
@@ -3878,7 +3132,7 @@ module.exports.updateSalesConversion = async (req, res) => {
 
                 if (updateSalesConversion.rowCount > 0 && findSalescommission.rowCount > 0 && updateSalesCloser.rowCount > 0 && updateSalesSupporter.rowCount > 0) {
                     res.json({
-                        status: 201,
+                        status: 200,
                         success: true,
                         message: "Sales conversion updated Successfully"
                     })
