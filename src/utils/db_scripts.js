@@ -71,8 +71,8 @@ const db_sql = {
     "Q60"  : `select id, supporters, lead_id, finishing_date, amount, description, created_at from targets where company_id = '{var1}' and deleted_at is null`,
 
     "Q61"  : `insert into follow_up_notes (id, deal_id, company_id, user_id, notes) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,
-    "Q62"  : `select notes, created_at from follow_up_notes where deal_id = '{var1}' and deleted_at is null`,
-    "Q63"  : `select id,full_name,email_address,phone_number, lead_value,company, description, created_at from leads where company_id ='{var1}' and deleted_at is null and ((created_at BETWEEN '{var2}' AND '{var3}') or (lead_value BETWEEN '{var4}' and '{var5}')) `,
+    "Q62"  : `select id, notes, created_at from follow_up_notes where deal_id = '{var1}' and deleted_at is null`,
+    "Q63"  : `select id,deal_company_id ,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id from deals where company_id ='{var1}' and deleted_at is null and (created_at BETWEEN '{var2}' AND '{var3}') `,
     "Q64"  : `update permissions set user_id = '{var2}' where role_id = '{var1}' and deleted_at is null returning *`,
     "Q65"  : `update roles set module_ids = '{var1}' , updated_at = '{var2}' where id = '{var3}' returning * `,
     "Q66"  : `select permission_to_view, permission_to_create, permission_to_update, permission_to_delete from permissions where role_id = '{var1}' and module_id = '{var2}' and deleted_at is null `,
@@ -111,8 +111,36 @@ const db_sql = {
     "Q97"  : `update sales_closer set deleted_at = '{var1}' where sales_conversion_id = '{var2}' and company_id = '{var3}' and deleted_at is null returning * `,
     "Q98"  : `update sales_conversion set deal_id = '{var1}', deal_commision_id = '{var2}', is_overwrite = '{var3}', updated_at = '{var4}' where id = '{var5}' and company_id = '{var6}' and deleted_at is null returning *`,
     "Q99"  : `update sales_closer set closer_id = '{var1}', closer_percentage = '{var2}', commision_id = '{var3}', updated_at = '{var4}' where sales_conversion_id = '{var5}' and company_id = '{var6}' and deleted_at is null returning *`,
-    "Q100" : `delete from sales_supporter where sales_conversion_id = '{var1}' and company_id = '{var2}' and deleted_at is null returning *`
+    "Q100" : `delete from sales_supporter where sales_conversion_id = '{var1}' and company_id = '{var2}' and deleted_at is null returning *`,
+    "Q101" : `select sc.id as id , sc.deal_id as dealId , d.lead_name as dealName, sc.deal_commision_id, sc.is_overwrite as is_overwrite, c.closer_id as closerId, c.closer_percentage as closerPercentage
+              from sales_conversion as sc inner join sales_closer as c on sc.id = c.sales_conversion_id
+              inner join deals as d on sc.deal_id = d.id
+              where sc.company_id = '{var1}' and replace(d.lead_name, ' ', '') ILIKE '%{var8}%' and sc.deleted_at is null
+              and c.deleted_at is null and (sc.created_at BETWEEN '{var2}' AND '{var3}') 
+              ORDER BY {var6} {var7} LIMIT '{var4}' OFFSET '{var5}'`,
 
+    "Q102" : `select sc.id as id , sc.deal_id as dealId , d.lead_name as dealName, sc.deal_commision_id, sc.is_overwrite as is_overwrite, c.closer_id as closerId, c.closer_percentage as closerPercentage
+    from sales_conversion as sc inner join sales_closer as c on sc.id = c.sales_conversion_id
+    inner join deals as d on sc.deal_id = d.id
+    where sc.company_id = '{var1}' and sc.deleted_at is null
+    and c.deleted_at is null and (sc.created_at BETWEEN '{var2}' AND '{var3}') 
+   LIMIT '{var4}' OFFSET '{var5}'`,
+
+    "Q103" : `select sc.id as id , sc.deal_id as dealId , d.lead_name as dealName, sc.deal_commision_id, sc.is_overwrite as is_overwrite, c.closer_id as closerId, c.closer_percentage as closerPercentage
+    from sales_conversion as sc inner join sales_closer as c on sc.id = c.sales_conversion_id
+    inner join deals as d on sc.deal_id = d.id
+    where sc.company_id = '{var1}' and sc.deleted_at is null
+    and c.deleted_at is null and (sc.created_at BETWEEN '{var2}' AND '{var3}') 
+    ORDER BY {var6} {var7} LIMIT '{var4}' OFFSET '{var5}'`,
+
+    "Q104" : `select sc.id as id , sc.deal_id as dealId , d.lead_name as dealName, sc.deal_commision_id, sc.is_overwrite as is_overwrite, c.closer_id as closerId, c.closer_percentage as closerPercentage
+    from sales_conversion as sc inner join sales_closer as c on sc.id = c.sales_conversion_id
+    inner join deals as d on sc.deal_id = d.id
+    where sc.company_id = '{var1}' and replace(d.lead_name, ' ', '') ILIKE '%{var6}%' and sc.deleted_at is null
+    and c.deleted_at is null and (sc.created_at BETWEEN '{var2}' AND '{var3}') 
+     LIMIT '{var4}' OFFSET '{var5}'`,
+
+    "Q105" : `update follow_up_notes set deleted_at = '{var1}' where id = '{var2}' and deleted_at is null`
  };
 
 
