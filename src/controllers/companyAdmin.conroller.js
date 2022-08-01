@@ -3173,7 +3173,6 @@ module.exports.salesConversionReport = async (req, res) => {
         let userEmail = req.user.email
 
         let { fromDate, toDate, pageNum, limit } = req.query
-        console.log(req.query);
 
         let offSet = ((pageNum - 1) * limit)
 
@@ -3193,7 +3192,7 @@ module.exports.salesConversionReport = async (req, res) => {
 
                         let { sortBy, sortType, searchKeyword } = req.query
 
-                        s4 = dbScript(db_sql['Q101'], { var1: findAdmin.rows[0].company_id, var2: fromDate, var3: toDate, var4: pageNum, var5: offSet, var6: sortBy, var7: sortType, var8: searchKeyword })
+                        s4 = dbScript(db_sql['Q101'], { var1: findAdmin.rows[0].company_id, var2: fromDate, var3: toDate, var4: limit })
                         var salesConversionList = await connection.query(s4)
 
                     } else {
