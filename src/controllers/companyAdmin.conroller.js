@@ -98,7 +98,7 @@ let createAdmin = async (bodyData, cId, res) => {
 module.exports.uploadLogo = async (req, res) => {
     try {
         let file = req.file
-        let path = `http://143.198.102.134:3003/comapnyLogo/${file.originalname}`;
+        let path = `http://143.198.102.134:3003/comapanyLogo/${file.originalname}`;
         res.json({
             status: 201,
             success: true,
