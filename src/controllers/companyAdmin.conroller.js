@@ -3200,7 +3200,7 @@ module.exports.salesConversionReport = async (req, res) => {
                         let { sortBy, sortType, } = req.query
 
                         s5 = dbScript(db_sql['Q103'], { var1: findAdmin.rows[0].company_id, var2: fromDate, var3: toDate, var4: limit, var5: offSet, var6: sortBy, var7: sortType })
-                        var salesConversionList = await connection.query(s4)
+                        var salesConversionList = await connection.query(s5)
                     }
                 } else {
                     if (req.query?.searchKeyword != undefined) {
@@ -3208,18 +3208,19 @@ module.exports.salesConversionReport = async (req, res) => {
                         let { searchKeyword } = req.query
 
                         s6 = dbScript(db_sql['Q104'], { var1: findAdmin.rows[0].company_id, var2: fromDate, var3: toDate, var4: limit, var5: offSet, var6: searchKeyword })
-                        var salesConversionList = await connection.query(s4)
+                        var salesConversionList = await connection.query(s6)
 
                     } else {
 
                         s7 = dbScript(db_sql['Q102'], { var1: findAdmin.rows[0].company_id, var2: fromDate, var3: toDate, var4: limit, var5: offSet })
-                        var salesConversionList = await connection.query(s4)
+                        var salesConversionList = await connection.query(s7)
                     }
                 }
 
                 let conversionList = []
 
                 for (data of salesConversionList.rows) {
+                    console.log(data);
                     let closer = {}
                     let supporters = []
 
