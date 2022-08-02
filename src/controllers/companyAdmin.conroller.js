@@ -3186,7 +3186,7 @@ module.exports.deleteSalesConversion = async (req, res) => {
 }
 
 
-//-------------------------------------------Reports----------------------------------------------
+//-------------------------------------------Reports-------------------------------------------
 
 module.exports.salesConversionReport = async (req, res) => {
     try {
@@ -3339,7 +3339,7 @@ module.exports.revenues = async (req, res) => {
                 let deals = await connection.query(s6)
 
                 if (deals.rowCount > 0) {
-                    
+
                     let expectedRevenue = 0;
                     let totalRevenue = 0;
                     let totalCommission = 0;
