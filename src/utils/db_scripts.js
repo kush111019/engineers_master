@@ -75,7 +75,8 @@ const db_sql = {
     "Q84"  : `update sales_commision set deleted_at = '{var1}' where id = '{var2}'  and deleted_at is null returning *`,
     "Q85"  : `select id,deal_company_id ,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id from deals where company_id = '{var1}' and closed_at is null and deleted_at is null`,
     "Q86"  : `insert into sales_conversion (id, deal_id, deal_commision_id, is_overwrite, company_id ) values ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}') returning *`,
-    "Q87"  : `select sc.id, sc.deal_id, sc.deal_commision_id, sc.is_overwrite, c.closer_id, c.closer_percentage from sales_conversion as sc inner join sales_closer as c on sc.id = c.sales_conversion_id
+    "Q87"  : `select sc.id, sc.deal_id, sc.deal_commision_id, sc.is_overwrite, c.closer_id, c.closer_percentage from sales_conversion as sc 
+              inner join sales_closer as c on sc.id = c.sales_conversion_id
               where sc.company_id = '{var1}' and sc.deleted_at is null and c.deleted_at is null`,
     "Q88"  : `select id,deal_company_id ,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id from deals where id = '{var1}' and deleted_at is null`,
     "Q89"  : `select id, closer_percentage, supporter_percentage from sales_commision where id ='{var1}' and company_id = '{var2}' and deleted_at is null`,
@@ -119,7 +120,7 @@ const db_sql = {
               LIMIT '{var4}' OFFSET '{var5}'`,
 
     "Q105" : `update follow_up_notes set deleted_at = '{var1}' where id = '{var2}' and deleted_at is null`,
-    "Q106" : `SELECT count(*) FROM sales_conversion where company_id = '{var1}' and deleted_at is null`
+
  };
 
 

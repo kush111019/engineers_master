@@ -34,10 +34,10 @@ router.get('/userWiseRoleList',verifyTokenFn, controller.companyAdmin.userWiseRo
 router.put('/deleteRole' , verifyTokenFn, controller.companyAdmin.deleteRole)
 
 //-------------------------------------Slabs-------------------------------------------------
-// router.get('/slabList',verifyTokenFn, controller.companyAdmin.slabList)
-// router.post('/createSlab',verifyTokenFn, controller.companyAdmin.createSlab)
-// router.put('/updateSlab',verifyTokenFn, controller.companyAdmin.updateSlab)
-// router.put('/deleteSlab',verifyTokenFn, controller.companyAdmin.deleteSlab)
+router.get('/slabList',verifyTokenFn, controller.companyAdmin.slabList)
+router.post('/createSlab',verifyTokenFn, controller.companyAdmin.createSlab)
+router.put('/updateSlab',verifyTokenFn, controller.companyAdmin.updateSlab)
+router.put('/deleteSlab',verifyTokenFn, controller.companyAdmin.deleteSlab)
 
 
 // router.post('/uploadLeadFile',verifyTokenFn,uploadLeadFile.single('file'), controller.companyAdmin.uploadLeadFile)
@@ -79,6 +79,6 @@ router.get('/salesConversionReport',verifyTokenFn, controller.companyAdmin.sales
 
 //---------------------------------------DashBoard counts -------------------------------
 
-router.get('/counts',verifyTokenFn, controller.companyAdmin.counts)
+router.get('/revenues',verifyTokenFn, controller.companyAdmin.revenues)
 
 module.exports = router;
