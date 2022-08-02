@@ -102,8 +102,7 @@ const db_sql = {
               from sales_conversion as sc inner join sales_closer as c on sc.id = c.sales_conversion_id
               inner join deals as d on sc.deal_id = d.id
               where sc.company_id = '{var1}' and sc.deleted_at is null
-              and c.deleted_at is null and (sc.created_at BETWEEN '{var2}' AND '{var3}') 
-              LIMIT '{var4}' OFFSET '{var5}'`,
+              and c.deleted_at is null and (sc.created_at BETWEEN '{var2}' AND '{var3}')`,
 
     "Q103" : `select sc.id as id , sc.deal_id as dealId , d.lead_name as dealName, sc.deal_commision_id, sc.is_overwrite as is_overwrite, c.closer_id as closerId, c.closer_percentage as closerPercentage
               from sales_conversion as sc inner join sales_closer as c on sc.id = c.sales_conversion_id
