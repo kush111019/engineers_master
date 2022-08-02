@@ -28,16 +28,16 @@ router.get('/moduleList',verifyTokenFn, controller.companyAdmin.moduleList)
 router.get('/rolesList',verifyTokenFn, controller.companyAdmin.rolesList)
 router.post('/createRole',verifyTokenFn, controller.companyAdmin.createRole)
 router.put('/updateRole' , verifyTokenFn, controller.companyAdmin.updateRole)
-router.post('/assignRoleToUser',verifyTokenFn, controller.companyAdmin.assignRoleToUser)
+//router.post('/assignRoleToUser',verifyTokenFn, controller.companyAdmin.assignRoleToUser)
 router.get('/usersListByRoleId',verifyTokenFn, controller.companyAdmin.usersListByRoleId)
 router.get('/userWiseRoleList',verifyTokenFn, controller.companyAdmin.userWiseRoleList)
 router.put('/deleteRole' , verifyTokenFn, controller.companyAdmin.deleteRole)
 
-//-------------------------------------Slabss-------------------------------------------------
-router.get('/slabList',verifyTokenFn, controller.companyAdmin.slabList)
-router.post('/createSlab',verifyTokenFn, controller.companyAdmin.createSlab)
-router.put('/updateSlab',verifyTokenFn, controller.companyAdmin.updateSlab)
-router.put('/deleteSlab',verifyTokenFn, controller.companyAdmin.deleteSlab)
+//-------------------------------------Slabs-------------------------------------------------
+// router.get('/slabList',verifyTokenFn, controller.companyAdmin.slabList)
+// router.post('/createSlab',verifyTokenFn, controller.companyAdmin.createSlab)
+// router.put('/updateSlab',verifyTokenFn, controller.companyAdmin.updateSlab)
+// router.put('/deleteSlab',verifyTokenFn, controller.companyAdmin.deleteSlab)
 
 
 // router.post('/uploadLeadFile',verifyTokenFn,uploadLeadFile.single('file'), controller.companyAdmin.uploadLeadFile)
@@ -77,7 +77,8 @@ router.put('/deleteSalesConversion',verifyTokenFn, controller.companyAdmin.delet
 //----------------------------------------Reports------------------------------------------
 router.get('/salesConversionReport',verifyTokenFn, controller.companyAdmin.salesConversionReport)
 
+//---------------------------------------DashBoard counts -------------------------------
 
-
+router.get('/counts',verifyTokenFn, controller.companyAdmin.counts)
 
 module.exports = router;
