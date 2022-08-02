@@ -58,7 +58,7 @@ const db_sql = {
     "Q67"  : `insert into deals(id, user_id,deal_company_id,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, company_id) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}') returning *`,
     "Q68"  : `insert into deal_companies(id, deal_company_name, company_id) values('{var1}','{var2}','{var3}') returning *`,
     "Q69"  : `select id, deal_company_name from deal_companies where id = '{var1}' and deleted_at is null`,
-    "Q70"  : `select id,deal_company_id ,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id from deals where company_id = '{var1}' and deleted_at is null`,
+    "Q70"  : `select id,deal_company_id ,lead_name, lead_source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id, created_at from deals where company_id = '{var1}' and deleted_at is null`,
     "Q71"  : `update deals set closed_at = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
     "Q72"  : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where module_name = '{var1}' and deleted_at is null` ,
     "Q73"  : `update deals set lead_name = '{var1}', lead_source = '{var2}', qualification = '{var3}', is_qualified = '{var4}', target_amount = '{var5}', product_match = '{var6}', target_closing_date = '{var7}', updated_at = '{var8}' where id = '{var9}' and deleted_at is null returning *`,
@@ -118,7 +118,8 @@ const db_sql = {
               and c.deleted_at is null and (sc.created_at BETWEEN '{var2}' AND '{var3}') 
               LIMIT '{var4}' OFFSET '{var5}'`,
 
-    "Q105" : `update follow_up_notes set deleted_at = '{var1}' where id = '{var2}' and deleted_at is null`
+    "Q105" : `update follow_up_notes set deleted_at = '{var1}' where id = '{var2}' and deleted_at is null`,
+    "Q106" : `SELECT count(*) FROM sales_conversion where company_id = '{var1}' and deleted_at is null`
  };
 
 

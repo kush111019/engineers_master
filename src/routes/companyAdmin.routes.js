@@ -77,7 +77,8 @@ router.put('/deleteSalesConversion',verifyTokenFn, controller.companyAdmin.delet
 //----------------------------------------Reports------------------------------------------
 router.get('/salesConversionReport',verifyTokenFn, controller.companyAdmin.salesConversionReport)
 
+//---------------------------------------DashBoard counts -------------------------------
 
-
+router.get('/counts',verifyTokenFn, controller.companyAdmin.counts)
 
 module.exports = router;
