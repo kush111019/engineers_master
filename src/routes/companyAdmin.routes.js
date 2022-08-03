@@ -8,8 +8,6 @@ router.post('/upload',verifyTokenFn, uploadAvatar.single('image'),controller.com
 router.get('/showProfile',verifyTokenFn, controller.companyAdmin.showProfile)
 router.put('/updateProfile',verifyTokenFn, controller.companyAdmin.updateUserProfile)
 router.put('/changePassword',verifyTokenFn, controller.companyAdmin.changePassword)
-router.post('/forgotPassword',controller.companyAdmin.forgotPassword)
-router.post('/resetPassword',controller.companyAdmin.resetPassword)
 
 //-------------------------------------Users-------------------------------------------------
 router.post('/addUser' , verifyTokenFn, controller.companyAdmin.addUser)
@@ -43,22 +41,22 @@ router.put('/deleteSlab',verifyTokenFn, controller.companyAdmin.deleteSlab)
 // router.post('/uploadLeadFile',verifyTokenFn,uploadLeadFile.single('file'), controller.companyAdmin.uploadLeadFile)
 
 
-//--------------------------------------Targets--------------------------------------------
+//--------------------------------------followUpNotes--------------------------------------------
 
 router.post('/addfollowUpNotes' , verifyTokenFn, controller.companyAdmin.addfollowUpNotes)
 router.get('/notesList',verifyTokenFn, controller.companyAdmin.notesList)
-router.put('/deleteNotes',verifyTokenFn, controller.companyAdmin.deleteNotes)
+router.put('/deleteNotes',verifyTokenFn, controller.companyAdmin.deleteNote)
 
 
 //------------------------------------Deal Management---------------------------------------
 
-router.post('/createDeal',verifyTokenFn, controller.companyAdmin.createDeal)
-router.post('/closeDeal',verifyTokenFn, controller.companyAdmin.closeDeal)
-router.get('/dealList',verifyTokenFn, controller.companyAdmin.dealList)
-router.put('/editDeal',verifyTokenFn, controller.companyAdmin.editDeal)
-router.get('/dealLogsList',verifyTokenFn, controller.companyAdmin.dealLogsList)
-router.get('/dealCompanyList',verifyTokenFn, controller.companyAdmin.dealCompanyList)
-router.put('/deleteDeal',verifyTokenFn, controller.companyAdmin.deleteDeal)
+router.post('/createCustomer',verifyTokenFn, controller.companyAdmin.createCustomer)
+router.post('/closeCustomer',verifyTokenFn, controller.companyAdmin.closeCustomer)
+router.get('/customerList',verifyTokenFn, controller.companyAdmin.customerList)
+router.put('/editCustomer',verifyTokenFn, controller.companyAdmin.editCustomer)
+router.get('/customerLogsList',verifyTokenFn, controller.companyAdmin.customerLogsList)
+router.get('/customerCompanyList',verifyTokenFn, controller.companyAdmin.customerCompanyList)
+router.put('/deleteCustomer',verifyTokenFn, controller.companyAdmin.deleteCustomer)
 
 //------------------------------------Commisions-----------------------------------------
 router.post('/commissionSplit',verifyTokenFn, controller.companyAdmin.commissionSplit)
@@ -69,13 +67,13 @@ router.put('/deletecommissionSplit',verifyTokenFn, controller.companyAdmin.delet
 //----------------------------------------sales conversion --------------------------------
 router.get('/dealListforSales',verifyTokenFn, controller.companyAdmin.dealListforSales)
 
-router.post('/createSalesConversion',verifyTokenFn, controller.companyAdmin.createSalesConversion)
-router.get('/salesConversionList',verifyTokenFn, controller.companyAdmin.salesConversionList)
-router.put('/updateSalesConversion',verifyTokenFn, controller.companyAdmin.updateSalesConversion)
-router.put('/deleteSalesConversion',verifyTokenFn, controller.companyAdmin.deleteSalesConversion)
+router.post('/createSalesCommission',verifyTokenFn, controller.companyAdmin.createSalesCommission)
+router.get('/salesCommissionList',verifyTokenFn, controller.companyAdmin.salesCommissionList)
+router.put('/updateSalesCommission',verifyTokenFn, controller.companyAdmin.updateSalesCommission)
+router.put('/deleteSalesCommission',verifyTokenFn, controller.companyAdmin.deleteSalesCommission)
 
 //----------------------------------------Reports------------------------------------------
-router.get('/salesConversionReport',verifyTokenFn, controller.companyAdmin.salesConversionReport)
+router.get('/salesCommissionReport',verifyTokenFn, controller.companyAdmin.salesCommissionReport)
 
 //---------------------------------------DashBoard counts -------------------------------
 
