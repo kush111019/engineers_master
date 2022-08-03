@@ -1641,24 +1641,14 @@ module.exports.createSlab = async (req, res) => {
                 s4 = dbScript(db_sql['Q31'], { var1: findAdmin.rows[0].company_id })
                 let slabList = await connection.query(s4)
 
-                if(slabList.rowCount > 0 ){
+                for (data of slabs) {
+                    id = uuid.v4()
+                    s5 = dbScript(db_sql['Q28'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: findAdmin.rows[0].company_id })
+                    var createSlab = await connection.query(s5)
 
-                    for (data of slabs) {
-                        id = uuid.v4()
-                        s5 = dbScript(db_sql['Q28'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: findAdmin.rows[0].company_id })
-                        var createSlab = await connection.query(s5)
-                        
-                        await connection.query('COMMIT')
-                    }
-
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "something went wrong"
-                    })
+                    await connection.query('COMMIT')
                 }
+
                 if (createSlab.rowCount > 0) {
                     res.json({
                         status: 201,
