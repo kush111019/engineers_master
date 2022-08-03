@@ -1295,7 +1295,17 @@ module.exports.usersList = async (req, res) => {
                     for (data of findUsers.rows) {
                         s5 = dbScript(db_sql['Q19'], { var1: data.role_id })
                         let findRole = await connection.query(s5);
-                        data.roleName = findRole.rows[0].role_name
+                        if(findRole.rowCount > 0) {
+
+                            data.roleName = findRole.rows[0].role_name
+
+                        }else{
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: "Role Name not found",
+                            })
+                        }
                     }
                     res.json({
                         status: 200,
@@ -2669,21 +2679,21 @@ module.exports.commissionSplitList = async (req, res) => {
             if (checkPermission.rows[0].permission_to_view) {
 
                 s4 = dbScript(db_sql['Q83'], { var1: findAdmin.rows[0].company_id })
-                let slabList = await connection.query(s4)
+                let commissionList = await connection.query(s4)
 
 
-                if (slabList.rows.length > 0) {
+                if (commissionList.rows.length > 0) {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "commission list",
-                        data: slabList.rows
+                        message: "Commission Split list",
+                        data: commissionList.rows
                     })
                 } else {
                     res.json({
                         status: 200,
                         success: false,
-                        message: "Empty commission list",
+                        message: "Empty Commission Split list",
                         data: []
                     })
                 }
@@ -2777,7 +2787,7 @@ module.exports.deletecommissionSplit = async (req, res) => {
 
 //----------------------------------Sales conversion-------------------------------------
 
-module.exports.dealListforSales = async (req, res) => {
+module.exports.customerListforSales = async (req, res) => {
 
     try {
 
