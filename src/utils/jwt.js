@@ -19,10 +19,9 @@ const jwt = {
         await jsonwebtoken.verify(token, 'KEy', function(err, decoded)
         {                     
             if (err) {                    
-                return res.json({
-                    status:400,
+                return res.status(401).json({
                     success: false,
-                    message: "Token not found",
+                    message: "Session timed out. Please sign in again",
                 });
             }   else {                          
                 req.user = {
