@@ -1635,11 +1635,28 @@ module.exports.createSlab = async (req, res) => {
             s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_create) {
-                for (data of slabs) {
-                    id = uuid.v4()
-                    s4 = dbScript(db_sql['Q28'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: findAdmin.rows[0].company_id })
-                    var createSlab = await connection.query(s4)
-                    await connection.query('COMMIT')
+                await connection.query('BEGIN')
+
+                s4 = dbScript(db_sql['Q31'], { var1: findAdmin.rows[0].company_id })
+                let slabList = await connection.query(s4)
+
+                if(slabList.rowCount > 0 ){
+
+                    for (data of slabs) {
+                        id = uuid.v4()
+                        s5 = dbScript(db_sql['Q28'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: findAdmin.rows[0].company_id })
+                        var createSlab = await connection.query(s5)
+                        
+                        await connection.query('COMMIT')
+                    }
+
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "something went wrong"
+                    })
                 }
                 if (createSlab.rowCount > 0) {
                     res.json({
@@ -1696,6 +1713,7 @@ module.exports.slabList = async (req, res) => {
             s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
+
                 s4 = dbScript(db_sql['Q25'], { var1: findAdmin.rows[0].company_id })
                 let slabList = await connection.query(s4)
                 if (slabList.rows.length > 0) {
@@ -1738,77 +1756,77 @@ module.exports.slabList = async (req, res) => {
     }
 }
 
-module.exports.updateSlab = async (req, res) => {
-    try {
-        let userEmail = req.user.email
-        let {
-            slabs
-        } = req.body
+// module.exports.updateSlab = async (req, res) => {
+//     try {
+//         let userEmail = req.user.email
+//         let {
+//             slabs
+//         } = req.body
 
-        s1 = dbScript(db_sql['Q4'], { var1: userEmail })
-        let findAdmin = await connection.query(s1)
+//         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+//         let findAdmin = await connection.query(s1)
 
-        let moduleName = 'Slab Configuration'
-        if (findAdmin.rows.length > 0) {
-            s2 = dbScript(db_sql['Q72'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
-            let checkPermission = await connection.query(s3)
-            if (checkPermission.rows[0].permission_to_update) {
-                await connection.query('BEGIN')
-                for (data of slabs) {
-                    _dt = new Date().toISOString();
-                    s4 = dbScript(db_sql['Q31'], { var1: data.minAmount, var2: data.maxAmount, var3: data.percentage, var4: data.isMax, var5: data.slabId, var6: _dt })
-                    var updateSlab = await connection.query(s4)
-                    await connection.query('COMMIT')
-                }
+//         let moduleName = 'Slab Configuration'
+//         if (findAdmin.rows.length > 0) {
+//             s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+//             let findModule = await connection.query(s2)
+//             s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+//             let checkPermission = await connection.query(s3)
+//             if (checkPermission.rows[0].permission_to_update) {
+//                 await connection.query('BEGIN')
+//                 for (data of slabs) {
+//                     _dt = new Date().toISOString();
+//                     s4 = dbScript(db_sql['Q31'], { var1: data.minAmount, var2: data.maxAmount, var3: data.percentage, var4: data.isMax, var5: data.slabId, var6: _dt })
+//                     var updateSlab = await connection.query(s4)
+//                     await connection.query('COMMIT')
+//                 }
 
-                await connection.query('COMMIT')
-                if (updateSlab.rowCount > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Slab details updated Successfully"
-                    })
+//                 await connection.query('COMMIT')
+//                 if (updateSlab.rowCount > 0) {
+//                     res.json({
+//                         status: 200,
+//                         success: true,
+//                         message: "Slab details updated Successfully"
+//                     })
 
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "something went wrong"
-                    })
-                }
-            } else {
-                res.json({
-                    status: 403,
-                    success: false,
-                    message: "UnAthorised"
-                })
-            }
+//                 } else {
+//                     await connection.query('ROLLBACK')
+//                     res.json({
+//                         status: 400,
+//                         success: false,
+//                         message: "something went wrong"
+//                     })
+//                 }
+//             } else {
+//                 res.json({
+//                     status: 403,
+//                     success: false,
+//                     message: "UnAthorised"
+//                 })
+//             }
 
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Admin not found"
-            })
-        }
+//         } else {
+//             res.json({
+//                 status: 400,
+//                 success: false,
+//                 message: "Admin not found"
+//             })
+//         }
 
-    } catch (error) {
-        await connection.query('ROLLBACK')
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
+//     } catch (error) {
+//         await connection.query('ROLLBACK')
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }
 
 module.exports.deleteSlab = async (req, res) => {
     try {
         let userEmail = req.user.email
-        let { slab } = req.body
+        let { slabId } = req.body
         s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
 
@@ -1820,18 +1838,18 @@ module.exports.deleteSlab = async (req, res) => {
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_delete) {
                 await connection.query('BEGIN')
-                _dt = new Date().toISOString();
-                for (data of slab) {
 
-                    s4 = dbScript(db_sql['Q47'], { var1: _dt, var2: data.slabId })
-                    var deleteSlab = await connection.query(s4)
-                    await connection.query('COMMIT')
-                }
+                _dt = new Date().toISOString();
+                s4 = dbScript(db_sql['Q47'], { var1: _dt, var2: slabId })
+                var deleteSlab = await connection.query(s4)
+
+                await connection.query('COMMIT')
+
                 if (deleteSlab.rowCount > 0) {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "slab deleted Successfully"
+                        message: "Slab deleted Successfully"
                     })
                 } else {
                     await connection.query('ROLLBACK')

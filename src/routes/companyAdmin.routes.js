@@ -34,7 +34,7 @@ router.put('/deleteRole' , verifyTokenFn, controller.companyAdmin.deleteRole)
 //-------------------------------------Slabs-------------------------------------------------
 router.get('/slabList',verifyTokenFn, controller.companyAdmin.slabList)
 router.post('/createSlab',verifyTokenFn, controller.companyAdmin.createSlab)
-router.put('/updateSlab',verifyTokenFn, controller.companyAdmin.updateSlab)
+//router.put('/updateSlab',verifyTokenFn, controller.companyAdmin.updateSlab)
 router.put('/deleteSlab',verifyTokenFn, controller.companyAdmin.deleteSlab)
 
 
