@@ -69,7 +69,7 @@ module.exports.resetPasswordMail = async (email , link) => {
     const smtpPassword = process.env.SMTP_PASSWORD;
 
     // The subject line of the email
-    var subject = "forgot password";
+    var subject = "Reset password";
     // The email body for recipients with non-HTML email clients.
     var body_text = `Please use the below link to reset your password`;
     

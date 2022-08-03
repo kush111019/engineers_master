@@ -13,6 +13,8 @@ router.post('/auth/upload',uploadLogo.single('image'),controller.companyAdmin.up
 router.post('/auth/signUp' , controller.companyAdmin.signUp)
 router.post('/auth/login' , controller.companyAdmin.login)
 router.post('/auth/setPassword',controller.companyAdmin.setPasswordForLogin)
+router.post('/auth/forgotPassword',controller.companyAdmin.forgotPassword)
+router.post('/auth/resetPassword',controller.companyAdmin.resetPassword)
 
 
 module.exports = router;
