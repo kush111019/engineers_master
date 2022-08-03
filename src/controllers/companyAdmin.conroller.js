@@ -6,6 +6,7 @@ const jsonwebtoken = require("jsonwebtoken");
 const uuid = require("node-uuid");
 const fs = require("fs");
 const fastcsv = require("fast-csv");
+const {mysql_real_escape_string} = require('../utils/helper')
 
 let verifyTokenFn = async (req) => {
     let { token } = req.body
@@ -129,7 +130,7 @@ module.exports.signUp = async (req, res) => {
         if (checkCompany.rows.length == 0) {
             let cId = uuid.v4()
             await connection.query('BEGIN')
-            s3 = dbScript(db_sql['Q2'], { var1: cId, var2: companyName, var3: companyLogo, var4: companyAddress })
+            s3 = dbScript(db_sql['Q2'], { var1: cId, var2: mysql_real_escape_string(companyName), var3: companyLogo, var4: mysql_real_escape_string(companyAddress) })
             let saveCompanyDetails = await connection.query(s3)
             if (saveCompanyDetails.rowCount > 0) {
                 await createAdmin(req.body, saveCompanyDetails.rows[0].id, res)
@@ -1101,7 +1102,7 @@ module.exports.addUser = async (req, res) => {
                 let checkPermission = await connection.query(s3)
                 if (checkPermission.rows[0].permission_to_create) {
                     await connection.query('BEGIN')
-                    s4 = dbScript(db_sql['Q76'], { var1: id, var2: name, var3: findAdmin.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: address })
+                    s4 = dbScript(db_sql['Q76'], { var1: id, var2: name, var3: findAdmin.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address) })
                     let addUser = await connection.query(s4)
                     _dt = new Date().toISOString();
                     s5 = dbScript(db_sql['Q64'], { var1: roleId, var2: addUser.rows[0].id, var3: _dt })
@@ -1371,7 +1372,7 @@ module.exports.updateUser = async (req, res) => {
 
                 _dt = new Date().toISOString();
                 await connection.query('BEGIN')
-                s4 = dbScript(db_sql['Q39'], { var1: emailAddress, var2: name, var3: mobileNumber, var4: address, var5: roleId, var6: userId, var7: _dt })
+                s4 = dbScript(db_sql['Q39'], { var1: emailAddress, var2: name, var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt })
                 let updateUser = await connection.query(s4)
                 await connection.query('COMMIT')
                 if (updateUser.rowCount > 0) {
@@ -1918,7 +1919,7 @@ module.exports.createCustomer = async (req, res) => {
 
                 if (findCustomerCom.rowCount == 0) {
                     let comId = uuid.v4()
-                    s5 = dbScript(db_sql['Q68'], { var1: comId, var2: customerName, var3: findAdmin.rows[0].company_id })
+                    s5 = dbScript(db_sql['Q68'], { var1: comId, var2: mysql_real_escape_string(customerName), var3: findAdmin.rows[0].company_id })
                     let addCustomerCom = await connection.query(s5)
                     if (addCustomerCom.rowCount > 0) {
                         compId = addCustomerCom.rows[0].id
@@ -1929,7 +1930,7 @@ module.exports.createCustomer = async (req, res) => {
                 }
 
                 let id = uuid.v4()
-                s6 = dbScript(db_sql['Q67'], { var1: id, var2: findAdmin.rows[0].id, var3: compId, var4: customerName, var5: source, var6: qualification, var7: is_qualified, var8: targetAmount, var9: productMatch, var10: targetClosingDate, var11: findAdmin.rows[0].company_id })
+                s6 = dbScript(db_sql['Q67'], { var1: id, var2: findAdmin.rows[0].id, var3: compId, var4: customerName, var5: source, var6: mysql_real_escape_string(qualification), var7: is_qualified, var8: targetAmount, var9: mysql_real_escape_string(productMatch), var10: targetClosingDate, var11: findAdmin.rows[0].company_id })
                 let createCustomer = await connection.query(s6)
 
                 await connection.query('COMMIT')
@@ -2135,7 +2136,7 @@ module.exports.editCustomer = async (req, res) => {
                 await connection.query('BEGIN')
 
                 _dt = new Date().toISOString();
-                s4 = dbScript(db_sql['Q73'], { var1: customerName, var2: source, var3: qualification, var4: is_qualified, var5: targetAmount, var6: productMatch, var7: targetClosingDate, var8: _dt, var9: customerId })
+                s4 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: source, var3: mysql_real_escape_string(qualification), var4: is_qualified, var5: targetAmount, var6: mysql_real_escape_string(productMatch), var7: targetClosingDate, var8: _dt, var9: customerId })
 
                 let updateCustomer = await connection.query(s4)
                 if (updateCustomer.rowCount > 0) {
@@ -2388,9 +2389,11 @@ module.exports.addfollowUpNotes = async (req, res) => {
             s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_update) {
+
                 let id = uuid.v4()
-                s2 = dbScript(db_sql['Q61'], { var1: id, var2: customerId, var3: findAdmin.rows[0].company_id, var4: findAdmin.rows[0].id, var5: note })
-                let addNote = await connection.query(s2)
+                s4 = dbScript(db_sql['Q61'], { var1: id, var2: customerId, var3: findAdmin.rows[0].company_id, var4: findAdmin.rows[0].id, var5: mysql_real_escape_string(note) })
+                let addNote = await connection.query(s4)
+
                 if (addNote.rowCount > 0) {
                     res.json({
                         status: 201,
