@@ -2975,13 +2975,12 @@ module.exports.salesCommissionList = async (req, res) => {
                 let commissionList = []
 
                 for (data of salesCommissionList.rows) {
-                    console.log(data,"data");
                     let closer = {}
                     let supporters = []
 
                     s5 = dbScript(db_sql['Q88'], { var1: data.customer_id })
                     let customerName = await connection.query(s5)
-                    console.log(customerName.rows);
+
                     s6 = dbScript(db_sql['Q12'], { var1: data.closer_id })
                     let closerName = await connection.query(s6)
 
@@ -3013,6 +3012,8 @@ module.exports.salesCommissionList = async (req, res) => {
                     closer.closerName = closerName.rows[0].full_name
                     closer.closerPercentage = data.closer_percentage
                     closer.supporters = supporters
+                    closer.createdAt = data.created_at
+                    closer.closedAt = customerName.rows[0].closed_at
 
                     commissionList.push(closer)
                 }
@@ -3183,7 +3184,7 @@ module.exports.deleteSalesCommission = async (req, res) => {
 
                 await connection.query('COMMIT')
 
-                if (deleteSalesConversion.rowCount > 0 && deleteSalesSupporter.rowCount > 0, deleteSalesCloser.rowCount > 0) {
+                if (deleteSalesConversion.rowCount > 0 && deleteSalesSupporter.rowCount >= 0, deleteSalesCloser.rowCount > 0) {
                     res.json({
                         status: 200,
                         success: true,

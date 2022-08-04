@@ -75,7 +75,7 @@ const db_sql = {
     "Q84"  : `update commission_split set deleted_at = '{var1}' where id = '{var2}'  and deleted_at is null returning *`,
     "Q85"  : `select id,customer_company_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id from customers where company_id = '{var1}' and closed_at is null and deleted_at is null`,
     "Q86"  : `insert into sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id ) values ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}') returning *`,
-    "Q87"  : `select sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite, c.closer_id, c.closer_percentage from sales_commission as sc 
+    "Q87"  : `select sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite, sc.created_at, c.closer_id, c.closer_percentage from sales_commission as sc 
               inner join sales_closer as c on sc.id = c.sales_commission_id
               where sc.company_id = '{var1}' and sc.deleted_at is null and c.deleted_at is null`,
     "Q88"  : `select id,customer_company_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id from customers where id = '{var1}' and deleted_at is null`,
