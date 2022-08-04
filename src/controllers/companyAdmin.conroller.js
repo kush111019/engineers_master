@@ -415,7 +415,7 @@ module.exports.updateUserProfile = async (req, res) => {
         if (findUser.rows.length > 0) {
             await connection.query('BEGIN')
             _dt = new Date().toISOString();
-            s2 = dbScript(db_sql['Q17'], { var1: name, var2: avatar, var3: emailAddress, var4: phoneNumber, var5: mobileNumber, var6: address, var7: _dt, var8: userMail })
+            s2 = dbScript(db_sql['Q17'], { var1: name, var2: avatar, var3: emailAddress, var4: phoneNumber, var5: mobileNumber, var6: mysql_real_escape_string(address), var7: _dt, var8: userMail })
             let updateUser = await connection.query(s2)
             await connection.query('COMMIT')
             if (updateUser.rowCount > 0) {
@@ -1920,7 +1920,7 @@ module.exports.createCustomer = async (req, res) => {
                 }
 
                 let id = uuid.v4()
-                s6 = dbScript(db_sql['Q67'], { var1: id, var2: findAdmin.rows[0].id, var3: compId, var4: customerName, var5: source, var6: mysql_real_escape_string(qualification), var7: is_qualified, var8: targetAmount, var9: mysql_real_escape_string(productMatch), var10: targetClosingDate, var11: findAdmin.rows[0].company_id })
+                s6 = dbScript(db_sql['Q67'], { var1: id, var2: findAdmin.rows[0].id, var3: compId, var4: customerName, var5: mysql_real_escape_string(source), var6: mysql_real_escape_string(qualification), var7: is_qualified, var8: targetAmount, var9: mysql_real_escape_string(productMatch), var10: targetClosingDate, var11: findAdmin.rows[0].company_id })
                 let createCustomer = await connection.query(s6)
 
                 await connection.query('COMMIT')
@@ -2126,14 +2126,14 @@ module.exports.editCustomer = async (req, res) => {
                 await connection.query('BEGIN')
 
                 _dt = new Date().toISOString();
-                s4 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: source, var3: mysql_real_escape_string(qualification), var4: is_qualified, var5: targetAmount, var6: mysql_real_escape_string(productMatch), var7: targetClosingDate, var8: _dt, var9: customerId })
-
+                s4 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: mysql_real_escape_string(qualification), var4: is_qualified, var5: targetAmount, var6: mysql_real_escape_string(productMatch), var7: targetClosingDate, var8: _dt, var9: customerId })
                 let updateCustomer = await connection.query(s4)
+
                 if (updateCustomer.rowCount > 0) {
 
                     let id = uuid.v4()
 
-                    s5 = dbScript(db_sql['Q74'], { var1: id, var2: updateCustomer.rows[0].id, var3: updateCustomer.rows[0].customer_name, var4: updateCustomer.rows[0].source, var5: updateCustomer.rows[0].qualification, var6: updateCustomer.rows[0].is_qualified, var7: updateCustomer.rows[0].target_amount, var8: updateCustomer.rows[0].product_match, var9: updateCustomer.rows[0].target_closing_date })
+                    s5 = dbScript(db_sql['Q74'], { var1: id, var2: updateCustomer.rows[0].id, var3: mysql_real_escape_string(updateCustomer.rows[0].customer_name), var4: mysql_real_escape_string(updateCustomer.rows[0].source), var5: mysql_real_escape_string(updateCustomer.rows[0].qualification), var6: updateCustomer.rows[0].is_qualified, var7: updateCustomer.rows[0].target_amount, var8: mysql_real_escape_string(updateCustomer.rows[0].product_match), var9: updateCustomer.rows[0].target_closing_date })
 
                     var createLog = await connection.query(s5)
                     await connection.query('COMMIT')
@@ -2903,18 +2903,19 @@ module.exports.createSalesCommission = async (req, res) => {
                 let closerId = uuid.v4()
                 s7 = dbScript(db_sql['Q93'], { var1: closerId, var2: customerCloserId, var3: closer_percentage, var4: customerCommissionSplitId, var5: createSalesConversion.rows[0].id, var6: findAdmin.rows[0].company_id })
                 let addSalesCloser = await connection.query(s7)
+                
+                if(supporters.length > 0){
 
-                for (supporterData of supporters) {
-
-                    let supporterId = uuid.v4()
-                    s8 = dbScript(db_sql['Q91'], { var1: supporterId, var2: customerCommissionSplitId, var3: supporterData.id, var4: supporterData.percentage, var5: createSalesConversion.rows[0].id, var6: findAdmin.rows[0].company_id })
-                    addSalesSupporter = await connection.query(s8)
-
+                    for (supporterData of supporters) {
+                        let supporterId = uuid.v4()
+                        s8 = dbScript(db_sql['Q91'], { var1: supporterId, var2: customerCommissionSplitId, var3: supporterData.id, var4: supporterData.percentage, var5: createSalesConversion.rows[0].id, var6: findAdmin.rows[0].company_id })
+                        addSalesSupporter = await connection.query(s8)
+                    }
                 }
 
                 await connection.query('COMMIT')
 
-                if (createSalesConversion.rowCount > 0 && findSalescommission.rowCount > 0 && addSalesCloser.rowCount > 0 && addSalesSupporter.rowCount > 0) {
+                if (createSalesConversion.rowCount > 0 && findSalescommission.rowCount > 0 && addSalesCloser.rowCount > 0 ) {
                     res.json({
                         status: 201,
                         success: true,
@@ -2986,15 +2987,21 @@ module.exports.salesCommissionList = async (req, res) => {
 
                     s7 = dbScript(db_sql['Q94'], { var1: data.id })
                     let supporter = await connection.query(s7)
-
-                    for (supporterData of supporter.rows) {
-                        s8 = dbScript(db_sql['Q12'], { var1: supporterData.supporter_id })
-                        let supporterName = await connection.query(s8)
-                        supporters.push({
-                            id: supporterData.supporter_id,
-                            name: supporterName.rows[0].full_name,
-                            percentage: supporterData.supporter_percentage
-                        })
+                    
+                    if(supporter.rowCount > 0) { 
+                        if(supporter.rows[0].supporter_id != ""){
+                            for (supporterData of supporter.rows) {
+                                
+                                s8 = dbScript(db_sql['Q12'], { var1: supporterData.supporter_id })
+                                let supporterName = await connection.query(s8)
+                                supporters.push({
+                                    id: supporterData.supporter_id,
+                                    name: supporterName.rows[0].full_name,
+                                    percentage: supporterData.supporter_percentage
+                                })
+                                
+                            }
+                        }
                     }
 
                     closer.id = data.id
