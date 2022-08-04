@@ -2975,7 +2975,6 @@ module.exports.salesCommissionList = async (req, res) => {
                 let commissionList = []
 
                 for (data of salesCommissionList.rows) {
-                    console.log(data,"data");
                     let closer = {}
                     let supporters = []
 
@@ -3013,6 +3012,7 @@ module.exports.salesCommissionList = async (req, res) => {
                     closer.closerName = closerName.rows[0].full_name
                     closer.closerPercentage = data.closer_percentage
                     closer.supporters = supporters
+                    closer.createdAt = data.created_at
                     closer.closedAt = customerName.rows[0].closed_at
 
                     commissionList.push(closer)
