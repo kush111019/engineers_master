@@ -27,6 +27,7 @@ const db_sql = {
     "Q23"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id, created_at from users where company_id = '{var1}' and deleted_at is null`,
     "Q24"  : `select id, role_name ,  reporter from roles where reporter = '{var1}' and deleted_at is null`,
     "Q25"  : `select id, min_amount, max_amount, percentage, is_max from slabs where company_id ='{var1}' and deleted_at is null`,
+    "Q26"  : `update users set role_id = null, updated_at = '{var2}' where role_id = '{var1}' and deleted_at is null returning *`,
     "Q28"  : `insert into slabs(id,min_amount, max_amount, percentage, is_max, company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') returning * `,
     "Q31"  : `delete from slabs where company_id = '{var1}' and deleted_at is null returning *`,
     "Q32"  : `insert into permissions(id, role_id, module_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') returning *`,
