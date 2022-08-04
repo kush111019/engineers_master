@@ -63,7 +63,7 @@ const db_sql = {
     "Q72"  : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where module_name = '{var1}' and deleted_at is null` ,
     "Q73"  : `update customers set customer_name = '{var1}', source = '{var2}', qualification = '{var3}', is_qualified = '{var4}', target_amount = '{var5}', product_match = '{var6}', target_closing_date = '{var7}', updated_at = '{var8}' where id = '{var9}' and deleted_at is null returning *`,
     "Q74"  : `insert into customer_logs(id,customer_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') returning *`,
-    "Q75"  : `select id, customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date from customer_logs where customer_id = '{var1}' and deleted_at is null`,
+    "Q75"  : `select id, customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date,created_at from customer_logs where customer_id = '{var1}' and deleted_at is null`,
     "Q76"  : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,encrypted_password,role_id,address,is_verified) 
               values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}',false) RETURNING *`, 
     "Q77"  : `update roles set deleted_at = '{var2}' where reporter = '{var1}' and deleted_at is null returning *`,  
