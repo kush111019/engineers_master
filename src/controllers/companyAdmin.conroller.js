@@ -830,7 +830,7 @@ module.exports.updateRole = async (req, res) => {
 
                 for (let moduleData of modulePermissions) {
 
-                    lets5 = dbScript(db_sql['Q43'], { var1: moduleData.permissionToCreate, var2: moduleData.permissionToView, var3: moduleData.permissionToUpdate, var4: moduleData.permissionToDelete, var5: roleId, var6: _dt, var7: moduleData.moduleId })
+                    let s5 = dbScript(db_sql['Q43'], { var1: moduleData.permissionToCreate, var2: moduleData.permissionToView, var3: moduleData.permissionToUpdate, var4: moduleData.permissionToDelete, var5: roleId, var6: _dt, var7: moduleData.moduleId })
                     updatePermission = await connection.query(s5)
                 }
 
@@ -940,7 +940,7 @@ module.exports.deleteRole = async (req, res) => {
                         res.json({
                             status: 200,
                             success: true,
-                            message: "role deleted successfully"
+                            message: "Role deleted successfully"
                         })
                     } else {
                         await connection.query('ROLLBACK')
@@ -953,9 +953,9 @@ module.exports.deleteRole = async (req, res) => {
 
                 } else {
                     res.json({
-                        status: 200,
-                        success: true,
-                        message: "Role already deleted "
+                        status: 400,
+                        success: false,
+                        message: "something went wrong "
                     })
                 }
 
