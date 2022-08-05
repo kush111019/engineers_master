@@ -79,4 +79,10 @@ router.get('/salesCommissionReport',verifyTokenFn, controller.companyAdmin.sales
 
 router.get('/revenues',verifyTokenFn, controller.companyAdmin.revenues)
 
+//-------------------------------------Revenue Forecast----------------------------------
+
+router.post('/createRevenueForecast',verifyTokenFn, controller.companyAdmin.createRevenueForecast)
+router.put('/updateRevenueForecast',verifyTokenFn, controller.companyAdmin.updateRevenueForecast)
+router.get('/revenueForecastList',verifyTokenFn, controller.companyAdmin.revenueForecastList)
+
 module.exports = router;
