@@ -59,12 +59,12 @@ const db_sql = {
     "Q67"  : `insert into customers(id, user_id,customer_company_id,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, company_id) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}') returning *`,
     "Q68"  : `insert into customer_companies(id, customer_company_name, company_id) values('{var1}','{var2}','{var3}') returning *`,
     "Q69"  : `select id, customer_company_name from customer_companies where id = '{var1}' and deleted_at is null`,
-    "Q70"  : `select id,customer_company_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id, created_at from customers where company_id = '{var1}' and deleted_at is null`,
+    "Q70"  : `select id,customer_company_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id, created_at from customers where company_id = '{var1}' and deleted_at is null ORDER BY created_at asc`,
     "Q71"  : `update customers set closed_at = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
     "Q72"  : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where module_name = '{var1}' and deleted_at is null` ,
     "Q73"  : `update customers set customer_name = '{var1}', source = '{var2}', qualification = '{var3}', is_qualified = '{var4}', target_amount = '{var5}', product_match = '{var6}', target_closing_date = '{var7}', updated_at = '{var8}' where id = '{var9}' and deleted_at is null returning *`,
     "Q74"  : `insert into customer_logs(id,customer_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') returning *`,
-    "Q75"  : `select id, customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date,created_at from customer_logs where customer_id = '{var1}' and deleted_at is null`,
+    "Q75"  : `select id, customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date,created_at from customer_logs where customer_id = '{var1}' and deleted_at is null ORDER BY created_at desc`,
     "Q76"  : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,encrypted_password,role_id,address,is_verified) 
               values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}',false) RETURNING *`, 
     "Q77"  : `update roles set deleted_at = '{var2}' where reporter = '{var1}' and deleted_at is null returning *`,  
@@ -120,6 +120,12 @@ const db_sql = {
               LIMIT '{var4}' OFFSET '{var5}'`,
 
     "Q105" : `update follow_up_notes set deleted_at = '{var1}' where id = '{var2}' and deleted_at is null`,
+    "Q106" : `insert into revenue_forecast(id, timeline, revenue, growth_window, growth_percentage, start_date, end_date, user_id, company_id)
+              values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}') returning * `,
+    "Q107" : `select id, timeline, revenue, growth_window, growth_percentage, start_date, end_date, created_at 
+              from revenue_forecast where company_id = '{var1}' and deleted_at is null`,   
+    "Q108" : `update revenue_forecast set timeline = '{var2}', revenue = '{var3}', growth_window = '{var4}', growth_percentage = '{var5}',
+              start_date = '{var6}', end_date = '{var7}', updated_at = '{var8}' where id = '{var1}' and deleted_at is null returning *` ,      
 
  };
 
