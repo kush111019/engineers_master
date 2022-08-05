@@ -2023,7 +2023,7 @@ module.exports.closeCustomer = async (req, res) => {
             let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_update) {
-
+                
                 let _dt = new Date().toISOString();
                 let s4 = dbScript(db_sql['Q71'], { var1: _dt, var2: _dt, var3: customerId })
                 let closeCustomer = await connection.query(s4)
@@ -2858,9 +2858,10 @@ module.exports.customerListforSales = async (req, res) => {
             let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
-                let customerArr = []
+                
                 let s4 = dbScript(db_sql['Q85'], { var1: findAdmin.rows[0].company_id })
                 let customerList = await connection.query(s4)
+                let customerArr = []
 
                 if (customerList.rowCount > 0) {
                     for (data of customerList.rows) {
@@ -2871,16 +2872,22 @@ module.exports.customerListforSales = async (req, res) => {
                         }
                         customerArr.push(data)
                     }
-                }
-
-                if (customerArr.length > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: 'Customers List',
-                        data: customerArr
-                    })
-                } else {
+                    if (customerArr.length > 0) {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: 'Customers List',
+                            data: customerArr
+                        })
+                    }else {
+                        res.json({
+                            status: 200,
+                            success: false,
+                            message: 'Empty Customers List',
+                            data: []
+                        })
+                    }
+                }else {
                     res.json({
                         status: 200,
                         success: false,
@@ -3731,7 +3738,7 @@ module.exports.updateRevenueForecast = async (req, res) => {
 module.exports.actualVsForecast = async (req, res) => {
     try {
         let { id } = req.query
-        
+
         let userEmail = req.user.email
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -3785,7 +3792,7 @@ module.exports.actualVsForecast = async (req, res) => {
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: "Empty Actual vs Forecast data",
                         data: actualVsForecastObj
                     })
