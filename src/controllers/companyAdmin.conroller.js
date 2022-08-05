@@ -1657,8 +1657,9 @@ module.exports.createSlab = async (req, res) => {
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_create) {
                 await connection.query('BEGIN')
+                let _dt = new Date().toISOString();
 
-                let s4 = dbScript(db_sql['Q31'], { var1: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q31'], { var1: findAdmin.rows[0].company_id , var2: _dt})
                 let slabList = await connection.query(s4)
 
                 for (data of slabs) {
@@ -3140,8 +3141,7 @@ module.exports.updateSalesCommission = async (req, res) => {
 
                 let s7 = dbScript(db_sql['Q99'], { var1: customerCloserId, var2: closer_percentage, var3: customerCommissionSplitId, var4: _dt, var5: salesCommissionId, var6: findAdmin.rows[0].company_id })
                 let updateSalesCloser = await connection.query(s7)
-
-                let s8 = dbScript(db_sql['Q100'], { var1: salesCommissionId, var2: findAdmin.rows[0].company_id })
+                let s8 = dbScript(db_sql['Q100'], { var1: salesCommissionId, var2: findAdmin.rows[0].company_id, var3 :  _dt})
                 let updateSupporter = await connection.query(s8)
 
 
