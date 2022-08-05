@@ -3601,7 +3601,6 @@ module.exports.createRevenueForecast = async (req, res) => {
 module.exports.revenueForecastList = async (req, res) => {
     try {
         let userEmail = req.user.email
-        console.log(userEmail);
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
 
@@ -3727,4 +3726,90 @@ module.exports.updateRevenueForecast = async (req, res) => {
         })
     }
 
+}
+
+module.exports.actualVsForecast = async (req, res) => {
+    try {
+        let { id } = req.query
+        
+        let userEmail = req.user.email
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        let moduleName = 'Revenue Management'
+        if (findAdmin.rows.length > 0) {
+
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_view) {
+
+                let actualVsForecastObj = {}
+
+                let s4 = dbScript(db_sql['Q109'], { var1: id })
+                let forecastRevenue = await connection.query(s4)
+
+                if (forecastRevenue.rowCount > 0) {
+
+                    actualVsForecastObj.forecastRevenue = forecastRevenue.rows[0].revenue
+                    actualVsForecastObj.forecastStartDate = forecastRevenue.rows[0].start_date
+                    actualVsForecastObj.forecastEndDate = forecastRevenue.rows[0].end_date
+
+                    let s5 = dbScript(db_sql['Q110'], { var1: forecastRevenue.rows[0].start_date, var2: forecastRevenue.rows[0].end_date })
+                    let actualRevenue = await connection.query(s5)
+
+                    let actualRevenueArr = []
+                    if (actualRevenue.rowCount > 0) {
+
+                        for (data of actualRevenue.rows) {
+                            actualRevenueArr.push({
+                                actualRevenue: data.target_amount,
+                                closedAt: data.closed_at
+                            })
+                        }
+
+                        actualVsForecastObj.actualRevenue = actualRevenueArr
+
+                    }else{
+
+                        actualVsForecastObj.actualRevenue = actualRevenueArr
+                    }
+
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Actual vs Forecast data",
+                        data: actualVsForecastObj
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Empty Actual vs Forecast data",
+                        data: actualVsForecastObj
+                    })
+                }
+
+            } else {
+                res.json({
+                    status: 403,
+                    success: false,
+                    message: "UnAthorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
 }
