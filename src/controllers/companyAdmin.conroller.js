@@ -899,15 +899,13 @@ module.exports.deleteRole = async (req, res) => {
 
                 await connection.query('BEGIN')
 
-                let s4 = dbScript(db_sql['Q24'], { var1: roleId })
-                let roleData = await connection.query(s4)
-                if (roleData.rowCount > 0) {
+                let updateRole;
+                let updatePermission;
 
-                    let updateRole;
-                    let updatePermission;
-
-                    if (status == "child") {
-
+                if (status == "child") {
+                    let s4 = dbScript(db_sql['Q24'], { var1: roleId })
+                    let roleData = await connection.query(s4)
+                    if (roleData.rowCount > 0) {
 
                         for (data of roleData.rows) {
 
@@ -921,41 +919,34 @@ module.exports.deleteRole = async (req, res) => {
                             // updateUser = await connection.query(s6)
                         }
 
-                    } else {
-                        let s7 = dbScript(db_sql['Q44'], { var1: roleId, var2: _dt })
-                        updateRole = await connection.query(s7)
-
-                        // s8 = dbScript(db_sql['Q26'], { var1: roleId, var2: _dt })
-                        // updateUser = await connection.query(s8)
-
-                        let s9 = dbScript(db_sql['Q77'], { var1: roleId, var2: _dt })
-                        updateChildRole = await connection.query(s9)
-
-                        let s10 = dbScript(db_sql['Q45'], { var1: roleId, var2: _dt })
-                        updatePermission = await connection.query(s10)
                     }
-                    await connection.query('COMMIT')
-
-                    if (updateRole.rowCount > 0 && updatePermission.rowCount > 0) {
-                        res.json({
-                            status: 200,
-                            success: true,
-                            message: "Role deleted successfully"
-                        })
-                    } else {
-                        await connection.query('ROLLBACK')
-                        res.json({
-                            status: 400,
-                            success: false,
-                            message: "something went wrong"
-                        })
-                    }
-
                 } else {
+                    let s7 = dbScript(db_sql['Q44'], { var1: roleId, var2: _dt })
+                    updateRole = await connection.query(s7)
+
+                    // s8 = dbScript(db_sql['Q26'], { var1: roleId, var2: _dt })
+                    // updateUser = await connection.query(s8)
+
+                    let s9 = dbScript(db_sql['Q77'], { var1: roleId, var2: _dt })
+                    updateChildRole = await connection.query(s9)
+
+                    let s10 = dbScript(db_sql['Q45'], { var1: roleId, var2: _dt })
+                    updatePermission = await connection.query(s10)
+                }
+                await connection.query('COMMIT')
+
+                if (updateRole.rowCount > 0 && updatePermission.rowCount > 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Role deleted successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong "
+                        message: "something went wrong"
                     })
                 }
 
