@@ -84,5 +84,6 @@ router.get('/revenues',verifyTokenFn, controller.companyAdmin.revenues)
 router.post('/createRevenueForecast',verifyTokenFn, controller.companyAdmin.createRevenueForecast)
 router.put('/updateRevenueForecast',verifyTokenFn, controller.companyAdmin.updateRevenueForecast)
 router.get('/revenueForecastList',verifyTokenFn, controller.companyAdmin.revenueForecastList)
+router.get('/actualVsForecast',verifyTokenFn, controller.companyAdmin.actualVsForecast)
 
 module.exports = router;
