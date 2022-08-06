@@ -29,7 +29,7 @@ const db_sql = {
     "Q25"  : `select id, min_amount, max_amount, percentage, is_max from slabs where company_id ='{var1}' and deleted_at is null`,
     "Q26"  : `update users set role_id = null, updated_at = '{var2}' where role_id = '{var1}' and deleted_at is null returning *`,
     "Q28"  : `insert into slabs(id,min_amount, max_amount, percentage, is_max, company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') returning * `,
-    "Q31"  : `delete from slabs where company_id = '{var1}' and deleted_at is null returning *`,
+    "Q31"  : `update slabs set deleted_at = '{var2}' where company_id = '{var1}' and deleted_at is null returning *`,
     "Q32"  : `insert into permissions(id, role_id, module_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') returning *`,
     "Q33"  : `insert into permissions(id, role_id, module_id,user_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view ) values('{var1}','{var2}','{var3}','{var4}',true, true,true,true) returning *`,
     "Q34"  : `select id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where role_id = '{var1}' and deleted_at is null `,
@@ -59,12 +59,12 @@ const db_sql = {
     "Q67"  : `insert into customers(id, user_id,customer_company_id,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, company_id) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}') returning *`,
     "Q68"  : `insert into customer_companies(id, customer_company_name, company_id) values('{var1}','{var2}','{var3}') returning *`,
     "Q69"  : `select id, customer_company_name from customer_companies where id = '{var1}' and deleted_at is null`,
-    "Q70"  : `select id,customer_company_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id, created_at from customers where company_id = '{var1}' and deleted_at is null`,
+    "Q70"  : `select id,customer_company_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id, created_at from customers where company_id = '{var1}' and deleted_at is null ORDER BY created_at asc`,
     "Q71"  : `update customers set closed_at = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
     "Q72"  : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where module_name = '{var1}' and deleted_at is null` ,
     "Q73"  : `update customers set customer_name = '{var1}', source = '{var2}', qualification = '{var3}', is_qualified = '{var4}', target_amount = '{var5}', product_match = '{var6}', target_closing_date = '{var7}', updated_at = '{var8}' where id = '{var9}' and deleted_at is null returning *`,
     "Q74"  : `insert into customer_logs(id,customer_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') returning *`,
-    "Q75"  : `select id, customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date,created_at from customer_logs where customer_id = '{var1}' and deleted_at is null`,
+    "Q75"  : `select id, customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date,created_at from customer_logs where customer_id = '{var1}' and deleted_at is null ORDER BY created_at desc`,
     "Q76"  : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,encrypted_password,role_id,address,is_verified) 
               values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}',false) RETURNING *`, 
     "Q77"  : `update roles set deleted_at = '{var2}' where reporter = '{var1}' and deleted_at is null returning *`,  
@@ -74,7 +74,7 @@ const db_sql = {
     "Q82"  : `update commission_split set closer_percentage = '{var1}', supporter_percentage = '{var2}' , updated_at = '{var4}'  where  id = '{var3}' and deleted_at is null returning *`,
     "Q83"  : `select id, closer_percentage, supporter_percentage from commission_split where company_id ='{var1}' and deleted_at is null`,
     "Q84"  : `update commission_split set deleted_at = '{var1}' where id = '{var2}'  and deleted_at is null returning *`,
-    "Q85"  : `select id,customer_company_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id from customers where company_id = '{var1}' and closed_at is null and deleted_at is null`,
+    "Q85"  : `select id,customer_company_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id from customers where company_id = '{var1}' and closed_at is null and is_qualified = true and deleted_at is null`,
     "Q86"  : `insert into sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id ) values ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}') returning *`,
     "Q87"  : `select sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite, sc.created_at, c.closer_id, c.closer_percentage from sales_commission as sc 
               inner join sales_closer as c on sc.id = c.sales_commission_id
@@ -91,7 +91,7 @@ const db_sql = {
     "Q97"  : `update sales_closer set deleted_at = '{var1}' where sales_commission_id = '{var2}' and company_id = '{var3}' and deleted_at is null returning * `,
     "Q98"  : `update sales_commission set customer_id = '{var1}', customer_commission_split_id = '{var2}', is_overwrite = '{var3}', updated_at = '{var4}' where id = '{var5}' and company_id = '{var6}' and deleted_at is null returning *`,
     "Q99"  : `update sales_closer set closer_id = '{var1}', closer_percentage = '{var2}', commission_split_id = '{var3}', updated_at = '{var4}' where sales_commission_id = '{var5}' and company_id = '{var6}' and deleted_at is null returning *`,
-    "Q100" : `delete from sales_supporter where sales_commission_id = '{var1}' and company_id = '{var2}' and deleted_at is null returning *`,
+    "Q100" : `update sales_supporter set deleted_at = '{var3}' where sales_commission_id = '{var1}' and company_id = '{var2}' and deleted_at is null returning *`,
     "Q101" : `select sc.id as id , sc.customer_id as customerId , d.customer_name as customerName, sc.customer_commission_split_id, sc.is_overwrite as is_overwrite, c.closer_id as closerId, c.closer_percentage as closerPercentage
               from sales_commission as sc inner join sales_closer as c on sc.id = c.sales_commission_id
               inner join customers as d on sc.customer_id = d.id
@@ -120,7 +120,14 @@ const db_sql = {
               LIMIT '{var4}' OFFSET '{var5}'`,
 
     "Q105" : `update follow_up_notes set deleted_at = '{var1}' where id = '{var2}' and deleted_at is null`,
-
+    "Q106" : `insert into revenue_forecast(id, timeline, revenue, growth_window, growth_percentage, start_date, end_date, user_id, company_id)
+              values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}') returning * `,
+    "Q107" : `select id, timeline, revenue, growth_window, growth_percentage, start_date, end_date, created_at 
+              from revenue_forecast where company_id = '{var1}' and deleted_at is null`,   
+    "Q108" : `update revenue_forecast set timeline = '{var2}', revenue = '{var3}', growth_window = '{var4}', growth_percentage = '{var5}',
+              start_date = '{var6}', end_date = '{var7}', updated_at = '{var8}' where id = '{var1}' and deleted_at is null returning *` ,   
+    "Q109" : `select revenue, start_date, end_date from revenue_forecast where id = '{var1}' and deleted_at is null  ` ,            
+    "Q110" : `select target_amount, closed_at from customers where closed_at is not null  and deleted_at is null and (closed_at BETWEEN '{var1}' AND '{var2}')`,
  };
 
 
