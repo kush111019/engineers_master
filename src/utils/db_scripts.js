@@ -56,10 +56,10 @@ const db_sql = {
     "Q64"  : `update permissions set user_id = '{var2}' where role_id = '{var1}' and deleted_at is null returning *`,
     "Q65"  : `update roles set module_ids = '{var1}' , updated_at = '{var2}' where id = '{var3}' returning * `,
     "Q66"  : `select permission_to_view, permission_to_create, permission_to_update, permission_to_delete from permissions where role_id = '{var1}' and module_id = '{var2}' and deleted_at is null `,
-    "Q67"  : `insert into customers(id, user_id,customer_company_id,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, company_id) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}') returning *`,
+    "Q67"  : `insert into customers(id, user_id,customer_company_id,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, company_id, business_id, revenue_id) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}', '{var13}') returning *`,
     "Q68"  : `insert into customer_companies(id, customer_company_name, company_id) values('{var1}','{var2}','{var3}') returning *`,
     "Q69"  : `select id, customer_company_name from customer_companies where id = '{var1}' and deleted_at is null`,
-    "Q70"  : `select id,customer_company_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id, created_at from customers where company_id = '{var1}' and deleted_at is null ORDER BY created_at asc`,
+    "Q70"  : `select id,customer_company_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id,business_id,revenue_id, created_at from customers where company_id = '{var1}' and deleted_at is null ORDER BY created_at asc`,
     "Q71"  : `update customers set closed_at = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
     "Q72"  : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where module_name = '{var1}' and deleted_at is null` ,
     "Q73"  : `update customers set customer_name = '{var1}', source = '{var2}', qualification = '{var3}', is_qualified = '{var4}', target_amount = '{var5}', product_match = '{var6}', target_closing_date = '{var7}', updated_at = '{var8}' where id = '{var9}' and deleted_at is null returning *`,
@@ -128,8 +128,8 @@ const db_sql = {
               start_date = '{var6}', end_date = '{var7}', updated_at = '{var8}' where id = '{var1}' and deleted_at is null returning *` ,   
     "Q109" : `select revenue, start_date, end_date from revenue_forecast where id = '{var1}' and deleted_at is null  ` ,            
     "Q110" : `select target_amount, closed_at from customers where closed_at is not null  and deleted_at is null and (closed_at BETWEEN '{var1}' AND '{var2}')`,
-    "Q111" : `insert into business_contact(id, full_name, email_address, phone_number, customer_company_id, customer_id) values('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') returning *`,
-    "Q112" : `insert into revenue_contact(id, full_name, email_address, phone_number, customer_company_id, customer_id) values('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') returning *`,
+    "Q111" : `insert into business_contact(id, full_name, email_address, phone_number, customer_company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,
+    "Q112" : `insert into revenue_contact(id, full_name, email_address, phone_number, customer_company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,
     "Q113" : `update business_contact set full_name = '{var2}', email_address = '{var3}', phone_number = '{var4}', updated_at = '{var5}' where id = '{var1}' and deleted_at is null returning *`,
     "Q114" : `update revenue_contact set full_name = '{var2}', email_address = '{var3}', phone_number = '{var4}', updated_at = '{var5}' where id = '{var1}' and deleted_at is null returning *`,
     "Q115" : `select id, full_name as business_contact_name, email_address as business_email, phone_number as business_phone_number
@@ -137,9 +137,10 @@ const db_sql = {
     "Q116" : `select id, full_name as revenue_contact_name, email_address as revenue_email, phone_number as revenue_phone_number
               from revenue_contact where customer_company_id = '{var1}' and deleted_at is null`,
     "Q117" : `select id, full_name as business_contact_name, email_address as business_email, phone_number as business_phone_number
-              from business_contact where customer_id = '{var1}' and deleted_at is null`,  
+              from business_contact where id = '{var1}' and deleted_at is null`,  
     "Q118" : `select id, full_name as revenue_contact_name, email_address as revenue_email, phone_number as revenue_phone_number
-              from revenue_contact where customer_id = '{var1}' and deleted_at is null`        
+              from revenue_contact where id = '{var1}' and deleted_at is null`,
+        
 
  };
 
