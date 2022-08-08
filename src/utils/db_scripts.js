@@ -126,7 +126,7 @@ const db_sql = {
               from revenue_forecast where company_id = '{var1}' and deleted_at is null`,   
     "Q108" : `update revenue_forecast set timeline = '{var2}', revenue = '{var3}', growth_window = '{var4}', growth_percentage = '{var5}',
               start_date = '{var6}', end_date = '{var7}', updated_at = '{var8}' where id = '{var1}' and deleted_at is null returning *` ,   
-    "Q109" : `select revenue, start_date, end_date from revenue_forecast where id = '{var1}' and deleted_at is null  ` ,            
+    "Q109" : `select timeline, revenue, growth_window, growth_percentage, start_date, end_date, created_at from revenue_forecast where id = '{var1}' and deleted_at is null  ` ,            
     "Q110" : `select target_amount, closed_at from customers where closed_at is not null  and deleted_at is null and (closed_at BETWEEN '{var1}' AND '{var2}')`,
     "Q111" : `insert into business_contact(id, full_name, email_address, phone_number, customer_company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,
     "Q112" : `insert into revenue_contact(id, full_name, email_address, phone_number, customer_company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,

@@ -2136,6 +2136,7 @@ module.exports.customerList = async (req, res) => {
                             data.businessEmail = businessDetails.rows[0].business_email
                             data.businessPhoneNumber = businessDetails.rows[0].business_phone_number 
                         }else{
+                            data.businessId = ""
                             data.businessContactName = ""
                             data.businessEmail = ""
                             data.businessPhoneNumber = ""
@@ -2151,6 +2152,7 @@ module.exports.customerList = async (req, res) => {
                             data.revenuePhoneNumber = revenueDetails.rows[0].revenue_phone_number 
                         }
                         else{
+                            data.revenueId = ""
                             data.revenueContactName = ""
                             data.revenueEmail = ""
                             data.revenuePhoneNumber = ""
@@ -3920,50 +3922,133 @@ module.exports.actualVsForecast = async (req, res) => {
             let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
-
                 let actualVsForecastObj = {}
 
                 let s4 = dbScript(db_sql['Q109'], { var1: id })
                 let forecastRevenue = await connection.query(s4)
-
                 if (forecastRevenue.rowCount > 0) {
-
-                    actualVsForecastObj.forecastRevenue = forecastRevenue.rows[0].revenue
-                    actualVsForecastObj.forecastStartDate = forecastRevenue.rows[0].start_date
-                    actualVsForecastObj.forecastEndDate = forecastRevenue.rows[0].end_date
-
-                    let s5 = dbScript(db_sql['Q110'], { var1: forecastRevenue.rows[0].start_date, var2: forecastRevenue.rows[0].end_date })
-                    let actualRevenue = await connection.query(s5)
-
-                    let actualRevenueArr = []
-                    if (actualRevenue.rowCount > 0) {
-
-                        for (data of actualRevenue.rows) {
-                            actualRevenueArr.push({
-                                actualRevenue: data.target_amount,
-                                closedAt: data.closed_at
+                    let revenue = forecastRevenue.rows[0].revenue
+                    let growthWindow = forecastRevenue.rows[0].growth_window
+                    let growthPercentage = forecastRevenue.rows[0].growth_percentage
+                    let createDate = forecastRevenue.rows[0].created_at
+                    let timeline = forecastRevenue.rows[0].timeline
+                    let revenueData = [];
+                    let date ;
+                    let count = 0;
+                    switch (timeline) {
+                        case 'Monthly':
+                            revenueData.push({
+                                revenue : Number(revenue),
+                                growthPercentage : growthPercentage,
+                                growthWindow : growthWindow,
+                                createDate: createDate
+                            }) 
+                            date = createDate
+                            for (i = 1; i <= 11; i++){
+                                if( growthWindow != count){
+                                    let newDate = new Date(date)
+                                    date = newDate.setMonth(newDate.getMonth() + 1);
+                                    revenueData.push({
+                                        revenue : Number(revenue),
+                                        growthPercentage : growthPercentage,
+                                        growthWindow : growthWindow,
+                                        createDate : new Date(date)
+                                    }) 
+                                    count++;  
+                                }else{
+                                    count = 0
+                                    let newDate = new Date(date)
+                                    date = newDate.setMonth(newDate.getMonth() + 1);
+                                    revenue = (Number(revenue) + Number(revenue)*(Number(growthPercentage)/100))
+                                    
+                                    revenueData.push({
+                                        revenue : Number(revenue.toFixed(2)),
+                                        growthPercentage : growthPercentage,
+                                        growthWindow : growthWindow,
+                                        createDate :new Date(date)
+                                    })   
+                                }
+                            }
+                            break;
+                        case 'Quarterly': 
+                                revenueData.push({
+                                    revenue : Number(revenue),
+                                    growthPercentage : growthPercentage,
+                                    growthWindow : growthWindow,
+                                    createDate: createDate
+                                }) 
+                                date = createDate
+                                for (i = 1; i <= 3; i++){
+                                    if( growthWindow != count){
+                                        let newDate = new Date(date)
+                                        date = newDate.setMonth(newDate.getMonth() + 4);
+                                        revenueData.push({
+                                            revenue : Number(revenue),
+                                            growthPercentage : growthPercentage,
+                                            growthWindow : growthWindow,
+                                            createDate : new Date(date)
+                                        }) 
+                                        count++;  
+                                    }else{
+                                        count = 0
+                                        let newDate = new Date(date)
+                                        date = newDate.setMonth(newDate.getMonth() + 4);
+                                        revenue = (Number(revenue) + Number(revenue)*(Number(growthPercentage)/100))
+                                        revenueData.push({
+                                            revenue : Number(revenue.toFixed(2)),
+                                            growthPercentage : growthPercentage,
+                                            growthWindow : growthWindow,
+                                            createDate :new Date(date)
+                                        })  
+                                    }
+                                }
+                            break;
+                        case 'Annual':
+                            revenueData.push({
+                                revenue : Number(revenue),
+                                growthPercentage : growthPercentage,
+                                growthWindow : growthWindow,
+                                createDate: createDate
                             })
-                        }
-
-                        actualVsForecastObj.actualRevenue = actualRevenueArr
-
-                    }else{
-
-                        actualVsForecastObj.actualRevenue = actualRevenueArr
+                            break;
+                        
                     }
+                    // actualVsForecastObj.forecastRevenue = forecastRevenue.rows[0].revenue
+                    // actualVsForecastObj.forecastStartDate = forecastRevenue.rows[0].start_date
+                    // actualVsForecastObj.forecastEndDate = forecastRevenue.rows[0].end_date
+
+                    // let s5 = dbScript(db_sql['Q110'], { var1: forecastRevenue.rows[0].start_date, var2: forecastRevenue.rows[0].end_date })
+                    // let actualRevenue = await connection.query(s5)
+
+                    // let actualRevenueArr = []
+                    // if (actualRevenue.rowCount > 0) {
+
+                    //     for (data of actualRevenue.rows) {
+                    //         actualRevenueArr.push({
+                    //             actualRevenue: data.target_amount,
+                    //             closedAt: data.closed_at
+                    //         })
+                    //     }
+
+                    //     actualVsForecastObj.actualRevenue = actualRevenueArr
+
+                    // }else{
+
+                    //     actualVsForecastObj.actualRevenue = actualRevenueArr
+                    // }
 
                     res.json({
                         status: 200,
                         success: true,
                         message: "Actual vs Forecast data",
-                        data: actualVsForecastObj
+                        data: revenueData
                     })
                 } else {
                     res.json({
                         status: 200,
                         success: false,
                         message: "Empty Actual vs Forecast data",
-                        data: actualVsForecastObj
+                        data:revenueData
                     })
                 }
 
