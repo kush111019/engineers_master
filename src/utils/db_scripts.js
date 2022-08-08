@@ -128,6 +128,19 @@ const db_sql = {
               start_date = '{var6}', end_date = '{var7}', updated_at = '{var8}' where id = '{var1}' and deleted_at is null returning *` ,   
     "Q109" : `select revenue, start_date, end_date from revenue_forecast where id = '{var1}' and deleted_at is null  ` ,            
     "Q110" : `select target_amount, closed_at from customers where closed_at is not null  and deleted_at is null and (closed_at BETWEEN '{var1}' AND '{var2}')`,
+    "Q111" : `insert into business_contact(id, full_name, email_address, phone_number, customer_company_id, customer_id) values('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') returning *`,
+    "Q112" : `insert into revenue_contact(id, full_name, email_address, phone_number, customer_company_id, customer_id) values('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') returning *`,
+    "Q113" : `update business_contact set full_name = '{var2}', email_address = '{var3}', phone_number = '{var4}', updated_at = '{var5}' where id = '{var1}' and deleted_at is null returning *`,
+    "Q114" : `update revenue_contact set full_name = '{var2}', email_address = '{var3}', phone_number = '{var4}', updated_at = '{var5}' where id = '{var1}' and deleted_at is null returning *`,
+    "Q115" : `select id, full_name as business_contact_name, email_address as business_email, phone_number as business_phone_number
+              from business_contact where customer_company_id = '{var1}' and deleted_at is null`,
+    "Q116" : `select id, full_name as revenue_contact_name, email_address as revenue_email, phone_number as revenue_phone_number
+              from revenue_contact where customer_company_id = '{var1}' and deleted_at is null`,
+    "Q117" : `select id, full_name as business_contact_name, email_address as business_email, phone_number as business_phone_number
+              from business_contact where customer_id = '{var1}' and deleted_at is null`,  
+    "Q118" : `select id, full_name as revenue_contact_name, email_address as revenue_email, phone_number as revenue_phone_number
+              from revenue_contact where customer_id = '{var1}' and deleted_at is null`        
+
  };
 
 

@@ -56,6 +56,7 @@ router.get('/customerList',verifyTokenFn, controller.companyAdmin.customerList)
 router.put('/editCustomer',verifyTokenFn, controller.companyAdmin.editCustomer)
 router.get('/customerLogsList',verifyTokenFn, controller.companyAdmin.customerLogsList)
 router.get('/customerCompanyList',verifyTokenFn, controller.companyAdmin.customerCompanyList)
+router.get('/customerContactDetails',verifyTokenFn, controller.companyAdmin.customerContactDetails)
 router.put('/deleteCustomer',verifyTokenFn, controller.companyAdmin.deleteCustomer)
 
 //------------------------------------Commisions-----------------------------------------

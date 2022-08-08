@@ -5,7 +5,30 @@
 -- Dumped from database version 14.2
 -- Dumped by pg_dump version 14.2
 
--- Started on 2022-07-25 15:02:14
+-- Started on 2022-08-08 10:21:28
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 3438 (class 1262 OID 123133)
+-- Name: hirise_sales1; Type: DATABASE; Schema: -; Owner: postgres
+--
+
+CREATE DATABASE hirise_sales1 WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'English_United States.1252';
+
+
+ALTER DATABASE hirise_sales1 OWNER TO postgres;
+
+\connect hirise_sales1
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -23,21 +46,22 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- TOC entry 215 (class 1259 OID 123194)
--- Name: assigned_quotations; Type: TABLE; Schema: public; Owner: postgres
+-- TOC entry 220 (class 1259 OID 229571)
+-- Name: commission_split; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.assigned_quotations (
+CREATE TABLE public.commission_split (
     id character varying NOT NULL,
-    quotation_id character varying,
-    user_id character varying,
+    closer_percentage integer,
+    supporter_percentage integer,
+    company_id character varying,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
 );
 
 
-ALTER TABLE public.assigned_quotations OWNER TO postgres;
+ALTER TABLE public.commission_split OWNER TO postgres;
 
 --
 -- TOC entry 209 (class 1259 OID 123134)
@@ -58,30 +82,31 @@ CREATE TABLE public.companies (
 ALTER TABLE public.companies OWNER TO postgres;
 
 --
--- TOC entry 223 (class 1259 OID 221400)
--- Name: deal_companies; Type: TABLE; Schema: public; Owner: postgres
+-- TOC entry 218 (class 1259 OID 221400)
+-- Name: customer_companies; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.deal_companies (
+CREATE TABLE public.customer_companies (
     id character varying NOT NULL,
-    company_name character varying,
+    customer_company_name character varying,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    company_id character varying
 );
 
 
-ALTER TABLE public.deal_companies OWNER TO postgres;
+ALTER TABLE public.customer_companies OWNER TO postgres;
 
 --
--- TOC entry 224 (class 1259 OID 221408)
--- Name: deal_logs; Type: TABLE; Schema: public; Owner: postgres
+-- TOC entry 219 (class 1259 OID 221408)
+-- Name: customer_logs; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.deal_logs (
+CREATE TABLE public.customer_logs (
     id character varying NOT NULL,
-    lead_name character varying,
-    lead_source character varying,
+    customer_name character varying,
+    source character varying,
     qualification character varying,
     is_qualified boolean,
     target_amount character varying,
@@ -90,23 +115,24 @@ CREATE TABLE public.deal_logs (
     closed_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    customer_id character varying
 );
 
 
-ALTER TABLE public.deal_logs OWNER TO postgres;
+ALTER TABLE public.customer_logs OWNER TO postgres;
 
 --
--- TOC entry 222 (class 1259 OID 221391)
--- Name: deals; Type: TABLE; Schema: public; Owner: postgres
+-- TOC entry 217 (class 1259 OID 221391)
+-- Name: customers; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.deals (
+CREATE TABLE public.customers (
     id character varying NOT NULL,
     user_id character varying,
-    deal_company_id character varying,
-    lead_name character varying,
-    lead_source character varying,
+    customer_company_id character varying,
+    customer_name character varying,
+    source character varying,
     qualification character varying,
     is_qualified boolean,
     target_amount character varying,
@@ -120,16 +146,16 @@ CREATE TABLE public.deals (
 );
 
 
-ALTER TABLE public.deals OWNER TO postgres;
+ALTER TABLE public.customers OWNER TO postgres;
 
 --
--- TOC entry 221 (class 1259 OID 196860)
+-- TOC entry 216 (class 1259 OID 196860)
 -- Name: follow_up_notes; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.follow_up_notes (
     id character varying NOT NULL,
-    target_id character varying,
+    customer_id character varying,
     company_id character varying,
     user_id character varying,
     notes character varying,
@@ -140,38 +166,6 @@ CREATE TABLE public.follow_up_notes (
 
 
 ALTER TABLE public.follow_up_notes OWNER TO postgres;
-
---
--- TOC entry 219 (class 1259 OID 139479)
--- Name: leads; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.leads (
-    id character varying NOT NULL,
-    user_id character varying,
-    company_id character varying,
-    assigned_to character varying,
-    full_name character varying,
-    designation character varying,
-    email_address character varying,
-    website character varying,
-    phone_number character varying,
-    lead_value character varying,
-    company character varying,
-    description character varying,
-    address character varying,
-    city_name character varying,
-    state_name character varying,
-    country_name character varying,
-    zip_code character varying,
-    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
-    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    supporters character varying[]
-);
-
-
-ALTER TABLE public.leads OWNER TO postgres;
 
 --
 -- TOC entry 211 (class 1259 OID 123154)
@@ -196,7 +190,7 @@ CREATE TABLE public.modules (
 ALTER TABLE public.modules OWNER TO postgres;
 
 --
--- TOC entry 218 (class 1259 OID 131267)
+-- TOC entry 215 (class 1259 OID 131267)
 -- Name: permissions; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -204,7 +198,6 @@ CREATE TABLE public.permissions (
     id character varying NOT NULL,
     role_id character varying,
     module_id character varying,
-    module_name character varying,
     permission_to_view boolean,
     permission_to_create boolean,
     permission_to_update boolean,
@@ -219,14 +212,19 @@ CREATE TABLE public.permissions (
 ALTER TABLE public.permissions OWNER TO postgres;
 
 --
--- TOC entry 213 (class 1259 OID 123174)
--- Name: quotations; Type: TABLE; Schema: public; Owner: postgres
+-- TOC entry 224 (class 1259 OID 254163)
+-- Name: revenue_forecast; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.quotations (
+CREATE TABLE public.revenue_forecast (
     id character varying NOT NULL,
-    target_time character varying,
-    target_amount character varying,
+    timeline character varying,
+    revenue numeric,
+    growth_window numeric,
+    growth_percentage numeric,
+    start_date character varying,
+    end_date character varying,
+    user_id character varying,
     company_id character varying,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
@@ -234,7 +232,7 @@ CREATE TABLE public.quotations (
 );
 
 
-ALTER TABLE public.quotations OWNER TO postgres;
+ALTER TABLE public.revenue_forecast OWNER TO postgres;
 
 --
 -- TOC entry 212 (class 1259 OID 123164)
@@ -249,37 +247,73 @@ CREATE TABLE public.roles (
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     company_id character varying,
-    reporter character varying,
-    supporter character varying
+    reporter character varying
 );
 
 
 ALTER TABLE public.roles OWNER TO postgres;
 
 --
--- TOC entry 216 (class 1259 OID 123204)
--- Name: sales_entries; Type: TABLE; Schema: public; Owner: postgres
+-- TOC entry 223 (class 1259 OID 237787)
+-- Name: sales_closer; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.sales_entries (
+CREATE TABLE public.sales_closer (
     id character varying NOT NULL,
-    user_id character varying,
-    amount character varying,
-    client_name character varying,
-    client_email character varying,
-    client_contact character varying,
-    description character varying,
+    commission_split_id character varying,
+    closer_id character varying,
+    closer_percentage numeric,
+    sales_commission_id character varying,
+    company_id character varying,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    company_id character varying
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
 );
 
 
-ALTER TABLE public.sales_entries OWNER TO postgres;
+ALTER TABLE public.sales_closer OWNER TO postgres;
 
 --
--- TOC entry 214 (class 1259 OID 123184)
+-- TOC entry 221 (class 1259 OID 237771)
+-- Name: sales_commission; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sales_commission (
+    id character varying NOT NULL,
+    customer_id character varying,
+    customer_commission_split_id character varying,
+    is_overwrite boolean,
+    company_id character varying,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+);
+
+
+ALTER TABLE public.sales_commission OWNER TO postgres;
+
+--
+-- TOC entry 222 (class 1259 OID 237779)
+-- Name: sales_supporter; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sales_supporter (
+    id character varying NOT NULL,
+    commission_split_id character varying,
+    supporter_id character varying,
+    supporter_percentage numeric,
+    company_id character varying,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    sales_commission_id character varying
+);
+
+
+ALTER TABLE public.sales_supporter OWNER TO postgres;
+
+--
+-- TOC entry 213 (class 1259 OID 123184)
 -- Name: slabs; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -287,7 +321,7 @@ CREATE TABLE public.slabs (
     id character varying NOT NULL,
     min_amount character varying,
     max_amount character varying,
-    percentage character varying,
+    percentage numeric,
     company_id character varying,
     is_max boolean DEFAULT false,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
@@ -299,7 +333,7 @@ CREATE TABLE public.slabs (
 ALTER TABLE public.slabs OWNER TO postgres;
 
 --
--- TOC entry 217 (class 1259 OID 123244)
+-- TOC entry 214 (class 1259 OID 123244)
 -- Name: super_admin; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -316,27 +350,6 @@ CREATE TABLE public.super_admin (
 ALTER TABLE public.super_admin OWNER TO postgres;
 
 --
--- TOC entry 220 (class 1259 OID 196809)
--- Name: targets; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.targets (
-    id character varying NOT NULL,
-    lead_id character varying,
-    supporters character varying,
-    finishing_date character varying,
-    amount character varying,
-    description character varying,
-    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
-    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    company_id character varying
-);
-
-
-ALTER TABLE public.targets OWNER TO postgres;
-
---
 -- TOC entry 210 (class 1259 OID 123144)
 -- Name: users; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -348,30 +361,19 @@ CREATE TABLE public.users (
     avatar character varying,
     email_address character varying,
     mobile_number character varying,
-    encrypted_password character varying,
-    is_verified boolean,
-    verification_code character varying,
-    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
-    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     role_id character varying,
     phone_number character varying,
     address character varying,
-    is_locked boolean DEFAULT false,
-    percentage_distribution character varying
+    encrypted_password character varying,
+    is_verified boolean,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    is_locked boolean DEFAULT false
 );
 
 
 ALTER TABLE public.users OWNER TO postgres;
-
---
--- TOC entry 3287 (class 2606 OID 123203)
--- Name: assigned_quotations assigned_quotations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.assigned_quotations
-    ADD CONSTRAINT assigned_quotations_pkey PRIMARY KEY (id);
-
 
 --
 -- TOC entry 3275 (class 2606 OID 123143)
@@ -383,21 +385,12 @@ ALTER TABLE ONLY public.companies
 
 
 --
--- TOC entry 3299 (class 2606 OID 196869)
+-- TOC entry 3289 (class 2606 OID 196869)
 -- Name: follow_up_notes follow_up_notes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.follow_up_notes
     ADD CONSTRAINT follow_up_notes_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 3295 (class 2606 OID 139488)
--- Name: leads leads_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.leads
-    ADD CONSTRAINT leads_pkey PRIMARY KEY (id);
 
 
 --
@@ -410,21 +403,12 @@ ALTER TABLE ONLY public.modules
 
 
 --
--- TOC entry 3293 (class 2606 OID 131276)
+-- TOC entry 3287 (class 2606 OID 131276)
 -- Name: permissions permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.permissions
     ADD CONSTRAINT permissions_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 3283 (class 2606 OID 123183)
--- Name: quotations quotations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.quotations
-    ADD CONSTRAINT quotations_pkey PRIMARY KEY (id);
 
 
 --
@@ -437,16 +421,7 @@ ALTER TABLE ONLY public.roles
 
 
 --
--- TOC entry 3289 (class 2606 OID 123213)
--- Name: sales_entries sales_entries_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.sales_entries
-    ADD CONSTRAINT sales_entries_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 3285 (class 2606 OID 123193)
+-- TOC entry 3283 (class 2606 OID 123193)
 -- Name: slabs slaps_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -455,21 +430,12 @@ ALTER TABLE ONLY public.slabs
 
 
 --
--- TOC entry 3291 (class 2606 OID 123252)
+-- TOC entry 3285 (class 2606 OID 123252)
 -- Name: super_admin super_admin_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.super_admin
     ADD CONSTRAINT super_admin_pkey PRIMARY KEY (id);
-
-
---
--- TOC entry 3297 (class 2606 OID 196818)
--- Name: targets targets_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.targets
-    ADD CONSTRAINT targets_pkey PRIMARY KEY (id);
 
 
 --
@@ -482,34 +448,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 3301 (class 2606 OID 123234)
--- Name: assigned_quotations assigned_quotations_quotation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.assigned_quotations
-    ADD CONSTRAINT assigned_quotations_quotation_id_fkey FOREIGN KEY (quotation_id) REFERENCES public.quotations(id) NOT VALID;
-
-
---
--- TOC entry 3302 (class 2606 OID 123239)
--- Name: assigned_quotations assigned_quotations_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.assigned_quotations
-    ADD CONSTRAINT assigned_quotations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) NOT VALID;
-
-
---
--- TOC entry 3306 (class 2606 OID 196830)
--- Name: targets company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.targets
-    ADD CONSTRAINT company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) NOT VALID;
-
-
---
--- TOC entry 3308 (class 2606 OID 196875)
+-- TOC entry 3292 (class 2606 OID 196875)
 -- Name: follow_up_notes company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -518,7 +457,7 @@ ALTER TABLE ONLY public.follow_up_notes
 
 
 --
--- TOC entry 3304 (class 2606 OID 131277)
+-- TOC entry 3291 (class 2606 OID 131277)
 -- Name: permissions permissions_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -527,34 +466,7 @@ ALTER TABLE ONLY public.permissions
 
 
 --
--- TOC entry 3303 (class 2606 OID 123224)
--- Name: sales_entries sales_entries_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.sales_entries
-    ADD CONSTRAINT sales_entries_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) NOT VALID;
-
-
---
--- TOC entry 3307 (class 2606 OID 196870)
--- Name: follow_up_notes target_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.follow_up_notes
-    ADD CONSTRAINT target_id_fkey FOREIGN KEY (target_id) REFERENCES public.targets(id) NOT VALID;
-
-
---
--- TOC entry 3305 (class 2606 OID 196819)
--- Name: targets targets_lead_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.targets
-    ADD CONSTRAINT targets_lead_id_fkey FOREIGN KEY (lead_id) REFERENCES public.leads(id) NOT VALID;
-
-
---
--- TOC entry 3309 (class 2606 OID 196880)
+-- TOC entry 3293 (class 2606 OID 196880)
 -- Name: follow_up_notes user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -563,7 +475,7 @@ ALTER TABLE ONLY public.follow_up_notes
 
 
 --
--- TOC entry 3300 (class 2606 OID 123214)
+-- TOC entry 3290 (class 2606 OID 123214)
 -- Name: users users_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -571,7 +483,7 @@ ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) NOT VALID;
 
 
--- Completed on 2022-07-25 15:02:14
+-- Completed on 2022-08-08 10:21:29
 
 --
 -- PostgreSQL database dump complete

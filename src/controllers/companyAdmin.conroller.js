@@ -103,7 +103,7 @@ module.exports.uploadLogo = async (req, res) => {
         res.json({
             status: 201,
             success: true,
-            message: "logo uploaded successfully!",
+            message: "Logo Uploaded successfully!",
             data: path
         })
 
@@ -148,7 +148,7 @@ module.exports.signUp = async (req, res) => {
             res.json({
                 status: 400,
                 success: false,
-                message: "company already exists",
+                message: "Company already exists",
             })
         }
     } catch (error) {
@@ -247,7 +247,7 @@ module.exports.login = async (req, res) => {
                     res.send({
                         status: 200,
                         success: true,
-                        message: "Login successfull",
+                        message: "Login Successfull",
                         data: {
                             token: jwtToken,
                             name: admin.rows[0].full_name,
@@ -303,7 +303,7 @@ module.exports.showProfile = async (req, res) => {
             res.json({
                 status: 200,
                 success: true,
-                message: 'user data',
+                message: 'User data',
                 data: checkUser.rows[0]
             })
         } else {
@@ -349,7 +349,7 @@ module.exports.changePassword = async (req, res) => {
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
                 }
 
@@ -385,7 +385,7 @@ module.exports.upload = async (req, res) => {
         res.json({
             success: true,
             status: 201,
-            message: "Avatar uploaded successfully!",
+            message: "User profile uploaded successfully!",
             data: path
         })
     } catch (error) {
@@ -422,7 +422,7 @@ module.exports.updateUserProfile = async (req, res) => {
                 res.json({
                     success: true,
                     status: 200,
-                    message: 'user Updated Successfully',
+                    message: 'User updated successfully',
                 })
             } else {
                 await connection.query('ROLLBACK')
@@ -471,14 +471,14 @@ module.exports.forgotPassword = async (req, res) => {
             res.json({
                 status: 200,
                 success: true,
-                message: "New Link Sended To Your Email Address",
+                message: "New link sent to your email address",
             })
 
         } else {
             res.json({
                 status: 400,
                 success: false,
-                message: "This User Is Not Exits",
+                message: "This user is not exits",
                 data: ""
             })
         }
@@ -511,7 +511,7 @@ module.exports.resetPassword = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "Password Changed Successfully",
+                        message: "Password changed successfully",
                         data: ""
                     })
                 } else {
@@ -519,7 +519,7 @@ module.exports.resetPassword = async (req, res) => {
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong",
+                        message: "Something went wrong",
                         data: ""
                     })
                 }
@@ -528,7 +528,7 @@ module.exports.resetPassword = async (req, res) => {
                 res.json({
                     status: 400,
                     success: false,
-                    message: "This User Is Not Exits",
+                    message: "This user is not exits",
                     data: ""
                 })
             }
@@ -572,7 +572,7 @@ module.exports.moduleList = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "module list",
+                        message: "Module list",
                         data: moduleList.rows
                     })
                 } else {
@@ -588,7 +588,7 @@ module.exports.moduleList = async (req, res) => {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Unathorised"
                 })
             }
 
@@ -682,14 +682,14 @@ module.exports.rolesList = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "role list",
+                        message: "Role list",
                         data: list
                     })
                 } else {
                     res.json({
                         status: 200,
                         success: false,
-                        message: "Empty Roles list",
+                        message: "Empty role list",
                         data: []
                     })
                 }
@@ -763,7 +763,7 @@ module.exports.createRole = async (req, res) => {
                     res.json({
                         status: 201,
                         success: true,
-                        message: "role created successfully",
+                        message: "Role created successfully",
                         data: {
                             roleId: createRole.rows[0].id
                         }
@@ -774,7 +774,7 @@ module.exports.createRole = async (req, res) => {
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
                 }
 
@@ -840,7 +840,7 @@ module.exports.updateRole = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "role updated successfully"
+                        message: "Role updated successfully"
                     })
 
                 } else {
@@ -848,7 +848,7 @@ module.exports.updateRole = async (req, res) => {
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
                 }
 
@@ -946,7 +946,7 @@ module.exports.deleteRole = async (req, res) => {
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
                 }
 
@@ -1060,14 +1060,14 @@ module.exports.userWiseRoleList = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "role list",
+                        message: "Role list",
                         data: RolesList.rows
                     })
                 } else {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "Empty Roles list",
+                        message: "Empty roles list",
                         data: []
                     })
                 }
@@ -1143,7 +1143,7 @@ module.exports.addUser = async (req, res) => {
                         res.json({
                             status: 201,
                             success: true,
-                            message: `user created successfully and link send for set password on ${emailAddress} ` 
+                            message: `User created successfully and link send for set password on ${emailAddress} ` 
                         })
 
                     } else {
@@ -1151,7 +1151,7 @@ module.exports.addUser = async (req, res) => {
                         res.json({
                             status: 400,
                             success: false,
-                            message: "something went wrong"
+                            message: "Something went wrong"
                         })
 
                     }
@@ -1160,7 +1160,7 @@ module.exports.addUser = async (req, res) => {
                     res.json({
                         status: 403,
                         success: false,
-                        message: "UnAthorised"
+                        message: "Unathorised"
                     })
                 }
             } else {
@@ -1209,7 +1209,7 @@ module.exports.showUserById = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "user data",
+                        message: "User data",
                         data: findUser.rows
                     })
                 } else {
@@ -1224,7 +1224,7 @@ module.exports.showUserById = async (req, res) => {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -1266,7 +1266,7 @@ module.exports.usersListByRoleId = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "users list",
+                        message: "Users list",
                         data: userList.rows
                     })
                 } else {
@@ -1281,7 +1281,7 @@ module.exports.usersListByRoleId = async (req, res) => {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -1331,14 +1331,14 @@ module.exports.usersList = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: 'Users List',
+                        message: 'Users list',
                         data: findUsers.rows
                     })
                 } else {
                     res.json({
                         status: 200,
                         success: false,
-                        message: "Empty Users list",
+                        message: "Empty users list",
                         data: []
                     })
                 }
@@ -1346,7 +1346,7 @@ module.exports.usersList = async (req, res) => {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorized",
+                    message: "Unathorized",
                 })
             }
         } else {
@@ -1399,21 +1399,21 @@ module.exports.updateUser = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "user Updated successfully"
+                        message: "User Updated successfully"
                     })
                 } else {
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
                 }
             } else {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -1517,21 +1517,21 @@ module.exports.deleteUser = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "user deleted successfully"
+                        message: "User deleted successfully"
                     })
                 } else {
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
                 }
             } else {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -1681,7 +1681,7 @@ module.exports.createSlab = async (req, res) => {
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
                 }
 
@@ -1910,7 +1910,15 @@ module.exports.createCustomer = async (req, res) => {
             is_qualified,
             targetAmount,
             productMatch,
-            targetClosingDate
+            targetClosingDate,
+            businessId,
+            businessContactName,
+            businessEmail,
+            businessPhoneNumber,
+            revenueId,
+            revenueContactName,
+            revenueEmail,
+            revenuePhoneNumber
         } = req.body
 
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
@@ -1923,6 +1931,7 @@ module.exports.createCustomer = async (req, res) => {
             let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_create) {
+
                 await connection.query('BEGIN')
                 let compId = ''
                 let s4 = dbScript(db_sql['Q69'], { var1: companyId })
@@ -1932,24 +1941,47 @@ module.exports.createCustomer = async (req, res) => {
                     let comId = uuid.v4()
                     let s5 = dbScript(db_sql['Q68'], { var1: comId, var2: mysql_real_escape_string(customerName), var3: findAdmin.rows[0].company_id })
                     let addCustomerCom = await connection.query(s5)
+                    
                     if (addCustomerCom.rowCount > 0) {
                         compId = addCustomerCom.rows[0].id
                     }
 
                 } else {
+
                     compId = findCustomerCom.rows[0].id
                 }
 
                 let id = uuid.v4()
-                let s6 = dbScript(db_sql['Q67'], { var1: id, var2: findAdmin.rows[0].id, var3: compId, var4: mysql_real_escape_string(customerName), var5: mysql_real_escape_string(source), var6: mysql_real_escape_string(qualification), var7: is_qualified, var8: targetAmount, var9: mysql_real_escape_string(productMatch), var10: targetClosingDate, var11: findAdmin.rows[0].company_id })
-                let createCustomer = await connection.query(s6)
-                if(createCustomer.rowCount > 0){
+                let s10 = dbScript(db_sql['Q67'], { var1: id, var2: findAdmin.rows[0].id, var3: compId, var4: mysql_real_escape_string(customerName), var5: mysql_real_escape_string(source), var6: mysql_real_escape_string(qualification), var7: is_qualified, var8: targetAmount, var9: mysql_real_escape_string(productMatch), var10: targetClosingDate, var11: findAdmin.rows[0].company_id })
+                let createCustomer = await connection.query(s10)
+                if (createCustomer.rowCount > 0) {
+
+                    if(businessId == ''){
+                        let businessId = uuid.v4()
+                        let s6 = dbScript(db_sql['Q111'], { var1: businessId, var2: mysql_real_escape_string(businessContactName), var3: businessEmail, var4: businessPhoneNumber, var5: compId, var6 : createCustomer.rows[0].id })
+                        let addBusinessContact = await connection.query(s6)
+                    }else{
+                        let _dt = new Date().toISOString();
+                        let s8 = dbScript(db_sql['Q113'], { var1: businessId, var2: mysql_real_escape_string(businessContactName), var3: businessEmail, var4: businessPhoneNumber, var5: _dt })
+                        let updateBusinessContact = await connection.query(s8)
+                    }
+
+                    if(revenueId == ''){
+                        let revenueId = uuid.v4()
+                        let s7 = dbScript(db_sql['Q112'], { var1: revenueId, var2: mysql_real_escape_string(revenueContactName), var3: revenueEmail, var4: revenuePhoneNumber, var5: compId,  var6 : createCustomer.rows[0].id })
+                        let addRevenueContact = await connection.query(s7)
+                    }else{
+
+                        let _dt = new Date().toISOString();
+                        let s9 = dbScript(db_sql['Q114'], { var1: revenueId, var2: mysql_real_escape_string(revenueContactName), var3: revenueEmail, var4: revenuePhoneNumber, var5: _dt })
+                        let updateRevenueContact = await connection.query(s9)
+                    }
 
                     let logId = uuid.v4()
-                    
-                    let s7 = dbScript(db_sql['Q74'], { var1: logId, var2: createCustomer.rows[0].id, var3: mysql_real_escape_string(createCustomer.rows[0].customer_name), var4: mysql_real_escape_string(createCustomer.rows[0].source), var5: mysql_real_escape_string(createCustomer.rows[0].qualification), var6: createCustomer.rows[0].is_qualified, var7: createCustomer.rows[0].target_amount, var8: mysql_real_escape_string(createCustomer.rows[0].product_match), var9: createCustomer.rows[0].target_closing_date })
-                    
-                    var createLog = await connection.query(s7)
+
+                    let s11 = dbScript(db_sql['Q74'], { var1: logId, var2: createCustomer.rows[0].id, var3: mysql_real_escape_string(createCustomer.rows[0].customer_name), var4: mysql_real_escape_string(createCustomer.rows[0].source), var5: mysql_real_escape_string(createCustomer.rows[0].qualification), var6: createCustomer.rows[0].is_qualified, var7: createCustomer.rows[0].target_amount, var8: mysql_real_escape_string(createCustomer.rows[0].product_match), var9: createCustomer.rows[0].target_closing_date })
+
+                    var createLog = await connection.query(s11)
                     await connection.query('COMMIT')
 
                     if (createLog.rowCount > 0) {
@@ -2024,7 +2056,7 @@ module.exports.closeCustomer = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "Customer Closed successfully"
+                        message: "Customer closed successfully"
                     })
                 } else {
                     await connection.query('ROLLBACK')
@@ -2082,11 +2114,43 @@ module.exports.customerList = async (req, res) => {
 
                 if (customerList.rowCount > 0) {
                     for (data of customerList.rows) {
+                        
                         let s5 = dbScript(db_sql['Q12'], { var1: data.user_id })
                         let createdBy = await connection.query(s5)
-                        if(createdBy.rowCount > 0){    
+
+                        if(createdBy.rowCount > 0){
                             data.createdBy = createdBy.rows[0].full_name
+                        }else{
+                            data.createdBy = ""
                         }
+
+                        let s6 = dbScript(db_sql['Q117'] , {var1 : data.id})
+                        let businessDetails = await connection.query(s6)
+
+                        if(businessDetails.rowCount > 0){
+                            data.businessContactName = businessDetails.rows[0].business_contact_name
+                            data.businessEmail = businessDetails.rows[0].business_email
+                            data.businessPhoneNumber = businessDetails.rows[0].business_phone_number 
+                        }else{
+                            data.businessContactName = ""
+                            data.businessEmail = ""
+                            data.businessPhoneNumber = ""
+                        }
+                        
+                        let s7 = dbScript(db_sql['Q118'] , {var1 : data.id})
+                        let revenueDetails = await connection.query(s7)
+
+                        if( revenueDetails.rowCount > 0){    
+                            data.revenueContactName = revenueDetails.rows[0].revenue_contact_name
+                            data.revenueEmail = revenueDetails.rows[0].revenue_email
+                            data.revenuePhoneNumber = revenueDetails.rows[0].revenue_phone_number 
+                        }
+                        else{
+                            data.revenueContactName = ""
+                            data.revenueEmail = ""
+                            data.revenuePhoneNumber = ""
+                        }
+
                         customerArr.push(data)
                     }
                 }
@@ -2095,15 +2159,15 @@ module.exports.customerList = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: 'Customers List',
+                        message: 'Customers list',
                         data: customerArr
                     })
                 } else {
                     res.json({
                         status: 200,
                         success: false,
-                        message: 'empty Customers List',
-                        data: []
+                        message: 'Empty customers list',
+                        data: customerArr
                     })
                 }
             } else {
@@ -2147,7 +2211,15 @@ module.exports.editCustomer = async (req, res) => {
             is_qualified,
             targetAmount,
             productMatch,
-            targetClosingDate
+            targetClosingDate,
+            businessId,
+            businessContactName,
+            businessEmail,
+            businessPhoneNumber,
+            revenueId,
+            revenueContactName,
+            revenueEmail,
+            revenuePhoneNumber
         } = req.body
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -2162,17 +2234,47 @@ module.exports.editCustomer = async (req, res) => {
 
                 await connection.query('BEGIN')
 
+                let compId = ''
+                let s4 = dbScript(db_sql['Q88'], { var1: customerId })
+                let findCustomerCom = await connection.query(s4)
+                console.log(findCustomerCom.rows);
+                if(findCustomerCom.rowCount > 0){
+
+                    compId = findCustomerCom.rows[0].customer_company_id
+                    
+                    if(businessId == ''){
+                        let businessId = uuid.v4()
+                        let s6 = dbScript(db_sql['Q111'], { var1: businessId, var2: mysql_real_escape_string(businessContactName), var3: businessEmail, var4: businessPhoneNumber, var5: compId })
+                        let addBusinessContact = await connection.query(s6)
+                    }else{
+                        let _dt = new Date().toISOString();
+                        let s8 = dbScript(db_sql['Q113'], { var1: businessId, var2: mysql_real_escape_string(businessContactName), var3: businessEmail, var4: businessPhoneNumber, var5: _dt })
+                        let updateBusinessContact = await connection.query(s8)
+                    }
+                    
+                    if(revenueId == ''){
+                        let revenueId = uuid.v4()
+                        let s7 = dbScript(db_sql['Q112'], { var1: revenueId, var2: mysql_real_escape_string(revenueContactName), var3: revenueEmail, var4: revenuePhoneNumber, var5: compId })
+                        let addRevenueContact = await connection.query(s7)
+                    }else{
+                        
+                        let _dt = new Date().toISOString();
+                        let s9 = dbScript(db_sql['Q114'], { var1: revenueId, var2: mysql_real_escape_string(revenueContactName), var3: revenueEmail, var4: revenuePhoneNumber, var5: _dt })
+                        let updateRevenueContact = await connection.query(s9)
+                    }
+                }
+
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: mysql_real_escape_string(qualification), var4: is_qualified, var5: targetAmount, var6: mysql_real_escape_string(productMatch), var7: targetClosingDate, var8: _dt, var9: customerId })
-                let updateCustomer = await connection.query(s4)
+                let s5 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: mysql_real_escape_string(qualification), var4: is_qualified, var5: targetAmount, var6: mysql_real_escape_string(productMatch), var7: targetClosingDate, var8: _dt, var9: customerId })
+                let updateCustomer = await connection.query(s5)
 
                 if (updateCustomer.rowCount > 0) {
 
                     let id = uuid.v4()
 
-                    let s5 = dbScript(db_sql['Q74'], { var1: id, var2: updateCustomer.rows[0].id, var3: mysql_real_escape_string(updateCustomer.rows[0].customer_name), var4: mysql_real_escape_string(updateCustomer.rows[0].source), var5: mysql_real_escape_string(updateCustomer.rows[0].qualification), var6: updateCustomer.rows[0].is_qualified, var7: updateCustomer.rows[0].target_amount, var8: mysql_real_escape_string(updateCustomer.rows[0].product_match), var9: updateCustomer.rows[0].target_closing_date })
+                    let s6 = dbScript(db_sql['Q74'], { var1: id, var2: updateCustomer.rows[0].id, var3: mysql_real_escape_string(updateCustomer.rows[0].customer_name), var4: mysql_real_escape_string(updateCustomer.rows[0].source), var5: mysql_real_escape_string(updateCustomer.rows[0].qualification), var6: updateCustomer.rows[0].is_qualified, var7: updateCustomer.rows[0].target_amount, var8: mysql_real_escape_string(updateCustomer.rows[0].product_match), var9: updateCustomer.rows[0].target_closing_date })
 
-                    var createLog = await connection.query(s5)
+                    var createLog = await connection.query(s6)
                     await connection.query('COMMIT')
 
                     if (createLog.rowCount > 0) {
@@ -2186,7 +2288,7 @@ module.exports.editCustomer = async (req, res) => {
                         res.json({
                             status: 400,
                             success: false,
-                            message: "something went wrong"
+                            message: "Something went wrong"
                         })
                     }
 
@@ -2195,7 +2297,7 @@ module.exports.editCustomer = async (req, res) => {
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
                 }
 
@@ -2246,14 +2348,14 @@ module.exports.customerLogsList = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: 'Customers log List',
+                        message: 'Customers log list',
                         data: customerlogList.rows
                     })
                 } else {
                     res.json({
                         status: 200,
                         success: false,
-                        message: 'empty Customers log List',
+                        message: 'Empty Customers log list',
                         data: []
                     })
                 }
@@ -2303,14 +2405,14 @@ module.exports.customerCompanyList = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: 'Customer Company List',
+                        message: 'Customer company list',
                         data: customerList.rows
                     })
                 } else {
                     res.json({
                         status: 200,
                         success: false,
-                        message: 'empty Customer Company List',
+                        message: 'Empty customer company list',
                         data: []
                     })
                 }
@@ -2335,6 +2437,78 @@ module.exports.customerCompanyList = async (req, res) => {
             message: error.message,
         })
     }
+}
+
+module.exports.customerContactDetails = async (req, res) => {
+
+    try {
+        let { customerCompanyId } = req.query
+        let userEmail = req.user.email
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        let moduleName = 'Customer management'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_view) {
+                let customerContactDetails = {};
+
+                let s4 = dbScript(db_sql['Q115'], { var1: customerCompanyId })
+                let businessDetails = await connection.query(s4)
+
+                let s5 = dbScript(db_sql['Q116'], { var1: customerCompanyId })
+                let revenueDetails = await connection.query(s5)
+
+
+                if (businessDetails.rowCount > 0 && revenueDetails.rowCount > 0) {
+
+                    customerContactDetails.businessDetails = businessDetails.rows
+                    customerContactDetails.revenueDetails = revenueDetails.rows
+
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: 'Customer contact details',
+                        data: customerContactDetails
+                    })
+                } else {
+
+                    customerContactDetails.businessDetails = []
+                    customerContactDetails.revenueDetails = []
+
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: 'Empty customer contact details',
+                        data: customerContactDetails
+                    })
+                }
+            } else {
+                res.json({
+                    status: 403,
+                    success: false,
+                    message: "UnAthorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+
+
 }
 
 module.exports.deleteCustomer = async (req, res) => {
@@ -2425,7 +2599,7 @@ module.exports.addfollowUpNotes = async (req, res) => {
                     res.json({
                         status: 201,
                         success: true,
-                        message: "Note created"
+                        message: "Note created successfully"
                     })
 
                 } else {
@@ -2479,14 +2653,14 @@ module.exports.notesList = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: 'Notes List',
+                        message: 'Notes list',
                         data: findNOtes.rows
                     })
                 } else {
                     res.json({
                         status: 200,
                         success: false,
-                        message: 'empty Notes List',
+                        message: 'Empty notes list',
                         data: []
                     })
                 }
@@ -2494,7 +2668,7 @@ module.exports.notesList = async (req, res) => {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -2549,7 +2723,7 @@ module.exports.deleteNote = async (req, res) => {
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
                 }
 
@@ -2608,14 +2782,14 @@ module.exports.commissionSplit = async (req, res) => {
                     res.json({
                         status: 201,
                         success: true,
-                        message: "commission created successfully"
+                        message: "Commission created successfully"
                     })
                 } else {
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
                 }
 
@@ -2675,7 +2849,7 @@ module.exports.updatecommissionSplit = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "commission updated Successfully"
+                        message: "Commission updated Successfully"
                     })
 
                 } else {
@@ -2683,14 +2857,14 @@ module.exports.updatecommissionSplit = async (req, res) => {
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
                 }
             } else {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Unathorised"
                 })
             }
 
@@ -2734,14 +2908,14 @@ module.exports.commissionSplitList = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "Commission Split list",
+                        message: "Commission split list",
                         data: commissionList.rows
                     })
                 } else {
                     res.json({
                         status: 200,
                         success: false,
-                        message: "Empty Commission Split list",
+                        message: "Empty commission split list",
                         data: []
                     })
                 }
@@ -2796,14 +2970,14 @@ module.exports.deletecommissionSplit = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "commission deleted Successfully"
+                        message: "Commission deleted Successfully"
                     })
                 } else {
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
 
                 }
@@ -2812,7 +2986,7 @@ module.exports.deletecommissionSplit = async (req, res) => {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -2868,14 +3042,14 @@ module.exports.customerListforSales = async (req, res) => {
                         res.json({
                             status: 200,
                             success: true,
-                            message: 'Customers List',
+                            message: 'Customers list',
                             data: customerArr
                         })
                     }else {
                         res.json({
                             status: 200,
                             success: false,
-                            message: 'Empty Customers List',
+                            message: 'Empty customers list',
                             data: []
                         })
                     }
@@ -2883,7 +3057,7 @@ module.exports.customerListforSales = async (req, res) => {
                     res.json({
                         status: 200,
                         success: false,
-                        message: 'Empty Customers List',
+                        message: 'Empty customers list',
                         data: []
                     })
                 }
@@ -2891,7 +3065,7 @@ module.exports.customerListforSales = async (req, res) => {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -2964,14 +3138,14 @@ module.exports.createSalesCommission = async (req, res) => {
                     res.json({
                         status: 201,
                         success: true,
-                        message: "Sales Commission created Successfully"
+                        message: "Sales commission created successfully"
                     })
                 } else {
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
                 }
 
@@ -3066,14 +3240,14 @@ module.exports.salesCommissionList = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: 'Sales Commission List',
+                        message: 'Sales commission list',
                         data: commissionList
                     })
                 } else {
                     res.json({
                         status: 200,
                         success: false,
-                        message: 'empty Sales Commission List',
+                        message: 'Empty sales commission list',
                         data: []
                     })
                 }
@@ -3159,14 +3333,14 @@ module.exports.updateSalesCommission = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "Sales Commission Updated Successfully"
+                        message: "Sales commission updated successfully"
                     })
                 } else {
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
                 }
 
@@ -3232,14 +3406,14 @@ module.exports.deleteSalesCommission = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "Sales Commission deleted Successfully"
+                        message: "Sales commission deleted successfully"
                     })
                 } else {
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
 
                 }
@@ -3361,7 +3535,7 @@ module.exports.salesCommissionReport = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "Sales Commission Report",
+                        message: "Sales commission report",
                         data: {
                             salesCommissionCount: commissionList.length,
                             salesCommissionData: commissionList
@@ -3371,7 +3545,7 @@ module.exports.salesCommissionReport = async (req, res) => {
                     res.json({
                         status: 200,
                         success: false,
-                        message: "Empty Sales Commission Report",
+                        message: "Empty sales commission report",
                         data: []
                     })
                 }
@@ -3379,7 +3553,7 @@ module.exports.salesCommissionReport = async (req, res) => {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -3502,7 +3676,7 @@ module.exports.revenues = async (req, res) => {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -3561,14 +3735,14 @@ module.exports.createRevenueForecast = async (req, res) => {
                     res.json({
                         status: 201,
                         success: true,
-                        message: 'Revenue Forecast Created Successfully'
+                        message: 'Revenue forecast created successfully'
                     })
                 }else{
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
                 }
 
@@ -3576,7 +3750,7 @@ module.exports.createRevenueForecast = async (req, res) => {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -3618,14 +3792,14 @@ module.exports.revenueForecastList = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: 'Revenue Forecast List',
+                        message: 'Revenue forecast list',
                         data: revenueForecastList.rows
                     })
                 }else{
                     res.json({
                         status: 200,
                         success: true,
-                        message: 'Empty Revenue Forecast List',
+                        message: 'Empty revenue forecast list',
                         data: []
                     })
                 }
@@ -3634,7 +3808,7 @@ module.exports.revenueForecastList = async (req, res) => {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -3691,14 +3865,14 @@ module.exports.updateRevenueForecast = async (req, res) => {
                     res.json({
                         status: 201,
                         success: true,
-                        message: 'Revenue Forecast Updated Successfully'
+                        message: 'Revenue forecast updated successfully'
                     })
                 }else{
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
                         success: false,
-                        message: "something went wrong"
+                        message: "Something went wrong"
                     })
                 }
 
@@ -3706,7 +3880,7 @@ module.exports.updateRevenueForecast = async (req, res) => {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -3793,7 +3967,7 @@ module.exports.actualVsForecast = async (req, res) => {
                 res.json({
                     status: 403,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Unathorised"
                 })
             }
         } else {
