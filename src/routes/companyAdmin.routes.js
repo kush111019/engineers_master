@@ -54,6 +54,7 @@ router.post('/createCustomer',verifyTokenFn, controller.companyAdmin.createCusto
 router.post('/closeCustomer',verifyTokenFn, controller.companyAdmin.closeCustomer)
 router.get('/customerList',verifyTokenFn, controller.companyAdmin.customerList)
 router.put('/editCustomer',verifyTokenFn, controller.companyAdmin.editCustomer)
+router.put('/deleteContactForCustomer',verifyTokenFn, controller.companyAdmin.deleteContactForCustomer)
 router.get('/customerLogsList',verifyTokenFn, controller.companyAdmin.customerLogsList)
 router.get('/customerCompanyList',verifyTokenFn, controller.companyAdmin.customerCompanyList)
 router.get('/customerContactDetails',verifyTokenFn, controller.companyAdmin.customerContactDetails)

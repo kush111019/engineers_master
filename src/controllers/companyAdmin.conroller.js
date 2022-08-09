@@ -2329,6 +2329,91 @@ module.exports.editCustomer = async (req, res) => {
     }
 }
 
+
+module.exports.deleteContactForCustomer = async (req, res) => {
+    try {
+
+        userEmail = req.user.email
+        let {
+            type,
+            id,
+            customerId
+        } = req.body
+
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        let moduleName = 'Customer management'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_update) {
+
+                let s4 = dbScript(db_sql['Q88'],{var1 : customerId})
+                let customerData = await connection.query(s4)
+
+                if(customerData.rowCount > 0){
+                    let updateCustomer
+                    await connection.query('BEGIN')
+                    if(type == 'business'){
+                        let businessIds = JSON.parse(customerData.rows[0].business_id)
+                        console.log(businessIds,"11111");
+                        let index = businessIds.indexOf(id);
+                        businessIds.splice(index, 1)
+                        console.log(businessIds,"2");
+
+                        let s5 = dbScript(db_sql['Q120'],{var1 : customerId, var2: JSON.stringify(businessIds) })
+                        updateCustomer = await connection.query(s5)
+                    }
+                    else if(type == 'revenue'){
+                        let revenueIds = JSON.parse(customerData.rows[0].revenue_id)
+                        let index = revenueIds.indexOf(id);
+                        revenueIds.splice(index, 1)
+
+                        let s6 = dbScript(db_sql['Q121'],{var1 : customerId, var2: JSON.stringify(revenueIds) })
+                        updateCustomer = await connection.query(s6)
+                    }
+                    await connection.query('COMMIT')
+                    if(updateCustomer.rowCount > 0){
+                        res.json({
+                            status:200,
+                            success: true,
+                            message: `${type} deleted successfully`
+                        })
+                    }else{
+                        res.json({
+                            status:400,
+                            success: false,
+                            message: "Something went wrong"
+                        })
+                    }
+                }
+            } else {
+                res.json({
+                    status: 403,
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 module.exports.customerLogsList = async (req, res) => {
 
     try {
