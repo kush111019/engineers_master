@@ -1910,14 +1910,9 @@ module.exports.createCustomer = async (req, res) => {
             targetAmount,
             productMatch,
             targetClosingDate,
-            businessId,
-            businessContactName,
-            businessEmail,
-            businessPhoneNumber,
-            revenueId,
-            revenueContactName,
-            revenueEmail,
-            revenuePhoneNumber
+            businessContact,
+            revenueContact
+
         } = req.body
 
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
@@ -1940,7 +1935,7 @@ module.exports.createCustomer = async (req, res) => {
                     let comId = uuid.v4()
                     let s5 = dbScript(db_sql['Q68'], { var1: comId, var2: mysql_real_escape_string(customerName), var3: findAdmin.rows[0].company_id })
                     let addCustomerCom = await connection.query(s5)
-                    
+
                     if (addCustomerCom.rowCount > 0) {
                         compId = addCustomerCom.rows[0].id
                     }
@@ -1949,34 +1944,36 @@ module.exports.createCustomer = async (req, res) => {
 
                     compId = findCustomerCom.rows[0].id
                 }
-                let bId = '';
-                let rId = '';
-                if(businessId == ''){
-                    let businessId = uuid.v4()
-                    let s6 = dbScript(db_sql['Q111'], { var1: businessId, var2: mysql_real_escape_string(businessContactName), var3: businessEmail, var4: businessPhoneNumber, var5: compId })
-                    let addBusinessContact = await connection.query(s6)
-                    bId = addBusinessContact.rows[0].id
-                }else{
-                    let _dt = new Date().toISOString();
-                    let s8 = dbScript(db_sql['Q113'], { var1: businessId, var2: mysql_real_escape_string(businessContactName), var3: businessEmail, var4: businessPhoneNumber, var5: _dt })
-                    let updateBusinessContact = await connection.query(s8)
-                    bId = updateBusinessContact.rows[0].id
+                let bId = [];
+                let rId = [];
+                for (businessData of businessContact) {
+                    if (businessData.businessId == '') {
+                        let businessId = uuid.v4()
+                        let s6 = dbScript(db_sql['Q111'], { var1: businessId, var2: mysql_real_escape_string(businessData.businessContactName), var3: businessData.businessEmail, var4: businessData.businessPhoneNumber, var5: compId })
+                        let addBusinessContact = await connection.query(s6)
+                        bId.push(addBusinessContact.rows[0].id)
+                    } else {
+                        let _dt = new Date().toISOString();
+                        let s8 = dbScript(db_sql['Q113'], { var1: businessData.businessId, var2: mysql_real_escape_string(businessData.businessContactName), var3: businessData.businessEmail, var4: businessData.businessPhoneNumber, var5: _dt })
+                        let updateBusinessContact = await connection.query(s8)
+                        bId.push(updateBusinessContact.rows[0].id)
+                    }
                 }
-
-                if(revenueId == ''){
-                    let revenueId = uuid.v4()
-                    let s7 = dbScript(db_sql['Q112'], { var1: revenueId, var2: mysql_real_escape_string(revenueContactName), var3: revenueEmail, var4: revenuePhoneNumber, var5: compId })
-                    let addRevenueContact = await connection.query(s7)
-                    rId = addRevenueContact.rows[0].id
-                }else{
-                    let _dt = new Date().toISOString();
-                    let s9 = dbScript(db_sql['Q114'], { var1: revenueId, var2: mysql_real_escape_string(revenueContactName), var3: revenueEmail, var4: revenuePhoneNumber, var5: _dt })
-                    let updateRevenueContact = await connection.query(s9)
-                    rId = updateRevenueContact.rows[0].id
+                for (revenueData of revenueContact) {
+                    if (revenueData.revenueId == '') {
+                        let revenueId = uuid.v4()
+                        let s7 = dbScript(db_sql['Q112'], { var1: revenueId, var2: mysql_real_escape_string(revenueData.revenueContactName), var3: revenueData.revenueEmail, var4: revenueData.revenuePhoneNumber, var5: compId })
+                        let addRevenueContact = await connection.query(s7)
+                        rId.push(addRevenueContact.rows[0].id)
+                    } else {
+                        let _dt = new Date().toISOString();
+                        let s9 = dbScript(db_sql['Q114'], { var1: revenueData.revenueId, var2: mysql_real_escape_string(revenueData.revenueContactName), var3: revenueData.revenueEmail, var4: revenueData.revenuePhoneNumber, var5: _dt })
+                        let updateRevenueContact = await connection.query(s9)
+                        rId.push(updateRevenueContact.rows[0].id)
+                    }
                 }
-
                 let id = uuid.v4()
-                let s10 = dbScript(db_sql['Q67'], { var1: id, var2: findAdmin.rows[0].id, var3: compId, var4: mysql_real_escape_string(customerName), var5: mysql_real_escape_string(source), var6: mysql_real_escape_string(qualification), var7: is_qualified, var8: targetAmount, var9: mysql_real_escape_string(productMatch), var10: targetClosingDate, var11: findAdmin.rows[0].company_id, var12: bId , var13 : rId })
+                let s10 = dbScript(db_sql['Q67'], { var1: id, var2: findAdmin.rows[0].id, var3: compId, var4: mysql_real_escape_string(customerName), var5: mysql_real_escape_string(source), var6: mysql_real_escape_string(qualification), var7: is_qualified, var8: targetAmount, var9: mysql_real_escape_string(productMatch), var10: targetClosingDate, var11: findAdmin.rows[0].company_id, var12: JSON.stringify(bId), var13: JSON.stringify(rId) })
                 let createCustomer = await connection.query(s10)
                 if (createCustomer.rowCount > 0) {
 
@@ -2106,91 +2103,88 @@ module.exports.customerList = async (req, res) => {
         if (findAdmin.rows.length > 0) {
             let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
             let findModule = await connection.query(s2)
-            if(findModule.rowCount > 0){
+            if (findModule.rowCount > 0) {
 
-            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
-            let checkPermission = await connection.query(s3)
-            if (checkPermission.rows[0].permission_to_view) {
-                let customerArr = []
-                let s4 = dbScript(db_sql['Q70'], { var1: findAdmin.rows[0].company_id })
-                let customerList = await connection.query(s4)
+                let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+                let checkPermission = await connection.query(s3)
+                if (checkPermission.rows[0].permission_to_view) {
+                    let customerArr = []
+                    let s4 = dbScript(db_sql['Q70'], { var1: findAdmin.rows[0].company_id })
+                    let customerList = await connection.query(s4)
+                    let businessContact = {}
+                    let revenueContact = {}
 
-                if (customerList.rowCount > 0) {
-                    for (data of customerList.rows) {
-                        
-                        let s5 = dbScript(db_sql['Q12'], { var1: data.user_id })
-                        let createdBy = await connection.query(s5)
+                    if (customerList.rowCount > 0) {
+                        for (data of customerList.rows) {
 
-                        if(createdBy.rowCount > 0){
-                            data.createdBy = createdBy.rows[0].full_name
-                        }else{
-                            data.createdBy = ""
+                            let s5 = dbScript(db_sql['Q12'], { var1: data.user_id })
+                            let createdBy = await connection.query(s5)
+
+                            if (createdBy.rowCount > 0) {
+                                data.createdBy = createdBy.rows[0].full_name
+                            } else {
+                                data.createdBy = ""
+                            }
+
+                            let customerContactDetails = {};
+
+                            let s4 = dbScript(db_sql['Q88'], { var1: data.id })
+                            let contactDetails = await connection.query(s4)
+                            if (contactDetails.rowCount > 0) {
+                                if(contactDetails.rows[0].business_id != null && contactDetails.rows[0].revenue_id != null){
+
+                                    let businessIds = JSON.parse(contactDetails.rows[0].business_id)
+                                    let revenueIds = JSON.parse(contactDetails.rows[0].revenue_id)
+                                    let businessContact = [];
+                                    let revenueContact = [];
+                                    for (id of businessIds) {
+                                        let s5 = dbScript(db_sql['Q117'], { var1: id })
+                                        let businessData = await connection.query(s5)
+                                        businessContact.push(businessData.rows[0])
+                                    }
+                                    for (id of revenueIds) {
+                                        let s5 = dbScript(db_sql['Q118'], { var1: id })
+                                        let revenueData = await connection.query(s5)
+                                        revenueContact.push(revenueData.rows[0])
+                                    }
+                                    customerContactDetails.businessContact = businessContact
+                                    customerContactDetails.revenueContact = revenueContact
+                                    data.customerContactDetails = customerContactDetails
+                                }
+                                customerArr.push(data)
+                            }
                         }
-
-                        let s6 = dbScript(db_sql['Q117'] , {var1 : data.business_id})
-                        let businessDetails = await connection.query(s6)
-
-                        if(businessDetails.rowCount > 0){
-                            data.businessId = businessDetails.rows[0].id
-                            data.businessContactName = businessDetails.rows[0].business_contact_name
-                            data.businessEmail = businessDetails.rows[0].business_email
-                            data.businessPhoneNumber = businessDetails.rows[0].business_phone_number 
-                        }else{
-                            data.businessId = ""
-                            data.businessContactName = ""
-                            data.businessEmail = ""
-                            data.businessPhoneNumber = ""
-                        }
-                        
-                        let s7 = dbScript(db_sql['Q118'] , {var1 : data.revenue_id})
-                        let revenueDetails = await connection.query(s7)
-
-                        if( revenueDetails.rowCount > 0){    
-                            data.revenueId = revenueDetails.rows[0].id
-                            data.revenueContactName = revenueDetails.rows[0].revenue_contact_name
-                            data.revenueEmail = revenueDetails.rows[0].revenue_email
-                            data.revenuePhoneNumber = revenueDetails.rows[0].revenue_phone_number 
-                        }
-                        else{
-                            data.revenueId = ""
-                            data.revenueContactName = ""
-                            data.revenueEmail = ""
-                            data.revenuePhoneNumber = ""
-                        }
-
-                        customerArr.push(data)
                     }
-                }
 
-                if (customerArr.length > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: 'Customers list',
-                        data: customerArr
-                    })
+                    if (customerArr.length > 0) {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: 'Customers list',
+                            data: customerArr
+                        })
+                    } else {
+                        res.json({
+                            status: 200,
+                            success: false,
+                            message: 'Empty customers list',
+                            data: customerArr
+                        })
+                    }
                 } else {
                     res.json({
-                        status: 200,
+                        status: 403,
                         success: false,
-                        message: 'Empty customers list',
-                        data: customerArr
+                        message: "UnAthorised"
                     })
                 }
             } else {
                 res.json({
-                    status: 403,
+                    status: 400,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Module not found"
                 })
             }
-        }else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Module not found"
-            })
-        }
         } else {
             res.json({
                 status: 400,
@@ -2219,14 +2213,9 @@ module.exports.editCustomer = async (req, res) => {
             targetAmount,
             productMatch,
             targetClosingDate,
-            businessId,
-            businessContactName,
-            businessEmail,
-            businessPhoneNumber,
-            revenueId,
-            revenueContactName,
-            revenueEmail,
-            revenuePhoneNumber
+            businessContact,
+            revenueContact
+            
         } = req.body
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -2248,30 +2237,38 @@ module.exports.editCustomer = async (req, res) => {
 
                     compId = findCustomerCom.rows[0].customer_company_id
                     
-                    if(businessId == ''){
-                        let businessId = uuid.v4()
-                        let s6 = dbScript(db_sql['Q111'], { var1: businessId, var2: mysql_real_escape_string(businessContactName), var3: businessEmail, var4: businessPhoneNumber, var5: compId })
-                        let addBusinessContact = await connection.query(s6)
-                    }else{
-                        let _dt = new Date().toISOString();
-                        let s8 = dbScript(db_sql['Q113'], { var1: businessId, var2: mysql_real_escape_string(businessContactName), var3: businessEmail, var4: businessPhoneNumber, var5: _dt })
-                        let updateBusinessContact = await connection.query(s8)
+                    let bId = [];
+                    let rId = [];
+                    for (businessData of businessContact) {
+                        if (businessData.businessId == '') {
+                            let businessId = uuid.v4()
+                            let s6 = dbScript(db_sql['Q111'], { var1: businessId, var2: mysql_real_escape_string(businessData.businessContactName), var3: businessData.businessEmail, var4: businessData.businessPhoneNumber, var5: compId })
+                            let addBusinessContact = await connection.query(s6)
+                            bId.push(addBusinessContact.rows[0].id)
+                        } else {
+                            let _dt = new Date().toISOString();
+                            let s8 = dbScript(db_sql['Q113'], { var1: businessData.businessId, var2: mysql_real_escape_string(businessData.businessContactName), var3: businessData.businessEmail, var4: businessData.businessPhoneNumber, var5: _dt })
+                            let updateBusinessContact = await connection.query(s8)
+                            bId.push(updateBusinessContact.rows[0].id)
+                        }
                     }
-                    
-                    if(revenueId == ''){
-                        let revenueId = uuid.v4()
-                        let s7 = dbScript(db_sql['Q112'], { var1: revenueId, var2: mysql_real_escape_string(revenueContactName), var3: revenueEmail, var4: revenuePhoneNumber, var5: compId })
-                        let addRevenueContact = await connection.query(s7)
-                    }else{
-                        
-                        let _dt = new Date().toISOString();
-                        let s9 = dbScript(db_sql['Q114'], { var1: revenueId, var2: mysql_real_escape_string(revenueContactName), var3: revenueEmail, var4: revenuePhoneNumber, var5: _dt })
-                        let updateRevenueContact = await connection.query(s9)
+                    for (revenueData of revenueContact) {
+                        if (revenueData.revenueId == '') {
+                            let revenueId = uuid.v4()
+                            let s7 = dbScript(db_sql['Q112'], { var1: revenueId, var2: mysql_real_escape_string(revenueData.revenueContactName), var3: revenueData.revenueEmail, var4: revenueData.revenuePhoneNumber, var5: compId })
+                            let addRevenueContact = await connection.query(s7)
+                            rId.push(addRevenueContact.rows[0].id)
+                        } else {
+                            let _dt = new Date().toISOString();
+                            let s9 = dbScript(db_sql['Q114'], { var1: revenueData.revenueId, var2: mysql_real_escape_string(revenueData.revenueContactName), var3: revenueData.revenueEmail, var4: revenueData.revenuePhoneNumber, var5: _dt })
+                            let updateRevenueContact = await connection.query(s9)
+                            rId.push(updateRevenueContact.rows[0].id)
+                        }
                     }
                 }
 
                 let _dt = new Date().toISOString();
-                let s5 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: mysql_real_escape_string(qualification), var4: is_qualified, var5: targetAmount, var6: mysql_real_escape_string(productMatch), var7: targetClosingDate, var8: _dt, var9: customerId })
+                let s5 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: mysql_real_escape_string(qualification), var4: is_qualified, var5: targetAmount, var6: mysql_real_escape_string(productMatch), var7: targetClosingDate, var8: _dt, var9: customerId , var10 : JSON.stringify(bId), var11 : JSON.stringify(rId) } )
                 let updateCustomer = await connection.query(s5)
 
                 if (updateCustomer.rowCount > 0) {
@@ -3090,6 +3087,85 @@ module.exports.customerListforSales = async (req, res) => {
     }
 }
 
+module.exports.customerContactDetailsForSales = async (req, res) => {
+
+    try {
+        let { customerId } = req.query
+        let userEmail = req.user.email
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        let moduleName = 'Customer management'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_view) {
+                let customerContactDetails = {};
+
+                let s4 = dbScript(db_sql['Q88'], { var1: customerId })
+                let contactDetails = await connection.query(s4)
+                if (contactDetails.rowCount > 0 ) {
+                    let businessIds = JSON.parse(contactDetails.rows[0].business_id)
+                    let revenueIds = JSON.parse(contactDetails.rows[0].revenue_id)
+                    let businessContact = [];
+                    let revenueContact = [];
+                    for(id of businessIds){
+                        let s5 = dbScript(db_sql['Q117'], {var1 : id})
+                        let businessData = await connection.query(s5)
+                        businessContact.push(businessData.rows[0])
+                    }
+                    for(id of revenueIds){
+                        let s5 = dbScript(db_sql['Q118'], {var1 : id})
+                        let revenueData = await connection.query(s5)
+                        revenueContact.push(revenueData.rows[0])
+                    }
+                    customerContactDetails.businessContact = businessContact
+                    customerContactDetails.revenueContact = revenueContact
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: 'Customer contact details',
+                        data: customerContactDetails
+                    })
+                } else {
+
+                    customerContactDetails.businessContact = []
+                    customerContactDetails.revenueContact = []
+
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: 'Empty customer contact details',
+                        data: customerContactDetails
+                    })
+                }
+            } else {
+                res.json({
+                    status: 403,
+                    success: false,
+                    message: "UnAthorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+
+
+}
+
 module.exports.createSalesCommission = async (req, res) => {
 
     try {
@@ -3100,7 +3176,9 @@ module.exports.createSalesCommission = async (req, res) => {
             customerCommissionSplitId,
             supporters,
             is_overwrite,
-            closerPercentage
+            closerPercentage,
+            businessId,
+            revenueId
         } = req.body
 
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
@@ -3117,7 +3195,7 @@ module.exports.createSalesCommission = async (req, res) => {
                 await connection.query('BEGIN')
 
                 let id = uuid.v4()
-                let s5 = dbScript(db_sql['Q86'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: findAdmin.rows[0].company_id })
+                let s5 = dbScript(db_sql['Q86'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: findAdmin.rows[0].company_id, var6:businessId, var7:revenueId })
                 let createSalesConversion = await connection.query(s5)
 
                 let s6 = dbScript(db_sql['Q89'], { var1: customerCommissionSplitId, var2: findAdmin.rows[0].company_id })
@@ -3198,10 +3276,11 @@ module.exports.salesCommissionList = async (req, res) => {
                 let s4 = dbScript(db_sql['Q87'], { var1: findAdmin.rows[0].company_id })
                 let salesCommissionList = await connection.query(s4)
                 let commissionList = []
-
                 for (data of salesCommissionList.rows) {
                     let closer = {}
                     let supporters = []
+                    let businessContact = {}
+                    let revenueContact = {}
 
                     let s5 = dbScript(db_sql['Q88'], { var1: data.customer_id })
                     let customerName = await connection.query(s5)
@@ -3228,6 +3307,30 @@ module.exports.salesCommissionList = async (req, res) => {
                         }
                     }
 
+                    
+
+                        let s8 = dbScript(db_sql['Q117'], {var1 : data.business_id})
+                        let businessData = await connection.query(s8);
+                        
+                        let s9 = dbScript(db_sql['Q118'], {var1 : data.revenue_id})
+                        let revenueData = await connection.query(s9);
+                        
+                        businessContact = {
+                            businessId : businessData.rows[0].id,
+                            businessContactName : businessData.rows[0].business_contact_name,
+                            businessEmail : businessData.rows[0].business_email,
+                            businessPhoneNumber : businessData.rows[0].business_phone_number
+                        }
+                        
+                        revenueContact = {
+                            revenueId : revenueData.rows[0].id,
+                            revenueContactName : revenueData.rows[0].revenue_contact_name,
+                            revenueEmail : revenueData.rows[0].revenue_email,
+                            revenuePhoneNumber : revenueData.rows[0].revenue_phone_number
+                        }
+                    
+
+
                     closer.id = data.id
                     closer.customerId = data.customer_id
                     closer.customerName = customerName.rows[0].customer_name
@@ -3239,6 +3342,8 @@ module.exports.salesCommissionList = async (req, res) => {
                     closer.supporters = supporters
                     closer.createdAt = data.created_at
                     closer.closedAt = customerName.rows[0].closed_at
+                    closer.businessContact = businessContact
+                    closer.revenueContact = revenueContact
 
                     commissionList.push(closer)
                 }
@@ -3293,7 +3398,10 @@ module.exports.updateSalesCommission = async (req, res) => {
             customerCloserId,
             supporters,
             is_overwrite,
-            closerPercentage
+            closerPercentage,
+            businessId,
+            revenueId
+
         } = req.body
 
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
@@ -3311,7 +3419,7 @@ module.exports.updateSalesCommission = async (req, res) => {
 
                 let _dt = new Date().toISOString();
 
-                let s5 = dbScript(db_sql['Q98'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: findAdmin.rows[0].company_id })
+                let s5 = dbScript(db_sql['Q98'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: findAdmin.rows[0].company_id, var7: businessId, var8: revenueId })
                 let updateSalesCommission = await connection.query(s5)
 
                 let s6 = dbScript(db_sql['Q89'], { var1: customerCommissionSplitId, var2: findAdmin.rows[0].company_id })

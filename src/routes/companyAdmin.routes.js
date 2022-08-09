@@ -67,6 +67,7 @@ router.put('/deletecommissionSplit',verifyTokenFn, controller.companyAdmin.delet
 
 //----------------------------------------sales conversion --------------------------------
 router.get('/customerListforSales',verifyTokenFn, controller.companyAdmin.customerListforSales)
+router.get('/customerContactDetailsForSales',verifyTokenFn, controller.companyAdmin.customerContactDetailsForSales)
 
 router.post('/createSalesCommission',verifyTokenFn, controller.companyAdmin.createSalesCommission)
 router.get('/salesCommissionList',verifyTokenFn, controller.companyAdmin.salesCommissionList)

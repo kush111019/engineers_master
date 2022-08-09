@@ -62,7 +62,7 @@ const db_sql = {
     "Q70"  : `select id,customer_company_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id,business_id,revenue_id, created_at from customers where company_id = '{var1}' and deleted_at is null ORDER BY created_at asc`,
     "Q71"  : `update customers set closed_at = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
     "Q72"  : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where module_name = '{var1}' and deleted_at is null` ,
-    "Q73"  : `update customers set customer_name = '{var1}', source = '{var2}', qualification = '{var3}', is_qualified = '{var4}', target_amount = '{var5}', product_match = '{var6}', target_closing_date = '{var7}', updated_at = '{var8}' where id = '{var9}' and deleted_at is null returning *`,
+    "Q73"  : `update customers set customer_name = '{var1}', source = '{var2}', qualification = '{var3}', is_qualified = '{var4}', target_amount = '{var5}', product_match = '{var6}', target_closing_date = '{var7}', updated_at = '{var8}', business_id = '{var10}', revenue_id = '{var11}' where id = '{var9}' and deleted_at is null returning *`,
     "Q74"  : `insert into customer_logs(id,customer_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') returning *`,
     "Q75"  : `select id, customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date,created_at from customer_logs where customer_id = '{var1}' and deleted_at is null ORDER BY created_at desc`,
     "Q76"  : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,encrypted_password,role_id,address,is_verified) 
@@ -75,11 +75,11 @@ const db_sql = {
     "Q83"  : `select id, closer_percentage, supporter_percentage from commission_split where company_id ='{var1}' and deleted_at is null`,
     "Q84"  : `update commission_split set deleted_at = '{var1}' where id = '{var2}'  and deleted_at is null returning *`,
     "Q85"  : `select id,customer_company_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id from customers where company_id = '{var1}' and closed_at is null and is_qualified = true and deleted_at is null`,
-    "Q86"  : `insert into sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id ) values ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}') returning *`,
-    "Q87"  : `select sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite, sc.created_at, c.closer_id, c.closer_percentage from sales_commission as sc 
+    "Q86"  : `insert into sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_id, revenue_id ) values ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}') returning *`,
+    "Q87"  : `select sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_id, sc.revenue_id, sc.created_at, c.closer_id, c.closer_percentage from sales_commission as sc 
               inner join sales_closer as c on sc.id = c.sales_commission_id
               where sc.company_id = '{var1}' and sc.deleted_at is null and c.deleted_at is null`,
-    "Q88"  : `select id,customer_company_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id from customers where id = '{var1}' and deleted_at is null`,
+    "Q88"  : `select id,customer_company_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id, business_id, revenue_id from customers where id = '{var1}' and deleted_at is null`,
     "Q89"  : `select id, closer_percentage, supporter_percentage from commission_split where id ='{var1}' and company_id = '{var2}' and deleted_at is null`,
     "Q90"  : `update commission_split set closer_id = '{var1}' where id = '{var2}' and deleted_at is null returning *`,
     "Q91"  : `insert into sales_supporter(id, commission_split_id ,supporter_id, supporter_percentage, sales_commission_id, company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') returning *`,
