@@ -2359,10 +2359,8 @@ module.exports.deleteContactForCustomer = async (req, res) => {
                     await connection.query('BEGIN')
                     if(type == 'business'){
                         let businessIds = JSON.parse(customerData.rows[0].business_id)
-                        console.log(businessIds,"11111");
                         let index = businessIds.indexOf(id);
                         businessIds.splice(index, 1)
-                        console.log(businessIds,"2");
 
                         let s5 = dbScript(db_sql['Q120'],{var1 : customerId, var2: JSON.stringify(businessIds) })
                         updateCustomer = await connection.query(s5)
@@ -4111,14 +4109,12 @@ module.exports.updateRevenueForecast = async (req, res) => {
 }
 
 let firstLastDate = async(date1,increment)=>{
-    console.log(date1, increment);
     let firstDay = new Date(date1.getFullYear(), date1.getMonth(), 2);
     let firstDay1 = new Date(firstDay.getTime() + firstDay.getTimezoneOffset() * 60000);
     firstDay1 = firstDay1.toString().split('GMT')
     let lastDay = new Date(date1.getFullYear(), date1.getMonth() + increment, 1);
     let lastDay1 = new Date(lastDay.getTime() + lastDay.getTimezoneOffset() * 60000);
     lastDay1 = lastDay1.toString().split('GMT')
-    console.log({firstDay1,lastDay1});
     return {firstDay1,lastDay1}
 }
 
@@ -4143,7 +4139,6 @@ module.exports.actualVsForecast = async (req, res) => {
                 let s4 = dbScript(db_sql['Q109'], { var1: id })
                 let forecastRevenue = await connection.query(s4)
                 if (forecastRevenue.rowCount > 0) {
-                    console.log(forecastRevenue.rows);
                     let revenue = forecastRevenue.rows[0].revenue
                     let growthWindow = forecastRevenue.rows[0].growth_window
                     let growthPercentage = forecastRevenue.rows[0].growth_percentage
@@ -4166,7 +4161,7 @@ module.exports.actualVsForecast = async (req, res) => {
                             let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: firstDay1[0], var3: lastDay1[0] })
                             let actualRevenue = await connection.query(s5)
 
-                            let sum = 0;
+                            let sum = 0; 
                             for (let data of actualRevenue.rows) {
                                 if (data.target_amount) {
                                     sum = sum + Number(data.target_amount)
@@ -4221,16 +4216,32 @@ module.exports.actualVsForecast = async (req, res) => {
                             }
                             break;
                         case 'Quarterly':
-                            revenueData.push( Number(revenue))
+                            revenueData.push(Number(revenue))
                             date = createDate
+                            dateArr.push(date)
+
+                            let days1 = await firstLastDate(date, 4)
+
+                            let s7 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: days1.firstDay1[0], var3: days1.lastDay1[0] })
+                            let actualRevenue3 = await connection.query(s7)
+
+                            let sum3 = 0;
+                            for (let data of actualRevenue3.rows) {
+                                if (data.target_amount) {
+                                    sum3 = sum3 + Number(data.target_amount)
+                                }
+                            }
+                            actualData.push(sum3)
+
                             for (i = 1; i <= 3; i++) {
                                 if (growthWindow != count) {
                                     let newDate = new Date(date)
-                                    date = newDate.setMonth(newDate.getMonth() + 1);
-                                    revenueData.push(Number(revenue))
+                                    date = newDate.setMonth(newDate.getMonth() + 4);
+                                    revenue = (Number(revenue) + Number(revenue) * (Number(growthPercentage) / 100))
+                                    revenueData.push(Number(revenue.toFixed(2)))
                                     let date1 = new Date(date)
                                     dateArr.push(date1)
-                                    let { firstDay1, lastDay1 } = await firstLastDate(date1, 3)
+                                    let { firstDay1, lastDay1 } = await firstLastDate(date1, 4)
                                     let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: firstDay1[0], var3: lastDay1[0] })
                                     let actualRevenue = await connection.query(s5)
                                     let sum = 0;
@@ -4246,7 +4257,7 @@ module.exports.actualVsForecast = async (req, res) => {
                                 } else {
                                     count = 0
                                     let newDate = new Date(date)
-                                    date = newDate.setMonth(newDate.getMonth() + 1);
+                                    date = newDate.setMonth(newDate.getMonth() + 4);
                                     revenue = (Number(revenue) + Number(revenue) * (Number(growthPercentage) / 100))
                                     revenueData.push(Number(revenue.toFixed(2)))
                                     let date1 = new Date(date)
@@ -4263,6 +4274,11 @@ module.exports.actualVsForecast = async (req, res) => {
                                     actualData.push(sum)
                                 }
                             }
+                            actualVsForecastObj = {
+                                actualRevenue: actualData,
+                                forecastRevenue: revenueData,
+                                date: dateArr
+                            }
                             break;
                         case 'Annual':
                             revenueData.push(Number(revenue))
@@ -4270,7 +4286,7 @@ module.exports.actualVsForecast = async (req, res) => {
 
                             dateArr.push(date2)
 
-                            let days= await firstLastDate(date2, 12)
+                            let days = await firstLastDate(date2, 12)
 
                             let s6 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: days.firstDay1[0], var3: days.lastDay1[0] })
                             let actualRevenue1 = await connection.query(s6)
@@ -4281,15 +4297,29 @@ module.exports.actualVsForecast = async (req, res) => {
                                 }
                             }
                             actualData.push(sum1)
+
+                            actualVsForecastObj = {
+                                actualRevenue: actualData,
+                                forecastRevenue: revenueData,
+                                date: dateArr
+                            }
                             break;
                     }
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Actual vs Forecast data",
-                        data: actualVsForecastObj
-                    })
+                    if (actualVsForecastObj) {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Actual vs Forecast data",
+                            data: actualVsForecastObj
+                        })
+                    }
+
                 } else {
+                    actualVsForecastObj = {
+                        actualRevenue: [],
+                        forecastRevenue: [],
+                        date: []
+                    }
                     res.json({
                         status: 200,
                         success: false,
