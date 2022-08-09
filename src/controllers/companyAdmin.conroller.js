@@ -2131,7 +2131,7 @@ module.exports.customerList = async (req, res) => {
                             let s4 = dbScript(db_sql['Q88'], { var1: data.id })
                             let contactDetails = await connection.query(s4)
                             if (contactDetails.rowCount > 0) {
-                                if(contactDetails.rows[0].business_id != null && contactDetails.rows[0].revenue_id != null){
+                                if (contactDetails.rows[0].business_id != null && contactDetails.rows[0].revenue_id != null) {
 
                                     let businessIds = JSON.parse(contactDetails.rows[0].business_id)
                                     let revenueIds = JSON.parse(contactDetails.rows[0].revenue_id)
@@ -2147,18 +2147,18 @@ module.exports.customerList = async (req, res) => {
                                         let revenueData = await connection.query(s5)
                                         revenueContact.push(revenueData.rows[0])
                                     }
-                                    customerContactDetails.businessContact = businessContact
-                                    customerContactDetails.revenueContact = revenueContact
-                                    data.customerContactDetails = customerContactDetails
+                                    data.businessContact = businessContact
+                                    data.revenueContact = revenueContact
+                                    
+                                } else {
+                                    data.businessContact = [];
+                                    data.revenueContact = [];
                                 }
-                                customerArr.push(data)
-                            }else{
-
-                                    customerContactDetails.businessContact = []
-                                    customerContactDetails.revenueContact = []
-                                    data.customerContactDetails = customerContactDetails
-
+                            } else {
+                                data.businessContact = [];
+                                data.revenueContact = [];
                             }
+                            customerArr.push(data);
                         }
                     }
 
