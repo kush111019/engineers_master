@@ -2152,6 +2152,12 @@ module.exports.customerList = async (req, res) => {
                                     data.customerContactDetails = customerContactDetails
                                 }
                                 customerArr.push(data)
+                            }else{
+
+                                    customerContactDetails.businessContact = []
+                                    customerContactDetails.revenueContact = []
+                                    data.customerContactDetails = customerContactDetails
+
                             }
                         }
                     }
@@ -3290,11 +3296,11 @@ module.exports.salesCommissionList = async (req, res) => {
 
                     let s7 = dbScript(db_sql['Q94'], { var1: data.id })
                     let supporter = await connection.query(s7)
-                    
-                    if(supporter.rowCount > 0) { 
-                        if(supporter.rows[0].supporter_id != ""){
+
+                    if (supporter.rowCount > 0) {
+                        if (supporter.rows[0].supporter_id != "") {
                             for (supporterData of supporter.rows) {
-                                
+
                                 let s8 = dbScript(db_sql['Q12'], { var1: supporterData.supporter_id })
                                 let supporterName = await connection.query(s8)
                                 supporters.push({
@@ -3302,33 +3308,35 @@ module.exports.salesCommissionList = async (req, res) => {
                                     name: supporterName.rows[0].full_name,
                                     percentage: supporterData.supporter_percentage
                                 })
-                                
+
                             }
                         }
                     }
 
-                    
+                    if (data.business_id != null && data.revenue_id != null) {
 
-                        let s8 = dbScript(db_sql['Q117'], {var1 : data.business_id})
+
+                        let s8 = dbScript(db_sql['Q117'], { var1: data.business_id })
                         let businessData = await connection.query(s8);
-                        
-                        let s9 = dbScript(db_sql['Q118'], {var1 : data.revenue_id})
+
+                        let s9 = dbScript(db_sql['Q118'], { var1: data.revenue_id })
                         let revenueData = await connection.query(s9);
-                        
+
                         businessContact = {
-                            businessId : businessData.rows[0].id,
-                            businessContactName : businessData.rows[0].business_contact_name,
-                            businessEmail : businessData.rows[0].business_email,
-                            businessPhoneNumber : businessData.rows[0].business_phone_number
+                            businessId: businessData.rows[0].id,
+                            businessContactName: businessData.rows[0].business_contact_name,
+                            businessEmail: businessData.rows[0].business_email,
+                            businessPhoneNumber: businessData.rows[0].business_phone_number
                         }
-                        
+
                         revenueContact = {
-                            revenueId : revenueData.rows[0].id,
-                            revenueContactName : revenueData.rows[0].revenue_contact_name,
-                            revenueEmail : revenueData.rows[0].revenue_email,
-                            revenuePhoneNumber : revenueData.rows[0].revenue_phone_number
+                            revenueId: revenueData.rows[0].id,
+                            revenueContactName: revenueData.rows[0].revenue_contact_name,
+                            revenueEmail: revenueData.rows[0].revenue_email,
+                            revenuePhoneNumber: revenueData.rows[0].revenue_phone_number
                         }
-                    
+                    }
+
 
 
                     closer.id = data.id
