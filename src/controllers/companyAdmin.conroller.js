@@ -2111,8 +2111,6 @@ module.exports.customerList = async (req, res) => {
                     let customerArr = []
                     let s4 = dbScript(db_sql['Q70'], { var1: findAdmin.rows[0].company_id })
                     let customerList = await connection.query(s4)
-                    let businessContact = {}
-                    let revenueContact = {}
 
                     if (customerList.rowCount > 0) {
                         for (data of customerList.rows) {
@@ -2125,8 +2123,6 @@ module.exports.customerList = async (req, res) => {
                             } else {
                                 data.createdBy = ""
                             }
-
-                            let customerContactDetails = {};
 
                             let s4 = dbScript(db_sql['Q88'], { var1: data.id })
                             let contactDetails = await connection.query(s4)
@@ -3112,29 +3108,44 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
 
                 let s4 = dbScript(db_sql['Q88'], { var1: customerId })
                 let contactDetails = await connection.query(s4)
-                if (contactDetails.rowCount > 0 ) {
-                    let businessIds = JSON.parse(contactDetails.rows[0].business_id)
-                    let revenueIds = JSON.parse(contactDetails.rows[0].revenue_id)
-                    let businessContact = [];
-                    let revenueContact = [];
-                    for(id of businessIds){
-                        let s5 = dbScript(db_sql['Q117'], {var1 : id})
-                        let businessData = await connection.query(s5)
-                        businessContact.push(businessData.rows[0])
+                if (contactDetails.rowCount > 0) {
+                    if (contactDetails.rows[0].business_id != null && contactDetails.rows[0].revenue_id != null) {
+                        let businessIds = JSON.parse(contactDetails.rows[0].business_id)
+                        let revenueIds = JSON.parse(contactDetails.rows[0].revenue_id)
+                        let businessContact = [];
+                        let revenueContact = [];
+                        for (id of businessIds) {
+                            let s5 = dbScript(db_sql['Q117'], { var1: id })
+                            let businessData = await connection.query(s5)
+                            businessContact.push(businessData.rows[0])
+                        }
+                        for (id of revenueIds) {
+                            let s5 = dbScript(db_sql['Q118'], { var1: id })
+                            let revenueData = await connection.query(s5)
+                            revenueContact.push(revenueData.rows[0])
+                        }
+                        customerContactDetails.businessContact = businessContact
+                        customerContactDetails.revenueContact = revenueContact
+
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Customer contact details",
+                            data : customerContactDetails
+                        })
+                        
                     }
-                    for(id of revenueIds){
-                        let s5 = dbScript(db_sql['Q118'], {var1 : id})
-                        let revenueData = await connection.query(s5)
-                        revenueContact.push(revenueData.rows[0])
+                    else {
+                        customerContactDetails.businessContact = []
+                        customerContactDetails.revenueContact = []
+
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Empty customer contact details",
+                            data : customerContactDetails
+                        })
                     }
-                    customerContactDetails.businessContact = businessContact
-                    customerContactDetails.revenueContact = revenueContact
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: 'Customer contact details',
-                        data: customerContactDetails
-                    })
                 } else {
 
                     customerContactDetails.businessContact = []
@@ -3142,9 +3153,9 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
 
                     res.json({
                         status: 200,
-                        success: false,
-                        message: 'Empty customer contact details',
-                        data: customerContactDetails
+                        success: true,
+                        message: "Empty customer contact details",
+                        data : customerContactDetails
                     })
                 }
             } else {
