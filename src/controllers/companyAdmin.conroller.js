@@ -2217,7 +2217,7 @@ module.exports.editCustomer = async (req, res) => {
             targetClosingDate,
             businessContact,
             revenueContact
-            
+
         } = req.body
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -2231,16 +2231,14 @@ module.exports.editCustomer = async (req, res) => {
             if (checkPermission.rows[0].permission_to_update) {
 
                 await connection.query('BEGIN')
-
+                let bId = [];
+                let rId = [];
                 let compId = ''
                 let s4 = dbScript(db_sql['Q88'], { var1: customerId })
                 let findCustomerCom = await connection.query(s4)
-                if(findCustomerCom.rowCount > 0){
-
+                if (findCustomerCom.rowCount > 0) {
                     compId = findCustomerCom.rows[0].customer_company_id
-                    
-                    let bId = [];
-                    let rId = [];
+
                     for (businessData of businessContact) {
                         if (businessData.businessId == '') {
                             let businessId = uuid.v4()
@@ -2267,10 +2265,11 @@ module.exports.editCustomer = async (req, res) => {
                             rId.push(updateRevenueContact.rows[0].id)
                         }
                     }
+
                 }
 
                 let _dt = new Date().toISOString();
-                let s5 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: mysql_real_escape_string(qualification), var4: is_qualified, var5: targetAmount, var6: mysql_real_escape_string(productMatch), var7: targetClosingDate, var8: _dt, var9: customerId , var10 : JSON.stringify(bId), var11 : JSON.stringify(rId) } )
+                let s5 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: mysql_real_escape_string(qualification), var4: is_qualified, var5: targetAmount, var6: mysql_real_escape_string(productMatch), var7: targetClosingDate, var8: _dt, var9: customerId, var10: JSON.stringify(bId), var11: JSON.stringify(rId) })
                 let updateCustomer = await connection.query(s5)
 
                 if (updateCustomer.rowCount > 0) {
@@ -3330,25 +3329,20 @@ module.exports.salesCommissionList = async (req, res) => {
                         let s8 = dbScript(db_sql['Q117'], { var1: data.business_id })
                         let businessData = await connection.query(s8);
 
+                        closer.businessContactId =businessData.rows[0].id,
+                        closer.businessContactName =businessData.rows[0].business_contact_name
+
                         let s9 = dbScript(db_sql['Q118'], { var1: data.revenue_id })
                         let revenueData = await connection.query(s9);
 
-                        businessContact = {
-                            businessId: businessData.rows[0].id,
-                            businessContactName: businessData.rows[0].business_contact_name,
-                            businessEmail: businessData.rows[0].business_email,
-                            businessPhoneNumber: businessData.rows[0].business_phone_number
-                        }
-
-                        revenueContact = {
-                            revenueId: revenueData.rows[0].id,
-                            revenueContactName: revenueData.rows[0].revenue_contact_name,
-                            revenueEmail: revenueData.rows[0].revenue_email,
-                            revenuePhoneNumber: revenueData.rows[0].revenue_phone_number
-                        }
+                        closer.revenueContactId =revenueData.rows[0].id,
+                        closer.revenueContactName =revenueData.rows[0].revenue_contact_name
+                    }else{
+                        closer.businessContactId =""
+                        closer.businessContactName =""
+                        closer.revenueContactId =""
+                        closer.revenueContactName =""
                     }
-
-
 
                     closer.id = data.id
                     closer.customerId = data.customer_id
@@ -3361,8 +3355,6 @@ module.exports.salesCommissionList = async (req, res) => {
                     closer.supporters = supporters
                     closer.createdAt = data.created_at
                     closer.closedAt = customerName.rows[0].closed_at
-                    closer.businessContact = businessContact
-                    closer.revenueContact = revenueContact
 
                     commissionList.push(closer)
                 }
@@ -4033,6 +4025,16 @@ module.exports.updateRevenueForecast = async (req, res) => {
 
 }
 
+let firstLastDate = async(date1)=>{
+    let firstDay = new Date(date1.getFullYear(), date1.getMonth(), 2);
+    let firstDay1 = new Date(firstDay.getTime() + firstDay.getTimezoneOffset() * 60000);
+    firstDay1 = firstDay1.toString().split('GMT')
+    let lastDay = new Date(date1.getFullYear(), date1.getMonth() + 1, 1);
+    let lastDay1 = new Date(lastDay.getTime() + lastDay.getTimezoneOffset() * 60000);
+    lastDay1 = lastDay1.toString().split('GMT')
+    return {firstDay1,lastDay1}
+}
+
 module.exports.actualVsForecast = async (req, res) => {
     try {
         let { id } = req.query
@@ -4060,122 +4062,151 @@ module.exports.actualVsForecast = async (req, res) => {
                     let createDate = forecastRevenue.rows[0].created_at
                     let timeline = forecastRevenue.rows[0].timeline
                     let revenueData = [];
-                    let date ;
+                    let actualData = []
+                    let dateArr = []
+                    let date;
                     let count = 0;
                     switch (timeline) {
                         case 'Monthly':
-                            revenueData.push({
-                                revenue : Number(revenue),
-                                growthPercentage : growthPercentage,
-                                growthWindow : growthWindow,
-                                createDate: createDate
-                            }) 
+                            revenueData.push(Number(revenue))
+                            let date1 = new Date(createDate)
+
+                            dateArr.push(date1)
+
+                            let { firstDay1, lastDay1 } = await firstLastDate(date1)
+
+                            let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: firstDay1[0], var3: lastDay1[0] })
+                            let actualRevenue = await connection.query(s5)
+
+                            let sum = 0;
+                            for (let data of actualRevenue.rows) {
+                                if (data.target_amount) {
+                                    sum = sum + Number(data.target_amount)
+                                }
+                            }
+                            actualData.push(sum)
+
                             date = createDate
-                            for (i = 1; i <= 11; i++){
-                                if( growthWindow != count){
+                            for (i = 1; i <= 11; i++) {
+                                if (growthWindow != count) {
                                     let newDate = new Date(date)
                                     date = newDate.setMonth(newDate.getMonth() + 1);
-                                    revenueData.push({
-                                        revenue : Number(revenue),
-                                        growthPercentage : growthPercentage,
-                                        growthWindow : growthWindow,
-                                        createDate : new Date(date)
-                                    }) 
-                                    count++;  
-                                }else{
+                                    revenueData.push(Number(revenue))
+                                    let date1 = new Date(date)
+                                    dateArr.push(date1)
+                                    let { firstDay1, lastDay1 } = await firstLastDate(date1)
+                                    let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: firstDay1[0], var3: lastDay1[0] })
+                                    let actualRevenue = await connection.query(s5)
+                                    let sum = 0;
+                                    for (let data of actualRevenue.rows) {
+                                        if (data.target_amount) {
+                                            sum = sum + Number(data.target_amount)
+
+                                        }
+                                    }
+                                    actualData.push(sum)
+                                    count++;
+                                } else {
                                     count = 0
                                     let newDate = new Date(date)
                                     date = newDate.setMonth(newDate.getMonth() + 1);
-                                    revenue = (Number(revenue) + Number(revenue)*(Number(growthPercentage)/100))
-                                    
-                                    revenueData.push({
-                                        revenue : Number(revenue.toFixed(2)),
-                                        growthPercentage : growthPercentage,
-                                        growthWindow : growthWindow,
-                                        createDate :new Date(date)
-                                    })   
+                                    revenue = (Number(revenue) + Number(revenue) * (Number(growthPercentage) / 100))
+                                    revenueData.push(Number(revenue.toFixed(2)))
+                                    let date1 = new Date(date)
+                                    dateArr.push(date1)
+                                    let { firstDay1, lastDay1 } = await firstLastDate(date1)
+                                    let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: firstDay1[0], var3: lastDay1[0] })
+                                    let actualRevenue = await connection.query(s5)
+                                    let sum = 0;
+                                    for (let data of actualRevenue.rows) {
+                                        if (data.target_amount) {
+                                            sum = sum + Number(data.target_amount)
+                                        }
+                                    }
+                                    actualData.push(sum)
+                                }
+                            }
+                            actualVsForecastObj = {
+                                actualRevenue: actualData,
+                                forecastRevenue: revenueData,
+                                date: dateArr
+                            }
+                            break;
+                        case 'Quarterly':
+                            revenueData.push( Number(revenue))
+                            date = createDate
+                            for (i = 1; i <= 3; i++) {
+                                if (growthWindow != count) {
+                                    let newDate = new Date(date)
+                                    date = newDate.setMonth(newDate.getMonth() + 1);
+                                    revenueData.push(Number(revenue))
+                                    let date1 = new Date(date)
+                                    dateArr.push(date1)
+                                    let { firstDay1, lastDay1 } = await firstLastDate(date1)
+                                    let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: firstDay1[0], var3: lastDay1[0] })
+                                    let actualRevenue = await connection.query(s5)
+                                    let sum = 0;
+                                    for (let data of actualRevenue.rows) {
+                                        if (data.target_amount) {
+                                            sum = sum + Number(data.target_amount)
+
+                                        }
+                                    }
+                                    actualData.push(sum)
+
+                                    count++;
+                                } else {
+                                    count = 0
+                                    let newDate = new Date(date)
+                                    date = newDate.setMonth(newDate.getMonth() + 1);
+                                    revenue = (Number(revenue) + Number(revenue) * (Number(growthPercentage) / 100))
+                                    revenueData.push(Number(revenue.toFixed(2)))
+                                    let date1 = new Date(date)
+                                    dateArr.push(date1)
+                                    let { firstDay1, lastDay1 } = await firstLastDate(date1)
+                                    let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: firstDay1[0], var3: lastDay1[0] })
+                                    let actualRevenue = await connection.query(s5)
+                                    let sum = 0;
+                                    for (let data of actualRevenue.rows) {
+                                        if (data.target_amount) {
+                                            sum = sum + Number(data.target_amount)
+                                        }
+                                    }
+                                    actualData.push(sum)
                                 }
                             }
                             break;
-                        case 'Quarterly': 
-                                revenueData.push({
-                                    revenue : Number(revenue),
-                                    growthPercentage : growthPercentage,
-                                    growthWindow : growthWindow,
-                                    createDate: createDate
-                                }) 
-                                date = createDate
-                                for (i = 1; i <= 3; i++){
-                                    if( growthWindow != count){
-                                        let newDate = new Date(date)
-                                        date = newDate.setMonth(newDate.getMonth() + 4);
-                                        revenueData.push({
-                                            revenue : Number(revenue),
-                                            growthPercentage : growthPercentage,
-                                            growthWindow : growthWindow,
-                                            createDate : new Date(date)
-                                        }) 
-                                        count++;  
-                                    }else{
-                                        count = 0
-                                        let newDate = new Date(date)
-                                        date = newDate.setMonth(newDate.getMonth() + 4);
-                                        revenue = (Number(revenue) + Number(revenue)*(Number(growthPercentage)/100))
-                                        revenueData.push({
-                                            revenue : Number(revenue.toFixed(2)),
-                                            growthPercentage : growthPercentage,
-                                            growthWindow : growthWindow,
-                                            createDate :new Date(date)
-                                        })  
-                                    }
-                                }
-                            break;
                         case 'Annual':
-                            revenueData.push({
-                                revenue : Number(revenue),
-                                growthPercentage : growthPercentage,
-                                growthWindow : growthWindow,
-                                createDate: createDate
-                            })
+                            revenueData.push(Number(revenue))
+                            let date2 = new Date(createDate)
+
+                            dateArr.push(date2)
+
+                            let { firstDay, lastDay } = await firstLastDate(date2)
+
+                            let s6 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: firstDay[0], var3: lastDay[0] })
+                            let actualRevenue1 = await connection.query(s6)
+                            let sum1 = 0;
+                            for (let data of actualRevenue1.rows) {
+                                if (data.target_amount) {
+                                    sum1 = sum1 + Number(data.target_amount)
+                                }
+                            }
+                            actualData.push(sum1)
                             break;
-                        
                     }
-                    // actualVsForecastObj.forecastRevenue = forecastRevenue.rows[0].revenue
-                    // actualVsForecastObj.forecastStartDate = forecastRevenue.rows[0].start_date
-                    // actualVsForecastObj.forecastEndDate = forecastRevenue.rows[0].end_date
-
-                    // let s5 = dbScript(db_sql['Q110'], { var1: forecastRevenue.rows[0].start_date, var2: forecastRevenue.rows[0].end_date })
-                    // let actualRevenue = await connection.query(s5)
-
-                    // let actualRevenueArr = []
-                    // if (actualRevenue.rowCount > 0) {
-
-                    //     for (data of actualRevenue.rows) {
-                    //         actualRevenueArr.push({
-                    //             actualRevenue: data.target_amount,
-                    //             closedAt: data.closed_at
-                    //         })
-                    //     }
-
-                    //     actualVsForecastObj.actualRevenue = actualRevenueArr
-
-                    // }else{
-
-                    //     actualVsForecastObj.actualRevenue = actualRevenueArr
-                    // }
-
                     res.json({
                         status: 200,
                         success: true,
                         message: "Actual vs Forecast data",
-                        data: revenueData
+                        data: actualVsForecastObj
                     })
                 } else {
                     res.json({
                         status: 200,
                         success: false,
                         message: "Empty Actual vs Forecast data",
-                        data:revenueData
+                        data: actualVsForecastObj
                     })
                 }
 
