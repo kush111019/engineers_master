@@ -2152,6 +2152,12 @@ module.exports.customerList = async (req, res) => {
                                     data.customerContactDetails = customerContactDetails
                                 }
                                 customerArr.push(data)
+                            }else{
+
+                                    customerContactDetails.businessContact = []
+                                    customerContactDetails.revenueContact = []
+                                    data.customerContactDetails = customerContactDetails
+                                    
                             }
                         }
                     }
