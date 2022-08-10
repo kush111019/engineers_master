@@ -418,6 +418,7 @@ module.exports.updateUserProfile = async (req, res) => {
             let s2 = dbScript(db_sql['Q17'], { var1: mysql_real_escape_string(name), var2: avatar, var3: emailAddress, var4: phoneNumber, var5: mobileNumber, var6: mysql_real_escape_string(address), var7: _dt, var8: userMail })
             let updateUser = await connection.query(s2)
             await connection.query('COMMIT')
+            console.log(updateUser.rows);
             if (updateUser.rowCount > 0) {
                 res.json({
                     success: true,
@@ -1377,7 +1378,8 @@ module.exports.updateUser = async (req, res) => {
             name,
             mobileNumber,
             address,
-            roleId
+            roleId,
+            avatar
         } = req.body
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -1392,9 +1394,11 @@ module.exports.updateUser = async (req, res) => {
 
                 let _dt = new Date().toISOString();
                 await connection.query('BEGIN')
-                let s4 = dbScript(db_sql['Q39'], { var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt })
+                let s4 = dbScript(db_sql['Q39'], {var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8 : avatar})
                 let updateUser = await connection.query(s4)
+                console.log(s4);
                 await connection.query('COMMIT')
+                console.log(updateUser.rows);
                 if (updateUser.rowCount > 0) {
                     res.json({
                         status: 200,
@@ -2271,7 +2275,7 @@ module.exports.editCustomer = async (req, res) => {
                 let _dt = new Date().toISOString();
                 let s5 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: mysql_real_escape_string(qualification), var4: is_qualified, var5: targetAmount, var6: mysql_real_escape_string(productMatch), var7: targetClosingDate, var8: _dt, var9: customerId, var10: JSON.stringify(bId), var11: JSON.stringify(rId) })
                 let updateCustomer = await connection.query(s5)
-
+                console.log(updateCustomer.rows,"update",s5);
                 if (updateCustomer.rowCount > 0) {
 
                     let id = uuid.v4()
@@ -4108,16 +4112,6 @@ module.exports.updateRevenueForecast = async (req, res) => {
 
 }
 
-let firstLastDate = async (date1, increment) => {
-    let firstDay = new Date(date1.getFullYear(), date1.getMonth(), 2);
-    let firstDay1 = new Date(firstDay.getTime() + firstDay.getTimezoneOffset() * 60000);
-    firstDay1 = firstDay1.toString().split('GMT')
-    let lastDay = new Date(date1.getFullYear(), date1.getMonth() + increment, 1);
-    let lastDay1 = new Date(lastDay.getTime() + lastDay.getTimezoneOffset() * 60000);
-    lastDay1 = lastDay1.toString().split('GMT')
-    return { firstDay1, lastDay1 }
-}
-
 let getMonthDifference = async (startDate, endDate) => {
     var months = endDate.getMonth() - startDate.getMonth()
         + (12 * (endDate.getFullYear() - startDate.getFullYear()));
@@ -4132,7 +4126,6 @@ let getYearDifference = async (startDate, endDate) => {
     let years = endDate.getFullYear() - startDate.getFullYear();;
     return years;
 }
-
 
 module.exports.actualVsForecast = async (req, res) => {
     try {
@@ -4187,7 +4180,6 @@ module.exports.actualVsForecast = async (req, res) => {
                                     }
                                     actualData.push(sum)
                                 } else {
-                                    //-----------------
                                     if (growthWindow != count) {
 
                                         month = month + 1;
@@ -4220,9 +4212,6 @@ module.exports.actualVsForecast = async (req, res) => {
                                         actualData.push(sum)
                                     }
                                 }
-
-
-
                             }
                             break;
                         case 'Quarterly':
