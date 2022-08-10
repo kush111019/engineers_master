@@ -37,7 +37,7 @@ const db_sql = {
     "Q36"  : `insert into sales_entries(id, user_id, client_name, client_email, client_contact, amount, description) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') returning *`,
     "Q37"  : `select id, amount, description, client_name, client_email, client_contact where user_id = '{var1}' and deleted_at is null`,
     "Q38"  : `select id, amount, description, client_name, client_email, client_contact where company_id = '{var1}' and deleted_at is null`,
-    "Q39"  : `update users set email_address = '{var1}', full_name ='{var2}', mobile_number = '{var3}', address = '{var4}', role_id = '{var5}' , updated_at = '{var7}' where id = '{var6}' and deleted_at is null RETURNING * `,
+    "Q39"  : `update users set email_address = '{var1}', full_name ='{var2}', mobile_number = '{var3}', address = '{var4}', role_id = '{var5}' , updated_at = '{var7}',avatar = '{var8}' where id = '{var6}' and deleted_at is null RETURNING * `,
     "Q40"  : `update users set deleted_at = '{var1}' where id = '{var2}' and deleted_at is null RETURNING * `,
     "Q41"  : `select id,email_address, full_name, company_id, avatar,mobile_number,address,role_id from users where id = '{var1}' and deleted_at is null`,
     "Q42"  : `update roles set role_name = '{var1}', reporter = '{var2}',updated_at = '{var4}' where id = '{var3}' and deleted_at is null returning *`,

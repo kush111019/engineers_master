@@ -100,52 +100,6 @@
           ]
         },
         {
-          "name": "forgotPassword",
-          "id": "4791e1c9-3d73-4d81-b567-fb672f95e96c",
-          "request": {
-            "method": "POST",
-            "header": [
-              
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"emailAddress\" : \"user2.stylecabbie@yopmail.com\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": "{{users}}/forgotPassword"
-          },
-          "response": [
-            
-          ]
-        },
-        {
-          "name": "reset password",
-          "id": "1894414f-2e41-42b2-86f3-e0b341c0c6d4",
-          "request": {
-            "method": "POST",
-            "header": [
-              
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"token\" : \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE2NjNkNDhlLTVlNGQtNDAzZC1hMGExLTA4YTIxZjFkM2IxYyIsImVtYWlsIjoidXNlcjIuc3R5bGVjYWJiaWVAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTQ3NTY4NjEsImV4cCI6MTY4NjI5Mjg2MX0.ao8dL0EJTrdazAO8QaUnxum-JsJwBcSRreWY9CkPhwE\",\r\n    \"password\" : \"user2#123#\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": "{{companyAdmin}}/resetPassword"
-          },
-          "response": [
-            
-          ]
-        },
-        {
           "name": "upload avatar",
           "id": "56b7087a-4ad0-44b9-b5bc-aef1321b3e3f",
           "request": {
@@ -415,7 +369,7 @@
                     "type": "text"
                   }
                 ],
-                "url": "http://localhost:3003/api/v1/companyAdmin/slabList"
+                "url": "{{companyAdmin}}/slabList"
               },
               "response": [
                 
@@ -435,41 +389,14 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"slabs\": [\r\n        {\r\n            \"minAmount\": \"0\",\r\n            \"maxAmount\" : \"100000\",\r\n            \"percentage\": \"10%\",\r\n            \"isMax\" : false\r\n        },\r\n        {\r\n            \"minAmount\": \"100001\",\r\n            \"maxAmount\" : \"1000000\",\r\n            \"percentage\": \"8%\",\r\n            \"isMax\" : false\r\n        },\r\n        {\r\n            \"minAmount\": \"1000000\",\r\n            \"maxAmount\" : \"1500000\",\r\n            \"percentage\": \"5%\",\r\n            \"isMax\" : false\r\n        }\r\n    ]\r\n}",
+                  "raw": "{\r\n    \"slabs\": [\r\n        {\r\n            \"minAmount\": \"0\",\r\n            \"maxAmount\" : \"100000\",\r\n            \"percentage\": 10,\r\n            \"isMax\" : false\r\n        },\r\n        {\r\n            \"minAmount\": \"100010\",\r\n            \"maxAmount\" : \"1000000\",\r\n            \"percentage\": 8,\r\n            \"isMax\" : false\r\n        },\r\n        {\r\n            \"minAmount\": \"1000010\",\r\n            \"maxAmount\" : \"1500000\",\r\n            \"percentage\": 5,\r\n            \"isMax\" : false\r\n        }\r\n    ]\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
                     }
                   }
                 },
-                "url": "http://143.198.102.134:3003/api/v1/companyAdmin/createSlab"
-              },
-              "response": [
-                
-              ]
-            },
-            {
-              "name": "Update Slab",
-              "id": "5d9f1d94-0b48-46ab-994a-6628f9de85a0",
-              "request": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"slabs\": [\r\n        {\r\n        \"slabId\": \"e23e303a-a64d-4d11-ae51-81deb298da3f\",   \r\n        \"minAmount\": \"0\",\r\n        \"maxAmount\" : \"100000\",\r\n        \"percentage\": \"10%\",\r\n        \"isMax\" : false\r\n    },\r\n    {\r\n        \"slabId\": \"62804a16-7a4a-4893-9379-5d3da6fe8fb9\",\r\n        \"minAmount\": \"100001\",\r\n        \"maxAmount\" : \"800000\",\r\n        \"percentage\": \"5%\",\r\n        \"isMax\" : false\r\n    },\r\n    {\r\n        \"slabId\": \"9f14c827-acc0-452c-a9e6-00548508cfec\",\r\n        \"minAmount\": \"800001\",\r\n        \"maxAmount\" : \"No limit\",\r\n        \"percentage\": \"3%\",\r\n        \"isMax\" : true\r\n    }\r\n    ]\r\n  }",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{companyAdmin}}/updateSlab"
+                "url": "{{companyAdmin}}/createSlab"
               },
               "response": [
                 
@@ -489,7 +416,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"slab\" : [\r\n                {\r\n                    \"slabId\" : \"e23e303a-a64d-4d11-ae51-81deb298da3f\"\r\n                },\r\n                {\r\n                    \"slabId\" : \"62804a16-7a4a-4893-9379-5d3da6fe8fb9\"\r\n                },                \r\n                {\r\n                    \"slabId\" : \"9f14c827-acc0-452c-a9e6-00548508cfec\"\r\n                }\r\n    ]\r\n}",
+                  "raw": "{\r\n\r\n    \"slabId\" : \"45464820-1ce6-4569-8829-d6748d755cb9\"\r\n              \r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -558,7 +485,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "\r\n        {\r\n            \"roleName\" : \"sales Manager 1\",\r\n            \"reporter\" : \"f05798f8-69d4-4470-a664-7ee957dc7e5b\",\r\n            \"modulePermissions\" : [\r\n                {\r\n                    \"moduleId\" : \"85d5a1aa-8eed-439e-be9c-17f7bf4c3f43\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"f40d0d01-d77a-4eca-9d0f-0a1e22606a62\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                }\r\n            ]\r\n     \r\n        }",
+                  "raw": "\r\n        {\r\n            \"roleName\" : \"sales Manager 3\",\r\n            \"reporter\" : \"524232ac-b486-40ad-828c-ca4ec00cdab8\",\r\n            \"modulePermissions\" : [\r\n                {\r\n                    \"moduleId\" : \"85d5a1aa-8eed-439e-be9c-17f7bf4c3f43\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"f40d0d01-d77a-4eca-9d0f-0a1e22606a62\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                }\r\n            ]\r\n     \r\n        }",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -669,7 +596,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"roleId\" : \"fabb6903-ea72-4209-88b5-eda7f8318f6c\",\r\n    \"status\" : \"all\"\r\n}",
+                  "raw": "{\r\n    \"roleId\" : \"524232ac-b486-40ad-828c-ca4ec00cdab8\",\r\n    \"status\" : \"child\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -684,235 +611,6 @@
             }
           ],
           "id": "be4c4a53-8120-493b-954f-2bf30454478a"
-        },
-        {
-          "name": "Leads",
-          "item": [
-            {
-              "name": "leads list",
-              "id": "f3abaf5c-784f-4aab-a809-0f7171ebe055",
-              "request": {
-                "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "url": "http://localhost:3003/api/v1/companyAdmin/leadsList"
-              },
-              "response": [
-                
-              ]
-            },
-            {
-              "name": "leads by ID",
-              "id": "ce8ba69a-505d-4844-b77f-94eb7eb484a6",
-              "protocolProfileBehavior": {
-                "disableBodyPruning": true
-              },
-              "request": {
-                "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"userId\" : \"327dd6e1-3c39-43a3-b1f0-cc34dbd73b6a\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{companyAdmin}}/showleadsById"
-              },
-              "response": [
-                
-              ]
-            },
-            {
-              "name": "create lead",
-              "id": "7c3da30b-1811-4130-ba36-11891aabea4a",
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"fullName\" : \"yash\",\r\n    \"designation\":\"sales\",\r\n    \"emailAddress\":\"yash@yopmail.com\",\r\n    \"website\":\"\",\r\n    \"phoneNumber\":\"+818 4451 265\",\r\n    \"leadValue\":\"1211320\",\r\n    \"companyName\":\"CIS\",\r\n    \"description\":\"dshfjd\",\r\n    \"address\":\"14, stark street\",\r\n    \"cityName\":\"indore\",\r\n    \"stateName\":\"india\",\r\n    \"countryName\":\"USA\",\r\n    \"zipCode\":\"90211\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "http://143.198.102.134:3003/api/v1/companyAdmin/createLead"
-              },
-              "response": [
-                
-              ]
-            },
-            {
-              "name": "update lead",
-              "id": "8d10ab43-30bd-498a-9d5c-f6fd2fc46f75",
-              "request": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"leadId\" : \"06ae589b-7ad2-4279-89c5-ead67f7b76af\",\r\n    \"fullName\" : \"Sukanta Ganguly\",\r\n    \"designation\":\"VP\",\r\n    \"emailAddress\":\"sg@yopmail.com\",\r\n    \"website\":\"htttp://www.clickIpo.com\",\r\n    \"phoneNumber\":\"+818 4451 265\",\r\n    \"leadValue\":\"2000000\",\r\n    \"companyName\":\"Click Ipo\",\r\n    \"description\":\"will get lead of very good amount from here\",\r\n    \"address\":\"14, stark street\",\r\n    \"cityName\":\"california\",\r\n    \"stateName\":\"california\",\r\n    \"countryName\":\"USA\",\r\n    \"zipCode\":\"90212\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{companyAdmin}}/updateLead"
-              },
-              "response": [
-                
-              ]
-            },
-            {
-              "name": "delete lead",
-              "id": "0ce4745b-3052-4ee2-bc4c-6cec97f082fe",
-              "request": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"leadId\" : \"06ae589b-7ad2-4279-89c5-ead67f7b76af\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{companyAdmin}}/deleteLead"
-              },
-              "response": [
-                
-              ]
-            },
-            {
-              "name": "assign Lead to user",
-              "id": "7c52bef5-870b-404c-859f-594a7fd0e394",
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"leadConfig\" : \r\n    [\r\n        {\r\n        \"userId\" : \"327dd6e1-3c39-43a3-b1f0-cc34dbd73b6a\",\r\n        \"leadId\" : \"06ae589b-7ad2-4279-89c5-ead67f7b76af\"\r\n        }\r\n    ]\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{companyAdmin}}/assignLeadToUser"
-              },
-              "response": [
-                
-              ]
-            },
-            {
-              "name": "upload lead file",
-              "id": "69f64a0c-539c-49dc-9389-b1054af293af",
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "formdata",
-                  "formdata": [
-                    {
-                      "key": "file",
-                      "type": "file",
-                      "src": "/C:/Users/kkard/Downloads/leadData.csv"
-                    },
-                    {
-                      "key": "userId",
-                      "value": "",
-                      "type": "text",
-                      "disabled": true
-                    }
-                  ]
-                },
-                "url": "{{companyAdmin}}/uploadLeadFile"
-              },
-              "response": [
-                
-              ]
-            },
-            {
-              "name": "user Wise Lead List",
-              "id": "b909f3c1-700b-4743-ad39-0bcfd0c61bcc",
-              "request": {
-                "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "url": {
-                  "raw": "{{companyAdmin}}/userWiseLeadList",
-                  "host": [
-                    "{{companyAdmin}}"
-                  ],
-                  "path": [
-                    "userWiseLeadList"
-                  ],
-                  "query": [
-                    {
-                      "key": "",
-                      "value": null,
-                      "disabled": true
-                    }
-                  ]
-                }
-              },
-              "response": [
-                
-              ]
-            }
-          ],
-          "id": "4dd7e3e1-cc5a-4ed2-a706-a742f1a7931e"
         },
         {
           "name": "users",
@@ -1009,7 +707,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"name\" : \"ankit\",\r\n    \"avatar\" : \"\",\r\n    \"emailAddress\" : \"ankit@yopmail.com\",\r\n    \"address\" : \"Indore Mp\",\r\n    \"mobileNumber\" : \"9754258352\",\r\n    \"roleId\" : \"41f4a073-2532-4649-89e4-3252b8cbdfa2\",\r\n    \"encryptedPassword\" : \"\"\r\n}",
+                  "raw": "{\r\n    \"name\" : \"Rahul\",\r\n    \"avatar\" : \"\",\r\n    \"emailAddress\" : \"rahuk@yopmail.com\",\r\n    \"address\" : \"Indore Mp\",\r\n    \"mobileNumber\" : \"9754258352\",\r\n    \"roleId\" : \"5177af86-bc06-4265-a90a-23cce60eafa2\",\r\n    \"encryptedPassword\" : \"\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1111,7 +809,7 @@
           "item": [
             {
               "name": "upload logo Copy",
-              "id": "a74e0a09-930a-446a-bfd5-63de0b66c44f",
+              "id": "9f06edaa-12b0-401b-9d40-c715c1641c38",
               "request": {
                 "method": "POST",
                 "header": [
@@ -1135,7 +833,7 @@
             },
             {
               "name": "signUp",
-              "id": "4987afaa-97d5-49ee-8bfc-0c646d49bd7b",
+              "id": "6e2c95f2-b886-4a1a-afc5-cb0d3a3c004a",
               "request": {
                 "method": "POST",
                 "header": [
@@ -1166,7 +864,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"token\" : \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkNzlkMTk4LWU1ZjAtNDk1ZC1hNjYxLTRjOWU3NTQ5ZjM2NSIsImVtYWlsIjoiYW5raXRAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTg3NjI2NTEsImV4cCI6MTY1ODg0OTA1MX0.HtgDRSsZbMsBWMcP_hbSJFOnk4A6UW060goiTq0jdRU\",\r\n    \"password\" : \"ankit@123#\"\r\n}",
+                  "raw": "{\r\n    \"token\" : \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZkNDBlZDc5LWVjYzUtNGZjOC1iY2RlLTBhYjY3YmQ1ZGQ3OSIsImVtYWlsIjoidGVzdDFAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTk1MTE0NTMsImV4cCI6MTY1OTU5Nzg1M30.DSNi8mTcyISrCnh0tdM-nf9VWctwOimYF75ytuLR3EQ\",\r\n    \"password\" : \"Test@123#\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1181,7 +879,7 @@
             },
             {
               "name": "Admin login",
-              "id": "63690fba-c6f5-4523-8ba8-70e4b41f9133",
+              "id": "219d14ea-c2c7-460b-b049-22e526d57933",
               "request": {
                 "method": "POST",
                 "header": [
@@ -1189,7 +887,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"emailAddress\" : \"test1@yopmail.com\",\r\n    \"password\" : \"Test@123#\"\r\n}",
+                  "raw": "{\r\n    \"emailAddress\" : \"test1@yopmail.com\",\r\n    \"password\" : \"Test#123#\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1204,7 +902,7 @@
             },
             {
               "name": "show profile",
-              "id": "2b934b00-5156-4d27-942e-825fb9c36ff3",
+              "id": "80817032-3676-4bfd-a9cd-96e75fd160b2",
               "request": {
                 "method": "GET",
                 "header": [
@@ -1234,7 +932,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"oldPassword\" : \"praveen@123#\",\r\n    \"newPassword\" : \"Praveen@123#\"\r\n}",
+                  "raw": "{\r\n    \"oldPassword\" : \"Test@1234#\",\r\n    \"newPassword\" : \"Test@123#\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1276,6 +974,52 @@
               ]
             },
             {
+              "name": "forgotPassword",
+              "id": "4791e1c9-3d73-4d81-b567-fb672f95e96c",
+              "request": {
+                "method": "POST",
+                "header": [
+                  
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"emailAddress\" : \"test1@yopmail.com\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "http://143.198.102.134:3003/api/v1/auth/forgotPassword"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "reset password",
+              "id": "1894414f-2e41-42b2-86f3-e0b341c0c6d4",
+              "request": {
+                "method": "POST",
+                "header": [
+                  
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"token\" : \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZkNDBlZDc5LWVjYzUtNGZjOC1iY2RlLTBhYjY3YmQ1ZGQ3OSIsImVtYWlsIjoidGVzdDFAeW9wbWFpbC5jb20iLCJpYXQiOjE2NTk1MjA3NzYsImV4cCI6MTY1OTYwNzE3Nn0.T_RIW9_hQbqhd53Aa0LZlIaINi8ZHLfLQl5p93zAldc\",\r\n    \"password\" : \"Test@123#\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "http://143.198.102.134:3003/api/v1/auth/resetPassword"
+              },
+              "response": [
+                
+              ]
+            },
+            {
               "name": "update profile",
               "id": "9f37eb94-cebe-4e88-bd0a-1bd5844bae06",
               "request": {
@@ -1306,11 +1050,186 @@
           "id": "7c97433c-f5d1-4f9e-9475-c6011776b7b4"
         },
         {
-          "name": "Targets",
+          "name": "Reports",
           "item": [
             {
-              "name": "Target List",
-              "id": "15933cd9-d72d-4743-9cd3-d9b5c9fc285d",
+              "name": "sales commission report",
+              "id": "e6f24d96-4d38-4745-86c3-5cf9f69d8746",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companyAdmin}}/salesCommissionReport?fromDate=2022-06-17&toDate=2022-07-31",
+                  "host": [
+                    "{{companyAdmin}}"
+                  ],
+                  "path": [
+                    "salesCommissionReport"
+                  ],
+                  "query": [
+                    {
+                      "key": "fromDate",
+                      "value": "2022-06-17",
+                      "description": "compulsary"
+                    },
+                    {
+                      "key": "toDate",
+                      "value": "2022-07-31",
+                      "description": "compulsary"
+                    },
+                    {
+                      "key": "pageNum",
+                      "value": "1",
+                      "description": "compulsary",
+                      "disabled": true
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "description": "compulsary",
+                      "disabled": true
+                    },
+                    {
+                      "key": "sortBy",
+                      "value": "dealName",
+                      "disabled": true
+                    },
+                    {
+                      "key": "sortType",
+                      "value": "asc",
+                      "disabled": true
+                    },
+                    {
+                      "key": "searchKeyword",
+                      "value": "",
+                      "disabled": true
+                    },
+                    {
+                      "key": "",
+                      "value": "",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "response": [
+                
+              ]
+            }
+          ],
+          "id": "95d2a8e4-19fc-4b4d-9193-10c05e5fd2cf"
+        },
+        {
+          "name": "customers",
+          "item": [
+            {
+              "name": "create Customer",
+              "id": "315b4727-338c-460d-a174-3956915f1b74",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{   \r\n    \"companyId\" : \"ef13c5aa-c4de-42a0-8944-f700e6eb6b68\",\r\n    \"customerName\" : \"EMS 4\",\r\n    \"source\" : \"twitter\",\r\n    \"qualification\" : \"qualifications \",\r\n    \"is_qualified\" : false ,\r\n    \"targetAmount\" : \"950000\",\r\n    \"productMatch\" : \"more than 20 products are matching\",\r\n    \"targetClosingDate\" : \"10/12/2022\" ,\r\n    \"businessContact\":[\r\n        {\r\n            \"businessId\" : \"\",\r\n            \"businessContactName\" : \"Job Brown11\",\r\n            \"businessEmail\" : \"bob@yopmail11.com\",\r\n            \"businessPhoneNumber\" : \"+1413-9991212\"\r\n        }\r\n    ],\r\n    \"revenueContact\":[\r\n        {\r\n            \"revenueId\" : \"\",\r\n            \"revenueContactName\" : \"Bob11 Leslie\",\r\n            \"revenueEmail\" : \"leslie11@yopmail.com\",\r\n            \"revenuePhoneNumber\" : \"+1912-6661212\"\r\n        }\r\n    ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/createCustomer"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "close customer",
+              "id": "2a61054a-78ca-4657-9631-28f4cfd42084",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"customerId\" : \"7a865f4e-b850-4932-b4a1-de8b6dbec783\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/closeCustomer"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "Customer List",
+              "id": "fedae41d-a7cf-4eb2-be95-9c08c90c0f25",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{companyAdmin}}/customerList"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "edit customer",
+              "id": "845f7bfd-ec1e-42ff-af67-7ad968455887",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"customerId\" : \"d0a628ec-0040-498b-a970-84cce09e8e58\",\r\n    \"customerName\" : \"EMS2 updated\",\r\n    \"source\" : \"linkedIn\",\r\n    \"qualification\" : \"all qualification's needed\",\r\n    \"is_qualified\" : true ,\r\n    \"targetAmount\" : \"1500000\",\r\n    \"productMatch\" : \"more than 10 product's are matching\",\r\n    \"targetClosingDate\" : \"11/12/2022\", \r\n    \"businessContact\":[\r\n        {\r\n            \"businessId\" : \"\",\r\n            \"businessContactName\" : \"Job Brown11\",\r\n            \"businessEmail\" : \"bob@yopmail11.com\",\r\n            \"businessPhoneNumber\" : \"+1413-9991212\"\r\n        }\r\n    ],\r\n    \"revenueContact\":[\r\n        {\r\n            \"revenueId\" : \"\",\r\n            \"revenueContactName\" : \"Bob11 Leslie\",\r\n            \"revenueEmail\" : \"leslie11@yopmail.com\",\r\n            \"revenuePhoneNumber\" : \"+1912-6661212\"\r\n        }\r\n    ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/editCustomer"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "Customer Logs List",
+              "id": "30d9aaeb-971e-496c-9c72-661ff160697a",
               "protocolProfileBehavior": {
                 "disableBodyPruning": true
               },
@@ -1332,17 +1251,63 @@
                     }
                   }
                 },
-                "url": "http://localhost:3003/api/v1/companyAdmin/targetList"
+                "url": {
+                  "raw": "{{companyAdmin}}/customerLogsList?customerId=cb5ff625-12ca-45ef-9e6f-bb1b08e2dae2",
+                  "host": [
+                    "{{companyAdmin}}"
+                  ],
+                  "path": [
+                    "customerLogsList"
+                  ],
+                  "query": [
+                    {
+                      "key": "customerId",
+                      "value": "cb5ff625-12ca-45ef-9e6f-bb1b08e2dae2"
+                    }
+                  ]
+                }
               },
               "response": [
                 
               ]
             },
             {
-              "name": "convert lead to target",
-              "id": "aaa24116-59e5-409d-b4f1-d1b1a8c0b48a",
+              "name": "Customer Company List",
+              "id": "ab533a40-6282-486b-afc0-4b60c4a1ce94",
               "request": {
-                "method": "POST",
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companyAdmin}}/customerCompanyList?companyName=",
+                  "host": [
+                    "{{companyAdmin}}"
+                  ],
+                  "path": [
+                    "customerCompanyList"
+                  ],
+                  "query": [
+                    {
+                      "key": "companyName",
+                      "value": ""
+                    }
+                  ]
+                }
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "delete Customer",
+              "id": "8f1bd878-e0f9-4e3f-93a1-8f1d6c5cbe7f",
+              "request": {
+                "method": "PUT",
                 "header": [
                   {
                     "key": "Authorization",
@@ -1352,14 +1317,14 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"leadId\" : \"373786a6-61c5-47bb-b39d-1c2c8d0f1116\",\r\n    \"supporters\" : [\"\"],\r\n    \"finishingDate\" : \"10/08/2022\",\r\n    \"targetAmount\" : \"1000000\",\r\n    \"description\" : \"please complete it on time\"\r\n}",
+                  "raw": "{\r\n    \"customerId\" : \"9fe07d68-05c3-4674-9ef9-b5b0215a738f\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
                     }
                   }
                 },
-                "url": "http://143.198.102.134:3003/api/v1/companyAdmin/convertLeadToTarget"
+                "url": "{{companyAdmin}}/deleteCustomer"
               },
               "response": [
                 
@@ -1379,7 +1344,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"targetId\" : \"3a8b1eb7-01b8-4938-9143-3ec660b240b9\",\r\n    \"notes\" : \"we have to complete this target immidietly \"\r\n}",
+                  "raw": "{\r\n    \"customerId\" : \"264c1717-d253-49c6-8265-839c85e0e777\",\r\n    \"note\" : \"In publishing and graphic design, Lorem's ipsums is a placeholder text .\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1409,239 +1374,6 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"targetId\" : \"3a8b1eb7-01b8-4938-9143-3ec660b240b9\"\r\n} ",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{companyAdmin}}/notesList"
-              },
-              "response": [
-                
-              ]
-            }
-          ],
-          "id": "91261512-372a-4331-bd7d-a9ab4bcbdba3"
-        },
-        {
-          "name": "Reports",
-          "item": [
-            {
-              "name": "Lead Report",
-              "id": "e6f24d96-4d38-4745-86c3-5cf9f69d8746",
-              "request": {
-                "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "url": {
-                  "raw": "{{companyAdmin}}/leadReport?fromDate=2022-06-17&toDate=2022-07-13&fromAmount=1200000&toAmount=1500000",
-                  "host": [
-                    "{{companyAdmin}}"
-                  ],
-                  "path": [
-                    "leadReport"
-                  ],
-                  "query": [
-                    {
-                      "key": "fromDate",
-                      "value": "2022-06-17",
-                      "description": "compulsary"
-                    },
-                    {
-                      "key": "toDate",
-                      "value": "2022-07-13",
-                      "description": "compulsary"
-                    },
-                    {
-                      "key": "fromAmount",
-                      "value": "1200000"
-                    },
-                    {
-                      "key": "toAmount",
-                      "value": "1500000"
-                    }
-                  ]
-                }
-              },
-              "response": [
-                
-              ]
-            },
-            {
-              "name": "leadConversionReport",
-              "id": "9fc2d300-5fdc-48a4-a5db-a1e41b258e9b",
-              "request": {
-                "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "url": {
-                  "raw": "{{companyAdmin}}/leadConversionReport?fromDate=2022-07-13&toDate=2022-07-15&fromAmount=1200000&toAmount=1500000",
-                  "host": [
-                    "{{companyAdmin}}"
-                  ],
-                  "path": [
-                    "leadConversionReport"
-                  ],
-                  "query": [
-                    {
-                      "key": "fromDate",
-                      "value": "2022-07-13",
-                      "description": "compulsary"
-                    },
-                    {
-                      "key": "toDate",
-                      "value": "2022-07-15",
-                      "description": "compulsary"
-                    },
-                    {
-                      "key": "fromAmount",
-                      "value": "1200000"
-                    },
-                    {
-                      "key": "toAmount",
-                      "value": "1500000"
-                    }
-                  ]
-                }
-              },
-              "response": [
-                
-              ]
-            }
-          ],
-          "id": "95d2a8e4-19fc-4b4d-9193-10c05e5fd2cf"
-        },
-        {
-          "name": "Deals",
-          "item": [
-            {
-              "name": "create Deal",
-              "id": "315b4727-338c-460d-a174-3956915f1b74",
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{   \r\n    \"companyId\" : \"\",\r\n    \"leadName\" : \"Autarky\",\r\n    \"leadSource\" : \"twitter\",\r\n    \"qualification\" : \"qualifications \",\r\n    \"is_qualified\" : false ,\r\n    \"targetAmount\" : \"1500000\",\r\n    \"productMatch\" : \"more than 20 products are matching\",\r\n    \"targetClosingDate\" : \"10/12/2022\" \r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{companyAdmin}}/createDeal"
-              },
-              "response": [
-                
-              ]
-            },
-            {
-              "name": "close Deal",
-              "id": "2a61054a-78ca-4657-9631-28f4cfd42084",
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"dealId\" : \"fe4c6fd5-dff5-4ac8-b1b7-8413dde663b6\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{companyAdmin}}/closeDeal"
-              },
-              "response": [
-                
-              ]
-            },
-            {
-              "name": "deal List",
-              "id": "fedae41d-a7cf-4eb2-be95-9c08c90c0f25",
-              "request": {
-                "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "url": "{{companyAdmin}}/dealList"
-              },
-              "response": [
-                
-              ]
-            },
-            {
-              "name": "edit deal",
-              "id": "845f7bfd-ec1e-42ff-af67-7ad968455887",
-              "request": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"dealId\" : \"5ea58b10-4d58-4a4a-b0d1-6d9edbef3ad3\",\r\n    \"leadName\" : \"ClickIpo web\",\r\n    \"leadSource\" : \"linkedIn\",\r\n    \"qualification\" : \"all qualifications needed\",\r\n    \"is_qualified\" : true ,\r\n    \"targetAmount\" : \"1500000\",\r\n    \"productMatch\" : \"more than 10 products are matching\",\r\n    \"targetClosingDate\" : \"11/12/2022\" \r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{companyAdmin}}/editDeal"
-              },
-              "response": [
-                
-              ]
-            },
-            {
-              "name": "deal Logs List",
-              "id": "30d9aaeb-971e-496c-9c72-661ff160697a",
-              "protocolProfileBehavior": {
-                "disableBodyPruning": true
-              },
-              "request": {
-                "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
                   "raw": "",
                   "options": {
                     "raw": {
@@ -1650,17 +1382,17 @@
                   }
                 },
                 "url": {
-                  "raw": "{{companyAdmin}}/dealLogsList?dealId=cb5ff625-12ca-45ef-9e6f-bb1b08e2dae2",
+                  "raw": "{{companyAdmin}}/notesList?customerId=264c1717-d253-49c6-8265-839c85e0e777",
                   "host": [
                     "{{companyAdmin}}"
                   ],
                   "path": [
-                    "dealLogsList"
+                    "notesList"
                   ],
                   "query": [
                     {
-                      "key": "dealId",
-                      "value": "cb5ff625-12ca-45ef-9e6f-bb1b08e2dae2"
+                      "key": "customerId",
+                      "value": "264c1717-d253-49c6-8265-839c85e0e777"
                     }
                   ]
                 }
@@ -1670,26 +1402,8 @@
               ]
             },
             {
-              "name": "deal Company List",
-              "id": "ab533a40-6282-486b-afc0-4b60c4a1ce94",
-              "request": {
-                "method": "GET",
-                "header": [
-                  {
-                    "key": "Authorization",
-                    "value": "{{token}}",
-                    "type": "text"
-                  }
-                ],
-                "url": "{{companyAdmin}}/dealCompanyList"
-              },
-              "response": [
-                
-              ]
-            },
-            {
-              "name": "delete Deal",
-              "id": "8f1bd878-e0f9-4e3f-93a1-8f1d6c5cbe7f",
+              "name": "delete note",
+              "id": "2d972e6e-4b01-4025-8020-26c3d4df0523",
               "request": {
                 "method": "PUT",
                 "header": [
@@ -1701,14 +1415,78 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"dealId\" : \"5084a443-0618-4cc1-b012-75ea42d92eed\"\r\n}",
+                  "raw": "{\r\n    \"noteId\" : \"5c642399-5d69-4c75-b330-8bf19ad187b4\"\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
                     }
                   }
                 },
-                "url": "{{companyAdmin}}/deleteDeal"
+                "url": "{{companyAdmin}}/deleteNotes"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "Customer Contact Details",
+              "id": "18b659e3-b0bc-4960-847b-74dcdf3095e3",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companyAdmin}}/customerContactDetails?customerCompanyId=46a7c63b-ce09-4e95-86e0-1615e9a13c0b",
+                  "host": [
+                    "{{companyAdmin}}"
+                  ],
+                  "path": [
+                    "customerContactDetails"
+                  ],
+                  "query": [
+                    {
+                      "key": "",
+                      "value": "",
+                      "disabled": true
+                    },
+                    {
+                      "key": "customerCompanyId",
+                      "value": "46a7c63b-ce09-4e95-86e0-1615e9a13c0b"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "delete Contact For Customer",
+              "id": "a46a85fe-ad2f-4845-9d62-95d54a565913",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"id\" : \"5a1786ad-9af7-40e1-a065-1f452951382f\",\r\n    \"type\" : \"business\",\r\n    \"customerId\" : \"ae029878-f6f5-4058-ae0f-e0a93d09b4af\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/deleteContactForCustomer"
               },
               "response": [
                 
@@ -1716,6 +1494,400 @@
             }
           ],
           "id": "e04828c5-0fe8-4ad8-b90b-c1ed91d6ccda"
+        },
+        {
+          "name": "sales commission",
+          "item": [
+            {
+              "name": "customer List for Sales",
+              "id": "a5e20e52-8fc3-4c2c-ba7f-90aec01acbe3",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{companyAdmin}}/customerListforSales"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "create sales commission",
+              "id": "5564e47c-60da-4b3e-9a2b-f26549ae7c06",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"customerId\" : \"550561b3-d9fd-4f23-ba74-e9d6ceb8e3bb\",\r\n    \"customerCommissionSplitId\" : \"21c4ab21-fe48-44f0-9c45-545d704e23c9\",\r\n    \"customerCloserId\" : \"444253ed-9be6-4a82-9cba-75de5ff976e9\",\r\n    \"supporters\" : [],\r\n    \"is_overwrite\" : true,\r\n    \"closerPercentage\" : 100,\r\n    \"businessId\" : \"\",\r\n    \"revenueId\" : \"\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/createSalesCommission"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "sales commission list",
+              "id": "3d5054d7-8ce4-495c-a2d4-8cfb34ae2f5d",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{companyAdmin}}/salesCommissionList"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "update sales commission",
+              "id": "9accb0d3-fdbb-4ea2-95f6-b9d371562426",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"salesCommissionId\" : \"54356af9-4ca8-4f1f-8ea3-747a462200c7\",\r\n    \"customerId\" : \"7a865f4e-b850-4932-b4a1-de8b6dbec783\",\r\n    \"customerCommissionSplitId\" : \"594dfee0-11e7-47b6-8206-4644053dd9ac\",\r\n    \"customerCloserId\" : \"3dde5829-3d7c-42d5-bd2a-06744631d91f\",\r\n    \"supporters\" : [\r\n            {\r\n                \"id\" : \"444253ed-9be6-4a82-9cba-75de5ff976e9\",\r\n                \"percentage\" : 40\r\n            }\r\n        ],\r\n    \"is_overwrite\" : true,\r\n    \"closerPercentage\" : 60,\r\n    \"businessId\" : \"\",\r\n    \"revenueId\" : \"\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/updateSalesCommission"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "delete sales commission",
+              "id": "da7f463a-a5a4-41d7-9136-be2b95967c43",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"salesCommissionId\" : \"c045010f-6715-4eab-bc3e-d6920f8db7a7\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/deleteSalesCommission"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "customer contact list for sales",
+              "id": "2ff239cb-1acf-49d9-bea7-b795ba4416a9",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companyAdmin}}/customerContactDetailsForSales?customerId=550561b3-d9fd-4f23-ba74-e9d6ceb8e3bb",
+                  "host": [
+                    "{{companyAdmin}}"
+                  ],
+                  "path": [
+                    "customerContactDetailsForSales"
+                  ],
+                  "query": [
+                    {
+                      "key": "customerId",
+                      "value": "550561b3-d9fd-4f23-ba74-e9d6ceb8e3bb"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                
+              ]
+            }
+          ],
+          "id": "9e3124f7-fc22-4691-b3b5-47add98bfbfa"
+        },
+        {
+          "name": "commision spilts",
+          "item": [
+            {
+              "name": "commision spilt list",
+              "id": "ff519bf7-61c8-4017-86de-ad2eed522535",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{companyAdmin}}/commissionSplitList"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "commision split",
+              "id": "3b672fa5-df21-4551-9970-d19fc796b775",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{   \r\n    \"closerPercentage\" : 80,\r\n    \"supporterPercentage\" : 20\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/commissionSplit"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "Update commision split",
+              "id": "1576056c-7002-4fca-93a1-1cef80bf58f4",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{   \r\n    \"commissionId\" : \"594dfee0-11e7-47b6-8206-4644053dd9ac\",\r\n    \"closerPercentage\" : 50,\r\n    \"supporterPercentage\": 50\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/updateCommissionSplit"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "Delete commision split",
+              "id": "dbeb1fb8-f933-455f-a77b-2e370dbce8f6",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"commissionId\" : \"2e9c8b6b-e3b7-4615-a666-f8487c499a36\"\r\n    \r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/deleteCommissionSplit"
+              },
+              "response": [
+                
+              ]
+            }
+          ],
+          "id": "1641eeea-7136-45ec-abe0-002d4f554e33"
+        },
+        {
+          "name": "DashBoard",
+          "item": [
+            {
+              "name": "revenues",
+              "id": "d0668ccc-3453-44a5-b18b-3e87e6424a8e",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{companyAdmin}}/revenues"
+              },
+              "response": [
+                
+              ]
+            }
+          ],
+          "id": "d437dbd6-75db-4b47-bef1-f932ee32531f"
+        },
+        {
+          "name": "revenue forecast",
+          "item": [
+            {
+              "name": "Revenue forecast List",
+              "id": "843eaa99-57ed-4448-88fe-cfdc924ff4ae",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": "{{companyAdmin}}/revenueForecastList"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "Create Revenue Forecast",
+              "id": "373b8460-c1e2-4a46-92de-3d9fbcb4896a",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"timeline\" : \"Annual\",\r\n    \"revenue\" : 10000,\r\n    \"growthWindow\" : 1,\r\n    \"growthPercentage\" : 2.5,\r\n    \"startDate\" : \"08/05/2022\",\r\n    \"endDate\" : \"09/05/2022\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/createRevenueForecast"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "Update Revenue Forecast",
+              "id": "f4e6bce7-96cf-430f-a8cd-4bd9e61b5130",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"revenueForecastId\" : \"b84dfb77-61fa-4ba0-b625-6d4ff298e519\",\r\n    \"timeline\" : \"Quarterly\",\r\n    \"revenue\" : 15000,\r\n    \"growthWindow\" : 0,\r\n    \"growthPercentage\" : 3,\r\n    \"startDate\" : \"08/05/2022\",\r\n    \"endDate\" : \"08/05/2023\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{companyAdmin}}/updateRevenueForecast"
+              },
+              "response": [
+                
+              ]
+            },
+            {
+              "name": "actual vs forecast",
+              "id": "74a4439b-6b8f-4aab-a4e9-7c87279c8a85",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "{{token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{companyAdmin}}/actualVsForecast?id=b84dfb77-61fa-4ba0-b625-6d4ff298e519",
+                  "host": [
+                    "{{companyAdmin}}"
+                  ],
+                  "path": [
+                    "actualVsForecast"
+                  ],
+                  "query": [
+                    {
+                      "key": "id",
+                      "value": "b84dfb77-61fa-4ba0-b625-6d4ff298e519"
+                    }
+                  ]
+                }
+              },
+              "response": [
+                
+              ]
+            }
+          ],
+          "id": "d18088bc-181a-4792-b8ab-cbd25520562d"
         }
       ],
       "id": "099c859e-d51e-4d9a-bec9-429528871e05"
