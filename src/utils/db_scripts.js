@@ -140,7 +140,7 @@ const db_sql = {
               from business_contact where id = '{var1}' and deleted_at is null`,  
     "Q118" : `select id, full_name as revenue_contact_name, email_address as revenue_email, phone_number as revenue_phone_number
               from revenue_contact where id = '{var1}' and deleted_at is null`,
-    "Q119" : `select target_amount from customers where company_id = '{var1}' and closed_at is not null and deleted_at is null and (created_at between '{var2}' and '{var3}')`,
+    "Q119" : `select target_amount from customers where company_id = '{var1}' and closed_at is not null and deleted_at is null and EXTRACT(MONTH FROM created_at) = '{var2}'`,
     "Q120" : `update customers set business_id = '{var2}' where id = '{var1}' returning *`,
     "Q121" : `update customers set revenue_id = '{var2}' where id = '{var1}' returning *`,
         
