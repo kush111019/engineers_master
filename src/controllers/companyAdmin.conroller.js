@@ -6,7 +6,7 @@ const jsonwebtoken = require("jsonwebtoken");
 const uuid = require("node-uuid");
 const fs = require("fs");
 const fastcsv = require("fast-csv");
-const {mysql_real_escape_string} = require('../utils/helper')
+const { mysql_real_escape_string } = require('../utils/helper')
 
 let verifyTokenFn = async (req) => {
     let { token } = req.body
@@ -217,46 +217,46 @@ module.exports.login = async (req, res) => {
             let company = await connection.query(s2)
 
             if (admin.rows[0].encrypted_password == password) {
-                    let s3 = dbScript(db_sql['Q19'], { var1: admin.rows[0].role_id })
-                    let checkRole = await connection.query(s3)
+                let s3 = dbScript(db_sql['Q19'], { var1: admin.rows[0].role_id })
+                let checkRole = await connection.query(s3)
 
-                    let moduleId = JSON.parse(checkRole.rows[0].module_ids)
-                    let modulePemissions = []
-                    for (data of moduleId) {
+                let moduleId = JSON.parse(checkRole.rows[0].module_ids)
+                let modulePemissions = []
+                for (data of moduleId) {
 
-                        let s4 = dbScript(db_sql['Q9'], { var1: data })
-                        let modules = await connection.query(s4)
+                    let s4 = dbScript(db_sql['Q9'], { var1: data })
+                    let modules = await connection.query(s4)
 
-                        let s5 = dbScript(db_sql['Q66'], { var1: checkRole.rows[0].id, var2: data })
-                        let findModulePermissions = await connection.query(s5)
+                    let s5 = dbScript(db_sql['Q66'], { var1: checkRole.rows[0].id, var2: data })
+                    let findModulePermissions = await connection.query(s5)
 
-                        modulePemissions.push({
-                            moduleId: data,
-                            moduleName: modules.rows[0].module_name,
-                            permissions: findModulePermissions.rows
-                        })
+                    modulePemissions.push({
+                        moduleId: data,
+                        moduleName: modules.rows[0].module_name,
+                        permissions: findModulePermissions.rows
+                    })
+                }
+
+                let payload = {
+                    id: admin.rows[0].id,
+                    email: admin.rows[0].email_address,
+                }
+                let jwtToken = await issueJWT(payload);
+                let profileImage = (checkRole.rows[0].role_name == "Admin") ? company.rows[0].company_logo : admin.rows[0].avatar
+
+                res.send({
+                    status: 200,
+                    success: true,
+                    message: "Login Successfull",
+                    data: {
+                        token: jwtToken,
+                        name: admin.rows[0].full_name,
+                        role: checkRole.rows[0].role_name,
+                        profileImage: profileImage,
+                        modulePermissions: modulePemissions
+
                     }
-
-                    let payload = {
-                        id: admin.rows[0].id,
-                        email: admin.rows[0].email_address,
-                    }
-                    let jwtToken = await issueJWT(payload);
-                    let profileImage = (checkRole.rows[0].role_name == "Admin") ? company.rows[0].company_logo : admin.rows[0].avatar
-
-                    res.send({
-                        status: 200,
-                        success: true,
-                        message: "Login Successfull",
-                        data: {
-                            token: jwtToken,
-                            name: admin.rows[0].full_name,
-                            role: checkRole.rows[0].role_name,
-                            profileImage: profileImage,
-                            modulePermissions: modulePemissions
-
-                        }
-                    });
+                });
             } else {
                 res.json({
                     status: 400,
@@ -290,11 +290,11 @@ module.exports.showProfile = async (req, res) => {
         if (checkUser.rows.length > 0) {
             let s3 = dbScript(db_sql['Q14'], { var1: checkUser.rows[0].company_id })
             let companyData = await connection.query(s3)
-            if(companyData.rowCount > 0){
+            if (companyData.rowCount > 0) {
                 checkUser.rows[0].companyName = companyData.rows[0].company_name
                 checkUser.rows[0].companyAddress = companyData.rows[0].company_address
                 checkUser.rows[0].companyLogo = companyData.rows[0].company_logo
-            }else{
+            } else {
                 checkUser.rows[0].companyName = ""
                 checkUser.rows[0].companyAddress = ""
                 checkUser.rows[0].companyLogo = ""
@@ -630,7 +630,7 @@ module.exports.rolesList = async (req, res) => {
                 let RolesList = await connection.query(s4)
                 for (let data of RolesList.rows) {
                     let modulePermissions = []
-                    if (  data.reporter != '' ) {
+                    if (data.reporter != '') {
                         for (let moduleId of JSON.parse(data.module_ids)) {
                             let s5 = dbScript(db_sql['Q66'], { var1: data.id, var2: moduleId })
                             let permissionList = await connection.query(s5)
@@ -1143,7 +1143,7 @@ module.exports.addUser = async (req, res) => {
                         res.json({
                             status: 201,
                             success: true,
-                            message: `User created successfully and link send for set password on ${emailAddress} ` 
+                            message: `User created successfully and link send for set password on ${emailAddress} `
                         })
 
                     } else {
@@ -1320,11 +1320,11 @@ module.exports.usersList = async (req, res) => {
                     for (data of findUsers.rows) {
                         let s5 = dbScript(db_sql['Q19'], { var1: data.role_id })
                         let findRole = await connection.query(s5);
-                        if(findRole.rowCount > 0) {
+                        if (findRole.rowCount > 0) {
 
                             data.roleName = findRole.rows[0].role_name
 
-                        }else{
+                        } else {
                             data.roleName = null
                         }
                     }
@@ -1659,7 +1659,7 @@ module.exports.createSlab = async (req, res) => {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
 
-                let s4 = dbScript(db_sql['Q31'], { var1: findAdmin.rows[0].company_id , var2: _dt})
+                let s4 = dbScript(db_sql['Q31'], { var1: findAdmin.rows[0].company_id, var2: _dt })
                 let slabList = await connection.query(s4)
 
                 for (data of slabs) {
@@ -2047,7 +2047,7 @@ module.exports.closeCustomer = async (req, res) => {
             let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_update) {
-                
+
                 let _dt = new Date().toISOString();
                 let s4 = dbScript(db_sql['Q71'], { var1: _dt, var2: _dt, var3: customerId })
                 let closeCustomer = await connection.query(s4)
@@ -2145,7 +2145,7 @@ module.exports.customerList = async (req, res) => {
                                     }
                                     data.businessContact = businessContact
                                     data.revenueContact = revenueContact
-                                    
+
                                 } else {
                                     data.businessContact = [];
                                     data.revenueContact = [];
@@ -2351,38 +2351,38 @@ module.exports.deleteContactForCustomer = async (req, res) => {
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_update) {
 
-                let s4 = dbScript(db_sql['Q88'],{var1 : customerId})
+                let s4 = dbScript(db_sql['Q88'], { var1: customerId })
                 let customerData = await connection.query(s4)
 
-                if(customerData.rowCount > 0){
+                if (customerData.rowCount > 0) {
                     let updateCustomer
                     await connection.query('BEGIN')
-                    if(type == 'business'){
+                    if (type == 'business') {
                         let businessIds = JSON.parse(customerData.rows[0].business_id)
                         let index = businessIds.indexOf(id);
                         businessIds.splice(index, 1)
 
-                        let s5 = dbScript(db_sql['Q120'],{var1 : customerId, var2: JSON.stringify(businessIds) })
+                        let s5 = dbScript(db_sql['Q120'], { var1: customerId, var2: JSON.stringify(businessIds) })
                         updateCustomer = await connection.query(s5)
                     }
-                    else if(type == 'revenue'){
+                    else if (type == 'revenue') {
                         let revenueIds = JSON.parse(customerData.rows[0].revenue_id)
                         let index = revenueIds.indexOf(id);
                         revenueIds.splice(index, 1)
 
-                        let s6 = dbScript(db_sql['Q121'],{var1 : customerId, var2: JSON.stringify(revenueIds) })
+                        let s6 = dbScript(db_sql['Q121'], { var1: customerId, var2: JSON.stringify(revenueIds) })
                         updateCustomer = await connection.query(s6)
                     }
                     await connection.query('COMMIT')
-                    if(updateCustomer.rowCount > 0){
+                    if (updateCustomer.rowCount > 0) {
                         res.json({
-                            status:200,
+                            status: 200,
                             success: true,
                             message: `${type} deleted successfully`
                         })
-                    }else{
+                    } else {
                         res.json({
-                            status:400,
+                            status: 400,
                             success: false,
                             message: "Something went wrong"
                         })
@@ -3111,7 +3111,7 @@ module.exports.customerListforSales = async (req, res) => {
             let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
-                
+
                 let s4 = dbScript(db_sql['Q85'], { var1: findAdmin.rows[0].company_id })
                 let customerList = await connection.query(s4)
                 let customerArr = []
@@ -3120,7 +3120,7 @@ module.exports.customerListforSales = async (req, res) => {
                     for (data of customerList.rows) {
                         let s5 = dbScript(db_sql['Q12'], { var1: data.user_id })
                         let createdBy = await connection.query(s5)
-                        if(createdBy.rows[0].full_name){
+                        if (createdBy.rows[0].full_name) {
                             data.createdBy = createdBy.rows[0].full_name
                         }
                         customerArr.push(data)
@@ -3132,7 +3132,7 @@ module.exports.customerListforSales = async (req, res) => {
                             message: 'Customers list',
                             data: customerArr
                         })
-                    }else {
+                    } else {
                         res.json({
                             status: 200,
                             success: false,
@@ -3140,7 +3140,7 @@ module.exports.customerListforSales = async (req, res) => {
                             data: []
                         })
                     }
-                }else {
+                } else {
                     res.json({
                         status: 200,
                         success: false,
@@ -3213,9 +3213,9 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
                             status: 200,
                             success: true,
                             message: "Customer contact details",
-                            data : customerContactDetails
+                            data: customerContactDetails
                         })
-                        
+
                     }
                     else {
                         customerContactDetails.businessContact = []
@@ -3225,7 +3225,7 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
                             status: 200,
                             success: true,
                             message: "Empty customer contact details",
-                            data : customerContactDetails
+                            data: customerContactDetails
                         })
                     }
                 } else {
@@ -3237,7 +3237,7 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
                         status: 200,
                         success: true,
                         message: "Empty customer contact details",
-                        data : customerContactDetails
+                        data: customerContactDetails
                     })
                 }
             } else {
@@ -3294,7 +3294,7 @@ module.exports.createSalesCommission = async (req, res) => {
                 await connection.query('BEGIN')
 
                 let id = uuid.v4()
-                let s5 = dbScript(db_sql['Q86'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: findAdmin.rows[0].company_id, var6:businessId, var7:revenueId })
+                let s5 = dbScript(db_sql['Q86'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: findAdmin.rows[0].company_id, var6: businessId, var7: revenueId })
                 let createSalesConversion = await connection.query(s5)
 
                 let s6 = dbScript(db_sql['Q89'], { var1: customerCommissionSplitId, var2: findAdmin.rows[0].company_id })
@@ -3305,8 +3305,8 @@ module.exports.createSalesCommission = async (req, res) => {
                 let closerId = uuid.v4()
                 let s7 = dbScript(db_sql['Q93'], { var1: closerId, var2: customerCloserId, var3: closer_percentage, var4: customerCommissionSplitId, var5: createSalesConversion.rows[0].id, var6: findAdmin.rows[0].company_id })
                 let addSalesCloser = await connection.query(s7)
-                
-                if(supporters.length > 0){
+
+                if (supporters.length > 0) {
 
                     for (supporterData of supporters) {
                         let supporterId = uuid.v4()
@@ -3317,7 +3317,7 @@ module.exports.createSalesCommission = async (req, res) => {
 
                 await connection.query('COMMIT')
 
-                if (createSalesConversion.rowCount > 0 && findSalescommission.rowCount > 0 && addSalesCloser.rowCount > 0 ) {
+                if (createSalesConversion.rowCount > 0 && findSalescommission.rowCount > 0 && addSalesCloser.rowCount > 0) {
                     res.json({
                         status: 201,
                         success: true,
@@ -3412,19 +3412,19 @@ module.exports.salesCommissionList = async (req, res) => {
                         let s8 = dbScript(db_sql['Q117'], { var1: data.business_id })
                         let businessData = await connection.query(s8);
 
-                        closer.businessContactId =businessData.rows[0].id,
-                        closer.businessContactName =businessData.rows[0].business_contact_name
+                        closer.businessContactId = businessData.rows[0].id,
+                            closer.businessContactName = businessData.rows[0].business_contact_name
 
                         let s9 = dbScript(db_sql['Q118'], { var1: data.revenue_id })
                         let revenueData = await connection.query(s9);
 
-                        closer.revenueContactId =revenueData.rows[0].id,
-                        closer.revenueContactName =revenueData.rows[0].revenue_contact_name
-                    }else{
-                        closer.businessContactId =""
-                        closer.businessContactName =""
-                        closer.revenueContactId =""
-                        closer.revenueContactName =""
+                        closer.revenueContactId = revenueData.rows[0].id,
+                            closer.revenueContactName = revenueData.rows[0].revenue_contact_name
+                    } else {
+                        closer.businessContactId = ""
+                        closer.businessContactName = ""
+                        closer.revenueContactId = ""
+                        closer.revenueContactName = ""
                     }
 
                     closer.id = data.id
@@ -3523,7 +3523,7 @@ module.exports.updateSalesCommission = async (req, res) => {
 
                 let s7 = dbScript(db_sql['Q99'], { var1: customerCloserId, var2: closer_percentage, var3: customerCommissionSplitId, var4: _dt, var5: salesCommissionId, var6: findAdmin.rows[0].company_id })
                 let updateSalesCloser = await connection.query(s7)
-                let s8 = dbScript(db_sql['Q100'], { var1: salesCommissionId, var2: findAdmin.rows[0].company_id, var3 :  _dt})
+                let s8 = dbScript(db_sql['Q100'], { var1: salesCommissionId, var2: findAdmin.rows[0].company_id, var3: _dt })
                 let updateSupporter = await connection.query(s8)
 
 
@@ -3678,7 +3678,7 @@ module.exports.salesCommissionReport = async (req, res) => {
 
                         let { sortBy, sortType, searchKeyword } = req.query
 
-                        let s4 = dbScript(db_sql['Q101'], { var1: findAdmin.rows[0].company_id, var2: fromDate, var3: toDate, var4: limit, var5: offSet, var6: sortBy, var7: sortType, var8: searchKeyword  })
+                        let s4 = dbScript(db_sql['Q101'], { var1: findAdmin.rows[0].company_id, var2: fromDate, var3: toDate, var4: limit, var5: offSet, var6: sortBy, var7: sortType, var8: searchKeyword })
                         var salesCommissionList = await connection.query(s4)
 
                     } else {
@@ -3934,18 +3934,18 @@ module.exports.createRevenueForecast = async (req, res) => {
                 await connection.query('BEGIN')
 
                 let id = uuid.v4()
-                let s4 = dbScript(db_sql['Q106'],{var1 : id, var2: timeline, var3 : revenue, var4 : growthWindow , var5 : growthPercentage , var6 : startDate, var7 : endDate, var8 : findAdmin.rows[0].id , var9 : findAdmin.rows[0].company_id})
+                let s4 = dbScript(db_sql['Q106'], { var1: id, var2: timeline, var3: revenue, var4: growthWindow, var5: growthPercentage, var6: startDate, var7: endDate, var8: findAdmin.rows[0].id, var9: findAdmin.rows[0].company_id })
 
                 let createForecast = await connection.query(s4)
 
                 await connection.query('COMMIT')
-                if(createForecast.rowCount > 0) {
+                if (createForecast.rowCount > 0) {
                     res.json({
                         status: 201,
                         success: true,
                         message: 'Revenue forecast created successfully'
                     })
-                }else{
+                } else {
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
@@ -3993,17 +3993,17 @@ module.exports.revenueForecastList = async (req, res) => {
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
 
-                let s4 = dbScript(db_sql['Q107'], {var1 : findAdmin.rows[0].company_id})
-                let revenueForecastList = await connection.query(s4) 
+                let s4 = dbScript(db_sql['Q107'], { var1: findAdmin.rows[0].company_id })
+                let revenueForecastList = await connection.query(s4)
 
-                if(revenueForecastList.rowCount > 0 ){
+                if (revenueForecastList.rowCount > 0) {
                     res.json({
                         status: 200,
                         success: true,
                         message: 'Revenue forecast list',
                         data: revenueForecastList.rows
                     })
-                }else{
+                } else {
                     res.json({
                         status: 200,
                         success: true,
@@ -4064,18 +4064,18 @@ module.exports.updateRevenueForecast = async (req, res) => {
 
                 let _dt = new Date().toISOString();
 
-                let s4 = dbScript(db_sql['Q108'],{var1 : revenueForecastId, var2: timeline, var3 : revenue, var4 : growthWindow , var5 : growthPercentage , var6 : startDate, var7 : endDate, var8 : _dt })
+                let s4 = dbScript(db_sql['Q108'], { var1: revenueForecastId, var2: timeline, var3: revenue, var4: growthWindow, var5: growthPercentage, var6: startDate, var7: endDate, var8: _dt })
 
                 let updateForecast = await connection.query(s4)
 
                 await connection.query('COMMIT')
-                if(updateForecast.rowCount > 0) {
+                if (updateForecast.rowCount > 0) {
                     res.json({
                         status: 201,
                         success: true,
                         message: 'Revenue forecast updated successfully'
                     })
-                }else{
+                } else {
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
@@ -4108,15 +4108,31 @@ module.exports.updateRevenueForecast = async (req, res) => {
 
 }
 
-let firstLastDate = async(date1,increment)=>{
+let firstLastDate = async (date1, increment) => {
     let firstDay = new Date(date1.getFullYear(), date1.getMonth(), 2);
     let firstDay1 = new Date(firstDay.getTime() + firstDay.getTimezoneOffset() * 60000);
     firstDay1 = firstDay1.toString().split('GMT')
     let lastDay = new Date(date1.getFullYear(), date1.getMonth() + increment, 1);
     let lastDay1 = new Date(lastDay.getTime() + lastDay.getTimezoneOffset() * 60000);
     lastDay1 = lastDay1.toString().split('GMT')
-    return {firstDay1,lastDay1}
+    return { firstDay1, lastDay1 }
 }
+
+let getMonthDifference = async (startDate, endDate) => {
+    var months = endDate.getMonth() - startDate.getMonth()
+        + (12 * (endDate.getFullYear() - startDate.getFullYear()));
+
+    if (endDate.getDate() < startDate.getDate()) {
+        months--;
+    }
+    return months;
+}
+
+let getYearDifference = async (startDate, endDate) => {
+    let years = endDate.getFullYear() - startDate.getFullYear();;
+    return years;
+}
+
 
 module.exports.actualVsForecast = async (req, res) => {
     try {
@@ -4135,6 +4151,9 @@ module.exports.actualVsForecast = async (req, res) => {
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
                 let actualVsForecastObj = {}
+                let revenueData = [];
+                let actualData = []
+                let dateArr = []
 
                 let s4 = dbScript(db_sql['Q109'], { var1: id })
                 let forecastRevenue = await connection.query(s4)
@@ -4142,177 +4161,199 @@ module.exports.actualVsForecast = async (req, res) => {
                     let revenue = forecastRevenue.rows[0].revenue
                     let growthWindow = forecastRevenue.rows[0].growth_window
                     let growthPercentage = forecastRevenue.rows[0].growth_percentage
-                    let createDate = forecastRevenue.rows[0].created_at
                     let timeline = forecastRevenue.rows[0].timeline
-                    let revenueData = [];
-                    let actualData = []
-                    let dateArr = []
-                    let date;
+                    let startDate = forecastRevenue.rows[0].start_date
+                    let endDate = forecastRevenue.rows[0].end_date
+
+                    let toDate = new Date(startDate)
+                    let fromDate = new Date(endDate)
+                    let difference = await getMonthDifference(toDate, fromDate)
+                    let yearDifference = await getYearDifference(toDate, fromDate)
                     let count = 0;
                     switch (timeline) {
                         case 'Monthly':
-                            revenueData.push(Number(revenue))
-                            let date1 = new Date(createDate)
-
-                            dateArr.push(date1)
-
-                            let { firstDay1, lastDay1 } = await firstLastDate(date1, 1)
-
-                            let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: firstDay1[0], var3: lastDay1[0] })
-                            let actualRevenue = await connection.query(s5)
-
-                            let sum = 0; 
-                            for (let data of actualRevenue.rows) {
-                                if (data.target_amount) {
-                                    sum = sum + Number(data.target_amount)
-                                }
-                            }
-                            actualData.push(sum)
-
-                            date = createDate
-                            for (i = 1; i <= 11; i++) {
-                                if (growthWindow != count) {
-                                    let newDate = new Date(date)
-                                    date = newDate.setMonth(newDate.getMonth() + 1);
+                            let month = (toDate.getMonth() + 1);
+                            for (let i = 1; i <= difference; i++) {
+                                let sum = 0
+                                if (i == 1) {
+                                    dateArr.push(new Date(toDate))
                                     revenueData.push(Number(revenue))
-                                    let date1 = new Date(date)
-                                    dateArr.push(date1)
-                                    let { firstDay1, lastDay1 } = await firstLastDate(date1, 1)
-                                    let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: firstDay1[0], var3: lastDay1[0] })
+                                    let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: month })
                                     let actualRevenue = await connection.query(s5)
-                                    let sum = 0;
-                                    for (let data of actualRevenue.rows) {
-                                        if (data.target_amount) {
-                                            sum = sum + Number(data.target_amount)
-
-                                        }
+                                    if (actualRevenue.rowCount > 0) {
+                                        actualRevenue.rows.map(index => {
+                                            sum = sum + Number(index.target_amount);
+                                        })
                                     }
                                     actualData.push(sum)
-                                    count++;
                                 } else {
-                                    count = 0
-                                    let newDate = new Date(date)
-                                    date = newDate.setMonth(newDate.getMonth() + 1);
-                                    revenue = (Number(revenue) + Number(revenue) * (Number(growthPercentage) / 100))
-                                    revenueData.push(Number(revenue.toFixed(2)))
-                                    let date1 = new Date(date)
-                                    dateArr.push(date1)
-                                    let { firstDay1, lastDay1 } = await firstLastDate(date1, 1)
-                                    let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: firstDay1[0], var3: lastDay1[0] })
-                                    let actualRevenue = await connection.query(s5)
-                                    let sum = 0;
-                                    for (let data of actualRevenue.rows) {
-                                        if (data.target_amount) {
-                                            sum = sum + Number(data.target_amount)
+                                    //-----------------
+                                    if (growthWindow != count) {
+
+                                        month = month + 1;
+                                        date = new Date(toDate.setMonth(toDate.getMonth() + 1));
+                                        dateArr.push(date)
+                                        revenueData.push(Number(Number(revenue).toFixed(2)))
+                                        let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: month })
+                                        let actualRevenue = await connection.query(s5)
+                                        if (actualRevenue.rowCount > 0) {
+                                            actualRevenue.rows.map(index => {
+                                                sum = sum + Number(index.target_amount);
+                                            })
                                         }
+                                        actualData.push(sum)
+                                        count++;
+                                    } else {
+                                        count = 0;
+                                        month = month + 1;
+                                        date = new Date(toDate.setMonth(toDate.getMonth() + 1));
+                                        dateArr.push(date)
+                                        revenue = (Number(revenue) + Number(revenue) * (Number(growthPercentage) / 100))
+                                        revenueData.push(Number(revenue.toFixed(2)))
+                                        let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: month })
+                                        let actualRevenue = await connection.query(s5)
+                                        if (actualRevenue.rowCount > 0) {
+                                            actualRevenue.rows.map(index => {
+                                                sum = sum + Number(index.target_amount);
+                                            })
+                                        }
+                                        actualData.push(sum)
                                     }
-                                    actualData.push(sum)
                                 }
-                            }
-                            actualVsForecastObj = {
-                                actualRevenue: actualData,
-                                forecastRevenue: revenueData,
-                                date: dateArr
+
+
+
                             }
                             break;
                         case 'Quarterly':
-                            revenueData.push(Number(revenue))
-                            date = createDate
-                            dateArr.push(date)
-
-                            let days1 = await firstLastDate(date, 4)
-
-                            let s7 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: days1.firstDay1[0], var3: days1.lastDay1[0] })
-                            let actualRevenue3 = await connection.query(s7)
-
-                            let sum3 = 0;
-                            for (let data of actualRevenue3.rows) {
-                                if (data.target_amount) {
-                                    sum3 = sum3 + Number(data.target_amount)
-                                }
-                            }
-                            actualData.push(sum3)
-
-                            for (i = 1; i <= 3; i++) {
-                                if (growthWindow != count) {
-                                    let newDate = new Date(date)
-                                    date = newDate.setMonth(newDate.getMonth() + 4);
-                                    revenue = (Number(revenue) + Number(revenue) * (Number(growthPercentage) / 100))
-                                    revenueData.push(Number(revenue.toFixed(2)))
-                                    let date1 = new Date(date)
-                                    dateArr.push(date1)
-                                    let { firstDay1, lastDay1 } = await firstLastDate(date1, 4)
-                                    let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: firstDay1[0], var3: lastDay1[0] })
-                                    let actualRevenue = await connection.query(s5)
-                                    let sum = 0;
-                                    for (let data of actualRevenue.rows) {
-                                        if (data.target_amount) {
-                                            sum = sum + Number(data.target_amount)
-
+                            let month1 = (toDate.getMonth() + 1);
+                            for (let i = 1; i <= difference / 3; i++) {
+                                let sum = 0
+                                if (i == 1) {
+                                    for (let i = 1; i <= 3; i++) {
+                                        let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: month1 })
+                                        let actualRevenue = await connection.query(s5)
+                                        if (actualRevenue.rowCount > 0) {
+                                            actualRevenue.rows.map(index => {
+                                                sum = sum + Number(index.target_amount);
+                                            })
                                         }
+                                        month1++;
                                     }
+                                    dateArr.push(new Date(toDate))
+                                    revenueData.push(Number(revenue))
                                     actualData.push(sum)
 
-                                    count++;
                                 } else {
-                                    count = 0
-                                    let newDate = new Date(date)
-                                    date = newDate.setMonth(newDate.getMonth() + 4);
-                                    revenue = (Number(revenue) + Number(revenue) * (Number(growthPercentage) / 100))
-                                    revenueData.push(Number(revenue.toFixed(2)))
-                                    let date1 = new Date(date)
-                                    dateArr.push(date1)
-                                    let { firstDay1, lastDay1 } = await firstLastDate(date1, 3)
-                                    let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: firstDay1[0], var3: lastDay1[0] })
-                                    let actualRevenue = await connection.query(s5)
-                                    let sum = 0;
-                                    for (let data of actualRevenue.rows) {
-                                        if (data.target_amount) {
-                                            sum = sum + Number(data.target_amount)
+                                    if (growthWindow != count) {
+                                        date = new Date(toDate.setMonth(toDate.getMonth() + 4));
+                                        for (let i = 1; i <= 3; i++) {
+                                            let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: month1 })
+                                            let actualRevenue = await connection.query(s5)
+                                            if (actualRevenue.rowCount > 0) {
+                                                actualRevenue.rows.map(index => {
+                                                    sum = sum + Number(index.target_amount);
+                                                })
+                                            }
+                                            month1++;
                                         }
+                                        dateArr.push(new Date(date))
+                                        revenueData.push(Number(revenue))
+                                        actualData.push(sum)
+                                        count++;
+
+                                    } else {
+                                        count = 0;
+                                        date = new Date(toDate.setMonth(toDate.getMonth() + 4));
+                                        for (let i = 1; i <= 3; i++) {
+                                            let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: month1 })
+                                            let actualRevenue = await connection.query(s5)
+                                            if (actualRevenue.rowCount > 0) {
+                                                actualRevenue.rows.map(index => {
+                                                    sum = sum + Number(index.target_amount);
+                                                })
+                                            }
+                                            month1++;
+                                        }
+                                        dateArr.push(new Date(date))
+                                        revenue = (Number(revenue) + Number(revenue) * (Number(growthPercentage) / 100))
+                                        revenueData.push(Number(revenue.toFixed(2)))
+                                        actualData.push(sum)
                                     }
+                                }
+                            }
+                            break;
+                        case "Annual":
+                            let month2 = (toDate.getMonth() + 1);
+                            for (let i = 1; i <= yearDifference; i++) {
+                                let sum = 0
+                                if (i == 1) {
+                                    for (let i = 1; i <= 12; i++) {
+                                        let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: month2 })
+                                        let actualRevenue = await connection.query(s5)
+                                        if (actualRevenue.rowCount > 0) {
+                                            actualRevenue.rows.map(index => {
+                                                sum = sum + Number(index.target_amount);
+                                            })
+                                        }
+                                        month2++;
+                                    }
+                                    dateArr.push(new Date(toDate))
+                                    revenueData.push(Number(revenue))
                                     actualData.push(sum)
+
+                                } else {
+                                    if (growthWindow != count) {
+                                        date = new Date(toDate.setFullYear(toDate.getFullYear() + 1))
+                                        for (let i = 1; i <= 12; i++) {
+                                            let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: month2 })
+                                            let actualRevenue = await connection.query(s5)
+                                            if (actualRevenue.rowCount > 0) {
+                                                actualRevenue.rows.map(index => {
+                                                    sum = sum + Number(index.target_amount);
+                                                })
+                                            }
+                                            month2++;
+                                        }
+                                        dateArr.push(new Date(date))
+                                        revenueData.push(Number(revenue))
+                                        actualData.push(sum)
+                                        count++;
+
+                                    } else {
+                                        count = 0;
+                                        date = new Date(toDate.setFullYear(toDate.getFullYear() + 1))
+                                        for (let i = 1; i <= 12; i++) {
+                                            let s5 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: month2 })
+                                            let actualRevenue = await connection.query(s5)
+                                            if (actualRevenue.rowCount > 0) {
+                                                actualRevenue.rows.map(index => {
+                                                    sum = sum + Number(index.target_amount);
+                                                })
+                                            }
+                                            month2++;
+                                        }
+                                        dateArr.push(new Date(date))
+                                        revenue = (Number(revenue) + Number(revenue) * (Number(growthPercentage) / 100))
+                                        revenueData.push(Number(revenue.toFixed(2)))
+                                        actualData.push(sum)
+                                    }
                                 }
-                            }
-                            actualVsForecastObj = {
-                                actualRevenue: actualData,
-                                forecastRevenue: revenueData,
-                                date: dateArr
-                            }
-                            break;
-                        case 'Annual':
-                            revenueData.push(Number(revenue))
-                            let date2 = new Date(createDate)
-
-                            dateArr.push(date2)
-
-                            let days = await firstLastDate(date2, 12)
-
-                            let s6 = dbScript(db_sql['Q119'], { var1: findAdmin.rows[0].company_id, var2: days.firstDay1[0], var3: days.lastDay1[0] })
-                            let actualRevenue1 = await connection.query(s6)
-                            let sum1 = 0;
-                            for (let data of actualRevenue1.rows) {
-                                if (data.target_amount) {
-                                    sum1 = sum1 + Number(data.target_amount)
-                                }
-                            }
-                            actualData.push(sum1)
-
-                            actualVsForecastObj = {
-                                actualRevenue: actualData,
-                                forecastRevenue: revenueData,
-                                date: dateArr
                             }
                             break;
                     }
-                    if (actualVsForecastObj) {
-                        res.json({
-                            status: 200,
-                            success: true,
-                            message: "Actual vs Forecast data",
-                            data: actualVsForecastObj
-                        })
+                    actualVsForecastObj = {
+                        actualRevenue: (actualData.length > 0) ? actualData : [],
+                        forecastRevenue: (revenueData.length > 0) ? revenueData : [],
+                        date: (dateArr.length > 0) ? dateArr : []
                     }
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Actual vs Forecast data",
+                        data: actualVsForecastObj
+                    })
+
 
                 } else {
                     actualVsForecastObj = {
