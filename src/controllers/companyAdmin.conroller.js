@@ -2460,30 +2460,16 @@ module.exports.customerContactDetails = async (req, res) => {
                 let s5 = dbScript(db_sql['Q116'], { var1: customerCompanyId })
                 let revenueDetails = await connection.query(s5)
 
-
-                if (businessDetails.rowCount > 0 && revenueDetails.rowCount > 0) {
-
-                    customerContactDetails.businessDetails = businessDetails.rows
-                    customerContactDetails.revenueDetails = revenueDetails.rows
+                    customerContactDetails.businessDetails = (businessDetails.rowCount > 0 ) ? businessDetails.rows : []
+                    customerContactDetails.revenueDetails = (revenueDetails.rowCount > 0) ? revenueDetails.rows : []
 
                     res.json({
                         status: 200,
                         success: true,
                         message: 'Customer contact details',
                         data: customerContactDetails
-                    })
-                } else {
-
-                    customerContactDetails.businessDetails = []
-                    customerContactDetails.revenueDetails = []
-
-                    res.json({
-                        status: 200,
-                        success: false,
-                        message: 'Empty customer contact details',
-                        data: customerContactDetails
-                    })
-                }
+                    }) 
+                
             } else {
                 res.json({
                     status: 403,
@@ -2921,60 +2907,37 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
             let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
-                let customerContactDetails = {};
+
 
                 let s4 = dbScript(db_sql['Q88'], { var1: customerId })
                 let contactDetails = await connection.query(s4)
+                console.log(contactDetails.rows);
                 if (contactDetails.rowCount > 0) {
-                    if (contactDetails.rows[0].business_id != null && contactDetails.rows[0].revenue_id != null) {
-                        let businessIds = JSON.parse(contactDetails.rows[0].business_id)
-                        let revenueIds = JSON.parse(contactDetails.rows[0].revenue_id)
-                        let businessContact = [];
-                        let revenueContact = [];
-                        for (id of businessIds) {
-                            let s5 = dbScript(db_sql['Q117'], { var1: id })
-                            let businessData = await connection.query(s5)
-                            businessContact.push(businessData.rows[0])
-                        }
-                        for (id of revenueIds) {
-                            let s5 = dbScript(db_sql['Q118'], { var1: id })
-                            let revenueData = await connection.query(s5)
-                            revenueContact.push(revenueData.rows[0])
-                        }
-                        customerContactDetails.businessContact = businessContact
-                        customerContactDetails.revenueContact = revenueContact
+                    let customerContactDetails = {};
 
-                        res.json({
-                            status: 200,
-                            success: true,
-                            message: "Customer contact details",
-                            data: customerContactDetails
-                        })
+                    let s4 = dbScript(db_sql['Q115'], { var1: contactDetails.rows[0].customer_company_id })
+                    let businessDetails = await connection.query(s4)
 
-                    }
-                    else {
-                        customerContactDetails.businessContact = []
-                        customerContactDetails.revenueContact = []
+                    let s5 = dbScript(db_sql['Q116'], { var1: contactDetails.rows[0].customer_company_id })
+                    let revenueDetails = await connection.query(s5)
 
-                        res.json({
-                            status: 200,
-                            success: true,
-                            message: "Empty customer contact details",
-                            data: customerContactDetails
-                        })
-                    }
-                } else {
-
-                    customerContactDetails.businessContact = []
-                    customerContactDetails.revenueContact = []
+                    customerContactDetails.businessDetails = (businessDetails.rowCount > 0) ? businessDetails.rows : []
+                    customerContactDetails.revenueDetails = (revenueDetails.rowCount > 0) ? revenueDetails.rows : []
 
                     res.json({
                         status: 200,
                         success: true,
-                        message: "Empty customer contact details",
+                        message: 'Customer contact details',
                         data: customerContactDetails
                     })
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
                 }
+
             } else {
                 res.json({
                     status: 403,
@@ -4448,3 +4411,136 @@ module.exports.actualVsForecast = async (req, res) => {
         })
     }
 }
+
+//--------------------------------------Business and revenue Contact---------------------------
+
+module.exports.addBusinessContact = async(req, res) => {
+    try {
+        let userEmail = req.user.email
+        let {
+            companyId,
+            businessEmail,
+            businessContactName,
+            businessPhoneNumber
+        } = req.body
+
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        let moduleName = 'Customer management'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_create) {
+                await connection.query('BEGIN')
+
+                let businessId = uuid.v4()
+                let s6 = dbScript(db_sql['Q111'], { var1: businessId, var2: mysql_real_escape_string(businessContactName), var3: businessEmail, var4: businessPhoneNumber, var5: companyId })
+                let addBusinessContact = await connection.query(s6)
+
+                await connection.query('COMMIT')
+                if(addBusinessContact.rowCount > 0) {
+                    res.json({
+                        status : 201,
+                        success : true,
+                        message : "Business contact added successfully"
+                    })
+                }else{
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+
+            } else {
+                res.json({
+                    status: 403,
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.addRevenueContact = async(req, res) => {
+    try {
+        let userEmail = req.user.email
+        let {
+            companyId,
+            revenueEmail,
+            revenueContactName,
+            revenuePhoneNumber
+        } = req.body
+
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        let moduleName = 'Customer management'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_create) {
+                await connection.query('BEGIN')
+
+                let revenueId = uuid.v4()
+                let s6 = dbScript(db_sql['Q112'], { var1: revenueId, var2: mysql_real_escape_string(revenueContactName), var3: revenueEmail, var4: revenuePhoneNumber, var5: companyId })
+                let addRevenueContact = await connection.query(s6)
+                
+                await connection.query('COMMIT')
+                if(addRevenueContact.rowCount > 0) {
+                    res.json({
+                        status : 201,
+                        success : true,
+                        message : "Revenue contact added successfully"
+                    })
+                }else{
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+
+            } else {
+                res.json({
+                    status: 403,
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+

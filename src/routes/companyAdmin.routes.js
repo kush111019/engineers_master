@@ -89,4 +89,11 @@ router.put('/updateRevenueForecast',verifyTokenFn, controller.companyAdmin.updat
 router.get('/revenueForecastList',verifyTokenFn, controller.companyAdmin.revenueForecastList)
 router.get('/actualVsForecast',verifyTokenFn, controller.companyAdmin.actualVsForecast)
 
+//---------------------------------------Business and Revenue Contact-------------------------
+
+router.post('/addBusinessContact',verifyTokenFn, controller.companyAdmin.addBusinessContact)
+router.post('/addRevenueContact',verifyTokenFn, controller.companyAdmin.addRevenueContact)
+
+
+
 module.exports = router;
