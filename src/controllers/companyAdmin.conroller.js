@@ -3034,6 +3034,9 @@ module.exports.createSalesCommission = async (req, res) => {
                 await connection.query('BEGIN')
 
                 let id = uuid.v4()
+                businessId = (businessId == '') ? null : businessId
+                revenueId = (revenueId == '') ? null : revenueId
+
                 let s5 = dbScript(db_sql['Q86'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: findAdmin.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10 : targetAmount, var11: targetClosingDate, var12: mysql_real_escape_string(productMatch) })
                 let createSalesConversion = await connection.query(s5)
 
@@ -3459,7 +3462,7 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                         }
                         
                     }
-                    if (data.business_id != '' && data.revenue_id != '') {
+                    if (data.business_id != null && data.revenue_id != null) {
 
 
                         let s8 = dbScript(db_sql['Q117'], { var1: data.business_id })
