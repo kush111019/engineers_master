@@ -3033,10 +3033,11 @@ module.exports.createSalesCommission = async (req, res) => {
                 let supporterIds = []
                 await connection.query('BEGIN')
 
-                let id = uuid.v4()
-                businessId = (businessId == '') ? null : businessId
-                revenueId = (revenueId == '') ? null : revenueId
+                
+                businessId = (businessId == '') ? '' : businessId
+                revenueId = (revenueId == '') ? '' : revenueId
 
+                let id = uuid.v4()
                 let s5 = dbScript(db_sql['Q86'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: findAdmin.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10 : targetAmount, var11: targetClosingDate, var12: mysql_real_escape_string(productMatch) })
                 let createSalesConversion = await connection.query(s5)
 
@@ -3123,7 +3124,6 @@ module.exports.salesCommissionList = async (req, res) => {
                 let s4 = dbScript(db_sql['Q87'], { var1: findAdmin.rows[0].company_id })
                 let salesCommissionList = await connection.query(s4)
                 let commissionList = []
-                console.log(salesCommissionList.rows);
                 for (data of salesCommissionList.rows) {
                     let closer = {}
                     let supporters = []
@@ -3136,7 +3136,6 @@ module.exports.salesCommissionList = async (req, res) => {
 
                     let s7 = dbScript(db_sql['Q94'], { var1: data.id })
                     let supporter = await connection.query(s7)
-
                     if (supporter.rowCount > 0) {
                         if (supporter.rows[0].supporter_id != "") {
                             for (supporterData of supporter.rows) {
@@ -3152,9 +3151,8 @@ module.exports.salesCommissionList = async (req, res) => {
                             }
                         }
                     }
-
-
-                    if (data.business_id != null  && data.revenue_id != null ) {
+                    
+                    if (data.business_id != ''  && data.revenue_id != '' ) {
 
                         let s8 = dbScript(db_sql['Q117'], { var1: data.business_id })
                         let businessData = await connection.query(s8);
@@ -3185,7 +3183,7 @@ module.exports.salesCommissionList = async (req, res) => {
                     closer.productMatch = data.product_match
                     closer.is_overwrite = data.is_overwrite
                     closer.closerId = data.closer_id
-                    closer.closerName = closerName.rows[0].full_name
+                    closer.closerName = (closerName.rowCount > 0 ) ? closerName.rows[0].full_name : ''
                     closer.closerPercentage = data.closer_percentage
                     closer.supporters = supporters
                     closer.createdAt = data.created_at
