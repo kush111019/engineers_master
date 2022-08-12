@@ -2907,60 +2907,37 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
             let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
-                let customerContactDetails = {};
+
 
                 let s4 = dbScript(db_sql['Q88'], { var1: customerId })
                 let contactDetails = await connection.query(s4)
+                console.log(contactDetails.rows);
                 if (contactDetails.rowCount > 0) {
-                    if (contactDetails.rows[0].business_id != null && contactDetails.rows[0].revenue_id != null) {
-                        let businessIds = JSON.parse(contactDetails.rows[0].business_id)
-                        let revenueIds = JSON.parse(contactDetails.rows[0].revenue_id)
-                        let businessContact = [];
-                        let revenueContact = [];
-                        for (id of businessIds) {
-                            let s5 = dbScript(db_sql['Q117'], { var1: id })
-                            let businessData = await connection.query(s5)
-                            businessContact.push(businessData.rows[0])
-                        }
-                        for (id of revenueIds) {
-                            let s5 = dbScript(db_sql['Q118'], { var1: id })
-                            let revenueData = await connection.query(s5)
-                            revenueContact.push(revenueData.rows[0])
-                        }
-                        customerContactDetails.businessContact = businessContact
-                        customerContactDetails.revenueContact = revenueContact
+                    let customerContactDetails = {};
 
-                        res.json({
-                            status: 200,
-                            success: true,
-                            message: "Customer contact details",
-                            data: customerContactDetails
-                        })
+                    let s4 = dbScript(db_sql['Q115'], { var1: contactDetails.rows[0].customer_company_id })
+                    let businessDetails = await connection.query(s4)
 
-                    }
-                    else {
-                        customerContactDetails.businessContact = []
-                        customerContactDetails.revenueContact = []
+                    let s5 = dbScript(db_sql['Q116'], { var1: contactDetails.rows[0].customer_company_id })
+                    let revenueDetails = await connection.query(s5)
 
-                        res.json({
-                            status: 200,
-                            success: true,
-                            message: "Empty customer contact details",
-                            data: customerContactDetails
-                        })
-                    }
-                } else {
-
-                    customerContactDetails.businessContact = []
-                    customerContactDetails.revenueContact = []
+                    customerContactDetails.businessDetails = (businessDetails.rowCount > 0) ? businessDetails.rows : []
+                    customerContactDetails.revenueDetails = (revenueDetails.rowCount > 0) ? revenueDetails.rows : []
 
                     res.json({
                         status: 200,
                         success: true,
-                        message: "Empty customer contact details",
+                        message: 'Customer contact details',
                         data: customerContactDetails
                     })
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
                 }
+
             } else {
                 res.json({
                     status: 403,
@@ -4468,7 +4445,7 @@ module.exports.addBusinessContact = async(req, res) => {
                     res.json({
                         status : 201,
                         success : true,
-                        message : "Business contact added succcessfully"
+                        message : "Business contact added successfully"
                     })
                 }else{
                     res.json({
@@ -4533,7 +4510,7 @@ module.exports.addRevenueContact = async(req, res) => {
                     res.json({
                         status : 201,
                         success : true,
-                        message : "Revenue contact added succcessfully"
+                        message : "Revenue contact added successfully"
                     })
                 }else{
                     res.json({
@@ -4566,3 +4543,4 @@ module.exports.addRevenueContact = async(req, res) => {
         })
     }
 }
+
