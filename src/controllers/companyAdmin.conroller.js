@@ -3017,7 +3017,9 @@ module.exports.createSalesCommission = async (req, res) => {
             productMatch,
             targetClosingDate,
             businessId,
-            revenueId
+            revenueId,
+            is_subscribed,
+            subscriptionPlan
         } = req.body
 
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
@@ -3038,7 +3040,7 @@ module.exports.createSalesCommission = async (req, res) => {
                 revenueId = (revenueId == '') ? '' : revenueId
 
                 let id = uuid.v4()
-                let s5 = dbScript(db_sql['Q86'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: findAdmin.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10 : targetAmount, var11: targetClosingDate, var12: mysql_real_escape_string(productMatch) })
+                let s5 = dbScript(db_sql['Q86'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: findAdmin.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10 : targetAmount, var11: targetClosingDate, var12: mysql_real_escape_string(productMatch), var13 : is_subscribed, var14: subscriptionPlan })
                 let createSalesConversion = await connection.query(s5)
 
                 let s6 = dbScript(db_sql['Q89'], { var1: customerCommissionSplitId, var2: findAdmin.rows[0].company_id })
@@ -3061,7 +3063,7 @@ module.exports.createSalesCommission = async (req, res) => {
                 }
 
                 let logId = uuid.v4()
-                let s9 = dbScript(db_sql['Q74'], { var1 : logId, var2: createSalesConversion.rows[0].id, var3: customerCommissionSplitId, var4 : mysql_real_escape_string(qualification), var5 : is_qualified, var6: targetAmount, var7: mysql_real_escape_string(productMatch), var8: targetClosingDate, var9 : customerId, var10 : is_overwrite, var11 : findAdmin.rows[0].company_id, var12: revenueId, var13 : businessId, var14: customerCloserId, var15 : JSON.stringify(supporterIds) })
+                let s9 = dbScript(db_sql['Q74'], { var1 : logId, var2: createSalesConversion.rows[0].id, var3: customerCommissionSplitId, var4 : mysql_real_escape_string(qualification), var5 : is_qualified, var6: targetAmount, var7: mysql_real_escape_string(productMatch), var8: targetClosingDate, var9 : customerId, var10 : is_overwrite, var11 : findAdmin.rows[0].company_id, var12: revenueId, var13 : businessId, var14: customerCloserId, var15 : JSON.stringify(supporterIds) , var16 : is_subscribed, var17 : subscriptionPlan})
                 let createLog = await connection.query(s9)
 
                 await connection.query('COMMIT')
@@ -3151,7 +3153,7 @@ module.exports.salesCommissionList = async (req, res) => {
                             }
                         }
                     }
-                    
+
                     if (data.business_id != ''  && data.revenue_id != '' ) {
 
                         let s8 = dbScript(db_sql['Q117'], { var1: data.business_id })
@@ -3188,6 +3190,8 @@ module.exports.salesCommissionList = async (req, res) => {
                     closer.supporters = supporters
                     closer.createdAt = data.created_at
                     closer.closedAt = (customerName.rowCount > 0 ) ? customerName.rows[0].closed_at : ''
+                    closer.is_subscribed = data.is_subscribed
+                    closer.subscriptionPlan = data.subscription_plan
 
                     commissionList.push(closer)
                 }
@@ -3249,7 +3253,9 @@ module.exports.updateSalesCommission = async (req, res) => {
             is_overwrite,
             closerPercentage,
             businessId,
-            revenueId
+            revenueId,
+            is_subscribed,
+            subscriptionPlan
 
         } = req.body
 
@@ -3268,7 +3274,7 @@ module.exports.updateSalesCommission = async (req, res) => {
 
                 let _dt = new Date().toISOString();
 
-                let s5 = dbScript(db_sql['Q98'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: findAdmin.rows[0].company_id, var7: businessId, var8: revenueId, var9 : qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var13:productMatch })
+                let s5 = dbScript(db_sql['Q98'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: findAdmin.rows[0].company_id, var7: businessId, var8: revenueId, var9 : qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var13:productMatch, var14:is_subscribed, var15 : subscriptionPlan })
                 let updateSalesCommission = await connection.query(s5)
 
                 let s6 = dbScript(db_sql['Q89'], { var1: customerCommissionSplitId, var2: findAdmin.rows[0].company_id })
@@ -3293,7 +3299,7 @@ module.exports.updateSalesCommission = async (req, res) => {
                 }
 
                 let logId = uuid.v4()
-                let s10 = dbScript(db_sql['Q74'], { var1 : logId, var2: updateSalesCommission.rows[0].id, var3: customerCommissionSplitId, var4 : mysql_real_escape_string(qualification), var5 : is_qualified, var6: targetAmount, var7: mysql_real_escape_string(productMatch), var8: targetClosingDate, var9 : customerId, var10 : is_overwrite, var11 : findAdmin.rows[0].company_id, var12: revenueId, var13 : businessId, var14: customerCloserId, var15 : JSON.stringify(supporterIds) })
+                let s10 = dbScript(db_sql['Q74'], { var1 : logId, var2: updateSalesCommission.rows[0].id, var3: customerCommissionSplitId, var4 : mysql_real_escape_string(qualification), var5 : is_qualified, var6: targetAmount, var7: mysql_real_escape_string(productMatch), var8: targetClosingDate, var9 : customerId, var10 : is_overwrite, var11 : findAdmin.rows[0].company_id, var12: revenueId, var13 : businessId, var14: customerCloserId, var15 : JSON.stringify(supporterIds), var16 : is_subscribed, var17 : subscriptionPlan })
                 let createLog = await connection.query(s10)
 
 
@@ -3432,7 +3438,6 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                 let commissionList = []
                 let s4 = dbScript(db_sql['Q75'], { var1: salesCommissionId })
                 let salesCommissionlogList = await connection.query(s4)
-                console.log(salesCommissionlogList.rows);
                 for (data of salesCommissionlogList.rows) {
                     let closer = {}
                     let supporters = []
@@ -3460,7 +3465,7 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                         }
                         
                     }
-                    if (data.business_id != null && data.revenue_id != null) {
+                    if (data.business_id != '' && data.revenue_id != '') {
 
 
                         let s8 = dbScript(db_sql['Q117'], { var1: data.business_id })
@@ -3497,6 +3502,8 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                     closer.supporters = supporters
                     closer.createdAt = data.created_at
                     closer.closedAt = (customerName.rowCount > 0 ) ? customerName.rows[0].closed_at : ''
+                    closer.is_subscribed = data.is_subscribed
+                    closer.subscriptionPlan = data.subscription_plan
 
                     commissionList.push(closer)
                 }
