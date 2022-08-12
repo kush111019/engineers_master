@@ -3151,7 +3151,7 @@ module.exports.salesCommissionList = async (req, res) => {
                     }
 
 
-                    if (data.business_id != '' && data.revenue_id != '') {
+                    if (data.business_id != null  && data.revenue_id != null ) {
 
                         let s8 = dbScript(db_sql['Q117'], { var1: data.business_id })
                         let businessData = await connection.query(s8);
