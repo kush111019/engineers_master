@@ -1,4 +1,7 @@
 const nodemailer = require("nodemailer");
+const resetPassTemplate = require('../templates/resetPassword')
+const verifyUserTemp = require('../templates/verification')
+const recurringPaymentTemplate = require('../templates/recurringPayment')
 require('dotenv').config()
 
 // module.exports.sendEmail = async (email,code) => {
@@ -62,6 +65,8 @@ module.exports.resetPasswordMail = async (email , link) => {
     const senderAddress = process.env.SMTP_USERNAME;
     var toAddresses = email;
 
+    let resetPass = resetPassTemplate.resetPassword(link)
+
     var ccAddresses = "";
     var bccAddresses = "";
 
@@ -75,12 +80,7 @@ module.exports.resetPasswordMail = async (email , link) => {
     
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
-    var body_html = `<html>
-                     <head></head>
-                     <body>
-                     <b> Please Click on the link :- <a style="font-size: 20px" href=${link} target="_blank">Link</a></b>
-                     </body>
-                     </html>`;
+    var body_html = resetPass;
 
     let transporter = nodemailer.createTransport({
         host: smtpEndpoint,
@@ -100,7 +100,7 @@ module.exports.resetPasswordMail = async (email , link) => {
         cc: ccAddresses,
         bcc: bccAddresses,
         text: body_text,
-        html: body_html,
+        html: resetPass,
         // Custom headers for configuration set and message tags.
         headers: {}
     };
@@ -118,6 +118,8 @@ module.exports.verificationMail = async (email , link) => {
     const senderAddress = process.env.SMTP_USERNAME;
     var toAddresses = email;
 
+    let verifyUser = verifyUserTemp.verifyUser(link)
+
     var ccAddresses = "";
     var bccAddresses = "";
 
@@ -131,12 +133,7 @@ module.exports.verificationMail = async (email , link) => {
     
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
-    var body_html = `<html>
-                     <head></head>
-                     <body>
-                     <b> Please Click on the link for verification:- <a style="font-size: 20px" href=${link} target="_blank">Link</a></b>
-                     </body>
-                     </html>`;
+    var body_html = ``;
 
     let transporter = nodemailer.createTransport({
         host: smtpEndpoint,
@@ -156,7 +153,7 @@ module.exports.verificationMail = async (email , link) => {
         cc: ccAddresses,
         bcc: bccAddresses,
         text: body_text,
-        html: body_html,
+        html: verifyUser,
         // Custom headers for configuration set and message tags.
         headers: {}
     };
@@ -174,6 +171,8 @@ module.exports.recurringPaymentMail = async (email,customerName) => {
     const senderAddress = process.env.SMTP_USERNAME;
     var toAddresses = email;
 
+    let payment = recurringPaymentTemplate.recurringPayment(customerName)
+
     var ccAddresses = "";
     var bccAddresses = "";
 
@@ -187,12 +186,7 @@ module.exports.recurringPaymentMail = async (email,customerName) => {
     
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
-    var body_html = `<html>
-                     <head></head>
-                     <body>
-                     <b> Reminder for recurring date of customer ${customerName} </b>
-                     </body>
-                     </html>`;
+    var body_html = ``;
 
     let transporter = nodemailer.createTransport({
         host: smtpEndpoint,
@@ -212,7 +206,7 @@ module.exports.recurringPaymentMail = async (email,customerName) => {
         cc: ccAddresses,
         bcc: bccAddresses,
         text: body_text,
-        html: body_html,
+        html: payment,
         // Custom headers for configuration set and message tags.
         headers: {}
     };

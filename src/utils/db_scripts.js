@@ -143,7 +143,7 @@ const db_sql = {
     "Q119" : `select target_amount from sales_commission where company_id = '{var1}' and deleted_at is null and EXTRACT(MONTH FROM created_at) = '{var2}'`,
     "Q120" : `update customers set business_id = '{var2}' where id = '{var1}' returning *`,
     "Q121" : `update customers set revenue_id = '{var2}' where id = '{var1}' returning *`,
-    "Q122" : `select id, supporter_id, supporter_percentage from sales_supporter where id = '{var1}' and deleted_at is null `,
+    "Q122" : `select id, supporter_id, supporter_percentage from sales_supporter where id = '{var1}'  `,
     "Q123" : `select customer_id, sales_type, subscription_plan, recurring_date from sales_commission where deleted_at is null`
         
 

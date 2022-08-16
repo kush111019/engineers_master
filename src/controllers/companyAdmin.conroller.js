@@ -3247,7 +3247,7 @@ module.exports.salesCommissionLogsList = async (req, res) => {
 
                         let s7 = dbScript(db_sql['Q122'], { var1: supporterId })
                         let supporter = await connection.query(s7)
-
+                        
                         if (supporter.rowCount > 0) {
 
                             let s8 = dbScript(db_sql['Q12'], { var1: supporter.rows[0].supporter_id })
@@ -4379,59 +4379,86 @@ module.exports.addRevenueContact = async(req, res) => {
 
 //------------------------------------------cron job ----------------------------------------
 
-// module.exports.recurringPaymentCron = async () => {
+module.exports.recurringPaymentCron = async () => {
 
-//     let s1 = dbScript(db_sql['Q123'], {})
-//     let salesCommissionList = await connection.query(s1)
-//     if (salesCommissionList.rowCount > 0) {
-//         for (let data of salesCommissionList.rows) {
-//             if (data.sales_type == "Subscription") {
+    let s1 = dbScript(db_sql['Q123'], {})
+    let salesCommissionList = await connection.query(s1)
+    if (salesCommissionList.rowCount > 0) {
+        for (let data of salesCommissionList.rows) {
+            if (data.sales_type == "Subscription") {
 
-//                 const str = data.recurring_date ;
-//                 const [ month, day, year] = str.split('/');
+                const str = data.recurring_date ;
+                const [ month, day, year] = str.split('/');
                 
-//                 const recurringDate = new Date(+year, month-1, +day);
-//                 let currentDate = new Date()
-//                 let currentDate1 = currentDate.toISOString().split('T');
+                const recurringDate = new Date(+year, month-1, +day);
+                let currentDate = new Date()
+                let currentDate1 = currentDate.toISOString().split('T');
                 
-//                 if (data.subscription_plan == "Monthly") {
-//                     let date = currentDate.getDate()
-//                     let day  = recurringDate.getDate()
-//                     if (date == day) {
-//                         let s2 = dbScript(db_sql['Q88'], { var1: data.customer_id })
-//                         let customers = await connection.query(s2)
-//                         for(let customerData of customers){
-//                             let s3 = dbScript(db_sql['Q12'],{ var1 : customerData.user_id}) 
-//                             let userData = await connection.query(s3)
-//                             let roles = dbScript(db_sql['Q21'],{var1 : userData.rows[0].company_id})
-//                             for (roleData of roles){
-//                                 if(roleData.role_name == 'Admin'){
-//                                     let adminRole = roleData.id
-//                                     await recurringPaymentMail(userData.email_address,customerData.customer_name)
-//                                 }else{
-//                                     await recurringPaymentMail(userData.email_address,customerData.customer_name)
-//                                 }
-//                             }
+                if (data.subscription_plan == "Monthly") {
+                    let date = currentDate.getDate()
+                    let day  = recurringDate.getDate()
+                    if (date == day) {
+                        let s2 = dbScript(db_sql['Q88'], { var1: data.customer_id })
+                        let customers = await connection.query(s2)
+                        for(let customerData of customers){
+                            let s3 = dbScript(db_sql['Q12'],{ var1 : customerData.user_id}) 
+                            let userData = await connection.query(s3)
+                            let s4 = dbScript(db_sql['Q19'],{var1 : userData.rows[0].role_id})
+                            let role = await connection.query(s4)
+                            if(role.rows[0].role_name == 'Admin'){
+                                await recurringPaymentMail(userData.email_address,customerData.customer_name)
+                            }else{
+                                let s5 = dbScript(db_sql['Q21'],{var1 : userData.rows[0].company_id})
+                                let roleData = await connection.query(s5)
+                                for(role of roleData){
+                                    if(role.role_name == 'Admin'){
+                                        let s6 = dbScript(db_sql['Q34'],{var1 :role.id})
+                                        let adminData = await connection.query(s6)
+                                        await recurringPaymentMail(adminData.rows[0].email_address,customerData.customer_name)
+                                        await recurringPaymentMail(userData.email_address,customerData.customer_name)
+                                    }
+                                  
+                                }
+                                
+                            }
+                            
 
                             
-//                         }
-//                     }
-//                 }
-//                 if (data.subscription_plan == "Yearly") {
-//                     let difference = await getYearDifference(recurringDate, currentDate)
-//                     let futureDate = new Date(recurringDate.setFullYear(recurringDate.getFullYear() + difference))
-//                     let recurringDate1 = futureDate.toISOString().split('T');
-//                     if(currentDate1[0] == recurringDate1[0]){
-//                         let s2 = dbScript(db_sql['Q88'], { var1: data.customer_id })
-//                         let customers = await connection.query(s2)
-//                         for(let customerData of customers){
-//                             let s3 = dbScript(db_sql['Q12'],{ var1 : customerData.user_id}) 
-//                             let userData = await connection.query(s3)
-//                             await recurringPaymentMail(userData.email_address,customerData.customer_name)
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
+                        }
+                    }
+                }
+                if (data.subscription_plan == "Yearly") {
+                    let difference = await getYearDifference(recurringDate, currentDate)
+                    let futureDate = new Date(recurringDate.setFullYear(recurringDate.getFullYear() + difference))
+                    let recurringDate1 = futureDate.toISOString().split('T');
+                    if(currentDate1[0] == recurringDate1[0]){
+                        let s2 = dbScript(db_sql['Q88'], { var1: data.customer_id })
+                        let customers = await connection.query(s2)
+                        for(let customerData of customers){
+                            let s3 = dbScript(db_sql['Q12'],{ var1 : customerData.user_id}) 
+                            let userData = await connection.query(s3)
+                            let s4 = dbScript(db_sql['Q19'],{var1 : userData.rows[0].role_id})
+                            let role = await connection.query(s4)
+                            if(role.rows[0].role_name == 'Admin'){
+                                await recurringPaymentMail(userData.email_address,customerData.customer_name)
+                            }else{
+                                let s5 = dbScript(db_sql['Q21'],{var1 : userData.rows[0].company_id})
+                                let roleData = await connection.query(s5)
+                                for(role of roleData){
+                                    if(role.role_name == 'Admin'){
+                                        let s6 = dbScript(db_sql['Q34'],{var1 :role.id})
+                                        let adminData = await connection.query(s6)
+                                        await recurringPaymentMail(adminData.rows[0].email_address,customerData.customer_name)
+                                        await recurringPaymentMail(userData.email_address,customerData.customer_name)
+                                    }
+                                  
+                                }
+                                
+                            } 
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
