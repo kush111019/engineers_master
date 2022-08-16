@@ -8,7 +8,7 @@ const db_sql = {
               values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}',false) RETURNING *`,          
     "Q4"   : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified from users where email_address = '{var1}' and deleted_at is null` ,
     "Q6"   : `select id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where email_address = '{var1}' and deleted_at is null ` , 
-    "Q7"   : `update users set encrypted_password = '{var2}' is_verified = true, updated_at = '{var3}' where email_address = '{var1}' RETURNING *`, 
+    "Q7"   : `update users set encrypted_password = '{var2}', is_verified = true, updated_at = '{var3}' where email_address = '{var1}' RETURNING *`, 
     "Q8"   : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where deleted_at is null` ,
     "Q9"   : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where id = '{var1}' and deleted_at is null`,  
     "Q10"  : `update users set is_verified = true ,updated_at = '{var2}' where email_address = '{var1}' RETURNING *`, 
@@ -52,7 +52,7 @@ const db_sql = {
               where r.company_id = '{var1}' and r.deleted_at is null and u.deleted_at is null` ,
     "Q61"  : `insert into follow_up_notes (id, sales_commission_id, company_id, user_id, notes) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,
     "Q62"  : `select id, notes, created_at from follow_up_notes where sales_commission_id = '{var1}' and deleted_at is null`,
-    "Q63"  : `select id,customer_company_id ,customer_name, source, qualification, is_qualified, target_amount, product_match, target_closing_date, closed_at , user_id from customers where company_id ='{var1}' and deleted_at is null and (created_at BETWEEN '{var2}' AND '{var3}') `,
+    "Q63"  : `select id,customer_company_id ,customer_name, source, closed_at , user_id from customers where company_id ='{var1}' and deleted_at is null and (created_at BETWEEN '{var2}' AND '{var3}') `,
     "Q64"  : `update permissions set user_id = '{var2}' where role_id = '{var1}' and deleted_at is null returning *`,
     "Q65"  : `update roles set module_ids = '{var1}' , updated_at = '{var2}' where id = '{var3}' returning * `,
     "Q66"  : `select permission_to_view, permission_to_create, permission_to_update, permission_to_delete from permissions where role_id = '{var1}' and module_id = '{var2}' and deleted_at is null `,
@@ -144,6 +144,7 @@ const db_sql = {
     "Q120" : `update customers set business_id = '{var2}' where id = '{var1}' returning *`,
     "Q121" : `update customers set revenue_id = '{var2}' where id = '{var1}' returning *`,
     "Q122" : `select id, supporter_id, supporter_percentage from sales_supporter where id = '{var1}' and deleted_at is null `,
+    "Q123" : `select customer_id, sales_type, subscription_plan, recurring_date from sales_commission where deleted_at is null`
         
 
  };
