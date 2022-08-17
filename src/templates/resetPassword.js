@@ -1,4 +1,4 @@
-module.exports.resetPassword = function(link){
+module.exports.resetPassword = function (link) {
     let resetPass = `
     <!doctype html>
     <html lang="en-US">
@@ -26,7 +26,7 @@ module.exports.resetPassword = function(link){
                         <tr>
                             <td style="text-align:center;">
                               <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
-                                <img src="public/hiriselogo.png" alt="logo" />
+                                <img width="60" src="http://143.198.102.134:8080/img/logo.png" alt="logo" >
                               </a>
                             </td>
                         </tr>

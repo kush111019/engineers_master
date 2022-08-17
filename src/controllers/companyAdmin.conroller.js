@@ -2105,9 +2105,8 @@ module.exports.editCustomer = async (req, res) => {
                 }
 
                 let _dt = new Date().toISOString();
-                let s5 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: _dt, var6: customerId, var4: JSON.stringify(bId), var5: JSON.stringify(rId), var6: mysql_real_escape_string(address)})
+                let s5 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: _dt, var6: customerId, var4: JSON.stringify(bId), var5: JSON.stringify(rId), var7: mysql_real_escape_string(address)})
                 let updateCustomer = await connection.query(s5)
-                console.log(updateCustomer.rows, "update", s5);
                 if (updateCustomer.rowCount > 0) {
 
                     res.json({
