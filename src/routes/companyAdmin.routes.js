@@ -88,6 +88,8 @@ router.get('/actualVsForecast',verifyTokenFn, controller.companyAdmin.actualVsFo
 router.post('/addBusinessContact',verifyTokenFn, controller.companyAdmin.addBusinessContact)
 router.post('/addRevenueContact',verifyTokenFn, controller.companyAdmin.addRevenueContact)
 
-
+//-------------------------------------------Configurations----------------------------------
+router.post('/addConfigs', verifyTokenFn, controller.companyAdmin.addConfigs)
+router.get('/configList', verifyTokenFn, controller.companyAdmin.configList)
 
 module.exports = router;
