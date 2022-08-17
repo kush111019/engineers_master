@@ -1600,7 +1600,7 @@ module.exports.createSlab = async (req, res) => {
                     res.json({
                         status: 201,
                         success: true,
-                        message: "Slab created successfully"
+                        message: "Slab added successfully"
                     })
                 } else {
                     await connection.query('ROLLBACK')
@@ -4496,7 +4496,7 @@ module.exports.addConfigs = async(req, res) => {
 
         if (findAdmin.rows.length > 0) {
             await connection.query('BEGIN')
-            
+
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q126'], {var1 : _dt , var2 : findAdmin.rows[0].company_id })
             let config = await connection.query(s2)
@@ -4550,20 +4550,34 @@ module.exports.configList = async(req, res) => {
 
             let s2 = dbScript(db_sql['Q125'], {var1 : findAdmin.rows[0].company_id })
             let configList = await connection.query(s2)
+            let configuration = {}
 
             if(configList.rowCount > 0){
+                
+                configuration.id = configList.rows[0].id
+                configuration.currency = configList.rows[0].currency,
+                configuration.phoneFormat = configList.rows[0].phone_format,
+                configuration.dateFormat = configList.rows[0].date_format 
+
                 res.json({
                     status : 200,
                     success : true,
                     message : "Configuration List",
-                    data : configList.rows[0]
+                    data : configuration
                 })
+
             }else{
+
+                configuration.id = "",
+                configuration.currency = "",
+                configuration.phoneFormat = "",
+                configuration.dateFormat = ""
+
                 res.json({
                     status : 200,
                     success : false,
                     message : "Empty Configuration List",
-                    data : configList.rows[0]
+                    data : configuration
                 }) 
             }
 
