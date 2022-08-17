@@ -1600,7 +1600,7 @@ module.exports.createSlab = async (req, res) => {
                     res.json({
                         status: 201,
                         success: true,
-                        message: "Slab created successfully"
+                        message: "Slab added successfully"
                     })
                 } else {
                     await connection.query('ROLLBACK')
