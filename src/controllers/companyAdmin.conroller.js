@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { issueJWT } = require("../utils/jwt")
-const { resetPasswordMail, verificationMail, recurringPaymentMail } = require("../utils/sendMail")
+const { resetPasswordMail, verificationMail, recurringPaymentMail, welcomeEmail } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const jsonwebtoken = require("jsonwebtoken");
 const uuid = require("node-uuid");
@@ -1150,7 +1150,7 @@ module.exports.addUser = async (req, res) => {
                         }
                         let token = await issueJWT(payload)
                         link = `http://143.198.102.134:8080/auth/reset-password/${token}`
-                        await resetPasswordMail(emailAddress, link);
+                        await welcomeEmail(emailAddress, link);
                         res.json({
                             status: 201,
                             success: true,
