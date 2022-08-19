@@ -1756,7 +1756,7 @@ module.exports.deleteSlab = async (req, res) => {
     }
 }
 
-// ---------------------------------------Deal Management---------------------------------------
+// ---------------------------------------customer Management-------------------------------
 
 module.exports.createCustomer = async (req, res) => {
     try {
@@ -2938,6 +2938,7 @@ module.exports.salesCommissionList = async (req, res) => {
                 let s4 = dbScript(db_sql['Q87'], { var1: findAdmin.rows[0].company_id })
                 let salesCommissionList = await connection.query(s4)
                 let commissionList = []
+                console.log(salesCommissionList.rows)
                 for (data of salesCommissionList.rows) {
                     let closer = {}
                     let supporters = []
@@ -2985,7 +2986,6 @@ module.exports.salesCommissionList = async (req, res) => {
                         closer.revenueContactId = ""
                         closer.revenueContactName = ""
                     }
-
                     closer.id = data.id
                     closer.customerId = data.customer_id
                     closer.customerName = (customerName.rowCount > 0 ) ? customerName.rows[0].customer_name : ''
@@ -3258,10 +3258,13 @@ module.exports.salesCommissionLogsList = async (req, res) => {
 
                     let s5 = dbScript(db_sql['Q88'], { var1: data.customer_id })
                     let customerName = await connection.query(s5)
-
+                    
                     let s6 = dbScript(db_sql['Q12'], { var1: data.closer_id })
                     let closerName = await connection.query(s6)
 
+                    let s10 = dbScript(db_sql['Q127'], { var1: salesCommissionId })
+                    let closerPercentage = await connection.query(s10)
+                    
                     for(let supporterId of JSON.parse(data.supporter_id)){
 
                         let s7 = dbScript(db_sql['Q122'], { var1: supporterId })
@@ -3299,7 +3302,6 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                         closer.revenueContactId = ""
                         closer.revenueContactName = ""
                     }
-
                     closer.id = data.id
                     closer.customerId = data.customer_id
                     closer.customerName = (customerName.rowCount > 0 ) ? customerName.rows[0].customer_name : ''
@@ -3312,7 +3314,7 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                     closer.is_overwrite = data.is_overwrite
                     closer.closerId = data.closer_id
                     closer.closerName = closerName.rows[0].full_name
-                    closer.closerPercentage = data.closer_percentage
+                    closer.closerPercentage = (closerPercentage.rows[0].closer_percentage > 0) ? closerPercentage.rows[0].closer_percentage : '';
                     closer.supporters = supporters
                     closer.createdAt = data.created_at
                     closer.closedAt = (customerName.rowCount > 0 ) ? customerName.rows[0].closed_at : ''

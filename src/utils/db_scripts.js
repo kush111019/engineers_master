@@ -148,7 +148,7 @@ const db_sql = {
     "Q124" : `insert into configurations(id, currency, phone_format, date_format, user_id, company_id ) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') returning *`,
     "Q125" : `select id, currency, phone_format, date_format, user_id, company_id, created_at from configurations where company_id = '{var1}' and deleted_at is null `,
     "Q126" : `update configurations set deleted_at = '{var1}' where company_id = '{var2}' and deleted_at is null returning *`,
-
+    "Q127" : `select closer_percentage from sales_closer where sales_commission_id ='{var1}' `,
         
 
  };
