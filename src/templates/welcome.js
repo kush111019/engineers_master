@@ -51,8 +51,7 @@ module.exports.welcome = function (link) {
                                                 following link and follow the instructions.
                                             </p>
                                             <a href="${link}"
-                                                style="background:#1f0757;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px;">Reset
-                                                Password</a>
+                                                style="background:#1f0757;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px;">Activate</a>
                                         </td>
                                     </tr>
                                     <tr>
