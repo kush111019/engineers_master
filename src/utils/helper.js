@@ -15,6 +15,7 @@ module.exports.mysql_real_escape_string = (str) =>{
             case "\r":
                 return "\\r";
             case "\"":
+                return "\"" + char;
             case "'":
             case "\\":
             case "%":
