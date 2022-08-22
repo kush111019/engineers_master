@@ -1,12 +1,12 @@
-module.exports.verifyUser = function(link){
+module.exports.setPassword = function(link, userName){
     let verify = `
     <!doctype html>
     <html lang="en-US">
     
     <head>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
-        <title>User verification Template</title>
-        <meta name="description" content="User verification Template.">
+        <title>Set password Template</title>
+        <meta name="description" content="Set password Template.">
         <style type="text/css">
             a:hover {text-decoration: underline !important;}
         </style>
@@ -26,7 +26,7 @@ module.exports.verifyUser = function(link){
                         <tr>
                             <td style="text-align:center;">
                               <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
-                                <img src="public/hiriselogo.png" alt="logo" />
+                                <img width="60" src="http://143.198.102.134:8080/img/logo.png" alt="logo" />
                               </a>
                             </td>
                         </tr>
@@ -46,11 +46,22 @@ module.exports.verifyUser = function(link){
                                             <span
                                                 style="display:inline-block; vertical-align:middle; margin:29px 0 26px; border-bottom:1px solid #cecece; width:100px;"></span>
                                             <p style="color:#455056; font-size:15px;line-height:24px; margin:0;">
-                                                A unique link to verify yourself has been generated. To verify, click the
-                                                following link and follow the instructions.
+                                            Hi ${userName},
+
+                                            Welcome to HiRise Technologies :). We are incredibly excited to have you on board and to
+                                            help you start building stronger customer relationships across sales, revenue and
+                                            commission management. We are here to set up you for higher success.
+
+                                            Please set-up your <b>password</b> by clicking on this <a href="${link}"
+                                            style="background:#1f0757;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px;">account link</a>.
+
+
+                                            Cheers,
+                                            HiRise Team
+
+                                            <h3>If you have any questions. Please email us at <a>Hirise@contactus.com</a>.</h3> 
                                             </p>
-                                            <a href="${link}"
-                                                style="background:#1f0757;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px;">Verify User</a>
+                                            
                                         </td>
                                     </tr>
                                     <tr>

@@ -26,7 +26,7 @@ module.exports.recurringPayment = function(customerName){
                         <tr>
                             <td style="text-align:center;">
                               <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
-                                <img src="/hiriselogo.png" alt="logo" />
+                                <img width="60" src="http://143.198.102.134:8080/img/logo.png" alt="logo" />
                               </a>
                             </td>
                         </tr>
