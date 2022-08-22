@@ -1,12 +1,12 @@
-module.exports.welcome = function (link) {
+module.exports.welcome = function (link, name) {
     let welcomeTemp = `
     <!doctype html>
     <html lang="en-US">
     
     <head>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
-        <title>Reset Password Email Template</title>
-        <meta name="description" content="Reset Password Email Template.">
+        <title>Welcome Email Template</title>
+        <meta name="description" content="Welcome Email Template.">
         <style type="text/css">
             a:hover {text-decoration: underline !important;}
         </style>
@@ -42,16 +42,24 @@ module.exports.welcome = function (link) {
                                     </tr>
                                     <tr>
                                         <td style="padding:0 35px;">
-                                            <h1 style="color:#1e1e2d; font-weight:500; margin:0;font-size:32px;font-family:'Rubik',sans-serif;">Welcome to HiRise</h1>
-                                            <span
-                                                style="display:inline-block; vertical-align:middle; margin:29px 0 26px; border-bottom:1px solid #cecece; width:100px;"></span>
+                                            
                                             <p style="color:#455056; font-size:15px;line-height:24px; margin:0;">
-                                                We cannot simply send you your password. A unique link to reset your
-                                                password has been generated for you. To activate your account please reset your password, click the
-                                                following link and follow the instructions.
-                                            </p>
+                                            Hi ${name},
+
+                                            Welcome to HiRise Technologies :). We are incredibly excited to have you on board and to
+                                            help you start building stronger customer relationships across sales, revenue and
+                                            commission management.
+
+                                            Please click on the below button to activate .
                                             <a href="${link}"
                                                 style="background:#1f0757;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px;">Activate</a>
+
+                                            If you have any questions. Please email us at <a>Hirise@contactus.com</a>.
+
+
+                                            Cheers,
+                                            HiRise Team
+                                            </p>
                                         </td>
                                     </tr>
                                     <tr>

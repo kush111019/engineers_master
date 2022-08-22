@@ -1,8 +1,7 @@
 const nodemailer = require("nodemailer");
 const welcomeTemplate = require('../templates/welcome')
 const resetPassTemplate = require('../templates/resetPassword')
-const verifyUserTemp = require('../templates/verification')
-const recurringPaymentTemplate = require('../templates/recurringPayment')
+const setPassTemp = require('../templates/setPassword')
 require('dotenv').config()
 
 // module.exports.sendEmail = async (email,code) => {
@@ -60,13 +59,13 @@ require('dotenv').config()
 
 // }
 
-module.exports.welcomeEmail = async (email , link) => {
+module.exports.welcomeEmail = async (email , link, userName) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
     var toAddresses = email;
 
-    let resetPass = welcomeTemplate.welcome(link)
+    let welcomeTemp = welcomeTemplate.welcome(link, userName)
 
     var ccAddresses = "";
     var bccAddresses = "";
@@ -101,7 +100,7 @@ module.exports.welcomeEmail = async (email , link) => {
         cc: ccAddresses,
         bcc: bccAddresses,
         text: body_text,
-        html: resetPass,
+        html: welcomeTemp,
         // Custom headers for configuration set and message tags.
         headers: {}
     };
@@ -165,13 +164,13 @@ module.exports.resetPasswordMail = async (email , link) => {
 }
 
 
-module.exports.verificationMail = async (email , link) => {
+module.exports.setPasswordMail = async (email , link, userName) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
     var toAddresses = email;
 
-    let verifyUser = verifyUserTemp.verifyUser(link)
+    let verifyUser = setPassTemp.setPassword(link, userName)
 
     var ccAddresses = "";
     var bccAddresses = "";
