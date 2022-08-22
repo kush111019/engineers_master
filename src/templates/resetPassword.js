@@ -26,7 +26,7 @@ module.exports.resetPassword = function (link,email, userName) {
                         <tr>
                             <td style="text-align:center;">
                               <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
-                                <img width="60" src="/hiriselogo.png" alt="logo" />
+                                <img width="60" src="https://www.engineermaster.in/images/hiriselogo.png" alt="logo" >
                               </a>
                             </td>
                         </tr>
@@ -46,16 +46,14 @@ module.exports.resetPassword = function (link,email, userName) {
                                             <br style="color:#455056; font-size:15px;line-height:24px; margin:0;">
                                             Hello ${userName}, <br>
                                             <br/>
-                                          <center> <img src="eyes.png" alt="eyes" width="40" height="30"> </center>
+                                          <center> <img src="https://www.engineermaster.in/images/eyes.png" alt="eyes" width="40" height="30" > </center>
                                             <h4 style="text-align:center;">Password Reset</h4>
 
 
-                                            Someone requested that the password be reset for the following account:
-                                            To reset your password, please click the below blue button
+                                            Someone requested that the password be reset for the following account:<br>
+                                            To reset your password, please click the below blue button <br>
                                              
-
-                                            <a href="${link}"
-                                             style="background:#4285f4;text-decoration:none !important; font-weight:500; margin-top:15px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:8px;">Click here to reset your password</a><br>
+                                            <a href= ${link} style="background:#4285f4;text-decoration:none !important; font-weight:500; margin-top:15px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:8px;">Click here to reset your password</a><br>
                                              <p>Your email:<a href="" style="color:#1bb2cc;"><u>${email}</u></a></p>
                                                 <br>
                                              <p>If this was a mistake, then just ignore this email.</p>
@@ -88,7 +86,7 @@ module.exports.resetPassword = function (link,email, userName) {
     </body>
     
     </html>`
-
+    console.log(resetPass);
     return resetPass
 }
 
