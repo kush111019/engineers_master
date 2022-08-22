@@ -540,7 +540,7 @@ module.exports.forgotPassword = async (req, res) => {
             }
             let token = await issueJWT(payload)
             let link = `http://143.198.102.134:8080/auth/reset-password/${token}`
-            let emailSend = await resetPasswordMail(emailAddress, link);
+            let emailSend = await resetPasswordMail(emailAddress, link, checkuser.rows[0].full_name );
             res.json({
                 status: 200,
                 success: true,
@@ -3680,6 +3680,7 @@ module.exports.salesCommissionReport = async (req, res) => {
 
 module.exports.revenuePerCustomer = async (req, res) => {
     try {
+        let userEmail = req.user.email
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
         let moduleName = 'Reports'
@@ -3689,7 +3690,86 @@ module.exports.revenuePerCustomer = async (req, res) => {
             let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
+                let s4 = dbScript(db_sql['Q128'], { var1: findAdmin.rows[0].company_id })
+                let customers = await connection.query(s4)
+                if (customers.rowCount > 0) {
+                    let revenuePerCustomer = []
+                    for (data of customers.rows) {
+                        if (data.closed_at != null) {
+                            revenuePerCustomer.push({
+                                customerId: data.customer_id,
+                                customerName: data.customer_name,
+                                salesCommissionId: data.sales_commission_id,
+                                revenue: data.target_amount,
+                                closedAt: data.closed_at
+                            })
+                        }
+                    }
+                    if (revenuePerCustomer.length > 0) {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Revenue per customer",
+                            data: revenuePerCustomer
+                        })
+                    } else {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Empty revenue per customer",
+                            data: revenuePerCustomer
+                        })
+                    }
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            } else {
+                res.json({
+                    status: 403,
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
 
+module.exports.totalRevenue = async (req, res) => {
+    try {
+        let userEmail = req.user.email
+        let {status} = req.query
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+        let moduleName = 'Reports'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_view) {
+                switch(status){
+                    case 'Monthly' : 
+                        let s4 = dbScript(db_sql['Q119'], {var1 : a})
+
+                }
 
             } else {
                 res.json({
@@ -3706,9 +3786,15 @@ module.exports.revenuePerCustomer = async (req, res) => {
             })
         }
     } catch (error) {
-        
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        }) 
     }
 }
+
 
 //----------------------------------------DashBoard Counts -----------------------------------
 

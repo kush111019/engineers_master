@@ -75,6 +75,7 @@ router.get('/salesCommissionReport',verifyTokenFn, controller.companyAdmin.sales
 //---------------------------------------DashBoard counts -------------------------------
 
 router.get('/revenues',verifyTokenFn, controller.companyAdmin.revenues)
+router.get('/revenuePerCustomer',verifyTokenFn, controller.companyAdmin.revenuePerCustomer)
 
 //-------------------------------------Revenue Forecast----------------------------------
 
