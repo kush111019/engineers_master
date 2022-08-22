@@ -26,7 +26,7 @@ module.exports.welcome = function (link, userName) {
                         <tr>
                             <td style="text-align:center;">
                               <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
-                                <img width="60" src="/hiriselogo.png" alt="logo" />
+                                <img width="60" src="https://www.engineermaster.in/images/hiriselogo.png" alt="logo" >
                               </a>
                             </td>
                         </tr>
@@ -52,7 +52,7 @@ module.exports.welcome = function (link, userName) {
                                             help you start building stronger customer relationships across sales, revenue and 
                                             commission management. <br>
                                             <br/>
-Please click on the given link for <a href="${link}" style="color:#1bb2cc;"><u>verify</u></a><br/>
+                                            Please click on the given link for <a href="${link}" style="color:#1bb2cc;"><u>verify</u></a><br/>
                                             If you have any questions. Please email us at <a href=""
                                             style="text-decoration:none !important; font-weight:500; margin-top:30px; color: #1bb2cc; font-size:14px;padding:4px 4px;display:inline-block;"><u>Hirise@contactus.com</u></a><br>
 

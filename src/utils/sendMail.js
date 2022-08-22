@@ -80,7 +80,6 @@ module.exports.welcomeEmail = async (email , link, userName) => {
     
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
-    var body_html = resetPass;
 
     let transporter = nodemailer.createTransport({
         host: smtpEndpoint,
@@ -132,7 +131,6 @@ module.exports.resetPasswordMail = async (email , link , userName) => {
     
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
-    var body_html = resetPass;
 
     let transporter = nodemailer.createTransport({
         host: smtpEndpoint,
@@ -170,7 +168,7 @@ module.exports.setPasswordMail = async (email , link, userName) => {
     const senderAddress = process.env.SMTP_USERNAME;
     var toAddresses = email;
 
-    let verifyUser = setPassTemp.setPassword(link, userName)
+    let setPass = setPassTemp.setPassword(link, userName)
 
     var ccAddresses = "";
     var bccAddresses = "";
@@ -185,7 +183,6 @@ module.exports.setPasswordMail = async (email , link, userName) => {
     
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
-    var body_html = ``;
 
     let transporter = nodemailer.createTransport({
         host: smtpEndpoint,
@@ -205,7 +202,7 @@ module.exports.setPasswordMail = async (email , link, userName) => {
         cc: ccAddresses,
         bcc: bccAddresses,
         text: body_text,
-        html: verifyUser,
+        html: setPass,
         // Custom headers for configuration set and message tags.
         headers: {}
     };
@@ -238,7 +235,6 @@ module.exports.recurringPaymentMail = async (email,customerName) => {
     
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
-    var body_html = ``;
 
     let transporter = nodemailer.createTransport({
         host: smtpEndpoint,
