@@ -149,8 +149,9 @@ const db_sql = {
     "Q125" : `select id, currency, phone_format, date_format, user_id, company_id, created_at from configurations where company_id = '{var1}' and deleted_at is null `,
     "Q126" : `update configurations set deleted_at = '{var1}' where company_id = '{var2}' and deleted_at is null returning *`,
     "Q127" : `select closer_percentage from sales_closer where sales_commission_id ='{var1}' `,
-    "Q128" : `select sc.target_amount, c.closed_at  from sales_commission as sc 
-              inner join customers as c on sc.customer_id = c.id where sc.company_id = '{var1}' and sc.deleted_at is null
+    "Q128" : `select sc.id as sales_commission_id, sc.target_amount, sc.target_closing_date, c.id as customer_id,
+              c.closed_at, c.customer_name  from sales_commission as sc inner join customers as c
+              on sc.customer_id = c.id where sc.company_id = '{var1}' and sc.deleted_at is null 
               and c.deleted_at is null`,
         
 

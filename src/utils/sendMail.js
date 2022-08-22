@@ -111,13 +111,13 @@ module.exports.welcomeEmail = async (email , link, userName) => {
 
 }
 
-module.exports.resetPasswordMail = async (email , link) => {
+module.exports.resetPasswordMail = async (email , link , userName) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
     var toAddresses = email;
 
-    let resetPass = resetPassTemplate.resetPassword(link)
+    let resetPass = resetPassTemplate.resetPassword(link, email, userName)
 
     var ccAddresses = "";
     var bccAddresses = "";

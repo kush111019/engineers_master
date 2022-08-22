@@ -1,12 +1,12 @@
-module.exports.welcome = function (link, name) {
+module.exports.welcome = function (link, userName) {
     let welcomeTemp = `
     <!doctype html>
     <html lang="en-US">
     
     <head>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
-        <title>Welcome Email Template</title>
-        <meta name="description" content="Welcome Email Template.">
+        <title>User verification Template</title>
+        <meta name="description" content="User verification Template.">
         <style type="text/css">
             a:hover {text-decoration: underline !important;}
         </style>
@@ -26,7 +26,7 @@ module.exports.welcome = function (link, name) {
                         <tr>
                             <td style="text-align:center;">
                               <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
-                                <img width="60" src="http://143.198.102.134:8080/img/logo.png" alt="logo" >
+                                <img width="60" src="/hiriselogo.png" alt="logo" />
                               </a>
                             </td>
                         </tr>
@@ -36,30 +36,34 @@ module.exports.welcome = function (link, name) {
                         <tr>
                             <td>
                                 <table width="95%" border="0" align="center" cellpadding="0" cellspacing="0"
-                                    style="max-width:670px;background:#fff; border-radius:3px; text-align:center;-webkit-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);-moz-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);box-shadow:0 6px 18px 0 rgba(0,0,0,.06);">
+                                    style="max-width:670px;background:#fff; border-radius:3px; text-align:left;-webkit-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);-moz-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);box-shadow:0 6px 18px 0 rgba(0,0,0,.06);">
                                     <tr>
                                         <td style="height:40px;">&nbsp;</td>
                                     </tr>
                                     <tr>
                                         <td style="padding:0 35px;">
                                             
-                                            <p style="color:#455056; font-size:15px;line-height:24px; margin:0;">
-                                            Hi ${name},
 
-                                            Welcome to HiRise Technologies :). We are incredibly excited to have you on board and to
-                                            help you start building stronger customer relationships across sales, revenue and
-                                            commission management.
+                                            <br style="color:#455056; font-size:15px;line-height:24px; margin:0;">
+                                            Hi ${userName}, <br>
+                                            <br/>
 
-                                            Please click on the below button to activate .
-                                            <a href="${link}"
-                                                style="background:#1f0757;text-decoration:none !important; font-weight:500; margin-top:35px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px;">Activate</a>
+                                            Welcome to HiRise Technologies :). We are incredibly excited to have you on board and to 
+                                            help you start building stronger customer relationships across sales, revenue and 
+                                            commission management. <br>
+                                            <br/>
+Please click on the given link for <a href="${link}" style="color:#1bb2cc;"><u>verify</u></a><br/>
+                                            If you have any questions. Please email us at <a href=""
+                                            style="text-decoration:none !important; font-weight:500; margin-top:30px; color: #1bb2cc; font-size:14px;padding:4px 4px;display:inline-block;"><u>Hirise@contactus.com</u></a><br>
 
-                                            If you have any questions. Please email us at <a>Hirise@contactus.com</a>.
-
-
+                                            <br>
                                             Cheers,
-                                            HiRise Team
+                                            <br/>
+                                            HiRise Team <br>
+
+                                        
                                             </p>
+                                            
                                         </td>
                                     </tr>
                                     <tr>
@@ -69,11 +73,6 @@ module.exports.welcome = function (link, name) {
                             </td>
                         <tr>
                             <td style="height:20px;">&nbsp;</td>
-                        </tr>
-                        <tr>
-                            <td style="text-align:center;">
-                                <p style="font-size:14px; color:rgba(69, 80, 86, 0.7411764705882353); line-height:18px; margin:0 0 0;">&copy; <strong>http://risehi.com</strong></p>
-                            </td>
                         </tr>
                         <tr>
                             <td style="height:80px;">&nbsp;</td>
