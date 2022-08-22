@@ -39,6 +39,9 @@ let createAdmin = async (bodyData, cId, res) => {
         phoneNumber,
         encryptedPassword
     } = bodyData
+
+    companyLogo = companyLogo == "" ? 'http://143.198.102.134:3003/companyLogo/user.jpg' : companyLogo;
+
     let s3 = dbScript(db_sql['Q4'], { var1: emailAddress })
     let findUser = await connection.query(s3)
     if (findUser.rowCount == 0) {
@@ -129,6 +132,8 @@ module.exports.signUp = async (req, res) => {
             companyLogo,
             companyAddress,
         } = req.body
+
+        companyLogo = companyLogo == "" ? 'http://143.198.102.134:3003/companyLogo/user.jpg' : companyLogo;
 
         let s2 = dbScript(db_sql['Q1'], { var1: companyName })
         let checkCompany = await connection.query(s2);
@@ -669,7 +674,6 @@ module.exports.moduleList = async (req, res) => {
     }
 }
 
-
 //-------------------------------------Roles-------------------------------------------------
 module.exports.rolesList = async (req, res) => {
     try {
@@ -1130,6 +1134,8 @@ module.exports.addUser = async (req, res) => {
             avatar,
             encryptedPassword
         } = req.body
+
+        avatar = (avatar == "") ? 'http://143.198.102.134:3003/companyLogo/user.jpg' : avatar;
 
         let id = uuid.v4()
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
