@@ -14,7 +14,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('uploads'))
 app.use(express.static('public'))
-app.use(express.static(path.join(__dirname, 'public')));
 // cron.schedule('59 59 23 * * *', async () => {
 //     await recurringPaymentCron();
 //   });
