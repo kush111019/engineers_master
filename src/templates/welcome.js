@@ -26,7 +26,8 @@ module.exports.welcome = function (link, userName) {
                         <tr>
                             <td style="text-align:center;">
                               <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
-                                <img width="60" src="https://www.engineermaster.in/images/hiriselogo.png" alt="logo" >
+                                <img src="https://www.engineermaster.in/images/hiriselogo.png" alt="logo" 
+                                style="height: 15%; width: 15%;">
                               </a>
                             </td>
                         </tr>
