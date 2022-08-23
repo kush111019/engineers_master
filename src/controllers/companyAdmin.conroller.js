@@ -3771,27 +3771,31 @@ module.exports.totalRevenue = async (req, res) => {
             let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
-                let total = 0;
-                totalRevenue = []
-                switch(status){
-                    case 'Monthly' : 
-                        
-                        let s4 = dbScript(db_sql['Q129'], {var1 : findAdmin.rows[0].company_id})
-                        let targetData = await connection.query(s4)
-                        for(data of targetData.rows){
-                            total = total + Number(data.target_amount)
-                        }
+                totalRevenue = [];
+                let format = (status == 'Monthly') ? 'month' : (status == 'Quarterly') ? 'quarter' : 'year'
+                let s4 = dbScript(db_sql['Q129'], {var1 : findAdmin.rows[0].company_id,  var2 : format})
+                let targetData = await connection.query(s4)
+                for(data of targetData.rows){
                         totalRevenue.push({
-                            revenue : total,
-                            month : targetData.rows[0].created_at
-                        })
-                        console.log(totalRevenue);
-                        break;
-                    case 'Quaterly' : 
-
-
+                            revenue : data.target_amount,
+                            date : data.date
+                        })  
+                } 
+                if (totalRevenue.length > 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Total revenue",
+                        data: totalRevenue
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Empty total revenue",
+                        data: totalRevenue
+                    })
                 }
-
             } else {
                 res.json({
                     status: 403,
