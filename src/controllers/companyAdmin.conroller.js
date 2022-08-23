@@ -1800,7 +1800,7 @@ module.exports.createCustomer = async (req, res) => {
                 let compId = ''
                 let s4 = dbScript(db_sql['Q69'], { var1: companyId })
                 let findCustomerCom = await connection.query(s4)
-
+                console.log(findCustomerCom.rows);
                 if (findCustomerCom.rowCount == 0) {
                     let comId = uuid.v4()
                     let s5 = dbScript(db_sql['Q68'], { var1: comId, var2: mysql_real_escape_string(customerName), var3: findAdmin.rows[0].company_id })
@@ -3771,9 +3771,24 @@ module.exports.totalRevenue = async (req, res) => {
             let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
+                let total = 0;
+                totalRevenue = []
                 switch(status){
                     case 'Monthly' : 
-                        let s4 = dbScript(db_sql['Q119'], {var1 : a})
+                        
+                        let s4 = dbScript(db_sql['Q129'], {var1 : findAdmin.rows[0].company_id})
+                        let targetData = await connection.query(s4)
+                        for(data of targetData.rows){
+                            total = total + Number(data.target_amount)
+                        }
+                        totalRevenue.push({
+                            revenue : total,
+                            month : targetData.rows[0].created_at
+                        })
+                        console.log(totalRevenue);
+                        break;
+                    case 'Quaterly' : 
+
 
                 }
 

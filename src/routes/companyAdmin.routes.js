@@ -76,6 +76,7 @@ router.get('/salesCommissionReport',verifyTokenFn, controller.companyAdmin.sales
 
 router.get('/revenues',verifyTokenFn, controller.companyAdmin.revenues)
 router.get('/revenuePerCustomer',verifyTokenFn, controller.companyAdmin.revenuePerCustomer)
+router.get('/totalRevenue',verifyTokenFn, controller.companyAdmin.totalRevenue)
 
 //-------------------------------------Revenue Forecast----------------------------------
 
