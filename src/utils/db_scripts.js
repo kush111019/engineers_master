@@ -153,10 +153,10 @@ const db_sql = {
               c.closed_at, c.customer_name  from sales_commission as sc inner join customers as c
               on sc.customer_id = c.id where sc.company_id = '{var1}' and sc.deleted_at is null 
               and c.deleted_at is null`,
-    "Q129" : `SELECT sc.target_amount, sc.customer_id,c.customer_name, c.closed_at, DATE_TRUNC('month', sc.created_at)  as created_at
-              FROM sales_commission as sc  inner join customers as c on sc.customer_id = c.id 
-              where sc.company_id = '{var1}' and  sc.deleted_at is null and c.deleted_at is null 
-              and c.closed_at is not null group by sc.target_amount, sc.customer_id,c.customer_name, c.closed_at, sc.created_at`
+    "Q129" : `SELECT DATE_TRUNC('{var2}',created_at) AS  date,
+              sum(target_amount::decimal) as target_amount
+              FROM sales_commission where company_id = '{var1}' and deleted_at is null
+              GROUP BY DATE_TRUNC('{var2}',created_at);`
         
 
  };
