@@ -767,8 +767,7 @@ module.exports.rolesList = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -851,8 +850,7 @@ module.exports.createRole = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 400,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -925,8 +923,7 @@ module.exports.updateRole = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 400,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -1039,8 +1036,7 @@ module.exports.deleteRole = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 400,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -1097,8 +1093,7 @@ module.exports.userWiseRoleList = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -1183,8 +1178,7 @@ module.exports.addUser = async (req, res) => {
                     }
                 } else {
                     await connection.query('ROLLBACK')
-                    res.json({
-                        status: 403,
+                    res.status(403).json({
                         success: false,
                         message: "Unathorised"
                     })
@@ -1247,8 +1241,7 @@ module.exports.showUserById = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -1304,8 +1297,7 @@ module.exports.usersListByRoleId = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -1439,8 +1431,7 @@ module.exports.updateUser = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -1498,8 +1489,7 @@ module.exports.lockUserAccount = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -1557,8 +1547,7 @@ module.exports.deleteUser = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -1627,8 +1616,7 @@ module.exports.createSlab = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -1685,8 +1673,7 @@ module.exports.slabList = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -1748,8 +1735,7 @@ module.exports.deleteSlab = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -1864,8 +1850,7 @@ module.exports.createCustomer = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -1924,8 +1909,7 @@ module.exports.closeCustomer = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2030,8 +2014,7 @@ module.exports.customerList = async (req, res) => {
                         })
                     }
                 } else {
-                    res.json({
-                        status: 403,
+                    res.status(403).json({
                         success: false,
                         message: "UnAthorised"
                     })
@@ -2140,8 +2123,7 @@ module.exports.editCustomer = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2222,8 +2204,7 @@ module.exports.deleteContactForCustomer = async (req, res) => {
                     }
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2280,8 +2261,7 @@ module.exports.customerCompanyList = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -2336,8 +2316,7 @@ module.exports.customerContactDetails = async (req, res) => {
                     }) 
                 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -2401,8 +2380,7 @@ module.exports.deleteCustomer = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2467,8 +2445,7 @@ module.exports.commissionSplit = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2534,8 +2511,7 @@ module.exports.updatecommissionSplit = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2594,8 +2570,7 @@ module.exports.commissionSplitList = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -2656,8 +2631,7 @@ module.exports.deletecommissionSplit = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2735,8 +2709,7 @@ module.exports.customerListforSales = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2804,8 +2777,7 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -2912,8 +2884,7 @@ module.exports.createSalesCommission = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3040,8 +3011,7 @@ module.exports.salesCommissionList = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -3151,8 +3121,7 @@ module.exports.updateSalesCommission = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3225,8 +3194,7 @@ module.exports.deleteSalesCommission = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3357,8 +3325,7 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -3414,8 +3381,7 @@ module.exports.addfollowUpNotes = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -3469,8 +3435,7 @@ module.exports.notesList = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3532,8 +3497,7 @@ module.exports.deleteNote = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3662,8 +3626,7 @@ module.exports.salesCommissionReport = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3735,8 +3698,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3773,32 +3735,39 @@ module.exports.totalRevenue = async (req, res) => {
             if (checkPermission.rows[0].permission_to_view) {
                 totalRevenue = [];
                 let format = (status == 'Monthly') ? 'month' : (status == 'Quarterly') ? 'quarter' : 'year'
-                let s4 = dbScript(db_sql['Q129'], {var1 : findAdmin.rows[0].company_id,  var2 : format})
+                let s4 = dbScript(db_sql['Q129'], {var1 : findAdmin.rows[0].company_id, var2 : format})
                 let targetData = await connection.query(s4)
-                for(data of targetData.rows){
+                if(targetData.rowCount > 0){
+                    for(data of targetData.rows){
                         totalRevenue.push({
                             revenue : data.target_amount,
                             date : data.date
                         })  
-                } 
-                if (totalRevenue.length > 0) {
+                    } 
+                    if (totalRevenue.length > 0) {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Total revenue",
+                            data: totalRevenue
+                        })
+                    } else {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Empty total revenue",
+                            data: totalRevenue
+                        })
+                    }
+                }else{
                     res.json({
-                        status: 200,
-                        success: true,
-                        message: "Total revenue",
-                        data: totalRevenue
-                    })
-                } else {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Empty total revenue",
-                        data: totalRevenue
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3921,8 +3890,7 @@ module.exports.revenues = async (req, res) => {
                 })
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3995,8 +3963,7 @@ module.exports.createRevenueForecast = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -4053,8 +4020,7 @@ module.exports.revenueForecastList = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -4125,8 +4091,7 @@ module.exports.updateRevenueForecast = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -4395,8 +4360,7 @@ module.exports.actualVsForecast = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -4462,8 +4426,7 @@ module.exports.addBusinessContact = async(req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -4527,8 +4490,7 @@ module.exports.addRevenueContact = async(req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
