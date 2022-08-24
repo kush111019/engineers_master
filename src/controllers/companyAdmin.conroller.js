@@ -3530,6 +3530,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 let s4 = dbScript(db_sql['Q130'], { var1: findAdmin.rows[0].company_id })
                 let customerCompanies = await connection.query(s4)
                 if (customerCompanies.rowCount > 0) {
+                    
                     for (company of customerCompanies.rows) {
                         let s5 = dbScript(db_sql['Q131'], { var1: company.id })
                         let customers = await connection.query(s5)
@@ -3594,7 +3595,6 @@ module.exports.revenuePerCustomer = async (req, res) => {
         })
     }
 }
-
 
 module.exports.revenuePerProduct = async (req, res) => {
     try {
@@ -3680,8 +3680,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                 let s4 = dbScript(db_sql['Q133'], { var1: findAdmin.rows[0].company_id })
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0) {
-                    let object = {};
-                    let sum = 0;
+                    let holder = {};
                     let newArr = []
                     for (let sales of salesData.rows) {
                         let s5 = dbScript(db_sql['Q127'], { var1: sales.id })
@@ -3693,13 +3692,16 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                             })
                         }
                     }
-                    salesRepArr.map(index => {
-                        let key = index.salesRep;
-                        object.salesRep = key
-                        sum = sum + Number(index.revenue)
-                        object.revenue = sum
-                    })
-                    newArr.push(object)
+                    salesRepArr.forEach((d) => {
+                    if (holder.hasOwnProperty(d.salesRep)) {
+                        holder[d.salesRep] = holder[d.salesRep] + Number(d.revenue);
+                    } else {
+                        holder[d.salesRep] = Number(d.revenue);
+                    }
+                    });
+                    for (let prop in holder) {
+                        newArr.push({ salesRep: prop, revenue: holder[prop] });
+                    }
                     if (newArr.length > 0) {
                         res.json({
                             status: 200,
