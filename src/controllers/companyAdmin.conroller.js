@@ -3530,25 +3530,24 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 let s4 = dbScript(db_sql['Q130'], { var1: findAdmin.rows[0].company_id })
                 let customerCompanies = await connection.query(s4)
                 if (customerCompanies.rowCount > 0) {
-                    
                     for (company of customerCompanies.rows) {
                         let s5 = dbScript(db_sql['Q131'], { var1: company.id })
                         let customers = await connection.query(s5)
                         if (customers.rows.length > 0) {
                             let revenue = 0
+                            let obj = {}
                             for (data of customers.rows) {
                                 let s6 = dbScript(db_sql['Q132'], { var1: data.id })
                                 let amount = await connection.query(s6)
                                 if (amount.rowCount > 0) {
                                     revenue = revenue + Number(amount.rows[0].target_amount)
-                                    revenuePerCustomer.push({
-                                        customerId: company.id,
-                                        customerName: company.customer_company_name,
-                                        revenue: revenue
-                                    })
-                                }
+                                }   
                             }
-                        }
+                            obj.customerId =  company.id
+                            obj.customerName = company.customer_company_name
+                            obj.revenue = revenue 
+                            revenuePerCustomer.push(obj)   
+                        }   
                     }
                     if (revenuePerCustomer.length > 0) {
                         res.json({
@@ -3565,7 +3564,6 @@ module.exports.revenuePerCustomer = async (req, res) => {
                             data: revenuePerCustomer
                         })
                     }
-
                 } else {
                     res.json({
                         status: 400,
