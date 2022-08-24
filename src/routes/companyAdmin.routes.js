@@ -70,13 +70,14 @@ router.put('/updateSalesCommission',verifyTokenFn, controller.companyAdmin.updat
 router.put('/deleteSalesCommission',verifyTokenFn, controller.companyAdmin.deleteSalesCommission)
 router.get('/salesCommissionLogsList',verifyTokenFn, controller.companyAdmin.salesCommissionLogsList)
 //----------------------------------------Reports------------------------------------------
-router.get('/salesCommissionReport',verifyTokenFn, controller.companyAdmin.salesCommissionReport)
-
+router.get('/revenuePerCustomer',verifyTokenFn, controller.companyAdmin.revenuePerCustomer)
+router.get('/revenuePerProduct',verifyTokenFn, controller.companyAdmin.revenuePerProduct)
+router.get('/revenuePerSalesRep',verifyTokenFn, controller.companyAdmin.revenuePerSalesRep)
+router.get('/totalRevenue',verifyTokenFn, controller.companyAdmin.totalRevenue)
 //---------------------------------------DashBoard counts -------------------------------
 
 router.get('/revenues',verifyTokenFn, controller.companyAdmin.revenues)
-router.get('/revenuePerCustomer',verifyTokenFn, controller.companyAdmin.revenuePerCustomer)
-router.get('/totalRevenue',verifyTokenFn, controller.companyAdmin.totalRevenue)
+
 
 //-------------------------------------Revenue Forecast----------------------------------
 

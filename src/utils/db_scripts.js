@@ -148,7 +148,9 @@ const db_sql = {
     "Q124" : `insert into configurations(id, currency, phone_format, date_format, user_id, company_id ) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') returning *`,
     "Q125" : `select id, currency, phone_format, date_format, user_id, company_id, created_at from configurations where company_id = '{var1}' and deleted_at is null `,
     "Q126" : `update configurations set deleted_at = '{var1}' where company_id = '{var2}' and deleted_at is null returning *`,
-    "Q127" : `select closer_percentage from sales_closer where sales_commission_id ='{var1}' `,
+    "Q127" : `select cr.closer_id,cr.closer_percentage, u.full_name from sales_closer as cr 
+              inner join users as u on u.id = cr.closer_id where sales_commission_id = '{var1}'
+              and cr.deleted_at is null and u.deleted_at is null`,
     "Q128" : `select sc.id as sales_commission_id, sc.target_amount, sc.target_closing_date, c.id as customer_id,
               c.closed_at, c.customer_name  from sales_commission as sc inner join customers as c
               on sc.customer_id = c.id where sc.company_id = '{var1}' and sc.deleted_at is null 
@@ -156,7 +158,12 @@ const db_sql = {
     "Q129" : `SELECT DATE_TRUNC('{var2}',created_at) AS  date,
               sum(target_amount::decimal) as target_amount
               FROM sales_commission where company_id = '{var1}' and deleted_at is null
-              GROUP BY DATE_TRUNC('{var2}',created_at);`
+              GROUP BY DATE_TRUNC('{var2}',created_at);`,
+    "Q130" : `select id, customer_company_name from customer_companies where deleted_at is null  and company_id = '{var1}'`,
+    "Q131" : `select id, closed_at from customers where customer_company_id = '{var1}' and deleted_at is null and closed_at is not null`,
+    "Q132" : `select id, target_amount, target_closing_date from sales_commission where customer_id = '{var1}' and deleted_at is null`,
+    "Q133" : `select id, target_amount, target_closing_date from sales_commission where company_id = '{var1}' and deleted_at is null`,
+
         
 
  };
