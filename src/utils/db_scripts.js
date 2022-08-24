@@ -163,6 +163,7 @@ const db_sql = {
     "Q131" : `select id, closed_at from customers where customer_company_id = '{var1}' and deleted_at is null and closed_at is not null`,
     "Q132" : `select id, target_amount, target_closing_date from sales_commission where customer_id = '{var1}' and deleted_at is null`,
     "Q133" : `select id, target_amount, target_closing_date from sales_commission where company_id = '{var1}' and deleted_at is null`,
+    "Q134" : `insert into contact_us(id, full_name, email, subject, messages, address) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') returning *`,
 
         
 
