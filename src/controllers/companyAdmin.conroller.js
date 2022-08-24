@@ -4,7 +4,8 @@ const {
     resetPasswordMail, 
     setPasswordMail, 
     recurringPaymentMail, 
-    welcomeEmail 
+    welcomeEmail,
+    //contactUsMail 
 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const jsonwebtoken = require("jsonwebtoken");
@@ -2408,7 +2409,7 @@ module.exports.commissionSplit = async (req, res) => {
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
 
-        let moduleName = 'Commision'
+        let moduleName = 'Commission'
         if (findAdmin.rows.length > 0) {
             let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
             let findModule = await connection.query(s2)
@@ -2473,7 +2474,7 @@ module.exports.updatecommissionSplit = async (req, res) => {
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
 
-        let moduleName = 'Commision'
+        let moduleName = 'Commission'
         if (findAdmin.rows.length > 0) {
             let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
             let findModule = await connection.query(s2)
@@ -2535,7 +2536,7 @@ module.exports.commissionSplitList = async (req, res) => {
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
 
-        let moduleName = 'Commision'
+        let moduleName = 'Commission'
         if (findAdmin.rows.length > 0) {
             let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
             let findModule = await connection.query(s2)
@@ -2595,7 +2596,7 @@ module.exports.deletecommissionSplit = async (req, res) => {
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
 
-        let moduleName = 'Commision'
+        let moduleName = 'Commission'
         if (findAdmin.rows.length > 0) {
             let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
             let findModule = await connection.query(s2)
@@ -4736,3 +4737,48 @@ module.exports.configList = async(req, res) => {
         })
     }
 }
+
+//--------------------------------------Contact_us-------------------------------------------
+
+// module.exports.contact_us = async (req, res) => {
+//     try {
+
+//         let { 
+//             fullName, 
+//             email,
+//             subject,
+//             message,
+//             address 
+//         } = req.body
+
+//             await connection.query('BEGIN')
+//             let id = uuid.v4()
+//             let s1 = dbScript(db_sql['Q134'], {var1: id, var2 : fullName, var3: email, var4: subject, var5 :message, var6: address})
+
+//             let addContactUs = await connection.query(s1)
+//             let 
+//             if(addConfig.rowCount > 0){
+//                 await connection.query('COMMIT')
+//                 res.json({
+//                     status : 201,
+//                     success : true,
+//                     message : "Configuration added successfully"
+//                 })
+
+//             }else{
+//                 await connection.query('ROLLBACK')
+//                 res.json({
+//                     status: 400,
+//                     success: false,
+//                     message: "Something went wrong"
+//                 })
+//             }
+//     } catch (error) {
+//         await connection.query('ROLLBACK')
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }
