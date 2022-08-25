@@ -4,9 +4,9 @@ const db_sql = {
     "Q1"   : `select id, company_name, company_address from companies where company_name = '{var1}'`,
     "Q2"   : `insert into companies(id,company_name,company_logo,company_address) 
               values('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
-    "Q3"   : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,phone_number,encrypted_password,role_id,address,is_verified) 
-              values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}',false) RETURNING *`,          
-    "Q4"   : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified from users where email_address = '{var1}' and deleted_at is null` ,
+    "Q3"   : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,phone_number,encrypted_password,role_id,address,is_verified,is_admin) 
+              values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}',false,true) RETURNING *`,          
+    "Q4"   : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified, is_admin from users where email_address = '{var1}' and deleted_at is null` ,
     "Q6"   : `select id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where email_address = '{var1}' and deleted_at is null ` , 
     "Q7"   : `update users set encrypted_password = '{var2}', is_verified = true, updated_at = '{var3}' where email_address = '{var1}' RETURNING *`, 
     "Q8"   : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where deleted_at is null` ,
@@ -23,8 +23,7 @@ const db_sql = {
     "Q19"  : `select id, role_name, reporter, module_ids from roles where id = '{var1}' and deleted_at is null` ,
     "Q20"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','{var2}','{var3}','{var4}') RETURNING *`, 
     "Q21"  : `select id, role_name, reporter , module_ids from roles where company_id = '{var1}' and deleted_at is null ` ,
-    "Q22"  : `update users set role_id = '{var2}', percentage_distribution = '{var3}', updated_at = '{var4}' where id = '{var1}' and deleted_at is null RETURNING *`,
-    "Q23"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id, created_at from users where company_id = '{var1}' and deleted_at is null`,
+    "Q23"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin, created_at from users where company_id = '{var1}' and deleted_at is null`,
     "Q24"  : `select id, role_name ,  reporter from roles where reporter = '{var1}' and deleted_at is null`,
     "Q25"  : `select id, min_amount, max_amount, percentage, is_max from slabs where company_id ='{var1}' and deleted_at is null`,
     "Q26"  : `update users set role_id = null, updated_at = '{var2}' where role_id = '{var1}' and deleted_at is null returning *`,
@@ -47,7 +46,7 @@ const db_sql = {
     "Q47"  : `update slabs set deleted_at = '{var1}' where id = '{var2}' and deleted_at is null`,
     "Q52"  : `update users set is_locked = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null and is_locked = false RETURNING * `,
     "Q54"  : `update customers set supporter = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null returning *`,
-    "Q56"  : `select r.id, r.role_name, u.id as user_id , u.full_name, u.percentage_distribution
+    "Q56"  : `select r.id, r.role_name, u.id as user_id , u.full_name
               from roles as r inner join users as u on r.id = u.role_id 
               where r.company_id = '{var1}' and r.deleted_at is null and u.deleted_at is null` ,
     "Q61"  : `insert into follow_up_notes (id, sales_commission_id, company_id, user_id, notes) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,

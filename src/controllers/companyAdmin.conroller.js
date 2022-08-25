@@ -320,6 +320,7 @@ module.exports.login = async (req, res) => {
                             token: jwtToken,
                             id : admin.rows[0].id,
                             name: admin.rows[0].full_name,
+                            isAdmin : admin.rows[0].is_admin,
                             role: checkRole.rows[0].role_name,
                             profileImage: profileImage,
                             modulePermissions: modulePemissions,
