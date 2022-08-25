@@ -4,8 +4,8 @@ module.exports.contactUs = function (email, fullName, subject, message, address)
 <html>
   <head>
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
-    <title>User verification Template</title>
-    <meta name="description" content="User verification Template.">
+    <title>Contact us</title>
+    <meta name="description" content="Contact us.">
     <style type="text/css">
         a:hover {text-decoration: underline !important;}
     </style>
