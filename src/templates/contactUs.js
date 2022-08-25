@@ -13,7 +13,7 @@ module.exports.contactUs = function (email, fullName, subject, message, address)
   <body>
     <table cellspacing="0" border="0" cellpadding="0" bgcolor="#f2f3f8"
             style="@import url(https://fonts.googleapis.com/css?family=Rubik:300,400,500,700|Open+Sans:300,400,600,700); font-family: 'Open Sans', sans-serif; width: 100%;">
-      <tr>
+        <tr>
         <td>
           <table style="background-color: #fff; max-width:670px;  margin-top:25px; margin-bottom:25px; padding: 25px;" width="100%" border="0"
           align="center" cellpadding="0" cellspacing="0">
@@ -25,29 +25,27 @@ module.exports.contactUs = function (email, fullName, subject, message, address)
             </a>
           </td>
       </tr>
+      <tr align="left">
+      <th style="width: 20%;">Name :</th>
+      <td><p>${fullName}</p></td>
+    
+        </tr>
+        <tr align="left">
+        <th style="width: 20%;">Email :</th>
+        <td><p>${email}</p></td>
+        </tr>
+        <tr align="left">
+        <th style="width: 20%;">Address :</th>
+        <td><p>${address}</p></td>
+        </tr>
         <tr align="left">
           <th style="width: 20%;">Subject :</th>
           <td><p>${subject}</p></td>
-          
-         
         </tr>
         <tr align="left">
           <th style="width: 20%;"> Message :</th>
          <td> ${message}</td>
         </tr>
-        <tr align="left">
-          <th style="width: 20%;">Name :</th>
-          <td><p>${fullName}</p></td>
-        
-        </tr>
-        <tr align="left">
-          <th style="width: 20%;">Email :</th>
-          <td><p>${email}</p></td>
-        </tr>
-        <tr align="left">
-          <th style="width: 20%;">Address :</th>
-          <td><p>${address}</p></td>
-      </tr>
       </table>
         </td>
       </tr>
