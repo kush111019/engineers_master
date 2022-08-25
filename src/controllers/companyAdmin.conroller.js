@@ -318,12 +318,12 @@ module.exports.login = async (req, res) => {
                         message: "Login Successfull",
                         data: {
                             token: jwtToken,
+                            id : admin.rows[0].id,
                             name: admin.rows[0].full_name,
                             role: checkRole.rows[0].role_name,
                             profileImage: profileImage,
                             modulePermissions: modulePemissions,
                             configuration : configuration
-
                         }
                     });
                 } else {
@@ -3511,7 +3511,6 @@ module.exports.deleteNote = async (req, res) => {
         })
     }
 }
-
 
 //-------------------------------------------Reports-------------------------------------------
 
