@@ -5,7 +5,7 @@ const {
     setPasswordMail, 
     recurringPaymentMail, 
     welcomeEmail,
-    //contactUsMail 
+    contactUsMail 
 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const jsonwebtoken = require("jsonwebtoken");
@@ -4740,45 +4740,44 @@ module.exports.configList = async(req, res) => {
 
 //--------------------------------------Contact_us-------------------------------------------
 
-// module.exports.contact_us = async (req, res) => {
-//     try {
+module.exports.contactUs = async (req, res) => {
+    try {
+        let {
+            fullName,
+            email,
+            subject,
+            message,
+            address
+        } = req.body
 
-//         let { 
-//             fullName, 
-//             email,
-//             subject,
-//             message,
-//             address 
-//         } = req.body
+        await connection.query('BEGIN')
+        let id = uuid.v4()
+        let s1 = dbScript(db_sql['Q134'], { var1: id, var2: fullName, var3: email, var4: subject, var5: mysql_real_escape_string(message), var6: address })
 
-//             await connection.query('BEGIN')
-//             let id = uuid.v4()
-//             let s1 = dbScript(db_sql['Q134'], {var1: id, var2 : fullName, var3: email, var4: subject, var5 :message, var6: address})
+        let addContactUs = await connection.query(s1)
+        if (addContactUs.rowCount > 0) {
+            await contactUsMail(email,fullName,subject,message,address)
+            await connection.query('COMMIT')
+            res.json({
+                status: 201,
+                success: true,
+                message: "Query added successfully"
+            })
 
-//             let addContactUs = await connection.query(s1)
-//             let 
-//             if(addConfig.rowCount > 0){
-//                 await connection.query('COMMIT')
-//                 res.json({
-//                     status : 201,
-//                     success : true,
-//                     message : "Configuration added successfully"
-//                 })
-
-//             }else{
-//                 await connection.query('ROLLBACK')
-//                 res.json({
-//                     status: 400,
-//                     success: false,
-//                     message: "Something went wrong"
-//                 })
-//             }
-//     } catch (error) {
-//         await connection.query('ROLLBACK')
-//         res.json({
-//             status: 400,
-//             success: false,
-//             message: error.message,
-//         })
-//     }
-// }
+        } else {
+            await connection.query('ROLLBACK')
+            res.json({
+                status: 400,
+                success: false,
+                message: "Something went wrong"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}

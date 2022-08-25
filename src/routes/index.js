@@ -16,6 +16,7 @@ router.post('/auth/login' , controller.companyAdmin.login)
 router.post('/auth/setPassword',controller.companyAdmin.setPasswordForLogin)
 router.post('/auth/forgotPassword',controller.companyAdmin.forgotPassword)
 router.post('/auth/resetPassword',controller.companyAdmin.resetPassword)
+router.post('/auth/contactUs', controller.companyAdmin.contactUs)
 
 
 
