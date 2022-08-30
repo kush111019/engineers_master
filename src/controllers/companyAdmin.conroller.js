@@ -412,7 +412,7 @@ module.exports.changePassword = async (req, res) => {
             if (user.rows[0].encrypted_password == oldPassword) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s2 = dbScript(db_sql['Q7'], { var1: userEmail, var2: newPassword, var3: _dt })
+                let s2 = dbScript(db_sql['Q7'], { var1: userEmail, var2: newPassword, var3: _dt, var4:user.rows[0].company_id })
                 let updatePass = await connection.query(s2)
                 await connection.query('COMMIT')
                 if (updatePass.rowCount > 0) {
@@ -492,7 +492,7 @@ module.exports.updateUserProfile = async (req, res) => {
         if (findUser.rows.length > 0) {
             await connection.query('BEGIN')
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q17'], { var1: mysql_real_escape_string(name), var2: avatar, var3: emailAddress, var4: phoneNumber, var5: mobileNumber, var6: mysql_real_escape_string(address), var7: _dt, var8: userMail })
+            let s2 = dbScript(db_sql['Q17'], { var1: mysql_real_escape_string(name), var2: avatar, var3: emailAddress, var4: phoneNumber, var5: mobileNumber, var6: mysql_real_escape_string(address), var7: _dt, var8: userMail, var9:findUser.rows[0].company_id })
             let updateUser = await connection.query(s2)
             await connection.query('COMMIT')
             if (updateUser.rowCount > 0) {
@@ -695,7 +695,7 @@ module.exports.rolesList = async (req, res) => {
                 for (let data of RolesList.rows) {
                     let modulePermissions = []
 
-                    let s8 = dbScript(db_sql['Q34'],{var1 : data.id} )
+                    let s8 = dbScript(db_sql['Q34'],{var1 : data.id, var2:findAdmin.rows[0].company_id} )
                     let getUser = await connection.query(s8)
 
                     if (data.reporter != '') {
@@ -893,7 +893,7 @@ module.exports.updateRole = async (req, res) => {
 
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q42'], { var1: mysql_real_escape_string(roleName), var2: reporter, var3: roleId, var4: _dt })
+                let s4 = dbScript(db_sql['Q42'], { var1: mysql_real_escape_string(roleName), var2: reporter, var3: roleId, var4: _dt, var5 : findAdmin.rows[0].company_id  })
 
                 let updateRole = await connection.query(s4)
 
@@ -1410,7 +1410,7 @@ module.exports.updateUser = async (req, res) => {
 
                 let _dt = new Date().toISOString();
                 await connection.query('BEGIN')
-                let s4 = dbScript(db_sql['Q39'], {var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8 : avatar})
+                let s4 = dbScript(db_sql['Q39'], {var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8 : avatar, var9:findAdmin.rows[0].company_id})
                 let updateUser = await connection.query(s4)
                 await connection.query('COMMIT')
                 if (updateUser.rowCount > 0) {
@@ -1526,7 +1526,7 @@ module.exports.deleteUser = async (req, res) => {
             if (checkPermission.rows[0].permission_to_delete) {
                 let _dt = new Date().toISOString();
                 await connection.query('BEGIN')
-                let s4 = dbScript(db_sql['Q40'], { var1: _dt, var2: userId })
+                let s4 = dbScript(db_sql['Q40'], { var1: _dt, var2: userId , var3: findAdmin.rows[0].company_id})
                 let updateUser = await connection.query(s4)
                 await connection.query('COMMIT')
                 if (updateUser.rowCount > 0) {
@@ -1710,7 +1710,7 @@ module.exports.deleteSlab = async (req, res) => {
                 await connection.query('BEGIN')
 
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q47'], { var1: _dt, var2: slabId })
+                let s4 = dbScript(db_sql['Q47'], { var1: _dt, var2: slabId, var3: findAdmin.rows[0].company_id})
                 var deleteSlab = await connection.query(s4)
 
                 await connection.query('COMMIT')
@@ -2099,7 +2099,7 @@ module.exports.editCustomer = async (req, res) => {
                 }
 
                 let _dt = new Date().toISOString();
-                let s5 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: _dt, var6: customerId, var4: JSON.stringify(bId), var5: JSON.stringify(rId), var7: mysql_real_escape_string(address)})
+                let s5 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: _dt, var6: customerId, var4: JSON.stringify(bId), var5: JSON.stringify(rId), var7: mysql_real_escape_string(address),var8: findAdmin.rows[0].company_id })
                 let updateCustomer = await connection.query(s5)
                 if (updateCustomer.rowCount > 0) {
 
@@ -2355,7 +2355,7 @@ module.exports.deleteCustomer = async (req, res) => {
                 await connection.query('BEGIN')
 
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q80'], { var1: _dt, var2: customerId })
+                let s4 = dbScript(db_sql['Q80'], { var1: _dt, var2: customerId, var3 : findAdmin.rows[0].company_id })
                 let deleteCustomer = await connection.query(s4)
 
                 await connection.query('COMMIT')
@@ -2485,7 +2485,7 @@ module.exports.updatecommissionSplit = async (req, res) => {
 
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q82'], { var1: closerPercentage, var2: supporterPercentage, var3: commissionId, var4: _dt })
+                let s4 = dbScript(db_sql['Q82'], { var1: closerPercentage, var2: supporterPercentage, var3: commissionId, var4: _dt , var5: findAdmin.rows[0].company_id })
 
                 var updatecommission = await connection.query(s4)
 
@@ -2606,7 +2606,7 @@ module.exports.deletecommissionSplit = async (req, res) => {
             if (checkPermission.rows[0].permission_to_delete) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q84'], { var1: _dt, var2: commissionId })
+                let s4 = dbScript(db_sql['Q84'], { var1: _dt, var2: commissionId , var3 : findAdmin.rows[0].company_id})
                 var deleteSlab = await connection.query(s4)
                 await connection.query('COMMIT')
 
@@ -4096,7 +4096,7 @@ module.exports.updateRevenueForecast = async (req, res) => {
 
                 let _dt = new Date().toISOString();
 
-                let s4 = dbScript(db_sql['Q108'], { var1: revenueForecastId, var2: timeline, var3: revenue, var4: growthWindow, var5: growthPercentage, var6: startDate, var7: endDate, var8: _dt })
+                let s4 = dbScript(db_sql['Q108'], { var1: revenueForecastId, var2: timeline, var3: revenue, var4: growthWindow, var5: growthPercentage, var6: startDate, var7: endDate, var8: _dt, var9 : findAdmin.rows[0].company_id })
 
                 let updateForecast = await connection.query(s4)
 
@@ -4175,7 +4175,7 @@ module.exports.actualVsForecast = async (req, res) => {
                 let actualData = []
                 let dateArr = []
 
-                let s4 = dbScript(db_sql['Q109'], { var1: id })
+                let s4 = dbScript(db_sql['Q109'], { var1: id, var2 : findAdmin.rows[0].company_id })
                 let forecastRevenue = await connection.query(s4)
                 if (forecastRevenue.rowCount > 0) {
                     let revenue = forecastRevenue.rows[0].revenue
