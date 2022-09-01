@@ -2,7 +2,7 @@ const express = require('express')
 var router = express.Router()
 var controller = require('../controllers/index')
 const { verifyTokenFn } = require('../utils/jwt')
-const {uploadAvatar , uploadLeadFile} = require('../utils/uploadfiles')
+const {uploadAvatar , uploadProductImage,uploadLeadFile} = require('../utils/uploadfiles')
 
 router.post('/upload',verifyTokenFn, uploadAvatar.single('image'),controller.companyAdmin.upload);
 router.get('/showProfile',verifyTokenFn, controller.companyAdmin.showProfile)
@@ -59,6 +59,14 @@ router.post('/commissionSplit',verifyTokenFn, controller.companyAdmin.commission
 router.put('/updatecommissionSplit',verifyTokenFn, controller.companyAdmin.updatecommissionSplit)
 router.get('/commissionSplitList',verifyTokenFn, controller.companyAdmin.commissionSplitList)
 router.put('/deletecommissionSplit',verifyTokenFn, controller.companyAdmin.deletecommissionSplit)
+
+//-------------------------------------Products---------------------------------------------
+
+router.post('/addProduct',verifyTokenFn, controller.companyAdmin.addProduct)
+router.put('/updateProduct',verifyTokenFn, controller.companyAdmin.updateProduct)
+router.get('/productList',verifyTokenFn, controller.companyAdmin.productList)
+router.put('/deleteProduct',verifyTokenFn, controller.companyAdmin.deleteProduct)
+router.post('/uploadProductImage',verifyTokenFn, uploadProductImage.single('image'),controller.companyAdmin.uploadProductImage);
 
 //----------------------------------------sales conversion --------------------------------
 router.get('/customerListforSales',verifyTokenFn, controller.companyAdmin.customerListforSales)
