@@ -52,13 +52,12 @@ const storage3 = multer.diskStorage({
         cb(null, `${fileName}-${Date.now()}${ext}`)
     }
 })
-const uploadLeadFile = multer({
+const uploadProductFile = multer({
     storage: storage3,
     fileFilter: function(req,file, cb){
         checkFileType(file, cb);
     }
 })
-
 function checkFileType(file, cb){
     // Allowed ext
     const filetypes = /csv/;
@@ -70,8 +69,8 @@ function checkFileType(file, cb){
     if(mimetype && extname){
       return cb(null,true);
     } else {
-        cb('Error: Images Only!');
+        cb('Error: CSV Only!');
     }
-  }
+}
 
-module.exports = { uploadLogo, uploadAvatar, uploadLeadFile, uploadProductImage };
+module.exports = { uploadLogo, uploadAvatar, uploadProductFile, uploadProductImage };

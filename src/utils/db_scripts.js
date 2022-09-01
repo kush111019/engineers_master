@@ -167,7 +167,9 @@ const db_sql = {
     "Q136" : `update products set product_name = '{var2}',product_image = '{var3}', description = '{var4}',available_quantity = '{var5}', price = '{var6}', tax = '{var7}', updated_at = '{var8}' where id = '{var1}' and company_id = '{var9}' and deleted_at is null returning * `,
     "Q137" : `select id, product_name, product_image, description, available_quantity, price, tax, company_id, created_at, updated_at from products where company_id = '{var1}' and deleted_at is null`,
     "Q138" : `update products set deleted_at = '{var2}' where id = '{var1}' and company_id = '{var3}' and deleted_at is null returning * `,
-    "Q139" : `select id, product_name, product_image, description, available_quantity, price, tax, company_id, created_at, updated_at from products where id = '{var1}' and company_id = '{var2}' and deleted_at is null`
+    "Q139" : `select id, product_name, product_image, description, available_quantity, price, tax, company_id, created_at, updated_at from products where id = '{var1}' and company_id = '{var2}' and deleted_at is null`,
+    "Q140" : `insert into products(id, company_id, product_name, product_image, description, available_quantity, price, tax) 
+              values ('{var1}','{var2}',$1,$2,$3,$4,$5,$6)`,
 
         
 

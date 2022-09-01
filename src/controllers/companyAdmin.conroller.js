@@ -11,6 +11,9 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 const jsonwebtoken = require("jsonwebtoken");
 const uuid = require("node-uuid");
 const { mysql_real_escape_string } = require('../utils/helper')
+const fs = require("fs");
+const fastcsv = require("fast-csv");
+
 
 let verifyTokenFn = async (req) => {
     let { token } = req.body
@@ -277,17 +280,17 @@ module.exports.login = async (req, res) => {
                     if (configs.rowCount > 0) {
                         configuration.id = configs.rows[0].id
                         configuration.currency = configs.rows[0].currency,
-                        configuration.phoneFormat = configs.rows[0].phone_format,
-                        configuration.dateFormat = configs.rows[0].date_format,
-                        configuration.graphType = configs.rows[0].graph_type
+                            configuration.phoneFormat = configs.rows[0].phone_format,
+                            configuration.dateFormat = configs.rows[0].date_format,
+                            configuration.graphType = configs.rows[0].graph_type
 
                     } else {
 
                         configuration.id = "",
-                        configuration.currency = "",
-                        configuration.phoneFormat = "",
-                        configuration.dateFormat = "",
-                        configuration.graphType = ""
+                            configuration.currency = "",
+                            configuration.phoneFormat = "",
+                            configuration.dateFormat = "",
+                            configuration.graphType = ""
                     }
 
                     let moduleId = JSON.parse(checkRole.rows[0].module_ids)
@@ -2912,6 +2915,96 @@ module.exports.uploadProductImage = async (req, res) => {
     }
 }
 
+module.exports.uploadProductFile = async (req, res) => {
+    try {
+        userEmail = req.user.email
+        let file = req.file
+
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+        let moduleName = 'Products'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_create) {
+
+                let promise = new Promise((resolve, reject) => {
+                    let stream = fs.createReadStream(file.path);
+                    let csvData = [];
+                    //.on('data') is triggered when a record is parsed,
+                    // so we will get the record (data) in the handler function.
+                    // Each record is pushed to csvData array.
+                    //on('end') is triggered after the parsing is done,
+                    // at the time that we have all records.
+                    let csvStream = fastcsv.parse().on("data", (data) => {
+                        csvData.push(data)
+                    }).on("end", () => {
+                        // remove the first line: header
+                        csvData.shift();
+                        // connect to the PostgreSQL database
+                        // insert csvData into DB 
+                        csvData.forEach(row => {
+                            //defualt product image 
+                            (row[1] == "") ? row[1] = 'http://143.198.102.134:3003/productImages/defaultproductImage.png' : row[1];
+                            
+                            //unique id for every row 
+                            id = uuid.v4()
+                            s3 = dbScript(db_sql['Q140'], { var1: id, var2: findAdmin.rows[0].company_id })
+                            connection.query(s3, row, (err, res) => {
+                                if (err) {
+                                    
+                                    throw err
+                                }
+                            });
+                        });
+                    })
+                    let exportedData = stream.pipe(csvStream);
+                    if (exportedData) {
+                        resolve(file);
+                    } else {
+                        reject(false)
+                    }
+                })
+                promise.then((file) => {
+                    fs.unlink(file.path, (err) => {
+                        if (err) {
+                            throw err
+                        }
+                    })
+                }).catch(err => {
+                    throw err
+                })
+
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Products exported to DB"
+                })
+
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 //----------------------------------Sales commission-------------------------------------
 
 module.exports.customerListforSales = async (req, res) => {
@@ -3905,7 +3998,7 @@ module.exports.revenuePerProduct = async (req, res) => {
                                     productName: product.rows[0].product_name,
                                     revenue: data.target_amount
                                 })
-                            }   
+                            }
                         }
                     }
                     if (revenuePerProduct.length > 0) {
@@ -4985,9 +5078,9 @@ module.exports.configList = async (req, res) => {
 
                 configuration.id = configList.rows[0].id
                 configuration.currency = configList.rows[0].currency,
-                configuration.phoneFormat = configList.rows[0].phone_format,
-                configuration.dateFormat = configList.rows[0].date_format,
-                configuration.graphType = configList.rows[0].graph_type
+                    configuration.phoneFormat = configList.rows[0].phone_format,
+                    configuration.dateFormat = configList.rows[0].date_format,
+                    configuration.graphType = configList.rows[0].graph_type
 
                 res.json({
                     status: 200,
@@ -4998,10 +5091,10 @@ module.exports.configList = async (req, res) => {
 
             } else {
                 configuration.id = "",
-                configuration.currency = "",
-                configuration.phoneFormat = "",
-                configuration.dateFormat = "",
-                configuration.graphType = ""
+                    configuration.currency = "",
+                    configuration.phoneFormat = "",
+                    configuration.dateFormat = "",
+                    configuration.graphType = ""
 
                 res.json({
                     status: 200,
