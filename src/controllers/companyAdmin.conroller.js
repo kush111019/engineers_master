@@ -2785,8 +2785,6 @@ module.exports.updateProduct = async (req, res) => {
 
 module.exports.productList = async (req, res) => {
     try {
-        let id = uuid.v4()
-        console.log(id, "id");
         userEmail = req.user.email
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -2796,7 +2794,7 @@ module.exports.productList = async (req, res) => {
             let findModule = await connection.query(s2)
             let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
-            if (checkPermission.rows[0].permission_to_update) {
+            if (checkPermission.rows[0].permission_to_view) {
                 let s4 = dbScript(db_sql['Q137'], { var1: findAdmin.rows[0].company_id })
                 let productList = await connection.query(s4)
                 if (productList.rowCount > 0) {
