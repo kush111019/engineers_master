@@ -150,7 +150,7 @@ const db_sql = {
     "Q127" : `select cr.closer_id,cr.closer_percentage, u.full_name from sales_closer as cr 
               inner join users as u on u.id = cr.closer_id where sales_commission_id = '{var1}'
               and cr.deleted_at is null and u.deleted_at is null`,
-    "Q128" : `select sc.id as sales_commission_id, sc.target_amount, sc.target_closing_date, c.id as customer_id,
+    "Q128" : `select sc.id as sales_commission_id, sc.target_amount, sc.target_closing_date,sc.products, c.id as customer_id,
               c.closed_at, c.customer_name  from sales_commission as sc inner join customers as c
               on sc.customer_id = c.id where sc.company_id = '{var1}' and sc.deleted_at is null 
               and c.deleted_at is null`,
