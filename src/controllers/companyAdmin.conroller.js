@@ -2664,7 +2664,7 @@ module.exports.addProduct = async (req, res) => {
             tax
         } = req.body
 
-        productImage = (productImage == "") ? 'http://143.198.102.134:3003/productImage/defaultproductImage.png' : productImage;
+        productImage = (productImage == "") ? 'http://143.198.102.134:3003/productImages/defaultproductImage.png' : productImage;
 
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -2730,7 +2730,7 @@ module.exports.updateProduct = async (req, res) => {
             tax
         } = req.body
 
-        productImage = (productImage == "") ? 'http://143.198.102.134:3003/productImage/defaultproductImage.png' : productImage;
+        productImage = (productImage == "") ? 'http://143.198.102.134:3003/productImages/defaultproductImage.png' : productImage;
 
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
