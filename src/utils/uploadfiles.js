@@ -28,7 +28,20 @@ const uploadAvatar = multer({
     storage: storage2
 })
 //----------------------------------------------------------------------------------------------------
+const storage4 = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/productImages')
+    },
+    filename: function (req, file, cb) {
+        //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, file.originalname)
+    }
+})
+const uploadProductImage = multer({
+    storage: storage4
+})
 
+//----------------------------------------------------------------------------------------------
 const storage3 = multer.diskStorage({
     
     destination:  'uploads',
@@ -61,4 +74,4 @@ function checkFileType(file, cb){
     }
   }
 
-module.exports = { uploadLogo, uploadAvatar, uploadLeadFile };
+module.exports = { uploadLogo, uploadAvatar, uploadLeadFile, uploadProductImage };

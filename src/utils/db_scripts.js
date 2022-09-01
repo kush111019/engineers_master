@@ -62,8 +62,8 @@ const db_sql = {
     "Q71"  : `update customers set closed_at = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
     "Q72"  : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where module_name = '{var1}' and deleted_at is null` ,
     "Q73"  : `update customers set customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', business_id = '{var4}', revenue_id = '{var5}', address = '{var7}' where id = '{var6}' and company_id = '{var8}' and deleted_at is null returning *`,
-    "Q74"  : `insert into sales_commission_logs(id,sales_commission_id, customer_commission_split_id, qualification, is_qualified, target_amount,product_match, target_closing_date,customer_id, is_overwrite, company_id, revenue_id, business_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}', '{var17}', '{var18}' ) returning *`,
-    "Q75"  : `select id,sales_commission_id, customer_commission_split_id,  qualification, is_qualified, target_amount, product_match, target_closing_date,customer_id, is_overwrite, company_id, revenue_id, business_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date, created_at from sales_commission_logs where sales_commission_id = '{var1}' and deleted_at is null ORDER BY created_at desc`,
+    "Q74"  : `insert into sales_commission_logs(id,sales_commission_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_id, business_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}', '{var17}', '{var18}' ) returning *`,
+    "Q75"  : `select id,sales_commission_id, customer_commission_split_id,  qualification, is_qualified, target_amount, products, target_closing_date,customer_id, is_overwrite, company_id, revenue_id, business_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date, created_at from sales_commission_logs where sales_commission_id = '{var1}' and deleted_at is null ORDER BY created_at desc`,
     "Q76"  : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,encrypted_password,role_id,address,is_verified) 
               values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}',false) RETURNING *`, 
     "Q77"  : `update roles set deleted_at = '{var2}' where reporter = '{var1}' and deleted_at is null returning *`,  
@@ -74,8 +74,8 @@ const db_sql = {
     "Q83"  : `select id, closer_percentage, supporter_percentage from commission_split where company_id ='{var1}' and deleted_at is null`,
     "Q84"  : `update commission_split set deleted_at = '{var1}' where id = '{var2}' and company_id = '{var3}'  and deleted_at is null returning *`,
     "Q85"  : `select id,customer_company_id ,customer_name, source, closed_at , user_id,address from customers where company_id = '{var1}' and closed_at is null  and deleted_at is null`,
-    "Q86"  : `insert into sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_id, revenue_id, qualification, is_qualified, target_amount, target_closing_date, product_match, sales_type, subscription_plan, recurring_date ) values ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}','{var12}', '{var13}', '{var14}', '{var15}') returning *`,
-    "Q87"  : `select sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_id, sc.revenue_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.target_closing_date, sc.product_match,sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, c.closer_id, c.closer_percentage from sales_commission as sc 
+    "Q86"  : `insert into sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_id, revenue_id, qualification, is_qualified, target_amount, target_closing_date, products, sales_type, subscription_plan, recurring_date ) values ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}','{var12}', '{var13}', '{var14}', '{var15}') returning *`,
+    "Q87"  : `select sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_id, sc.revenue_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.target_closing_date, sc.products,sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, c.closer_id, c.closer_percentage from sales_commission as sc 
               inner join sales_closer as c on sc.id = c.sales_commission_id
               where sc.company_id = '{var1}' and sc.deleted_at is null and c.deleted_at is null`,
     "Q88"  : `select id,customer_company_id ,customer_name, source, closed_at , user_id, business_id, revenue_id, address from customers where id = '{var1}' and deleted_at is null`,
@@ -88,7 +88,7 @@ const db_sql = {
     "Q95"  : `update sales_commission set deleted_at = '{var1}' where id = '{var2}' and company_id = '{var3}' and deleted_at is null returning * `,
     "Q96"  : `update sales_supporter set deleted_at = '{var1}' where sales_commission_id = '{var2}' and company_id = '{var3}' and deleted_at is null returning * `,
     "Q97"  : `update sales_closer set deleted_at = '{var1}' where sales_commission_id = '{var2}' and company_id = '{var3}' and deleted_at is null returning * `,
-    "Q98"  : `update sales_commission set customer_id = '{var1}', customer_commission_split_id = '{var2}', is_overwrite = '{var3}', updated_at = '{var4}',business_id = '{var7}', revenue_id = '{var8}', qualification = '{var9}', is_qualified = '{var10}', target_amount = '{var11}', target_closing_date = '{var12}',product_match = '{var13}', sales_type = '{var14}', subscription_plan = '{var15}', recurring_date = '{var16}'  where id = '{var5}' and company_id = '{var6}' and deleted_at is null returning *`,
+    "Q98"  : `update sales_commission set customer_id = '{var1}', customer_commission_split_id = '{var2}', is_overwrite = '{var3}', updated_at = '{var4}',business_id = '{var7}', revenue_id = '{var8}', qualification = '{var9}', is_qualified = '{var10}', target_amount = '{var11}', target_closing_date = '{var12}',products = '{var13}', sales_type = '{var14}', subscription_plan = '{var15}', recurring_date = '{var16}'  where id = '{var5}' and company_id = '{var6}' and deleted_at is null returning *`,
     "Q99"  : `update sales_closer set closer_id = '{var1}', closer_percentage = '{var2}', commission_split_id = '{var3}', updated_at = '{var4}' where sales_commission_id = '{var5}' and company_id = '{var6}' and deleted_at is null returning *`,
     "Q100" : `update sales_supporter set deleted_at = '{var3}' where sales_commission_id = '{var1}' and company_id = '{var2}' and deleted_at is null returning *`,
     "Q101" : `select sc.id as id , sc.customer_id as customerId , d.customer_name as customerName, sc.customer_commission_split_id, sc.is_overwrite as is_overwrite, c.closer_id as closerId, c.closer_percentage as closerPercentage
@@ -150,7 +150,7 @@ const db_sql = {
     "Q127" : `select cr.closer_id,cr.closer_percentage, u.full_name from sales_closer as cr 
               inner join users as u on u.id = cr.closer_id where sales_commission_id = '{var1}'
               and cr.deleted_at is null and u.deleted_at is null`,
-    "Q128" : `select sc.id as sales_commission_id, sc.target_amount, sc.target_closing_date, c.id as customer_id,
+    "Q128" : `select sc.id as sales_commission_id, sc.target_amount, sc.target_closing_date,sc.products, c.id as customer_id,
               c.closed_at, c.customer_name  from sales_commission as sc inner join customers as c
               on sc.customer_id = c.id where sc.company_id = '{var1}' and sc.deleted_at is null 
               and c.deleted_at is null`,
@@ -163,6 +163,11 @@ const db_sql = {
     "Q132" : `select id, target_amount, target_closing_date from sales_commission where customer_id = '{var1}' and deleted_at is null`,
     "Q133" : `select id, target_amount, target_closing_date from sales_commission where company_id = '{var1}' and deleted_at is null`,
     "Q134" : `insert into contact_us(id, full_name, email, subject, messages, address) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') returning *`,
+    "Q135" : `insert into products(id, product_name,product_image,description,available_quantity,price,tax,company_id)values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}')`,
+    "Q136" : `update products set product_name = '{var2}',product_image = '{var3}', description = '{var4}',available_quantity = '{var5}', price = '{var6}', tax = '{var7}', updated_at = '{var8}' where id = '{var1}' and company_id = '{var9}' and deleted_at is null returning * `,
+    "Q137" : `select id, product_name, product_image, description, available_quantity, price, tax, company_id, created_at, updated_at from products where company_id = '{var1}' and deleted_at is null`,
+    "Q138" : `update products set deleted_at = '{var2}' where id = '{var1}' and company_id = '{var9}' and deleted_at is null returning * `,
+    "Q139" : `select id, product_name, product_image, description, available_quantity, price, tax, company_id, created_at, updated_at from products where id = '{var1}' and company_id = '{var2}' and deleted_at is null`
 
         
 
