@@ -2,7 +2,7 @@ const express = require('express')
 var router = express.Router()
 var controller = require('../controllers/index')
 const { verifyTokenFn } = require('../utils/jwt')
-const {uploadAvatar , uploadProductImage,uploadLeadFile} = require('../utils/uploadfiles')
+const {uploadAvatar , uploadProductImage,uploadProductFile} = require('../utils/uploadfiles')
 
 router.post('/upload',verifyTokenFn, uploadAvatar.single('image'),controller.companyAdmin.upload);
 router.get('/showProfile',verifyTokenFn, controller.companyAdmin.showProfile)
@@ -67,7 +67,7 @@ router.put('/updateProduct',verifyTokenFn, controller.companyAdmin.updateProduct
 router.get('/productList',verifyTokenFn, controller.companyAdmin.productList)
 router.put('/deleteProduct',verifyTokenFn, controller.companyAdmin.deleteProduct)
 router.post('/uploadProductImage',verifyTokenFn, uploadProductImage.single('image'),controller.companyAdmin.uploadProductImage);
-
+router.post('/uploadProductFile',verifyTokenFn,uploadProductFile.single('file'), controller.companyAdmin.uploadProductFile)
 //----------------------------------------sales conversion --------------------------------
 router.get('/customerListforSales',verifyTokenFn, controller.companyAdmin.customerListforSales)
 router.get('/customerContactDetailsForSales',verifyTokenFn, controller.companyAdmin.customerContactDetailsForSales)
