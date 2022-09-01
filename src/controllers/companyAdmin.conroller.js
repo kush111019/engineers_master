@@ -277,15 +277,17 @@ module.exports.login = async (req, res) => {
                     if (configs.rowCount > 0) {
                         configuration.id = configs.rows[0].id
                         configuration.currency = configs.rows[0].currency,
-                            configuration.phoneFormat = configs.rows[0].phone_format,
-                            configuration.dateFormat = configs.rows[0].date_format
+                        configuration.phoneFormat = configs.rows[0].phone_format,
+                        configuration.dateFormat = configs.rows[0].date_format,
+                        configuration.graphType = configs.rows[0].graph_type
 
                     } else {
 
                         configuration.id = "",
-                            configuration.currency = "",
-                            configuration.phoneFormat = "",
-                            configuration.dateFormat = ""
+                        configuration.currency = "",
+                        configuration.phoneFormat = "",
+                        configuration.dateFormat = "",
+                        configuration.graphType = ""
                     }
 
                     let moduleId = JSON.parse(checkRole.rows[0].module_ids)
@@ -4916,7 +4918,7 @@ module.exports.recurringPaymentCron = async () => {
 module.exports.addConfigs = async (req, res) => {
     try {
         let userEmail = req.user.email
-        let { currency, phoneFormat, dateFormat } = req.body
+        let { currency, phoneFormat, dateFormat, graphType } = req.body
 
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -4929,7 +4931,7 @@ module.exports.addConfigs = async (req, res) => {
             let config = await connection.query(s2)
 
             let id = uuid.v4()
-            let s3 = dbScript(db_sql['Q124'], { var1: id, var2: currency, var3: phoneFormat, var4: dateFormat, var5: findAdmin.rows[0].id, var6: findAdmin.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q124'], { var1: id, var2: currency, var3: phoneFormat, var4: dateFormat, var5: findAdmin.rows[0].id, var6: graphType, var7: findAdmin.rows[0].company_id })
 
             let addConfig = await connection.query(s3)
 
@@ -4983,8 +4985,9 @@ module.exports.configList = async (req, res) => {
 
                 configuration.id = configList.rows[0].id
                 configuration.currency = configList.rows[0].currency,
-                    configuration.phoneFormat = configList.rows[0].phone_format,
-                    configuration.dateFormat = configList.rows[0].date_format
+                configuration.phoneFormat = configList.rows[0].phone_format,
+                configuration.dateFormat = configList.rows[0].date_format,
+                configuration.graphType = configList.rows[0].graph_type
 
                 res.json({
                     status: 200,
@@ -4994,11 +4997,11 @@ module.exports.configList = async (req, res) => {
                 })
 
             } else {
-
                 configuration.id = "",
-                    configuration.currency = "",
-                    configuration.phoneFormat = "",
-                    configuration.dateFormat = ""
+                configuration.currency = "",
+                configuration.phoneFormat = "",
+                configuration.dateFormat = "",
+                configuration.graphType = ""
 
                 res.json({
                     status: 200,
