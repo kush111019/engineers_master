@@ -144,8 +144,8 @@ const db_sql = {
     "Q121" : `update customers set revenue_id = '{var2}' where id = '{var1}' returning *`,
     "Q122" : `select id, supporter_id, supporter_percentage from sales_supporter where id = '{var1}'  `,
     "Q123" : `select customer_id, sales_type, subscription_plan, recurring_date from sales_commission where deleted_at is null`,
-    "Q124" : `insert into configurations(id, currency, phone_format, date_format, user_id, company_id ) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') returning *`,
-    "Q125" : `select id, currency, phone_format, date_format, user_id, company_id, created_at from configurations where company_id = '{var1}' and deleted_at is null `,
+    "Q124" : `insert into configurations(id, currency, phone_format, date_format,user_id, graph_type,  company_id ) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') returning *`,
+    "Q125" : `select id, currency, phone_format, date_format,graph_type, user_id, company_id, created_at from configurations where company_id = '{var1}' and deleted_at is null `,
     "Q126" : `update configurations set deleted_at = '{var1}' where company_id = '{var2}' and deleted_at is null returning *`,
     "Q127" : `select cr.closer_id,cr.closer_percentage, u.full_name from sales_closer as cr 
               inner join users as u on u.id = cr.closer_id where sales_commission_id = '{var1}'
