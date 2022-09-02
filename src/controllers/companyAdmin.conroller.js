@@ -184,9 +184,11 @@ module.exports.setPasswordForLogin = async (req, res) => {
             let s1 = dbScript(db_sql['Q4'], { var1: user.email })
             let checkuser = await connection.query(s1);
             if (checkuser.rows.length > 0) {
+                await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
                 let s2 = dbScript(db_sql['Q7'], { var1: user.email, var2: password, var3: _dt, var4: checkuser.rows[0].company_id })
                 let updateuser = await connection.query(s2)
+                await connection.query('COMMIT')
                 if (updateuser.rowCount == 1){
                     res.json({
                         status: 201,
@@ -194,6 +196,7 @@ module.exports.setPasswordForLogin = async (req, res) => {
                         message: "Password created Successfully",
                     })
                 }else{
+                    await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
                         success: false,
@@ -217,6 +220,7 @@ module.exports.setPasswordForLogin = async (req, res) => {
             });
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             success: false,
             status: 400,
@@ -233,15 +237,26 @@ module.exports.verifyUser = async (req, res) => {
             let s1 = dbScript(db_sql['Q4'], { var1: user.email })
             let checkuser = await connection.query(s1);
             if (checkuser.rows.length > 0) {
+                await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
                 let s2 = dbScript(db_sql['Q10'], { var1: user.email, var2: _dt })
                 let updateuser = await connection.query(s2)
-                if (updateuser.rowCount == 1)
+                await connection.query('COMMIT')
+                if (updateuser.rowCount == 1){
                     res.json({
                         status: 200,
                         success: true,
                         message: "User verified Successfully"
                     })
+                }else{
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+                    
             } else {
                 res.json({
                     status: 400,
@@ -257,6 +272,7 @@ module.exports.verifyUser = async (req, res) => {
             });
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             success: false,
             status: 400,
@@ -593,7 +609,7 @@ module.exports.resetPassword = async (req, res) => {
             if (checkuser.rows.length > 0) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s2 = dbScript(db_sql['Q7'], { var1: user.email, var2: password, var3: _dt })
+                let s2 = dbScript(db_sql['Q7'], { var1: user.email, var2: password, var3: _dt, var4: checkuser.rows[0].company_id})
                 let updateuser = await connection.query(s2)
                 await connection.query('COMMIT')
                 if (updateuser.rowCount == 1) {
