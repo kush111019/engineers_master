@@ -192,12 +192,11 @@ module.exports.setPasswordForLogin = async (req, res) => {
                         status: 201,
                         success: true,
                         message: "Password created Successfully",
-                        data: ""
                     })
                 }else{
                     res.json({
                         status: 400,
-                        success: FontFaceSetLoadEvent,
+                        success: false,
                         message: "Something went wrong",
                     })
                 }
