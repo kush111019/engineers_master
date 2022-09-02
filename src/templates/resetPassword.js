@@ -24,7 +24,7 @@ module.exports.resetPassword = function (link, email, userName) {
                             <td style="text-align:left; padding-top: 20px; padding-left: 50px;">
                               <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
                                 <img src="https://www.engineermaster.in/images/hiriselogo.png" alt="logo" 
-                                style="height: 10%; width: 10%;">
+                                style=" width: 120px;">
                               </a>
                             </td>
                         </tr>

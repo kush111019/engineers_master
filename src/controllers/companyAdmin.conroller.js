@@ -185,15 +185,23 @@ module.exports.setPasswordForLogin = async (req, res) => {
             let checkuser = await connection.query(s1);
             if (checkuser.rows.length > 0) {
                 let _dt = new Date().toISOString();
-                let s2 = dbScript(db_sql['Q7'], { var1: user.email, var2: password, var3: _dt })
+                let s2 = dbScript(db_sql['Q7'], { var1: user.email, var2: password, var3: _dt, var4: checkuser.rows[0].company_id })
                 let updateuser = await connection.query(s2)
-                if (updateuser.rowCount == 1)
+                if (updateuser.rowCount == 1){
                     res.json({
                         status: 201,
                         success: true,
                         message: "Password created Successfully",
                         data: ""
                     })
+                }else{
+                    res.json({
+                        status: 400,
+                        success: FontFaceSetLoadEvent,
+                        message: "Something went wrong",
+                    })
+                }
+                    
             } else {
                 res.json({
                     status: 400,
