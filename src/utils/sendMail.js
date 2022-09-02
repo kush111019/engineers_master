@@ -270,7 +270,7 @@ module.exports.contactUsMail = async (email,fullName,subject,message,address) =>
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
-    var toAddresses = 'test@yopmail.com';
+    var toAddresses = process.env.SMTP_USERNAME;
 
     let contact = contactUsTemplate.contactUs(email,fullName,subject,message,address)
 
