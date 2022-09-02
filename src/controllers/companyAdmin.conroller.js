@@ -1215,7 +1215,7 @@ module.exports.addUser = async (req, res) => {
                 res.json({
                     status: 400,
                     success: false,
-                    message: "user already exists"
+                    message: "User already exists"
                 })
             }
 
