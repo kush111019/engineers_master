@@ -2680,7 +2680,7 @@ module.exports.addProduct = async (req, res) => {
             if (checkPermission.rows[0].permission_to_create) {
                 await connection.query('BEGIN')
                 let id = uuid.v4()
-                let s4 = dbScript(db_sql['Q135'], { var1: id, var2: productName, var3: productImage, var4: description, var5: availableQuantity, var6: price, var7: tax, var8: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q135'], { var1: id, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: findAdmin.rows[0].company_id })
                 let addProduct = await connection.query(s4)
                 if (addProduct.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -2746,10 +2746,8 @@ module.exports.updateProduct = async (req, res) => {
             if (checkPermission.rows[0].permission_to_update) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q136'], { var1: productId, var2: productName, var3: productImage, var4: description, var5: availableQuantity, var6: price, var7: tax, var8: _dt, var9: findAdmin.rows[0].company_id })
-                console.log(s4);
+                let s4 = dbScript(db_sql['Q136'], { var1: productId, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: _dt, var9: findAdmin.rows[0].company_id })
                 let updateProduct = await connection.query(s4)
-                console.log(updateProduct.rows, "updateProduct");
                 if (updateProduct.rowCount > 0) {
                     await connection.query('COMMIT')
                     res.json({
@@ -2951,8 +2949,8 @@ module.exports.uploadProductFile = async (req, res) => {
                             
                             //unique id for every row 
                             id = uuid.v4()
-                            s3 = dbScript(db_sql['Q140'], { var1: id, var2: findAdmin.rows[0].company_id })
-                            connection.query(s3, row, (err, res) => {
+                            let s4 = dbScript(db_sql['Q140'], { var1: id, var2: findAdmin.rows[0].company_id })
+                            connection.query(s4, row, (err, res) => {
                                 if (err) {
                                     
                                     throw err
@@ -3173,7 +3171,6 @@ module.exports.createSalesCommission = async (req, res) => {
             recurringDate,
         } = req.body
 
-        console.log(closerPercentage, "closerPercentage");
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
 
@@ -3196,16 +3193,15 @@ module.exports.createSalesCommission = async (req, res) => {
 
                 let s6 = dbScript(db_sql['Q89'], { var1: customerCommissionSplitId, var2: findAdmin.rows[0].company_id })
                 let findSalescommission = await connection.query(s6)
-                console.log(findSalescommission.rows[0].closer_percentage);
                 let closer_percentage = is_overwrite ? closerPercentage : findSalescommission.rows[0].closer_percentage
-                console.log(closer_percentage);
+
                 let closerId = uuid.v4()
                 let s7 = dbScript(db_sql['Q93'], { var1: closerId, var2: customerCloserId, var3: closer_percentage, var4: customerCommissionSplitId, var5: createSalesConversion.rows[0].id, var6: findAdmin.rows[0].company_id })
                 let addSalesCloser = await connection.query(s7)
 
                 if (supporters.length > 0) {
 
-                    for (supporterData of supporters) {
+                    for (let supporterData of supporters) {
                         let supporterId = uuid.v4()
                         let s8 = dbScript(db_sql['Q91'], { var1: supporterId, var2: customerCommissionSplitId, var3: supporterData.id, var4: supporterData.percentage, var5: createSalesConversion.rows[0].id, var6: findAdmin.rows[0].company_id })
                         addSalesSupporter = await connection.query(s8)
