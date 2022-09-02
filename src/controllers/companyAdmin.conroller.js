@@ -2922,7 +2922,7 @@ module.exports.uploadProductImage = async (req, res) => {
         res.json({
             status: 201,
             success: true,
-            message: "Logo Uploaded successfully!",
+            message: "Product image Uploaded successfully!",
             data: path
         })
 
