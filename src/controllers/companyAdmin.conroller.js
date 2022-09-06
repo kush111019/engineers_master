@@ -5,7 +5,11 @@ const {
     setPasswordMail,
     recurringPaymentMail,
     welcomeEmail,
-    contactUsMail
+    contactUsMail,
+    resetPasswordMail2,
+    setPasswordMail2,
+    welcomeEmail2,
+    contactUsMail2
 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const jsonwebtoken = require("jsonwebtoken");
@@ -13,7 +17,7 @@ const uuid = require("node-uuid");
 const { mysql_real_escape_string } = require('../utils/helper')
 const fs = require("fs");
 const fastcsv = require("fast-csv");
-
+require('dotenv').config()
 
 let verifyTokenFn = async (req) => {
     let { token } = req.body
@@ -79,22 +83,33 @@ let createAdmin = async (bodyData, cId, res) => {
             }
             let token = await issueJWT(payload)
             link = `http://143.198.102.134:8080/auth/verify-email/${token}`
-            let emailSent = await welcomeEmail(emailAddress, link, name);
-            if(emailSent.status == 400){
-                await connection.query('ROLLBACK')
-                return res.json({
-                    status: 400,
-                    success: false,
-                    message: `Something went wrong`,
-                })
-            }
-            else{
+            if(process.env.isLocalEmail == true){
+                await welcomeEmail2(emailAddress, link, name); 
                 await connection.query('COMMIT')
                 return res.json({
                     status: 201,
                     success: true,
                     message: ` User Created Successfully and verification link send on registered email `,
                 })
+            }else{
+
+                let emailSent = await welcomeEmail(emailAddress, link, name);
+                if(emailSent.status == 400){
+                    await connection.query('ROLLBACK')
+                    return res.json({
+                        status: 400,
+                        success: false,
+                        message: `Something went wrong`,
+                    })
+                }
+                else{
+                    await connection.query('COMMIT')
+                    return res.json({
+                        status: 201,
+                        success: true,
+                        message: ` User Created Successfully and verification link send on registered email `,
+                    })
+                }
             }
         } else {
             await connection.query('ROLLBACK')
@@ -582,19 +597,31 @@ module.exports.forgotPassword = async (req, res) => {
             }
             let token = await issueJWT(payload)
             let link = `http://143.198.102.134:8080/auth/reset-password/${token}`
-            let emailSend = await resetPasswordMail(emailAddress, link, checkuser.rows[0].full_name);
-            if(emailSend.status == 400){
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Something went wrong",
-                })
-            }else{
+            console.log(process.env.isLocalEmail,"env");
+            if(process.env.isLocalEmail == true){
+                console.log('11111111111111111111');
+                await resetPasswordMail2(emailAddress, link, checkuser.rows[0].full_name);
                 res.json({
                     status: 200,
                     success: true,
                     message: "New link sent to your email address",
                 })
+            }else{
+                console.log('2222222222222222222222');
+                let emailSend = await resetPasswordMail(emailAddress, link, checkuser.rows[0].full_name);
+                if(emailSend.status == 400){
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong",
+                    })
+                }else{
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "New link sent to your email address",
+                    })
+                }
             }
         } else {
             res.json({
@@ -1204,21 +1231,31 @@ module.exports.addUser = async (req, res) => {
                         }
                         let token = await issueJWT(payload)
                         link = `http://143.198.102.134:8080/auth/reset-password/${token}`
-                        let emailSent = await setPasswordMail(emailAddress, link, name);
-                        if(emailSent.status == 400){
-                            await connection.query('ROLLBACK')
-                            res.json({
-                                status: 400,
-                                success: false,
-                                message: "Something went wrong"
-                            })
-                        }else{
+                        if(process.env.isLocalEmail == true){
+                            await setPasswordMail2(emailAddress, link, name);
                             await connection.query('COMMIT')
                             res.json({
                                 status: 201,
                                 success: true,
                                 message: `User created successfully and link send for set password on ${emailAddress} `
                             })
+                        }else{
+                            let emailSent = await setPasswordMail(emailAddress, link, name);
+                            if(emailSent.status == 400){
+                                await connection.query('ROLLBACK')
+                                res.json({
+                                    status: 400,
+                                    success: false,
+                                    message: "Something went wrong"
+                                })
+                            }else{
+                                await connection.query('COMMIT')
+                                res.json({
+                                    status: 201,
+                                    success: true,
+                                    message: `User created successfully and link send for set password on ${emailAddress} `
+                                })
+                            }
                         }
                     } else {
                         await connection.query('ROLLBACK')
@@ -4294,7 +4331,7 @@ module.exports.revenues = async (req, res) => {
                                         let percentage = slabData.percentage
                                         let amount = ((Number(percentage) / 100) * Number(data.target_amount))
 
-                                        revenueCommissionByDateObj.commission = amount
+                                        revenueCommissionByDateObj.commission = amount.toFixed(2)
 
                                         totalCommission = totalCommission + amount
                                     }
@@ -4303,7 +4340,7 @@ module.exports.revenues = async (req, res) => {
                                         let percentage = slabData.percentage
                                         let amount = ((Number(percentage) / 100) * Number(data.target_amount))
 
-                                        revenueCommissionByDateObj.commission = amount
+                                        revenueCommissionByDateObj.commission = amount.toFixed(2)
 
                                         totalCommission = totalCommission + amount
 
@@ -4323,8 +4360,8 @@ module.exports.revenues = async (req, res) => {
 
                     }
                     counts.expectedRevenue = expectedRevenue
-                    counts.totalRevenue = totalRevenue
-                    counts.totalCommission = totalCommission
+                    counts.totalRevenue = totalRevenue.toFixed(2)
+                    counts.totalCommission = totalCommission.toFixed(2)
                     counts.revenueCommissionBydate = revenueCommissionBydate
 
 
@@ -5184,21 +5221,31 @@ module.exports.contactUs = async (req, res) => {
 
         let addContactUs = await connection.query(s1)
         if (addContactUs.rowCount > 0) {
-            let emailSent = await contactUsMail(email, fullName, subject, message, address)
-            if(emailSent.status == 400){
-                await connection.query('ROLLBACK')
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Something went wrong"
-                })
-            }else{
+            if(process.env.isLocalEmail == true){
+                await contactUsMail2(email, fullName, subject, message, address)
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,
                     success: true,
                     message: "Query added successfully"
                 })
+            }else{
+                let emailSent = await contactUsMail(email, fullName, subject, message, address)
+                if(emailSent.status == 400){
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }else{
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Query added successfully"
+                    })
+                }
             }
                 
         } else {
