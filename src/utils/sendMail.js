@@ -1,3 +1,4 @@
+const nodemailer = require("nodemailer");
 const SibApiV3Sdk = require('sib-api-v3-sdk');
 const welcomeTemplate = require('../templates/welcome')
 const resetPassTemplate = require('../templates/resetPassword')
@@ -64,7 +65,6 @@ module.exports.resetPasswordMail = async (email , link , userName) => {
     return sentdata
 }
 
-
 module.exports.setPasswordMail = async (email , link, userName) => {
 
     let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
@@ -91,7 +91,6 @@ module.exports.setPasswordMail = async (email , link, userName) => {
       });
     return sentdata
 }
-
 
 module.exports.recurringPaymentMail = async (email,customerName) => {
     const smtpEndpoint = "smtp.gmail.com";
@@ -171,8 +170,264 @@ module.exports.contactUsMail = async (email,fullName,subject1,message,address) =
       });
     return sentdata
 }
-//---------------------------------------------------------------------------------------
+
+
+//-----------------------------------------Local Email-------------------------------------
 
 
 
+module.exports.welcomeEmail2 = async (email , link, userName) => {
+    const smtpEndpoint = "smtp.gmail.com";
+    const port = 587;
+    const senderAddress = process.env.SMTP_USERNAME;
+    var toAddresses = email;
+
+    let welcomeTemp = welcomeTemplate.welcome(link, userName)
+
+    var ccAddresses = "";
+    var bccAddresses = "";
+
+    const smtpUsername = process.env.SMTP_USERNAME;
+    const smtpPassword = process.env.SMTP_PASSWORD;
+
+    // The subject line of the email
+    var subject = "Welcome to HiRise";
+    // The email body for recipients with non-HTML email clients.
+    var body_text = `Please use the below link to activate your account and reset your password`;
+    
+    // The body of the email for recipients whose email clients support HTML contenty.
+    //var body_html= emailTem;
+
+    let transporter = nodemailer.createTransport({
+        host: smtpEndpoint,
+        port: port,
+        secure: false, // true for 465, false for other ports
+        auth: {
+            user: smtpUsername,
+            pass: smtpPassword
+        }
+    });
+
+    // Specify the fields in the email.
+    let mailOptions = {
+        from: senderAddress,
+        to: toAddresses,
+        subject: subject,
+        cc: ccAddresses,
+        bcc: bccAddresses,
+        text: body_text,
+        html: welcomeTemp,
+        // Custom headers for configuration set and message tags.
+        headers: {}
+    };
+
+    // Send the email.
+    let info = await transporter.sendMail(mailOptions)
+    console.log("Message sent! Message ID: ", info.messageId);
+
+}
+
+module.exports.resetPasswordMail2 = async (email , link , userName) => {
+    const smtpEndpoint = "smtp.gmail.com";
+    const port = 587;
+    const senderAddress = process.env.SMTP_USERNAME;
+    var toAddresses = email;
+
+    let resetPass = resetPassTemplate.resetPassword(link, email, userName)
+
+    var ccAddresses = "";
+    var bccAddresses = "";
+
+    const smtpUsername = process.env.SMTP_USERNAME;
+    const smtpPassword = process.env.SMTP_PASSWORD;
+
+    // The subject line of the email
+    var subject = "Reset password";
+    // The email body for recipients with non-HTML email clients.
+    var body_text = `Please use the below link to reset your password`;
+    
+    // The body of the email for recipients whose email clients support HTML contenty.
+    //var body_html= emailTem;
+
+    let transporter = nodemailer.createTransport({
+        host: smtpEndpoint,
+        port: port,
+        secure: false, // true for 465, false for other ports
+        auth: {
+            user: smtpUsername,
+            pass: smtpPassword
+        }
+    });
+
+    // Specify the fields in the email.
+    let mailOptions = {
+        from: senderAddress,
+        to: toAddresses,
+        subject: subject,
+        cc: ccAddresses,
+        bcc: bccAddresses,
+        text: body_text,
+        html: resetPass,
+        // Custom headers for configuration set and message tags.
+        headers: {}
+    };
+
+    // Send the email.
+    let info = await transporter.sendMail(mailOptions)
+    console.log("Message sent! Message ID: ", info.messageId);
+
+}
+
+module.exports.setPasswordMail2 = async (email , link, userName) => {
+    const smtpEndpoint = "smtp.gmail.com";
+    const port = 587;
+    const senderAddress = process.env.SMTP_USERNAME;
+    var toAddresses = email;
+
+    let setPass = setPassTemp.setPassword(link, userName)
+
+    var ccAddresses = "";
+    var bccAddresses = "";
+
+    const smtpUsername = process.env.SMTP_USERNAME;
+    const smtpPassword = process.env.SMTP_PASSWORD;
+
+    // The subject line of the email
+    var subject = "Verification Mail";
+    // The email body for recipients with non-HTML email clients.
+    var body_text = `Please use the below link for verification`;
+    
+    // The body of the email for recipients whose email clients support HTML contenty.
+    //var body_html= emailTem;
+
+    let transporter = nodemailer.createTransport({
+        host: smtpEndpoint,
+        port: port,
+        secure: false, // true for 465, false for other ports
+        auth: {
+            user: smtpUsername,
+            pass: smtpPassword
+        }
+    });
+
+    // Specify the fields in the email.
+    let mailOptions = {
+        from: senderAddress,
+        to: toAddresses,
+        subject: subject,
+        cc: ccAddresses,
+        bcc: bccAddresses,
+        text: body_text,
+        html: setPass,
+        // Custom headers for configuration set and message tags.
+        headers: {}
+    };
+
+    // Send the email.
+    let info = await transporter.sendMail(mailOptions)
+    console.log("Message sent! Message ID: ", info.messageId);
+
+}
+
+module.exports.recurringPaymentMail2 = async (email,customerName) => {
+    const smtpEndpoint = "smtp.gmail.com";
+    const port = 587;
+    const senderAddress = process.env.SMTP_USERNAME;
+    var toAddresses = email;
+
+    let payment = recurringPaymentTemplate.recurringPayment(customerName)
+
+    var ccAddresses = "";
+    var bccAddresses = "";
+
+    const smtpUsername = process.env.SMTP_USERNAME;
+    const smtpPassword = process.env.SMTP_PASSWORD;
+
+    // The subject line of the email
+    var subject = "Recurring payment Mail";
+    // The email body for recipients with non-HTML email clients.
+    var body_text = `Please use the below link for verification`;
+    
+    // The body of the email for recipients whose email clients support HTML contenty.
+    //var body_html= emailTem;
+
+    let transporter = nodemailer.createTransport({
+        host: smtpEndpoint,
+        port: port,
+        secure: false, // true for 465, false for other ports
+        auth: {
+            user: smtpUsername,
+            pass: smtpPassword
+        }
+    });
+
+    // Specify the fields in the email.
+    let mailOptions = {
+        from: senderAddress,
+        to: toAddresses,
+        subject: subject,
+        cc: ccAddresses,
+        bcc: bccAddresses,
+        text: body_text,
+        html: payment,
+        // Custom headers for configuration set and message tags.
+        headers: {}
+    };
+
+    // Send the email.
+    let info = await transporter.sendMail(mailOptions)
+    console.log("Message sent! Message ID: ", info.messageId);
+
+}
+
+module.exports.contactUsMail2 = async (email,fullName,subject,message,address) => {
+    const smtpEndpoint = "smtp.gmail.com";
+    const port = 587;
+    const senderAddress = process.env.SMTP_USERNAME;
+    var toAddresses = process.env.SMTP_USERNAME;
+
+    let contact = contactUsTemplate.contactUs(email,fullName,subject,message,address)
+
+    var ccAddresses = "";
+    var bccAddresses = "";
+
+    const smtpUsername = process.env.SMTP_USERNAME;
+    const smtpPassword = process.env.SMTP_PASSWORD;
+
+    // The subject line of the email
+    //let subject = subject;
+    // The email body for recipients with non-HTML email clients.
+    var body_text = `Contact us Mail`;
+    
+    // The body of the email for recipients whose email clients support HTML contenty.
+    //var body_html= emailTem;
+
+    let transporter = nodemailer.createTransport({
+        host: smtpEndpoint,
+        port: port,
+        secure: false, // true for 465, false for other ports
+        auth: {
+            user: smtpUsername,
+            pass: smtpPassword
+        }
+    });
+
+    // Specify the fields in the email.
+    let mailOptions = {
+        from: senderAddress,
+        to: toAddresses,
+        subject: subject,
+        cc: ccAddresses,
+        bcc: bccAddresses,
+        text: body_text,
+        html: contact,
+        // Custom headers for configuration set and message tags.
+        headers: {}
+    };
+
+    // Send the email.
+    let info = await transporter.sendMail(mailOptions)
+    console.log("Message sent! Message ID: ", info.messageId);
+
+}
 
