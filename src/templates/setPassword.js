@@ -1,12 +1,12 @@
-module.exports.resetPassword = function (link, email, userName) {
-    let resetPass = `
+module.exports.setPassword = function (link, userName) {
+    let verify = `
     <!doctype html>
     <html lang="en-US">
     
     <head>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
-        <title>Reset Password Template</title>
-        <meta name="description" content="Reset Password Template.">
+        <title>Set password</title>
+        <meta name="description" content="Set password Template.">
         <style type="text/css">
             a:hover {text-decoration: underline !important;}
         </style>
@@ -19,7 +19,7 @@ module.exports.resetPassword = function (link, email, userName) {
             <tr>
                 <td>
                     <table style="background-color: #fff; max-width:670px;  margin-top:25px; margin-bottom:25px; " width="100%" border="0"
-                        align="center" cellpadding="0" cellspacing="0">
+                    align="center" cellpadding="0" cellspacing="0">
                         <tr>
                             <td style="text-align:left; padding-top: 20px; padding-left: 50px;">
                               <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
@@ -35,26 +35,23 @@ module.exports.resetPassword = function (link, email, userName) {
                                     <tr>
                                         <td style="padding:0 35px;">
                                             
+
                                             <br style="color:#455056; font-size:15px;line-height:24px; margin:0;">
-                                            Hello ${userName}, <br>
-                                            <br/>
-                                          <center> <img src="https://www.engineermaster.in/images/eyes.png" alt="eyes" style="width: 5%;" > </center>
-                                            <h4 style="text-align:center;">Password Reset</h4>
+                                            Hi ${userName}, <br>
+<br/>
+                                            Welcome to HiRise Technologies :). We are incredibly excited to have you on board and to 
+                                            help you start building stronger customer relationships across sales, revenue and 
+                                            commission management. We are here to set up you for higher success. <br>
 
+                                            Please set-up your <b>password</b> by clicking on this <a href="${link}"
+                                            style="text-decoration:none !important; font-weight:500; margin-top:35px; color: #1bb2cc; font-size:14px;padding:4px 4px;display:inline-block;"><u>account link.</u></a><br>
 
-                                            Someone requested that the password be reset for the following account:<br>
-                                            To reset your password, please click the below blue button <br>
-                                             
-                                            <a href= ${link} style="background:#4285f4;text-decoration:none !important; font-weight:500; margin-top:15px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:8px;">Click here to reset your password</a><br>
-                                             <p>Your email:<a href="" style="color:#1bb2cc;"><u>${email}</u></a></p>
-                                                <br>
-                                             <p>If this was a mistake, then just ignore this email.</p>
                                             <br>
                                             Cheers,
                                             <br/>
                                             HiRise Team <br>
 
-                                            <h5>If you have any questions. Please email us at <a style="color:#1bb2cc;"><u>Hirise@contactus.com</u></a>.</h5> 
+                                            <h5>If you have any questions. Please email us at <a style="color:#1bb2cc;"><u>Hirise@contactus.com</u></a></h5> 
                                             </p>
                                             
                                         </td>
@@ -79,8 +76,5 @@ module.exports.resetPassword = function (link, email, userName) {
     
     </html>`
 
-    return resetPass
+    return verify
 }
-
-
-

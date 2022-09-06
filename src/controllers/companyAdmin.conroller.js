@@ -1,14 +1,26 @@
 const connection = require('../database/connection')
 const { issueJWT } = require("../utils/jwt")
-const { resetPasswordMail, verificationMail, recurringPaymentMail, welcomeEmail } = require("../utils/sendMail")
+const {
+    resetPasswordMail,
+    setPasswordMail,
+    recurringPaymentMail,
+    welcomeEmail,
+    contactUsMail,
+    resetPasswordMail2,
+    setPasswordMail2,
+    welcomeEmail2,
+    contactUsMail2
+} = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const jsonwebtoken = require("jsonwebtoken");
 const uuid = require("node-uuid");
 const { mysql_real_escape_string } = require('../utils/helper')
+const fs = require("fs");
+const fastcsv = require("fast-csv");
+require('dotenv').config()
 
 let verifyTokenFn = async (req) => {
     let { token } = req.body
-    console.log(token);
     let user = await jsonwebtoken.verify(token, 'KEy', function (err, decoded) {
         if (err) {
             return 0
@@ -34,6 +46,9 @@ let createAdmin = async (bodyData, cId, res) => {
         phoneNumber,
         encryptedPassword
     } = bodyData
+
+    companyLogo = companyLogo == "" ? 'http://143.198.102.134:3003/companyLogo/user.jpg' : companyLogo;
+
     let s3 = dbScript(db_sql['Q4'], { var1: emailAddress })
     let findUser = await connection.query(s3)
     if (findUser.rowCount == 0) {
@@ -68,13 +83,34 @@ let createAdmin = async (bodyData, cId, res) => {
             }
             let token = await issueJWT(payload)
             link = `http://143.198.102.134:8080/auth/verify-email/${token}`
-            await verificationMail(emailAddress, link);
-            await connection.query('COMMIT')
-            return res.json({
-                status: 201,
-                success: true,
-                message: ` User Created Successfully and verification link send on registered email `,
-            })
+            if(process.env.isLocalEmail == true){
+                await welcomeEmail2(emailAddress, link, name); 
+                await connection.query('COMMIT')
+                return res.json({
+                    status: 201,
+                    success: true,
+                    message: ` User Created Successfully and verification link send on registered email `,
+                })
+            }else{
+
+                let emailSent = await welcomeEmail(emailAddress, link, name);
+                if(emailSent.status == 400){
+                    await connection.query('ROLLBACK')
+                    return res.json({
+                        status: 400,
+                        success: false,
+                        message: `Something went wrong`,
+                    })
+                }
+                else{
+                    await connection.query('COMMIT')
+                    return res.json({
+                        status: 201,
+                        success: true,
+                        message: ` User Created Successfully and verification link send on registered email `,
+                    })
+                }
+            }
         } else {
             await connection.query('ROLLBACK')
             return res.json({
@@ -125,6 +161,8 @@ module.exports.signUp = async (req, res) => {
             companyAddress,
         } = req.body
 
+        companyLogo = companyLogo == "" ? 'http://143.198.102.134:3003/companyLogo/user.jpg' : companyLogo;
+
         let s2 = dbScript(db_sql['Q1'], { var1: companyName })
         let checkCompany = await connection.query(s2);
         if (checkCompany.rows.length == 0) {
@@ -171,16 +209,26 @@ module.exports.setPasswordForLogin = async (req, res) => {
             let s1 = dbScript(db_sql['Q4'], { var1: user.email })
             let checkuser = await connection.query(s1);
             if (checkuser.rows.length > 0) {
+                await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s2 = dbScript(db_sql['Q7'], { var1: user.email, var2: password, var3: _dt })
+                let s2 = dbScript(db_sql['Q7'], { var1: user.email, var2: password, var3: _dt, var4: checkuser.rows[0].company_id })
                 let updateuser = await connection.query(s2)
-                if (updateuser.rowCount == 1)
+                await connection.query('COMMIT')
+                if (updateuser.rowCount == 1){
                     res.json({
                         status: 201,
                         success: true,
                         message: "Password created Successfully",
-                        data: ""
                     })
+                }else{
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong",
+                    })
+                }
+                    
             } else {
                 res.json({
                     status: 400,
@@ -197,6 +245,7 @@ module.exports.setPasswordForLogin = async (req, res) => {
             });
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             success: false,
             status: 400,
@@ -206,23 +255,33 @@ module.exports.setPasswordForLogin = async (req, res) => {
     }
 }
 
-module.exports.verifyUser = async(req, res) => {
+module.exports.verifyUser = async (req, res) => {
     try {
         let user = await verifyTokenFn(req)
-        console.log(user,"user");
         if (user) {
             let s1 = dbScript(db_sql['Q4'], { var1: user.email })
             let checkuser = await connection.query(s1);
             if (checkuser.rows.length > 0) {
+                await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
                 let s2 = dbScript(db_sql['Q10'], { var1: user.email, var2: _dt })
                 let updateuser = await connection.query(s2)
-                if (updateuser.rowCount == 1)
+                await connection.query('COMMIT')
+                if (updateuser.rowCount == 1){
                     res.json({
                         status: 200,
                         success: true,
                         message: "User verified Successfully"
                     })
+                }else{
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+                    
             } else {
                 res.json({
                     status: 400,
@@ -238,6 +297,7 @@ module.exports.verifyUser = async(req, res) => {
             });
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             success: false,
             status: 400,
@@ -262,21 +322,23 @@ module.exports.login = async (req, res) => {
                     let s3 = dbScript(db_sql['Q19'], { var1: admin.rows[0].role_id })
                     let checkRole = await connection.query(s3)
 
-                    let s4 = dbScript(db_sql['Q125'],{var1 : admin.rows[0].company_id})
+                    let s4 = dbScript(db_sql['Q125'], { var1: admin.rows[0].company_id })
                     let configs = await connection.query(s4)
                     let configuration = {}
-                    if(configs.rowCount > 0){
+                    if (configs.rowCount > 0) {
                         configuration.id = configs.rows[0].id
                         configuration.currency = configs.rows[0].currency,
-                        configuration.phoneFormat = configs.rows[0].phone_format,
-                        configuration.dateFormat = configs.rows[0].date_format 
+                            configuration.phoneFormat = configs.rows[0].phone_format,
+                            configuration.dateFormat = configs.rows[0].date_format,
+                            configuration.graphType = configs.rows[0].graph_type
 
-                    }else{
+                    } else {
 
                         configuration.id = "",
-                        configuration.currency = "",
-                        configuration.phoneFormat = "",
-                        configuration.dateFormat = ""
+                            configuration.currency = "",
+                            configuration.phoneFormat = "",
+                            configuration.dateFormat = "",
+                            configuration.graphType = ""
                     }
 
                     let moduleId = JSON.parse(checkRole.rows[0].module_ids)
@@ -309,12 +371,13 @@ module.exports.login = async (req, res) => {
                         message: "Login Successfull",
                         data: {
                             token: jwtToken,
+                            id: admin.rows[0].id,
                             name: admin.rows[0].full_name,
+                            isAdmin: admin.rows[0].is_admin,
                             role: checkRole.rows[0].role_name,
                             profileImage: profileImage,
                             modulePermissions: modulePemissions,
-                            configuration : configuration
-
+                            configuration: configuration
                         }
                     });
                 } else {
@@ -402,7 +465,7 @@ module.exports.changePassword = async (req, res) => {
             if (user.rows[0].encrypted_password == oldPassword) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s2 = dbScript(db_sql['Q7'], { var1: userEmail, var2: newPassword, var3: _dt })
+                let s2 = dbScript(db_sql['Q7'], { var1: userEmail, var2: newPassword, var3: _dt, var4: user.rows[0].company_id })
                 let updatePass = await connection.query(s2)
                 await connection.query('COMMIT')
                 if (updatePass.rowCount > 0) {
@@ -482,10 +545,9 @@ module.exports.updateUserProfile = async (req, res) => {
         if (findUser.rows.length > 0) {
             await connection.query('BEGIN')
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q17'], { var1: mysql_real_escape_string(name), var2: avatar, var3: emailAddress, var4: phoneNumber, var5: mobileNumber, var6: mysql_real_escape_string(address), var7: _dt, var8: userMail })
+            let s2 = dbScript(db_sql['Q17'], { var1: mysql_real_escape_string(name), var2: avatar, var3: emailAddress, var4: phoneNumber, var5: mobileNumber, var6: mysql_real_escape_string(address), var7: _dt, var8: userMail, var9: findUser.rows[0].company_id })
             let updateUser = await connection.query(s2)
             await connection.query('COMMIT')
-            console.log(updateUser.rows);
             if (updateUser.rowCount > 0) {
                 res.json({
                     success: true,
@@ -535,13 +597,32 @@ module.exports.forgotPassword = async (req, res) => {
             }
             let token = await issueJWT(payload)
             let link = `http://143.198.102.134:8080/auth/reset-password/${token}`
-            let emailSend = await resetPasswordMail(emailAddress, link);
-            res.json({
-                status: 200,
-                success: true,
-                message: "New link sent to your email address",
-            })
-
+            console.log(process.env.isLocalEmail,"env");
+            if(process.env.isLocalEmail == true){
+                console.log('11111111111111111111');
+                await resetPasswordMail2(emailAddress, link, checkuser.rows[0].full_name);
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "New link sent to your email address",
+                })
+            }else{
+                console.log('2222222222222222222222');
+                let emailSend = await resetPasswordMail(emailAddress, link, checkuser.rows[0].full_name);
+                if(emailSend.status == 400){
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong",
+                    })
+                }else{
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "New link sent to your email address",
+                    })
+                }
+            }
         } else {
             res.json({
                 status: 400,
@@ -572,7 +653,7 @@ module.exports.resetPassword = async (req, res) => {
             if (checkuser.rows.length > 0) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s2 = dbScript(db_sql['Q7'], { var1: user.email, var2: password, var3: _dt })
+                let s2 = dbScript(db_sql['Q7'], { var1: user.email, var2: password, var3: _dt, var4: checkuser.rows[0].company_id})
                 let updateuser = await connection.query(s2)
                 await connection.query('COMMIT')
                 if (updateuser.rowCount == 1) {
@@ -629,34 +710,22 @@ module.exports.moduleList = async (req, res) => {
 
         if (findAdmin.rows.length > 0) {
 
-            let s2 = dbScript(db_sql['Q35'], { var1: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s2)
-            if (checkPermission.rows[0].permission_to_view) {
+            let s3 = dbScript(db_sql['Q8'], {})
+            let moduleList = await connection.query(s3)
 
-                let s3 = dbScript(db_sql['Q8'], {})
-                let moduleList = await connection.query(s3)
-
-                if (moduleList.rows.length > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Module list",
-                        data: moduleList.rows
-                    })
-                } else {
-                    res.json({
-                        status: 200,
-                        success: false,
-                        message: "Empty module list",
-                        data: []
-                    })
-                }
-
+            if (moduleList.rows.length > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Module list",
+                    data: moduleList.rows
+                })
             } else {
                 res.json({
-                    status: 403,
+                    status: 200,
                     success: false,
-                    message: "Unathorised"
+                    message: "Empty module list",
+                    data: []
                 })
             }
 
@@ -675,7 +744,6 @@ module.exports.moduleList = async (req, res) => {
         })
     }
 }
-
 
 //-------------------------------------Roles-------------------------------------------------
 module.exports.rolesList = async (req, res) => {
@@ -699,7 +767,7 @@ module.exports.rolesList = async (req, res) => {
                 for (let data of RolesList.rows) {
                     let modulePermissions = []
 
-                    let s8 = dbScript(db_sql['Q34'],{var1 : data.id} )
+                    let s8 = dbScript(db_sql['Q34'], { var1: data.id, var2: findAdmin.rows[0].company_id })
                     let getUser = await connection.query(s8)
 
                     if (data.reporter != '') {
@@ -770,8 +838,7 @@ module.exports.rolesList = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -854,8 +921,7 @@ module.exports.createRole = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 400,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -899,7 +965,7 @@ module.exports.updateRole = async (req, res) => {
 
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q42'], { var1: mysql_real_escape_string(roleName), var2: reporter, var3: roleId, var4: _dt })
+                let s4 = dbScript(db_sql['Q42'], { var1: mysql_real_escape_string(roleName), var2: reporter, var3: roleId, var4: _dt, var5: findAdmin.rows[0].company_id })
 
                 let updateRole = await connection.query(s4)
 
@@ -928,8 +994,7 @@ module.exports.updateRole = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 400,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -977,7 +1042,7 @@ module.exports.deleteRole = async (req, res) => {
                 let updateRole;
                 let updatePermission;
 
-                if (status == "child") {
+                if (status.toLowerCase() == "child") {
                     let s4 = dbScript(db_sql['Q24'], { var1: roleId })
                     let roleData = await connection.query(s4)
                     if (roleData.rowCount > 0) {
@@ -989,45 +1054,60 @@ module.exports.deleteRole = async (req, res) => {
 
                             let s6 = dbScript(db_sql['Q45'], { var1: data.id, var2: _dt })
                             updatePermission = await connection.query(s6)
-
-                            // s6 = dbScript(db_sql['Q26'], { var1: data.id, var2: _dt })
-                            // updateUser = await connection.query(s6)
+                        }
+                        if (updateRole.rowCount > 0 && updatePermission.rowCount > 0) {
+                            await connection.query('COMMIT')
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "Role deleted successfully"
+                            })
+                        } else {
+                            await connection.query('ROLLBACK')
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: "Something went wrong"
+                            })
                         }
 
+                    } else {
+                        await connection.query('ROLLBACK')
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "No child available for given role"
+                        })
                     }
-                } else {
+                } else if (status.toLowerCase() == "all") {
                     let s7 = dbScript(db_sql['Q44'], { var1: roleId, var2: _dt })
                     updateRole = await connection.query(s7)
-
-                    // s8 = dbScript(db_sql['Q26'], { var1: roleId, var2: _dt })
-                    // updateUser = await connection.query(s8)
 
                     let s9 = dbScript(db_sql['Q77'], { var1: roleId, var2: _dt })
                     updateChildRole = await connection.query(s9)
 
                     let s10 = dbScript(db_sql['Q45'], { var1: roleId, var2: _dt })
                     updatePermission = await connection.query(s10)
-                }
-                await connection.query('COMMIT')
 
-                if (updateRole.rowCount > 0 && updatePermission.rowCount > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Role deleted successfully"
-                    })
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
-                    })
+                    if (updateRole.rowCount > 0 && updatePermission.rowCount > 0) {
+                        await connection.query('COMMIT')
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Role deleted successfully"
+                        })
+                    } else {
+                        await connection.query('ROLLBACK')
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Something went wrong"
+                        })
+                    }
                 }
 
             } else {
-                res.json({
-                    status: 400,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -1084,8 +1164,7 @@ module.exports.userWiseRoleList = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -1122,6 +1201,8 @@ module.exports.addUser = async (req, res) => {
             encryptedPassword
         } = req.body
 
+        avatar = (avatar == "") ? 'http://143.198.102.134:3003/companyLogo/user.jpg' : avatar;
+
         let id = uuid.v4()
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -1150,13 +1231,32 @@ module.exports.addUser = async (req, res) => {
                         }
                         let token = await issueJWT(payload)
                         link = `http://143.198.102.134:8080/auth/reset-password/${token}`
-                        await welcomeEmail(emailAddress, link);
-                        res.json({
-                            status: 201,
-                            success: true,
-                            message: `User created successfully and link send for set password on ${emailAddress} `
-                        })
-
+                        if(process.env.isLocalEmail == true){
+                            await setPasswordMail2(emailAddress, link, name);
+                            await connection.query('COMMIT')
+                            res.json({
+                                status: 201,
+                                success: true,
+                                message: `User created successfully and link send for set password on ${emailAddress} `
+                            })
+                        }else{
+                            let emailSent = await setPasswordMail(emailAddress, link, name);
+                            if(emailSent.status == 400){
+                                await connection.query('ROLLBACK')
+                                res.json({
+                                    status: 400,
+                                    success: false,
+                                    message: "Something went wrong"
+                                })
+                            }else{
+                                await connection.query('COMMIT')
+                                res.json({
+                                    status: 201,
+                                    success: true,
+                                    message: `User created successfully and link send for set password on ${emailAddress} `
+                                })
+                            }
+                        }
                     } else {
                         await connection.query('ROLLBACK')
                         res.json({
@@ -1168,8 +1268,7 @@ module.exports.addUser = async (req, res) => {
                     }
                 } else {
                     await connection.query('ROLLBACK')
-                    res.json({
-                        status: 403,
+                    res.status(403).json({
                         success: false,
                         message: "Unathorised"
                     })
@@ -1179,7 +1278,7 @@ module.exports.addUser = async (req, res) => {
                 res.json({
                     status: 400,
                     success: false,
-                    message: "user already exists"
+                    message: "User already exists"
                 })
             }
 
@@ -1232,8 +1331,7 @@ module.exports.showUserById = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -1289,8 +1387,7 @@ module.exports.usersListByRoleId = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -1404,11 +1501,9 @@ module.exports.updateUser = async (req, res) => {
 
                 let _dt = new Date().toISOString();
                 await connection.query('BEGIN')
-                let s4 = dbScript(db_sql['Q39'], {var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8 : avatar})
+                let s4 = dbScript(db_sql['Q39'], { var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: findAdmin.rows[0].company_id })
                 let updateUser = await connection.query(s4)
-                console.log(s4);
                 await connection.query('COMMIT')
-                console.log(updateUser.rows);
                 if (updateUser.rowCount > 0) {
                     res.json({
                         status: 200,
@@ -1424,8 +1519,7 @@ module.exports.updateUser = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -1483,8 +1577,7 @@ module.exports.lockUserAccount = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -1524,7 +1617,7 @@ module.exports.deleteUser = async (req, res) => {
             if (checkPermission.rows[0].permission_to_delete) {
                 let _dt = new Date().toISOString();
                 await connection.query('BEGIN')
-                let s4 = dbScript(db_sql['Q40'], { var1: _dt, var2: userId })
+                let s4 = dbScript(db_sql['Q40'], { var1: _dt, var2: userId, var3: findAdmin.rows[0].company_id })
                 let updateUser = await connection.query(s4)
                 await connection.query('COMMIT')
                 if (updateUser.rowCount > 0) {
@@ -1542,8 +1635,7 @@ module.exports.deleteUser = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -1612,8 +1704,7 @@ module.exports.createSlab = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -1670,8 +1761,7 @@ module.exports.slabList = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -1711,7 +1801,7 @@ module.exports.deleteSlab = async (req, res) => {
                 await connection.query('BEGIN')
 
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q47'], { var1: _dt, var2: slabId })
+                let s4 = dbScript(db_sql['Q47'], { var1: _dt, var2: slabId, var3: findAdmin.rows[0].company_id })
                 var deleteSlab = await connection.query(s4)
 
                 await connection.query('COMMIT')
@@ -1733,8 +1823,7 @@ module.exports.deleteSlab = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -1785,7 +1874,6 @@ module.exports.createCustomer = async (req, res) => {
                 let compId = ''
                 let s4 = dbScript(db_sql['Q69'], { var1: companyId })
                 let findCustomerCom = await connection.query(s4)
-
                 if (findCustomerCom.rowCount == 0) {
                     let comId = uuid.v4()
                     let s5 = dbScript(db_sql['Q68'], { var1: comId, var2: mysql_real_escape_string(customerName), var3: findAdmin.rows[0].company_id })
@@ -1828,7 +1916,7 @@ module.exports.createCustomer = async (req, res) => {
                     }
                 }
                 let id = uuid.v4()
-                let s10 = dbScript(db_sql['Q67'], { var1: id, var2: findAdmin.rows[0].id, var3: compId, var4: mysql_real_escape_string(customerName), var5: mysql_real_escape_string(source), var6: findAdmin.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9 : mysql_real_escape_string(address) })
+                let s10 = dbScript(db_sql['Q67'], { var1: id, var2: findAdmin.rows[0].id, var3: compId, var4: mysql_real_escape_string(customerName), var5: mysql_real_escape_string(source), var6: findAdmin.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address) })
                 let createCustomer = await connection.query(s10)
 
                 await connection.query('COMMIT')
@@ -1849,8 +1937,7 @@ module.exports.createCustomer = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -1909,8 +1996,7 @@ module.exports.closeCustomer = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2015,8 +2101,7 @@ module.exports.customerList = async (req, res) => {
                         })
                     }
                 } else {
-                    res.json({
-                        status: 403,
+                    res.status(403).json({
                         success: false,
                         message: "UnAthorised"
                     })
@@ -2105,7 +2190,7 @@ module.exports.editCustomer = async (req, res) => {
                 }
 
                 let _dt = new Date().toISOString();
-                let s5 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: _dt, var6: customerId, var4: JSON.stringify(bId), var5: JSON.stringify(rId), var7: mysql_real_escape_string(address)})
+                let s5 = dbScript(db_sql['Q73'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: _dt, var6: customerId, var4: JSON.stringify(bId), var5: JSON.stringify(rId), var7: mysql_real_escape_string(address), var8: findAdmin.rows[0].company_id })
                 let updateCustomer = await connection.query(s5)
                 if (updateCustomer.rowCount > 0) {
 
@@ -2125,8 +2210,7 @@ module.exports.editCustomer = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2207,8 +2291,7 @@ module.exports.deleteContactForCustomer = async (req, res) => {
                     }
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2265,8 +2348,7 @@ module.exports.customerCompanyList = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -2310,19 +2392,18 @@ module.exports.customerContactDetails = async (req, res) => {
                 let s5 = dbScript(db_sql['Q116'], { var1: customerCompanyId })
                 let revenueDetails = await connection.query(s5)
 
-                    customerContactDetails.businessDetails = (businessDetails.rowCount > 0 ) ? businessDetails.rows : []
-                    customerContactDetails.revenueDetails = (revenueDetails.rowCount > 0) ? revenueDetails.rows : []
+                customerContactDetails.businessDetails = (businessDetails.rowCount > 0) ? businessDetails.rows : []
+                customerContactDetails.revenueDetails = (revenueDetails.rowCount > 0) ? revenueDetails.rows : []
 
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: 'Customer contact details',
-                        data: customerContactDetails
-                    }) 
-                
-            } else {
                 res.json({
-                    status: 403,
+                    status: 200,
+                    success: true,
+                    message: 'Customer contact details',
+                    data: customerContactDetails
+                })
+
+            } else {
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -2365,7 +2446,7 @@ module.exports.deleteCustomer = async (req, res) => {
                 await connection.query('BEGIN')
 
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q80'], { var1: _dt, var2: customerId })
+                let s4 = dbScript(db_sql['Q80'], { var1: _dt, var2: customerId, var3: findAdmin.rows[0].company_id })
                 let deleteCustomer = await connection.query(s4)
 
                 await connection.query('COMMIT')
@@ -2386,8 +2467,7 @@ module.exports.deleteCustomer = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2421,7 +2501,7 @@ module.exports.commissionSplit = async (req, res) => {
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
 
-        let moduleName = 'Commision'
+        let moduleName = 'Commission'
         if (findAdmin.rows.length > 0) {
             let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
             let findModule = await connection.query(s2)
@@ -2452,8 +2532,7 @@ module.exports.commissionSplit = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2487,7 +2566,7 @@ module.exports.updatecommissionSplit = async (req, res) => {
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
 
-        let moduleName = 'Commision'
+        let moduleName = 'Commission'
         if (findAdmin.rows.length > 0) {
             let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
             let findModule = await connection.query(s2)
@@ -2497,7 +2576,7 @@ module.exports.updatecommissionSplit = async (req, res) => {
 
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q82'], { var1: closerPercentage, var2: supporterPercentage, var3: commissionId, var4: _dt })
+                let s4 = dbScript(db_sql['Q82'], { var1: closerPercentage, var2: supporterPercentage, var3: commissionId, var4: _dt, var5: findAdmin.rows[0].company_id })
 
                 var updatecommission = await connection.query(s4)
 
@@ -2519,8 +2598,7 @@ module.exports.updatecommissionSplit = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2550,7 +2628,7 @@ module.exports.commissionSplitList = async (req, res) => {
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
 
-        let moduleName = 'Commision'
+        let moduleName = 'Commission'
         if (findAdmin.rows.length > 0) {
             let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
             let findModule = await connection.query(s2)
@@ -2579,8 +2657,7 @@ module.exports.commissionSplitList = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -2611,7 +2688,7 @@ module.exports.deletecommissionSplit = async (req, res) => {
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
 
-        let moduleName = 'Commision'
+        let moduleName = 'Commission'
         if (findAdmin.rows.length > 0) {
             let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
             let findModule = await connection.query(s2)
@@ -2620,7 +2697,7 @@ module.exports.deletecommissionSplit = async (req, res) => {
             if (checkPermission.rows[0].permission_to_delete) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q84'], { var1: _dt, var2: commissionId })
+                let s4 = dbScript(db_sql['Q84'], { var1: _dt, var2: commissionId, var3: findAdmin.rows[0].company_id })
                 var deleteSlab = await connection.query(s4)
                 await connection.query('COMMIT')
 
@@ -2641,8 +2718,73 @@ module.exports.deletecommissionSplit = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+//----------------------------------Products--------------------------------------------
+
+module.exports.addProduct = async (req, res) => {
+    try {
+        userEmail = req.user.email
+        let {
+            productName,
+            productImage,
+            description,
+            availableQuantity,
+            price,
+            tax
+        } = req.body
+
+        productImage = (productImage == "") ? 'http://143.198.102.134:3003/productImages/defaultproductImage.png' : productImage;
+
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+        let moduleName = 'Products'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_create) {
+                await connection.query('BEGIN')
+                let id = uuid.v4()
+                let s4 = dbScript(db_sql['Q135'], { var1: id, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: findAdmin.rows[0].company_id })
+                let addProduct = await connection.query(s4)
+                if (addProduct.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Product added successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            } else {
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2664,6 +2806,288 @@ module.exports.deletecommissionSplit = async (req, res) => {
     }
 }
 
+module.exports.updateProduct = async (req, res) => {
+    try {
+        userEmail = req.user.email
+        let {
+            productId,
+            productName,
+            productImage,
+            description,
+            availableQuantity,
+            price,
+            tax
+        } = req.body
+
+        productImage = (productImage == "") ? 'http://143.198.102.134:3003/productImages/defaultproductImage.png' : productImage;
+
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+        let moduleName = 'Products'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_update) {
+                await connection.query('BEGIN')
+                let _dt = new Date().toISOString();
+                let s4 = dbScript(db_sql['Q136'], { var1: productId, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: _dt, var9: findAdmin.rows[0].company_id })
+                let updateProduct = await connection.query(s4)
+                if (updateProduct.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Product updated successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.productList = async (req, res) => {
+    try {
+        userEmail = req.user.email
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+        let moduleName = 'Products'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_view) {
+                let s4 = dbScript(db_sql['Q137'], { var1: findAdmin.rows[0].company_id })
+                let productList = await connection.query(s4)
+                if (productList.rowCount > 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Product List",
+                        data: productList.rows
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty product list",
+                        data: []
+                    })
+                }
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.deleteProduct = async (req, res) => {
+    try {
+        userEmail = req.user.email
+        let { productId } = req.body
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+        let moduleName = 'Products'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_delete) {
+                await connection.query('BEGIN')
+                let _dt = new Date().toISOString();
+                let s4 = dbScript(db_sql['Q138'], { var1: productId, var2: _dt, var3: findAdmin.rows[0].company_id })
+                let deleteProduct = await connection.query(s4)
+                if (deleteProduct.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Product deleted successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.uploadProductImage = async (req, res) => {
+    try {
+        let file = req.file
+        let path = `http://143.198.102.134:3003/productImages/${file.originalname}`;
+        res.json({
+            status: 201,
+            success: true,
+            message: "Product image Uploaded successfully!",
+            data: path
+        })
+
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+            data: ""
+        })
+    }
+}
+
+module.exports.uploadProductFile = async (req, res) => {
+    try {
+        userEmail = req.user.email
+        let file = req.file
+
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+        let moduleName = 'Products'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_create) {
+
+                let promise = new Promise((resolve, reject) => {
+                    let stream = fs.createReadStream(file.path);
+                    let csvData = [];
+                    //.on('data') is triggered when a record is parsed,
+                    // so we will get the record (data) in the handler function.
+                    // Each record is pushed to csvData array.
+                    //on('end') is triggered after the parsing is done,
+                    // at the time that we have all records.
+                    let csvStream = fastcsv.parse().on("data", (data) => {
+                        csvData.push(data)
+                    }).on("end", () => {
+                        // remove the first line: header
+                        csvData.shift();
+                        // connect to the PostgreSQL database
+                        // insert csvData into DB 
+                        csvData.forEach(row => {
+                            //defualt product image 
+                            (row[1] == "") ? row[1] = 'http://143.198.102.134:3003/productImages/defaultproductImage.png' : row[1];
+                            
+                            //unique id for every row 
+                            id = uuid.v4()
+                            let s4 = dbScript(db_sql['Q140'], { var1: id, var2: findAdmin.rows[0].company_id })
+                            connection.query(s4, row, (err, res) => {
+                                if (err) {
+                                    
+                                    throw err
+                                }
+                            });
+                        });
+                    })
+                    let exportedData = stream.pipe(csvStream);
+                    if (exportedData) {
+                        resolve(file);
+                    } else {
+                        reject(false)
+                    }
+                })
+                promise.then((file) => {
+                    fs.unlink(file.path, (err) => {
+                        if (err) {
+                            throw err
+                        }
+                    })
+                }).catch(err => {
+                    throw err
+                })
+
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Products exported to DB"
+                })
+
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
 
 //----------------------------------Sales commission-------------------------------------
 
@@ -2720,8 +3144,7 @@ module.exports.customerListforSales = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2761,7 +3184,6 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
 
                 let s4 = dbScript(db_sql['Q88'], { var1: customerId })
                 let contactDetails = await connection.query(s4)
-                console.log(contactDetails.rows);
                 if (contactDetails.rowCount > 0) {
                     let customerContactDetails = {};
 
@@ -2789,8 +3211,7 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -2827,13 +3248,13 @@ module.exports.createSalesCommission = async (req, res) => {
             qualification,
             is_qualified,
             targetAmount,
-            productMatch,
+            products,
             targetClosingDate,
             businessId,
             revenueId,
             salesType,
             subscriptionPlan,
-            recurringDate
+            recurringDate,
         } = req.body
 
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
@@ -2853,12 +3274,11 @@ module.exports.createSalesCommission = async (req, res) => {
                 revenueId = (revenueId == '') ? '' : revenueId
 
                 let id = uuid.v4()
-                let s5 = dbScript(db_sql['Q86'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: findAdmin.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10 : targetAmount, var11: targetClosingDate, var12: mysql_real_escape_string(productMatch), var13 : salesType, var14: subscriptionPlan, var15 : recurringDate  })
+                let s5 = dbScript(db_sql['Q86'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: findAdmin.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var12: JSON.stringify(products), var13: salesType, var14: subscriptionPlan, var15: recurringDate })
                 let createSalesConversion = await connection.query(s5)
 
                 let s6 = dbScript(db_sql['Q89'], { var1: customerCommissionSplitId, var2: findAdmin.rows[0].company_id })
                 let findSalescommission = await connection.query(s6)
-
                 let closer_percentage = is_overwrite ? closerPercentage : findSalescommission.rows[0].closer_percentage
 
                 let closerId = uuid.v4()
@@ -2867,7 +3287,7 @@ module.exports.createSalesCommission = async (req, res) => {
 
                 if (supporters.length > 0) {
 
-                    for (supporterData of supporters) {
+                    for (let supporterData of supporters) {
                         let supporterId = uuid.v4()
                         let s8 = dbScript(db_sql['Q91'], { var1: supporterId, var2: customerCommissionSplitId, var3: supporterData.id, var4: supporterData.percentage, var5: createSalesConversion.rows[0].id, var6: findAdmin.rows[0].company_id })
                         addSalesSupporter = await connection.query(s8)
@@ -2876,12 +3296,13 @@ module.exports.createSalesCommission = async (req, res) => {
                 }
 
                 let logId = uuid.v4()
-                let s9 = dbScript(db_sql['Q74'], { var1 : logId, var2: createSalesConversion.rows[0].id, var3: customerCommissionSplitId, var4 : mysql_real_escape_string(qualification), var5 : is_qualified, var6: targetAmount, var7: mysql_real_escape_string(productMatch), var8: targetClosingDate, var9 : customerId, var10 : is_overwrite, var11 : findAdmin.rows[0].company_id, var12: revenueId, var13 : businessId, var14: customerCloserId, var15 : JSON.stringify(supporterIds) , var16 : salesType, var17 : subscriptionPlan, var18 : recurringDate})
+                let s9 = dbScript(db_sql['Q74'], { var1: logId, var2: createSalesConversion.rows[0].id, var3: customerCommissionSplitId, var4: mysql_real_escape_string(qualification), var5: is_qualified, var6: targetAmount, var7: JSON.stringify(products), var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: findAdmin.rows[0].company_id, var12: revenueId, var13: businessId, var14: customerCloserId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate })
                 let createLog = await connection.query(s9)
 
-                await connection.query('COMMIT')
+
 
                 if (createSalesConversion.rowCount > 0 && findSalescommission.rowCount > 0 && addSalesCloser.rowCount > 0 && createLog.rowCount > 0) {
+                    await connection.query('COMMIT')
                     res.json({
                         status: 201,
                         success: true,
@@ -2897,8 +3318,7 @@ module.exports.createSalesCommission = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -2938,7 +3358,6 @@ module.exports.salesCommissionList = async (req, res) => {
                 let s4 = dbScript(db_sql['Q87'], { var1: findAdmin.rows[0].company_id })
                 let salesCommissionList = await connection.query(s4)
                 let commissionList = []
-                console.log(salesCommissionList.rows)
                 for (data of salesCommissionList.rows) {
                     let closer = {}
                     let supporters = []
@@ -2967,19 +3386,29 @@ module.exports.salesCommissionList = async (req, res) => {
                         }
                     }
 
-                    if (data.business_id != ''  && data.revenue_id != '' ) {
+                    let products = JSON.parse(data.products)
+                    let productName = []
+                    for (let productIds of products) {
+                        let s10 = dbScript(db_sql['Q139'], { var1: productIds, var2: findAdmin.rows[0].company_id })
+                        let product = await connection.query(s10)
+                        productName.push({
+                            id: product.rows[0].id,
+                            name: product.rows[0].product_name
+                        })
+                    }
+                    if (data.business_id != '' && data.revenue_id != '') {
 
                         let s8 = dbScript(db_sql['Q117'], { var1: data.business_id })
                         let businessData = await connection.query(s8);
 
                         closer.businessContactId = businessData.rows[0].id,
-                        closer.businessContactName = businessData.rows[0].business_contact_name
+                            closer.businessContactName = businessData.rows[0].business_contact_name
 
                         let s9 = dbScript(db_sql['Q118'], { var1: data.revenue_id })
                         let revenueData = await connection.query(s9);
 
                         closer.revenueContactId = revenueData.rows[0].id,
-                        closer.revenueContactName = revenueData.rows[0].revenue_contact_name
+                            closer.revenueContactName = revenueData.rows[0].revenue_contact_name
                     } else {
                         closer.businessContactId = ""
                         closer.businessContactName = ""
@@ -2988,7 +3417,7 @@ module.exports.salesCommissionList = async (req, res) => {
                     }
                     closer.id = data.id
                     closer.customerId = data.customer_id
-                    closer.customerName = (customerName.rowCount > 0 ) ? customerName.rows[0].customer_name : ''
+                    closer.customerName = (customerName.rowCount > 0) ? customerName.rows[0].customer_name : ''
                     closer.commissionSplitId = data.customer_commission_split_id
                     closer.qualification = data.qualification
                     closer.is_qualified = data.is_qualified
@@ -2997,14 +3426,15 @@ module.exports.salesCommissionList = async (req, res) => {
                     closer.productMatch = data.product_match
                     closer.is_overwrite = data.is_overwrite
                     closer.closerId = data.closer_id
-                    closer.closerName = (closerName.rowCount > 0 ) ? closerName.rows[0].full_name : ''
+                    closer.closerName = (closerName.rowCount > 0) ? closerName.rows[0].full_name : ''
                     closer.closerPercentage = data.closer_percentage
                     closer.supporters = supporters
                     closer.createdAt = data.created_at
-                    closer.closedAt = (customerName.rowCount > 0 ) ? customerName.rows[0].closed_at : ''
+                    closer.closedAt = (customerName.rowCount > 0) ? customerName.rows[0].closed_at : ''
                     closer.salesType = data.sales_type
                     closer.subscriptionPlan = data.subscription_plan
                     closer.recurringDate = data.recurring_date
+                    closer.products = productName
 
                     commissionList.push(closer)
                 }
@@ -3025,8 +3455,7 @@ module.exports.salesCommissionList = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -3060,7 +3489,7 @@ module.exports.updateSalesCommission = async (req, res) => {
             qualification,
             is_qualified,
             targetAmount,
-            productMatch,
+            products,
             targetClosingDate,
             supporters,
             is_overwrite,
@@ -3088,7 +3517,7 @@ module.exports.updateSalesCommission = async (req, res) => {
 
                 let _dt = new Date().toISOString();
 
-                let s5 = dbScript(db_sql['Q98'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: findAdmin.rows[0].company_id, var7: businessId, var8: revenueId, var9 : qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var13:productMatch, var14:salesType, var15 : subscriptionPlan, var16: recurringDate })
+                let s5 = dbScript(db_sql['Q98'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: findAdmin.rows[0].company_id, var7: businessId, var8: revenueId, var9: qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var13: JSON.stringify(products), var14: salesType, var15: subscriptionPlan, var16: recurringDate })
                 let updateSalesCommission = await connection.query(s5)
 
                 let s6 = dbScript(db_sql['Q89'], { var1: customerCommissionSplitId, var2: findAdmin.rows[0].company_id })
@@ -3102,8 +3531,7 @@ module.exports.updateSalesCommission = async (req, res) => {
                 let s8 = dbScript(db_sql['Q100'], { var1: salesCommissionId, var2: findAdmin.rows[0].company_id, var3: _dt })
                 let updateSupporter = await connection.query(s8)
 
-
-                for (supporterData of supporters) {
+                for (let supporterData of supporters) {
 
                     let supporterId = uuid.v4()
                     let s9 = dbScript(db_sql['Q91'], { var1: supporterId, var2: customerCommissionSplitId, var3: supporterData.id, var4: supporterData.percentage, var5: salesCommissionId, var6: findAdmin.rows[0].company_id })
@@ -3113,14 +3541,11 @@ module.exports.updateSalesCommission = async (req, res) => {
                 }
 
                 let logId = uuid.v4()
-                let s10 = dbScript(db_sql['Q74'], { var1 : logId, var2: updateSalesCommission.rows[0].id, var3: customerCommissionSplitId, var4 : mysql_real_escape_string(qualification), var5 : is_qualified, var6: targetAmount, var7: mysql_real_escape_string(productMatch), var8: targetClosingDate, var9 : customerId, var10 : is_overwrite, var11 : findAdmin.rows[0].company_id, var12: revenueId, var13 : businessId, var14: customerCloserId, var15 : JSON.stringify(supporterIds), var16 : salesType, var17 : subscriptionPlan , var18 : recurringDate})
+                let s10 = dbScript(db_sql['Q74'], { var1: logId, var2: updateSalesCommission.rows[0].id, var3: customerCommissionSplitId, var4: mysql_real_escape_string(qualification), var5: is_qualified, var6: targetAmount, var7: JSON.stringify(products), var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: findAdmin.rows[0].company_id, var12: revenueId, var13: businessId, var14: customerCloserId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate })
                 let createLog = await connection.query(s10)
 
-
-                await connection.query('COMMIT')
-
-                if (updateSalesCommission.rowCount > 0 && findSalesCommission.rowCount > 0 && updateSalesCloser.rowCount > 0 && updateSalesSupporter.rowCount > 0 && createLog.rowCount > 0) 
-                {
+                if (updateSalesCommission.rowCount > 0 && findSalesCommission.rowCount > 0 && updateSalesCloser.rowCount > 0 && updateSalesSupporter.rowCount > 0 && createLog.rowCount > 0) {
+                    await connection.query('COMMIT')
                     res.json({
                         status: 200,
                         success: true,
@@ -3136,8 +3561,7 @@ module.exports.updateSalesCommission = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3210,8 +3634,7 @@ module.exports.deleteSalesCommission = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3258,18 +3681,18 @@ module.exports.salesCommissionLogsList = async (req, res) => {
 
                     let s5 = dbScript(db_sql['Q88'], { var1: data.customer_id })
                     let customerName = await connection.query(s5)
-                    
+
                     let s6 = dbScript(db_sql['Q12'], { var1: data.closer_id })
                     let closerName = await connection.query(s6)
 
                     let s10 = dbScript(db_sql['Q127'], { var1: salesCommissionId })
                     let closerPercentage = await connection.query(s10)
-                    
-                    for(let supporterId of JSON.parse(data.supporter_id)){
+
+                    for (let supporterId of JSON.parse(data.supporter_id)) {
 
                         let s7 = dbScript(db_sql['Q122'], { var1: supporterId })
                         let supporter = await connection.query(s7)
-                        
+
                         if (supporter.rowCount > 0) {
 
                             let s8 = dbScript(db_sql['Q12'], { var1: supporter.rows[0].supporter_id })
@@ -3280,8 +3703,20 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                                 percentage: supporter.rows[0].supporter_percentage
                             })
                         }
-                        
+
                     }
+
+                    let products = JSON.parse(data.products)
+                    let productName = []
+                    for (let productIds of products) {
+                        let s10 = dbScript(db_sql['Q139'], { var1: productIds, var2: findAdmin.rows[0].company_id })
+                        let product = await connection.query(s10)
+                        productName.push({
+                            id: product.rows[0].id,
+                            name: product.rows[0].product_name
+                        })
+                    }
+
                     if (data.business_id != '' && data.revenue_id != '') {
 
 
@@ -3304,7 +3739,7 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                     }
                     closer.id = data.id
                     closer.customerId = data.customer_id
-                    closer.customerName = (customerName.rowCount > 0 ) ? customerName.rows[0].customer_name : ''
+                    closer.customerName = (customerName.rowCount > 0) ? customerName.rows[0].customer_name : ''
                     closer.commissionSplitId = data.customer_commission_split_id
                     closer.qualification = data.qualification
                     closer.is_qualified = data.is_qualified
@@ -3314,17 +3749,18 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                     closer.is_overwrite = data.is_overwrite
                     closer.closerId = data.closer_id
                     closer.closerName = closerName.rows[0].full_name
-                    closer.closerPercentage = (closerPercentage.rows[0].closer_percentage > 0) ? closerPercentage.rows[0].closer_percentage : '';
+                    closer.closerPercentage = (closerPercentage.rowCount > 0) ? closerPercentage.rows[0].closer_percentage : '';
                     closer.supporters = supporters
                     closer.createdAt = data.created_at
-                    closer.closedAt = (customerName.rowCount > 0 ) ? customerName.rows[0].closed_at : ''
+                    closer.closedAt = (customerName.rowCount > 0) ? customerName.rows[0].closed_at : ''
                     closer.salesType = data.sales_type
                     closer.subscriptionPlan = data.subscription_plan
                     closer.recurringDate = data.recurring_date
+                    closer.products = productName
 
                     commissionList.push(closer)
                 }
-                
+
 
                 if (commissionList.length > 0) {
                     res.json({
@@ -3342,8 +3778,7 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -3399,8 +3834,7 @@ module.exports.addfollowUpNotes = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
@@ -3454,8 +3888,7 @@ module.exports.notesList = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3517,8 +3950,7 @@ module.exports.deleteNote = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3540,17 +3972,11 @@ module.exports.deleteNote = async (req, res) => {
     }
 }
 
-
 //-------------------------------------------Reports-------------------------------------------
 
-module.exports.salesCommissionReport = async (req, res) => {
+module.exports.revenuePerCustomer = async (req, res) => {
     try {
         let userEmail = req.user.email
-
-        let { fromDate, toDate, pageNum, limit } = req.query
-
-        let offSet = ((pageNum - 1) * limit)
-
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
         let moduleName = 'Reports'
@@ -3560,95 +3986,54 @@ module.exports.salesCommissionReport = async (req, res) => {
             let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
-
-                if (req.query?.sortBy != undefined && req.query?.sortType != undefined) {
-
-                    if (req.query?.searchKeyword != undefined) {
-
-                        let { sortBy, sortType, searchKeyword } = req.query
-
-                        let s4 = dbScript(db_sql['Q101'], { var1: findAdmin.rows[0].company_id, var2: fromDate, var3: toDate, var4: limit, var5: offSet, var6: sortBy, var7: sortType, var8: searchKeyword })
-                        var salesCommissionList = await connection.query(s4)
-
-                    } else {
-                        let { sortBy, sortType, } = req.query
-
-                        let s5 = dbScript(db_sql['Q103'], { var1: findAdmin.rows[0].company_id, var2: fromDate, var3: toDate, var4: limit, var5: offSet, var6: sortBy, var7: sortType })
-                        var salesCommissionList = await connection.query(s5)
+                let revenuePerCustomer = []
+                let s4 = dbScript(db_sql['Q130'], { var1: findAdmin.rows[0].company_id })
+                let customerCompanies = await connection.query(s4)
+                if (customerCompanies.rowCount > 0) {
+                    for (company of customerCompanies.rows) {
+                        let s5 = dbScript(db_sql['Q131'], { var1: company.id })
+                        let customers = await connection.query(s5)
+                        if (customers.rows.length > 0) {
+                            let revenue = 0
+                            let obj = {}
+                            for (data of customers.rows) {
+                                let s6 = dbScript(db_sql['Q132'], { var1: data.id })
+                                let amount = await connection.query(s6)
+                                if (amount.rowCount > 0) {
+                                    revenue = revenue + Number(amount.rows[0].target_amount)
+                                }
+                            }
+                            obj.customerId = company.id
+                            obj.customerName = company.customer_company_name
+                            obj.revenue = revenue
+                            revenuePerCustomer.push(obj)
+                        }
                     }
-                } else {
-                    if (req.query?.searchKeyword != undefined) {
-
-                        let { searchKeyword } = req.query
-
-                        let s6 = dbScript(db_sql['Q104'], { var1: findAdmin.rows[0].company_id, var2: fromDate, var3: toDate, var4: limit, var5: offSet, var6: searchKeyword })
-                        var salesCommissionList = await connection.query(s6)
-
+                    if (revenuePerCustomer.length > 0) {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Revenue per customer",
+                            data: revenuePerCustomer
+                        })
                     } else {
-
-                        let s7 = dbScript(db_sql['Q102'], { var1: findAdmin.rows[0].company_id, var2: fromDate, var3: toDate, var4: limit, var5: offSet })
-                        var salesCommissionList = await connection.query(s7)
-                    }
-                }
-
-                let commissionList = []
-
-                for (data of salesCommissionList.rows) {
-                    let closer = {}
-                    let supporters = []
-
-                    let s8 = dbScript(db_sql['Q12'], { var1: data.closerid })
-                    let closerName = await connection.query(s8)
-
-                    let s9 = dbScript(db_sql['Q94'], { var1: data.id })
-                    let supporter = await connection.query(s9)
-
-                    for (supporterData of supporter.rows) {
-                        let s10 = dbScript(db_sql['Q12'], { var1: supporterData.supporter_id })
-                        let supporterName = await connection.query(s10)
-                        supporters.push({
-                            id: supporterData.supporter_id,
-                            name: supporterName.rows[0].full_name,
-                            percentage: supporterData.supporter_percentage
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Empty revenue per customer",
+                            data: revenuePerCustomer
                         })
                     }
-
-                    closer.id = data.id
-                    closer.customerId = data.customerid
-                    closer.customerName = data.customername
-                    closer.commissionSplitId = data.customer_commission_split_id
-                    closer.is_overwrite = data.is_overwrite
-                    closer.closerId = data.closer_id
-                    closer.closerName = closerName.rows[0].full_name
-                    closer.closerPercentage = data.closerpercentage
-                    closer.supporters = supporters
-
-                    commissionList.push(closer)
-                }
-
-
-                if (commissionList.length > 0) {
-
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Sales commission report",
-                        data: {
-                            salesCommissionCount: commissionList.length,
-                            salesCommissionData: commissionList
-                        }
-                    })
                 } else {
                     res.json({
-                        status: 200,
+                        status: 400,
                         success: false,
-                        message: "Empty sales commission report",
-                        data: []
+                        message: "Something went wrong"
                     })
                 }
+
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3661,6 +4046,232 @@ module.exports.salesCommissionReport = async (req, res) => {
             })
         }
     } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.revenuePerProduct = async (req, res) => {
+    try {
+        let userEmail = req.user.email
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+        let moduleName = 'Reports'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_view) {
+                let s4 = dbScript(db_sql['Q128'], { var1: findAdmin.rows[0].company_id })
+                let customers = await connection.query(s4)
+                if (customers.rowCount > 0) {
+                    let revenuePerProduct = []
+                    for (data of customers.rows) {
+                        if (data.closed_at != null) {
+                            let products = JSON.parse(data.products)
+                            for (let productIds of products) {
+                                let s10 = dbScript(db_sql['Q139'], { var1: productIds, var2: findAdmin.rows[0].company_id })
+                                let product = await connection.query(s10)
+                                revenuePerProduct.push({
+                                    productName: product.rows[0].product_name,
+                                    revenue: data.target_amount
+                                })
+                            }
+                        }
+                    }
+                    if (revenuePerProduct.length > 0) {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Revenue per product",
+                            data: revenuePerProduct
+                        })
+                    } else {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Empty revenue per product",
+                            data: revenuePerProduct
+                        })
+                    }
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.revenuePerSalesRep = async (req, res) => {
+    try {
+        let userEmail = req.user.email
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+        let moduleName = 'Reports'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_view) {
+                let salesRepArr = []
+                let s4 = dbScript(db_sql['Q133'], { var1: findAdmin.rows[0].company_id })
+                let salesData = await connection.query(s4)
+                if (salesData.rowCount > 0) {
+                    let holder = {};
+                    let newArr = []
+                    for (let sales of salesData.rows) {
+                        let s5 = dbScript(db_sql['Q127'], { var1: sales.id })
+                        let salesRep = await connection.query(s5)
+                        if (salesRep.rows.length > 0) {
+                            salesRepArr.push({
+                                salesRep: salesRep.rows[0].full_name,
+                                revenue: sales.target_amount
+                            })
+                        }
+                    }
+                    salesRepArr.forEach((d) => {
+                        if (holder.hasOwnProperty(d.salesRep)) {
+                            holder[d.salesRep] = holder[d.salesRep] + Number(d.revenue);
+                        } else {
+                            holder[d.salesRep] = Number(d.revenue);
+                        }
+                    });
+                    for (let prop in holder) {
+                        newArr.push({ salesRep: prop, revenue: holder[prop] });
+                    }
+                    if (newArr.length > 0) {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Revenue per sales representative",
+                            data: newArr
+                        })
+                    } else {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Empty revenue per sales representative",
+                            data: newArr
+                        })
+                    }
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.totalRevenue = async (req, res) => {
+    try {
+        let userEmail = req.user.email
+        let { status } = req.query
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+        let moduleName = 'Reports'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q72'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q66'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_view) {
+                totalRevenue = [];
+                let format = (status == 'Monthly') ? 'month' : (status == 'Quarterly') ? 'quarter' : 'year'
+                let s4 = dbScript(db_sql['Q129'], { var1: findAdmin.rows[0].company_id, var2: format })
+                let targetData = await connection.query(s4)
+                if (targetData.rowCount > 0) {
+                    for (data of targetData.rows) {
+                        totalRevenue.push({
+                            revenue: data.target_amount,
+                            date: data.date
+                        })
+                    }
+                    if (totalRevenue.length > 0) {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Total revenue",
+                            data: totalRevenue
+                        })
+                    } else {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Empty total revenue",
+                            data: totalRevenue
+                        })
+                    }
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,
@@ -3690,9 +4301,8 @@ module.exports.revenues = async (req, res) => {
                 let counts = {}
                 let revenueCommissionBydate = []
 
-                let s4 = dbScript(db_sql['Q70'], { var1: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q128'], { var1: findAdmin.rows[0].company_id })
                 let customers = await connection.query(s4)
-
                 if (customers.rowCount > 0) {
 
                     let expectedRevenue = 0;
@@ -3721,7 +4331,7 @@ module.exports.revenues = async (req, res) => {
                                         let percentage = slabData.percentage
                                         let amount = ((Number(percentage) / 100) * Number(data.target_amount))
 
-                                        revenueCommissionByDateObj.commission = amount
+                                        revenueCommissionByDateObj.commission = amount.toFixed(2)
 
                                         totalCommission = totalCommission + amount
                                     }
@@ -3730,7 +4340,7 @@ module.exports.revenues = async (req, res) => {
                                         let percentage = slabData.percentage
                                         let amount = ((Number(percentage) / 100) * Number(data.target_amount))
 
-                                        revenueCommissionByDateObj.commission = amount
+                                        revenueCommissionByDateObj.commission = amount.toFixed(2)
 
                                         totalCommission = totalCommission + amount
 
@@ -3750,8 +4360,8 @@ module.exports.revenues = async (req, res) => {
 
                     }
                     counts.expectedRevenue = expectedRevenue
-                    counts.totalRevenue = totalRevenue
-                    counts.totalCommission = totalCommission
+                    counts.totalRevenue = totalRevenue.toFixed(2)
+                    counts.totalCommission = totalCommission.toFixed(2)
                     counts.revenueCommissionBydate = revenueCommissionBydate
 
 
@@ -3770,8 +4380,7 @@ module.exports.revenues = async (req, res) => {
                 })
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3844,8 +4453,7 @@ module.exports.createRevenueForecast = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3902,8 +4510,7 @@ module.exports.revenueForecastList = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -3953,7 +4560,7 @@ module.exports.updateRevenueForecast = async (req, res) => {
 
                 let _dt = new Date().toISOString();
 
-                let s4 = dbScript(db_sql['Q108'], { var1: revenueForecastId, var2: timeline, var3: revenue, var4: growthWindow, var5: growthPercentage, var6: startDate, var7: endDate, var8: _dt })
+                let s4 = dbScript(db_sql['Q108'], { var1: revenueForecastId, var2: timeline, var3: revenue, var4: growthWindow, var5: growthPercentage, var6: startDate, var7: endDate, var8: _dt, var9: findAdmin.rows[0].company_id })
 
                 let updateForecast = await connection.query(s4)
 
@@ -3974,8 +4581,7 @@ module.exports.updateRevenueForecast = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -4033,7 +4639,7 @@ module.exports.actualVsForecast = async (req, res) => {
                 let actualData = []
                 let dateArr = []
 
-                let s4 = dbScript(db_sql['Q109'], { var1: id })
+                let s4 = dbScript(db_sql['Q109'], { var1: id, var2: findAdmin.rows[0].company_id })
                 let forecastRevenue = await connection.query(s4)
                 if (forecastRevenue.rowCount > 0) {
                     let revenue = forecastRevenue.rows[0].revenue
@@ -4244,8 +4850,7 @@ module.exports.actualVsForecast = async (req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -4268,7 +4873,7 @@ module.exports.actualVsForecast = async (req, res) => {
 
 //--------------------------------------Business and revenue Contact---------------------------
 
-module.exports.addBusinessContact = async(req, res) => {
+module.exports.addBusinessContact = async (req, res) => {
     try {
         let userEmail = req.user.email
         let {
@@ -4295,13 +4900,13 @@ module.exports.addBusinessContact = async(req, res) => {
                 let addBusinessContact = await connection.query(s6)
 
                 await connection.query('COMMIT')
-                if(addBusinessContact.rowCount > 0) {
+                if (addBusinessContact.rowCount > 0) {
                     res.json({
-                        status : 201,
-                        success : true,
-                        message : "Business contact added successfully"
+                        status: 201,
+                        success: true,
+                        message: "Business contact added successfully"
                     })
-                }else{
+                } else {
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
@@ -4311,8 +4916,7 @@ module.exports.addBusinessContact = async(req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -4334,7 +4938,7 @@ module.exports.addBusinessContact = async(req, res) => {
     }
 }
 
-module.exports.addRevenueContact = async(req, res) => {
+module.exports.addRevenueContact = async (req, res) => {
     try {
         let userEmail = req.user.email
         let {
@@ -4359,15 +4963,15 @@ module.exports.addRevenueContact = async(req, res) => {
                 let revenueId = uuid.v4()
                 let s6 = dbScript(db_sql['Q112'], { var1: revenueId, var2: mysql_real_escape_string(revenueContactName), var3: revenueEmail, var4: revenuePhoneNumber, var5: companyId })
                 let addRevenueContact = await connection.query(s6)
-                
+
                 await connection.query('COMMIT')
-                if(addRevenueContact.rowCount > 0) {
+                if (addRevenueContact.rowCount > 0) {
                     res.json({
-                        status : 201,
-                        success : true,
-                        message : "Revenue contact added successfully"
+                        status: 201,
+                        success: true,
+                        message: "Revenue contact added successfully"
                     })
-                }else{
+                } else {
                     res.json({
                         status: 400,
                         success: false,
@@ -4376,8 +4980,7 @@ module.exports.addRevenueContact = async(req, res) => {
                 }
 
             } else {
-                res.json({
-                    status: 403,
+                res.status(403).json({
                     success: false,
                     message: "Unathorised"
                 })
@@ -4409,43 +5012,43 @@ module.exports.recurringPaymentCron = async () => {
         for (let data of salesCommissionList.rows) {
             if (data.sales_type == "Subscription") {
 
-                const str = data.recurring_date ;
-                const [ month, day, year] = str.split('/');
-                
-                const recurringDate = new Date(+year, month-1, +day);
+                const str = data.recurring_date;
+                const [month, day, year] = str.split('/');
+
+                const recurringDate = new Date(+year, month - 1, +day);
                 let currentDate = new Date()
                 let currentDate1 = currentDate.toISOString().split('T');
-                
+
                 if (data.subscription_plan == "Monthly") {
                     let date = currentDate.getDate()
-                    let day  = recurringDate.getDate()
+                    let day = recurringDate.getDate()
                     if (date == day) {
                         let s2 = dbScript(db_sql['Q88'], { var1: data.customer_id })
                         let customers = await connection.query(s2)
-                        for(let customerData of customers){
-                            let s3 = dbScript(db_sql['Q12'],{ var1 : customerData.user_id}) 
+                        for (let customerData of customers) {
+                            let s3 = dbScript(db_sql['Q12'], { var1: customerData.user_id })
                             let userData = await connection.query(s3)
-                            let s4 = dbScript(db_sql['Q19'],{var1 : userData.rows[0].role_id})
+                            let s4 = dbScript(db_sql['Q19'], { var1: userData.rows[0].role_id })
                             let role = await connection.query(s4)
-                            if(role.rows[0].role_name == 'Admin'){
-                                await recurringPaymentMail(userData.email_address,customerData.customer_name)
-                            }else{
-                                let s5 = dbScript(db_sql['Q21'],{var1 : userData.rows[0].company_id})
+                            if (role.rows[0].role_name == 'Admin') {
+                                await recurringPaymentMail(userData.email_address, customerData.customer_name)
+                            } else {
+                                let s5 = dbScript(db_sql['Q21'], { var1: userData.rows[0].company_id })
                                 let roleData = await connection.query(s5)
-                                for(role of roleData){
-                                    if(role.role_name == 'Admin'){
-                                        let s6 = dbScript(db_sql['Q34'],{var1 :role.id})
+                                for (role of roleData) {
+                                    if (role.role_name == 'Admin') {
+                                        let s6 = dbScript(db_sql['Q34'], { var1: role.id })
                                         let adminData = await connection.query(s6)
-                                        await recurringPaymentMail(adminData.rows[0].email_address,customerData.customer_name)
-                                        await recurringPaymentMail(userData.email_address,customerData.customer_name)
+                                        await recurringPaymentMail(adminData.rows[0].email_address, customerData.customer_name)
+                                        await recurringPaymentMail(userData.email_address, customerData.customer_name)
                                     }
-                                  
-                                }
-                                
-                            }
-                            
 
-                            
+                                }
+
+                            }
+
+
+
                         }
                     }
                 }
@@ -4453,30 +5056,30 @@ module.exports.recurringPaymentCron = async () => {
                     let difference = await getYearDifference(recurringDate, currentDate)
                     let futureDate = new Date(recurringDate.setFullYear(recurringDate.getFullYear() + difference))
                     let recurringDate1 = futureDate.toISOString().split('T');
-                    if(currentDate1[0] == recurringDate1[0]){
+                    if (currentDate1[0] == recurringDate1[0]) {
                         let s2 = dbScript(db_sql['Q88'], { var1: data.customer_id })
                         let customers = await connection.query(s2)
-                        for(let customerData of customers){
-                            let s3 = dbScript(db_sql['Q12'],{ var1 : customerData.user_id}) 
+                        for (let customerData of customers) {
+                            let s3 = dbScript(db_sql['Q12'], { var1: customerData.user_id })
                             let userData = await connection.query(s3)
-                            let s4 = dbScript(db_sql['Q19'],{var1 : userData.rows[0].role_id})
+                            let s4 = dbScript(db_sql['Q19'], { var1: userData.rows[0].role_id })
                             let role = await connection.query(s4)
-                            if(role.rows[0].role_name == 'Admin'){
-                                await recurringPaymentMail(userData.email_address,customerData.customer_name)
-                            }else{
-                                let s5 = dbScript(db_sql['Q21'],{var1 : userData.rows[0].company_id})
+                            if (role.rows[0].role_name == 'Admin') {
+                                await recurringPaymentMail(userData.email_address, customerData.customer_name)
+                            } else {
+                                let s5 = dbScript(db_sql['Q21'], { var1: userData.rows[0].company_id })
                                 let roleData = await connection.query(s5)
-                                for(role of roleData){
-                                    if(role.role_name == 'Admin'){
-                                        let s6 = dbScript(db_sql['Q34'],{var1 :role.id})
+                                for (role of roleData) {
+                                    if (role.role_name == 'Admin') {
+                                        let s6 = dbScript(db_sql['Q34'], { var1: role.id })
                                         let adminData = await connection.query(s6)
-                                        await recurringPaymentMail(adminData.rows[0].email_address,customerData.customer_name)
-                                        await recurringPaymentMail(userData.email_address,customerData.customer_name)
+                                        await recurringPaymentMail(adminData.rows[0].email_address, customerData.customer_name)
+                                        await recurringPaymentMail(userData.email_address, customerData.customer_name)
                                     }
-                                  
+
                                 }
-                                
-                            } 
+
+                            }
                         }
                     }
                 }
@@ -4487,10 +5090,10 @@ module.exports.recurringPaymentCron = async () => {
 
 //------------------------------------------configuratins------------------------------------
 
-module.exports.addConfigs = async(req, res) => {
+module.exports.addConfigs = async (req, res) => {
     try {
         let userEmail = req.user.email
-        let { currency, phoneFormat, dateFormat } = req.body
+        let { currency, phoneFormat, dateFormat, graphType } = req.body
 
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -4499,23 +5102,23 @@ module.exports.addConfigs = async(req, res) => {
             await connection.query('BEGIN')
 
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q126'], {var1 : _dt , var2 : findAdmin.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q126'], { var1: _dt, var2: findAdmin.rows[0].company_id })
             let config = await connection.query(s2)
 
             let id = uuid.v4()
-            let s3 = dbScript(db_sql['Q124'], {var1: id, var2 : currency, var3: phoneFormat, var4: dateFormat, var5 : findAdmin.rows[0].id, var6: findAdmin.rows[0].company_id})
+            let s3 = dbScript(db_sql['Q124'], { var1: id, var2: currency, var3: phoneFormat, var4: dateFormat, var5: findAdmin.rows[0].id, var6: graphType, var7: findAdmin.rows[0].company_id })
 
             let addConfig = await connection.query(s3)
 
-            if(addConfig.rowCount > 0){
+            if (addConfig.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
-                    status : 201,
-                    success : true,
-                    message : "Configuration added successfully"
+                    status: 201,
+                    success: true,
+                    message: "Configuration added successfully"
                 })
 
-            }else{
+            } else {
                 await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
@@ -4541,7 +5144,7 @@ module.exports.addConfigs = async(req, res) => {
     }
 }
 
-module.exports.configList = async(req, res) => {
+module.exports.configList = async (req, res) => {
     try {
         let userEmail = req.user.email
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
@@ -4549,37 +5152,38 @@ module.exports.configList = async(req, res) => {
 
         if (findAdmin.rows.length > 0) {
 
-            let s2 = dbScript(db_sql['Q125'], {var1 : findAdmin.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].company_id })
             let configList = await connection.query(s2)
             let configuration = {}
 
-            if(configList.rowCount > 0){
-                
+            if (configList.rowCount > 0) {
+
                 configuration.id = configList.rows[0].id
                 configuration.currency = configList.rows[0].currency,
-                configuration.phoneFormat = configList.rows[0].phone_format,
-                configuration.dateFormat = configList.rows[0].date_format 
+                    configuration.phoneFormat = configList.rows[0].phone_format,
+                    configuration.dateFormat = configList.rows[0].date_format,
+                    configuration.graphType = configList.rows[0].graph_type
 
                 res.json({
-                    status : 200,
-                    success : true,
-                    message : "Configuration List",
-                    data : configuration
+                    status: 200,
+                    success: true,
+                    message: "Configuration List",
+                    data: configuration
                 })
 
-            }else{
-
+            } else {
                 configuration.id = "",
-                configuration.currency = "",
-                configuration.phoneFormat = "",
-                configuration.dateFormat = ""
+                    configuration.currency = "",
+                    configuration.phoneFormat = "",
+                    configuration.dateFormat = "",
+                    configuration.graphType = ""
 
                 res.json({
-                    status : 200,
-                    success : false,
-                    message : "Empty Configuration List",
-                    data : configuration
-                }) 
+                    status: 200,
+                    success: false,
+                    message: "Empty Configuration List",
+                    data: configuration
+                })
             }
 
         } else {
@@ -4598,3 +5202,67 @@ module.exports.configList = async(req, res) => {
         })
     }
 }
+
+//--------------------------------------Contact_us-------------------------------------------
+
+module.exports.contactUs = async (req, res) => {
+    try {
+        let {
+            fullName,
+            email,
+            subject,
+            message,
+            address
+        } = req.body
+
+        await connection.query('BEGIN')
+        let id = uuid.v4()
+        let s1 = dbScript(db_sql['Q134'], { var1: id, var2: fullName, var3: email, var4: subject, var5: mysql_real_escape_string(message), var6: address })
+
+        let addContactUs = await connection.query(s1)
+        if (addContactUs.rowCount > 0) {
+            if(process.env.isLocalEmail == true){
+                await contactUsMail2(email, fullName, subject, message, address)
+                await connection.query('COMMIT')
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Query added successfully"
+                })
+            }else{
+                let emailSent = await contactUsMail(email, fullName, subject, message, address)
+                if(emailSent.status == 400){
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }else{
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Query added successfully"
+                    })
+                }
+            }
+                
+        } else {
+            await connection.query('ROLLBACK')
+            res.json({
+                status: 400,
+                success: false,
+                message: "Something went wrong"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+

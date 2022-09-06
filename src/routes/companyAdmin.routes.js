@@ -2,7 +2,7 @@ const express = require('express')
 var router = express.Router()
 var controller = require('../controllers/index')
 const { verifyTokenFn } = require('../utils/jwt')
-const {uploadAvatar , uploadLeadFile} = require('../utils/uploadfiles')
+const {uploadAvatar , uploadProductImage,uploadProductFile} = require('../utils/uploadfiles')
 
 router.post('/upload',verifyTokenFn, uploadAvatar.single('image'),controller.companyAdmin.upload);
 router.get('/showProfile',verifyTokenFn, controller.companyAdmin.showProfile)
@@ -60,6 +60,14 @@ router.put('/updatecommissionSplit',verifyTokenFn, controller.companyAdmin.updat
 router.get('/commissionSplitList',verifyTokenFn, controller.companyAdmin.commissionSplitList)
 router.put('/deletecommissionSplit',verifyTokenFn, controller.companyAdmin.deletecommissionSplit)
 
+//-------------------------------------Products---------------------------------------------
+
+router.post('/addProduct',verifyTokenFn, controller.companyAdmin.addProduct)
+router.put('/updateProduct',verifyTokenFn, controller.companyAdmin.updateProduct)
+router.get('/productList',verifyTokenFn, controller.companyAdmin.productList)
+router.put('/deleteProduct',verifyTokenFn, controller.companyAdmin.deleteProduct)
+router.post('/uploadProductImage',verifyTokenFn, uploadProductImage.single('image'),controller.companyAdmin.uploadProductImage);
+router.post('/uploadProductFile',verifyTokenFn,uploadProductFile.single('file'), controller.companyAdmin.uploadProductFile)
 //----------------------------------------sales conversion --------------------------------
 router.get('/customerListforSales',verifyTokenFn, controller.companyAdmin.customerListforSales)
 router.get('/customerContactDetailsForSales',verifyTokenFn, controller.companyAdmin.customerContactDetailsForSales)
@@ -70,11 +78,14 @@ router.put('/updateSalesCommission',verifyTokenFn, controller.companyAdmin.updat
 router.put('/deleteSalesCommission',verifyTokenFn, controller.companyAdmin.deleteSalesCommission)
 router.get('/salesCommissionLogsList',verifyTokenFn, controller.companyAdmin.salesCommissionLogsList)
 //----------------------------------------Reports------------------------------------------
-router.get('/salesCommissionReport',verifyTokenFn, controller.companyAdmin.salesCommissionReport)
-
+router.get('/revenuePerCustomer',verifyTokenFn, controller.companyAdmin.revenuePerCustomer)
+router.get('/revenuePerProduct',verifyTokenFn, controller.companyAdmin.revenuePerProduct)
+router.get('/revenuePerSalesRep',verifyTokenFn, controller.companyAdmin.revenuePerSalesRep)
+router.get('/totalRevenue',verifyTokenFn, controller.companyAdmin.totalRevenue)
 //---------------------------------------DashBoard counts -------------------------------
 
 router.get('/revenues',verifyTokenFn, controller.companyAdmin.revenues)
+
 
 //-------------------------------------Revenue Forecast----------------------------------
 
