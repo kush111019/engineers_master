@@ -79,13 +79,23 @@ let createAdmin = async (bodyData, cId, res) => {
             }
             let token = await issueJWT(payload)
             link = `http://143.198.102.134:8080/auth/verify-email/${token}`
-            await welcomeEmail(emailAddress, link, name);
-            await connection.query('COMMIT')
-            return res.json({
-                status: 201,
-                success: true,
-                message: ` User Created Successfully and verification link send on registered email `,
-            })
+            let emailSent = await welcomeEmail(emailAddress, link, name);
+            if(emailSent.status == 400){
+                await connection.query('ROLLBACK')
+                return res.json({
+                    status: 400,
+                    success: false,
+                    message: `Something went wrong`,
+                })
+            }
+            else{
+                await connection.query('COMMIT')
+                return res.json({
+                    status: 201,
+                    success: true,
+                    message: ` User Created Successfully and verification link send on registered email `,
+                })
+            }
         } else {
             await connection.query('ROLLBACK')
             return res.json({
@@ -573,12 +583,19 @@ module.exports.forgotPassword = async (req, res) => {
             let token = await issueJWT(payload)
             let link = `http://143.198.102.134:8080/auth/reset-password/${token}`
             let emailSend = await resetPasswordMail(emailAddress, link, checkuser.rows[0].full_name);
-            res.json({
-                status: 200,
-                success: true,
-                message: "New link sent to your email address",
-            })
-
+            if(emailSend.status == 400){
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong",
+                })
+            }else{
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "New link sent to your email address",
+                })
+            }
         } else {
             res.json({
                 status: 400,
@@ -1187,13 +1204,22 @@ module.exports.addUser = async (req, res) => {
                         }
                         let token = await issueJWT(payload)
                         link = `http://143.198.102.134:8080/auth/reset-password/${token}`
-                        await setPasswordMail(emailAddress, link, name);
-                        res.json({
-                            status: 201,
-                            success: true,
-                            message: `User created successfully and link send for set password on ${emailAddress} `
-                        })
-
+                        let emailSent = await setPasswordMail(emailAddress, link, name);
+                        if(emailSent.status == 400){
+                            await connection.query('ROLLBACK')
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: "Something went wrong"
+                            })
+                        }else{
+                            await connection.query('COMMIT')
+                            res.json({
+                                status: 201,
+                                success: true,
+                                message: `User created successfully and link send for set password on ${emailAddress} `
+                            })
+                        }
                     } else {
                         await connection.query('ROLLBACK')
                         res.json({
@@ -1215,7 +1241,7 @@ module.exports.addUser = async (req, res) => {
                 res.json({
                     status: 400,
                     success: false,
-                    message: "user already exists"
+                    message: "User already exists"
                 })
             }
 
@@ -5158,14 +5184,23 @@ module.exports.contactUs = async (req, res) => {
 
         let addContactUs = await connection.query(s1)
         if (addContactUs.rowCount > 0) {
-            await contactUsMail(email, fullName, subject, message, address)
-            await connection.query('COMMIT')
-            res.json({
-                status: 201,
-                success: true,
-                message: "Query added successfully"
-            })
-
+            let emailSent = await contactUsMail(email, fullName, subject, message, address)
+            if(emailSent.status == 400){
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }else{
+                await connection.query('COMMIT')
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Query added successfully"
+                })
+            }
+                
         } else {
             await connection.query('ROLLBACK')
             res.json({
