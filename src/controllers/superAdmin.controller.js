@@ -48,16 +48,20 @@ module.exports.login = async (req, res) => {
 module.exports.showProfile = async (req, res) => {
     try {
         let sAEmail = req.user.email
-
         let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
+            let admin = {
+                id : checkSuperAdmin.rows[0].id,
+                name : checkSuperAdmin.rows[0].name,
+                email : checkSuperAdmin.rows[0].email
+            }
             res.json({
                 status: 200,
                 success: true,
                 message: 'Super admin data',
-                data: checkSuperAdmin.rows[0]
-            })
+                data: admin
+            })   
         } else {
             res.json({
                 status: 400,
@@ -66,7 +70,6 @@ module.exports.showProfile = async (req, res) => {
                 data: ""
             })
         }
-
     } catch (error) {
         res.json({
             status: 400,
