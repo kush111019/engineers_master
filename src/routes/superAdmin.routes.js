@@ -12,7 +12,7 @@ router.get('/showProfile',verifyTokenFn, controller.superAdmin.showProfile)
 router.get('/companiesList',verifyTokenFn,controller.superAdmin.companiesList)
 router.get('/showUsersByCompanyId',verifyTokenFn,controller.superAdmin.showUsersByCompanyId)
 router.get('/companyWiseTotalRevenue', verifyTokenFn, controller.superAdmin.companyWiseTotalRevenue)
-
+router.get('/userWiseCompanyRevenue', verifyTokenFn, controller.superAdmin.userWiseCompanyRevenue)
 
 
 module.exports = router;
