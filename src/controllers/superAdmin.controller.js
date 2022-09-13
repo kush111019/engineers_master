@@ -365,6 +365,88 @@ module.exports.companyWiseTotalRevenue = async (req, res) => {
     }
 }
 
+module.exports.userWiseCompanyRevenue = async (req, res) => {
+    try {
+        let sAEmail = req.user.email
+        let { companyId } = req.query
+        let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
+            let salesRepArr = []
+            let s4 = dbScript(db_sql['Q98'], { var1: companyId })
+            let salesData = await connection.query(s4)
+            console.log(salesData.rows);
+            if (salesData.rowCount > 0) {
+                let holder = {};
+                let newArr = []
+                for (let sales of salesData.rows) {
+                    let s5 = dbScript(db_sql['Q92'], { var1: sales.id })
+                    let salesRep = await connection.query(s5)
+                    if (salesRep.rows.length > 0) {
+                        salesRepArr.push({
+                            user: salesRep.rows[0].full_name,
+                            revenue: sales.target_amount
+                        })
+                    }
+                }
+                salesRepArr.forEach((d) => {
+                    if (holder.hasOwnProperty(d.user)) {
+                        holder[d.user] = holder[d.user] + Number(d.revenue);
+                    } else {
+                        holder[d.user] = Number(d.revenue);
+                    }
+                });
+                for (let prop in holder) {
+                    newArr.push({ user: prop, revenue: holder[prop] });
+                }
+                if (newArr.length > 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Revenue per user",
+                        data: newArr
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Empty revenue per user",
+                        data: newArr
+                    })
+                }
+            } else {
+                if(salesData.rows.length == 0){
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Empty revenue per user",
+                        data: []
+                    })
+                }else{
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                } 
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Super Admin not found",
+                data: ""
+            })
+        }
+
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
 
 
 
