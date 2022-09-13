@@ -311,50 +311,37 @@ module.exports.companyWiseTotalRevenue = async (req, res) => {
         let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
-            let s4 = dbScript(db_sql['Q107'],{})
-            let companies = await connection.query(s4)
+            let s2 = dbScript(db_sql['Q107'], {})
+            let companies = await connection.query(s2)
             let revenue = []
-            for(let data of companies.rows){
-                let companyWiseRevenue = {}
-                let s2 = dbScript(db_sql['Q98'], { var1: data.id})
-                let companyRevenue = await connection.query(s2)
+            for (let data of companies.rows) {
+                let s3 = dbScript(db_sql['Q109'], { var1: data.id })
+                let revenueByCompany = await connection.query(s3)
                 let sum = 0
-                if (companyRevenue.rowCount > 0) {
-                    for (let companyData of companyRevenue.rows) {
-                        let s3 = dbScript(db_sql['Q60'], { var1: companyData.customer_id })
-                        let closedCustomer = await connection.query(s3)
-                        for (let customerData of closedCustomer.rows) {
-                            if (customerData.closed_at != null) {
-                                sum = sum + Number(companyData.target_amount)
-                            }
-                        }
-                        companyWiseRevenue.companyName = data.company_name
-                        companyWiseRevenue.companyId = data.id
-                        companyWiseRevenue.totalRevenue = sum
-                        revenue.push(companyWiseRevenue)
-                       
+                if (revenueByCompany.rowCount > 0) {
+                    for (amount of revenueByCompany.rows){
+                        sum = sum + Number(amount.target_amount)
                     }
-                   
-                } 
-                
-                
-                
-                
+                    revenue.push({
+                        companyId : revenueByCompany.rows[0].company_id,
+                        companyName : revenueByCompany.rows[0].company_name,
+                        revenue : sum
+                    })   
+                }
             }
-            
-            if(revenue.length > 0){
+            if (revenue.length > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: "Company wise total revenue",
                     data: revenue
                 })
-            
-            }else{
+            } else {
                 res.json({
                     status: 400,
                     success: false,
                     message: "Empty Company wise total revenue",
+                    data : revenue
                 })
             }
         } else {
