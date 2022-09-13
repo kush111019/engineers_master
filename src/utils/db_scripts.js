@@ -131,7 +131,11 @@ const db_sql = {
               values ('{var1}','{var2}',$1,$2,$3,$4,$5,$6)`,
     "Q106" : `select id, name, email, encrypted_password from super_admin where email = '{var1}'`,
     "Q107" : `select id, company_name, company_logo, company_address, created_at from companies where deleted_at is null`,
-    "Q108" : `update super_admin set encrypted_password = '{var2}' where email = '{var1}'`
+    "Q108" : `update super_admin set encrypted_password = '{var2}' where email = '{var1}'`,
+    "Q109" : `select  sc.target_amount,  c.closed_at ,com.id as company_id, com.company_name from sales_commission as sc 
+              inner join customers as c on sc.customer_id = c.id 
+              inner join companies as com on sc.company_id = com.id 
+              where sc.company_id = '{var1}' and sc.deleted_at is null and c.deleted_at is null Order by c.closed_at asc`
 
  };
 
