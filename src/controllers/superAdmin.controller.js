@@ -475,10 +475,8 @@ module.exports.dashboard = async (req, res) => {
                                     for (slabData of slab.rows) {
 
                                         if ((Number(customerData.target_amount) >= Number(slabData.min_amount)) && slabData.is_max == true) {
-                                            console.log(slabData,"slabData");
                                             let percentage = slabData.percentage
                                             let amount = ((Number(percentage) / 100) * Number(customerData.target_amount))
-                                            console.log(amount,"amount");
                                             commission = commission + amount
                                         }
                                         else if ((Number(customerData.target_amount) >= Number(slabData.min_amount)) && (Number(customerData.target_amount) <= Number(slabData.max_amount))) {
@@ -497,8 +495,6 @@ module.exports.dashboard = async (req, res) => {
                                 }
                                 
                             }
-                            
-
                         } 
                         revenueCommissionObj.name = data.company_name
                         revenueCommissionObj.revenue = targetAmount
@@ -518,7 +514,6 @@ module.exports.dashboard = async (req, res) => {
                             totalRevenue: totalRevenue,
                             totalCommission: totalCommission,
                             revenueCommission: revenueCommission
-
                         }
                     })
                 } else {
@@ -530,19 +525,20 @@ module.exports.dashboard = async (req, res) => {
                             totalRevenue: 0,
                             totalCommission: 0,
                             revenueCommission: revenueCommission
-
                         }
                     })
                 }
-
-
             } else {
                 if (companyData.rows.length == 0) {
                     res.json({
                         status: 200,
                         success: true,
                         message: "Empty total revenue and total commission",
-                        data: []
+                        data:  {
+                            totalRevenue: 0,
+                            totalCommission: 0,
+                            revenueCommission: revenueCommission
+                        }
                     })
                 } else {
                     res.json({
