@@ -52,16 +52,16 @@ module.exports.showProfile = async (req, res) => {
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
             let admin = {
-                id : checkSuperAdmin.rows[0].id,
-                name : checkSuperAdmin.rows[0].name,
-                email : checkSuperAdmin.rows[0].email
+                id: checkSuperAdmin.rows[0].id,
+                name: checkSuperAdmin.rows[0].name,
+                email: checkSuperAdmin.rows[0].email
             }
             res.json({
                 status: 200,
                 success: true,
                 message: 'Super admin data',
                 data: admin
-            })   
+            })
         } else {
             res.json({
                 status: 400,
@@ -322,14 +322,14 @@ module.exports.companyWiseTotalRevenue = async (req, res) => {
                 let revenueByCompany = await connection.query(s3)
                 let sum = 0
                 if (revenueByCompany.rowCount > 0) {
-                    for (amount of revenueByCompany.rows){
+                    for (amount of revenueByCompany.rows) {
                         sum = sum + Number(amount.target_amount)
                     }
                     revenue.push({
-                        companyId : revenueByCompany.rows[0].company_id,
-                        companyName : revenueByCompany.rows[0].company_name,
-                        revenue : sum
-                    })   
+                        companyId: revenueByCompany.rows[0].company_id,
+                        companyName: revenueByCompany.rows[0].company_name,
+                        revenue: sum
+                    })
                 }
             }
             if (revenue.length > 0) {
@@ -344,7 +344,7 @@ module.exports.companyWiseTotalRevenue = async (req, res) => {
                     status: 400,
                     success: false,
                     message: "Empty Company wise total revenue",
-                    data : revenue
+                    data: revenue
                 })
             }
         } else {
@@ -375,7 +375,6 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
             let salesRepArr = []
             let s4 = dbScript(db_sql['Q98'], { var1: companyId })
             let salesData = await connection.query(s4)
-            console.log(salesData.rows);
             if (salesData.rowCount > 0) {
                 let holder = {};
                 let newArr = []
@@ -415,20 +414,20 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
                     })
                 }
             } else {
-                if(salesData.rows.length == 0){
+                if (salesData.rows.length == 0) {
                     res.json({
                         status: 200,
                         success: true,
                         message: "Empty revenue per user",
                         data: []
                     })
-                }else{
+                } else {
                     res.json({
                         status: 400,
                         success: false,
                         message: "Something went wrong"
                     })
-                } 
+                }
             }
         } else {
             res.json({
@@ -448,7 +447,125 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
     }
 }
 
+module.exports.dashboard = async (req, res) => {
+    try {
+        let sAEmail = req.user.email
+        let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q107'], {})
+            let companyData = await connection.query(s2)
+            let totalCommission = 0;
+            let revenueCommission = []
+            let totalRevenue = 0;
+            if (companyData.rowCount > 0) {
+                for (let data of companyData.rows) {
+                    let targetAmount = 0;
+                    let commission = 0;
+                    let revenueCommissionObj = {}
+                    let s3 = dbScript(db_sql['Q93'], { var1: data.id })
+                    let customers = await connection.query(s3)
+                    if (customers.rowCount > 0) {
+                        for (customerData of customers.rows) {
+                            if (customerData.closed_at != null) {
+                                targetAmount = targetAmount + Number(customerData.target_amount)
+                                let s5 = dbScript(db_sql['Q19'], { var1: data.id })
+                                let slab = await connection.query(s5)
+                                if (slab.rowCount > 0) {
+                                    for (slabData of slab.rows) {
 
+                                        if ((Number(customerData.target_amount) >= Number(slabData.min_amount)) && slabData.is_max == true) {
+                                            let percentage = slabData.percentage
+                                            let amount = ((Number(percentage) / 100) * Number(customerData.target_amount))
+                                            commission = commission + amount
+                                        }
+                                        else if ((Number(customerData.target_amount) >= Number(slabData.min_amount)) && (Number(customerData.target_amount) <= Number(slabData.max_amount))) {
+
+                                            let percentage = slabData.percentage
+                                            let amount = ((Number(percentage) / 100) * Number(customerData.target_amount))
+                                            commission = commission + amount
+                                        }
+                                    }
+                                } else {
+                                    res.json({
+                                        status: 400,
+                                        success: false,
+                                        message: "Slab not found"
+                                    })
+                                }
+                                
+                            }
+                        } 
+                        revenueCommissionObj.name = data.company_name
+                        revenueCommissionObj.revenue = targetAmount
+                        revenueCommissionObj.commission = commission
+                        revenueCommissionObj.date = data.created_at
+                        revenueCommission.push(revenueCommissionObj)
+                    }
+                    totalRevenue = totalRevenue + targetAmount
+                    totalCommission = totalCommission + commission
+                }
+                if (revenueCommission.length > 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "total revenue and total commission",
+                        data: {
+                            totalRevenue: totalRevenue,
+                            totalCommission: totalCommission,
+                            revenueCommission: revenueCommission
+                        }
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Empty total revenue and total commission",
+                        data: {
+                            totalRevenue: 0,
+                            totalCommission: 0,
+                            revenueCommission: revenueCommission
+                        }
+                    })
+                }
+            } else {
+                if (companyData.rows.length == 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Empty total revenue and total commission",
+                        data:  {
+                            totalRevenue: 0,
+                            totalCommission: 0,
+                            revenueCommission: revenueCommission
+                        }
+                    })
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            }
+
+
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Super Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
 
 
 
