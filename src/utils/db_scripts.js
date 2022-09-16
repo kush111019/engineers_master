@@ -116,7 +116,7 @@ const db_sql = {
     "Q94"  : `SELECT DATE_TRUNC('{var2}',created_at) AS  date,
               sum(target_amount::decimal) as target_amount
               FROM sales_commission where company_id = '{var1}' and deleted_at is null
-              GROUP BY DATE_TRUNC('{var2}',created_at);`,
+              GROUP BY DATE_TRUNC('{var2}',created_at) ORDER BY date;`,
     "Q95"  : `select id, customer_company_name from customer_companies where deleted_at is null  and company_id = '{var1}'`,
     "Q96"  : `select id, closed_at from customers where customer_company_id = '{var1}' and deleted_at is null and closed_at is not null`,
     "Q97"  : `select id, target_amount, target_closing_date from sales_commission where customer_id = '{var1}' and deleted_at is null`,
