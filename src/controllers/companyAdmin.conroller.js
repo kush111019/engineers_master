@@ -726,7 +726,7 @@ module.exports.recurringPaymentCron = async () => {
                                 let roleData = await connection.query(s5)
                                 for (role of roleData) {
                                     if (role.role_name == 'Admin') {
-                                        let s6 = dbScript(db_sql['Q24'], { var1: role.id })
+                                        let s6 = dbScript(db_sql['Q24'], { var1: role.id, var2: userData.rows[0].company_id })
                                         let adminData = await connection.query(s6)
                                         await recurringPaymentMail(adminData.rows[0].email_address, customerData.customer_name)
                                         await recurringPaymentMail(userData.email_address, customerData.customer_name)

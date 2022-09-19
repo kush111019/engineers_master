@@ -4,6 +4,7 @@ const { issueJWT } = require("../utils/jwt")
 const { resetPasswordMail, resetPasswordMail2 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const jsonwebtoken = require("jsonwebtoken");
+const stripe = require('stripe')(process.env.SECRET_KEY)
 
 module.exports.login = async (req, res) => {
     try {
@@ -493,9 +494,9 @@ module.exports.dashboard = async (req, res) => {
                                         message: "Slab not found"
                                     })
                                 }
-                                
+
                             }
-                        } 
+                        }
                         revenueCommissionObj.name = data.company_name
                         revenueCommissionObj.revenue = targetAmount
                         revenueCommissionObj.commission = commission
@@ -534,7 +535,7 @@ module.exports.dashboard = async (req, res) => {
                         status: 200,
                         success: true,
                         message: "Empty total revenue and total commission",
-                        data:  {
+                        data: {
                             totalRevenue: 0,
                             totalCommission: 0,
                             revenueCommission: revenueCommission
@@ -567,5 +568,250 @@ module.exports.dashboard = async (req, res) => {
     }
 }
 
+
+//----------------------------------Stripe Plans----------------------------------------------
+
+module.exports.addPlan = async (req, res) => {
+    try {
+        let { name, type, amount, description, currency } = req.body
+        let sAEmail = req.user.email
+        let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
+            const product = await stripe.products.create({
+                name: name,
+                description: description
+            });
+            let plan = await stripe.plans.create({
+                interval: type,
+                currency: currency,
+                amount: amount * 100,
+                product: product.id
+            })
+            await connection.query('BEGIN')
+            let id = uuid.v4()
+            let s2 = dbScript(db_sql['Q110'], {
+                var1: id, var2: product.id, var3: product.name,
+                var4: product.description, var5: product.active, var6: plan.id, var7: plan.interval,
+                var8: plan.amount, var9: plan.currency
+            })
+            let addPlan = await connection.query(s2)
+            if (addPlan.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Plan added successfully",
+                    data: ""
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong",
+                    data: ""
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Super Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+
+}
+
+module.exports.plansList = async (req, res) => {
+    try {
+        let sAEmail = req.user.email
+        let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
+            let s2 = await dbScript(db_sql['Q111'], {})
+            let planData = await connection.query(s2)
+            if (planData.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Plans list",
+                    data: planData.rows
+                })
+            } else {
+                if (planData.rows.length == 0) {
+                    req.json({
+                        status: 200,
+                        success: true,
+                        message: "Empty Plans list",
+                        data: []
+                    })
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong",
+                        data: ""
+                    })
+                }
+            }
+
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Super Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.updatePlan = async (req, res) => {
+    try {
+        let { planId, name, description } = req.body
+        let sAEmail = req.user.email
+        let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q112'],{var1 : planId})
+            let planData = await connection.query(s2)
+            if(planData.rowCount > 0 ){
+                const product = await stripe.products.update(
+                    planData.rows[0].product_id,
+                    {
+                        name : name,
+                        description: description
+                    }
+                ); 
+
+                let _dt = new Date().toISOString();
+
+                await connection.query('BEGIN')
+                let s3 = dbScript(db_sql['Q113'],{var1: product.name, var2:product.description,
+                          var3 : _dt, var4 : planId})
+                let updatePlan = await connection.query(s3)
+                if(updatePlan.rowCount > 0){
+                    await connection.query('COMMIT')
+                    res.json({
+                        status : 200,
+                        success : true,
+                        message : 'Plan updated successfully'
+                    })
+                }else{
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong",
+                        data: ""
+                    }) 
+                }
+            }else{
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Plan not found",
+                    data: ""
+                }) 
+            }
+            
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Super Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.activateOrDeactivatePlan = async (req, res) => {
+    try {
+        let { planId, activeStatus } = req.body
+        let sAEmail = req.user.email
+        let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q112'],{var1 : planId})
+            let planData = await connection.query(s2)
+            if(planData.rowCount > 0 ){
+                const product = await stripe.products.update(
+                    planData.rows[0].product_id,
+                    {
+                        active : activeStatus
+                    }
+                );
+                
+                let _dt = new Date().toISOString();
+                await connection.query('BEGIN')
+                let s3 = dbScript(db_sql['Q114'],{ var1: product.active, var2 : _dt, var3 : planId})
+                let updatePlan = await connection.query(s3)
+                if(updatePlan.rowCount > 0){
+                    await connection.query('COMMIT')
+                    let update = (activeStatus==true) ? 'activated' : 'deactivated' 
+                    res.json({
+                        status : 200,
+                        success : true,
+                        message : `Plan ${update} successfully`
+                    })
+                }else{
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong",
+                        data: ""
+                    }) 
+                }
+            }else{
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Plan not found",
+                    data: ""
+                }) 
+            }
+
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Super Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
 
 

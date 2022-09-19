@@ -15,6 +15,12 @@ router.get('/companyWiseTotalRevenue', verifyTokenFn, controller.superAdmin.comp
 router.get('/userWiseCompanyRevenue', verifyTokenFn, controller.superAdmin.userWiseCompanyRevenue)
 router.get('/dashboard', verifyTokenFn, controller.superAdmin.dashboard)
 
+//------------------------------------------plans----------------------------------------
+
+router.post('/addPlan', verifyTokenFn, controller.superAdmin.addPlan)
+router.get('/plansList', verifyTokenFn, controller.superAdmin.plansList)
+router.put('/updatePlan', verifyTokenFn, controller.superAdmin.updatePlan)
+router.put('/activateOrDeactivatePlan', verifyTokenFn, controller.superAdmin.activateOrDeactivatePlan)
 
 
 module.exports = router;
