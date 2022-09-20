@@ -10,97 +10,100 @@ router.put('/updateProfile',verifyTokenFn, controller.companyAdmin.updateUserPro
 router.put('/changePassword',verifyTokenFn, controller.companyAdmin.changePassword)
 
 //-------------------------------------Users-------------------------------------------------
-router.post('/addUser' , verifyTokenFn, controller.companyAdmin.addUser)
-router.get('/usersList',verifyTokenFn, controller.companyAdmin.usersList)
-router.get('/showUserById' , verifyTokenFn, controller.companyAdmin.showUserById)
-router.put('/updateUser' , verifyTokenFn, controller.companyAdmin.updateUser)
-router.put('/deleteUser' , verifyTokenFn, controller.companyAdmin.deleteUser)
-router.put('/lockUserAccount' , verifyTokenFn, controller.companyAdmin.lockUserAccount)
-
+router.post('/addUser' , verifyTokenFn, controller.users.addUser)
+router.get('/usersList',verifyTokenFn, controller.users.usersList)
+router.get('/showUserById' , verifyTokenFn, controller.users.showUserById)
+router.put('/updateUser' , verifyTokenFn, controller.users.updateUser)
+router.put('/deleteUser' , verifyTokenFn, controller.users.deleteUser)
+router.put('/lockUserAccount' , verifyTokenFn, controller.users.lockUserAccount)
 
 //---------------------------------------modules------------------------------------------
 
-router.get('/moduleList',verifyTokenFn, controller.companyAdmin.moduleList)
+router.get('/moduleList',verifyTokenFn, controller.roles.moduleList)
 
 //-------------------------------------Roles-------------------------------------------------
-router.get('/rolesList',verifyTokenFn, controller.companyAdmin.rolesList)
-router.post('/createRole',verifyTokenFn, controller.companyAdmin.createRole)
-router.put('/updateRole' , verifyTokenFn, controller.companyAdmin.updateRole)
-router.get('/usersListByRoleId',verifyTokenFn, controller.companyAdmin.usersListByRoleId)
-router.get('/userWiseRoleList',verifyTokenFn, controller.companyAdmin.userWiseRoleList)
-router.put('/deleteRole' , verifyTokenFn, controller.companyAdmin.deleteRole)
+router.get('/rolesList',verifyTokenFn, controller.roles.rolesList)
+router.post('/createRole',verifyTokenFn, controller.roles.createRole)
+router.put('/updateRole' , verifyTokenFn, controller.roles.updateRole)
+router.get('/usersListByRoleId',verifyTokenFn, controller.roles.usersListByRoleId)
+router.get('/userWiseRoleList',verifyTokenFn, controller.roles.userWiseRoleList)
+router.put('/deleteRole' , verifyTokenFn, controller.roles.deleteRole)
 
 //-------------------------------------Slabs-------------------------------------------------
-router.get('/slabList',verifyTokenFn, controller.companyAdmin.slabList)
-router.post('/createSlab',verifyTokenFn, controller.companyAdmin.createSlab)
-router.put('/deleteSlab',verifyTokenFn, controller.companyAdmin.deleteSlab)
+router.get('/slabList',verifyTokenFn, controller.slabs.slabList)
+router.post('/createSlab',verifyTokenFn, controller.slabs.createSlab)
+router.put('/deleteSlab',verifyTokenFn, controller.slabs.deleteSlab)
 
 //--------------------------------------followUpNotes--------------------------------------------
 
-router.post('/addfollowUpNotes' , verifyTokenFn, controller.companyAdmin.addfollowUpNotes)
-router.get('/notesList',verifyTokenFn, controller.companyAdmin.notesList)
-router.put('/deleteNotes',verifyTokenFn, controller.companyAdmin.deleteNote)
+router.post('/addfollowUpNotes' , verifyTokenFn, controller.sales.addfollowUpNotes)
+router.get('/notesList',verifyTokenFn, controller.sales.notesList)
+router.put('/deleteNotes',verifyTokenFn, controller.sales.deleteNote)
 
 
-//------------------------------------Deal Management---------------------------------------
+//------------------------------------customers---------------------------------------
 
-router.post('/createCustomer',verifyTokenFn, controller.companyAdmin.createCustomer)
-router.post('/closeCustomer',verifyTokenFn, controller.companyAdmin.closeCustomer)
-router.get('/customerList',verifyTokenFn, controller.companyAdmin.customerList)
-router.put('/editCustomer',verifyTokenFn, controller.companyAdmin.editCustomer)
-router.put('/deleteContactForCustomer',verifyTokenFn, controller.companyAdmin.deleteContactForCustomer)
+router.post('/createCustomer',verifyTokenFn, controller.customers.createCustomer)
+router.post('/closeCustomer',verifyTokenFn, controller.customers.closeCustomer)
+router.get('/customerList',verifyTokenFn, controller.customers.customerList)
+router.put('/editCustomer',verifyTokenFn, controller.customers.editCustomer)
+router.put('/deleteContactForCustomer',verifyTokenFn, controller.customers.deleteContactForCustomer)
 
-router.get('/customerCompanyList',verifyTokenFn, controller.companyAdmin.customerCompanyList)
-router.get('/customerContactDetails',verifyTokenFn, controller.companyAdmin.customerContactDetails)
-router.put('/deleteCustomer',verifyTokenFn, controller.companyAdmin.deleteCustomer)
+router.get('/customerCompanyList',verifyTokenFn, controller.customers.customerCompanyList)
+router.get('/customerContactDetails',verifyTokenFn, controller.customers.customerContactDetails)
+router.put('/deleteCustomer',verifyTokenFn, controller.customers.deleteCustomer)
 
 //------------------------------------Commisions-----------------------------------------
-router.post('/commissionSplit',verifyTokenFn, controller.companyAdmin.commissionSplit)
-router.put('/updatecommissionSplit',verifyTokenFn, controller.companyAdmin.updatecommissionSplit)
-router.get('/commissionSplitList',verifyTokenFn, controller.companyAdmin.commissionSplitList)
-router.put('/deletecommissionSplit',verifyTokenFn, controller.companyAdmin.deletecommissionSplit)
+router.post('/commissionSplit',verifyTokenFn, controller.commissions.commissionSplit)
+router.put('/updatecommissionSplit',verifyTokenFn, controller.commissions.updatecommissionSplit)
+router.get('/commissionSplitList',verifyTokenFn, controller.commissions.commissionSplitList)
+router.put('/deletecommissionSplit',verifyTokenFn, controller.commissions.deletecommissionSplit)
 
 //-------------------------------------Products---------------------------------------------
 
-router.post('/addProduct',verifyTokenFn, controller.companyAdmin.addProduct)
-router.put('/updateProduct',verifyTokenFn, controller.companyAdmin.updateProduct)
-router.get('/productList',verifyTokenFn, controller.companyAdmin.productList)
-router.put('/deleteProduct',verifyTokenFn, controller.companyAdmin.deleteProduct)
-router.post('/uploadProductImage',verifyTokenFn, uploadProductImage.single('image'),controller.companyAdmin.uploadProductImage);
-router.post('/uploadProductFile',verifyTokenFn,uploadProductFile.single('file'), controller.companyAdmin.uploadProductFile)
+router.post('/addProduct',verifyTokenFn, controller.products.addProduct)
+router.put('/updateProduct',verifyTokenFn, controller.products.updateProduct)
+router.get('/productList',verifyTokenFn, controller.products.productList)
+router.put('/deleteProduct',verifyTokenFn, controller.products.deleteProduct)
+router.post('/uploadProductImage',verifyTokenFn, uploadProductImage.single('image'),controller.products.uploadProductImage);
+router.post('/uploadProductFile',verifyTokenFn,uploadProductFile.single('file'), controller.products.uploadProductFile)
 //----------------------------------------sales conversion --------------------------------
-router.get('/customerListforSales',verifyTokenFn, controller.companyAdmin.customerListforSales)
-router.get('/customerContactDetailsForSales',verifyTokenFn, controller.companyAdmin.customerContactDetailsForSales)
+router.get('/customerListforSales',verifyTokenFn, controller.sales.customerListforSales)
+router.get('/customerContactDetailsForSales',verifyTokenFn, controller.sales.customerContactDetailsForSales)
 
-router.post('/createSalesCommission',verifyTokenFn, controller.companyAdmin.createSalesCommission)
-router.get('/salesCommissionList',verifyTokenFn, controller.companyAdmin.salesCommissionList)
-router.put('/updateSalesCommission',verifyTokenFn, controller.companyAdmin.updateSalesCommission)
-router.put('/deleteSalesCommission',verifyTokenFn, controller.companyAdmin.deleteSalesCommission)
-router.get('/salesCommissionLogsList',verifyTokenFn, controller.companyAdmin.salesCommissionLogsList)
+router.post('/createSalesCommission',verifyTokenFn, controller.sales.createSalesCommission)
+router.get('/salesCommissionList',verifyTokenFn, controller.sales.salesCommissionList)
+router.put('/updateSalesCommission',verifyTokenFn, controller.sales.updateSalesCommission)
+router.put('/deleteSalesCommission',verifyTokenFn, controller.sales.deleteSalesCommission)
+router.get('/salesCommissionLogsList',verifyTokenFn, controller.sales.salesCommissionLogsList)
 //----------------------------------------Reports------------------------------------------
-router.get('/revenuePerCustomer',verifyTokenFn, controller.companyAdmin.revenuePerCustomer)
-router.get('/revenuePerProduct',verifyTokenFn, controller.companyAdmin.revenuePerProduct)
-router.get('/revenuePerSalesRep',verifyTokenFn, controller.companyAdmin.revenuePerSalesRep)
-router.get('/totalRevenue',verifyTokenFn, controller.companyAdmin.totalRevenue)
+router.get('/revenuePerCustomer',verifyTokenFn, controller.reports.revenuePerCustomer)
+router.get('/revenuePerProduct',verifyTokenFn, controller.reports.revenuePerProduct)
+router.get('/revenuePerSalesRep',verifyTokenFn, controller.reports.revenuePerSalesRep)
+router.get('/totalRevenue',verifyTokenFn, controller.reports.totalRevenue)
 //---------------------------------------DashBoard counts -------------------------------
 
-router.get('/revenues',verifyTokenFn, controller.companyAdmin.revenues)
+router.get('/revenues',verifyTokenFn, controller.dashboard.revenues)
 
 
 //-------------------------------------Revenue Forecast----------------------------------
 
-router.post('/createRevenueForecast',verifyTokenFn, controller.companyAdmin.createRevenueForecast)
-router.put('/updateRevenueForecast',verifyTokenFn, controller.companyAdmin.updateRevenueForecast)
-router.get('/revenueForecastList',verifyTokenFn, controller.companyAdmin.revenueForecastList)
-router.get('/actualVsForecast',verifyTokenFn, controller.companyAdmin.actualVsForecast)
+router.post('/createRevenueForecast',verifyTokenFn, controller.revenueForecast.createRevenueForecast)
+router.put('/updateRevenueForecast',verifyTokenFn, controller.revenueForecast.updateRevenueForecast)
+router.get('/revenueForecastList',verifyTokenFn, controller.revenueForecast.revenueForecastList)
+router.get('/actualVsForecast',verifyTokenFn, controller.revenueForecast.actualVsForecast)
 
 //---------------------------------------Business and Revenue Contact-------------------------
 
-router.post('/addBusinessContact',verifyTokenFn, controller.companyAdmin.addBusinessContact)
-router.post('/addRevenueContact',verifyTokenFn, controller.companyAdmin.addRevenueContact)
+router.post('/addBusinessContact',verifyTokenFn, controller.customers.addBusinessContact)
+router.post('/addRevenueContact',verifyTokenFn, controller.customers.addRevenueContact)
 
 //-------------------------------------------Configurations----------------------------------
-router.post('/addConfigs', verifyTokenFn, controller.companyAdmin.addConfigs)
-router.get('/configList', verifyTokenFn, controller.companyAdmin.configList)
+router.post('/addConfigs', verifyTokenFn, controller.configuration.addConfigs)
+router.get('/configList', verifyTokenFn, controller.configuration.configList)
+
+//------------------------------------Payment----------------------------------------
+router.post('/createPayment', controller.payment.createPayment) 
+router.get('/success/:sessionId' , controller.payment.onSuccess)
 
 module.exports = router;

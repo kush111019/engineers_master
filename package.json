@@ -26,6 +26,7 @@
     "pg": "^8.7.3",
     "rotating-file-stream": "^3.0.4",
     "sha3": "^2.1.4",
-    "sib-api-v3-sdk": "^8.4.2"
+    "sib-api-v3-sdk": "^8.4.2",
+    "stripe": "^10.10.0"
   }
 }

@@ -1,99 +1,107 @@
 const connection = require('../database/connection')
 const { issueJWT } = require("../utils/jwt")
-const { resetPasswordMail } = require("../utils/sendMail")
+const {
+    setPasswordMail,
+    setPasswordMail2,
+} = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const jsonwebtoken = require("jsonwebtoken");
+const uuid = require("node-uuid");
+const { mysql_real_escape_string } = require('../utils/helper')
 
-let verifyTokenFn = async (req) => {
-      let {token} = req.body              
-      let user = await jsonwebtoken.verify(token, 'KEy', function(err, decoded)
-      {                     
-          if (err) {   
-            return 0
-          }   else {                          
-              var decoded = {
-                  id: decoded.id,  
-                  email: decoded.email,               
-              };
-              return decoded;
-          }
-      });
-      return user
-}
-
-module.exports.setPasswordForLogin = async (req, res) => {
+module.exports.addUser = async (req, res) => {
     try {
+        let userEmail = req.user.email
         let {
-            password
+            name,
+            emailAddress,
+            mobileNumber,
+            address,
+            roleId,
+            avatar,
+            encryptedPassword
         } = req.body
-        let user = await verifyTokenFn(req)
-        if (user) {
-            s1 = dbScript(db_sql['Q4'], { var1: user.email })
-            let checkuser = await connection.query(s1);
-            if (checkuser.rows.length > 0) {
-                _dt = new Date().toISOString();
-                s2 = dbScript(db_sql['Q7'], { var1: user.email, var2: password, var3: _dt })
-                let updateuser = await connection.query(s2)
-                if (updateuser.rowCount == 1)
-                    res.json({
-                        status: 201,
-                        success: true,
-                        message: "Password created Successfully",
-                        data: ""
+
+        avatar = (avatar == "") ? 'http://143.198.102.134:3003/companyLogo/user.jpg' : avatar;
+
+        let id = uuid.v4()
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        let moduleName = 'users'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q4'], { var1: emailAddress })
+            let findUser = await connection.query(s2)
+            if (findUser.rowCount == 0) {
+                let s3 = dbScript(db_sql['Q45'], { var1: moduleName })
+                let findModule = await connection.query(s3)
+                let s4 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+                let checkPermission = await connection.query(s4)
+                if (checkPermission.rows[0].permission_to_create) {
+                    await connection.query('BEGIN')
+                    let s5 = dbScript(db_sql['Q49'], { var1: id, var2: mysql_real_escape_string(name), var3: findAdmin.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address) })
+                    let addUser = await connection.query(s5)
+                    let _dt = new Date().toISOString();
+                    let s6 = dbScript(db_sql['Q37'], { var1: roleId, var2: addUser.rows[0].id, var3: _dt })
+                    let addPermission = await connection.query(s6)
+                    await connection.query('COMMIT')
+                    if (addUser.rowCount > 0 && addPermission.rowCount > 0) {
+                        const payload = {
+                            id: addUser.rows[0].id,
+                            email: addUser.rows[0].email_address
+                        }
+                        let token = await issueJWT(payload)
+                        link = `http://143.198.102.134:8080/auth/reset-password/${token}`
+                        if(process.env.isLocalEmail == 'true'){
+                            await setPasswordMail2(emailAddress, link, name);
+                            await connection.query('COMMIT')
+                            res.json({
+                                status: 201,
+                                success: true,
+                                message: `User created successfully and link send for set password on ${emailAddress} `
+                            })
+                        }else{
+                            let emailSent = await setPasswordMail(emailAddress, link, name);
+                            if(emailSent.status == 400){
+                                await connection.query('ROLLBACK')
+                                res.json({
+                                    status: 400,
+                                    success: false,
+                                    message: "Something went wrong"
+                                })
+                            }else{
+                                await connection.query('COMMIT')
+                                res.json({
+                                    status: 201,
+                                    success: true,
+                                    message: `User created successfully and link send for set password on ${emailAddress} `
+                                })
+                            }
+                        }
+                    } else {
+                        await connection.query('ROLLBACK')
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Something went wrong"
+                        })
+
+                    }
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.status(403).json({
+                        success: false,
+                        message: "Unathorised"
                     })
+                }
             } else {
+                await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
                     success: false,
-                    message: "This User Is Not Exits",
-                    data: ""
+                    message: "User already exists"
                 })
             }
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Token not found",
-            });
-        }
-    } catch (error) {
-        res.json({
-            success: false,
-            status: 400,
-            message: error.message,
-            data: ""
-        })
-    }
-} 
 
-module.exports.login = async (req, res) => {
-    try {
-        let { emailAddress, password } = req.body;
-        s1 = dbScript(db_sql['Q4'], { var1: emailAddress })
-        let user = await connection.query(s1)
-        console.log(user);
-        if (user.rows.length > 0) {
-                if (user.rows[0].encrypted_password == password) {
-                    let payload = {
-                        id : user.rows[0].id,
-                        email : user.rows[0].email_address,
-                    }
-                    let jwtToken = await issueJWT(payload);
-                    res.send({
-                        status: 200,
-                        success: true,
-                        message: "Login successfull",
-                        data: {
-                            token: jwtToken
-                        }
-                    });
-                } else {
-                    res.json({
-                        status: 200,
-                        success: false,
-                        message: "Incorrect password"
-                    })
-                }
         } else {
             res.json({
                 status: 400,
@@ -101,54 +109,58 @@ module.exports.login = async (req, res) => {
                 message: "Admin not found"
             })
         }
-    }
-    catch (error) {
-        res.json({
-            status: 500,
-            success: false,
-            message: error.message
-        })
-    }
-}
-
-module.exports.upload = async(req,res)=>{
-    try {
-        let file = req.file
-            let path = `http:/localhost:3003/avatar/${file.originalname}`;
-            res.json({
-                success: true,
-                status: 201,
-                message : "Avatar uploaded successfully!",
-                data: path
-            })   
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
-            success: false,
             status: 400,
+            success: false,
             message: error.message,
-            data: ""
         })
     }
 }
 
-module.exports.showProfile = async (req, res) => {
+module.exports.showUserById = async (req, res) => {
     try {
         let userEmail = req.user.email
-        s1 = dbScript(db_sql['Q6'], { var1: userEmail })
-        let checkUser = await connection.query(s1)
-        if (checkUser.rows.length > 0) {
-            res.json({
-                status: 200,
-                success: true,
-                message: 'user data',
-                data: checkUser.rows[0]
-            })
+        let { userId } = req.body
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        let moduleName = 'users'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_view) {
+                let s4 = dbScript(db_sql['Q27'], { var1: userId })
+                let findUser = await connection.query(s4)
+                if (findUser.rows.length > 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "User data",
+                        data: findUser.rows
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty user data",
+                        data: []
+                    })
+                }
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
         } else {
             res.json({
                 status: 400,
                 success: false,
-                message: "User not found",
-                data: ""
+                message: "Admin not found"
             })
         }
     } catch (error) {
@@ -160,86 +172,178 @@ module.exports.showProfile = async (req, res) => {
     }
 }
 
-module.exports.updateUserProfile = async (req, res) => {
+module.exports.usersList = async (req, res) => {
     try {
-        let userMail = req.user.email
-        let {
-            name,
-            avatar
-        } = req.body
+        let email = req.user.email
+        let s1 = dbScript(db_sql['Q5'], { var1: email })
+        let findAdmin = await connection.query(s1);
+        let moduleName = 'users'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_view) {
 
-        s1 = dbScript(db_sql['Q4'], { var1: userMail })
-        let findUser = await connection.query(s1)
+                let s4 = dbScript(db_sql['Q17'], { var1: findAdmin.rows[0].company_id })
+                let findUsers = await connection.query(s4);
+                if (findUsers.rows.length > 0) {
 
-        if(findUser.rows.length>0){
+                    for (data of findUsers.rows) {
+                        let s5 = dbScript(db_sql['Q14'], { var1: data.role_id })
+                        let findRole = await connection.query(s5);
+                        if (findRole.rowCount > 0) {
 
-                _dt = new Date().toISOString();
-                s2 = dbScript(db_sql['Q17'], { var1:name, var2:avatar, var3 : _dt , var4: userMail})
-                let updateUser = await connection.query(s2)
+                            data.roleName = findRole.rows[0].role_name
 
-                if (updateUser.rowCount > 0 ) {
+                        } else {
+                            data.roleName = null
+                        }
+                    }
                     res.json({
-                        success: true,
                         status: 200,
-                        message: 'user Updated Successfully',
+                        success: true,
+                        message: 'Users list',
+                        data: findUsers.rows
                     })
                 } else {
                     res.json({
+                        status: 200,
                         success: false,
-                        status: 400,
-                        message: "Something Went Wrong",
-                        data: ""
+                        message: "Empty users list",
+                        data: []
                     })
                 }
-          
-        }else {
+            } else {
+                res.json({
+                    status: 403,
+                    success: false,
+                    message: "Unathorized",
+                })
+            }
+        } else {
             res.json({
+                status: 400,
                 success: false,
-                status: 200,
-                message: "user not found",
-                data: ""
+                message: "Admin not found",
             })
         }
-       
+
+
     } catch (error) {
         res.json({
-            success: false,
             status: 400,
+            success: false,
             message: error.message,
         })
     }
 }
 
-module.exports.changePassword = async (req, res) => {
+module.exports.updateUser = async (req, res) => {
+
     try {
         let userEmail = req.user.email
-        const { oldPassword, newPassword } = req.body;
-        s1 = dbScript(db_sql['Q4'], { var1: userEmail })
-        let user = await connection.query(s1)
-        if (user.rows.length > 0) {
-            if (user.rows[0].encrypted_password == oldPassword) {
-                _dt = new Date().toISOString();
-                s2 = dbScript(db_sql['Q7'], { var1: userEmail, var2: newPassword, var3: _dt })
-                let updatePass = await connection.query(s2)
-                if (updatePass.rowCount > 0) {
-                    res.send({
+        let {
+            userId,
+            emailAddress,
+            name,
+            mobileNumber,
+            address,
+            roleId,
+            avatar
+        } = req.body
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        let moduleName = 'users'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_update) {
+
+                let _dt = new Date().toISOString();
+                await connection.query('BEGIN')
+                let s4 = dbScript(db_sql['Q25'], { var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: findAdmin.rows[0].company_id })
+                let updateUser = await connection.query(s4)
+                await connection.query('COMMIT')
+                if (updateUser.rowCount > 0) {
+                    res.json({
                         status: 200,
                         success: true,
-                        message: "Password Changed Successfully!",
-                    });
+                        message: "User Updated successfully"
+                    })
                 } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.lockUserAccount = async (req, res) => {
+    try {
+        let userEmail = req.user.email
+        let {
+            userId,
+            isLocked
+        } = req.body
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+        let moduleName = 'users'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_update) {
+                let _dt = new Date().toISOString();
+                await connection.query('BEGIN')
+                let s4 = dbScript(db_sql['Q33'], { var1: isLocked, var2: userId, var3: _dt })
+                let updateUser = await connection.query(s4)
+                await connection.query('COMMIT')
+                if (updateUser.rowCount > 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "user locked successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
                         success: false,
                         message: "something went wrong"
                     })
                 }
-
             } else {
-                res.json({
-                    status: 400,
+                res.status(403).json({
                     success: false,
-                    message: "Incorrect Old Password"
+                    message: "UnAthorised"
                 })
             }
         } else {
@@ -249,96 +353,70 @@ module.exports.changePassword = async (req, res) => {
                 message: "Admin not found"
             })
         }
-    }
-    catch (error) {
-        res.json({
-            status: 500,
-            success: false,
-            message: error.message
-        })
-    }
-}
-
-module.exports.forgotPassword = async (req, res) => {
-    try {
-        let {
-            emailAddress
-        } = req.body
-        s1 = dbScript(db_sql['Q4'], { var1: emailAddress })
-        let checkuser = await connection.query(s1);
-        if (checkuser.rows.length > 0) {
-            const payload = {
-                id: checkuser.rows[0].id,
-                email: checkuser.rows[0].email_address
-            }
-            let token = await issueJWT(payload)
-            let link = `localhost:3003/api/v1/user/resetPassword/${token}` 
-            let emailSend = await resetPasswordMail(emailAddress, link);
-            res.json({
-                status: 200,
-                success: true,
-                message: "New Link Sended To Your Email Address",
-            })
-
-        } else {
-            res.json({
-                status: 200,
-                success: false,
-                message: "This User Is Not Exits",
-                data: ""
-            })
-        }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,
             message: error.message,
-            data: ""
         })
     }
 }
 
-module.exports.resetPassword = async (req, res) => {
+module.exports.deleteUser = async (req, res) => {
     try {
+        let userEmail = req.user.email
         let {
-            password
+            userId
         } = req.body
-        let user = await verifyTokenFn(req)
-        if (user) {
-            s1 = dbScript(db_sql['Q4'], { var1: user.email })
-            let checkuser = await connection.query(s1);
-            if (checkuser.rows.length > 0) {
-                _dt = new Date().toISOString();
-                s2 = dbScript(db_sql['Q7'], { var1: user.email, var2: password, var3: _dt })
-                let updateuser = await connection.query(s2)
-                if (updateuser.rowCount == 1)
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        let moduleName = 'users'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_delete) {
+                let _dt = new Date().toISOString();
+                await connection.query('BEGIN')
+                let s4 = dbScript(db_sql['Q26'], { var1: _dt, var2: userId, var3: findAdmin.rows[0].company_id })
+                let updateUser = await connection.query(s4)
+                await connection.query('COMMIT')
+                if (updateUser.rowCount > 0) {
                     res.json({
-                        status: 201,
+                        status: 200,
                         success: true,
-                        message: "Password Changed Successfully",
-                        data: ""
+                        message: "User deleted successfully"
                     })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
             } else {
-                res.json({
-                    status: 400,
+                res.status(403).json({
                     success: false,
-                    message: "This User Is Not Exits",
-                    data: ""
+                    message: "Unathorised"
                 })
             }
         } else {
             res.json({
                 status: 400,
                 success: false,
-                message: "Token not found",
-            });
+                message: "Admin not found"
+            })
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,
             message: error.message,
-            data: ""
         })
     }
 }
