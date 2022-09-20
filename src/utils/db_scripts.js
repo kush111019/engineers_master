@@ -141,7 +141,7 @@ const db_sql = {
               values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', 
               '{var9}') returning *`,
     "Q111" : `select id,  name, description, active_status,
-              interval, amount, currency from payment_plans where deleted_at is null`,
+              interval, amount, currency from payment_plans where active_status = 'true' and  deleted_at is null`,
     "Q112" : `select id, product_id, name, description, active_status,
               plan_id, interval, amount, currency from payment_plans where id = '{var1}' and deleted_at is null`,  
     "Q113" : `update payment_plans set name = '{var1}', description = '{var2}', 
