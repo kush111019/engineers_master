@@ -40,7 +40,7 @@ let createAdmin = async (bodyData, cId, res) => {
         encryptedPassword
     } = bodyData
 
-    companyLogo = companyLogo == "" ? 'http://143.198.102.134:3003/companyLogo/user.jpg' : companyLogo;
+    companyLogo = companyLogo == "" ? process.env.DEFAULT_LOGO : companyLogo;
 
     let s3 = dbScript(db_sql['Q4'], { var1: emailAddress })
     let findUser = await connection.query(s3)
@@ -351,6 +351,13 @@ module.exports.login = async (req, res) => {
                         })
                     }
 
+                    let s6 = dbScript(db_sql['Q116'],{var1 :admin.rows[0].id ,var2 : admin.rows[0].company_id})
+                    let payment = await connection.query(s6)
+                    let paymentStatus = 'pending';
+                    if(payment.rowCount > 0){
+                        paymentStatus =  payment.rows[0].payment_status
+                    }
+
                     let payload = {
                         id: admin.rows[0].id,
                         email: admin.rows[0].email_address,
@@ -370,7 +377,8 @@ module.exports.login = async (req, res) => {
                             role: checkRole.rows[0].role_name,
                             profileImage: profileImage,
                             modulePermissions: modulePemissions,
-                            configuration: configuration
+                            configuration: configuration,
+                            paymentStatus : paymentStatus
                         }
                     });
                 } else {

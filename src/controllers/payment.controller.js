@@ -76,6 +76,7 @@ module.exports.createPayment = async (req, res) => {
                         phone: checkuser.rows[0].mobile_number,
                         description: "Hirise-sales subscription",
                     });
+                    console.log(customer,"customer");
                     const createSession = await stripe.checkout.sessions.create({
                         mode: 'subscription',
                         customer: customer.id,
@@ -85,8 +86,8 @@ module.exports.createPayment = async (req, res) => {
                                 quantity: 1,
                             },
                         ],
-                        success_url: 'http://143.198.102.134:3003/api/v1/companyAdmin/success/{CHECKOUT_SESSION_ID}',
-                        cancel_url: 'https://example.com/cancel'
+                        success_url: process.env.SUCCESS_URL,
+                        cancel_url: process.env.CANCEL_URL
                     });
 
                     if (createSession && customer) {
@@ -166,7 +167,7 @@ module.exports.onSuccess = async (req, res) => {
                 res.set("Content-Type", "text/html");
                 res.send(
                     Buffer.from(
-                        '<html><head head ><link href="https://fonts.googleapis.com/css?family=Nunito+Sans:400,400i,700,900&display=swap" rel="stylesheet"></head><style>body {text-align: center;padding: 40px 0;background: #EBF0F5;}h1 {color: #88B04B;font-family: "Nunito Sans", "Helvetica Neue", sans-serif;font-weight: 900;font-size: 40px;margin-bottom: 10px;p {color: #404F5E;font-family: "Nunito Sans", "Helvetica Neue", sans-serif;font-size:20px; margin: 0;} i{color: #9ABC66;font-size: 100px;line-height: 200px;margin-left:-15px;}.card {background: white;padding: 60px;border-radius: 4px;box-shadow: 0 2px 3px #C8D0D8;display: inline-block;margin: 0 auto;</style><body><div class="card"><div style="border-radius:200px; height:200px; width:200px; background: #F8FAF5; margin:0 auto;"><i style="color: #9ABC66;font-size: 100px;line-height: 200px;margin-left:-15px;" class="checkmark">✓</i></div><h1>Success</h1> <p>Your payment successfully done!</p></div></body></html > '
+                        '<html><head head ><link href="https://fonts.googleapis.com/css?family=Nunito+Sans:400,400i,700,900&display=swap" rel="stylesheet"></head><style>body {text-align: center;padding: 40px 0;background: #EBF0F5;}h1 {color: #88B04B;font-family: "Nunito Sans", "Helvetica Neue", sans-serif;font-weight: 900;font-size: 40px;margin-bottom: 10px;p {color: #404F5E;font-family: "Nunito Sans", "Helvetica Neue", sans-serif;font-size:20px; margin: 0;} i{color: #9ABC66;font-size: 100px;line-height: 200px;margin-left:-15px;}.card {background: white;padding: 60px;border-radius: 4px;box-shadow: 0 2px 3px #C8D0D8;display: inline-block;margin: 0 auto;</style><body><div class="card"><div style="border-radius:200px; height:200px; width:200px; background: #F8FAF5; margin:0 auto;"><i style="color: #9ABC66;font-size: 100px;line-height: 200px;margin-left:-15px;" class="checkmark">✓</i></div><h1>Success</h1> <p>Your payment successfully done!</p><a href="http://143.198.102.134:8080/auth/login"><button style="color: #fff;background: #1F0757; height:50px; width:120px;font-size: 15px;" >Login</button></a></div></body></html>'
                     )
                 );
             } else {
