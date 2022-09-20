@@ -135,7 +135,18 @@ const db_sql = {
     "Q109" : `select  sc.target_amount,  c.closed_at ,com.id as company_id, com.company_name from sales_commission as sc 
               inner join customers as c on sc.customer_id = c.id 
               inner join companies as com on sc.company_id = com.id 
-              where sc.company_id = '{var1}' and sc.deleted_at is null and c.deleted_at is null Order by c.closed_at asc`
+              where sc.company_id = '{var1}' and sc.deleted_at is null and c.deleted_at is null Order by c.closed_at asc`,
+    "Q110" : `insert into payment_plans(id, product_id, name, description, active_status,
+              plan_id, interval, amount, currency) 
+              values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', 
+              '{var9}') returning *`,
+    "Q111" : `select id,  name, description, active_status,
+              interval, amount, currency from payment_plans where deleted_at is null`,
+    "Q112" : `select id, product_id, name, description, active_status,
+              plan_id, interval, amount, currency from payment_plans where id = '{var1}' and deleted_at is null`,  
+    "Q113" : `update payment_plans set name = '{var1}', description = '{var2}', 
+               updated_at = '{var3}' where id = '{var4}' and deleted_at is null returning *` ,
+    "Q114" : `update payment_plans set active_status = '{var1}', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`                             
 
  };
 

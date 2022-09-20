@@ -12,6 +12,7 @@ const revenueForecast = require('./revenueForcast.controller')
 const configuration = require('./configurations.controllers')
 const contactUs = require('./contactUs.controller')
 const dashboard = require('./dashboard.controller')
+const payment = require('./payment.controller')
 
 const controller = { 
     superAdmin,
@@ -27,7 +28,8 @@ const controller = {
     revenueForecast,
     configuration,
     contactUs,
-    dashboard
+    dashboard,
+    payment
 }
 
 module.exports = controller
