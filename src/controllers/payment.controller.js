@@ -67,57 +67,45 @@ module.exports.createPayment = async (req, res) => {
             let s1 = dbScript(db_sql['Q4'], { var1: user.email })
             let checkuser = await connection.query(s1);
             if (checkuser.rows.length > 0) {
-                console.log(checkuser.rows);
                 let s2 = dbScript(db_sql['Q112'], { var1: planId })
                 let planData = await connection.query(s2)
                 if (planData.rowCount > 0) {
-                    let s3 = dbScript(db_sql['Q116'], { var1: planId })
-                    let findTransaction = await connection.query(s3)
-                    if (findTransaction.rowCount == 0) {
-                        const customer = await stripe.customers.create({
-                            name: checkuser.rows[0].full_name,
-                            email: checkuser.rows[0].email_address,
-                            phone: checkuser.rows[0].mobile_number,
-                            description: "Hirise-sales subscription",
-                        });
-                        const createSession = await stripe.checkout.sessions.create({
-                            mode: 'subscription',
-                            customer: customer.id,
-                            line_items: [
-                                {
-                                    price: planData.rows[0].plan_id,
-                                    quantity: 1,
-                                },
-                            ],
-                            success_url: 'http://143.198.102.134:3003/api/v1/companyAdmin/success/{CHECKOUT_SESSION_ID}',
-                            cancel_url: 'https://example.com/cancel'
-                        });
+                    const customer = await stripe.customers.create({
+                        name: checkuser.rows[0].full_name,
+                        email: checkuser.rows[0].email_address,
+                        phone: checkuser.rows[0].mobile_number,
+                        description: "Hirise-sales subscription",
+                    });
+                    const createSession = await stripe.checkout.sessions.create({
+                        mode: 'subscription',
+                        customer: customer.id,
+                        line_items: [
+                            {
+                                price: planData.rows[0].plan_id,
+                                quantity: 1,
+                            },
+                        ],
+                        success_url: 'http://143.198.102.134:3003/api/v1/companyAdmin/success/{CHECKOUT_SESSION_ID}',
+                        cancel_url: 'https://example.com/cancel'
+                    });
 
-                        if (createSession && customer) {
-                            let id = uuid.v4()
-                            await connection.query('BEGIN')
-                            let s4 = dbScript(db_sql['Q115'], {
-                                var1: id, var2: user.id, var3: checkuser.rows[0].company_id,
-                                var4: planId, var5: createSession.id, var6: createSession.mode, var7: customer.id
+                    if (createSession && customer) {
+                        let id = uuid.v4()
+                        await connection.query('BEGIN')
+                        let s4 = dbScript(db_sql['Q115'], {
+                            var1: id, var2: user.id, var3: checkuser.rows[0].company_id,
+                            var4: planId, var5: createSession.id, var6: createSession.mode, var7: customer.id
+                        })
+                        let saveTrasaction = await connection.query(s4)
+
+                        if (saveTrasaction.rowCount > 0) {
+                            await connection.query('COMMIT')
+                            res.json({
+                                status: 201,
+                                success: true,
+                                message: 'Transaction initiated',
+                                data: createSession.url
                             })
-                            let saveTrasaction = await connection.query(s4)
-
-                            if (saveTrasaction.rowCount > 0) {
-                                await connection.query('COMMIT')
-                                res.json({
-                                    status: 201,
-                                    success: true,
-                                    message: 'Trasaction initiated',
-                                    data: createSession.url
-                                })
-                            } else {
-                                res.json({
-                                    status: 400,
-                                    success: false,
-                                    message: 'something went wrong'
-                                })
-                            }
-
                         } else {
                             res.json({
                                 status: 400,
@@ -129,10 +117,10 @@ module.exports.createPayment = async (req, res) => {
                         res.json({
                             status: 400,
                             success: false,
-                            message: "Already subscribed for this plan",
-                            data: ""
+                            message: 'something went wrong'
                         })
                     }
+
                 } else {
                     res.json({
                         status: 400,
@@ -207,3 +195,7 @@ module.exports.onSuccess = async (req, res) => {
         })
     }
 }
+
+// module.exports.onCancel = async(req, res) => {
+
+// }
