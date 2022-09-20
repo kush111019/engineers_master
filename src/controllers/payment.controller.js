@@ -89,10 +89,10 @@ module.exports.createPayment = async (req, res) => {
                                     quantity: 1,
                                 },
                             ],
-                            success_url: 'http://localhost:3003/api/v1/companyAdmin/success/{CHECKOUT_SESSION_ID}',
+                            success_url: 'http://143.198.102.134:3003/api/v1/companyAdmin/success/{CHECKOUT_SESSION_ID}',
                             cancel_url: 'https://example.com/cancel'
                         });
-                        
+
                         if (createSession && customer) {
                             let id = uuid.v4()
                             await connection.query('BEGIN')
