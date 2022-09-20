@@ -649,7 +649,7 @@ module.exports.plansList = async (req, res) => {
                 })
             } else {
                 if (planData.rows.length == 0) {
-                    req.json({
+                    res.json({
                         status: 200,
                         success: true,
                         message: "Empty Plans list",

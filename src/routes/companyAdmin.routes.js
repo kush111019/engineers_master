@@ -102,4 +102,8 @@ router.post('/addRevenueContact',verifyTokenFn, controller.customers.addRevenueC
 router.post('/addConfigs', verifyTokenFn, controller.configuration.addConfigs)
 router.get('/configList', verifyTokenFn, controller.configuration.configList)
 
+//------------------------------------Payment----------------------------------------
+router.post('/createPayment', controller.payment.createPayment) 
+router.get('/success/:sessionId' , controller.payment.onSuccess)
+
 module.exports = router;
