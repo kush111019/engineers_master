@@ -150,7 +150,8 @@ const db_sql = {
     "Q115" : `insert into transactions(id, user_id, company_id, plan_id, session_id, payment_mode, stripe_customer_id, payment_status)
               values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', 'pending') returning *` ,
     "Q116" : `select id, user_id, company_id, plan_id, session_id, payment_mode, stripe_customer_id, payment_status from transactions where user_id = '{var1}' and company_id = '{var2}' and deleted_at is null`,
-    "Q117" : `update transactions set payment_status = 'paid' where session_id = '{var1}' and deleted_at is null returning *`                                      
+    "Q117" : `update transactions set payment_status = 'paid' where session_id = '{var1}' and deleted_at is null returning *`,
+    "Q118" : `select id, name, description, active_status, interval, amount, currency from payment_plans where deleted_at is null`                                      
 
  };
 
