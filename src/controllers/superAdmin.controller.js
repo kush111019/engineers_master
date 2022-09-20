@@ -638,7 +638,7 @@ module.exports.plansList = async (req, res) => {
         let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
-            let s2 = await dbScript(db_sql['Q111'], {})
+            let s2 = await dbScript(db_sql['Q118'], {})
             let planData = await connection.query(s2)
             if (planData.rowCount > 0) {
                 res.json({
