@@ -8,6 +8,50 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
 const { mysql_real_escape_string } = require('../utils/helper')
 
+module.exports.userCount = async(req, res) => {
+    try {
+        let userEmail = req.user.email
+
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+
+            let s2 = dbScript(db_sql['Q17'],{var1 : findAdmin.rows[0].company_id})
+            let users = await connection.query(s2)
+
+            let s3 = dbScript(db_sql['Q116'],{var1 : findAdmin.rows[0].company_id})
+            let count = await connection.query(s3)
+            
+            if(users.rowCount-1 < count.rows[0].user_count){
+                res.json({
+                    status: 200,
+                    success : true,
+                    message : 'Can add users'
+                })
+            }else{
+                res.json({
+                    status: 400,
+                    success : false,
+                    message : 'Plan limit exists! Can not add more users'
+                })
+            }
+        }else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 module.exports.addUser = async (req, res) => {
     try {
         let userEmail = req.user.email
