@@ -11,6 +11,7 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 const jsonwebtoken = require("jsonwebtoken");
 const uuid = require("node-uuid");
 const { mysql_real_escape_string } = require('../utils/helper')
+const { paymentReminder } = require('../utils/paymentReminder')
 
 let verifyTokenFn = async (req) => {
     let { token } = req.body
@@ -351,12 +352,16 @@ module.exports.login = async (req, res) => {
                         })
                     }
 
-                    let s6 = dbScript(db_sql['Q116'],{var1 :admin.rows[0].id ,var2 : admin.rows[0].company_id})
+                    let s6 = dbScript(db_sql['Q116'],{var1 : admin.rows[0].company_id})
                     let payment = await connection.query(s6)
                     let paymentStatus = 'pending';
                     if(payment.rowCount > 0){
                         paymentStatus =  payment.rows[0].payment_status
                     }
+                    if(checkRole.rows[0].role_name == 'Admin'){
+                        let payment1 = paymentReminder()
+                    }
+                    
 
                     let payload = {
                         id: admin.rows[0].id,
@@ -701,88 +706,90 @@ module.exports.resetPassword = async (req, res) => {
 
 //------------------------------------------cron job ----------------------------------------
 
-module.exports.recurringPaymentCron = async () => {
+// module.exports.recurringPaymentCron = async () => {
 
-    let s1 = dbScript(db_sql['Q88'], {})
-    let salesCommissionList = await connection.query(s1)
-    if (salesCommissionList.rowCount > 0) {
-        for (let data of salesCommissionList.rows) {
-            if (data.sales_type == "Subscription") {
+//     let s1 = dbScript(db_sql['Q88'], {})
+//     let salesCommissionList = await connection.query(s1)
+//     if (salesCommissionList.rowCount > 0) {
+//         for (let data of salesCommissionList.rows) {
+//             if (data.sales_type == "Subscription") {
 
-                const str = data.recurring_date;
-                const [month, day, year] = str.split('/');
+//                 const str = data.recurring_date;
+//                 const [month, day, year] = str.split('/');
 
-                const recurringDate = new Date(+year, month - 1, +day);
-                let currentDate = new Date()
-                let currentDate1 = currentDate.toISOString().split('T');
+//                 const recurringDate = new Date(+year, month - 1, +day);
+//                 let currentDate = new Date()
+//                 let currentDate1 = currentDate.toISOString().split('T');
 
-                if (data.subscription_plan == "Monthly") {
-                    let date = currentDate.getDate()
-                    let day = recurringDate.getDate()
-                    if (date == day) {
-                        let s2 = dbScript(db_sql['Q60'], { var1: data.customer_id })
-                        let customers = await connection.query(s2)
-                        for (let customerData of customers) {
-                            let s3 = dbScript(db_sql['Q10'], { var1: customerData.user_id })
-                            let userData = await connection.query(s3)
-                            let s4 = dbScript(db_sql['Q14'], { var1: userData.rows[0].role_id })
-                            let role = await connection.query(s4)
-                            if (role.rows[0].role_name == 'Admin') {
-                                await recurringPaymentMail(userData.email_address, customerData.customer_name)
-                            } else {
-                                let s5 = dbScript(db_sql['Q16'], { var1: userData.rows[0].company_id })
-                                let roleData = await connection.query(s5)
-                                for (role of roleData) {
-                                    if (role.role_name == 'Admin') {
-                                        let s6 = dbScript(db_sql['Q24'], { var1: role.id, var2: userData.rows[0].company_id })
-                                        let adminData = await connection.query(s6)
-                                        await recurringPaymentMail(adminData.rows[0].email_address, customerData.customer_name)
-                                        await recurringPaymentMail(userData.email_address, customerData.customer_name)
-                                    }
+//                 if (data.subscription_plan == "Monthly") {
+//                     let date = currentDate.getDate()
+//                     let day = recurringDate.getDate()
+//                     if (date == day) {
+//                         let s2 = dbScript(db_sql['Q60'], { var1: data.customer_id })
+//                         let customers = await connection.query(s2)
+//                         for (let customerData of customers) {
+//                             let s3 = dbScript(db_sql['Q10'], { var1: customerData.user_id })
+//                             let userData = await connection.query(s3)
+//                             let s4 = dbScript(db_sql['Q14'], { var1: userData.rows[0].role_id })
+//                             let role = await connection.query(s4)
+//                             if (role.rows[0].role_name == 'Admin') {
+//                                 await recurringPaymentMail(userData.email_address, customerData.customer_name)
+//                             } else {
+//                                 let s5 = dbScript(db_sql['Q16'], { var1: userData.rows[0].company_id })
+//                                 let roleData = await connection.query(s5)
+//                                 for (role of roleData) {
+//                                     if (role.role_name == 'Admin') {
+//                                         let s6 = dbScript(db_sql['Q24'], { var1: role.id, var2: userData.rows[0].company_id })
+//                                         let adminData = await connection.query(s6)
+//                                         await recurringPaymentMail(adminData.rows[0].email_address, customerData.customer_name)
+//                                         await recurringPaymentMail(userData.email_address, customerData.customer_name)
+//                                     }
 
-                                }
+//                                 }
 
-                            }
+//                             }
 
 
 
-                        }
-                    }
-                }
-                if (data.subscription_plan == "Yearly") {
-                    let difference = await getYearDifference(recurringDate, currentDate)
-                    let futureDate = new Date(recurringDate.setFullYear(recurringDate.getFullYear() + difference))
-                    let recurringDate1 = futureDate.toISOString().split('T');
-                    if (currentDate1[0] == recurringDate1[0]) {
-                        let s2 = dbScript(db_sql['Q60'], { var1: data.customer_id })
-                        let customers = await connection.query(s2)
-                        for (let customerData of customers) {
-                            let s3 = dbScript(db_sql['Q10'], { var1: customerData.user_id })
-                            let userData = await connection.query(s3)
-                            let s4 = dbScript(db_sql['Q14'], { var1: userData.rows[0].role_id })
-                            let role = await connection.query(s4)
-                            if (role.rows[0].role_name == 'Admin') {
-                                await recurringPaymentMail(userData.email_address, customerData.customer_name)
-                            } else {
-                                let s5 = dbScript(db_sql['Q16'], { var1: userData.rows[0].company_id })
-                                let roleData = await connection.query(s5)
-                                for (role of roleData) {
-                                    if (role.role_name == 'Admin') {
-                                        let s6 = dbScript(db_sql['Q24'], { var1: role.id })
-                                        let adminData = await connection.query(s6)
-                                        await recurringPaymentMail(adminData.rows[0].email_address, customerData.customer_name)
-                                        await recurringPaymentMail(userData.email_address, customerData.customer_name)
-                                    }
+//                         }
+//                     }
+//                 }
+//                 if (data.subscription_plan == "Yearly") {
+//                     let difference = await getYearDifference(recurringDate, currentDate)
+//                     let futureDate = new Date(recurringDate.setFullYear(recurringDate.getFullYear() + difference))
+//                     let recurringDate1 = futureDate.toISOString().split('T');
+//                     if (currentDate1[0] == recurringDate1[0]) {
+//                         let s2 = dbScript(db_sql['Q60'], { var1: data.customer_id })
+//                         let customers = await connection.query(s2)
+//                         for (let customerData of customers) {
+//                             let s3 = dbScript(db_sql['Q10'], { var1: customerData.user_id })
+//                             let userData = await connection.query(s3)
+//                             let s4 = dbScript(db_sql['Q14'], { var1: userData.rows[0].role_id })
+//                             let role = await connection.query(s4)
+//                             if (role.rows[0].role_name == 'Admin') {
+//                                 await recurringPaymentMail(userData.email_address, customerData.customer_name)
+//                             } else {
+//                                 let s5 = dbScript(db_sql['Q16'], { var1: userData.rows[0].company_id })
+//                                 let roleData = await connection.query(s5)
+//                                 for (role of roleData) {
+//                                     if (role.role_name == 'Admin') {
+//                                         let s6 = dbScript(db_sql['Q24'], { var1: role.id })
+//                                         let adminData = await connection.query(s6)
+//                                         await recurringPaymentMail(adminData.rows[0].email_address, customerData.customer_name)
+//                                         await recurringPaymentMail(userData.email_address, customerData.customer_name)
+//                                     }
 
-                                }
+//                                 }
 
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
+
+
 
 

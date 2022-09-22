@@ -1,8 +1,9 @@
 const express = require('express');
 const cors = require('cors');
+const cron = require('node-cron');
 require('dotenv').config()
 const logger = require('./middleware/logger');
-const {recurringPayment} = require('./src/controllers/companyAdmin.conroller')
+const {paymentReminder} = require('./src/utils/paymentReminder')
 
 const app = express();
 const path = require('path')
@@ -15,10 +16,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('uploads'))
 app.use(express.static('public'))
 app.use(logger);
-// cron.schedule('59 59 23 * * *', async () => {
-//     await recurringPaymentCron();
-//   });
-//   cronJob.start();
+
+let cronJob = cron.schedule('59 59 23 * * *', async () => {
+    await paymentReminder();
+  });
+cronJob.start();
 
 
 app.listen(process.env.LISTEN_PORT, () => {

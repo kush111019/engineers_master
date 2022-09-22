@@ -105,5 +105,8 @@ router.get('/configList', verifyTokenFn, controller.configuration.configList)
 //------------------------------------Payment----------------------------------------
 router.post('/createPayment', controller.payment.createPayment) 
 router.get('/success/:sessionId' , controller.payment.onSuccess)
+router.get('/userCount', verifyTokenFn, controller.users.userCount)
+
+router.get('/subscriptionDetails', verifyTokenFn, controller.payment.subscriptionDetails)
 
 module.exports = router;
