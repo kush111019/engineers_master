@@ -216,7 +216,7 @@ module.exports.onSuccess = async (req, res) => {
 
 // }
 
-// module.exports.recurringPayment = async(req, res)
+
 
 //--------------------Company subscription details--------------------------------------
 
@@ -240,19 +240,24 @@ module.exports.subscriptionDetails = async (req, res) => {
                 const subscription = await stripe.subscriptions.retrieve(
                     transaction.rows[0].stripe_subscription_id
                 );
-
+                
                 let endDate = new Date(subscription.current_period_end * 1000)
                 let timeDifference = endDate.getTime() - new Date().getTime();
                 //calculate days difference by dividing total milliseconds in a day  
                 let daysDifference = timeDifference / (1000 * 60 * 60 * 24);
                 let days = daysDifference.toString().split('.')
-
+                
                 if (product && subscription) {
                     let details = {
                         planName: product.name,
+                        planInterval : subscription.items.data[0].plan.interval,
                         activeStatus: product.active,
                         description: product.description,
-                        endsIn: Number(days[0])
+                        adminPrice : subscription.items.data[0].price.unit_amount,
+                        userPrice : subscription.items.data[1].price.unit_amount,
+                        userCount : subscription.items.data[1].quantity,
+                        endsIn: Number(days[0]),
+                        planType : (subscription.trial_end != null) ? "Trial Plan" : "Paid Plan"
                     }
                     res.json({
                         status: 200,
@@ -263,9 +268,14 @@ module.exports.subscriptionDetails = async (req, res) => {
                 } else {
                     let details = {
                         planName: "",
+                        planInterval : "",
                         activeStatus: "",
                         description: "",
-                        endsIn: ""
+                        adminPrice : "",
+                        userPrice : "",
+                        userCount : "",
+                        endsIn: "",
+                        planType : ""
                     }
                     res.json({
                         status: 200,
