@@ -11,7 +11,6 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 const jsonwebtoken = require("jsonwebtoken");
 const uuid = require("node-uuid");
 const { mysql_real_escape_string } = require('../utils/helper')
-const { paymentReminder } = require('../utils/paymentReminder')
 
 let verifyTokenFn = async (req) => {
     let { token } = req.body
@@ -364,18 +363,12 @@ module.exports.login = async (req, res) => {
                             })
                         }
 
-                        let s6 = dbScript(db_sql['Q116'], { var1: admin.rows[0].company_id })
-                        let payment = await connection.query(s6)
-                        let paymentStatus = 'pending';
-                        if (payment.rowCount > 0) {
-                            paymentStatus = payment.rows[0].payment_status
-                        }
-                        if (checkRole.rows[0].role_name == 'Admin') {
-
-                            let payment1 = paymentReminder()
-                        }
-
-
+                        // let s6 = dbScript(db_sql['Q116'], { var1: admin.rows[0].company_id })
+                        // let payment = await connection.query(s6)
+                        // let paymentStatus = 'pending';
+                        // if (payment.rowCount > 0) {
+                        //     paymentStatus = payment.rows[0].payment_status
+                        // }
                         let payload = {
                             id: admin.rows[0].id,
                             email: admin.rows[0].email_address,
@@ -396,7 +389,7 @@ module.exports.login = async (req, res) => {
                                 profileImage: profileImage,
                                 modulePermissions: modulePemissions,
                                 configuration: configuration,
-                                paymentStatus: paymentStatus,
+                                //paymentStatus: paymentStatus,
                                 expiryDate: (checkRole.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : ''
                             }
                         });
@@ -808,7 +801,7 @@ module.exports.resetPassword = async (req, res) => {
 //             }
 //         }
 //     }
-// }
+//}
 
 
 

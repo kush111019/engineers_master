@@ -4,11 +4,10 @@ const cron = require('node-cron');
 require('dotenv').config()
 const logger = require('./middleware/logger');
 const {paymentReminder} = require('./src/utils/paymentReminder')
-const {recurringPaymentData} = require('./src/controllers/payment.controller')
 const app = express();
 const path = require('path')
 const Router = require('./src/routes/index');
-const connection = require('./src/database/connection') 
+require('./src/database/connection') 
 
 app.use(cors());
 app.use(express.json());

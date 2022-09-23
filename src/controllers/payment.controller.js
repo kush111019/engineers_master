@@ -79,7 +79,6 @@ module.exports.createPayment = async (req, res) => {
                         phone: checkuser.rows[0].mobile_number,
                         description: "Hirise-sales subscription",
                     });
-
                     const subscription = await stripe.subscriptions.create({
                         customer: customer.id,
                         items: [
@@ -88,10 +87,10 @@ module.exports.createPayment = async (req, res) => {
                         ],
                         payment_settings: {
                             payment_method_types: ['card'],
+                            save_default_payment_method : "on_subscription"
                         },
                         coupon: (planData.rows[0].interval == 'year') ? 'Omgx6XvX' : ''
                     });
-
                     const createSession = await stripe.checkout.sessions.create({
                         mode: 'subscription',
                         customer: customer.id,
@@ -102,7 +101,6 @@ module.exports.createPayment = async (req, res) => {
                         success_url: process.env.SUCCESS_URL,
                         cancel_url: process.env.CANCEL_URL
                     });
-
                     if (createSession && customer && subscription) {
                         let id = uuid.v4()
                         await connection.query('BEGIN')
@@ -115,7 +113,7 @@ module.exports.createPayment = async (req, res) => {
 
                         let expiryDate = new Date(Number(subscription.current_period_end) * 1000).toISOString()
                         let _dt = new Date().toISOString();
-                        
+
                         let s5 = dbScript(db_sql['Q122'],{var1: expiryDate, var2 : checkuser.rows[0].id , var3 : _dt })
                         let updateUserExpiryDate = await connection.query(s5)
 

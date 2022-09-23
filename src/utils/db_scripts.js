@@ -154,7 +154,7 @@ const db_sql = {
     "Q118" : `select id, name, description, active_status, interval, admin_amount,user_amount, currency from payment_plans where deleted_at is null`,
     "Q119" : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified, is_admin, expiry_date from users where deleted_at is null`,
     "Q120" : `insert into superadmin_config(id, trial_days) values('{var1}', '{var2}') returning *`,
-    "Q121" : `select id, trial_days, created_at from superadmin_config where deleted_at is null` ,
+    "Q121" : `select id, trial_days, created_at from superadmin_config where deleted_at is null ORDER BY created_at desc ` ,
     "Q122" : `update users set expiry_date = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null returning *`                                   
 
  };
