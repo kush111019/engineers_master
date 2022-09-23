@@ -6,7 +6,7 @@ const db_sql = {
               values('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
     "Q3"   : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,phone_number,encrypted_password,role_id,address,expiry_date,is_verified,is_admin) 
               values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}',false,true) RETURNING *`,          
-    "Q4"   : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar,expiry_date, is_verified, is_admin from users where email_address = '{var1}' and deleted_at is null` ,
+    "Q4"   : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar,expiry_date, is_verified, is_admin, is_locked from users where email_address = '{var1}' and deleted_at is null` ,
     "Q5"   : `select id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,expiry_date from users where email_address = '{var1}' and deleted_at is null ` , 
     "Q6"   : `update users set encrypted_password = '{var2}', is_verified = true, updated_at = '{var3}' where email_address = '{var1}' and company_id = '{var4}' RETURNING *`, 
     "Q7"   : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where deleted_at is null` ,
@@ -35,7 +35,7 @@ const db_sql = {
     "Q30"  : `update roles set deleted_at = '{var2}' where id = '{var1}' and deleted_at is null returning *`,
     "Q31"  : `update permissions set deleted_at = '{var2}' where role_id = '{var1}' and deleted_at is null returning * `,
     "Q32"  : `update slabs set deleted_at = '{var1}' where id = '{var2}' and company_id = '{var3}' and deleted_at is null`,
-    "Q33"  : `update users set is_locked = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null and is_locked = false RETURNING * `,
+    "Q33"  : `update users set is_locked = '{var1}', updated_at = '{var3}' where company_id = '{var2}' and deleted_at is null  RETURNING * `,
     "Q34"  : `select r.id, r.role_name, u.id as user_id , u.full_name
               from roles as r inner join users as u on r.id = u.role_id 
               where r.company_id = '{var1}' and r.deleted_at is null and u.deleted_at is null` ,
@@ -155,7 +155,7 @@ const db_sql = {
     "Q119" : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified, is_admin, expiry_date from users where deleted_at is null`,
     "Q120" : `insert into superadmin_config(id, trial_days) values('{var1}', '{var2}') returning *`,
     "Q121" : `select id, trial_days, created_at from superadmin_config where deleted_at is null` ,
-    "Q122" : `update users set expiry_date = '{var1}' where id = '{var2}' and deleted_at is null returning *`                                   
+    "Q122" : `update users set expiry_date = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null returning *`                                   
 
  };
 

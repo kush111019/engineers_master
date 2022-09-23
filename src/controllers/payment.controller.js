@@ -114,11 +114,15 @@ module.exports.createPayment = async (req, res) => {
                         let saveTrasaction = await connection.query(s4)
 
                         let expiryDate = new Date(Number(subscription.current_period_end) * 1000).toISOString()
-
-                        let s5 = dbScript(db_sql['Q122'],{var1: expiryDate, var2 : checkuser.rows[0].id })
+                        let _dt = new Date().toISOString();
+                        
+                        let s5 = dbScript(db_sql['Q122'],{var1: expiryDate, var2 : checkuser.rows[0].id , var3 : _dt })
                         let updateUserExpiryDate = await connection.query(s5)
 
-                        if (saveTrasaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0) {
+                        let s6 = dbScript(db_sql['Q33'],{var1 : false, var2 : checkuser.rows[0].company_id, var3 : _dt })
+                        let unlockUsers = await connection.query(s6)
+
+                        if (saveTrasaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && unlockUsers.rowCount > 0) {
                             await connection.query('COMMIT')
                             res.json({
                                 status: 201,
