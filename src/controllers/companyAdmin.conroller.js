@@ -56,7 +56,7 @@ let createAdmin = async (bodyData, cId, res) => {
         let expiryDate;
         if(trialDays.rowCount > 0){
             let currentDate = new Date()
-            expiryDate = new Date(currentDate.setDate(currentDate.getDate() + Number(trialDays.rows[0].trial_days)))
+            expiryDate = new Date(currentDate.setDate(currentDate.getDate() + Number(trialDays.rows[0].trial_days))).toISOString()
         }
         
 
