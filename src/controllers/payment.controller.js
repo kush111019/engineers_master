@@ -113,7 +113,7 @@ module.exports.createPayment = async (req, res) => {
                         })
                         let saveTrasaction = await connection.query(s4)
 
-                        let expiryDate = new Date(Number(subscription.current_period_end) * 1000)
+                        let expiryDate = new Date(Number(subscription.current_period_end) * 1000).toISOString()
 
                         let s5 = dbScript(db_sql['Q122'],{var1: expiryDate, var2 : checkuser.rows[0].id })
                         let updateUserExpiryDate = await connection.query(s5)
