@@ -4,22 +4,22 @@ const db_sql = {
     "Q1"   : `select id, company_name, company_address from companies where company_name = '{var1}'`,
     "Q2"   : `insert into companies(id,company_name,company_logo,company_address) 
               values('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
-    "Q3"   : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,phone_number,encrypted_password,role_id,address,is_verified,is_admin) 
-              values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}',false,true) RETURNING *`,          
-    "Q4"   : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified, is_admin from users where email_address = '{var1}' and deleted_at is null` ,
-    "Q5"   : `select id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where email_address = '{var1}' and deleted_at is null ` , 
+    "Q3"   : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,phone_number,encrypted_password,role_id,address,expiry_date,is_verified,is_admin) 
+              values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}',false,true) RETURNING *`,          
+    "Q4"   : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar,expiry_date, is_verified, is_admin from users where email_address = '{var1}' and deleted_at is null` ,
+    "Q5"   : `select id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,expiry_date from users where email_address = '{var1}' and deleted_at is null ` , 
     "Q6"   : `update users set encrypted_password = '{var2}', is_verified = true, updated_at = '{var3}' where email_address = '{var1}' and company_id = '{var4}' RETURNING *`, 
     "Q7"   : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where deleted_at is null` ,
     "Q8"   : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where id = '{var1}' and deleted_at is null`,  
     "Q9"   : `update users set is_verified = true ,updated_at = '{var2}' where email_address = '{var1}' RETURNING *`, 
-    "Q10"  : `select id, email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where id = '{var1}' and deleted_at is null ` ,
+    "Q10"  : `select id, email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,expiry_date from users where id = '{var1}' and deleted_at is null ` ,
     "Q11"  : `select id, company_name, company_address, company_logo from companies where id = '{var1}' and deleted_at is null`,
     "Q12"  : `update users set full_name='{var1}',avatar = '{var2}', email_address = '{var3}',phone_number = '{var4}',mobile_number = '{var5}',address = '{var6}' ,updated_at = '{var7}' where email_address='{var8}' and company_id = '{var9}' and deleted_at is null RETURNING * `, 
     "Q13"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','Admin','','{var2}') RETURNING *`, 
     "Q14"  : `select id, role_name, reporter, module_ids from roles where id = '{var1}' and deleted_at is null` ,
     "Q15"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','{var2}','{var3}','{var4}') RETURNING *`, 
     "Q16"  : `select id, role_name, reporter , module_ids from roles where company_id = '{var1}' and deleted_at is null ` ,
-    "Q17"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin, created_at from users where company_id = '{var1}' and deleted_at is null`,
+    "Q17"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at from users where company_id = '{var1}' and deleted_at is null`,
     "Q18"  : `select id, role_name ,  reporter from roles where reporter = '{var1}' and deleted_at is null`,
     "Q19"  : `select id, min_amount, max_amount, percentage, is_max from slabs where company_id ='{var1}' and deleted_at is null`,
     "Q20"  : `insert into slabs(id,min_amount, max_amount, percentage, is_max, company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') returning * `,
@@ -147,12 +147,15 @@ const db_sql = {
     "Q113" : `update payment_plans set name = '{var1}', description = '{var2}', 
                updated_at = '{var3}' where id = '{var4}' and deleted_at is null returning *` ,
     "Q114" : `update payment_plans set active_status = '{var1}', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`,
-    "Q115" : `insert into transactions(id, user_id, company_id, plan_id, session_id, payment_mode, stripe_customer_id, stripe_subscription_id,trial_end_date,user_count, payment_status)
+    "Q115" : `insert into transactions(id, user_id, company_id, plan_id, session_id, payment_mode, stripe_customer_id, stripe_subscription_id,expiry_date,user_count, payment_status)
               values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}','{var8}', '{var9}', '{var10}', 'pending') returning *` ,
-    "Q116" : `select id, user_id, company_id, plan_id, session_id, payment_mode, stripe_customer_id, payment_status, trial_end_date,user_count,stripe_subscription_id from transactions where company_id = '{var1}' and deleted_at is null`,
+    "Q116" : `select id, user_id, company_id, plan_id, session_id, payment_mode, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id from transactions where company_id = '{var1}' and deleted_at is null`,
     "Q117" : `update transactions set payment_status = 'paid' where session_id = '{var1}' and deleted_at is null returning *`,
     "Q118" : `select id, name, description, active_status, interval, admin_amount,user_amount, currency from payment_plans where deleted_at is null`,
-    "Q119" : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified, is_admin from users where deleted_at is null`                                    
+    "Q119" : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified, is_admin, expiry_date from users where deleted_at is null`,
+    "Q120" : `insert into superadmin_config(id, trial_days) values('{var1}', '{var2}') returning *`,
+    "Q121" : `select id, trial_days, created_at from superadmin_config where deleted_at is null` ,
+    "Q122" : `update users set expiry_date = '{var1}' where id = '{var2}' and deleted_at is null returning *`                                   
 
  };
 

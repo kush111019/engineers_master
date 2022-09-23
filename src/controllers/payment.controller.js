@@ -86,7 +86,9 @@ module.exports.createPayment = async (req, res) => {
                             { price: planData.rows[0].admin_price_id },
                             { price: planData.rows[0].user_price_id, quantity: userCount },
                         ],
-                        trial_period_days: 90,
+                        payment_settings: {
+                            payment_method_types: ['card'],
+                        },
                         coupon: (planData.rows[0].interval == 'year') ? 'Omgx6XvX' : ''
                     });
 
@@ -97,9 +99,6 @@ module.exports.createPayment = async (req, res) => {
                             { price: planData.rows[0].admin_price_id, quantity: 1 },
                             { price: planData.rows[0].user_price_id, quantity: userCount }
                         ],
-                        subscription_data: {
-                            trial_period_days: 90
-                        },
                         success_url: process.env.SUCCESS_URL,
                         cancel_url: process.env.CANCEL_URL
                     });
@@ -110,11 +109,16 @@ module.exports.createPayment = async (req, res) => {
                         let s4 = dbScript(db_sql['Q115'], {
                             var1: id, var2: user.id, var3: checkuser.rows[0].company_id,
                             var4: planId, var5: createSession.id, var6: createSession.mode, var7: customer.id,
-                            var8: subscription.id, var9: subscription.trial_end, var10: userCount
+                            var8: subscription.id, var9: subscription.current_period_end, var10: userCount
                         })
                         let saveTrasaction = await connection.query(s4)
 
-                        if (saveTrasaction.rowCount > 0) {
+                        let expiryDate = new Date(Number(subscription.current_period_end) * 1000)
+
+                        let s5 = dbScript(db_sql['Q122'],{var1: expiryDate, var2 : checkuser.rows[0].id })
+                        let updateUserExpiryDate = await connection.query(s5)
+
+                        if (saveTrasaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0) {
                             await connection.query('COMMIT')
                             res.json({
                                 status: 201,
@@ -212,10 +216,6 @@ module.exports.onSuccess = async (req, res) => {
     }
 }
 
-// module.exports.onCancel = async(req, res) => {
-
-// }
-
 
 
 //--------------------Company subscription details--------------------------------------
@@ -240,7 +240,7 @@ module.exports.subscriptionDetails = async (req, res) => {
                 const subscription = await stripe.subscriptions.retrieve(
                     transaction.rows[0].stripe_subscription_id
                 );
-                
+
                 let endDate = new Date(subscription.current_period_end * 1000)
                 let timeDifference = endDate.getTime() - new Date().getTime();
                 //calculate days difference by dividing total milliseconds in a day  
@@ -310,3 +310,12 @@ module.exports.subscriptionDetails = async (req, res) => {
         })
     }
 }
+
+
+// module.exports.recurringPaymentData = async(paymentData) =>{
+//     try {
+        
+//     } catch (error) {
+        
+//     }
+// }

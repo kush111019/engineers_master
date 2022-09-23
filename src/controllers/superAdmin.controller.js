@@ -705,7 +705,6 @@ module.exports.addPlan = async (req, res) => {
 
 }
 
-
 module.exports.plansList = async (req, res) => {
     try {
         let sAEmail = req.user.email
@@ -890,4 +889,111 @@ module.exports.activateOrDeactivatePlan = async (req, res) => {
     }
 }
 
+//---------------------------------config----------------------------------------
 
+module.exports.addConfig = async (req, res) => {
+    try {
+        
+        let { trialDays } = req.body
+        let sAEmail = req.user.email
+        let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
+
+            let id = uuid.v4()
+
+            await connection.query('BEGIN')
+            let s2 = dbScript(db_sql['Q120'],{var1 : id, var2: trialDays})
+            let addConfig = await connection.query(s2)
+
+            if(addConfig.rowCount > 0){
+
+                await connection.query('COMMIT')
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "config added successfully",
+                    data: ""
+                })
+            }
+            else{
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong",
+                    data: ""
+                })
+            }
+
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Super Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.configList = async (req, res) => {
+    try {
+        let sAEmail = req.user.email
+        let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
+
+            let s2 = dbScript(db_sql['Q121'],{})
+            let configList = await connection.query(s2)
+
+            if(configList.rowCount > 0){
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Config list",
+                    data: configList.rows
+                })
+
+            }else{
+                if(configList.rows.length == 0){
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty Config list",
+                        data: []
+                    })
+                }else{
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong",
+                        data: ""
+                    })
+                }
+            }
+
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Super Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+
+}
