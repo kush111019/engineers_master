@@ -52,7 +52,7 @@ let createAdmin = async (bodyData, cId, res) => {
 
         let s9 = dbScript(db_sql['Q121'], {})
         let trialDays = await connection.query(s9)
-        let expiryDate;
+        let expiryDate = '';
         if (trialDays.rowCount > 0) {
             let currentDate = new Date()
             expiryDate = new Date(currentDate.setDate(currentDate.getDate() + Number(trialDays.rows[0].trial_days))).toISOString()

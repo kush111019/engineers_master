@@ -37,7 +37,7 @@ module.exports.paymentReminder = async () => {
                         } else {
                             await recurringPaymentMail(data.emailAddress, data.full_name, endDate);
                         }
-                    } else if (currentDate == endDate) {
+                    } else if (currentDate ==  endDate) {
                         let _dt = new Date().toISOString();
                         await connection.query('BEGIN')
                         let s3 = dbScript(db_sql['Q33'], { var1: true, var2: data.company_id, var3: _dt })

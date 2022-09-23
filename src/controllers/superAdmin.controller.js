@@ -648,7 +648,7 @@ module.exports.addPlan = async (req, res) => {
             const price1 = await stripe.prices.create({
                 nickname: 'For Admin',
                 product: product.id,
-                unit_amount: adminAmount,
+                unit_amount: adminAmount * 100,
                 currency: currency,
                 recurring: { interval: type },
             });
@@ -656,7 +656,7 @@ module.exports.addPlan = async (req, res) => {
             const price2 = await stripe.prices.create({
                 nickname: 'For Users',
                 product: product.id,
-                unit_amount: userAmount,
+                unit_amount: userAmount * 100,
                 currency: currency,
                 recurring: { interval: type },
             });
