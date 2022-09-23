@@ -22,5 +22,9 @@ router.get('/plansList', verifyTokenFn, controller.superAdmin.plansList)
 router.put('/updatePlan', verifyTokenFn, controller.superAdmin.updatePlan)
 router.put('/activateOrDeactivatePlan', verifyTokenFn, controller.superAdmin.activateOrDeactivatePlan)
 
+//-------------------------------Config-----------------------------------
+router.post('/addConfig', verifyTokenFn, controller.superAdmin.addConfig)
+router.get('/configList', verifyTokenFn, controller.superAdmin.configList)
+
 
 module.exports = router;

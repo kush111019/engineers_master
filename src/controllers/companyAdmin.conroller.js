@@ -51,8 +51,13 @@ let createAdmin = async (bodyData, cId, res) => {
         let s4 = dbScript(db_sql['Q13'], { var1: roleId, var2: cId })
         let createRole = await connection.query(s4)
 
+        let s9 = dbScript(db_sql['Q121'],{})
+        let trialDays = await connection.query(s9)
+        let currentDate = new Date()
+        let expiryDate = new Date(currentDate.setDate(currentDate.getDate() + Number(trialDays.rows[0].trial_days)))
+
         let role_id = createRole.rows[0].id
-        let s5 = dbScript(db_sql['Q3'], { var1: id, var2: mysql_real_escape_string(name), var3: cId, var4: companyLogo, var5: emailAddress, var6: mobileNumber, var7: phoneNumber, var8: encryptedPassword, var9: role_id, var10: mysql_real_escape_string(companyAddress) })
+        let s5 = dbScript(db_sql['Q3'], { var1: id, var2: mysql_real_escape_string(name), var3: cId, var4: companyLogo, var5: emailAddress, var6: mobileNumber, var7: phoneNumber, var8: encryptedPassword, var9: role_id, var10: mysql_real_escape_string(companyAddress), var11 : expiryDate })
         let saveuser = await connection.query(s5)
 
         let s6 = dbScript(db_sql['Q7'], {})
@@ -69,6 +74,7 @@ let createAdmin = async (bodyData, cId, res) => {
         let s8 = dbScript(db_sql['Q38'], { var1: JSON.stringify(moduleArr), var2: _dt, var3: role_id })
         let updateModule = await connection.query(s8)
 
+        
         await connection.query('COMMIT')
         if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0) {
             const payload = {
@@ -359,6 +365,7 @@ module.exports.login = async (req, res) => {
                         paymentStatus =  payment.rows[0].payment_status
                     }
                     if(checkRole.rows[0].role_name == 'Admin'){
+                        
                         let payment1 = paymentReminder()
                     }
                     
@@ -383,7 +390,8 @@ module.exports.login = async (req, res) => {
                             profileImage: profileImage,
                             modulePermissions: modulePemissions,
                             configuration: configuration,
-                            paymentStatus : paymentStatus
+                            paymentStatus : paymentStatus,
+                            expiryDate : (checkRole.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : ''
                         }
                     });
                 } else {
