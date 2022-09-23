@@ -230,68 +230,87 @@ module.exports.subscriptionDetails = async (req, res) => {
         if (user.rows.length > 0) {
             let s2 = dbScript(db_sql['Q116'], { var1: user.rows[0].company_id })
             let transaction = await connection.query(s2)
+            if (transaction.rowCount > 0) {
+                let s3 = dbScript(db_sql['Q112'], { var1: transaction.rows[0].plan_id })
+                let planData = await connection.query(s3)
 
-            let s3 = dbScript(db_sql['Q112'], { var1: transaction.rows[0].plan_id })
-            let planData = await connection.query(s3)
+                if (planData.rowCount > 0) {
+                    const product = await stripe.products.retrieve(
+                        planData.rows[0].product_id
+                    );
 
-            if (planData.rowCount > 0) {
-                const product = await stripe.products.retrieve(
-                    planData.rows[0].product_id
-                );
+                    const subscription = await stripe.subscriptions.retrieve(
+                        transaction.rows[0].stripe_subscription_id
+                    );
 
-                const subscription = await stripe.subscriptions.retrieve(
-                    transaction.rows[0].stripe_subscription_id
-                );
+                    let endDate = new Date(subscription.current_period_end * 1000)
+                    let timeDifference = endDate.getTime() - new Date().getTime();
+                    //calculate days difference by dividing total milliseconds in a day  
+                    let daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+                    let days = daysDifference.toString().split('.')
 
-                let endDate = new Date(subscription.current_period_end * 1000)
-                let timeDifference = endDate.getTime() - new Date().getTime();
-                //calculate days difference by dividing total milliseconds in a day  
-                let daysDifference = timeDifference / (1000 * 60 * 60 * 24);
-                let days = daysDifference.toString().split('.')
-                
-                if (product && subscription) {
-                    let details = {
-                        planName: product.name,
-                        planInterval : subscription.items.data[0].plan.interval,
-                        activeStatus: product.active,
-                        description: product.description,
-                        adminPrice : subscription.items.data[0].price.unit_amount,
-                        userPrice : subscription.items.data[1].price.unit_amount,
-                        userCount : subscription.items.data[1].quantity,
-                        endsIn: Number(days[0]),
-                        planType : (subscription.trial_end != null) ? "Trial Plan" : "Paid Plan"
+                    if (product && subscription) {
+                        let details = {
+                            planName: product.name,
+                            planInterval: subscription.items.data[0].plan.interval,
+                            activeStatus: product.active,
+                            description: product.description,
+                            adminPrice: subscription.items.data[0].price.unit_amount,
+                            userPrice: subscription.items.data[1].price.unit_amount,
+                            userCount: subscription.items.data[1].quantity,
+                            endsIn: Number(days[0]),
+                            planType: (subscription.trial_end != null) ? "Trial Plan" : "Paid Plan"
+                        }
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Subscription details",
+                            data: details
+                        })
+                    } else {
+                        let details = {
+                            planName: "",
+                            planInterval: "",
+                            activeStatus: "",
+                            description: "",
+                            adminPrice: "",
+                            userPrice: "",
+                            userCount: "",
+                            endsIn: "",
+                            planType: ""
+                        }
+                        res.json({
+                            status: 200,
+                            success: false,
+                            message: "Empty Subscription details",
+                            data: details
+                        })
                     }
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Subscription details",
-                        data: details
-                    })
+
                 } else {
-                    let details = {
-                        planName: "",
-                        planInterval : "",
-                        activeStatus: "",
-                        description: "",
-                        adminPrice : "",
-                        userPrice : "",
-                        userCount : "",
-                        endsIn: "",
-                        planType : ""
-                    }
                     res.json({
-                        status: 200,
+                        status: 400,
                         success: false,
-                        message: "Empty Subscription details",
-                        data: details
+                        message: "No Subscription details found"
                     })
                 }
-
-            } else {
+            }else{
+                let details = {
+                    planName: "",
+                    planInterval: "",
+                    activeStatus: "",
+                    description: "",
+                    adminPrice: "",
+                    userPrice: "",
+                    userCount: "",
+                    endsIn: "",
+                    planType: ""
+                }
                 res.json({
-                    status: 400,
+                    status: 200,
                     success: false,
-                    message: "No Subscription details found"
+                    message: "Empty Subscription details",
+                    data: details
                 })
             }
 
