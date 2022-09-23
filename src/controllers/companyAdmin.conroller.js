@@ -53,8 +53,12 @@ let createAdmin = async (bodyData, cId, res) => {
 
         let s9 = dbScript(db_sql['Q121'],{})
         let trialDays = await connection.query(s9)
-        let currentDate = new Date()
-        let expiryDate = new Date(currentDate.setDate(currentDate.getDate() + Number(trialDays.rows[0].trial_days)))
+        let expiryDate;
+        if(trialDays.rowCount > 0){
+            let currentDate = new Date()
+            expiryDate = new Date(currentDate.setDate(currentDate.getDate() + Number(trialDays.rows[0].trial_days)))
+        }
+        
 
         let role_id = createRole.rows[0].id
         let s5 = dbScript(db_sql['Q3'], { var1: id, var2: mysql_real_escape_string(name), var3: cId, var4: companyLogo, var5: emailAddress, var6: mobileNumber, var7: phoneNumber, var8: encryptedPassword, var9: role_id, var10: mysql_real_escape_string(companyAddress), var11 : expiryDate })
@@ -75,8 +79,9 @@ let createAdmin = async (bodyData, cId, res) => {
         let updateModule = await connection.query(s8)
 
         
-        await connection.query('COMMIT')
+        
         if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0) {
+            await connection.query('COMMIT')
             const payload = {
                 id: saveuser.rows[0].id,
                 email: saveuser.rows[0].email_address
