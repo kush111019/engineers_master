@@ -15,10 +15,10 @@ module.exports.paymentReminder = async () => {
                     let transaction = await connection.query(s2)
                     if (transaction.rowCount > 0) {
                         let currentDate = new Date()
-                        let endDate = new Date(Number(transaction.rows[0].expiry_date) * 1000)
-                        let beforeWeek = new Date(endDate.setDate(endDate.getDate() - 7))
-                        let beforeThreeDays = new Date(endDate.setDate(endDate.getDate() - 3))
+                        let endDate = transaction.rows[0].expiry_date
                         let beforeOneDay = new Date(endDate.setDate(endDate.getDate() - 1))
+                        let beforeThreeDays = new Date(endDate.setDate(endDate.getDate() - 2))
+                        let beforeWeek = new Date(endDate.setDate(endDate.getDate() - 4))
                         if (currentDate == beforeWeek) {
                             if (process.env.isLocalEmail == 'true') {
                                 await recurringPaymentMail2(data.emailAddress, data.full_name, endDate);
@@ -36,6 +36,14 @@ module.exports.paymentReminder = async () => {
                                 await recurringPaymentMail2(data.emailAddress, data.full_name, endDate);
                             } else {
                                 await recurringPaymentMail(data.emailAddress, data.full_name, endDate);
+                            }
+                        }else if(currentDate == endDate){
+                            let _dt = new Date().toISOString();
+                            await connection.query('BEGIN')
+                            let s3 = dbScript(db_sql['Q33'],{var1 : true ,var2 : data.company_id, var3 : _dt})
+                            let lockUser = await connection.query(s3)
+                            if(lockUser.rowCount > 0){
+                                await connection.query('COMMIT')
                             }
                         }
                     }
