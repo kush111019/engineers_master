@@ -50,8 +50,17 @@ let createAdmin = async (bodyData, cId, res) => {
         let s4 = dbScript(db_sql['Q13'], { var1: roleId, var2: cId })
         let createRole = await connection.query(s4)
 
+        let s9 = dbScript(db_sql['Q121'], {})
+        let trialDays = await connection.query(s9)
+        let expiryDate = '';
+        if (trialDays.rowCount > 0) {
+            let currentDate = new Date()
+            expiryDate = new Date(currentDate.setDate(currentDate.getDate() + Number(trialDays.rows[0].trial_days))).toISOString()
+        }
+
+
         let role_id = createRole.rows[0].id
-        let s5 = dbScript(db_sql['Q3'], { var1: id, var2: mysql_real_escape_string(name), var3: cId, var4: companyLogo, var5: emailAddress, var6: mobileNumber, var7: phoneNumber, var8: encryptedPassword, var9: role_id, var10: mysql_real_escape_string(companyAddress) })
+        let s5 = dbScript(db_sql['Q3'], { var1: id, var2: mysql_real_escape_string(name), var3: cId, var4: companyLogo, var5: emailAddress, var6: mobileNumber, var7: phoneNumber, var8: encryptedPassword, var9: role_id, var10: mysql_real_escape_string(companyAddress), var11: expiryDate })
         let saveuser = await connection.query(s5)
 
         let s6 = dbScript(db_sql['Q7'], {})
@@ -68,26 +77,28 @@ let createAdmin = async (bodyData, cId, res) => {
         let s8 = dbScript(db_sql['Q38'], { var1: JSON.stringify(moduleArr), var2: _dt, var3: role_id })
         let updateModule = await connection.query(s8)
 
-        await connection.query('COMMIT')
+
+
         if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0) {
+            await connection.query('COMMIT')
             const payload = {
                 id: saveuser.rows[0].id,
                 email: saveuser.rows[0].email_address
             }
             let token = await issueJWT(payload)
             link = `http://143.198.102.134:8080/auth/verify-email/${token}`
-            if(process.env.isLocalEmail == 'true'){
-                await welcomeEmail2(emailAddress, link, name); 
+            if (process.env.isLocalEmail == 'true') {
+                await welcomeEmail2(emailAddress, link, name);
                 await connection.query('COMMIT')
                 return res.json({
                     status: 201,
                     success: true,
                     message: ` User Created Successfully and verification link send on registered email `,
                 })
-            }else{
+            } else {
 
                 let emailSent = await welcomeEmail(emailAddress, link, name);
-                if(emailSent.status == 400){
+                if (emailSent.status == 400) {
                     await connection.query('ROLLBACK')
                     return res.json({
                         status: 400,
@@ -95,7 +106,7 @@ let createAdmin = async (bodyData, cId, res) => {
                         message: `Something went wrong`,
                     })
                 }
-                else{
+                else {
                     await connection.query('COMMIT')
                     return res.json({
                         status: 201,
@@ -207,13 +218,13 @@ module.exports.setPasswordForLogin = async (req, res) => {
                 let s2 = dbScript(db_sql['Q6'], { var1: user.email, var2: password, var3: _dt, var4: checkuser.rows[0].company_id })
                 let updateuser = await connection.query(s2)
                 await connection.query('COMMIT')
-                if (updateuser.rowCount == 1){
+                if (updateuser.rowCount == 1) {
                     res.json({
                         status: 201,
                         success: true,
                         message: "Password created Successfully",
                     })
-                }else{
+                } else {
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
@@ -221,7 +232,7 @@ module.exports.setPasswordForLogin = async (req, res) => {
                         message: "Something went wrong",
                     })
                 }
-                    
+
             } else {
                 res.json({
                     status: 400,
@@ -260,13 +271,13 @@ module.exports.verifyUser = async (req, res) => {
                 let s2 = dbScript(db_sql['Q9'], { var1: user.email, var2: _dt })
                 let updateuser = await connection.query(s2)
                 await connection.query('COMMIT')
-                if (updateuser.rowCount == 1){
+                if (updateuser.rowCount == 1) {
                     res.json({
                         status: 200,
                         success: true,
                         message: "User verified Successfully"
                     })
-                }else{
+                } else {
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
@@ -274,7 +285,7 @@ module.exports.verifyUser = async (req, res) => {
                         message: "Something went wrong"
                     })
                 }
-                    
+
             } else {
                 res.json({
                     status: 400,
@@ -308,79 +319,87 @@ module.exports.login = async (req, res) => {
         if (admin.rows.length > 0) {
             if (admin.rows[0].encrypted_password == password) {
                 if (admin.rows[0].is_verified == true) {
+                    if (admin.rows[0].is_locked == false) {
 
-                    let s2 = dbScript(db_sql['Q11'], { var1: admin.rows[0].company_id })
-                    let company = await connection.query(s2)
+                        let s2 = dbScript(db_sql['Q11'], { var1: admin.rows[0].company_id })
+                        let company = await connection.query(s2)
 
-                    let s3 = dbScript(db_sql['Q14'], { var1: admin.rows[0].role_id })
-                    let checkRole = await connection.query(s3)
+                        let s3 = dbScript(db_sql['Q14'], { var1: admin.rows[0].role_id })
+                        let checkRole = await connection.query(s3)
 
-                    let s4 = dbScript(db_sql['Q90'], { var1: admin.rows[0].company_id })
-                    let configs = await connection.query(s4)
-                    let configuration = {}
-                    if (configs.rowCount > 0) {
-                        configuration.id = configs.rows[0].id
-                        configuration.currency = configs.rows[0].currency,
-                            configuration.phoneFormat = configs.rows[0].phone_format,
-                            configuration.dateFormat = configs.rows[0].date_format,
-                            configuration.graphType = configs.rows[0].graph_type
+                        let s4 = dbScript(db_sql['Q90'], { var1: admin.rows[0].company_id })
+                        let configs = await connection.query(s4)
+                        let configuration = {}
+                        if (configs.rowCount > 0) {
+                            configuration.id = configs.rows[0].id
+                            configuration.currency = configs.rows[0].currency,
+                                configuration.phoneFormat = configs.rows[0].phone_format,
+                                configuration.dateFormat = configs.rows[0].date_format,
+                                configuration.graphType = configs.rows[0].graph_type
 
+                        } else {
+
+                            configuration.id = "",
+                                configuration.currency = "",
+                                configuration.phoneFormat = "",
+                                configuration.dateFormat = "",
+                                configuration.graphType = ""
+                        }
+
+                        let moduleId = JSON.parse(checkRole.rows[0].module_ids)
+                        let modulePemissions = []
+                        for (data of moduleId) {
+
+                            let s4 = dbScript(db_sql['Q8'], { var1: data })
+                            let modules = await connection.query(s4)
+
+                            let s5 = dbScript(db_sql['Q39'], { var1: checkRole.rows[0].id, var2: data })
+                            let findModulePermissions = await connection.query(s5)
+
+                            modulePemissions.push({
+                                moduleId: data,
+                                moduleName: modules.rows[0].module_name,
+                                permissions: findModulePermissions.rows
+                            })
+                        }
+
+                        // let s6 = dbScript(db_sql['Q116'], { var1: admin.rows[0].company_id })
+                        // let payment = await connection.query(s6)
+                        // let paymentStatus = 'pending';
+                        // if (payment.rowCount > 0) {
+                        //     paymentStatus = payment.rows[0].payment_status
+                        // }
+                        let payload = {
+                            id: admin.rows[0].id,
+                            email: admin.rows[0].email_address,
+                        }
+                        let jwtToken = await issueJWT(payload);
+                        let profileImage = (checkRole.rows[0].role_name == "Admin") ? company.rows[0].company_logo : admin.rows[0].avatar
+
+                        res.send({
+                            status: 200,
+                            success: true,
+                            message: "Login Successfull",
+                            data: {
+                                token: jwtToken,
+                                id: admin.rows[0].id,
+                                name: admin.rows[0].full_name,
+                                isAdmin: admin.rows[0].is_admin,
+                                role: checkRole.rows[0].role_name,
+                                profileImage: profileImage,
+                                modulePermissions: modulePemissions,
+                                configuration: configuration,
+                                //paymentStatus: paymentStatus,
+                                expiryDate: (checkRole.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : ''
+                            }
+                        });
                     } else {
-
-                        configuration.id = "",
-                            configuration.currency = "",
-                            configuration.phoneFormat = "",
-                            configuration.dateFormat = "",
-                            configuration.graphType = ""
-                    }
-
-                    let moduleId = JSON.parse(checkRole.rows[0].module_ids)
-                    let modulePemissions = []
-                    for (data of moduleId) {
-
-                        let s4 = dbScript(db_sql['Q8'], { var1: data })
-                        let modules = await connection.query(s4)
-
-                        let s5 = dbScript(db_sql['Q39'], { var1: checkRole.rows[0].id, var2: data })
-                        let findModulePermissions = await connection.query(s5)
-
-                        modulePemissions.push({
-                            moduleId: data,
-                            moduleName: modules.rows[0].module_name,
-                            permissions: findModulePermissions.rows
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "not subscribed for any plan"
                         })
                     }
-
-                    let s6 = dbScript(db_sql['Q116'],{var1 :admin.rows[0].id ,var2 : admin.rows[0].company_id})
-                    let payment = await connection.query(s6)
-                    let paymentStatus = 'pending';
-                    if(payment.rowCount > 0){
-                        paymentStatus =  payment.rows[0].payment_status
-                    }
-
-                    let payload = {
-                        id: admin.rows[0].id,
-                        email: admin.rows[0].email_address,
-                    }
-                    let jwtToken = await issueJWT(payload);
-                    let profileImage = (checkRole.rows[0].role_name == "Admin") ? company.rows[0].company_logo : admin.rows[0].avatar
-
-                    res.send({
-                        status: 200,
-                        success: true,
-                        message: "Login Successfull",
-                        data: {
-                            token: jwtToken,
-                            id: admin.rows[0].id,
-                            name: admin.rows[0].full_name,
-                            isAdmin: admin.rows[0].is_admin,
-                            role: checkRole.rows[0].role_name,
-                            profileImage: profileImage,
-                            modulePermissions: modulePemissions,
-                            configuration: configuration,
-                            paymentStatus : paymentStatus
-                        }
-                    });
                 } else {
                     res.json({
                         status: 400,
@@ -430,7 +449,6 @@ module.exports.showProfile = async (req, res) => {
                 checkUser.rows[0].companyAddress = ""
                 checkUser.rows[0].companyLogo = ""
             }
-
             res.json({
                 status: 200,
                 success: true,
@@ -598,23 +616,23 @@ module.exports.forgotPassword = async (req, res) => {
             }
             let token = await issueJWT(payload)
             let link = `http://143.198.102.134:8080/auth/reset-password/${token}`
-            if(process.env.isLocalEmail == 'true'){
+            if (process.env.isLocalEmail == 'true') {
                 await resetPasswordMail2(emailAddress, link, checkuser.rows[0].full_name);
                 res.json({
                     status: 200,
                     success: true,
                     message: "New link sent to your email address",
                 })
-            }else{
+            } else {
                 console.log('2222222222222222222222');
                 let emailSend = await resetPasswordMail(emailAddress, link, checkuser.rows[0].full_name);
-                if(emailSend.status == 400){
+                if (emailSend.status == 400) {
                     res.json({
                         status: 400,
                         success: false,
                         message: "Something went wrong",
                     })
-                }else{
+                } else {
                     res.json({
                         status: 200,
                         success: true,
@@ -652,7 +670,7 @@ module.exports.resetPassword = async (req, res) => {
             if (checkuser.rows.length > 0) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s2 = dbScript(db_sql['Q6'], { var1: user.email, var2: password, var3: _dt, var4: checkuser.rows[0].company_id})
+                let s2 = dbScript(db_sql['Q6'], { var1: user.email, var2: password, var3: _dt, var4: checkuser.rows[0].company_id })
                 let updateuser = await connection.query(s2)
                 await connection.query('COMMIT')
                 if (updateuser.rowCount == 1) {
@@ -701,88 +719,90 @@ module.exports.resetPassword = async (req, res) => {
 
 //------------------------------------------cron job ----------------------------------------
 
-module.exports.recurringPaymentCron = async () => {
+// module.exports.recurringPaymentCron = async () => {
 
-    let s1 = dbScript(db_sql['Q88'], {})
-    let salesCommissionList = await connection.query(s1)
-    if (salesCommissionList.rowCount > 0) {
-        for (let data of salesCommissionList.rows) {
-            if (data.sales_type == "Subscription") {
+//     let s1 = dbScript(db_sql['Q88'], {})
+//     let salesCommissionList = await connection.query(s1)
+//     if (salesCommissionList.rowCount > 0) {
+//         for (let data of salesCommissionList.rows) {
+//             if (data.sales_type == "Subscription") {
 
-                const str = data.recurring_date;
-                const [month, day, year] = str.split('/');
+//                 const str = data.recurring_date;
+//                 const [month, day, year] = str.split('/');
 
-                const recurringDate = new Date(+year, month - 1, +day);
-                let currentDate = new Date()
-                let currentDate1 = currentDate.toISOString().split('T');
+//                 const recurringDate = new Date(+year, month - 1, +day);
+//                 let currentDate = new Date()
+//                 let currentDate1 = currentDate.toISOString().split('T');
 
-                if (data.subscription_plan == "Monthly") {
-                    let date = currentDate.getDate()
-                    let day = recurringDate.getDate()
-                    if (date == day) {
-                        let s2 = dbScript(db_sql['Q60'], { var1: data.customer_id })
-                        let customers = await connection.query(s2)
-                        for (let customerData of customers) {
-                            let s3 = dbScript(db_sql['Q10'], { var1: customerData.user_id })
-                            let userData = await connection.query(s3)
-                            let s4 = dbScript(db_sql['Q14'], { var1: userData.rows[0].role_id })
-                            let role = await connection.query(s4)
-                            if (role.rows[0].role_name == 'Admin') {
-                                await recurringPaymentMail(userData.email_address, customerData.customer_name)
-                            } else {
-                                let s5 = dbScript(db_sql['Q16'], { var1: userData.rows[0].company_id })
-                                let roleData = await connection.query(s5)
-                                for (role of roleData) {
-                                    if (role.role_name == 'Admin') {
-                                        let s6 = dbScript(db_sql['Q24'], { var1: role.id, var2: userData.rows[0].company_id })
-                                        let adminData = await connection.query(s6)
-                                        await recurringPaymentMail(adminData.rows[0].email_address, customerData.customer_name)
-                                        await recurringPaymentMail(userData.email_address, customerData.customer_name)
-                                    }
+//                 if (data.subscription_plan == "Monthly") {
+//                     let date = currentDate.getDate()
+//                     let day = recurringDate.getDate()
+//                     if (date == day) {
+//                         let s2 = dbScript(db_sql['Q60'], { var1: data.customer_id })
+//                         let customers = await connection.query(s2)
+//                         for (let customerData of customers) {
+//                             let s3 = dbScript(db_sql['Q10'], { var1: customerData.user_id })
+//                             let userData = await connection.query(s3)
+//                             let s4 = dbScript(db_sql['Q14'], { var1: userData.rows[0].role_id })
+//                             let role = await connection.query(s4)
+//                             if (role.rows[0].role_name == 'Admin') {
+//                                 await recurringPaymentMail(userData.email_address, customerData.customer_name)
+//                             } else {
+//                                 let s5 = dbScript(db_sql['Q16'], { var1: userData.rows[0].company_id })
+//                                 let roleData = await connection.query(s5)
+//                                 for (role of roleData) {
+//                                     if (role.role_name == 'Admin') {
+//                                         let s6 = dbScript(db_sql['Q24'], { var1: role.id, var2: userData.rows[0].company_id })
+//                                         let adminData = await connection.query(s6)
+//                                         await recurringPaymentMail(adminData.rows[0].email_address, customerData.customer_name)
+//                                         await recurringPaymentMail(userData.email_address, customerData.customer_name)
+//                                     }
 
-                                }
+//                                 }
 
-                            }
+//                             }
 
 
 
-                        }
-                    }
-                }
-                if (data.subscription_plan == "Yearly") {
-                    let difference = await getYearDifference(recurringDate, currentDate)
-                    let futureDate = new Date(recurringDate.setFullYear(recurringDate.getFullYear() + difference))
-                    let recurringDate1 = futureDate.toISOString().split('T');
-                    if (currentDate1[0] == recurringDate1[0]) {
-                        let s2 = dbScript(db_sql['Q60'], { var1: data.customer_id })
-                        let customers = await connection.query(s2)
-                        for (let customerData of customers) {
-                            let s3 = dbScript(db_sql['Q10'], { var1: customerData.user_id })
-                            let userData = await connection.query(s3)
-                            let s4 = dbScript(db_sql['Q14'], { var1: userData.rows[0].role_id })
-                            let role = await connection.query(s4)
-                            if (role.rows[0].role_name == 'Admin') {
-                                await recurringPaymentMail(userData.email_address, customerData.customer_name)
-                            } else {
-                                let s5 = dbScript(db_sql['Q16'], { var1: userData.rows[0].company_id })
-                                let roleData = await connection.query(s5)
-                                for (role of roleData) {
-                                    if (role.role_name == 'Admin') {
-                                        let s6 = dbScript(db_sql['Q24'], { var1: role.id })
-                                        let adminData = await connection.query(s6)
-                                        await recurringPaymentMail(adminData.rows[0].email_address, customerData.customer_name)
-                                        await recurringPaymentMail(userData.email_address, customerData.customer_name)
-                                    }
+//                         }
+//                     }
+//                 }
+//                 if (data.subscription_plan == "Yearly") {
+//                     let difference = await getYearDifference(recurringDate, currentDate)
+//                     let futureDate = new Date(recurringDate.setFullYear(recurringDate.getFullYear() + difference))
+//                     let recurringDate1 = futureDate.toISOString().split('T');
+//                     if (currentDate1[0] == recurringDate1[0]) {
+//                         let s2 = dbScript(db_sql['Q60'], { var1: data.customer_id })
+//                         let customers = await connection.query(s2)
+//                         for (let customerData of customers) {
+//                             let s3 = dbScript(db_sql['Q10'], { var1: customerData.user_id })
+//                             let userData = await connection.query(s3)
+//                             let s4 = dbScript(db_sql['Q14'], { var1: userData.rows[0].role_id })
+//                             let role = await connection.query(s4)
+//                             if (role.rows[0].role_name == 'Admin') {
+//                                 await recurringPaymentMail(userData.email_address, customerData.customer_name)
+//                             } else {
+//                                 let s5 = dbScript(db_sql['Q16'], { var1: userData.rows[0].company_id })
+//                                 let roleData = await connection.query(s5)
+//                                 for (role of roleData) {
+//                                     if (role.role_name == 'Admin') {
+//                                         let s6 = dbScript(db_sql['Q24'], { var1: role.id })
+//                                         let adminData = await connection.query(s6)
+//                                         await recurringPaymentMail(adminData.rows[0].email_address, customerData.customer_name)
+//                                         await recurringPaymentMail(userData.email_address, customerData.customer_name)
+//                                     }
 
-                                }
+//                                 }
 
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//}
+
+
 
 
