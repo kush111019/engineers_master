@@ -54,9 +54,9 @@ module.exports.revenuePerCustomer = async (req, res) => {
                     }
                 } else {
                     res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
+                        status: 200,
+                        success: true,
+                        message: "No customers available, hence no revenues"
                     })
                 }
 
@@ -130,15 +130,15 @@ module.exports.revenuePerProduct = async (req, res) => {
                     }
                 } else {
                     res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
+                        status: 200,
+                        success: true,
+                        message: "No customers available"
                     })
                 }
             } else {
                 res.status(403).json({
                     success: false,
-                    message: "Unathorised"
+                    message: "Unauthorised"
                 })
             }
         } else {
@@ -212,16 +212,16 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                     }
                 } else {
                     res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
+                        status: 200,
+                        success: true,
+                        message: "No Sales data available"
                     })
                 }
 
             } else {
                 res.status(403).json({
                     success: false,
-                    message: "Unathorised"
+                    message: "Unauthorised"
                 })
             }
         } else {
