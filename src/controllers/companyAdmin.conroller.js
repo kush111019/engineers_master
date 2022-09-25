@@ -45,7 +45,7 @@ let createAdmin = async (bodyData, cId, res) => {
     let s3 = dbScript(db_sql['Q4'], { var1: emailAddress })
     let findUser = await connection.query(s3)
     if (findUser.rowCount == 0) {
-        // await connection.query('BEGIN')
+        await connection.query('BEGIN')
         let roleId = uuid.v4()
         let s4 = dbScript(db_sql['Q13'], { var1: roleId, var2: cId })
         let createRole = await connection.query(s4)
@@ -58,9 +58,11 @@ let createAdmin = async (bodyData, cId, res) => {
             expiryDate = new Date(currentDate.setDate(currentDate.getDate() + Number(trialDays.rows[0].trial_days))).toISOString()
         }
 
-
         let role_id = createRole.rows[0].id
-        let s5 = dbScript(db_sql['Q3'], { var1: id, var2: mysql_real_escape_string(name), var3: cId, var4: companyLogo, var5: emailAddress, var6: mobileNumber, var7: phoneNumber, var8: encryptedPassword, var9: role_id, var10: mysql_real_escape_string(companyAddress), var11: expiryDate })
+        let s5 = dbScript(db_sql['Q3'], { var1: id, var2: mysql_real_escape_string(name), 
+                    var3: cId, var4: companyLogo, var5: emailAddress, var6: mobileNumber, 
+                    var7: phoneNumber, var8: encryptedPassword, var9: role_id, 
+                    var10: mysql_real_escape_string(companyAddress), var11: expiryDate })
         let saveuser = await connection.query(s5)
 
         let s6 = dbScript(db_sql['Q7'], {})
@@ -69,15 +71,14 @@ let createAdmin = async (bodyData, cId, res) => {
         for (data of findModules.rows) {
             moduleArr.push(data.id)
             let perId = uuid.v4()
-            let s7 = dbScript(db_sql['Q23'], { var1: perId, var2: role_id, var3: data.id, var4: saveuser.rows[0].id })
+            let s7 = dbScript(db_sql['Q23'], { var1: perId, var2: role_id, var3: data.id, 
+                        var4: saveuser.rows[0].id })
             var addPermission = await connection.query(s7)
-
         }
         let _dt = new Date().toISOString();
-        let s8 = dbScript(db_sql['Q38'], { var1: JSON.stringify(moduleArr), var2: _dt, var3: role_id })
+        let s8 = dbScript(db_sql['Q38'], { var1: JSON.stringify(moduleArr), var2: _dt, 
+                    var3: role_id })
         let updateModule = await connection.query(s8)
-
-
 
         if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0) {
             await connection.query('COMMIT')
@@ -96,7 +97,6 @@ let createAdmin = async (bodyData, cId, res) => {
                     message: ` User Created Successfully and verification link send on registered email `,
                 })
             } else {
-
                 let emailSent = await welcomeEmail(emailAddress, link, name);
                 if (emailSent.status == 400) {
                     await connection.query('ROLLBACK')
@@ -125,11 +125,11 @@ let createAdmin = async (bodyData, cId, res) => {
             })
         }
     } else {
-        await connection.query('ROLLBACK')
+        //await connection.query('ROLLBACK')
         return res.json({
             status: 200,
             success: false,
-            message: "user Already Exists",
+            message: "User already exists",
             data: ""
         })
     }
