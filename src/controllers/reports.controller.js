@@ -284,7 +284,7 @@ module.exports.totalRevenue = async (req, res) => {
                         status: 200,
                         success: true,
                         message: "Empty total revenue",
-                        data: ''
+                        data: []
                     })
                 }
             } else {
