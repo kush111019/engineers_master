@@ -8,7 +8,7 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
 const { mysql_real_escape_string } = require('../utils/helper')
 
-module.exports.userCount = async(req, res) => {
+module.exports.userCount = async (req, res) => {
     try {
         let userEmail = req.user.email
 
@@ -17,26 +17,34 @@ module.exports.userCount = async(req, res) => {
 
         if (findAdmin.rows.length > 0) {
 
-            let s2 = dbScript(db_sql['Q17'],{var1 : findAdmin.rows[0].company_id})
+            let s2 = dbScript(db_sql['Q17'], { var1: findAdmin.rows[0].company_id })
             let users = await connection.query(s2)
 
-            let s3 = dbScript(db_sql['Q116'],{var1 : findAdmin.rows[0].company_id})
+            let s3 = dbScript(db_sql['Q116'], { var1: findAdmin.rows[0].company_id })
             let count = await connection.query(s3)
-            
-            if(users.rowCount-1 < count.rows[0].user_count){
+
+            if (count.rows.length > 0) {
+                if (users.rowCount - 1 < count.rows[0].user_count) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: 'Can add users'
+                    })
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: 'Plan limit exists! Can not add more users'
+                    })
+                }
+            } else {
                 res.json({
                     status: 200,
-                    success : true,
-                    message : 'Can add users'
-                })
-            }else{
-                res.json({
-                    status: 400,
-                    success : false,
-                    message : 'Plan limit exists! Can not add more users'
+                    success: true,
+                    message: 'Empty User List'
                 })
             }
-        }else {
+        } else {
             res.json({
                 status: 400,
                 success: false,
@@ -95,7 +103,7 @@ module.exports.addUser = async (req, res) => {
                         }
                         let token = await issueJWT(payload)
                         link = `http://143.198.102.134:8080/auth/reset-password/${token}`
-                        if(process.env.isLocalEmail == 'true'){
+                        if (process.env.isLocalEmail == 'true') {
                             await setPasswordMail2(emailAddress, link, name);
                             await connection.query('COMMIT')
                             res.json({
@@ -103,16 +111,16 @@ module.exports.addUser = async (req, res) => {
                                 success: true,
                                 message: `User created successfully and link send for set password on ${emailAddress} `
                             })
-                        }else{
+                        } else {
                             let emailSent = await setPasswordMail(emailAddress, link, name);
-                            if(emailSent.status == 400){
+                            if (emailSent.status == 400) {
                                 await connection.query('ROLLBACK')
                                 res.json({
                                     status: 400,
                                     success: false,
                                     message: "Something went wrong"
                                 })
-                            }else{
+                            } else {
                                 await connection.query('COMMIT')
                                 res.json({
                                     status: 201,
