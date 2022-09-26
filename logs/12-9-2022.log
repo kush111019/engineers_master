@@ -1,0 +1,5 @@
+{"method":"GET","path":"/api/v1/companyAdmin/moduleList","time":"2022-09-12T06:35:11.344Z","status":401,"data":{},"ua":"PostmanRuntime/7.29.2"}
+{"method":"POST","path":"/api/v1/auth/login","time":"2022-09-12T06:35:27.447Z","status":200,"data":{"emailAddress":"jackie@yopmail.com","password":"Test@123#"},"ua":"PostmanRuntime/7.29.2"}
+{"method":"GET","path":"/api/v1/companyAdmin/moduleList","time":"2022-09-12T06:35:43.340Z","status":200,"data":{},"ua":"PostmanRuntime/7.29.2"}
+{"method":"GET","path":"/api/v1/companyAdmin/revenues","time":"2022-09-12T11:24:47.811Z","status":200,"data":{},"ua":"PostmanRuntime/7.29.2"}
+{"method":"GET","path":"/api/v1/companyAdmin/revenues","time":"2022-09-12T11:27:06.795Z","status":200,"data":{},"ua":"PostmanRuntime/7.29.2"}
