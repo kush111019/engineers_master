@@ -1,0 +1,8 @@
+{"method":"GET","path":"/","time":"2022-09-17T03:07:54.158Z","status":404,"data":{},"ua":"curl/7.64.1"}
+{"method":"GET","path":"/","time":"2022-09-17T03:07:58.189Z","status":404,"data":{},"ua":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"}
+{"method":"GET","path":"/favicon.ico","time":"2022-09-17T03:07:58.428Z","status":404,"data":{},"ua":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"}
+{"method":"GET","path":"/","time":"2022-09-17T08:30:11.167Z","status":404,"data":{},"ua":"Mozilla/5.0 (compatible; CensysInspect/1.1; +https://about.censys.io/)"}
+{"method":"PRI","path":"*","time":"2022-09-17T08:30:11.403Z","status":200,"data":{}}
+{"method":"POST","path":"/api/v1/auth/setPassword","time":"2022-09-17T09:19:43.417Z","status":200,"data":{"password":"83107e45467d558de2d139084c63617ab8a1b2b6787405c4595b8d9ad9d0b6a70d49e9e5f68f794ec455649ab1ebc072451557d3e0e558f76f142e51f84ee715","token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjQwNDA1NGZkLTk5MTItNDJjMC1iYTVkLWU3MDE2YWUwOWU2OSIsImVtYWlsIjoiY29sbGluQHlvcG1haWwuY29tIiwiaWF0IjoxNjYzMDY5NTE3LCJleHAiOjE2NjMxNTU5MTd9.8nm6C--UxAejunxZSERuVbJJwP5aT1zvoFFW1mcoBKs"},"ua":"Mozilla/5.0 (Linux; Android 10; TECNO LD7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Mobile Safari/537.36"}
+{"method":"GET","path":"/","time":"2022-09-17T12:09:51.123Z","status":404,"data":{},"ua":"Mozilla/5.0 (compatible; CensysInspect/1.1; +https://about.censys.io/)"}
+{"method":"PRI","path":"*","time":"2022-09-17T12:09:51.315Z","status":200,"data":{}}

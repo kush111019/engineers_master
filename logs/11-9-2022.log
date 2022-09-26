@@ -1,0 +1,5 @@
+{"method":"GET","path":"/","time":"2022-09-10T12:58:38.979Z","status":404,"data":{},"ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36"}
+{"method":"GET","path":"/","time":"2022-09-10T14:06:24.375Z","status":404,"data":{},"ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36"}
+{"method":"GET","path":"/","time":"2022-09-10T14:45:27.977Z","status":404,"data":{}}
+{"method":"GET","path":"/","time":"2022-09-10T14:45:28.126Z","status":404,"data":{},"ua":"Mozilla/5.0 (compatible; CensysInspect/1.1; +https://about.censys.io/)"}
+{"method":"PRI","path":"*","time":"2022-09-10T14:45:28.244Z","status":200,"data":{}}

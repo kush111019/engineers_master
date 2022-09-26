@@ -1,0 +1,2 @@
+{"method":"GET","path":"/","time":"2022-09-11T04:24:05.691Z","status":404,"data":{},"ua":"Mozilla/5.0 (compatible; CensysInspect/1.1; +https://about.censys.io/)"}
+{"method":"PRI","path":"*","time":"2022-09-11T04:24:05.859Z","status":200,"data":{}}
