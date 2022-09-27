@@ -1012,10 +1012,13 @@ module.exports.subcribedCompaniesList = async (req, res) => {
             if (users.rowCount > 0) {
                 let subcribedCompanies = []
                 let trialCompanies = []
+                let s3 = dbScript(db_sql['Q121'], {})
+                let configList = await connection.query(s3)
+                console.log(configList.rows[0]);
                 for (let userData of users.rows) {
                     if (userData.is_admin) {
-                        let s3 = dbScript(db_sql['Q116'], { var1: userData.company_id })
-                        let transactions = await connection.query(s3)
+                        let s4 = dbScript(db_sql['Q116'], { var1: userData.company_id })
+                        let transactions = await connection.query(s4)
                         let s5 = dbScript(db_sql['Q11'], { var1: userData.company_id })
                         let companyDetails = await connection.query(s5)
                         if (transactions.rows.length > 0) {
@@ -1025,6 +1028,8 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                                 subcribedCompanies.push({
                                     companyId: userData.company_id,
                                     companyName: companyDetails.rows[0].company_name,
+                                    companyAddress : companyDetails.rows[0].company_address,
+                                    companyLogo : companyDetails.rows[0].company_logo,
                                     planName: plan.rows[0].name,
                                     planInterval: plan.rows[0].interval,
                                     PlanExpiryDate: userData.expiry_date,
@@ -1032,15 +1037,15 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                                 })
                             }
                         }else{
-                            let s2 = dbScript(db_sql['Q121'], {})
-                            let configList = await connection.query(s2)
                             trialCompanies.push({
                                 companyId: userData.company_id,
                                 companyName: companyDetails.rows[0].company_name,
+                                companyAddress : companyDetails.rows[0].company_address,
+                                companyLogo : companyDetails.rows[0].company_logo,
                                 planName: "Trial",
-                                planInterval: configList.rows[0].trialDays,
+                                planInterval: `${configList.rows[0].trial_days} days`,
                                 PlanExpiryDate: userData.expiry_date,
-                                userCount: ""
+                                userCount: "no limit"
                             })
                         }
                     }
@@ -1049,7 +1054,7 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                     res.json({
 
                         status: 200,
-                        success: false,
+                        success: true,
                         message: 'Subscribed/Trial Companies List',
                         data: {
                             subcribedCompanies : subcribedCompanies,
@@ -1067,12 +1072,11 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                          }
                     })
                 }
-
             } else {
                 res.json({
                     status: 200,
                     success: false,
-                    message: 'Empty users list',
+                    message: 'Empty Companies list',
                     data: []
                 })
             }
@@ -1094,3 +1098,5 @@ module.exports.subcribedCompaniesList = async (req, res) => {
     }
 
 }
+
+

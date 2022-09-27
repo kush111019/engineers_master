@@ -196,7 +196,6 @@ module.exports.createPayment = async (req, res) => {
     }
 }
 
-
 module.exports.subscriptionDetails = async (req, res) => {
     try {
         let userEmail = req.user.email
@@ -306,5 +305,7 @@ module.exports.subscriptionDetails = async (req, res) => {
         })
     }
 }
+
+
 
 
