@@ -1089,7 +1089,6 @@ module.exports.subcribedCompaniesList = async (req, res) => {
             })
         }
     } catch (error) {
-        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,
@@ -1099,4 +1098,86 @@ module.exports.subcribedCompaniesList = async (req, res) => {
 
 }
 
+module.exports.activeAndCanceledCompanies = async (req, res) => {
+    try {
+        let sAEmail = req.user.email
+        let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
 
+            let s2 = dbScript(db_sql['Q107'],{})
+            let companies = await connection.query(s2)
+
+            if(companies.rowCount > 0){
+                let activeCompanies = []
+                let canceledCompanies = []
+                for(let companyData of companies.rows){
+                    let s3 = dbScript(db_sql['Q116'], {var1 : companyData.id})
+                    let transaction = await connection.query(s3);
+                    if(transaction.rowCount > 0){
+                        const subscription = await stripe.subscriptions.retrieve(
+                            transaction.rows[0].stripe_subscription_id
+                        );
+                        if(subscription.status == 'active'){
+                            activeCompanies.push({
+                                companyId : companyData.id,
+                                companyName : companyData.company_name,
+                                status : subscription.status
+                            })
+                        }else if(subscription.status == 'canceled'){
+                            canceledCompanies.push({
+                                companyId : companyData.id,
+                                companyName : companyData.company_name,
+                                status : subscription.status
+                            })
+                        }  
+                    }
+                }
+                if(activeCompanies.length > 0 || canceledCompanies.length > 0){
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Active and canceled companies",
+                        data: {
+                            activeCompanies : activeCompanies,
+                            canceledCompanies : canceledCompanies
+                        }
+                    })
+                }else{
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty active and canceled companies",
+                        data: {
+                            activeCompanies : activeCompanies,
+                            canceledCompanies : canceledCompanies
+                        }
+                    })
+                }
+
+            }else{
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty companies list",
+                    data: []
+                })
+            }
+
+
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Super Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
