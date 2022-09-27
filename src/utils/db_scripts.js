@@ -147,15 +147,18 @@ const db_sql = {
     "Q113" : `update payment_plans set name = '{var1}', description = '{var2}', 
                updated_at = '{var3}' where id = '{var4}' and deleted_at is null returning *` ,
     "Q114" : `update payment_plans set active_status = '{var1}', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`,
-    "Q115" : `insert into transactions(id, user_id, company_id, plan_id, session_id, payment_mode, stripe_customer_id, stripe_subscription_id,expiry_date,user_count, payment_status)
-              values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}','{var8}', '{var9}', '{var10}', 'pending') returning *` ,
-    "Q116" : `select id, user_id, company_id, plan_id, session_id, payment_mode, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id from transactions where company_id = '{var1}' and deleted_at is null`,
+    "Q115" : `insert into transactions(id, user_id, company_id, plan_id, stripe_customer_id,
+              stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, expiry_date,
+              user_count, payment_status) values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', 
+              '{var6}', '{var7}','{var8}', '{var9}', '{var10}','{var11}','{var12}') returning *` ,
+    "Q116" : `select id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id  from transactions where company_id = '{var1}' and deleted_at is null`,
     "Q117" : `update transactions set payment_status = 'paid' where session_id = '{var1}' and deleted_at is null returning *`,
     "Q118" : `select id, name, description, active_status, interval, admin_amount,user_amount, currency from payment_plans where deleted_at is null`,
     "Q119" : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified, is_admin, expiry_date from users where deleted_at is null`,
     "Q120" : `insert into superadmin_config(id, trial_days) values('{var1}', '{var2}') returning *`,
     "Q121" : `select id, trial_days, created_at from superadmin_config where deleted_at is null ORDER BY created_at desc ` ,
-    "Q122" : `update users set expiry_date = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null returning *`                                   
+    "Q122" : `update users set expiry_date = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null returning *`,
+    "Q123" : `select id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id from transactions where deleted_at is null`                                   
 
  };
 

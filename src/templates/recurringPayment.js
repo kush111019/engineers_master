@@ -59,12 +59,6 @@ module.exports.recurringPayment = function (customerName,endDate) {
                                     </tr>
                                 </table>
                             </td>
-                        <tr>
-                            <td style="height:20px;">&nbsp;</td>
-                        </tr>
-                        <tr>
-                            <td style="height:80px;">&nbsp;</td>
-                        </tr>
                     </table>
                 </td>
             </tr>

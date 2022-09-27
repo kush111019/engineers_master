@@ -54,7 +54,6 @@ let verifyTokenFn = async (req) => {
             return decoded;
         }
     });
-    console.log(user);
     return user
 }
 
@@ -62,7 +61,11 @@ module.exports.createPayment = async (req, res) => {
     try {
         let {
             planId,
-            userCount
+            userCount,
+            cardNumber,
+            expMonth,
+            expYear,
+            cvc
         } = req.body
         let user = await verifyTokenFn(req)
         if (user) {
@@ -71,6 +74,7 @@ module.exports.createPayment = async (req, res) => {
             if (checkuser.rows.length > 0) {
                 let s2 = dbScript(db_sql['Q112'], { var1: planId })
                 let planData = await connection.query(s2)
+
                 if (planData.rowCount > 0) {
 
                     const customer = await stripe.customers.create({
@@ -79,6 +83,18 @@ module.exports.createPayment = async (req, res) => {
                         phone: checkuser.rows[0].mobile_number,
                         description: "Hirise-sales subscription",
                     });
+                    const token = await stripe.tokens.create({
+                        card: {
+                          number: cardNumber,
+                          exp_month: expMonth,
+                          exp_year:  expYear,
+                          cvc: cvc,
+                        },
+                    });
+                    const card = await stripe.customers.createSource(
+                        customer.id,
+                        {source: token.id}
+                    ); 
                     const subscription = await stripe.subscriptions.create({
                         customer: customer.id,
                         items: [
@@ -91,29 +107,32 @@ module.exports.createPayment = async (req, res) => {
                         },
                         coupon: (planData.rows[0].interval == 'year') ? 'Omgx6XvX' : ''
                     });
-                    const createSession = await stripe.checkout.sessions.create({
-                        mode: 'subscription',
-                        customer: customer.id,
-                        line_items: [
-                            { price: planData.rows[0].admin_price_id, quantity: 1 },
-                            { price: planData.rows[0].user_price_id, quantity: userCount }
-                        ],
-                        success_url: process.env.SUCCESS_URL,
-                        cancel_url: process.env.CANCEL_URL
+                    let totalAmount = 0
+                    for(let data of subscription.items.data){
+                            let totalPrice = data.price.unit_amount * data.quantity
+                            totalAmount = totalAmount + totalPrice;
+                    }
+                    const charge = await stripe.charges.create({
+                        amount: totalAmount,
+                        currency: subscription.currency,
+                        customer : customer.id,
+                        source: card.id
                     });
-                    if (createSession && customer && subscription) {
+                    if (charge && customer && subscription && token && card) {
+
                         let id = uuid.v4()
                         await connection.query('BEGIN')
                         let s4 = dbScript(db_sql['Q115'], {
                             var1: id, var2: user.id, var3: checkuser.rows[0].company_id,
-                            var4: planId, var5: createSession.id, var6: createSession.mode, var7: customer.id,
-                            var8: subscription.id, var9: subscription.current_period_end, var10: userCount
+                            var4: planId, var5: customer.id,var6: subscription.id, var7: card.id,
+                            var8: token.id, var9 : charge.id, var10 : subscription.current_period_end,
+                            var11 : userCount , var12 : charge.status
                         })
                         let saveTrasaction = await connection.query(s4)
 
                         let expiryDate = new Date(Number(subscription.current_period_end) * 1000).toISOString()
                         let _dt = new Date().toISOString();
-
+                        
                         let s5 = dbScript(db_sql['Q122'],{var1: expiryDate, var2 : checkuser.rows[0].id , var3 : _dt })
                         let updateUserExpiryDate = await connection.query(s5)
 
@@ -125,8 +144,8 @@ module.exports.createPayment = async (req, res) => {
                             res.json({
                                 status: 201,
                                 success: true,
-                                message: 'Transaction initiated',
-                                data: createSession.url
+                                message: 'Transaction Completed',
+                                data: charge.receipt_url
                             })
                         } else {
                             res.json({
@@ -177,35 +196,95 @@ module.exports.createPayment = async (req, res) => {
     }
 }
 
-module.exports.onSuccess = async (req, res) => {
+// module.exports.onSuccess = async (req, res) => {
+//     try {
+//         let { sessionId } = req.params
+//         const session = await stripe.checkout.sessions.retrieve(sessionId);
+//         if (session.payment_status == 'paid') {
+//             let s2 = dbScript(db_sql['Q117'], { var1: sessionId })
+//             let updateSession = await connection.query(s2)
+//             if (updateSession.rowCount > 0) {
+//                 res.set("Content-Type", "text/html");
+//                 res.send(
+//                     Buffer.from(
+//                         '<html><head head ><link href="https://fonts.googleapis.com/css?family=Nunito+Sans:400,400i,700,900&display=swap" rel="stylesheet"></head><style>body {text-align: center;padding: 40px 0;background: #EBF0F5;}h1 {color: #88B04B;font-family: "Nunito Sans", "Helvetica Neue", sans-serif;font-weight: 900;font-size: 40px;margin-bottom: 10px;p {color: #404F5E;font-family: "Nunito Sans", "Helvetica Neue", sans-serif;font-size:20px; margin: 0;} i{color: #9ABC66;font-size: 100px;line-height: 200px;margin-left:-15px;}.card {background: white;padding: 60px;border-radius: 4px;box-shadow: 0 2px 3px #C8D0D8;display: inline-block;margin: 0 auto;</style><body><div class="card"><div style="border-radius:200px; height:200px; width:200px; background: #F8FAF5; margin:0 auto;"><i style="color: #9ABC66;font-size: 100px;line-height: 200px;margin-left:-15px;" class="checkmark">✓</i></div><h1>Success</h1> <p>Your payment successfully done!</p><a href="http://143.198.102.134:8080/auth/login"><button style="color: #fff;background: #1F0757; height:50px; width:120px;font-size: 15px;" >Login</button></a></div></body></html>'
+//                     )
+//                 );
+//             } else {
+//                 res.json({
+//                     status: 400,
+//                     success: false,
+//                     message: "Payment not completed",
+//                     data: ""
+//                 })
+//             }
+//         }
+//         else {
+//             res.json({
+//                 status: 400,
+//                 success: false,
+//                 message: "Transaction in not Completed",
+//             });
+//         }
+//     } catch (error) {
+//         await connection.query('ROLLBACK')
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//             data: ""
+//         })
+//     }
+// }
+
+module.exports.subscribedUsersList = async(req,res) => {
     try {
-        let { sessionId } = req.params
-        const session = await stripe.checkout.sessions.retrieve(sessionId);
-        if (session.payment_status == 'paid') {
-            let s2 = dbScript(db_sql['Q117'], { var1: sessionId })
-            let updateSession = await connection.query(s2)
-            if (updateSession.rowCount > 0) {
-                res.set("Content-Type", "text/html");
-                res.send(
-                    Buffer.from(
-                        '<html><head head ><link href="https://fonts.googleapis.com/css?family=Nunito+Sans:400,400i,700,900&display=swap" rel="stylesheet"></head><style>body {text-align: center;padding: 40px 0;background: #EBF0F5;}h1 {color: #88B04B;font-family: "Nunito Sans", "Helvetica Neue", sans-serif;font-weight: 900;font-size: 40px;margin-bottom: 10px;p {color: #404F5E;font-family: "Nunito Sans", "Helvetica Neue", sans-serif;font-size:20px; margin: 0;} i{color: #9ABC66;font-size: 100px;line-height: 200px;margin-left:-15px;}.card {background: white;padding: 60px;border-radius: 4px;box-shadow: 0 2px 3px #C8D0D8;display: inline-block;margin: 0 auto;</style><body><div class="card"><div style="border-radius:200px; height:200px; width:200px; background: #F8FAF5; margin:0 auto;"><i style="color: #9ABC66;font-size: 100px;line-height: 200px;margin-left:-15px;" class="checkmark">✓</i></div><h1>Success</h1> <p>Your payment successfully done!</p><a href="http://143.198.102.134:8080/auth/login"><button style="color: #fff;background: #1F0757; height:50px; width:120px;font-size: 15px;" >Login</button></a></div></body></html>'
-                    )
+        let sAEmail = req.user.email
+        let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
+
+            let s2 = dbScript(db_sql['Q123'],{})
+            let subscriptionUsers = await connection.query(s2)
+            let subscriptionArr = []
+            if(subscriptionUsers.rowCount > 0 ){
+                for(data of subscriptionUsers.rows ){
+                    const subscription = await stripe.subscriptions.retrieve(
+                        data.stripe_subscription_id
                 );
-            } else {
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Payment not completed",
-                    data: ""
+                subscriptionArr.push({
+                    subscriptionId : subscription.id,
+
                 })
+                        
+                    
+                
             }
-        }
-        else {
+            }else{
+                if(subscriptionUsers.rows.length == 0){
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Empty subscribed users List",
+                        data: []
+                    }) 
+                }else{
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong",
+                    })
+                }
+                
+            }
+
+        } else {
             res.json({
                 status: 400,
                 success: false,
-                message: "Transaction in not Completed",
-            });
+                message: "Super Admin not found",
+                data: ""
+            })
         }
     } catch (error) {
         await connection.query('ROLLBACK')
@@ -213,12 +292,9 @@ module.exports.onSuccess = async (req, res) => {
             status: 400,
             success: false,
             message: error.message,
-            data: ""
         })
     }
 }
-
-
 
 //--------------------Company subscription details--------------------------------------
 
@@ -333,10 +409,3 @@ module.exports.subscriptionDetails = async (req, res) => {
 }
 
 
-// module.exports.recurringPaymentData = async(paymentData) =>{
-//     try {
-        
-//     } catch (error) {
-        
-//     }
-// }
