@@ -143,7 +143,7 @@ const db_sql = {
     "Q111" : `select id,  name, description, active_status,
               interval, admin_amount,user_amount, currency from payment_plans where active_status = 'true' and  deleted_at is null`,
     "Q112" : `select id, product_id, name, description, active_status,
-              admin_price_id,user_price_id, interval, admin_amount,user_amount currency from payment_plans where id = '{var1}' and deleted_at is null`,  
+              admin_price_id,user_price_id, interval, admin_amount,user_amount currency from payment_plans where id = '{var1}' and deleted_at is null ORDER BY name asc`,  
     "Q113" : `update payment_plans set name = '{var1}', description = '{var2}', 
                updated_at = '{var3}' where id = '{var4}' and deleted_at is null returning *` ,
     "Q114" : `update payment_plans set active_status = '{var1}', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`,

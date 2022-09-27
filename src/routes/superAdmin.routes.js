@@ -26,5 +26,8 @@ router.put('/activateOrDeactivatePlan', verifyTokenFn, controller.superAdmin.act
 router.post('/addConfig', verifyTokenFn, controller.superAdmin.addConfig)
 router.get('/configList', verifyTokenFn, controller.superAdmin.configList)
 
+//----------------------------------------------------------------------------
+router.get('/subcribedCompaniesList', verifyTokenFn,controller.superAdmin.subcribedCompaniesList)
+
 
 module.exports = router;

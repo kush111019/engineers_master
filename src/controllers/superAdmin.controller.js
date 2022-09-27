@@ -893,7 +893,7 @@ module.exports.activateOrDeactivatePlan = async (req, res) => {
 
 module.exports.addConfig = async (req, res) => {
     try {
-        
+
         let { trialDays } = req.body
         let sAEmail = req.user.email
         let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
@@ -903,10 +903,10 @@ module.exports.addConfig = async (req, res) => {
             let id = uuid.v4()
 
             await connection.query('BEGIN')
-            let s2 = dbScript(db_sql['Q120'],{var1 : id, var2: trialDays})
+            let s2 = dbScript(db_sql['Q120'], { var1: id, var2: trialDays })
             let addConfig = await connection.query(s2)
 
-            if(addConfig.rowCount > 0){
+            if (addConfig.rowCount > 0) {
 
                 await connection.query('COMMIT')
                 res.json({
@@ -916,7 +916,7 @@ module.exports.addConfig = async (req, res) => {
                     data: ""
                 })
             }
-            else{
+            else {
                 res.json({
                     status: 400,
                     success: false,
@@ -950,10 +950,10 @@ module.exports.configList = async (req, res) => {
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
 
-            let s2 = dbScript(db_sql['Q121'],{})
+            let s2 = dbScript(db_sql['Q121'], {})
             let configList = await connection.query(s2)
 
-            if(configList.rowCount > 0){
+            if (configList.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
@@ -961,15 +961,15 @@ module.exports.configList = async (req, res) => {
                     data: configList.rows
                 })
 
-            }else{
-                if(configList.rows.length == 0){
+            } else {
+                if (configList.rows.length == 0) {
                     res.json({
                         status: 200,
                         success: false,
                         message: "Empty Config list",
                         data: []
                     })
-                }else{
+                } else {
                     res.json({
                         status: 400,
                         success: false,
@@ -979,6 +979,103 @@ module.exports.configList = async (req, res) => {
                 }
             }
 
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Super Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+
+}
+
+//-----------------------------------------------------------------------------------
+
+module.exports.subcribedCompaniesList = async (req, res) => {
+    try {
+        let sAEmail = req.user.email
+        let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
+
+            let s2 = dbScript(db_sql['Q119'], {})
+            let users = await connection.query(s2)
+            if (users.rowCount > 0) {
+                let subcribedCompanies = []
+                let trialCompanies = []
+                for (let userData of users.rows) {
+                    if (userData.is_admin) {
+                        let s3 = dbScript(db_sql['Q116'], { var1: userData.company_id })
+                        let transactions = await connection.query(s3)
+                        let s5 = dbScript(db_sql['Q11'], { var1: userData.company_id })
+                        let companyDetails = await connection.query(s5)
+                        if (transactions.rows.length > 0) {
+                            let s4 = dbScript(db_sql['Q112'], { var1: transactions.rows[0].plan_id })
+                            let plan = await connection.query(s4)
+                            if (plan.rowCount > 0) {
+                                subcribedCompanies.push({
+                                    companyId: userData.company_id,
+                                    companyName: companyDetails.rows[0].company_name,
+                                    planName: plan.rows[0].name,
+                                    planInterval: plan.rows[0].interval,
+                                    PlanExpiryDate: userData.expiry_date,
+                                    userCount: transactions.rows[0].user_count
+                                })
+                            }
+                        }else{
+                            let s2 = dbScript(db_sql['Q121'], {})
+                            let configList = await connection.query(s2)
+                            trialCompanies.push({
+                                companyId: userData.company_id,
+                                companyName: companyDetails.rows[0].company_name,
+                                planName: "Trial",
+                                planInterval: configList.rows[0].trialDays,
+                                PlanExpiryDate: userData.expiry_date,
+                                userCount: ""
+                            })
+                        }
+                    }
+                }
+                if (subcribedCompanies.length > 0 && trialCompanies.length > 0) {
+                    res.json({
+
+                        status: 200,
+                        success: false,
+                        message: 'Subscribed/Trial Companies List',
+                        data: {
+                            subcribedCompanies : subcribedCompanies,
+                            trialCompanies : trialCompanies
+                         }
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: 'Empty Subscribed/Trial Companies List',
+                        data: {
+                            subcribedCompanies : subcribedCompanies,
+                            trialCompanies : trialCompanies
+                         }
+                    })
+                }
+
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty users list',
+                    data: []
+                })
+            }
         } else {
             res.json({
                 status: 400,
