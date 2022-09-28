@@ -159,7 +159,10 @@ const db_sql = {
     "Q121" : `select id, trial_days, created_at from superadmin_config where deleted_at is null ORDER BY created_at desc ` ,
     "Q122" : `update users set expiry_date = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null returning *`,
     "Q123" : `select id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id from transactions where deleted_at is null`,
-    "Q124" : `select id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id  from transactions where plan_id = '{var1}' and deleted_at is null`,                                  
+    "Q124" : `select id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id  from transactions where plan_id = '{var1}' and deleted_at is null`,  
+    "Q125" : `update transactions set stripe_customer_id = {var1}, stripe_subscription_id = {var2}, 
+              stripe_card_id = {var3}, stripe_token_id = {var4}, stripe_charge_id = {var5}, 
+              expiry_date = {var6}, updated_at = {var7} where id = {var8} and deleted_at is null returning *`                                
 
  };
 
