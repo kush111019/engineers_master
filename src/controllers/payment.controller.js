@@ -74,9 +74,7 @@ module.exports.createPayment = async (req, res) => {
             if (checkuser.rows.length > 0) {
                 let s2 = dbScript(db_sql['Q112'], { var1: planId })
                 let planData = await connection.query(s2)
-
                 if (planData.rowCount > 0) {
-
                     const customer = await stripe.customers.create({
                         name: checkuser.rows[0].full_name,
                         email: checkuser.rows[0].email_address,
@@ -306,6 +304,102 @@ module.exports.subscriptionDetails = async (req, res) => {
     }
 }
 
+module.exports.cancelSubscription = async(req, res)=> {
+    try {
+        let userEmail = req.user.email
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let user = await connection.query(s1)
+        if (user.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q116'],{var1 : user.rows[0].company_id})
+            let transaction = await connection.query(s2)
+            if(transaction.rowCount > 0){
+                let subscriptionId = transaction.rows[0].stripe_subscription_id
+                let cancelSubscription = await stripe.subscriptions.update(
+                    subscriptionId, 
+                    {cancel_at_period_end: true}
+                );
+                if(cancelSubscription){
+                    res.json({
+                        status : 200,
+                        success : true,
+                        message : "Subcription canceled successfully"
+                    })
+                }else{
+                    res.json({
+                        status : 400,
+                        success : false,
+                        message : "Something went wrong"
+                    })
+                }
+            }else{
+                if(transaction.rows.length == 0){
+                    res.json({
+                        status : 200,
+                        success : false,
+                        message : "Not subscribed for any plan"
+                    })
+                }else{
+                    res.json({
+                        status : 400,
+                        success : false,
+                        message : "Something went wrong"
+                    }) 
+                }
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 500,
+            success: false,
+            message: error.message
+        })
+    }
+}
 
+// module.exports.upgradeSubcription = async (req, res) => {
+//     try{
+//         let userEmail = req.user.email
+//         let {
+//             planId,
+//             userCount,
+//             cardNumber,
+//             expMonth,
+//             expYear,
+//             cvc,
+//             immediateUpgade
+//         } = req.body
+//         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+//         let user = await connection.query(s1)
+//         if (user.rows.length > 0) {
+
+//             let s2 = dbScript(db_sql[''],{})
+//             let plan = await connection.query(s2)
+
+
+
+
+//         } else {
+//             res.json({
+//                 status: 400,
+//                 success: false,
+//                 message: "Admin not found"
+//             })
+//         }
+//     }catch (error) {
+//         await connection.query('ROLLBACK')
+//         res.json({
+//             status: 500,
+//             success: false,
+//             message: error.message
+//         })
+//     }
+// }
 
 

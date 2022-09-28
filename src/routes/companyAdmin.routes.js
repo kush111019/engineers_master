@@ -106,5 +106,6 @@ router.get('/configList', verifyTokenFn, controller.configuration.configList)
 router.post('/createPayment', controller.payment.createPayment)
 router.get('/userCount', verifyTokenFn, controller.users.userCount)
 router.get('/subscriptionDetails', verifyTokenFn, controller.payment.subscriptionDetails)
+router.put('/cancelSubscription', verifyTokenFn, controller.payment.cancelSubscription)
 
 module.exports = router;

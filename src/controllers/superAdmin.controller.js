@@ -1266,7 +1266,6 @@ module.exports.extendExpiryByCompanyId = async(req, res) => {
     try {
         let {companyId} = req.params
         let {trialDays} = req.body
-        console.log(trialDays);
         let sAEmail = req.user.email
         let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
