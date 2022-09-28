@@ -1274,7 +1274,7 @@ module.exports.extendExpiryByCompanyId = async (req, res) => {
             let s2 = dbScript(db_sql['Q17'], { var1: companyId })
             let companyExpiry = await connection.query(s2)
             let updateExpiry;
-            for (let compannyData of companyExpiry) {
+            for (let compannyData of companyExpiry.rows) {
                 if (compannyData.is_admin == true) {
                     let expiryDate = compannyData.expiry_date
                     let extendedExpiry = new Date(expiryDate.setDate(expiryDate.getDate() + trialDays)).toISOString()
