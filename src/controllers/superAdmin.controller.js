@@ -1122,13 +1122,19 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                             activeCompanies.push({
                                 companyId : companyData.id,
                                 companyName : companyData.company_name,
-                                status : subscription.status
+                                companyAddress : companyData.company_address,
+                                companyLogo : companyData.company_logo,
+                                status : subscription.status,
+                                createdAt : companyData.created_at
                             })
                         }else if(subscription.status == 'canceled'){
                             canceledCompanies.push({
                                 companyId : companyData.id,
                                 companyName : companyData.company_name,
-                                status : subscription.status
+                                companyAddress : companyData.company_address,
+                                companyLogo : companyData.company_logo,
+                                status : subscription.status,
+                                createdAt : companyData.created_at
                             })
                         }  
                     }
@@ -1164,6 +1170,80 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                 })
             }
 
+
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Super Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.planwiseCompaniesList = async(req, res) => {
+    try {
+        let { planId } = req.params
+        let sAEmail = req.user.email
+        let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
+
+            let s2 = dbScript(db_sql['Q124'],{var1 : planId})
+            let planDetails = await connection.query(s2);
+
+            if(planDetails.rowCount > 0 ){
+                companiesArr = []
+                for(let planData of planDetails.rows){
+                    let s3 = dbScript(db_sql['Q11'],{var1 : planData.company_id})
+                    let companydetails = await connection.query(s3)
+                    if(companydetails.rowCount > 0){
+                        companiesArr.push({
+                            companyId : companydetails.rows[0].id,
+                            companyName : companydetails.rows[0].company_name,
+                            companyLogo : companydetails.rows[0].company_logo,
+                            companyAddress : companydetails.rows[0].company_address
+                        })
+                    }
+                }
+                if(companiesArr.length > 0){
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Plan wise company details ",
+                        data: companiesArr
+                    }) 
+                }else{
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty plan wise company details ",
+                        data: companiesArr
+                    }) 
+                }
+            }else{
+                if(planDetails.rows.length == 0){
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Not subscribed for this plan",
+                        data: ""
+                    }) 
+                }else{
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    }) 
+                }
+            }
 
         } else {
             res.json({
