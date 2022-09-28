@@ -322,7 +322,7 @@ module.exports.cancelSubscription = async(req, res)=> {
                     res.json({
                         status : 200,
                         success : true,
-                        message : "Subcription canceled successfully"
+                        message : "Subscription canceled successfully"
                     })
                 }else{
                     res.json({
@@ -363,43 +363,92 @@ module.exports.cancelSubscription = async(req, res)=> {
     }
 }
 
-// module.exports.upgradeSubcription = async (req, res) => {
-//     try{
-//         let userEmail = req.user.email
-//         let {
-//             planId,
-//             userCount,
-//             cardNumber,
-//             expMonth,
-//             expYear,
-//             cvc,
-//             immediateUpgade
-//         } = req.body
-//         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
-//         let user = await connection.query(s1)
-//         if (user.rows.length > 0) {
+module.exports.upgradeSubscription = async (req, res) => {
+    try{
+        let userEmail = req.user.email
+        let {
+            planId,
+            userCount,
+            cardNumber,
+            expMonth,
+            expYear,
+            cvc,
+            immediateUpgrade
+        } = req.body
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let user = await connection.query(s1)
+        if (user.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q116'],{var1 : user.rows[0].company_id})
+            let transaction = await connection.query(s2)
+            console.log(transaction.rows,"transactiondata");
+            if(transaction.rowCount > 0){
+                let subscriptionId = transaction.rows[0].stripe_subscription_id
+                if(immediateUpgrade == true){
+                    const deleted = await stripe.subscriptions.del(
+                        subscriptionId
+                    );
+                    console.log(deleted,"deleted subscription");
+                    let s2 = dbScript(db_sql['Q112'], { var1: planId })
+                    let planData = await connection.query(s2)
+                    if (planData.rowCount > 0) {
+                        const card = await stripe.customers.createSource(
+                            transaction.rows[0].stripe_customer_id,
+                            {source: transaction.rows[0].stripe_token_id}
+                        ); 
+                        console.log(card,"card data");
+                        const subscription = await stripe.subscriptions.create({
+                            customer: transaction.rows[0].stripe_customer_id,
+                            items: [
+                                { price: planData.rows[0].admin_price_id },
+                                { price: planData.rows[0].user_price_id, quantity: userCount },
+                            ],
+                            payment_settings: {
+                                payment_method_types: ['card'],
+                                save_default_payment_method : "on_subscription"
+                            },
+                            coupon: (planData.rows[0].interval == 'year') ? 'Omgx6XvX' : ''
+                        });
+                        let totalAmount = 0
+                        for(let data of subscription.items.data){
+                                let totalPrice = data.price.unit_amount * data.quantity
+                                totalAmount = totalAmount + totalPrice;
+                        }
+                        const charge = await stripe.charges.create({
+                            amount: totalAmount,
+                            currency: subscription.currency,
+                            customer : transaction.rows[0].stripe_customer_id,
+                            source: card.id
+                        });
+                    }
 
-//             let s2 = dbScript(db_sql[''],{})
-//             let plan = await connection.query(s2)
+
+                }
+            }else{
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "not subscribed for any plan"
+                })
+            }
 
 
 
 
-//         } else {
-//             res.json({
-//                 status: 400,
-//                 success: false,
-//                 message: "Admin not found"
-//             })
-//         }
-//     }catch (error) {
-//         await connection.query('ROLLBACK')
-//         res.json({
-//             status: 500,
-//             success: false,
-//             message: error.message
-//         })
-//     }
-// }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    }catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 500,
+            success: false,
+            message: error.message
+        })
+    }
+}
 
 

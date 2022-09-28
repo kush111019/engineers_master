@@ -1028,20 +1028,20 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                                 subcribedCompanies.push({
                                     companyId: userData.company_id,
                                     companyName: companyDetails.rows[0].company_name,
-                                    companyAddress : companyDetails.rows[0].company_address,
-                                    companyLogo : companyDetails.rows[0].company_logo,
+                                    companyAddress: companyDetails.rows[0].company_address,
+                                    companyLogo: companyDetails.rows[0].company_logo,
                                     planName: plan.rows[0].name,
                                     planInterval: plan.rows[0].interval,
                                     PlanExpiryDate: userData.expiry_date,
                                     userCount: transactions.rows[0].user_count
                                 })
                             }
-                        }else{
+                        } else {
                             trialCompanies.push({
                                 companyId: userData.company_id,
                                 companyName: companyDetails.rows[0].company_name,
-                                companyAddress : companyDetails.rows[0].company_address,
-                                companyLogo : companyDetails.rows[0].company_logo,
+                                companyAddress: companyDetails.rows[0].company_address,
+                                companyLogo: companyDetails.rows[0].company_logo,
                                 planName: "Trial",
                                 planInterval: `${configList.rows[0].trial_days} days`,
                                 PlanExpiryDate: userData.expiry_date,
@@ -1057,9 +1057,9 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                         success: true,
                         message: 'Subscribed/Trial Companies List',
                         data: {
-                            subcribedCompanies : subcribedCompanies,
-                            trialCompanies : trialCompanies
-                         }
+                            subcribedCompanies: subcribedCompanies,
+                            trialCompanies: trialCompanies
+                        }
                     })
                 } else {
                     res.json({
@@ -1067,9 +1067,9 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                         success: false,
                         message: 'Empty Subscribed/Trial Companies List',
                         data: {
-                            subcribedCompanies : subcribedCompanies,
-                            trialCompanies : trialCompanies
-                         }
+                            subcribedCompanies: subcribedCompanies,
+                            trialCompanies: trialCompanies
+                        }
                     })
                 }
             } else {
@@ -1105,63 +1105,63 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
 
-            let s2 = dbScript(db_sql['Q107'],{})
+            let s2 = dbScript(db_sql['Q107'], {})
             let companies = await connection.query(s2)
 
-            if(companies.rowCount > 0){
+            if (companies.rowCount > 0) {
                 let activeCompanies = []
                 let canceledCompanies = []
-                for(let companyData of companies.rows){
-                    let s3 = dbScript(db_sql['Q116'], {var1 : companyData.id})
+                for (let companyData of companies.rows) {
+                    let s3 = dbScript(db_sql['Q116'], { var1: companyData.id })
                     let transaction = await connection.query(s3);
-                    if(transaction.rowCount > 0){
+                    if (transaction.rowCount > 0) {
                         const subscription = await stripe.subscriptions.retrieve(
                             transaction.rows[0].stripe_subscription_id
                         );
-                        if(subscription.status == 'active'){
+                        if (subscription.status == 'active') {
                             activeCompanies.push({
-                                companyId : companyData.id,
-                                companyName : companyData.company_name,
-                                companyAddress : companyData.company_address,
-                                companyLogo : companyData.company_logo,
-                                status : subscription.status,
-                                createdAt : companyData.created_at
+                                companyId: companyData.id,
+                                companyName: companyData.company_name,
+                                companyAddress: companyData.company_address,
+                                companyLogo: companyData.company_logo,
+                                status: subscription.status,
+                                createdAt: companyData.created_at
                             })
-                        }else if(subscription.status == 'canceled'){
+                        } else if (subscription.status == 'canceled') {
                             canceledCompanies.push({
-                                companyId : companyData.id,
-                                companyName : companyData.company_name,
-                                companyAddress : companyData.company_address,
-                                companyLogo : companyData.company_logo,
-                                status : subscription.status,
-                                createdAt : companyData.created_at
+                                companyId: companyData.id,
+                                companyName: companyData.company_name,
+                                companyAddress: companyData.company_address,
+                                companyLogo: companyData.company_logo,
+                                status: subscription.status,
+                                createdAt: companyData.created_at
                             })
-                        }  
+                        }
                     }
                 }
-                if(activeCompanies.length > 0 || canceledCompanies.length > 0){
+                if (activeCompanies.length > 0 || canceledCompanies.length > 0) {
                     res.json({
                         status: 200,
                         success: true,
                         message: "Active and canceled companies",
                         data: {
-                            activeCompanies : activeCompanies,
-                            canceledCompanies : canceledCompanies
+                            activeCompanies: activeCompanies,
+                            canceledCompanies: canceledCompanies
                         }
                     })
-                }else{
+                } else {
                     res.json({
                         status: 200,
                         success: false,
                         message: "Empty active and canceled companies",
                         data: {
-                            activeCompanies : activeCompanies,
-                            canceledCompanies : canceledCompanies
+                            activeCompanies: activeCompanies,
+                            canceledCompanies: canceledCompanies
                         }
                     })
                 }
 
-            }else{
+            } else {
                 res.json({
                     status: 200,
                     success: false,
@@ -1188,7 +1188,7 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
     }
 }
 
-module.exports.planwiseCompaniesList = async(req, res) => {
+module.exports.planwiseCompaniesList = async (req, res) => {
     try {
         let { planId } = req.params
         let sAEmail = req.user.email
@@ -1196,52 +1196,52 @@ module.exports.planwiseCompaniesList = async(req, res) => {
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
 
-            let s2 = dbScript(db_sql['Q124'],{var1 : planId})
+            let s2 = dbScript(db_sql['Q124'], { var1: planId })
             let planDetails = await connection.query(s2);
 
-            if(planDetails.rowCount > 0 ){
+            if (planDetails.rowCount > 0) {
                 companiesArr = []
-                for(let planData of planDetails.rows){
-                    let s3 = dbScript(db_sql['Q11'],{var1 : planData.company_id})
+                for (let planData of planDetails.rows) {
+                    let s3 = dbScript(db_sql['Q11'], { var1: planData.company_id })
                     let companydetails = await connection.query(s3)
-                    if(companydetails.rowCount > 0){
+                    if (companydetails.rowCount > 0) {
                         companiesArr.push({
-                            companyId : companydetails.rows[0].id,
-                            companyName : companydetails.rows[0].company_name,
-                            companyLogo : companydetails.rows[0].company_logo,
-                            companyAddress : companydetails.rows[0].company_address
+                            companyId: companydetails.rows[0].id,
+                            companyName: companydetails.rows[0].company_name,
+                            companyLogo: companydetails.rows[0].company_logo,
+                            companyAddress: companydetails.rows[0].company_address
                         })
                     }
                 }
-                if(companiesArr.length > 0){
+                if (companiesArr.length > 0) {
                     res.json({
                         status: 200,
                         success: true,
                         message: "Plan wise company details ",
                         data: companiesArr
-                    }) 
-                }else{
+                    })
+                } else {
                     res.json({
                         status: 200,
                         success: false,
                         message: "Empty plan wise company details ",
                         data: companiesArr
-                    }) 
+                    })
                 }
-            }else{
-                if(planDetails.rows.length == 0){
+            } else {
+                if (planDetails.rows.length == 0) {
                     res.json({
                         status: 200,
                         success: false,
                         message: "Not subscribed for this plan",
                         data: ""
-                    }) 
-                }else{
+                    })
+                } else {
                     res.json({
                         status: 400,
                         success: false,
                         message: "Something went wrong"
-                    }) 
+                    })
                 }
             }
 
@@ -1262,34 +1262,38 @@ module.exports.planwiseCompaniesList = async(req, res) => {
     }
 }
 
-module.exports.extendExpiryByCompanyId = async(req, res) => {
+module.exports.extendExpiryByCompanyId = async (req, res) => {
     try {
-        let {companyId} = req.params
-        let {trialDays} = req.body
+        let { companyId } = req.params
+        let { trialDays } = req.body
         let sAEmail = req.user.email
         let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
 
-            let s2 = dbScript(db_sql['Q17'],{var1 : companyId})
+            let s2 = dbScript(db_sql['Q17'], { var1: companyId })
             let companyExpiry = await connection.query(s2)
-            let expiryDate = companyExpiry.rows[0].expiry_date
-            let extendedExpiry = new Date(expiryDate.setDate(expiryDate.getDate() + trialDays)).toISOString()
+            let updateExpiry;
+            for (let compannyData of companyExpiry) {
+                if (compannyData.is_admin == true) {
+                    let expiryDate = compannyData.expiry_date
+                    let extendedExpiry = new Date(expiryDate.setDate(expiryDate.getDate() + trialDays)).toISOString()
 
-            let _dt = new Date().toISOString();
+                    let _dt = new Date().toISOString();
 
-            await connection.query('BEGIN')
-            let s3 = dbScript(db_sql['Q125'],{var1 : extendedExpiry, var2 : companyId, var3: _dt})
-            let updateExpiry = await connection.query(s3)
-
-            if(updateExpiry.rowCount > 0){
+                    await connection.query('BEGIN')
+                    let s3 = dbScript(db_sql['Q122'], { var1: extendedExpiry, var2: compannyData.id, var3: _dt })
+                    updateExpiry = await connection.query(s3)
+                }
+            }
+            if (updateExpiry.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
                     message: "Expiry date extended successfully ",
                 })
-            }else{
+            } else {
                 await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
