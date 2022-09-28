@@ -30,6 +30,7 @@ router.get('/configList', verifyTokenFn, controller.superAdmin.configList)
 router.get('/subcribedCompaniesList', verifyTokenFn,controller.superAdmin.subcribedCompaniesList)
 router.get('/activeAndCanceledCompanies', verifyTokenFn , controller.superAdmin.activeAndCanceledCompanies)
 router.get('/planwiseCompaniesList/:planId', verifyTokenFn, controller.superAdmin.planwiseCompaniesList)
+router.put('/extendExpiryByCompanyId/:companyId', verifyTokenFn, controller.superAdmin.extendExpiryByCompanyId)
 
 
 module.exports = router;

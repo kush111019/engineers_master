@@ -1261,3 +1261,57 @@ module.exports.planwiseCompaniesList = async(req, res) => {
         })
     }
 }
+
+module.exports.extendExpiryByCompanyId = async(req, res) => {
+    try {
+        let {companyId} = req.params
+        let {trialDays} = req.body
+        console.log(trialDays);
+        let sAEmail = req.user.email
+        let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
+
+            let s2 = dbScript(db_sql['Q17'],{var1 : companyId})
+            let companyExpiry = await connection.query(s2)
+            let expiryDate = companyExpiry.rows[0].expiry_date
+            let extendedExpiry = new Date(expiryDate.setDate(expiryDate.getDate() + trialDays)).toISOString()
+
+            let _dt = new Date().toISOString();
+
+            await connection.query('BEGIN')
+            let s3 = dbScript(db_sql['Q125'],{var1 : extendedExpiry, var2 : companyId, var3: _dt})
+            let updateExpiry = await connection.query(s3)
+
+            if(updateExpiry.rowCount > 0){
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Expiry date extended successfully ",
+                })
+            }else{
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "something went wrong",
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Super Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
