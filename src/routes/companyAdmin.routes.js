@@ -28,6 +28,7 @@ router.put('/updateRole' , verifyTokenFn, controller.roles.updateRole)
 router.get('/usersListByRoleId',verifyTokenFn, controller.roles.usersListByRoleId)
 router.get('/userWiseRoleList',verifyTokenFn, controller.roles.userWiseRoleList)
 router.put('/deleteRole' , verifyTokenFn, controller.roles.deleteRole)
+router.put('/moveRole', verifyTokenFn, controller.roles.moveRole)
 
 //-------------------------------------Slabs-------------------------------------------------
 router.get('/slabList',verifyTokenFn, controller.slabs.slabList)
