@@ -409,7 +409,6 @@ let immediateUpgradeSubFn = async (req, res, user, transaction) => {
     
     let s2 = dbScript(db_sql['Q112'], { var1: planId })
     let planData = await connection.query(s2)
-    console.log(planData, "plan data");
     if (planData.rowCount > 0) {
         const token = await stripe.tokens.create({
             card: {
@@ -455,7 +454,7 @@ let immediateUpgradeSubFn = async (req, res, user, transaction) => {
                 var1: transaction.rows[0].stripe_customer_id, var2: subscription.id,
                 var3: card.id, var4: token.id, var5: charge.id, var6: subscription.current_period_end,
                 var7: _dt, var8: transaction.rows[0].id, var9:Math.round(totalAmount), var10: true,
-                var11 : charge.receipt_url, var12 : userCount
+                var11 : charge.receipt_url, var12 : userCount, var13 : planId
             })
             let updateTransaction = await connection.query(s3)
 
@@ -547,7 +546,7 @@ let laterUpgradeSubFn = async (req, res, user, transaction) => {
                 var1: transaction.rows[0].stripe_customer_id, var2: subscription.id,
                 var3: card.id, var4: token.id, var5: '', var6: subscription.current_period_end,
                 var7: _dt, var8: transaction.rows[0].id, var9:Math.round(totalAmount), var10: false,
-                var11 : '', var12: userCount
+                var11 : '', var12: userCount, var13:planId
             })
             let updateTransaction = await connection.query(s3)
             if(updateTransaction.rowCount > 0){

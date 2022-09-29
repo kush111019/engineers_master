@@ -63,7 +63,6 @@ module.exports.upgradeSubscriptionCronFn = async () => {
             let currentDate = new Date().toISOString();
             let expiryDate =  new Date(Number(transactionData.expiry_date) * 1000).toISOString()
             if (transactionData.immediate_upgrade == false && currentDate == expiryDate) {
-                console.log("inside if");
                 const subscription = await stripe.subscriptions.retrieve(
                     transactionData.stripe_subscription_id
                 );
