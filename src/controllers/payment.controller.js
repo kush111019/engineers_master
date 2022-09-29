@@ -102,16 +102,20 @@ module.exports.createPayment = async (req, res) => {
                         payment_settings: {
                             payment_method_types: ['card'],
                             save_default_payment_method: "on_subscription"
-                        },
-                        coupon: (planData.rows[0].interval == 'year') ? 'Omgx6XvX' : ''
+                        }
                     });
                     let totalAmount = 0
                     for (let data of subscription.items.data) {
                         let totalPrice = data.price.unit_amount * data.quantity
                         totalAmount = totalAmount + totalPrice;
                     }
+                    console.log(totalAmount,"total amount");
+                    if(planData.rows[0].interval == 'year'){
+                        totalAmount = totalAmount - ((Number(process.env.DISCOUNT_PERCENTAGE)/100) * totalAmount)   
+                    }
+                    console.log(totalAmount,"total amount2");
                     const charge = await stripe.charges.create({
-                        amount: totalAmount,
+                        amount: Math.round(totalAmount),
                         currency: subscription.currency,
                         customer: customer.id,
                         source: card.id
@@ -124,7 +128,7 @@ module.exports.createPayment = async (req, res) => {
                             var1: id, var2: user.id, var3: checkuser.rows[0].company_id,
                             var4: planId, var5: customer.id, var6: subscription.id, var7: card.id,
                             var8: token.id, var9: charge.id, var10: subscription.current_period_end,
-                            var11: userCount, var12: charge.status
+                            var11: userCount, var12: charge.status, var13: Math.round(totalAmount)
                         })
                         let saveTrasaction = await connection.query(s4)
 
@@ -323,7 +327,7 @@ module.exports.cancelSubscription = async (req, res) => {
                         res.json({
                             status: 200,
                             success: true,
-                            message: "Subscription canceled successfully"
+                            message: "Subscription will be canceled on end of current plan"
                         })
                     } else {
                         res.json({
@@ -371,7 +375,8 @@ module.exports.cancelSubscription = async (req, res) => {
     }
 }
 
-let immediateUpgradeSubFn = async (req, res, user) => {
+//---------------------------------------------------------------------------------------
+let immediateUpgradeSubFn = async (req, res, user, transaction) => {
     let {
         planId,
         userCount,
@@ -380,8 +385,10 @@ let immediateUpgradeSubFn = async (req, res, user) => {
         expYear,
         cvc
     } = req.body
+    
     let s2 = dbScript(db_sql['Q112'], { var1: planId })
     let planData = await connection.query(s2)
+    console.log(planData, "plan data");
     if (planData.rowCount > 0) {
         const token = await stripe.tokens.create({
             card: {
@@ -404,16 +411,18 @@ let immediateUpgradeSubFn = async (req, res, user) => {
             payment_settings: {
                 payment_method_types: ['card'],
                 save_default_payment_method: "on_subscription"
-            },
-            coupon: (planData.rows[0].interval == 'year') ? 'Omgx6XvX' : ''
+            }
         });
         let totalAmount = 0
         for (let data of subscription.items.data) {
             let totalPrice = data.price.unit_amount * data.quantity
             totalAmount = totalAmount + totalPrice;
         }
+        if(planData.rows[0].interval == 'year'){
+            totalAmount = totalAmount - ((Number(process.env.DISCOUNT_PERCENTAGE)/100) * totalAmount)   
+        }
         const charge = await stripe.charges.create({
-            amount: totalAmount,
+            amount: Math.round(totalAmount),
             currency: subscription.currency,
             customer: transaction.rows[0].stripe_customer_id,
             source: card.id
@@ -424,7 +433,7 @@ let immediateUpgradeSubFn = async (req, res, user) => {
             let s3 = dbScript(db_sql['Q125'], {
                 var1: transaction.rows[0].stripe_customer_id, var2: subscription.id,
                 var3: card.id, var4: token.id, var5: charge.id, var6: subscription.current_period_end,
-                var7: _dt, var8: transaction.rows[0].id
+                var7: _dt, var8: transaction.rows[0].id, var9:Math.round(totalAmount), var10: true
             })
             let updateTransaction = await connection.query(s3)
 
@@ -465,8 +474,88 @@ let immediateUpgradeSubFn = async (req, res, user) => {
     }
 }
 
-let laterUpgradeSubFn = async (req, res, user) => {
+let laterUpgradeSubFn = async (req, res, user, transaction) => {
+    let {
+        planId,
+        userCount,
+        cardNumber,
+        expMonth,
+        expYear,
+        cvc
+    } = req.body
 
+    let s2 = dbScript(db_sql['Q112'], { var1: planId })
+    let planData = await connection.query(s2)
+    if (planData.rowCount > 0) {
+        const token = await stripe.tokens.create({
+            card: {
+                number: cardNumber,
+                exp_month: expMonth,
+                exp_year: expYear,
+                cvc: cvc,
+            },
+        });
+        const card = await stripe.customers.createSource(
+            transaction.rows[0].stripe_customer_id,
+            { source: token.id }
+        );
+        const subscription = await stripe.subscriptions.create({
+            customer: transaction.rows[0].stripe_customer_id,
+            items: [
+                { price: planData.rows[0].admin_price_id },
+                { price: planData.rows[0].user_price_id, quantity: userCount },
+            ],
+            payment_settings: {
+                payment_method_types: ['card'],
+                save_default_payment_method: "on_subscription"
+            }
+        });
+        let totalAmount = 0
+        for (let data of subscription.items.data) {
+            let totalPrice = data.price.unit_amount * data.quantity
+            totalAmount = totalAmount + totalPrice;
+        }
+        if(planData.rows[0].interval == 'year'){
+            totalAmount = totalAmount - ((Number(process.env.DISCOUNT_PERCENTAGE)/100) * totalAmount)   
+        }
+        if (token && card && subscription) {
+            let _dt = new Date().toISOString();
+
+            let s3 = dbScript(db_sql['Q125'], {
+                var1: transaction.rows[0].stripe_customer_id, var2: subscription.id,
+                var3: card.id, var4: token.id, var5: '', var6: subscription.current_period_end,
+                var7: _dt, var8: transaction.rows[0].id, var9:Math.round(totalAmount), var10: false
+            })
+            let updateTransaction = await connection.query(s3)
+            if(updateTransaction.rowCount > 0){
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Subscription will be upgrade on end of current subscription'
+                })
+            }else{
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: 'Something went wrong'
+                })
+            }
+
+        }else{
+            res.json({
+                status: 400,
+                success: false,
+                message: 'Something went wrong'
+            })
+        }
+
+    }else{
+        res.json({
+            status: 400,
+            success: false,
+            message: 'Plan not found'
+        })
+    }
 }
 
 
@@ -488,7 +577,7 @@ module.exports.upgradeSubscription = async (req, res) => {
                         subscriptionId
                     );
                     if(deleted){
-                        immediateUpgradeSubFn(req, res, user)
+                        await immediateUpgradeSubFn(req, res, user, transaction)
                     }
                 } else if (immediateUpgrade == false) {
                     let cancelSubscription = await stripe.subscriptions.update(
@@ -496,7 +585,7 @@ module.exports.upgradeSubscription = async (req, res) => {
                         { cancel_at_period_end: true }
                     );
                     if(cancelSubscription){
-                        upgradeSubFn(req, res, user)
+                        await laterUpgradeSubFn(req, res, user, transaction)
                     }
                 }
             } else {

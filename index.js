@@ -3,7 +3,7 @@ const cors = require('cors');
 const cron = require('node-cron');
 require('dotenv').config()
 const logger = require('./middleware/logger');
-const {paymentReminder} = require('./src/utils/paymentReminder')
+const {paymentReminder, upgradeSubscriptionCronFn} = require('./src/utils/paymentReminder')
 const app = express();
 const path = require('path')
 const Router = require('./src/routes/index');
@@ -18,6 +18,7 @@ app.use(logger);
 
 let cronJob = cron.schedule('59 59 23 * * *', async () => {
     await paymentReminder();
+    await upgradeSubscriptionCronFn()
   });
 cronJob.start();
 

@@ -1,4 +1,5 @@
 const connection = require("../database/connection");
+const stripe = require('stripe')(process.env.SECRET_KEY)
 const { dbScript, db_sql } = require("./db_scripts");
 const { recurringPaymentMail2, recurringPaymentMail } = require("../utils/sendMail")
 
@@ -6,6 +7,7 @@ module.exports.paymentReminder = async () => {
 
     let s1 = dbScript(db_sql['Q119'], {})
     let admindata = await connection.query(s1)
+    console.log(admindata.rows,"admin data");
     for (let data of admindata.rows) {
         let s3 = dbScript(db_sql['Q14'], { var1: data.role_id })
         let checkRole = await connection.query(s3)
@@ -45,6 +47,43 @@ module.exports.paymentReminder = async () => {
                         if (lockUser.rowCount > 0) {
                             await connection.query('COMMIT')
                         }
+                    }
+                }
+            }
+        }
+    }
+}
+
+module.exports.upgradeSubscriptionCronFn = async () => {
+
+    let s1 = dbScript(db_sql['Q123'], {})
+    let transaction = await connection.query(s1)
+    if (transaction.rowCount > 0) {
+        for (let transactionData of transaction.rows) {
+            console.log(transactionData,"transactionData");
+            let currentDate = new Date().toISOString();
+            let expiryDate =  new Date(Number(transactionData.expiry_date) * 1000).toISOString()
+            console.log(currentDate, expiryDate, "current and expiry date");
+            if (transactionData.immediate_upgrade == false && currentDate == expiryDate) {
+                console.log("inside if");
+                const subscription = await stripe.subscriptions.retrieve(
+                    transactionData.stripe_subscription_id
+                );
+                const charge = await stripe.charges.create({
+                    amount: transactionData.total_amount,
+                    currency: subscription.currency,
+                    customer: transactionData.stripe_customer_id,
+                    source: transactionData.stripe_card_id
+                });
+                if (subscription && charge) {
+                    let _dt = new Date().toISOString();
+                    await connection.query('BEGIN')
+                    let s2 = dbScript(db_sql['Q126'], { var1: charge.id, var2: _dt, var3: transactionData.id })
+                    let updateTransaction = await connection.query(s2)
+                    if (updateTransaction.rowCount > 0) {
+                        await connection.query('COMMIT')
+                    } else {
+                        await connection.query('ROLLBACK')
                     }
                 }
             }
