@@ -235,7 +235,8 @@ module.exports.subscriptionDetails = async (req, res) => {
                             userPrice: subscription.items.data[1].price.unit_amount,
                             userCount: subscription.items.data[1].quantity,
                             endsIn: Number(days[0]),
-                            planType: (subscription.trial_end != null) ? "Trial Plan" : "Paid Plan"
+                            planType: (subscription.trial_end != null) ? "Trial Plan" : "Paid Plan",
+                            isCanceled : transaction.rows[0].is_canceled
                         }
                         res.json({
                             status: 200,
@@ -253,7 +254,8 @@ module.exports.subscriptionDetails = async (req, res) => {
                             userPrice: "",
                             userCount: "",
                             endsIn: "",
-                            planType: ""
+                            planType: "",
+                            isCanceled : ""
                         }
                         res.json({
                             status: 200,
@@ -280,7 +282,8 @@ module.exports.subscriptionDetails = async (req, res) => {
                     userPrice: "",
                     userCount: "",
                     endsIn: "",
-                    planType: ""
+                    planType: "",
+                    isCanceled : ""
                 }
                 res.json({
                     status: 200,
@@ -324,11 +327,26 @@ module.exports.cancelSubscription = async (req, res) => {
                         { cancel_at_period_end: true }
                     );
                     if (cancelSubscription) {
-                        res.json({
-                            status: 200,
-                            success: true,
-                            message: "Subscription will be canceled on end of current plan"
-                        })
+                        let _dt = new Date().toISOString();
+                        await connection.query('BEGIN')
+                        let s2 = dbScript(db_sql['Q127'], { var1: true, var2: _dt, var3: transaction.rows[0].id })
+                        let updateTransaction = await connection.query(s2)
+                        if (updateTransaction.rowCount > 0) {
+                            await connection.query('COMMIT')
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "Subscription will be canceled on end of current plan"
+                            })
+                        } else {
+                            await connection.query('ROLLBACK')
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: "Something went wrong"
+                            })
+                        }
+
                     } else {
                         res.json({
                             status: 400,
