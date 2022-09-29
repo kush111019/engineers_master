@@ -149,9 +149,9 @@ const db_sql = {
     "Q114" : `update payment_plans set active_status = '{var1}', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`,
     "Q115" : `insert into transactions(id, user_id, company_id, plan_id, stripe_customer_id,
               stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, expiry_date,
-              user_count, payment_status,total_amount) values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', 
-              '{var6}', '{var7}','{var8}', '{var9}', '{var10}','{var11}','{var12}','{var13}') returning *` ,
-    "Q116" : `select id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade, is_canceled  from transactions where company_id = '{var1}' and deleted_at is null`,
+              user_count, payment_status,total_amount, payment_receipt) values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', 
+              '{var6}', '{var7}','{var8}', '{var9}', '{var10}','{var11}','{var12}','{var13}','{var14}') returning *` ,
+    "Q116" : `select id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade, is_canceled, payment_receipt  from transactions where company_id = '{var1}' and deleted_at is null`,
     "Q117" : `update transactions set payment_status = 'paid' where session_id = '{var1}' and deleted_at is null returning *`,
     "Q118" : `select id, name, description, active_status, interval, admin_amount,user_amount, currency from payment_plans where deleted_at is null`,
     "Q119" : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified, is_admin, expiry_date from users where deleted_at is null`,
@@ -162,8 +162,8 @@ const db_sql = {
     "Q124" : `select id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade  from transactions where plan_id = '{var1}' and deleted_at is null`,  
     "Q125" : `update transactions set stripe_customer_id = '{var1}', stripe_subscription_id = '{var2}', 
               stripe_card_id = '{var3}', stripe_token_id = '{var4}', stripe_charge_id = '{var5}', 
-              expiry_date = '{var6}', updated_at = '{var7}', total_amount = '{var9}', immediate_upgrade = '{var10}' where id = '{var8}' and deleted_at is null returning *`,
-    "Q126" : `update transactions set stripe_charge_id = '{var1}', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`,
+              expiry_date = '{var6}', updated_at = '{var7}', total_amount = '{var9}', immediate_upgrade = '{var10}', payment_receipt = '{var11}', user_count = '{var12}' where id = '{var8}' and deleted_at is null returning *`,
+    "Q126" : `update transactions set stripe_charge_id = '{var1}', payment_receipt = '{var4}', immediate_upgrade = '', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`,
     "Q127" : `update transactions set is_canceled = '{var1}', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`                                          
 
  };

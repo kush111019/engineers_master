@@ -128,7 +128,7 @@ module.exports.createPayment = async (req, res) => {
                             var1: id, var2: user.id, var3: checkuser.rows[0].company_id,
                             var4: planId, var5: customer.id, var6: subscription.id, var7: card.id,
                             var8: token.id, var9: charge.id, var10: subscription.current_period_end,
-                            var11: userCount, var12: charge.status, var13: Math.round(totalAmount)
+                            var11: userCount, var12: charge.status, var13: Math.round(totalAmount), var14: charge.receipt_url
                         })
                         let saveTrasaction = await connection.query(s4)
 
@@ -236,7 +236,8 @@ module.exports.subscriptionDetails = async (req, res) => {
                             userCount: subscription.items.data[1].quantity,
                             endsIn: Number(days[0]),
                             planType: (subscription.trial_end != null) ? "Trial Plan" : "Paid Plan",
-                            isCanceled : transaction.rows[0].is_canceled
+                            isCanceled : transaction.rows[0].is_canceled,
+                            paymentReceipt : transaction.rows[0].payment_receipt
                         }
                         res.json({
                             status: 200,
@@ -255,7 +256,8 @@ module.exports.subscriptionDetails = async (req, res) => {
                             userCount: "",
                             endsIn: "",
                             planType: "",
-                            isCanceled : ""
+                            isCanceled : "",
+                            paymentReceipt : ""
                         }
                         res.json({
                             status: 200,
@@ -283,7 +285,8 @@ module.exports.subscriptionDetails = async (req, res) => {
                     userCount: "",
                     endsIn: "",
                     planType: "",
-                    isCanceled : ""
+                    isCanceled : "",
+                    paymentReceipt : ""
                 }
                 res.json({
                     status: 200,
@@ -451,7 +454,8 @@ let immediateUpgradeSubFn = async (req, res, user, transaction) => {
             let s3 = dbScript(db_sql['Q125'], {
                 var1: transaction.rows[0].stripe_customer_id, var2: subscription.id,
                 var3: card.id, var4: token.id, var5: charge.id, var6: subscription.current_period_end,
-                var7: _dt, var8: transaction.rows[0].id, var9:Math.round(totalAmount), var10: true
+                var7: _dt, var8: transaction.rows[0].id, var9:Math.round(totalAmount), var10: true,
+                var11 : charge.receipt_url, var12 : userCount
             })
             let updateTransaction = await connection.query(s3)
 
@@ -542,7 +546,8 @@ let laterUpgradeSubFn = async (req, res, user, transaction) => {
             let s3 = dbScript(db_sql['Q125'], {
                 var1: transaction.rows[0].stripe_customer_id, var2: subscription.id,
                 var3: card.id, var4: token.id, var5: '', var6: subscription.current_period_end,
-                var7: _dt, var8: transaction.rows[0].id, var9:Math.round(totalAmount), var10: false
+                var7: _dt, var8: transaction.rows[0].id, var9:Math.round(totalAmount), var10: false,
+                var11 : '', var12: userCount
             })
             let updateTransaction = await connection.query(s3)
             if(updateTransaction.rowCount > 0){

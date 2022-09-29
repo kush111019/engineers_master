@@ -60,10 +60,8 @@ module.exports.upgradeSubscriptionCronFn = async () => {
     let transaction = await connection.query(s1)
     if (transaction.rowCount > 0) {
         for (let transactionData of transaction.rows) {
-            console.log(transactionData,"transactionData");
             let currentDate = new Date().toISOString();
             let expiryDate =  new Date(Number(transactionData.expiry_date) * 1000).toISOString()
-            console.log(currentDate, expiryDate, "current and expiry date");
             if (transactionData.immediate_upgrade == false && currentDate == expiryDate) {
                 console.log("inside if");
                 const subscription = await stripe.subscriptions.retrieve(
@@ -78,7 +76,7 @@ module.exports.upgradeSubscriptionCronFn = async () => {
                 if (subscription && charge) {
                     let _dt = new Date().toISOString();
                     await connection.query('BEGIN')
-                    let s2 = dbScript(db_sql['Q126'], { var1: charge.id, var2: _dt, var3: transactionData.id })
+                    let s2 = dbScript(db_sql['Q126'], { var1: charge.id, var2: _dt, var3: transactionData.id, var4:charge.receipt_url })
                     let updateTransaction = await connection.query(s2)
                     if (updateTransaction.rowCount > 0) {
                         await connection.query('COMMIT')
