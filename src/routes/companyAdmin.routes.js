@@ -110,4 +110,11 @@ router.get('/subscriptionDetails', verifyTokenFn, controller.payment.subscriptio
 router.put('/cancelSubscription', verifyTokenFn, controller.payment.cancelSubscription)
 router.post('/upgradeSubscription', verifyTokenFn, controller.payment.upgradeSubscription)
 
+
+//-----------------------------------Chat----------------------------------------------
+router.post('/createRoom', verifyTokenFn, controller.chat.createRoom)
+router.post('/createGroupRoom', verifyTokenFn, controller.chat.createGroupRoom)
+// router.post('/sendMessage', verifyTokenFn, controller.chat.createChat)
+router.get('/chatHistory/:roomId', verifyTokenFn, controller.chat.chatHistory)
+
 module.exports = router;

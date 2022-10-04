@@ -1,0 +1,274 @@
+const connection = require('../database/connection')
+const { db_sql, dbScript } = require('../utils/db_scripts');
+const uuid = require("node-uuid");
+const {mysql_real_escape_string} = require('../utils/helper')
+const jsonwebtoken = require("jsonwebtoken");
+
+module.exports.createRoom = async (req, res) => {
+    try {
+        let userEmail = req.user.email
+        let { receiverId } = req.body
+        console.log(receiverId,"receiver id");
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let checkUser = await connection.query(s1)
+        if (checkUser.rows.length > 0) {
+                let s2 = dbScript(db_sql['Q128'], { var1: checkUser.rows[0].id, var2: receiverId })
+                console.log(s2,"query");
+                let findRoom = await connection.query(s2)
+                console.log(findRoom.rows,"room details");
+                if (findRoom.rowCount == 0) {
+                    let id = uuid.v4()
+                    let s3 = dbScript(db_sql['Q129'], { var1: id, var2: checkUser.rows[0].id, var3: receiverId })
+                    let createRoom = await connection.query(s3)
+                    if (createRoom.rowCount > 0) {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Chat room initiated",
+                            data: {
+                                roomId: createRoom.rows[0].id,
+                                senderId: checkUser.rows[0].id,
+                                lastMessage: '',
+                                messageDate: ''
+                            }
+                        })
+                    } else {
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Something went wrong"
+                        })
+                    }
+                } else {
+                    let s4 = dbScript(db_sql['Q130'], { var1: findRoom.rows[0].id })
+                    let findChat = await connection.query(s4)
+                    if (findChat.rowCount > 0) {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Chat already initiated",
+                            data: {
+                                roomId: findChat.rows[0].room_id,
+                                senderId: findChat.rows[0].sender_id,
+                                lastMessage: findChat.rows[0].chat_message,
+                                messageDate: findChat.rows[0].created_at
+                            }
+                        })
+                    } else {
+                        if(findChat.rows.length == 0){
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "Chat already initiated",
+                                data: {
+                                    roomId: findRoom.rows[0].id,
+                                    senderId: findRoom.rows[0].sender_id,
+                                    lastMessage: '',
+                                    messageDate: ''
+                                }
+                            })
+                        }else{
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: "Something Went wrong"
+                            })
+                        }
+                        
+                    }
+                }
+            
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.createGroupRoom = async (req, res) => {
+    try {
+        let userEmail = req.user.email
+        let { receiverIds, groupName } = req.body
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let checkUser = await connection.query(s1)
+        if (checkUser.rows.length > 0) {
+            receiverIds.push(checkUser.rows[0].id)
+            await connection.query('BEGIN')
+            let id = uuid.v4()
+            let s2 = dbScript(db_sql['Q129'], { var1: id, var2: '', var3: '' })
+            let createRoom = await connection.query(s2)
+            console.log(createRoom.rows, "room");
+            if (createRoom.rowCount > 0) {
+                for (let i = 0; i < receiverIds.length; i++) {
+                    let id = uuid.v4()
+                    let s3 = dbScript(db_sql['Q133'], { var1: id, var2: createRoom.rows[0].id, var3: receiverIds[i], var4: groupName })
+                    let addGroupMember = await connection.query(s3)
+                }
+                await connection.query('COMMIT')
+                res.json({
+                    status : 201,
+                    success : true,
+                    message : "Chat group created successfully", 
+                    data : {
+                        roomId : createRoom.rows[0].id,
+                        users : receiverIds 
+                    }
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+let verifyTokenFn = async (req) => {
+    let  token  = req.headers.authorization
+    let user = await jsonwebtoken.verify(token, 'KEy', function (err, decoded) {
+        if (err) {
+            return 0
+        } else {
+            var decoded = {
+                id: decoded.id,
+                email: decoded.email,
+            };
+            return decoded;
+        }
+    });
+    return user
+}
+
+module.exports.createChat = async (req) => {
+    try {
+        let user = await verifyTokenFn(req)
+        let {  receiverId, roomId, chatMessage } = req.body;
+        let s1 = dbScript(db_sql['Q4'], { var1: user.email })
+        let checkUser = await connection.query(s1)
+        if (checkUser.rows.length > 0) {
+            await connection.query('BEGIN')
+            let id = uuid.v4()
+            let s2 = dbScript(db_sql['Q131'], {var1 : id, var2 : roomId, var3 :checkUser.rows[0].id , var4 : receiverId, var5 : mysql_real_escape_string(chatMessage)})
+            let createMessage = await connection.query(s2)
+
+            let s4 = dbScript(db_sql['Q10'],{var1 : receiverId })
+            let receiverData = await connection.query(s4)
+
+            let _dt = new Date().toISOString()
+            let s3 = dbScript(db_sql['Q132'],{var1 : mysql_real_escape_string(createMessage.rows[0].chat_message), var2 : _dt, var3 : roomId})
+            let updateRoom = await connection.query(s3)
+
+            if(createMessage.rowCount > 0 && updateRoom.rowCount > 0){
+                await connection.query('COMMIT')
+                return {
+                    status : 200,
+                    success : true, 
+                    message : "message sent",
+                    data : {
+                        roomId : roomId,
+                        senderId : checkUser.rows[0].id,
+                        senderName : checkUser.rows[0].full_name,
+                        receiverId : receiverId,
+                        receiverName : receiverData.rows[0].full_name,
+                        chatMessage : createMessage.rows[0].chat_message,
+                        createdAt : createMessage.rows[0].created_at
+                    }
+                }
+            }else{
+                await connection.query('ROLLBACK')
+                return {
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                }
+            }
+        } else {
+            return {
+                status: 400,
+                success: false,
+                message: "Admin not found",
+                data: ""
+            }
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        return {
+            status: 400,
+            success: false,
+            message: error.message,
+        }
+    }
+}
+
+module.exports.chatHistory = async(req, res) => {
+    try {
+        let userEmail = req.user.email
+        let { roomId } = req.params
+        console.log(req.params);
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let checkUser = await connection.query(s1)
+        if (checkUser.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q130'], {var1 : roomId})
+            let findHistory = await connection.query(s2)
+            console.log(findHistory.rows,"chat history");
+            for(let historyData of findHistory.rows){
+                console.log(historyData,"data");
+            }
+            if(findHistory.rowCount > 0){
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Chat history",
+                    data : findHistory.rows
+                })
+            }else{
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}

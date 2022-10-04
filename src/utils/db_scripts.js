@@ -164,9 +164,15 @@ const db_sql = {
               stripe_card_id = '{var3}', stripe_token_id = '{var4}', stripe_charge_id = '{var5}', 
               expiry_date = '{var6}', updated_at = '{var7}', total_amount = '{var9}', immediate_upgrade = '{var10}', payment_receipt = '{var11}', user_count = '{var12}', plan_id = '{var13}' where id = '{var8}' and deleted_at is null returning *`,
     "Q126" : `update transactions set stripe_charge_id = '{var1}', payment_receipt = '{var4}', immediate_upgrade = '', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`,
-    "Q127" : `update transactions set is_canceled = '{var1}', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`                                          
+    "Q127" : `update transactions set is_canceled = '{var1}', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`,
+    "Q128" : `select id, sender_id, receiver_id, created_at from chat_room where (sender_id = '{var1}' and receiver_id = '{var2}') or (sender_id = '{var2}' and receiver_id = '{var1}') and deleted_at is null`,
+    "Q129" : `insert into chat_room(id, sender_id, receiver_id) values('{var1}','{var2}','{var3}') returning *`,
+    "Q130" : `select id, room_id, sender_id, receiver_id, chat_message, created_at from chat_message where room_id = '{var1}' and deleted_at is null ORDER BY created_at DESC`,
+    "Q131" : `insert into chat_message(id, room_id, sender_id, receiver_id, chat_message) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,
+    "Q132" : `update chat_room set last_message = '{var1}', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`,
+    "Q133" : `insert into chat_room_members (id, room_id, user_id, group_name) values('{var1}','{var2}','{var3}','{var4}') returning *`                                          
 
- };
+ }
 
 
 
