@@ -42,8 +42,13 @@ io.on('connection', (socket) => {
   console.log("user connected", socket.id);
   
   socket.on('chat message', async (msg) => {
-    let res = await chat.createChat(msg)
+    let res = await chat.createMessage(msg)
     io.emit('chat message', res);
+  });
+
+  socket.on('chat list', async (msg) => {
+    let res = await chat.chatList(msg)
+    io.emit('chat list', res);
   });
 
   socket.on("disconnect", () => {

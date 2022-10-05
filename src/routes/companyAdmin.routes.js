@@ -115,6 +115,7 @@ router.post('/upgradeSubscription', verifyTokenFn, controller.payment.upgradeSub
 router.post('/createRoom', verifyTokenFn, controller.chat.createRoom)
 // router.post('/createGroupRoom', verifyTokenFn, controller.chat.createGroupRoom)
 // router.post('/sendMessage', verifyTokenFn, controller.chat.createChat)
+//router.get('/chatList', verifyTokenFn,controller.chat.chatList)
 router.get('/chatHistory/:roomId', verifyTokenFn, controller.chat.chatHistory)
 
 module.exports = router;
