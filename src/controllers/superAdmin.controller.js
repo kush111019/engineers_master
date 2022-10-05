@@ -214,7 +214,6 @@ module.exports.companiesList = async (req, res) => {
 
         let s1 = dbScript(db_sql['Q106'], { var1: email })
         let checkSuperAdmin = await connection.query(s1);
-        console.log(checkSuperAdmin.rows);
         if (checkSuperAdmin.rowCount != 0) {
             let s2 = dbScript(db_sql['Q107'], {})
             let findCompanies = await connection.query(s2);
@@ -255,7 +254,6 @@ module.exports.showUsersByCompanyId = async (req, res) => {
         let {
             companyId,
         } = req.query
-        console.log(req.query);
         let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
@@ -1014,7 +1012,6 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                 let trialCompanies = []
                 let s3 = dbScript(db_sql['Q121'], {})
                 let configList = await connection.query(s3)
-                console.log(configList.rows[0]);
                 for (let userData of users.rows) {
                     if (userData.is_admin) {
                         let s4 = dbScript(db_sql['Q116'], { var1: userData.company_id })

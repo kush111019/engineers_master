@@ -109,11 +109,9 @@ module.exports.createPayment = async (req, res) => {
                         let totalPrice = data.price.unit_amount * data.quantity
                         totalAmount = totalAmount + totalPrice;
                     }
-                    console.log(totalAmount,"total amount");
                     if(planData.rows[0].interval == 'year'){
                         totalAmount = totalAmount - ((Number(process.env.DISCOUNT_PERCENTAGE)/100) * totalAmount)   
                     }
-                    console.log(totalAmount,"total amount2");
                     const charge = await stripe.charges.create({
                         amount: Math.round(totalAmount),
                         currency: subscription.currency,

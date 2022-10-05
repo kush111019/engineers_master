@@ -624,7 +624,6 @@ module.exports.forgotPassword = async (req, res) => {
                     message: "New link sent to your email address",
                 })
             } else {
-                console.log('2222222222222222222222');
                 let emailSend = await resetPasswordMail(emailAddress, link, checkuser.rows[0].full_name);
                 if (emailSend.status == 400) {
                     res.json({

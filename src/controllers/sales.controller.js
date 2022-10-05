@@ -97,7 +97,6 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
 
                 let s4 = dbScript(db_sql['Q60'], { var1: customerId })
                 let contactDetails = await connection.query(s4)
-                console.log(contactDetails.rows);
                 if (contactDetails.rowCount > 0) {
                     let customerContactDetails = {};
 

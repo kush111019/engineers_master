@@ -51,6 +51,11 @@ io.on('connection', (socket) => {
     io.emit('chat list', res);
   });
 
+  socket.on('chat history', async (msg) => {
+    let res = await chat.chatHistory(msg)
+    io.emit('chat history', res);
+  });
+
   socket.on("disconnect", () => {
     console.log("user disconnected", socket.id);
   });

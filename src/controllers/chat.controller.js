@@ -13,7 +13,6 @@ module.exports.createRoom = async (req, res) => {
         if (checkUser.rows.length > 0) {
             if (chatType == 'one to one') {
                 let s2 = dbScript(db_sql['Q128'], { var1: checkUser.rows[0].id, var2: receiverIds[0] })
-                console.log(s2, "query");
                 let findRoom = await connection.query(s2)
                 if (findRoom.rowCount == 0) {
                     await connection.query('BEGIN')
@@ -218,7 +217,6 @@ module.exports.createMessage = async (req) => {
     try {
         let user = await verifyTokenFn(req)
         let { receiverId, roomId, chatMessage } = req.body;
-        console.log(req.body,"body data");
         let s1 = dbScript(db_sql['Q4'], { var1: user.email })
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
@@ -235,7 +233,6 @@ module.exports.createMessage = async (req) => {
                 let _dt = new Date().toISOString()
                 let s3 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string          (chatMessage),var2 : checkUser.rows[0].id,var3: receiverId, var4: _dt, var5: roomId })
                 let updateRoom = await connection.query(s3)
-                console.log(updateRoom,"updateRoom11111111111111111111111");
                 if (createMessage.rowCount > 0 && updateRoom.rowCount > 0) {
                     await connection.query('COMMIT')
                     return {
@@ -261,10 +258,8 @@ module.exports.createMessage = async (req) => {
                     }
                 }
             } else {
-                console.log("inside else");
                 let s5 = dbScript(db_sql['Q136'], {var1 : roomId })
                 let findGroup = await connection.query(s5)
-                console.log(findGroup.rows,"group");
                 if(findGroup.rowCount >0){
                     await connection.query('BEGIN')
                     let createdAt;
@@ -406,53 +401,72 @@ module.exports.chatList = async (req) => {
     }
 }
 
-module.exports.chatHistory = async(req, res) => {
+module.exports.chatHistory = async (req) => {
     try {
-        let userEmail = req.user.email
-        let { roomId } = req.params
-        console.log(req.params);
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let user = await verifyTokenFn(req)
+        let  roomId  = req.params.roomId
+        let s1 = dbScript(db_sql['Q4'], { var1: user.email })
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q130'], {var1 : roomId})
+            let chatHistoryArr = []
+            let s2 = dbScript(db_sql['Q130'], { var1: roomId })
             let findHistory = await connection.query(s2)
-            if(findHistory.rowCount > 0){
-                res.json({
+            for (historyData of findHistory.rows) {
+                let s4 = dbScript(db_sql['Q10'], { var1: historyData.sender_id })
+                let senderData = await connection.query(s4)
+                let s5 = dbScript(db_sql['Q10'], { var1: historyData.recceiver_id })
+                let receiverData = await connection.query(s5)
+                chatHistoryArr.push({
+                    id: historyData.id,
+                    roomId: historyData.room_id,
+                    senderId: historyData.sender_id,
+                    senderName: (senderData.rowCount > 0) ? senderData.rows[0].full_name : "",
+                    senderProfile: (senderData.rowCount > 0) ? senderData.rows[0].avatar : "",
+                    receiverid: historyData.receiver_id,
+                    receiverName: (receiverData.rowCount > 0) ? receiverData.rows[0].full_name : "",
+                    receiverProfile: (receiverData.rowCount > 0) ? receiverData.rows[0].avatar : "",
+                    chatMessage: historyData.chat_message,
+                    createdAt: historyData.created_at
+                })
+            }
+
+            if (chatHistoryArr.length > 0) {
+                return{
                     status: 200,
                     success: true,
                     message: "Chat history",
-                    data : findHistory.rows
-                })
-            }else{
-                if(findHistory.rows == 0){
-                    res.json({
+                    data: chatHistoryArr
+                }
+            } else {
+                if (chatHistoryArr.length == 0) {
+                    return{
                         status: 200,
                         success: true,
                         message: "Empty Chat history",
-                        data : []
-                    })
-                }else{
-                    res.json({
+                        data: []
+                    }
+                } else {
+                    return{
                         status: 400,
                         success: false,
                         message: "Something went wrong"
-                    })
+                    }
                 }
             }
         } else {
-            res.json({
+            return{
                 status: 400,
                 success: false,
                 message: "Admin not found",
                 data: ""
-            })
+            }
         }
     } catch (error) {
         await connection.query('ROLLBACK')
-        res.json({
+        return{
             status: 400,
             success: false,
             message: error.message,
-        })
+        }
     }
 }

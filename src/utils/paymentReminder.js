@@ -7,7 +7,6 @@ module.exports.paymentReminder = async () => {
 
     let s1 = dbScript(db_sql['Q119'], {})
     let admindata = await connection.query(s1)
-    console.log(admindata.rows,"admin data");
     for (let data of admindata.rows) {
         let s3 = dbScript(db_sql['Q14'], { var1: data.role_id })
         let checkRole = await connection.query(s3)
