@@ -354,8 +354,8 @@ module.exports.chatList = async (req) => {
                 chatListArr.push({
                     roomId: groupData.room_id,
                     senderId: groupChat.rows[0].sender_id,
-                    senderName: (senderData.rowCount > 0) ? senderData.rows[0].full_name : "",
-                    senderProfile: (senderData.rowCount > 0) ? senderData.rows[0].avatar : "",
+                    senderName: groupData.group_name,
+                    senderProfile: process.env.DEFAULT_LOGO,
                     lastMessage: groupChat.rows[0].last_message,
                     messageDate: groupChat.rows[0].updated_at
                 })
