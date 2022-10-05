@@ -7,20 +7,21 @@ const jsonwebtoken = require("jsonwebtoken");
 module.exports.createRoom = async (req, res) => {
     try {
         let userEmail = req.user.email
-        let { receiverId } = req.body
-        console.log(receiverId,"receiver id");
+        let { receiverIds, chatType, groupName } = req.body
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
-                let s2 = dbScript(db_sql['Q128'], { var1: checkUser.rows[0].id, var2: receiverId })
-                console.log(s2,"query");
+            if (chatType == 'one to one') {
+                let s2 = dbScript(db_sql['Q128'], { var1: checkUser.rows[0].id, var2: receiverIds[0] })
+                console.log(s2, "query");
                 let findRoom = await connection.query(s2)
-                console.log(findRoom.rows,"room details");
                 if (findRoom.rowCount == 0) {
+                    await connection.query('BEGIN')
                     let id = uuid.v4()
-                    let s3 = dbScript(db_sql['Q129'], { var1: id, var2: checkUser.rows[0].id, var3: receiverId })
+                    let s3 = dbScript(db_sql['Q129'], { var1: id, var2: checkUser.rows[0].id, var3: receiverIds[0], var4: chatType })
                     let createRoom = await connection.query(s3)
                     if (createRoom.rowCount > 0) {
+                        await connection.query('COMMIT')
                         res.json({
                             status: 200,
                             success: true,
@@ -28,11 +29,15 @@ module.exports.createRoom = async (req, res) => {
                             data: {
                                 roomId: createRoom.rows[0].id,
                                 senderId: checkUser.rows[0].id,
+                                senderName: checkUser.rows[0].full_name,
+                                profile: checkUser.rows[0].avatar,
                                 lastMessage: '',
-                                messageDate: ''
+                                messageDate: '',
+                                receiverId: receiverIds[0]
                             }
                         })
                     } else {
+                        await connection.query('ROLLBACK')
                         res.json({
                             status: 400,
                             success: false,
@@ -42,42 +47,86 @@ module.exports.createRoom = async (req, res) => {
                 } else {
                     let s4 = dbScript(db_sql['Q130'], { var1: findRoom.rows[0].id })
                     let findChat = await connection.query(s4)
+                    console.log(findChat.rows, "findChat");
                     if (findChat.rowCount > 0) {
+                        let s5 = dbScript(db_sql['Q10'], { var1: findChat.rows[0].sender_id })
+                        let findSender = await connection.query(s5)
                         res.json({
                             status: 200,
                             success: true,
                             message: "Chat already initiated",
                             data: {
                                 roomId: findChat.rows[0].room_id,
-                                senderId: findChat.rows[0].sender_id,
+                                senderId: checkUser.rows[0].id,
+                                senderName: checkUser.rows[0].full_name,
+                                profile: checkUser.rows[0].avatar,
                                 lastMessage: findChat.rows[0].chat_message,
-                                messageDate: findChat.rows[0].created_at
+                                messageDate: findChat.rows[0].created_at,
+                                receiverId: receiverIds[0]
                             }
                         })
                     } else {
-                        if(findChat.rows.length == 0){
+                        if (findChat.rows.length == 0) {
                             res.json({
                                 status: 200,
                                 success: true,
                                 message: "Chat already initiated",
                                 data: {
                                     roomId: findRoom.rows[0].id,
-                                    senderId: findRoom.rows[0].sender_id,
+                                    senderId: checkUser.rows[0].id,
+                                    senderName: checkUser.rows[0].full_name,
+                                    profile: checkUser.rows[0].avatar,
                                     lastMessage: '',
-                                    messageDate: ''
+                                    messageDate: '',
+                                    receiverId: receiverIds[0]
                                 }
                             })
-                        }else{
+                        } else {
                             res.json({
                                 status: 400,
                                 success: false,
                                 message: "Something Went wrong"
                             })
                         }
-                        
+
                     }
                 }
-            
+            } else {
+                receiverIds.push(checkUser.rows[0].id)
+                await connection.query('BEGIN')
+                let id = uuid.v4()
+                let s2 = dbScript(db_sql['Q129'], { var1: id, var2: '', var3: '', var4: chatType })
+                let createRoom = await connection.query(s2)
+                if (createRoom.rowCount > 0) {
+                    for (let i = 0; i < receiverIds.length; i++) {
+                        let id = uuid.v4()
+                        let s3 = dbScript(db_sql['Q133'], { var1: id, var2: createRoom.rows[0].id, var3: receiverIds[i], var4: groupName })
+                        let addGroupMember = await connection.query(s3)
+                    }
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Chat group created successfully",
+                        data: {
+                            roomId: createRoom.rows[0].id,
+                            senderId: checkUser.rows[0].id,
+                            senderName: groupName,
+                            profile: process.env.DEFAULT_LOGO,
+                            lastMessage: '',
+                            messageDate: '',
+                            receiverId: receiverIds
+                        }
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            }
         } else {
             res.json({
                 status: 400,
@@ -95,60 +144,60 @@ module.exports.createRoom = async (req, res) => {
     }
 }
 
-module.exports.createGroupRoom = async (req, res) => {
-    try {
-        let userEmail = req.user.email
-        let { receiverIds, groupName } = req.body
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
-        let checkUser = await connection.query(s1)
-        if (checkUser.rows.length > 0) {
-            receiverIds.push(checkUser.rows[0].id)
-            await connection.query('BEGIN')
-            let id = uuid.v4()
-            let s2 = dbScript(db_sql['Q129'], { var1: id, var2: '', var3: '' })
-            let createRoom = await connection.query(s2)
-            console.log(createRoom.rows, "room");
-            if (createRoom.rowCount > 0) {
-                for (let i = 0; i < receiverIds.length; i++) {
-                    let id = uuid.v4()
-                    let s3 = dbScript(db_sql['Q133'], { var1: id, var2: createRoom.rows[0].id, var3: receiverIds[i], var4: groupName })
-                    let addGroupMember = await connection.query(s3)
-                }
-                await connection.query('COMMIT')
-                res.json({
-                    status : 201,
-                    success : true,
-                    message : "Chat group created successfully", 
-                    data : {
-                        roomId : createRoom.rows[0].id,
-                        users : receiverIds 
-                    }
-                })
-            } else {
-                await connection.query('ROLLBACK')
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Something went wrong"
-                })
-            }
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Admin not found",
-                data: ""
-            })
-        }
-    } catch (error) {
-        await connection.query('ROLLBACK')
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
+// module.exports.createGroupRoom = async (req, res) => {
+//     try {
+//         let userEmail = req.user.email
+//         let { receiverIds, groupName } = req.body
+//         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+//         let checkUser = await connection.query(s1)
+//         if (checkUser.rows.length > 0) {
+//             receiverIds.push(checkUser.rows[0].id)
+//             await connection.query('BEGIN')
+//             let id = uuid.v4()
+//             let s2 = dbScript(db_sql['Q129'], { var1: id, var2: '', var3: '' })
+//             let createRoom = await connection.query(s2)
+//             console.log(createRoom.rows, "room");
+//             if (createRoom.rowCount > 0) {
+//                 for (let i = 0; i < receiverIds.length; i++) {
+//                     let id = uuid.v4()
+//                     let s3 = dbScript(db_sql['Q133'], { var1: id, var2: createRoom.rows[0].id, var3: receiverIds[i], var4: groupName })
+//                     let addGroupMember = await connection.query(s3)
+//                 }
+//                 await connection.query('COMMIT')
+//                 res.json({
+//                     status : 201,
+//                     success : true,
+//                     message : "Chat group created successfully", 
+//                     data : {
+//                         roomId : createRoom.rows[0].id,
+//                         users : receiverIds 
+//                     }
+//                 })
+//             } else {
+//                 await connection.query('ROLLBACK')
+//                 res.json({
+//                     status: 400,
+//                     success: false,
+//                     message: "Something went wrong"
+//                 })
+//             }
+//         } else {
+//             res.json({
+//                 status: 400,
+//                 success: false,
+//                 message: "Admin not found",
+//                 data: ""
+//             })
+//         }
+//     } catch (error) {
+//         await connection.query('ROLLBACK')
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }
 
 let verifyTokenFn = async (req) => {
     let  token  = req.headers.authorization
@@ -224,6 +273,36 @@ module.exports.createChat = async (req) => {
             success: false,
             message: error.message,
         }
+    }
+}
+
+module.exports.chatList = async (req, res) => {
+    try {
+        let userEmail = req.user.email
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let checkUser = await connection.query(s1)
+        if (checkUser.rows.length > 0) {
+
+            let s2 = dbScript(db_sql[''],{})
+            let chatList = await connection.query(s2)
+
+
+
+
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
     }
 }
 
