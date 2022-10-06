@@ -173,10 +173,9 @@ const db_sql = {
     "Q133" : `insert into chat_room_members (id, room_id, user_id, group_name) values('{var1}','{var2}','{var3}','{var4}') returning *` ,
     "Q134" : `select id, sender_id, receiver_id, last_message, chat_type, created_at, updated_at from chat_room 
               where (sender_id = '{var1}') or (receiver_id = '{var1}') and deleted_at is null`,
-    "Q135" : `select room_id, user_id, group_name from chat_room_members where user_id = '{var1}' and deleted_at is null `,
-    "Q136" : `select id, sender_id, receiver_id, last_message, chat_type, created_at, updated_at from chat_room 
-              where id = '{var1}' and deleted_at is null `,
-
+    "Q135" : `select room_id, user_id, group_name from chat_room_members where user_id = '{var1}' and deleted_at is null`,
+    "Q136" : `select id, sender_id, receiver_id, last_message, chat_type, created_at, updated_at from chat_room where id = '{var1}' and deleted_at is null `,
+    "Q137" : `select room_id, user_id, group_name from chat_room_members where room_id = '{var1}' and deleted_at is null`
 
  }
 

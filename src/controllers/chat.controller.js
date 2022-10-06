@@ -258,7 +258,7 @@ module.exports.createMessage = async (req) => {
                     }
                 }
             } else {
-                let s5 = dbScript(db_sql['Q136'], {var1 : roomId })
+                let s5 = dbScript(db_sql['Q137'], {var1 : roomId })
                 let findGroup = await connection.query(s5)
                 if(findGroup.rowCount >0){
                     await connection.query('BEGIN')
@@ -270,7 +270,7 @@ module.exports.createMessage = async (req) => {
                         createdAt = createMessage.rows[0].created_at
                     }
                     let _dt = new Date().toISOString()
-                    let s7 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string          (chatMessage),var2 : checkUser.rows[0].id,var3: receiverId, var4: _dt, var5: roomId })
+                    let s7 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string(chatMessage),var2 : checkUser.rows[0].id,var3: receiverId, var4: _dt, var5: roomId })
                     let updateRoom = await connection.query(s7)
 
                     if(updateRoom.rowCount > 0){
@@ -360,22 +360,22 @@ module.exports.chatList = async (req) => {
                     messageDate: groupChat.rows[0].updated_at
                 })
             }
-            chatListArr.sort(function(a, b) {
-                var keyA = new Date(a.messageDate),
-                    keyB = new Date(b.messageDate);
-                // Compare the 2 dates
-                if (keyA < keyB) return -1;
-                if (keyA > keyB) return 1;
-                return 0;
-              })
             if (chatListArr.length > 0) {
+                chatListArr.sort(function(a, b) {
+                    var keyA = new Date(a.messageDate),
+                        keyB = new Date(b.messageDate);
+                    // Compare the 2 dates
+                    if (keyA < keyB) return 1;
+                    if (keyA > keyB) return -1;
+                    return 0;
+                })
+
                 return {
                     status: 200,
                     success: true,
                     message: "Chat list",
                     data: chatListArr
                 }
-
             } else {
                 return {
                     status: 200,
@@ -429,7 +429,6 @@ module.exports.chatHistory = async (req) => {
                     createdAt: historyData.created_at
                 })
             }
-
             if (chatHistoryArr.length > 0) {
                 return{
                     status: 200,
