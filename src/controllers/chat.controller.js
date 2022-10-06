@@ -341,8 +341,8 @@ module.exports.chatList = async (req) => {
                 chatListArr.push({
                     roomId: oneToOneData.id,
                     senderId: oneToOneData.sender_id,
-                    senderName: senderData.rows[0].full_name,
-                    senderProfile: senderData.rows[0].avatar,
+                    senderName: (senderData.rowCount > 0) ? senderData.rows[0].full_name : "",
+                    senderProfile: (senderData.rowCount > 0) ? senderData.rows[0].avatar : process.env.DEFAULT_LOGO,
                     receiverId :oneToOneData.receiver_id,
                     receiverName : (receiverData.rowCount > 0) ? receiverData.rows[0].full_name : "",
                     receiverProfile :  (receiverData.rowCount > 0) ? receiverData.rows[0].avatar : process.env.DEFAULT_LOGO,
@@ -360,11 +360,11 @@ module.exports.chatList = async (req) => {
                 chatListArr.push({
                     roomId: groupData.room_id,
                     senderId: groupChat.rows[0].sender_id,
-                    senderName: groupData.group_name,
-                    senderProfile: process.env.DEFAULT_LOGO,
+                    senderName: (senderData.rowCount > 0) ? senderData.rows[0].full_name : "",
+                    senderProfile: (senderData.rowCount > 0) ? senderData.rows[0].avatar : process.env.DEFAULT_LOGO,
                     receiverId : "",
-                    receiverName : "",
-                    receiverProfile : "",
+                    receiverName :groupData.group_name,
+                    receiverProfile : process.env.DEFAULT_LOGO,
                     lastMessage: groupChat.rows[0].last_message,
                     messageDate: groupChat.rows[0].updated_at
                 })
