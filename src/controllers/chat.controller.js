@@ -430,10 +430,10 @@ module.exports.chatHistory = async (req) => {
                     roomId: historyData.room_id,
                     senderId: historyData.sender_id,
                     senderName: (senderData.rowCount > 0) ? senderData.rows[0].full_name : "",
-                    senderProfile: (senderData.rowCount > 0) ? senderData.rows[0].avatar : "",
+                    senderProfile: (senderData.rowCount > 0) ? senderData.rows[0].avatar : process.env.DEFAULT_LOGO,
                     receiverid: historyData.receiver_id,
                     receiverName: (receiverData.rowCount > 0) ? receiverData.rows[0].full_name : "",
-                    receiverProfile: (receiverData.rowCount > 0) ? receiverData.rows[0].avatar : "",
+                    receiverProfile: (receiverData.rowCount > 0) ? receiverData.rows[0].avatar : process.env.DEFAULT_LOGO,
                     chatMessage: historyData.chat_message,
                     createdAt: historyData.created_at
                 })
