@@ -449,6 +449,13 @@ module.exports.chatHistory = async (req) => {
                     id =userReceiverId
                     profile = (senderData.rowCount > 0) ? senderData.rows[0].full_name : ""
                     name = (senderData.rowCount > 0) ? senderData.rows[0].avatar : process.env.DEFAULT_LOGO 
+                }else{
+                    userReceiverId = checkUser.rows[0].id
+                    let s4 = dbScript(db_sql['Q10'], { var1: userReceiverId })
+                    let senderData = await connection.query(s4)
+                    id =userReceiverId
+                    profile = (senderData.rowCount > 0) ? senderData.rows[0].full_name : ""
+                    name = (senderData.rowCount > 0) ? senderData.rows[0].avatar : process.env.DEFAULT_LOGO 
                 }
                 // let s5 = dbScript(db_sql['Q10'], { var1: historyData.recceiver_id })
                 // let receiverData = await connection.query(s5)
