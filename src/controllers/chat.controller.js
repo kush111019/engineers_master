@@ -333,13 +333,22 @@ module.exports.chatList = async (req) => {
             let s2 = dbScript(db_sql['Q134'], { var1: checkUser.rows[0].id })
             let oneToOneChat = await connection.query(s2)
             for (let oneToOneData of oneToOneChat.rows) {
+                console.log(oneToOneData,"oneToOneData");
                 let s4 = dbScript(db_sql['Q10'], { var1: oneToOneData.sender_id })
                 let senderData = await connection.query(s4)
+                console.log(senderData.rows,"senderData");
+                let s5 = dbScript(db_sql['Q10'], {var1 :oneToOneData.receiver_id })
+                console.log(s5);
+                let receiverData = await connection.query(s5)
+                console.log(receiverData.rows,"receiverData");
                 chatListArr.push({
                     roomId: oneToOneData.id,
                     senderId: oneToOneData.sender_id,
                     senderName: senderData.rows[0].full_name,
                     senderProfile: senderData.rows[0].avatar,
+                    receiverId :oneToOneData.receiver_id,
+                    receiverName : (receiverData.rowCount > 0) ? receiverData.rows[0].full_name : "",
+                    receiverProfile :  (receiverData.rowCount > 0) ? receiverData.rows[0].avatar : process.env.DEFAULT_LOGO,
                     lastMessage: oneToOneData.last_message,
                     messageDate: oneToOneData.updated_at
                 })
@@ -356,6 +365,9 @@ module.exports.chatList = async (req) => {
                     senderId: groupChat.rows[0].sender_id,
                     senderName: groupData.group_name,
                     senderProfile: process.env.DEFAULT_LOGO,
+                    receiverId : "",
+                    receiverName : "",
+                    receiverProfile : "",
                     lastMessage: groupChat.rows[0].last_message,
                     messageDate: groupChat.rows[0].updated_at
                 })
@@ -396,7 +408,7 @@ module.exports.chatList = async (req) => {
         return {
             status: 400,
             success: false,
-            message: error
+            message: error.message
         }
     }
 }
@@ -404,7 +416,7 @@ module.exports.chatList = async (req) => {
 module.exports.chatHistory = async (req) => {
     try {
         let user = await verifyTokenFn(req)
-        let  roomId  = req.params.roomId
+        let roomId = req.params.roomId
         let s1 = dbScript(db_sql['Q4'], { var1: user.email })
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
@@ -430,7 +442,7 @@ module.exports.chatHistory = async (req) => {
                 })
             }
             if (chatHistoryArr.length > 0) {
-                return{
+                return {
                     status: 200,
                     success: true,
                     message: "Chat history",
@@ -438,14 +450,14 @@ module.exports.chatHistory = async (req) => {
                 }
             } else {
                 if (chatHistoryArr.length == 0) {
-                    return{
+                    return {
                         status: 200,
                         success: true,
                         message: "Empty Chat history",
                         data: []
                     }
                 } else {
-                    return{
+                    return {
                         status: 400,
                         success: false,
                         message: "Something went wrong"
@@ -453,7 +465,7 @@ module.exports.chatHistory = async (req) => {
                 }
             }
         } else {
-            return{
+            return {
                 status: 400,
                 success: false,
                 message: "Admin not found",
@@ -462,7 +474,7 @@ module.exports.chatHistory = async (req) => {
         }
     } catch (error) {
         await connection.query('ROLLBACK')
-        return{
+        return {
             status: 400,
             success: false,
             message: error.message,
