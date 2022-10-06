@@ -113,7 +113,7 @@ module.exports.createRoom = async (req, res) => {
                             profile: process.env.DEFAULT_LOGO,
                             lastMessage: '',
                             messageDate: '',
-                            receiverId: receiverIds
+                            receiverId: ''
                         }
                     })
                 } else {
@@ -226,7 +226,7 @@ module.exports.createMessage = async (req) => {
                 let s0 = dbScript(db_sql['Q136'],{var1 : roomId})
                 let findRoom = await connection.query(s0)
                 let id = uuid.v4()
-                let s2 = dbScript(db_sql['Q131'], { var1: id, var2: roomId, var3: checkUser.rows[0].id, var4: findRoom.rows[0].receiver_id, var5: mysql_real_escape_string(chatMessage) })
+                let s2 = dbScript(db_sql['Q131'], { var1: id, var2: roomId, var3: checkUser.rows[0].id, var4: mysql_real_escape_string(chatMessage) })
                 let createMessage = await connection.query(s2)
 
                 let s4 = dbScript(db_sql['Q10'], { var1: findRoom.rows[0].receiver_id })
@@ -267,12 +267,12 @@ module.exports.createMessage = async (req) => {
                     let createdAt;
                     for(let groupData of findGroup.rows){
                         let id = uuid.v4()
-                        let s6 = dbScript(db_sql['Q131'], { var1: id, var2: roomId, var3: checkUser.rows[0].id, var4: groupData.user_id, var5: mysql_real_escape_string(chatMessage) })
+                        let s6 = dbScript(db_sql['Q131'], { var1: id, var2: roomId, var3: checkUser.rows[0].id, var4: mysql_real_escape_string(chatMessage) })
                         let createMessage = await connection.query(s6) 
                         createdAt = createMessage.rows[0].created_at
                     }
                     let _dt = new Date().toISOString()
-                    let s7 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string(chatMessage),var2 : checkUser.rows[0].id,var3: receiverId, var4: _dt, var5: roomId })
+                    let s7 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string(chatMessage),var2 : checkUser.rows[0].id,var3: "", var4: _dt, var5: roomId })
                     let updateRoom = await connection.query(s7)
 
                     if(updateRoom.rowCount > 0){
@@ -285,7 +285,7 @@ module.exports.createMessage = async (req) => {
                                 roomId: roomId,
                                 senderId: checkUser.rows[0].id,
                                 senderName: checkUser.rows[0].full_name,
-                                receiverId: receiverId,
+                                receiverId: "",
                                 receiverName: "",
                                 chatMessage: chatMessage,
                                 createdAt: createdAt
@@ -335,29 +335,13 @@ module.exports.chatList = async (req) => {
             let s2 = dbScript(db_sql['Q134'], { var1: checkUser.rows[0].id })
             let oneToOneChat = await connection.query(s2)
             for (let oneToOneData of oneToOneChat.rows) {
-                // let s4 = dbScript(db_sql['Q10'], { var1: oneToOneData.sender_id })
-                // let senderData = await connection.query(s4)
-                // let s5 = dbScript(db_sql['Q10'], {var1 :oneToOneData.receiver_id })
-                // console.log(s5);
-                // let receiverData = await connection.query(s5)
-                let userReceiverId = ''
-                if(checkUser.rows[0].id == oneToOneData.receiver_id ){
-                    userReceiverId = oneToOneData.sender_id
-                }else{
-                    userReceiverId = oneToOneData.receiver_id
-                }
-
-                let s4 = dbScript(db_sql['Q10'], {var1 :userReceiverId })
+                let s4 = dbScript(db_sql['Q10'], { var1: oneToOneData.sender_id })
                 let senderData = await connection.query(s4)
-
                 chatListArr.push({
                     roomId: oneToOneData.id,
-                    id: userReceiverId,
+                    id: oneToOneData.sender_id,
                     name: (senderData.rowCount > 0) ? senderData.rows[0].full_name : "",
                     profile: (senderData.rowCount > 0) ? senderData.rows[0].avatar : process.env.DEFAULT_LOGO,
-                    // receiverId :oneToOneData.receiver_id,
-                    // receiverName : (receiverData.rowCount > 0) ? receiverData.rows[0].full_name : "",
-                    // receiverProfile :  (receiverData.rowCount > 0) ? receiverData.rows[0].avatar : process.env.DEFAULT_LOGO,
                     lastMessage: oneToOneData.last_message,
                     messageDate: oneToOneData.updated_at
                 })
@@ -367,23 +351,15 @@ module.exports.chatList = async (req) => {
             for (let groupData of groupChatMember.rows) {
                 let s4 = dbScript(db_sql['Q136'], { var1: groupData.room_id })
                 let groupChat = await connection.query(s4)
-                // let s5 = dbScript(db_sql['Q10'], { var1: groupChat.rows[0].sender_id })
-                // let senderData = await connection.query(s5)
 
-                // if(checkUser.rows[0].id == groupChat.rows[0].receiver_id ){
-                //     userReceiverId = groupChat.rows[0].sender_id
-                // }else{
-                //     userReceiverId = groupChat.rows[0].receiver_id
-                // }
+                let s5 = dbScript(db_sql['Q10'], { var1: groupChat.rows[0].sender_id })
+                let senderData = await connection.query(s5)
 
                 chatListArr.push({
                     roomId: groupData.room_id,
-                    id: "",
+                    id: groupChat.rows[0].sender_id,
                     name: groupData.group_name,
                     profile: process.env.DEFAULT_LOGO,
-                    // receiverId : "",
-                    // receiverName :groupData.group_name,
-                    // receiverProfile : process.env.DEFAULT_LOGO,
                     lastMessage: groupChat.rows[0].last_message,
                     messageDate: groupChat.rows[0].updated_at
                 })
@@ -440,36 +416,16 @@ module.exports.chatHistory = async (req) => {
             let s2 = dbScript(db_sql['Q130'], { var1: roomId })
             let findHistory = await connection.query(s2)
             for (historyData of findHistory.rows) {
-                let userReceiverId = ''
-                let id =''
-                let profile = ''
-                let name = ''
-                if(checkUser.rows[0].id != historyData.sender_id ){
-                    userReceiverId = historyData.sender_id
-                    let s4 = dbScript(db_sql['Q10'], { var1: userReceiverId })
-                    let senderData = await connection.query(s4)
-                    id =userReceiverId
-                    profile = (senderData.rowCount > 0) ? senderData.rows[0].full_name : ""
-                    name = (senderData.rowCount > 0) ? senderData.rows[0].avatar : process.env.DEFAULT_LOGO 
-                }else{
-                    userReceiverId = checkUser.rows[0].id
-                    let s4 = dbScript(db_sql['Q10'], { var1: userReceiverId })
-                    let senderData = await connection.query(s4)
-                    id =userReceiverId
-                    name = (senderData.rowCount > 0) ? senderData.rows[0].full_name : ""
-                    profile = (senderData.rowCount > 0) ? senderData.rows[0].avatar : process.env.DEFAULT_LOGO 
-                }
-                // let s5 = dbScript(db_sql['Q10'], { var1: historyData.recceiver_id })
-                // let receiverData = await connection.query(s5)
+
+                let s4 = dbScript(db_sql['Q10'], { var1:historyData.sender_id })
+                let senderData = await connection.query(s4)
+
                 chatHistoryArr.push({
                     id: historyData.id,
                     roomId: historyData.room_id,
-                    id: id,
-                    name: name,
-                    profile:profile ,
-                    // receiverid: historyData.receiver_id,
-                    // receiverName: (receiverData.rowCount > 0) ? receiverData.rows[0].full_name : "",
-                    // receiverProfile: (receiverData.rowCount > 0) ? receiverData.rows[0].avatar : process.env.DEFAULT_LOGO,
+                    id: historyData.sender_id,
+                    name: (senderData.rowCount > 0) ? senderData.rows[0].full_name : "",
+                    profile:(senderData.rowCount > 0) ? senderData.rows[0].avatar : process.env.DEFAULT_LOGO,
                     chatMessage: historyData.chat_message,
                     createdAt: historyData.created_at
                 })
