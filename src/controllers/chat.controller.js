@@ -333,14 +333,11 @@ module.exports.chatList = async (req) => {
             let s2 = dbScript(db_sql['Q134'], { var1: checkUser.rows[0].id })
             let oneToOneChat = await connection.query(s2)
             for (let oneToOneData of oneToOneChat.rows) {
-                console.log(oneToOneData,"oneToOneData");
                 let s4 = dbScript(db_sql['Q10'], { var1: oneToOneData.sender_id })
                 let senderData = await connection.query(s4)
-                console.log(senderData.rows,"senderData");
                 let s5 = dbScript(db_sql['Q10'], {var1 :oneToOneData.receiver_id })
                 console.log(s5);
                 let receiverData = await connection.query(s5)
-                console.log(receiverData.rows,"receiverData");
                 chatListArr.push({
                     roomId: oneToOneData.id,
                     senderId: oneToOneData.sender_id,
