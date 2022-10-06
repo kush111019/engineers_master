@@ -223,15 +223,17 @@ module.exports.createMessage = async (req) => {
             if (receiverId != '') {
 
                 await connection.query('BEGIN')
+                let s0 = dbScript(db_sql['Q136'],{var1 : roomId})
+                let findRoom = await connection.query(s0)
                 let id = uuid.v4()
-                let s2 = dbScript(db_sql['Q131'], { var1: id, var2: roomId, var3: checkUser.rows[0].id, var4: receiverId, var5: mysql_real_escape_string(chatMessage) })
+                let s2 = dbScript(db_sql['Q131'], { var1: id, var2: roomId, var3: checkUser.rows[0].id, var4: findRoom.rows[0].receiver_id, var5: mysql_real_escape_string(chatMessage) })
                 let createMessage = await connection.query(s2)
 
-                let s4 = dbScript(db_sql['Q10'], { var1: receiverId })
+                let s4 = dbScript(db_sql['Q10'], { var1: findRoom.rows[0].receiver_id })
                 let receiverData = await connection.query(s4)
 
                 let _dt = new Date().toISOString()
-                let s3 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string          (chatMessage),var2 : checkUser.rows[0].id,var3: receiverId, var4: _dt, var5: roomId })
+                let s3 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string          (chatMessage),var2 : checkUser.rows[0].id,var3: findRoom.rows[0].receiver_id, var4: _dt, var5: roomId })
                 let updateRoom = await connection.query(s3)
                 if (createMessage.rowCount > 0 && updateRoom.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -243,7 +245,7 @@ module.exports.createMessage = async (req) => {
                             roomId: roomId,
                             senderId: checkUser.rows[0].id,
                             senderName: checkUser.rows[0].full_name,
-                            receiverId: receiverId,
+                            receiverId: findRoom.rows[0].receiver_id,
                             receiverName: receiverData.rows[0].full_name,
                             chatMessage: createMessage.rows[0].chat_message,
                             createdAt: createMessage.rows[0].created_at
