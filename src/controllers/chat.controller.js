@@ -323,7 +323,7 @@ module.exports.chatList = async (req) => {
             let groupChatMember = await connection.query(s4)
             for (let groupData of groupChatMember.rows) {
 
-                let s5 = dbScript(db_sql['Q136'], { var1: groupData.room_id })
+                let s5 = dbScript(db_sql['Q136'], { var1: groupData.room_id, var2 : salesId })
                 let groupChat = await connection.query(s5)
 
                 let s6 = dbScript(db_sql['Q10'], { var1: groupChat.rows[0].sender_id })
