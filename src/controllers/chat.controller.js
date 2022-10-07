@@ -229,7 +229,7 @@ module.exports.sendMessage = async (req) => {
                     let createMessage = await connection.query(s7)
 
                     let _dt = new Date().toISOString()
-                    let s8 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string(chatMessage), var2: checkUser.rows[0].id, var3: "", var4: _dt, var5: roomId })
+                    let s8 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string(chatMessage), var2: checkUser.rows[0].id, var3: "", var4: _dt, var5: roomId, var6 : salesId })
                     let updateRoom = await connection.query(s8)
 
                     if (updateRoom.rowCount > 0 && createMessage.rowCount > 0) {
