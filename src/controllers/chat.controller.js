@@ -7,17 +7,17 @@ const jsonwebtoken = require("jsonwebtoken");
 module.exports.createRoom = async (req, res) => {
     try {
         let userEmail = req.user.email
-        let { receiverIds, chatType, groupName } = req.body
+        let { receiverIds, chatType, groupName, salesId } = req.body
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
             if (chatType == 'one to one') {
-                let s2 = dbScript(db_sql['Q128'], { var1: checkUser.rows[0].id, var2: receiverIds[0] })
+                let s2 = dbScript(db_sql['Q128'], { var1: checkUser.rows[0].id, var2: receiverIds[0], var3 : salesId })
                 let findRoom = await connection.query(s2)
                 if (findRoom.rowCount == 0) {
                     await connection.query('BEGIN')
                     let id = uuid.v4()
-                    let s3 = dbScript(db_sql['Q129'], { var1: id, var2: checkUser.rows[0].id, var3: receiverIds[0], var4: chatType })
+                    let s3 = dbScript(db_sql['Q129'], { var1: id, var2: checkUser.rows[0].id, var3: receiverIds[0], var4: chatType, var5 : salesId })
                     let createRoom = await connection.query(s3)
                     if (createRoom.rowCount > 0) {
                         await connection.query('COMMIT')
@@ -96,7 +96,7 @@ module.exports.createRoom = async (req, res) => {
                 receiverIds.push(checkUser.rows[0].id)
                 await connection.query('BEGIN')
                 let id = uuid.v4()
-                let s2 = dbScript(db_sql['Q129'], { var1: id, var2: '', var3: '', var4: chatType })
+                let s2 = dbScript(db_sql['Q129'], { var1: id, var2: '', var3: '', var4: chatType, var5 : salesId })
                 let createRoom = await connection.query(s2)
                 if (createRoom.rowCount > 0) {
                     for (let i = 0; i < receiverIds.length; i++) {
@@ -165,7 +165,7 @@ let verifyTokenFn = async (req) => {
 module.exports.sendMessage = async (req) => {
     try {
         let user = await verifyTokenFn(req)
-        let { chatType, roomId, chatMessage } = req.body;
+        let { chatType, roomId, chatMessage, salesId } = req.body;
 
         let s1 = dbScript(db_sql['Q4'], { var1: user.email })
         let checkUser = await connection.query(s1)
@@ -175,11 +175,11 @@ module.exports.sendMessage = async (req) => {
 
                 await connection.query('BEGIN')
                 
-                let s2 = dbScript(db_sql['Q136'], { var1: roomId })
+                let s2 = dbScript(db_sql['Q136'], { var1: roomId, var2 : salesId })
                 let findRoom = await connection.query(s2)
 
                 let id = uuid.v4()
-                let s3 = dbScript(db_sql['Q131'], { var1: id, var2: roomId, var3: checkUser.rows[0].id, var4: mysql_real_escape_string(chatMessage) })
+                let s3 = dbScript(db_sql['Q131'], { var1: id, var2: roomId, var3: checkUser.rows[0].id, var4: mysql_real_escape_string(chatMessage)})
                 let createMessage = await connection.query(s3)
 
                 let recieverId = (findRoom.rows[0].receiver_id == checkUser.rows[0].id) ? findRoom.rows[0].sender_id : findRoom.rows[0].receiver_id
@@ -188,7 +188,7 @@ module.exports.sendMessage = async (req) => {
                 // let receiverData = await connection.query(s4)
                 
                 let _dt = new Date().toISOString()
-                let s5 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string(chatMessage), var2: checkUser.rows[0].id, var3: recieverId, var4: _dt, var5: roomId })
+                let s5 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string(chatMessage), var2: checkUser.rows[0].id, var3: recieverId, var4: _dt, var5: roomId, var6: salesId })
                 let updateRoom = await connection.query(s5)
 
                 if (createMessage.rowCount > 0 && updateRoom.rowCount > 0) {
@@ -287,11 +287,12 @@ module.exports.sendMessage = async (req) => {
 module.exports.chatList = async (req) => {
     try {
         let user = await verifyTokenFn(req)
+        let salesId = req.params.salesId
         let s1 = dbScript(db_sql['Q4'], { var1: user.email })
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
             let chatListArr = []
-            let s2 = dbScript(db_sql['Q134'], { var1: checkUser.rows[0].id })
+            let s2 = dbScript(db_sql['Q134'], { var1: checkUser.rows[0].id, var2: salesId})
             let oneToOneChat = await connection.query(s2)
 
             for (let oneToOneData of oneToOneChat.rows) {
