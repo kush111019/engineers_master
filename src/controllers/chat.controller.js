@@ -391,6 +391,7 @@ module.exports.chatHistory = async (req) => {
             let chatHistoryArr = []
             let s2 = dbScript(db_sql['Q130'], { var1: roomId })
             let findHistory = await connection.query(s2)
+            if(findHistory.rowCount > 0){
             for (historyData of findHistory.rows) {
 
                 let s3 = dbScript(db_sql['Q10'], { var1: historyData.sender_id })
@@ -417,7 +418,7 @@ module.exports.chatHistory = async (req) => {
                 if (chatHistoryArr.length == 0) {
                     return {
                         status: 200,
-                        success: true,
+                        success: false,
                         message: "Empty Chat history",
                         data: []
                     }
@@ -429,6 +430,14 @@ module.exports.chatHistory = async (req) => {
                     }
                 }
             }
+        }else{
+            return {
+                status: 200,
+                success: false,
+                message: "Empty Chat history",
+                data: []
+            }
+        }
         } else {
             return {
                 status: 400,
