@@ -43,6 +43,7 @@ io.on('connection', (socket) => {
   
   socket.on('chat message', async (msg) => {
     let res = await chat.sendMessage(msg)
+    res.socket_id = socket.id
     io.emit('chat message', res);
   });
 
@@ -54,6 +55,7 @@ io.on('connection', (socket) => {
 
   socket.on('chat history', async (msg) => {
     let res = await chat.chatHistory(msg)
+    res.socket_id = socket.id
     io.emit('chat history', res);
   });
 
