@@ -325,9 +325,9 @@ module.exports.chatList = async (req) => {
 
                 let s5 = dbScript(db_sql['Q136'], { var1: groupData.room_id, var2: salesId })
                 let groupChat = await connection.query(s5)
+                console.log(groupChat.rows);
 
-
-                if (groupChat.rows[0].sender_id != '') {
+                if (groupChat.rowCount > 0 && groupChat.rows[0].sender_id != '') {
                     let s6 = dbScript(db_sql['Q10'], { var1: groupChat.rows[0].sender_id })
                     let senderData = await connection.query(s6)
 
@@ -350,9 +350,9 @@ module.exports.chatList = async (req) => {
                         id: "",
                         name: "",
                         profile: process.env.DEFAULT_LOGO,
-                        lastMessage: groupChat.rows[0].last_message,
-                        messageDate: groupChat.rows[0].updated_at,
-                        chatType: groupChat.rows[0].chat_type
+                        lastMessage: (groupChat.rowCount > 0) ? groupChat.rows[0].last_message : "",
+                        messageDate: (groupChat.rowCount > 0) ? groupChat.rows[0].updated_at:"",
+                        chatType: (groupChat.rowCount > 0) ? groupChat.rows[0].chat_type : ""
                     })
                 }
             }
