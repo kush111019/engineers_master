@@ -326,7 +326,7 @@ module.exports.chatList = async (req) => {
                 let s5 = dbScript(db_sql['Q136'], { var1: groupData.room_id, var2 : salesId })
                 let groupChat = await connection.query(s5)
 
-                let s6 = dbScript(db_sql['Q10'], { var1: groupChat.rows[0].sender_id })
+                let s6 = dbScript(db_sql['Q10'], { var1: checkUser.rows[0].id })
                 let senderData = await connection.query(s6)
 
                 chatListArr.push({
@@ -387,7 +387,6 @@ module.exports.chatHistory = async (req) => {
         let roomId = req.params.roomId
         let s1 = dbScript(db_sql['Q4'], { var1: user.email })
         let checkUser = await connection.query(s1)
-        if (checkUser.rows.length > 0) {
             let chatHistoryArr = []
             let s2 = dbScript(db_sql['Q130'], { var1: roomId })
             let findHistory = await connection.query(s2)
@@ -430,14 +429,6 @@ module.exports.chatHistory = async (req) => {
                     }
                 }
             }
-        }else{
-            return {
-                status: 200,
-                success: false,
-                message: "Empty Chat history",
-                data: []
-            }
-        }
         } else {
             return {
                 status: 400,
