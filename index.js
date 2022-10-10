@@ -48,6 +48,7 @@ io.on('connection', (socket) => {
 
   socket.on('chat list', async (msg) => {
     let res = await chat.chatList(msg)
+    res.socket_id = socket.id
     io.emit('chat list', res);
   });
 
