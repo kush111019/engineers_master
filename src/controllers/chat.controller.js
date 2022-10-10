@@ -325,21 +325,34 @@ module.exports.chatList = async (req) => {
             for (let groupData of groupChatMember.rows) {
                 let s5 = dbScript(db_sql['Q136'], { var1: groupData.room_id, var2: salesId })
                 let groupChat = await connection.query(s5)
-
-                if (groupChat.rowCount > 0 && groupChat.rows[0].sender_id != '') {
-                    let s6 = dbScript(db_sql['Q10'], { var1: groupChat.rows[0].sender_id })
-                    let senderData = await connection.query(s6)
-                    chatListArr.push({
-                        roomId: groupData.room_id,
-                        roomTitle: groupData.group_name,
-                        roomProfile: process.env.DEFAULT_GROUP_LOGO,
-                        id: groupChat.rows[0].sender_id,
-                        name: (senderData.rowCount > 0) ? senderData.rows[0].full_name : "",
-                        profile: (senderData.rowCount > 0) ? senderData.rows[0].avatar : process.env.DEFAULT_LOGO,
-                        lastMessage: groupChat.rows[0].last_message,
-                        messageDate: groupChat.rows[0].updated_at,
-                        chatType: groupChat.rows[0].chat_type
-                    })
+                if (groupChat.rowCount > 0) {
+                    if (groupChat.rows[0].sender_id != '') {
+                        let s6 = dbScript(db_sql['Q10'], { var1: groupChat.rows[0].sender_id })
+                        let senderData = await connection.query(s6)
+                        chatListArr.push({
+                            roomId: groupData.room_id,
+                            roomTitle: groupData.group_name,
+                            roomProfile: process.env.DEFAULT_GROUP_LOGO,
+                            id: groupChat.rows[0].sender_id,
+                            name: (senderData.rowCount > 0) ? senderData.rows[0].full_name : "",
+                            profile: (senderData.rowCount > 0) ? senderData.rows[0].avatar : process.env.DEFAULT_LOGO,
+                            lastMessage: groupChat.rows[0].last_message,
+                            messageDate: groupChat.rows[0].updated_at,
+                            chatType: groupChat.rows[0].chat_type
+                        })
+                    }else{
+                        chatListArr.push({
+                            roomId: groupData.room_id,
+                            roomTitle: groupData.group_name,
+                            roomProfile: process.env.DEFAULT_GROUP_LOGO,
+                            id: "",
+                            name: "",
+                            profile:  process.env.DEFAULT_LOGO,
+                            lastMessage: "",
+                            messageDate:"",
+                            chatType: "group"
+                        })
+                    }
                 }
             }
             if (chatListArr.length > 0) {
