@@ -104,7 +104,7 @@ module.exports.createSingleRoom = async (req, res) => {
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
-                let s2 = dbScript(db_sql['Q128'], { var1: checkUser.rows[0].id, var2: receiverId, var3: salesId })
+                let s2 = dbScript(db_sql['Q128'], { var1: checkUser.rows[0].id, var2: receiverId })
                 let findRoom = await connection.query(s2)
                 if (findRoom.rowCount == 0) {
                     await connection.query('BEGIN')
@@ -348,8 +348,6 @@ module.exports.chatList = async (req) => {
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
             let chatListArr = []
-            let users = []
-
             let s4 = dbScript(db_sql['Q134'], { var1: checkUser.rows[0].id })
             let oneToOneChat = await connection.query(s4)
 
@@ -386,7 +384,7 @@ module.exports.chatList = async (req) => {
 
             let s7 = dbScript(db_sql['Q135'], { var1: checkUser.rows[0].id })
             let groupChatMember = await connection.query(s7)
-            
+            let users = []
             for (let groupData of groupChatMember.rows) {
                 let s8 = dbScript(db_sql['Q141'], {var1 : groupData.room_id})
                 let roomMembers = await connection.query(s8)
@@ -409,8 +407,8 @@ module.exports.chatList = async (req) => {
                             id: groupChat.rows[0].sender_id,
                             name: (senderData.rowCount > 0) ? senderData.rows[0].full_name : "",
                             profile: (senderData.rowCount > 0) ? senderData.rows[0].avatar : process.env.DEFAULT_LOGO,
-                            lastMessage: groupChat.rows[0].last_message,
-                            messageDate: groupChat.rows[0].updated_at,
+                            lastMessage:(groupChat.rows[0].last_message == null) ? '' : groupChat.rows[0].last_message ,
+                            messageDate: (groupChat.rows[0].updated_at == null) ? '' : groupChat.rows[0].updated_at,
                             chatType: groupChat.rows[0].chat_type,
                             users: users
                         })
