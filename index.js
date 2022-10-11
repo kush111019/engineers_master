@@ -44,8 +44,8 @@ io.on('connection', (socket) => {
   socket.on('chat message', async (msg) => {
     let res = await chat.sendMessage(msg)
     res.socket_id = socket.id
-    // io.to(socket.id).emit('chat message', res);
-    io.emit('chat message', res)
+    io.to(socket.id).emit('chat message', res);
+    // io.emit('chat message', res)
     // socket.join(res)
   });
 
