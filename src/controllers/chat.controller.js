@@ -380,10 +380,10 @@ module.exports.chatList = async (req) => {
 
                 let s7 = dbScript(db_sql['Q135'], { var1: checkUser.rows[0].id })
                 let groupChatMember = await connection.query(s7)
-                let users = []
                 for (let groupData of groupChatMember.rows) {
                     let s8 = dbScript(db_sql['Q141'], { var1: groupData.room_id })
                     let roomMembers = await connection.query(s8)
+                    let users = []
                     if (roomMembers.rowCount > 0) {
                         for (let roomMemeberData of roomMembers.rows) {
                             users.push({
