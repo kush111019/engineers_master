@@ -4,20 +4,112 @@ const uuid = require("node-uuid");
 const { mysql_real_escape_string } = require('../utils/helper')
 const jsonwebtoken = require("jsonwebtoken");
 
-module.exports.createRoom = async (req, res) => {
+module.exports.createGroupRoom = async (req, res) => {
     try {
         let userEmail = req.user.email
-        let { receiverIds, chatType, groupName, salesId } = req.body
+        let { chatType, groupName, salesId } = req.body
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
-            if (chatType == 'one to one') {
-                let s2 = dbScript(db_sql['Q128'], { var1: checkUser.rows[0].id, var2: receiverIds[0], var3 : salesId })
+            let receiverIds = []
+            receiverIds.push(checkUser.rows[0].id)
+
+            let s2 = dbScript(db_sql['Q138'], { var1: salesId })
+            let salesDetails = await connection.query(s2)
+            receiverIds.push(salesDetails.rows[0].closer_id)
+
+            let s3 = dbScript(db_sql['Q139'], { var1: salesId })
+            let supporters = await connection.query(s3)
+            for (let supporterData of supporters.rows) {
+                receiverIds.push(supporterData.supporter_id)
+            }
+
+            let s4 = dbScript(db_sql['Q140'], { var1: salesId, var2: chatType })
+            let findRoom = await connection.query(s4)
+
+            if (findRoom.rowCount == 0) {
+                await connection.query('BEGIN')
+                let id = uuid.v4()
+                let s5 = dbScript(db_sql['Q129'], { var1: id, var2: '', var3: '', var4: chatType, var5: salesId })
+                let createRoom = await connection.query(s5)
+                if (createRoom.rowCount > 0) {
+                    for (let i = 0; i < receiverIds.length; i++) {
+                        let id = uuid.v4()
+                        let s6 = dbScript(db_sql['Q133'], { var1: id, var2: createRoom.rows[0].id, var3: receiverIds[i], var4: groupName })
+                        let addGroupMember = await connection.query(s6)
+                    }
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Chat group created successfully",
+                        data: {
+                            roomId: createRoom.rows[0].id,
+                            senderId: checkUser.rows[0].id,
+                            senderName: groupName,
+                            senderProfile: process.env.DEFAULT_GROUP_LOGO,
+                            lastMessage: '',
+                            messageDate: '',
+                            receiverId: '',
+                            chatType: chatType
+                        }
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            }else{
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Chat group already innitiated ",
+                    data: {
+                        roomId: findRoom.rows[0].id,
+                        senderId: findRoom.rows[0].sender_id,
+                        senderName: groupName,
+                        senderProfile: process.env.DEFAULT_GROUP_LOGO,
+                        lastMessage: findRoom.rows[0].last_message,
+                        messageDate: findRoom.rows[0].updated_at,
+                        receiverId: '',
+                        chatType: chatType
+                    }
+                })
+            }
+
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.createSingleRoom = async (req, res) => {
+    try {
+        let userEmail = req.user.email
+        let { receiverId, chatType, salesId } = req.body
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let checkUser = await connection.query(s1)
+        if (checkUser.rows.length > 0) {
+                let s2 = dbScript(db_sql['Q128'], { var1: checkUser.rows[0].id, var2: receiverId, var3: salesId })
                 let findRoom = await connection.query(s2)
                 if (findRoom.rowCount == 0) {
                     await connection.query('BEGIN')
                     let id = uuid.v4()
-                    let s3 = dbScript(db_sql['Q129'], { var1: id, var2: checkUser.rows[0].id, var3: receiverIds[0], var4: chatType, var5 : salesId })
+                    let s3 = dbScript(db_sql['Q129'], { var1: id, var2: checkUser.rows[0].id, var3: receiverId, var4: chatType, var5: salesId })
                     let createRoom = await connection.query(s3)
                     if (createRoom.rowCount > 0) {
                         await connection.query('COMMIT')
@@ -32,8 +124,8 @@ module.exports.createRoom = async (req, res) => {
                                 senderProfile: checkUser.rows[0].avatar,
                                 lastMessage: '',
                                 messageDate: '',
-                                receiverId: receiverIds[0],
-                                chatType : chatType
+                                receiverId: receiverId,
+                                chatType: chatType
                             }
                         })
                     } else {
@@ -62,7 +154,7 @@ module.exports.createRoom = async (req, res) => {
                                 lastMessage: findChat.rows[findChat.rows.length - 1].chat_message,
                                 messageDate: findChat.rows[findChat.rows.length - 1].created_at,
                                 receiverId: findRoom.rows[0].receiver_id,
-                                chatType : findRoom.rows[0].chat_type
+                                chatType: findRoom.rows[0].chat_type
                             }
                         })
                     } else {
@@ -79,7 +171,7 @@ module.exports.createRoom = async (req, res) => {
                                     lastMessage: "",
                                     messageDate: "",
                                     receiverId: "",
-                                    chatType : findRoom.rows[0].chat_type
+                                    chatType: findRoom.rows[0].chat_type
                                 }
                             })
                         } else {
@@ -92,43 +184,6 @@ module.exports.createRoom = async (req, res) => {
 
                     }
                 }
-            } else {
-                receiverIds.push(checkUser.rows[0].id)
-                await connection.query('BEGIN')
-                let id = uuid.v4()
-                let s2 = dbScript(db_sql['Q129'], { var1: id, var2: '', var3: '', var4: chatType, var5 : salesId })
-                let createRoom = await connection.query(s2)
-                if (createRoom.rowCount > 0) {
-                    for (let i = 0; i < receiverIds.length; i++) {
-                        let id = uuid.v4()
-                        let s3 = dbScript(db_sql['Q133'], { var1: id, var2: createRoom.rows[0].id, var3: receiverIds[i], var4: groupName })
-                        let addGroupMember = await connection.query(s3)
-                    }
-                    await connection.query('COMMIT')
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Chat group created successfully",
-                        data: {
-                            roomId: createRoom.rows[0].id,
-                            senderId: checkUser.rows[0].id,
-                            senderName: groupName,
-                            senderProfile: process.env.DEFAULT_LOGO,
-                            lastMessage: '',
-                            messageDate: '',
-                            receiverId: '',
-                            chatType : chatType
-                        }
-                    })
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
-                    })
-                }
-            }
         } else {
             res.json({
                 status: 400,
@@ -144,6 +199,7 @@ module.exports.createRoom = async (req, res) => {
             message: error.message,
         })
     }
+
 }
 
 let verifyTokenFn = async (req) => {
@@ -292,19 +348,21 @@ module.exports.chatList = async (req) => {
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
             let chatListArr = []
-            let s2 = dbScript(db_sql['Q134'], { var1: checkUser.rows[0].id, var2: salesId })
-            let oneToOneChat = await connection.query(s2)
+            let users = []
+
+            let s4 = dbScript(db_sql['Q134'], { var1: checkUser.rows[0].id, var2: salesId })
+            let oneToOneChat = await connection.query(s4)
 
             for (let oneToOneData of oneToOneChat.rows) {
                 if (oneToOneData.receiver_id != '') {
 
                     // let id = (checkUser.rows[0].id == oneToOneData.sender_id) ? oneToOneData.receiver_id : oneToOneData.sender_id;
 
-                    let s3 = dbScript(db_sql['Q10'], { var1: oneToOneData.sender_id })
-                    let senderData = await connection.query(s3)
+                    let s5 = dbScript(db_sql['Q10'], { var1: oneToOneData.sender_id })
+                    let senderData = await connection.query(s5)
 
-                    let s4 = dbScript(db_sql['Q10'], { var1: oneToOneData.receiver_id })
-                    let receiverData = await connection.query(s4)
+                    let s6 = dbScript(db_sql['Q10'], { var1: oneToOneData.receiver_id })
+                    let receiverData = await connection.query(s6)
 
                     chatListArr.push({
                         roomId: oneToOneData.id,
@@ -315,20 +373,35 @@ module.exports.chatList = async (req) => {
                         profile: (senderData.rowCount > 0) ? senderData.rows[0].avatar : process.env.DEFAULT_LOGO,
                         lastMessage: (oneToOneData.last_message == null) ? '' : oneToOneData.last_message,
                         messageDate: (oneToOneData.updated_at == null) ? '' : oneToOneData.updated_at,
-                        chatType: oneToOneData.chat_type
+                        chatType: oneToOneData.chat_type,
+                        users: [
+                            {
+                                id: oneToOneData.receiver_id,
+                                name: (receiverData.rowCount > 0) ? receiverData.rows[0].full_name : ""
+                            }
+                        ]
                     })
                 }
             }
 
-            let s4 = dbScript(db_sql['Q135'], { var1: checkUser.rows[0].id })
-            let groupChatMember = await connection.query(s4)
+            let s7 = dbScript(db_sql['Q135'], { var1: checkUser.rows[0].id })
+            let groupChatMember = await connection.query(s7)
+            
             for (let groupData of groupChatMember.rows) {
-                let s5 = dbScript(db_sql['Q136'], { var1: groupData.room_id, var2: salesId })
-                let groupChat = await connection.query(s5)
+                let s8 = dbScript(db_sql['Q141'], {var1 : groupData.room_id})
+                let roomMembers = await connection.query(s8)
+                if(roomMembers.rowCount > 0){
+                    users.push({
+                        id: (roomMembers.rowCount > 0) ? roomMembers.rows[0].user_id : "",
+                        name: (roomMembers.rowCount > 0) ? roomMembers.rows[0].full_name : ""
+                    })
+                }
+                let s9 = dbScript(db_sql['Q136'], { var1: groupData.room_id, var2: salesId })
+                let groupChat = await connection.query(s9)
                 if (groupChat.rowCount > 0) {
                     if (groupChat.rows[0].sender_id != '') {
-                        let s6 = dbScript(db_sql['Q10'], { var1: groupChat.rows[0].sender_id })
-                        let senderData = await connection.query(s6)
+                        let s10 = dbScript(db_sql['Q10'], { var1: groupChat.rows[0].sender_id })
+                        let senderData = await connection.query(s10)
                         chatListArr.push({
                             roomId: groupData.room_id,
                             roomTitle: groupData.group_name,
@@ -338,19 +411,21 @@ module.exports.chatList = async (req) => {
                             profile: (senderData.rowCount > 0) ? senderData.rows[0].avatar : process.env.DEFAULT_LOGO,
                             lastMessage: groupChat.rows[0].last_message,
                             messageDate: groupChat.rows[0].updated_at,
-                            chatType: groupChat.rows[0].chat_type
+                            chatType: groupChat.rows[0].chat_type,
+                            users: users
                         })
-                    }else{
+                    } else {
                         chatListArr.push({
                             roomId: groupData.room_id,
                             roomTitle: groupData.group_name,
                             roomProfile: process.env.DEFAULT_GROUP_LOGO,
                             id: "",
                             name: "",
-                            profile:  process.env.DEFAULT_LOGO,
+                            profile: process.env.DEFAULT_LOGO,
                             lastMessage: "",
-                            messageDate:"",
-                            chatType: "group"
+                            messageDate: "",
+                            chatType: "group",
+                            users: users
                         })
                     }
                 }
