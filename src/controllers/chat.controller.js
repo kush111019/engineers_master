@@ -348,7 +348,6 @@ module.exports.chatList = async (req) => {
                 let chatListArr = []
                 let s4 = dbScript(db_sql['Q134'], { var1: checkUser.rows[0].id })
                 let oneToOneChat = await connection.query(s4)
-
                 for (let oneToOneData of oneToOneChat.rows) {
                     if (oneToOneData.receiver_id != '' && oneToOneData.chat_type == 'one to one') {
 
@@ -357,7 +356,7 @@ module.exports.chatList = async (req) => {
 
                         let s6 = dbScript(db_sql['Q10'], { var1: oneToOneData.receiver_id })
                         let receiverData = await connection.query(s6)
-
+                        
                         chatListArr.push({
                             roomId: oneToOneData.id,
                             roomTitle: (receiverData.rowCount > 0) ? receiverData.rows[0].full_name : "",
