@@ -109,7 +109,7 @@ module.exports.createSingleRoom = async (req, res) => {
                 if (findRoom.rowCount == 0) {
                     await connection.query('BEGIN')
                     let id = uuid.v4()
-                    let s3 = dbScript(db_sql['Q129'], { var1: id, var2: checkUser.rows[0].id, var3: receiverId, var4: chatType })
+                    let s3 = dbScript(db_sql['Q129'], { var1: id, var2: checkUser.rows[0].id, var3: receiverId, var4: chatType, var5 : '' })
                     let createRoom = await connection.query(s3)
                     if (createRoom.rowCount > 0) {
                         await connection.query('COMMIT')
