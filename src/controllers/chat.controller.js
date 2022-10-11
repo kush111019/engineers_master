@@ -12,8 +12,6 @@ module.exports.createGroupRoom = async (req, res) => {
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
             let receiverIds = []
-            receiverIds.push(checkUser.rows[0].id)
-
             let s2 = dbScript(db_sql['Q138'], { var1: salesId })
             let salesDetails = await connection.query(s2)
             receiverIds.push(salesDetails.rows[0].closer_id)
