@@ -100,7 +100,7 @@ module.exports.createGroupRoom = async (req, res) => {
 module.exports.createSingleRoom = async (req, res) => {
     try {
         let userEmail = req.user.email
-        let { receiverId, chatType, salesId } = req.body
+        let { receiverId, chatType } = req.body
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
@@ -109,7 +109,7 @@ module.exports.createSingleRoom = async (req, res) => {
                 if (findRoom.rowCount == 0) {
                     await connection.query('BEGIN')
                     let id = uuid.v4()
-                    let s3 = dbScript(db_sql['Q129'], { var1: id, var2: checkUser.rows[0].id, var3: receiverId, var4: chatType, var5: salesId })
+                    let s3 = dbScript(db_sql['Q129'], { var1: id, var2: checkUser.rows[0].id, var3: receiverId, var4: chatType })
                     let createRoom = await connection.query(s3)
                     if (createRoom.rowCount > 0) {
                         await connection.query('COMMIT')
@@ -221,7 +221,7 @@ let verifyTokenFn = async (req) => {
 module.exports.sendMessage = async (req) => {
     try {
         let user = await verifyTokenFn(req)
-        let { chatType, roomId, chatMessage, salesId } = req.body;
+        let { chatType, roomId, chatMessage } = req.body;
 
         let s1 = dbScript(db_sql['Q4'], { var1: user.email })
         let checkUser = await connection.query(s1)
@@ -244,7 +244,7 @@ module.exports.sendMessage = async (req) => {
                 // let receiverData = await connection.query(s4)
                 
                 let _dt = new Date().toISOString()
-                let s5 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string(chatMessage), var2: checkUser.rows[0].id, var3: recieverId, var4: _dt, var5: roomId, var6: salesId })
+                let s5 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string(chatMessage), var2: checkUser.rows[0].id, var3: recieverId, var4: _dt, var5: roomId })
                 let updateRoom = await connection.query(s5)
 
                 if (createMessage.rowCount > 0 && updateRoom.rowCount > 0) {
@@ -285,7 +285,7 @@ module.exports.sendMessage = async (req) => {
                     let createMessage = await connection.query(s7)
 
                     let _dt = new Date().toISOString()
-                    let s8 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string(chatMessage), var2: checkUser.rows[0].id, var3: "", var4: _dt, var5: roomId, var6 : salesId })
+                    let s8 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string(chatMessage), var2: checkUser.rows[0].id, var3: "", var4: _dt, var5: roomId })
                     let updateRoom = await connection.query(s8)
 
                     if (updateRoom.rowCount > 0 && createMessage.rowCount > 0) {
@@ -343,7 +343,6 @@ module.exports.sendMessage = async (req) => {
 module.exports.chatList = async (req) => {
     try {
         let user = await verifyTokenFn(req)
-        // let salesId = req.params.salesId
         let s1 = dbScript(db_sql['Q4'], { var1: user.email })
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
