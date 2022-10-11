@@ -352,7 +352,7 @@ module.exports.chatList = async (req) => {
                 let oneToOneChat = await connection.query(s4)
 
                 for (let oneToOneData of oneToOneChat.rows) {
-                    if (oneToOneData.receiver_id != '') {
+                    if (oneToOneData.receiver_id != '' && oneToOneData.chat_type == 'one to one') {
 
                         let s5 = dbScript(db_sql['Q10'], { var1: oneToOneData.sender_id })
                         let senderData = await connection.query(s5)
