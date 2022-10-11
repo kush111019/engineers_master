@@ -24,6 +24,7 @@ let io = require("socket.io")(http, {
   },
 });
 
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -44,7 +45,18 @@ io.on('connection', (socket) => {
   socket.on('chat message', async (msg) => {
     let res = await chat.sendMessage(msg)
     res.socket_id = socket.id
-    io.to(socket.id).emit('chat message', res);
+    if(res.data.chatType == 'one to one'){
+      socket.join(res.data.id)
+      socket.join(res.data.receiverId)
+      io.to(res.data.id).emit('chat message', res);
+      io.to(res.data.receiverId).emit('chat message', res);
+    }else{
+      for(resData of res.data.receiverId){
+        socket.join(res.data.id)
+        io.to(resData.id).emit('chat list', res);
+      }
+    }
+   
     // io.emit('chat message', res)
     // socket.join(res)
   });
@@ -52,9 +64,14 @@ io.on('connection', (socket) => {
   socket.on('chat list', async (msg) => {
     let res = await chat.chatList(msg);
     res.socket_id = socket.id;
-    io.to(socket.id).emit('chat list', res);
+    // io.to(socket.id).emit('chat list', res);
     // io.emit('chat list', res);
     // io.join(res)
+    for(resData of res.data.users){
+      socket.join(res.data.id)
+      io.to(resData.id).emit('chat list', res);
+    }
+    //io.socket.in()
   });
 
   socket.on('chat history', async (msg) => {

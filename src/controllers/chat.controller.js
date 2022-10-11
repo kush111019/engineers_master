@@ -255,7 +255,9 @@ module.exports.sendMessage = async (req) => {
                                 name: checkUser.rows[0].full_name,
                                 profile: checkUser.rows[0].avatar,
                                 chatMessage: createMessage.rows[0].chat_message,
-                                createdAt: createMessage.rows[0].created_at
+                                receiverId : recieverId,
+                                createdAt: createMessage.rows[0].created_at,
+                                chatType : chatType
                             }
                         }
                     } else {
@@ -269,7 +271,12 @@ module.exports.sendMessage = async (req) => {
                 } else if (chatType == 'group') {
                     let s6 = dbScript(db_sql['Q137'], { var1: roomId })
                     let findGroup = await connection.query(s6)
-
+                    let users = []
+                    for(groupData of findGroup.rows){
+                        users.push({
+                            id : groupData.user_id
+                        })
+                    }
                     if (findGroup.rowCount > 0) {
                         await connection.query('BEGIN')
 
@@ -293,7 +300,9 @@ module.exports.sendMessage = async (req) => {
                                     name: checkUser.rows[0].full_name,
                                     profile: checkUser.rows[0].avatar,
                                     chatMessage: createMessage.rows[0].chat_message,
-                                    createdAt: createMessage.rows[0].created_at
+                                    createdAt: createMessage.rows[0].created_at,
+                                    receiverId : users,
+                                    chatType : chatType 
                                 }
                             }
                         } else {
