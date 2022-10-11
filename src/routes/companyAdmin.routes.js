@@ -28,6 +28,7 @@ router.put('/updateRole' , verifyTokenFn, controller.roles.updateRole)
 router.get('/usersListByRoleId',verifyTokenFn, controller.roles.usersListByRoleId)
 router.get('/userWiseRoleList',verifyTokenFn, controller.roles.userWiseRoleList)
 router.put('/deleteRole' , verifyTokenFn, controller.roles.deleteRole)
+router.put('/moveRole', verifyTokenFn, controller.roles.moveRole)
 
 //-------------------------------------Slabs-------------------------------------------------
 router.get('/slabList',verifyTokenFn, controller.slabs.slabList)
@@ -103,10 +104,19 @@ router.post('/addConfigs', verifyTokenFn, controller.configuration.addConfigs)
 router.get('/configList', verifyTokenFn, controller.configuration.configList)
 
 //------------------------------------Payment----------------------------------------
-router.post('/createPayment', controller.payment.createPayment) 
-router.get('/success/:sessionId' , controller.payment.onSuccess)
+router.post('/createPayment', controller.payment.createPayment)
 router.get('/userCount', verifyTokenFn, controller.users.userCount)
-
 router.get('/subscriptionDetails', verifyTokenFn, controller.payment.subscriptionDetails)
+router.put('/cancelSubscription', verifyTokenFn, controller.payment.cancelSubscription)
+router.post('/upgradeSubscription', verifyTokenFn, controller.payment.upgradeSubscription)
+
+
+//-----------------------------------Chat----------------------------------------------
+router.post('/createGroupRoom', verifyTokenFn, controller.chat.createGroupRoom)
+router.post('/createSingleRoom', verifyTokenFn, controller.chat.createSingleRoom)
+// router.post('/createGroupRoom', verifyTokenFn, controller.chat.createGroupRoom)
+// router.post('/sendMessage', verifyTokenFn, controller.chat.createChat)
+//router.get('/chatList', verifyTokenFn,controller.chat.chatList)
+//router.get('/chatHistory/:roomId', verifyTokenFn, controller.chat.chatHistory)
 
 module.exports = router;

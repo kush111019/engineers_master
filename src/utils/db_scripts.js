@@ -113,10 +113,10 @@ const db_sql = {
               c.closed_at, c.customer_name  from sales_commission as sc inner join customers as c
               on sc.customer_id = c.id where sc.company_id = '{var1}' and sc.deleted_at is null 
               and c.deleted_at is null Order by c.closed_at asc`,
-    "Q94"  : `SELECT DATE_TRUNC('{var2}',created_at) AS  date,
-              sum(target_amount::decimal) as target_amount
-              FROM sales_commission where company_id = '{var1}' and deleted_at is null
-              GROUP BY DATE_TRUNC('{var2}',created_at) ORDER BY date;`,
+    "Q94"  : `SELECT DATE_TRUNC('{var2}',c.closed_at) AS  date, sum(sc.target_amount::decimal) as target_amount
+              FROM sales_commission as sc inner join customers as c on sc.customer_id = c.id
+              where sc.company_id = '{var1}' and c.deleted_at is null and sc.deleted_at is null 
+              and c.closed_at is not null GROUP BY DATE_TRUNC('{var2}',c.closed_at) ORDER BY date`,
     "Q95"  : `select id, customer_company_name from customer_companies where deleted_at is null  and company_id = '{var1}'`,
     "Q96"  : `select id, closed_at from customers where customer_company_id = '{var1}' and deleted_at is null and closed_at is not null`,
     "Q97"  : `select id, target_amount, target_closing_date from sales_commission where customer_id = '{var1}' and deleted_at is null`,
@@ -143,21 +143,54 @@ const db_sql = {
     "Q111" : `select id,  name, description, active_status,
               interval, admin_amount,user_amount, currency from payment_plans where active_status = 'true' and  deleted_at is null`,
     "Q112" : `select id, product_id, name, description, active_status,
-              admin_price_id,user_price_id, interval, admin_amount,user_amount currency from payment_plans where id = '{var1}' and deleted_at is null`,  
+              admin_price_id,user_price_id, interval, admin_amount,user_amount, currency from payment_plans where id = '{var1}' and deleted_at is null ORDER BY name asc`,  
     "Q113" : `update payment_plans set name = '{var1}', description = '{var2}', 
                updated_at = '{var3}' where id = '{var4}' and deleted_at is null returning *` ,
     "Q114" : `update payment_plans set active_status = '{var1}', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`,
-    "Q115" : `insert into transactions(id, user_id, company_id, plan_id, session_id, payment_mode, stripe_customer_id, stripe_subscription_id,expiry_date,user_count, payment_status)
-              values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}','{var8}', '{var9}', '{var10}', 'pending') returning *` ,
-    "Q116" : `select id, user_id, company_id, plan_id, session_id, payment_mode, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id from transactions where company_id = '{var1}' and deleted_at is null`,
+    "Q115" : `insert into transactions(id, user_id, company_id, plan_id, stripe_customer_id,
+              stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, expiry_date,
+              user_count, payment_status,total_amount, payment_receipt) values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', 
+              '{var6}', '{var7}','{var8}', '{var9}', '{var10}','{var11}','{var12}','{var13}','{var14}') returning *` ,
+    "Q116" : `select id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade, is_canceled, payment_receipt  from transactions where company_id = '{var1}' and deleted_at is null`,
     "Q117" : `update transactions set payment_status = 'paid' where session_id = '{var1}' and deleted_at is null returning *`,
     "Q118" : `select id, name, description, active_status, interval, admin_amount,user_amount, currency from payment_plans where deleted_at is null`,
     "Q119" : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified, is_admin, expiry_date from users where deleted_at is null`,
     "Q120" : `insert into superadmin_config(id, trial_days) values('{var1}', '{var2}') returning *`,
     "Q121" : `select id, trial_days, created_at from superadmin_config where deleted_at is null ORDER BY created_at desc ` ,
-    "Q122" : `update users set expiry_date = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null returning *`                                   
+    "Q122" : `update users set expiry_date = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null returning *`,
+    "Q123" : `select id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id,total_amount, immediate_upgrade from transactions where deleted_at is null`,
+    "Q124" : `select id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade  from transactions where plan_id = '{var1}' and deleted_at is null`,  
+    "Q125" : `update transactions set stripe_customer_id = '{var1}', stripe_subscription_id = '{var2}', 
+              stripe_card_id = '{var3}', stripe_token_id = '{var4}', stripe_charge_id = '{var5}', 
+              expiry_date = '{var6}', updated_at = '{var7}', total_amount = '{var9}', immediate_upgrade = '{var10}', payment_receipt = '{var11}', user_count = '{var12}', plan_id = '{var13}' where id = '{var8}' and deleted_at is null returning *`,
+    "Q126" : `update transactions set stripe_charge_id = '{var1}', payment_receipt = '{var4}', immediate_upgrade = '', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`,
+    "Q127" : `update transactions set is_canceled = '{var1}', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`,
+    "Q128" : `select id, sender_id, receiver_id, last_message, chat_type, created_at from chat_room where ((sender_id = '{var1}' and receiver_id = '{var2}') or (sender_id = '{var2}' and receiver_id = '{var1}')) and deleted_at is null`,
+    "Q129" : `insert into chat_room(id, sender_id, receiver_id, chat_type, sales_id) values('{var1}','{var2}','{var3}','{var4}', '{var5}') returning *`,
+    "Q130" : `select id, room_id, sender_id, chat_message, created_at from chat_message where room_id = '{var1}' and deleted_at is null ORDER BY created_at ASC`,
+    "Q131" : `insert into chat_message(id, room_id, sender_id, chat_message) values('{var1}','{var2}','{var3}','{var4}') returning *`,
+    "Q132" : `update chat_room set last_message = '{var1}', sender_id = '{var2}', receiver_id = '{var3}', updated_at = '{var4}' where id = '{var5}'  and deleted_at is null returning *`,
+    "Q133" : `insert into chat_room_members (id, room_id, user_id, group_name) values('{var1}','{var2}','{var3}','{var4}') returning *` ,
+    "Q134" : `select id, sender_id, receiver_id, last_message, chat_type,sales_id, created_at, updated_at from chat_room 
+              where (sender_id = '{var1}' or receiver_id = '{var1}')  and deleted_at is null`,
+    "Q135" : `select room_id, user_id, group_name from chat_room_members where user_id = '{var1}' and deleted_at is null`,
+    "Q136" : `select id, sender_id, receiver_id, last_message, chat_type, created_at, updated_at from chat_room where id = '{var1}' and deleted_at is null `,
+    "Q137" : `select room_id, user_id, group_name from chat_room_members where room_id = '{var1}' and deleted_at is null`,
+    "Q138" : `select sc.id,c.closer_id, u.full_name from sales_commission as sc 
+              inner join sales_closer as c on sc.id = c.sales_commission_id 
+              inner join users as u on c.closer_id = u.id where sc.id = '{var1}' 
+              and sc.deleted_at is null and c.deleted_at is null and u.deleted_at is null`,
+    "Q139" : `select s.supporter_id, u.full_name from sales_supporter as s
+              inner join users as u on s.supporter_id = u.id
+              where s.sales_commission_id = '{var1}' 
+              and s.deleted_at is null and u.deleted_at is null`,
+    "Q140" : `select id, sender_id, receiver_id, last_message, chat_type,sales_id, created_at, updated_at 
+              from chat_room where sales_id = '{var1}' and chat_type = '{var2}' and deleted_at is null` ,
+    "Q141" : `select cr.room_id, cr.user_id,u.full_name from chat_room_members as cr 
+              inner join users as u on cr.user_id = u.id where cr.room_id = '{var1}' 
+              and cr.deleted_at is null and u.deleted_at is null`                  
 
- };
+ }
 
 
 

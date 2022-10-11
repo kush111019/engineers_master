@@ -545,3 +545,77 @@ module.exports.usersListByRoleId = async (req, res) => {
         })
     }
 }
+
+module.exports.moveRole = async (req, res) => {
+    try {
+        userEmail = req.user.email
+        let {
+            roleId,
+            reporter
+        } = req.body
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+        let moduleName = 'Role'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
+            let findModule = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_update) {
+
+                let s4 = dbScript(db_sql['Q14'], { var1: roleId })
+                let findRole = await connection.query(s4)
+
+                if (findRole.rowCount > 0) {
+                    let _dt = new Date().toISOString();
+
+                    await connection.query('BEGIN')
+                    let s5 = dbScript(db_sql['Q28'], {
+                        var1: findRole.rows[0].role_name, var2: reporter,
+                        var3: roleId, var4: _dt, var5: findAdmin.rows[0].company_id
+                    })
+                    let moveRole = await connection.query(s5)
+                    if (moveRole.rowCount > 0) {
+                        await connection.query('COMMIT')
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Role moved successfully"
+                        })
+                    } else {
+                        await connection.query('ROLLBACK')
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Something went wrong"
+                        })
+                    }
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Role not found"
+                    })
+                }
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}

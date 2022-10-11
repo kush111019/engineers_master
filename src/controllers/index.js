@@ -13,6 +13,7 @@ const configuration = require('./configurations.controllers')
 const contactUs = require('./contactUs.controller')
 const dashboard = require('./dashboard.controller')
 const payment = require('./payment.controller')
+const chat = require('./chat.controller')
 
 const controller = { 
     superAdmin,
@@ -29,7 +30,8 @@ const controller = {
     configuration,
     contactUs,
     dashboard,
-    payment
+    payment,
+    chat
 }
 
 module.exports = controller
