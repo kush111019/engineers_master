@@ -52,16 +52,16 @@ io.on('connection', (socket) => {
   socket.on('chat list', async (msg) => {
     let res = await chat.chatList(msg);
     res.socket_id = socket.id;
-    //io.to(socket.id).emit('chat list', res);
-    io.emit('chat list', res);
+    io.to(socket.id).emit('chat list', res);
+    // io.emit('chat list', res);
     // io.join(res)
   });
 
   socket.on('chat history', async (msg) => {
     let res = await chat.chatHistory(msg)
     res.socket_id = socket.id
-    //io.to(socket.id).emit('chat history', res);
-    io.emit('chat history', res)
+    io.to(socket.id).emit('chat history', res);
+    // io.emit('chat history', res)
   });
 
   socket.on("disconnect", () => {
