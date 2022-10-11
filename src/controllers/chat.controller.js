@@ -231,7 +231,7 @@ module.exports.sendMessage = async (req) => {
 
                 await connection.query('BEGIN')
                 
-                let s2 = dbScript(db_sql['Q136'], { var1: roomId, var2 : salesId })
+                let s2 = dbScript(db_sql['Q136'], { var1: roomId })
                 let findRoom = await connection.query(s2)
 
                 let id = uuid.v4()
@@ -343,14 +343,14 @@ module.exports.sendMessage = async (req) => {
 module.exports.chatList = async (req) => {
     try {
         let user = await verifyTokenFn(req)
-        let salesId = req.params.salesId
+        // let salesId = req.params.salesId
         let s1 = dbScript(db_sql['Q4'], { var1: user.email })
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
             let chatListArr = []
             let users = []
 
-            let s4 = dbScript(db_sql['Q134'], { var1: checkUser.rows[0].id, var2: salesId })
+            let s4 = dbScript(db_sql['Q134'], { var1: checkUser.rows[0].id })
             let oneToOneChat = await connection.query(s4)
 
             for (let oneToOneData of oneToOneChat.rows) {
@@ -396,7 +396,7 @@ module.exports.chatList = async (req) => {
                         name: (roomMembers.rowCount > 0) ? roomMembers.rows[0].full_name : ""
                     })
                 }
-                let s9 = dbScript(db_sql['Q136'], { var1: groupData.room_id, var2: salesId })
+                let s9 = dbScript(db_sql['Q136'], { var1: groupData.room_id })
                 let groupChat = await connection.query(s9)
                 if (groupChat.rowCount > 0) {
                     if (groupChat.rows[0].sender_id != '') {
