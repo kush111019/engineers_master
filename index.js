@@ -40,6 +40,7 @@ cronJob.start();
 
 
 io.on('connection', (socket) => {
+  //console.log(socket,"socket");
   console.log("user connected", socket.id);
   
   socket.on('chat message', async (msg) => {
@@ -67,7 +68,7 @@ io.on('connection', (socket) => {
     //io.to(socket.id).emit('chat list', res);
    // console.log(res,"chat list res");
     // io.emit('chat list', res);
-    io.in(socket.id).emit('chat list', res);
+    io.in('chat list').emit('chat list', res);
     // io.join(res)
     // for(resData of res.data.users){
     //   socket.join(res.data.id)
@@ -82,7 +83,7 @@ io.on('connection', (socket) => {
     // io.to(socket.id).emit('chat history', res);
     //console.log(res,"chat history res");
     // socket.emit('chat history', res)
-    io.in(socket.id).emit('chat history', res);
+    io.in('chat history').emit('chat history', res);
   });
 
   socket.on("disconnect", () => {
