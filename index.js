@@ -57,7 +57,7 @@ io.on('connection', (socket) => {
     //   }
     // }
     console.log(res,"chat message res");
-    socket.emit('chat message', res)
+    io.emit('chat message', res)
     // socket.join(res)
   });
 
@@ -80,7 +80,7 @@ io.on('connection', (socket) => {
     res.socket_id = socket.id
     // io.to(socket.id).emit('chat history', res);
     console.log(res,"chat history res");
-    socket.emit('chat history', res)
+    io.emit('chat history', res)
   });
 
   socket.on("disconnect", () => {
