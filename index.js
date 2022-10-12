@@ -57,7 +57,7 @@ io.on('connection', (socket) => {
     //   }
     // }
     console.log(res,"chat message res");
-    io.emit('chat message', res)
+    socket.emit('chat message', res)
     // socket.join(res)
   });
 
@@ -66,7 +66,7 @@ io.on('connection', (socket) => {
     res.socket_id = socket.id;
     //io.to(socket.id).emit('chat list', res);
     console.log(res,"chat list res");
-    socket.emit('chat list', res);
+    io.emit('chat list', res);
     // io.join(res)
     // for(resData of res.data.users){
     //   socket.join(res.data.id)
@@ -80,7 +80,7 @@ io.on('connection', (socket) => {
     res.socket_id = socket.id
     // io.to(socket.id).emit('chat history', res);
     console.log(res,"chat history res");
-    io.emit('chat history', res)
+    socket.emit('chat history', res)
   });
 
   socket.on("disconnect", () => {
