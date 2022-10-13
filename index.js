@@ -53,11 +53,11 @@ io.on("connection", (socket) => {
   socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
 
   socket.on("new message", (newMessageRecieved) => {
-    var chat = newMessageRecieved.chat;
+    // var chat = newMessageRecieved.chat;
 
-    if (!chat.users) return console.log("chat.users not defined");
+    if (!newMessageRecieved.users) return console.log("chat.users not defined");
 
-    chat.users.forEach((user) => {
+    newMessageRecieved.users.forEach((user) => {
       if (user.id == newMessageRecieved.sender.id) return;
 
       socket.in(user.id).emit("message recieved", newMessageRecieved);
