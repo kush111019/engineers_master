@@ -687,11 +687,23 @@ module.exports.fetchChats = async (req, res) => {
                     if (chatsData.is_group_chat == false) {
                         let s2 = dbScript(db_sql['Q132'], { var1: id })
                         let findChat = await connection.query(s2)
+
                         for (let chat of findChat.rows) {
+                            let s4 = dbScript(db_sql['Q10'], { var1:chat.user_a })
+                            let userA = await connection.query(s4)
+
+                            let s5 = dbScript(db_sql['Q10'], { var1:chat.user_b })
+                            let userB = await connection.query(s5)
+                            
                             if (chat.last_message != null) {
                                 let s3 = dbScript(db_sql['Q139'], { var1: chat.last_message })
-                                let lastMessage = await connection.query(s3)
+                                let lastMessage = await connection.query(s3) 
                                 chatData.push({
+                                    id: chat.id,
+                                    chatName: chat.chat_name,
+                                    isGroupChat: chat.is_group_chat,
+                                    groupAdmin: chat.group_admin,
+                                    users: [userA.rows[0], userB.rows[0]],
                                     lastMessage: {
                                         messageId: lastMessage.rows[0].id,
                                         sender: {
@@ -704,41 +716,28 @@ module.exports.fetchChats = async (req, res) => {
                                         readBy: lastMessage.rows[0].read_by,
                                     },
                                 })
-                            }
+                            }else{
+                                chatData.push({
+                                    id: chat.id,
+                                    chatName: chat.chat_name,
+                                    isGroupChat: chat.is_group_chat,
+                                    groupAdmin: chat.group_admin,
+                                    users: [userA.rows[0], userB.rows[0]],
+                                    lastMessage: {
+                                        messageId: "",
+                                        sender: {
+                                            id: "",
+                                            name: "",
+                                            avatar: ""
+                                        },
+                                        content: "",
+                                        chatId: "",
+                                        readBy: "",
+                                    }
+                                })
+                            } 
                         }
-
-                        let s4 = dbScript(db_sql['Q10'], { var1: findChat.rows[0].user_a })
-                        let userA = await connection.query(s4)
-
-                        let s5 = dbScript(db_sql['Q10'], { var1: findChat.rows[0].user_b })
-                        let userB = await connection.query(s5)
-
-                        chatData.push({
-                            id: findChat.rows[0].id,
-                            chatName: findChat.rows[0].chat_name,
-                            isGroupChat: findChat.rows[0].is_group_chat,
-                            groupAdmin: findChat.rows[0].group_admin,
-                            users: [userA.rows[0], userB.rows[0]]
-                        })
                     } else if (chatsData.is_group_chat == true) {
-
-                        if (chatsData.last_message != null) {
-                            let s6 = dbScript(db_sql['Q139'], { var1: chatsData.last_message })
-                            let lastMessage = await connection.query(s6)
-                            chatData.push({
-                                lastMessage: {
-                                    messageId: lastMessage.rows[0].id,
-                                    sender: {
-                                        id: lastMessage.rows[0].sender_id,
-                                        name: lastMessage.rows[0].full_name,
-                                        avatar: lastMessage.rows[0].avatar
-                                    },
-                                    content: lastMessage.rows[0].content,
-                                    chatId: lastMessage.rows[0].chat_id,
-                                    readBy: lastMessage.rows[0].read_by,
-                                },
-                            })
-                        }
 
                         let s7 = dbScript(db_sql['Q133'], { var1: chatsData.id })
                         let findGroupChat = await connection.query(s7)
@@ -752,13 +751,47 @@ module.exports.fetchChats = async (req, res) => {
                             userArr.push(users.rows[0])
                         }
 
-                        chatData.push({
-                            id: findGroupChat.rows[0].id,
-                            chatName: findGroupChat.rows[0].chat_name,
-                            isGroupChat: findGroupChat.rows[0].is_group_chat,
-                            groupAdmin: findGroupChat.rows[0].group_admin,
-                            users: userArr
-                        })
+                        if (chatsData.last_message != null) {
+                            let s6 = dbScript(db_sql['Q139'], { var1: chatsData.last_message })
+                            let lastMessage = await connection.query(s6)
+                            chatData.push({
+                                id: findGroupChat.rows[0].id,
+                                chatName: findGroupChat.rows[0].chat_name,
+                                isGroupChat: findGroupChat.rows[0].is_group_chat,
+                                groupAdmin: findGroupChat.rows[0].group_admin,
+                                users: userArr,
+                                lastMessage: {
+                                    messageId: lastMessage.rows[0].id,
+                                    sender: {
+                                        id: lastMessage.rows[0].sender_id,
+                                        name: lastMessage.rows[0].full_name,
+                                        avatar: lastMessage.rows[0].avatar
+                                    },
+                                    content: lastMessage.rows[0].content,
+                                    chatId: lastMessage.rows[0].chat_id,
+                                    readBy: lastMessage.rows[0].read_by,
+                                },
+                            })
+                        }else{
+                            chatData.push({
+                                id: findGroupChat.rows[0].id,
+                                chatName: findGroupChat.rows[0].chat_name,
+                                isGroupChat: findGroupChat.rows[0].is_group_chat,
+                                groupAdmin: findGroupChat.rows[0].group_admin,
+                                users: userArr,
+                                lastMessage: {
+                                    messageId: "",
+                                    sender: {
+                                        id: "",
+                                        name: "",
+                                        avatar: ""
+                                    },
+                                    content: "",
+                                    chatId: "",
+                                    readBy: "",
+                                }
+                            })
+                        }
                     }
                 }
                 if (chatData.length > 0) {
@@ -801,59 +834,67 @@ module.exports.createGroupChat = async (req, res) => {
         let s0 = dbScript(db_sql['Q10'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
-            
-            let users = []
-            users.push(id)
+            let s1 = dbScript(db_sql['Q144'], {var1 : salesId})
+            let findChat = await connection.query(s1)
+            if (findChat.rowCount > 0) {
+                let users = []
+                users.push(id)
 
-            let groupChatData = []
-            let chatId = uuid.v4()
-            let isGroupChat = true
+                let groupChatData = []
+                let chatId = uuid.v4()
+                let isGroupChat = true
 
-            let s2 = dbScript(db_sql['Q135'], { var1: salesId })
-            let salesDetails = await connection.query(s2)
-            users.push(salesDetails.rows[0].closer_id)
+                let s2 = dbScript(db_sql['Q135'], { var1: salesId })
+                let salesDetails = await connection.query(s2)
+                users.push(salesDetails.rows[0].closer_id)
 
-            let s3 = dbScript(db_sql['Q136'], { var1: salesId })
-            let supporters = await connection.query(s3)
-            for (let supporterData of supporters.rows) {
-                users.push(supporterData.supporter_id)
-            }
+                let s3 = dbScript(db_sql['Q136'], { var1: salesId })
+                let supporters = await connection.query(s3)
+                for (let supporterData of supporters.rows) {
+                    users.push(supporterData.supporter_id)
+                }
 
+                let s4 = dbScript(db_sql['Q137'], { var1: chatId, var2: name, var3: isGroupChat, var4: '', var5: '', var6: id, var7: salesId })
+                let createGroup = await connection.query(s4)
 
-            let s1 = dbScript(db_sql['Q137'], { var1: chatId, var2: name, var3: isGroupChat, var4: '', var5: '', var6: id, var7: salesId })
-            let createGroup = await connection.query(s1)
+                let usersArr = []
+                for (userId of users) {
+                    let memberId = uuid.v4()
+                    let s5 = dbScript(db_sql['Q131'], { var1: memberId, var2: createGroup.rows[0].id, var3: userId, var4: name })
+                    let createMembers = await connection.query(s5)
 
-            let usersArr = []
-            for (userId of users) {
-                let memberId = uuid.v4()
-                let s2 = dbScript(db_sql['Q131'], { var1: memberId, var2: createGroup.rows[0].id, var3: userId, var4: name })
-                let createMembers = await connection.query(s2)
+                    let s6 = dbScript(db_sql['Q10'], { var1: userId })
+                    let userDetails = await connection.query(s6)
+                    usersArr.push(userDetails.rows[0])
+                }
 
-                let s3 = dbScript(db_sql['Q10'], { var1: userId })
-                let userDetails = await connection.query(s3)
-                usersArr.push(userDetails.rows[0])
-            }
+                groupChatData.push({
+                    id: createGroup.rows[0].id,
+                    chatName: createGroup.rows[0].chat_name,
+                    isGroupChat: isGroupChat,
+                    groupAdmin: checkAdmin.rows[0],
+                    users: usersArr
+                })
 
-            groupChatData.push({
-                id: createGroup.rows[0].id,
-                chatName: createGroup.rows[0].chat_name,
-                isGroupChat: isGroupChat,
-                groupAdmin: checkAdmin.rows[0],
-                users: usersArr
-            })
-
-            if (groupChatData.length > 0) {
+                if (groupChatData.length > 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Group created",
+                        data: groupChatData
+                    });
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong",
+                    });
+                }
+            } else {
                 res.json({
                     status: 200,
                     success: true,
-                    message: "Group created",
-                    data: groupChatData
-                });
-            } else {
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Something went wrong",
+                    message: "Group already created",
                 });
             }
         } else {
@@ -873,33 +914,12 @@ module.exports.createGroupChat = async (req, res) => {
 }
 
 module.exports.renameGroup = async (req, res) => {
-    // const { chatId, chatName } = req.body;
-
-    // const updatedChat = await Chat.findByIdAndUpdate(
-    //     chatId,
-    //     {
-    //         chatName: chatName,
-    //     },
-    //     {
-    //         new: true,
-    //     }
-    // )
-    //     .populate("users", "-password")
-    //     .populate("groupAdmin", "-password");
-
-    // if (!updatedChat) {
-    //     res.status(404);
-    //     throw new Error("Chat Not Found");
-    // } else {
-    //     res.json(updatedChat);
-    // }
-
     try {
         let { chatId, chatName } = req.body;
         let id = req.user.id
-        let s1 = dbScript(db_sql['Q138'], {})
-        let chats = await connection.query(s1)
-        if (chats.rowCount > 0) {
+        let s0 = dbScript(db_sql['Q10'], { var1: id })
+        let checkAdmin = await connection.query(s0)
+        if (checkAdmin.rowCount > 0) {
             let usersArr = []
             let groupChatData = []
             let s2 = dbScript(db_sql['Q140'], { var1: chatName, var2: chatId })
@@ -956,27 +976,63 @@ module.exports.renameGroup = async (req, res) => {
 }
 
 module.exports.removeFromGroup = async (req, res) => {
-    const { chatId, userId } = req.body;
+    // const { chatId, userId } = req.body;
 
     // check if the requester is admin
 
-    const removed = await Chat.findByIdAndUpdate(
-        chatId,
-        {
-            $pull: { users: userId },
-        },
-        {
-            new: true,
-        }
-    )
-        .populate("users", "-password")
-        .populate("groupAdmin", "-password");
+    // const removed = await Chat.findByIdAndUpdate(
+    //     chatId,
+    //     {
+    //         $pull: { users: userId },
+    //     },
+    //     {
+    //         new: true,
+    //     }
+    // )
+    //     .populate("users", "-password")
+    //     .populate("groupAdmin", "-password");
 
-    if (!removed) {
-        res.status(404);
-        throw new Error("Chat Not Found");
-    } else {
-        res.json(removed);
+    // if (!removed) {
+    //     res.status(404);
+    //     throw new Error("Chat Not Found");
+    // } else {
+    //     res.json(removed);
+    // }
+
+    try {
+        let { chatId, userId } = req.body;
+        let id = req.user.id
+
+        let s0 = dbScript(db_sql['Q10'], { var1: id })
+        let checkAdmin = await connection.query(s0)
+        if (checkAdmin.rowCount > 0) {
+
+            let s1 = dbScript(db_sql['Q145'], {var1 : _dt, var2 : chatId, var4 : userId})
+            let removeUser = await connection.query(s1)
+
+            if(removeUser.rowCount > 0){
+
+            }else{
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: 'Something went wrong'
+                })
+            }
+
+        }else{
+            res.json({
+                status: 400,
+                success: false,
+                message: 'Admin not found'
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message
+        })
     }
 }
 
@@ -1063,15 +1119,13 @@ module.exports.sendMessage = async (req, res) => {
             let messageId = uuid.v4()
             let s1 = dbScript(db_sql['Q129'], {var1 : messageId, var2: chatId, var3: id, var4: content})
             let message = await connection.query(s1)
-
-            let s2 = dbScript(db_sql['Q130'], {var1 : message.rows[0].id, var2 : chatId})
+            let _dt = new Date().toISOString();
+            let s2 = dbScript(db_sql['Q130'], {var1 : message.rows[0].id, var2 : chatId, var3 : _dt})
             let updateLastMessage = await connection.query(s2)
             if(message.rowCount > 0 && updateLastMessage.rowCount > 0){
                 let s3 = dbScript(db_sql['Q142'], {var1 : chatId})
                 let messageDetails = await connection.query(s3)
                 if(messageDetails.rowCount > 0){
-
-
                     res.json({
                         status: 200,
                         success: true,
@@ -1100,5 +1154,4 @@ module.exports.sendMessage = async (req, res) => {
             message: error.message
         })
     }
-
 }
