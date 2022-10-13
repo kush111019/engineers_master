@@ -382,6 +382,8 @@ module.exports.allMessages = async (req, res) => {
                     },
                     content : messageData.content,
                     id : chatDetails.rows[0].id,
+                    chatName: chatDetails.rows[0].chat_name,
+                    isGroupChat: chatDetails.rows[0].is_group_chat,
                     createdAt : messageData.created_at
                 })
             }
