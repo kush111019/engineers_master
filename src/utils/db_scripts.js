@@ -170,7 +170,7 @@ const db_sql = {
     
     
     "Q129" : `insert into message(id, chat_id, sender, content) values('{var1}','{var2}','{var3}','{var4}') returning *`,
-    "Q130" : `update chat set last_message = '{var1}' where id = '{var2}'  and deleted_at is null returning *`,
+    "Q130" : `update chat set last_message = '{var1}', updated_at = '{var3}' where id = '{var2}'  and deleted_at is null returning *`,
     "Q131" : `insert into chat_room_members (id, room_id, user_id, group_name) values('{var1}','{var2}','{var3}','{var4}') returning *` ,
     "Q132" : `select id, chat_name, is_group_chat, last_message, group_admin,user_a, user_b, created_at from chat where (user_a = '{var1}' or user_b = '{var1}')  and deleted_at is null`,
    
@@ -189,7 +189,7 @@ const db_sql = {
     "Q137" : `insert into chat(id, chat_name, is_group_chat, user_a, user_b, group_admin, sales_id) values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}','{var6}','{var7}') returning *`,
     "Q138" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin from chat where deleted_at is null`,
     "Q139" : `select m.id, m.sender, m.content, m.chat_id, m.ready_by, m.created_at, u.full_name,
-              u.avatar, u.id as sender_id, from message as m inner join users as u on m.sender = u.id 
+              u.avatar, u.id as sender_id from message as m inner join users as u on m.sender = u.id 
               where id = '{var1}' and m.deleted_at is null`,
     "Q140" : `update chat set chat_name = '{var1}' where id = '{var2}' and deleted_at is null returning *`,
     "Q141" : `update chat_room_members set group_name = '{var1}' where id = '{var2}' and deleted_at is null returning *`,
@@ -203,7 +203,9 @@ const db_sql = {
              u.full_name, u.avatar, c.id, c.chat_name, c.is_group_chat,
              c.group_admin, c.user_a, c.user_b, c.created_at from message as m 
              inner join users as u on m.sender = u.id
-             inner join chat as c on m.chat_id = c.id  where chat_id = '{var1}' and m.deleted_at is null ORDER BY m.created_at ASC `          
+             inner join chat as c on m.chat_id = c.id  where chat_id = '{var1}' and m.deleted_at is null ORDER BY m.created_at ASC `,
+    "Q144" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at from chat where sales_id = '{var1}' and deleted_at is null`,  
+    "Q145" : `update chat_room_members set deleted_at = '{var1}' , updated_at = '{var1}' where chat_id = '{var2}' and user_id = '{var3}' returning *`                 
     
 
 
