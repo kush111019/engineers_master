@@ -375,7 +375,7 @@ module.exports.allMessages = async (req, res) => {
             let messagesArr = []
             for (messageData of chatMessage.rows) {
                 messagesArr.push({
-                    id: messageData.sender,
+                    id: messageData.senderId,
                     name: messageData.full_name,
                     avatar: messageData.avatar,
                     content: messageData.content
