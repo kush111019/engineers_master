@@ -453,12 +453,22 @@ module.exports.sendMessage = async (req, res) => {
                 await connection.query('COMMIT')
                 let s3 = dbScript(db_sql['Q142'], {var1 : chatId})
                 let messageDetails = await connection.query(s3)
+                let messageObj = {}
                 if(messageDetails.rowCount > 0){
+                    messageObj = {
+                        sender: {
+                            id: messageDetails.rows[0].senderid,
+                            full_name: messageDetails.rows[0].full_name,
+                            avatar: messageDetails.rows[0].avatar
+                        },
+                        content: messageDetails.rows[0].content,
+                        id: messageDetails.rows[0].messageid
+                    }
                     res.json({
                         status: 200,
                         success: true,
                         message: "Message sent",
-                        data: messageDetails.rows
+                        data: messageObj
                     });
                 }
             }else{
