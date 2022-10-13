@@ -243,6 +243,7 @@ module.exports.fetchChats = async (req, res) => {
                             chatData.push({
                                 id: findGroupChat.rows[0].id,
                                 chatName: findGroupChat.rows[0].chat_name,
+                                profile : process.env.DEFAULT_GROUP_LOGO,
                                 isGroupChat: findGroupChat.rows[0].is_group_chat,
                                 groupAdmin: findGroupChat.rows[0].group_admin,
                                 users: userArr,
