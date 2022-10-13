@@ -466,10 +466,12 @@ module.exports.sendMessage = async (req, res) => {
                             userArr.push(users.rows[0])
                         }
                     } else {
-                        userId = chatDetails.rows[0].user_a == id ? chatDetails.rows[0].user_b : chatDetails.rows[0].user_a
-                        let s9 = dbScript(db_sql['Q10'], { var1: userId })
-                        let users = await connection.query(s9)
-                        userArr.push(users.rows[0])
+                        let s9 = dbScript(db_sql['Q10'], { var1: chatDetails.rows[0].user_a })
+                        let usersA = await connection.query(s9)
+
+                        let s10 = dbScript(db_sql['Q10'], { var1: chatDetails.rows[0].user_b })
+                        let usersB = await connection.query(s10)
+                        userArr = [usersA.rows[0],usersB.rows[0]]
                     }
                     messageObj = {
                         sender: {
