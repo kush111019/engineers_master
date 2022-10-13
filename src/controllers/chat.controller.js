@@ -483,6 +483,7 @@ module.exports.sendMessage = async (req, res) => {
                         },
                         content: messageDetails.rows[0].content,
                         id: messageDetails.rows[0].messageid,
+                        chatId : messageDetails.rows[0].chat_id,
                         chatName : messageDetails.rows[0].chat_name,
                         isGroupChat : messageDetails.rows[0].is_group_chat,
                         createdAt : messageDetails.rows[0].created_at,
