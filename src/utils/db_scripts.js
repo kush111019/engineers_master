@@ -200,7 +200,7 @@ const db_sql = {
               inner join users as u on m.sender = u.id
               inner join chat as c on m.chat_id = c.id  where chat_id = '{var1}' and m.deleted_at is null ORDER BY m.created_at DESC LIMIT 1`,
     "Q143" :`select m.id as messageId,m.content,m.sender as senderId, m.created_at,
-             u.full_name, u.avatar, from message as m 
+             u.full_name, u.avatar from message as m 
              inner join users as u on m.sender = u.id
             where chat_id = '{var1}' and m.deleted_at is null ORDER BY m.created_at ASC `,
     "Q144" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at from chat where sales_id = '{var1}' and deleted_at is null`,  
