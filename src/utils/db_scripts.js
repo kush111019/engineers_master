@@ -190,7 +190,7 @@ const db_sql = {
     "Q138" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin from chat where deleted_at is null`,
     "Q139" : `select m.id, m.sender, m.content, m.chat_id, m.read_by, m.created_at, u.full_name,
               u.avatar, u.id as sender_id from message as m inner join users as u on m.sender = u.id 
-              where id = '{var1}' and m.deleted_at is null`,
+              where m.id = '{var1}' and m.deleted_at is null`,
     "Q140" : `update chat set chat_name = '{var1}' where id = '{var2}' and deleted_at is null returning *`,
     "Q141" : `update chat_room_members set group_name = '{var1}' where id = '{var2}' and deleted_at is null returning *`,
 
