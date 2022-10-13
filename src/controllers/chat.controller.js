@@ -278,8 +278,6 @@ module.exports.createGroupChat = async (req, res) => {
             let findChat = await connection.query(s1)
             if (findChat.rowCount == 0) {
                 let users = []
-                users.push(id)
-
                 let groupChatData = []
                 let chatId = uuid.v4()
                 let isGroupChat = true
