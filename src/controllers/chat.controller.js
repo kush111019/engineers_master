@@ -569,9 +569,9 @@ module.exports.accessChat = async (req, res) => {
     try {
         const { userId } = req.body;
         let id = req.user.id
-        let s0 = dbScript(db_sql['Q138'], {})
-        let chats = await connection.query(s0)
-        if (chats.rowCount > 0) {
+        let s0 = dbScript(db_sql['Q10'], { var1: id })
+        let checkAdmin = await connection.query(s0)
+        if (checkAdmin.rowCount > 0) {
             if (!userId) {
                 console.log("UserId param not sent with request");
                 return res.sendStatus(400);
@@ -676,9 +676,10 @@ module.exports.fetchChats = async (req, res) => {
     try {
         let id = req.user.id
         let chatData = []
-        let s0 = dbScript(db_sql['Q138'], {})
-        let chats = await connection.query(s0)
-        if (chats.rowCount > 0) {
+        let s0 = dbScript(db_sql['Q10'], { var1: id })
+        let checkAdmin = await connection.query(s0)
+        if (checkAdmin.rowCount > 0) {
+
             let s1 = dbScript(db_sql['Q138'], {})
             let chats = await connection.query(s1)
             if (chats.rowCount > 0) {
@@ -777,13 +778,14 @@ module.exports.fetchChats = async (req, res) => {
                     data: chatData
                 });
             }
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: 'Admin not found'
-            })
-        }
+        
+    } else {
+        res.json({
+            status: 400,
+            success: false,
+            message: 'Admin not found'
+        })
+    }
     } catch (error) {
         res.json({
             status: 400,
