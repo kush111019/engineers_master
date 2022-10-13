@@ -122,9 +122,7 @@ router.post('/upgradeSubscription', verifyTokenFn, controller.payment.upgradeSub
 router.post("/accessChat",verifyTokenFn, controller.chat.accessChat);
 router.get("/fetchChats", verifyTokenFn, controller.chat.fetchChats);
 router.post("/createGroupChat",verifyTokenFn, controller.chat.createGroupChat);
-router.put("/rename",verifyTokenFn, controller.chat.renameGroup);
-router.put("/groupremove",verifyTokenFn, controller.chat.removeFromGroup);
-router.put("/groupadd",verifyTokenFn, controller.chat.addToGroup);
+
 
 router.get("/allMessages/:chatId", verifyTokenFn, controller.chat.allMessages);
 router.post("/sendMessage",verifyTokenFn, controller.chat.sendMessage);

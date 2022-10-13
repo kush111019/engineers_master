@@ -199,11 +199,10 @@ const db_sql = {
               c.group_admin, c.user_a, c.user_b, c.created_at from message as m 
               inner join users as u on m.sender = u.id
               inner join chat as c on m.chat_id = c.id  where chat_id = '{var1}' and m.deleted_at is null ORDER BY m.created_at DESC LIMIT 1`,
-    "Q143" :`select m.id as messageId, m.content, m.sender as senderId, m.chat_id, m.read_by, m.created_at,
-             u.full_name, u.avatar, c.id, c.chat_name, c.is_group_chat,
-             c.group_admin, c.user_a, c.user_b, c.created_at from message as m 
+    "Q143" :`select m.id as messageId,m.content,m.sender as senderId, m.created_at,
+             u.full_name, u.avatar, from message as m 
              inner join users as u on m.sender = u.id
-             inner join chat as c on m.chat_id = c.id  where chat_id = '{var1}' and m.deleted_at is null ORDER BY m.created_at ASC `,
+            where chat_id = '{var1}' and m.deleted_at is null ORDER BY m.created_at ASC `,
     "Q144" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at from chat where sales_id = '{var1}' and deleted_at is null`,  
     "Q145" : `update chat_room_members set deleted_at = '{var1}' , updated_at = '{var1}' where chat_id = '{var2}' and user_id = '{var3}' returning *`                 
     

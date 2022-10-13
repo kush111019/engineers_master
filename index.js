@@ -38,66 +38,10 @@ let cronJob = cron.schedule('59 59 23 * * *', async () => {
 });
 cronJob.start();
 
-
-// io.on('connection', (socket) => {
-//   //console.log(socket,"socket");
-//   console.log("user connected", socket.id);
-  
-//   socket.on('chat message', async (msg) => {
-//     let res = await chat.sendMessage(msg)
-//     res.socket_id = socket.id
-//     // if(res.data.chatType == 'one to one'){
-//     //   socket.join(res.data.id)
-//     //   socket.join(res.data.receiverId)
-//     //   io.to(res.data.id).emit('chat message', res);
-//     //   io.to(res.data.receiverId).emit('chat message', res);
-//     // }else{
-//     //   for(resData of res.data.receiverId){
-//     //     socket.join(res.data.id)
-//     //     io.to(resData.id).emit('chat list', res);
-//     //   }
-//     // }
-//     //console.log(res,"chat message res");
-//     io.emit('chat message', res)
-//     // socket.join(res)
-//   });
-
-//   socket.on('chat list', async (msg) => {
-//     let res = await chat.chatList(msg);
-//     res.socket_id = socket.id;
-//     //io.to(socket.id).emit('chat list', res);
-//    // console.log(res,"chat list res");
-//     // io.emit('chat list', res);
-//     io.in().emit('chat list', res);
-//     // io.join(res)
-//     // for(resData of res.data.users){
-//     //   socket.join(res.data.id)
-//     //   io.to(resData.id).emit('chat list', res);
-//     // }
-//     // io.socket.in()
-//   });
-
-//   socket.on('chat history', async (msg) => {
-//     let res = await chat.chatHistory(msg)
-//     res.socket_id = socket.id
-//     // io.to(socket.id).emit('chat history', res);
-//     //console.log(res,"chat history res");
-//     // socket.emit('chat history', res)
-//     io.in().emit('chat history', res);
-//   });
-
-//   socket.on("disconnect", () => {
-//     console.log("user disconnected", socket.id);
-//   });
-
-//   socket.on("error", (err) => {
-//     console.log(err);
-//   });
-// });
 io.on("connection", (socket) => {
   console.log("Connected to socket.io");
   socket.on("setup", (userData) => {
-    socket.join(userData._id);
+    socket.join(userData.id);
     socket.emit("connected");
   });
 
@@ -114,21 +58,17 @@ io.on("connection", (socket) => {
     if (!chat.users) return console.log("chat.users not defined");
 
     chat.users.forEach((user) => {
-      if (user._id == newMessageRecieved.sender._id) return;
+      if (user.id == newMessageRecieved.sender.id) return;
 
-      socket.in(user._id).emit("message recieved", newMessageRecieved);
+      socket.in(user.id).emit("message recieved", newMessageRecieved);
     });
   });
 
   socket.off("setup", () => {
     console.log("USER DISCONNECTED");
-    socket.leave(userData._id);
+    socket.leave(userData.id);
   });
 });
-
-
-
-
 
 http.listen(process.env.LISTEN_PORT, () => {
   console.log(`Hirise sales is running on ${process.env.LISTEN_PORT} `);
