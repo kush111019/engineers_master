@@ -381,7 +381,8 @@ module.exports.allMessages = async (req, res) => {
                         avatar : messageData.avatar
                     },
                     content : messageData.content,
-                    id : chatDetails.rows[0].id
+                    id : chatDetails.rows[0].id,
+                    createdAt : messageData.created_at
                 })
             }
             // chatObj.sender = messagesArr
@@ -462,7 +463,8 @@ module.exports.sendMessage = async (req, res) => {
                             avatar: messageDetails.rows[0].avatar
                         },
                         content: messageDetails.rows[0].content,
-                        id: messageDetails.rows[0].messageid
+                        id: messageDetails.rows[0].messageid,
+                        createdAt : messageDetails.rows[0].created_at
                     }
                     res.json({
                         status: 200,
