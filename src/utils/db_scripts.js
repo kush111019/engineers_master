@@ -188,7 +188,7 @@ const db_sql = {
     
     "Q137" : `insert into chat(id, chat_name, is_group_chat, user_a, user_b, group_admin, sales_id) values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}','{var6}','{var7}') returning *`,
     "Q138" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin from chat where deleted_at is null`,
-    "Q139" : `select m.id, m.sender, m.content, m.chat_id, m.ready_by, m.created_at, u.full_name,
+    "Q139" : `select m.id, m.sender, m.content, m.chat_id, m.read_by, m.created_at, u.full_name,
               u.avatar, u.id as sender_id from message as m inner join users as u on m.sender = u.id 
               where id = '{var1}' and m.deleted_at is null`,
     "Q140" : `update chat set chat_name = '{var1}' where id = '{var2}' and deleted_at is null returning *`,
