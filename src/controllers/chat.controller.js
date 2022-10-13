@@ -456,6 +456,21 @@ module.exports.sendMessage = async (req, res) => {
                 let messageDetails = await connection.query(s3)
                 let messageObj = {}
                 if(messageDetails.rowCount > 0){
+                    let userArr = []
+                    if (messageDetails.rows[0].is_group_chat == true) {
+                        let s8 = dbScript(db_sql['Q134'], { var1: chatId })
+                        let findGroupMembers = await connection.query(s8)
+                        for (let members of findGroupMembers.rows) {
+                            let s9 = dbScript(db_sql['Q10'], { var1: members.user_id })
+                            let users = await connection.query(s9)
+                            userArr.push(users.rows[0])
+                        }
+                    } else {
+                        userId = chatDetails.rows[0].user_a == id ? chatDetails.rows[0].user_b : chatDetails.rows[0].user_a
+                        let s9 = dbScript(db_sql['Q10'], { var1: userId })
+                        let users = await connection.query(s9)
+                        userArr.push(users.rows[0])
+                    }
                     messageObj = {
                         sender: {
                             id: messageDetails.rows[0].senderid,
@@ -464,7 +479,8 @@ module.exports.sendMessage = async (req, res) => {
                         },
                         content: messageDetails.rows[0].content,
                         id: messageDetails.rows[0].messageid,
-                        createdAt : messageDetails.rows[0].created_at
+                        createdAt : messageDetails.rows[0].created_at,
+                        users : userArr
                     }
                     res.json({
                         status: 200,
