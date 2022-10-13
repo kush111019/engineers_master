@@ -362,57 +362,60 @@ module.exports.allMessages = async (req, res) => {
         let s0 = dbScript(db_sql['Q10'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
-            let chatObj = {}
+            let chatArr = []
             let s1 = dbScript(db_sql['Q133'], { var1: chatId })
             let chatDetails = await connection.query(s1)
-            chatObj = {
-                id: chatDetails.rows[0].id,
-                chatName: chatDetails.rows[0].chat_name,
-                isGroupChat: chatDetails.rows[0].is_group_chat
-            }
+            // chatObj = {
+            //     id: chatDetails.rows[0].id,
+            //     chatName: chatDetails.rows[0].chat_name,
+            //     isGroupChat: chatDetails.rows[0].is_group_chat
+            // }
             let s2 = dbScript(db_sql['Q143'], { var1: chatId })
             let chatMessage = await connection.query(s2)
-            let messagesArr = []
+            // let messagesArr = []
             for (messageData of chatMessage.rows) {
-                messagesArr.push({
-                    id: messageData.senderid,
-                    name: messageData.full_name,
-                    avatar: messageData.avatar,
-                    content: messageData.content
+                chatArr.push({
+                    sender : {
+                        full_name : messageData.full_name,
+                        id : messageData.senderid,
+                        avatar : messageData.avatar
+                    },
+                    content : messageData.content,
+                    id : chatDetails.rows[0].id
                 })
             }
-            chatObj.sender = messagesArr
+            // chatObj.sender = messagesArr
 
-            if (chatDetails.rows[0].is_group_chat == true) {
-                let s8 = dbScript(db_sql['Q134'], { var1: chatId })
-                let findGroupMembers = await connection.query(s8)
-                let userArr = []
-                for (let members of findGroupMembers.rows) {
-                    let s9 = dbScript(db_sql['Q10'], { var1: members.user_id })
-                    let users = await connection.query(s9)
-                    userArr.push(users.rows[0])
-                }
-                chatObj.users = userArr
-            } else {
-                userId = chatDetails.rows[0].user_a == id ? chatDetails.rows[0].user_b : chatDetails.rows[0].user_a
-                let s9 = dbScript(db_sql['Q10'], { var1: userId })
-                let users = await connection.query(s9)
-                userArr.push(users.rows[0])
-                chatObj.users = userArr
-            }
-            if (chatObj) {
+            // if (chatDetails.rows[0].is_group_chat == true) {
+            //     let s8 = dbScript(db_sql['Q134'], { var1: chatId })
+            //     let findGroupMembers = await connection.query(s8)
+            //     let userArr = []
+            //     for (let members of findGroupMembers.rows) {
+            //         let s9 = dbScript(db_sql['Q10'], { var1: members.user_id })
+            //         let users = await connection.query(s9)
+            //         userArr.push(users.rows[0])
+            //     }
+            //     chatObj.users = userArr
+            // } else {
+            //     userId = chatDetails.rows[0].user_a == id ? chatDetails.rows[0].user_b : chatDetails.rows[0].user_a
+            //     let s9 = dbScript(db_sql['Q10'], { var1: userId })
+            //     let users = await connection.query(s9)
+            //     userArr.push(users.rows[0])
+            //     chatObj.users = userArr
+            // }
+            if (chatArr.length > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: "Chat messages",
-                    data: chatObj
+                    data: chatArr
                 });
             } else {
                 res.json({
                     status: 200,
                     success: true,
                     message: "Empty chat messages",
-                    data: chatObj
+                    data: chatArr
                 });
             }
         } else {
