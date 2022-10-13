@@ -742,12 +742,6 @@ module.exports.fetchChats = async (req, res) => {
 
                         let s7 = dbScript(db_sql['Q133'], { var1: chatsData.id })
                         let findGroupChat = await connection.query(s7)
-                        chatData.push({
-                            id: findGroupChat.rows[0].id,
-                            chatName: findGroupChat.rows[0].chat_name,
-                            isGroupChat: findGroupChat.rows[0].is_group_chat,
-                            groupAdmin: findGroupChat.rows[0].group_admin
-                        })
 
                         let s8 = dbScript(db_sql['Q134'], { var1: chatsData.id })
                         let findGroupMembers = await connection.query(s8)
@@ -757,7 +751,12 @@ module.exports.fetchChats = async (req, res) => {
                             let users = await connection.query(s9)
                             userArr.push(users.rows[0])
                         }
+
                         chatData.push({
+                            id: findGroupChat.rows[0].id,
+                            chatName: findGroupChat.rows[0].chat_name,
+                            isGroupChat: findGroupChat.rows[0].is_group_chat,
+                            groupAdmin: findGroupChat.rows[0].group_admin,
                             users: userArr
                         })
                     }
