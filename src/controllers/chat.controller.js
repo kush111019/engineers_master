@@ -1,8 +1,7 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
-// const { mysql_real_escape_string } = require('../utils/helper')
-// const jsonwebtoken = require("jsonwebtoken");
+const { mysql_real_escape_string } = require('../utils/helper')
 
 module.exports.accessChat = async (req, res) => {
     try {
@@ -425,9 +424,8 @@ module.exports.sendMessage = async (req, res) => {
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
             await connection.query('BEGIN')
-            // let messageArr = []
             let messageId = uuid.v4()
-            let s1 = dbScript(db_sql['Q129'], { var1: messageId, var2: chatId, var3: id, var4: content })
+            let s1 = dbScript(db_sql['Q129'], { var1: messageId, var2: chatId, var3: id, var4: mysql_real_escape_string(content) })
             let message = await connection.query(s1)
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q130'], { var1: message.rows[0].id, var2: chatId, var3: _dt })
