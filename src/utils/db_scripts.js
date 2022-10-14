@@ -172,7 +172,7 @@ const db_sql = {
     "Q129" : `insert into message(id, chat_id, sender, content) values('{var1}','{var2}','{var3}','{var4}') returning *`,
     "Q130" : `update chat set last_message = '{var1}', updated_at = '{var3}' where id = '{var2}'  and deleted_at is null returning *`,
     "Q131" : `insert into chat_room_members (id, room_id, user_id, group_name) values('{var1}','{var2}','{var3}','{var4}') returning *` ,
-    "Q132" : `select id, chat_name, is_group_chat, last_message, group_admin,user_a, user_b, created_at from chat where (user_a = '{var1}' or user_b = '{var1}')  and deleted_at is null`,
+    "Q132" : `select id, chat_name, is_group_chat, last_message, group_admin,user_a, user_b, created_at from chat where (user_a = '{var1}' or user_b = '{var1}') and company_id = '{var2}' and is_group_chat = '{var3}' and deleted_at is null`,
    
     "Q133" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at from chat where id = '{var1}' and deleted_at is null `,
     "Q134" : `select room_id, user_id, group_name from chat_room_members where room_id = '{var1}' and deleted_at is null`,
@@ -186,8 +186,8 @@ const db_sql = {
               and s.deleted_at is null and u.deleted_at is null`,
     
     
-    "Q137" : `insert into chat(id, chat_name, is_group_chat, user_a, user_b, group_admin, sales_id) values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}','{var6}','{var7}') returning *`,
-    "Q138" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin from chat where deleted_at is null`,
+    "Q137" : `insert into chat(id, chat_name, is_group_chat, user_a, user_b, group_admin, sales_id, company_id) values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}','{var6}','{var7}','{var8}') returning *`,
+    "Q138" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin from chat where company_id = '{var1}' and is_group_chat = '{var2}' and deleted_at is null`,
     "Q139" : `select m.id, m.sender, m.content, m.chat_id, m.read_by, m.created_at, u.full_name,
               u.avatar, u.id as sender_id from message as m inner join users as u on m.sender = u.id 
               where m.id = '{var1}' and m.deleted_at is null`,
@@ -203,8 +203,8 @@ const db_sql = {
              u.full_name, u.avatar from message as m 
              inner join users as u on m.sender = u.id
             where chat_id = '{var1}' and m.deleted_at is null ORDER BY m.created_at ASC `,
-    "Q144" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at from chat where sales_id = '{var1}' and deleted_at is null`,  
-    "Q145" : `update chat_room_members set deleted_at = '{var1}' , updated_at = '{var1}' where chat_id = '{var2}' and user_id = '{var3}' returning *`                 
+    "Q144" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at from chat where sales_id = '{var1}' and company_id = '{var2}' and deleted_at is null`,  
+    "Q145" : `update chat_room_members set deleted_at = '{var1}' , updated_at = '{var1}' where chat_id = '{var2}' and user_id = '{var3}' returning *`
     
 
 
