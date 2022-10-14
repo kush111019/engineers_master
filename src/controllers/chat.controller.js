@@ -286,7 +286,9 @@ module.exports.createGroupChat = async (req, res) => {
                 for (let supporterData of supporters.rows) {
                     users.push(supporterData.supporter_id)
                 }
-
+                if(!users.includes(checkAdmin.rows[0])){
+                    users.push(checkAdmin.rows[0].id)
+                }
                 let s4 = dbScript(db_sql['Q137'], { var1: chatId, var2: name, var3: isGroupChat, var4: '', var5: '', var6: id, var7: salesId, var8: checkAdmin.rows[0].company_id })
                 let createGroup = await connection.query(s4)
 
