@@ -182,7 +182,7 @@ const db_sql = {
               where s.sales_commission_id = '{var1}' 
               and s.deleted_at is null and u.deleted_at is null`,
     "Q137" : `insert into chat(id, chat_name, is_group_chat, user_a, user_b, group_admin, sales_id, company_id) values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}','{var6}','{var7}','{var8}') returning *`,
-    "Q138" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin from chat where company_id = '{var1}' and is_group_chat = '{var2}' and deleted_at is null`,
+    "Q138" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin from chat where id = '{var1}' and company_id = '{var2}' and is_group_chat = '{var3}' and deleted_at is null`,
     "Q139" : `select m.id, m.sender, m.content, m.chat_id, m.read_by, m.created_at, u.full_name,
               u.avatar, u.id as sender_id from message as m inner join users as u on m.sender = u.id 
               where m.id = '{var1}' and m.deleted_at is null`,
@@ -195,7 +195,8 @@ const db_sql = {
              u.full_name, u.avatar from message as m 
              inner join users as u on m.sender = u.id
             where chat_id = '{var1}' and m.deleted_at is null ORDER BY m.created_at ASC `,
-    "Q142" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at from chat where sales_id = '{var1}' and company_id = '{var2}' and deleted_at is null`,  
+    "Q142" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at from chat where sales_id = '{var1}' and company_id = '{var2}' and deleted_at is null`, 
+    "Q143" :`select room_id, user_id, group_name from chat_room_members where user_id = '{var1}' and deleted_at is null` 
    
  }
 

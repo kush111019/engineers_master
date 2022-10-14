@@ -121,60 +121,64 @@ module.exports.fetchChats = async (req, res) => {
         let s0 = dbScript(db_sql['Q10'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
-            let s1 = dbScript(db_sql['Q138'], { var1: checkAdmin.rows[0].company_id, var2: true })
-            let chats = await connection.query(s1)
-            if (chats.rowCount > 0) {
-                for (let chatsData of chats.rows) {
-                    let s8 = dbScript(db_sql['Q134'], { var1: chatsData.id })
-                    let findGroupMembers = await connection.query(s8)
-                    let userArr = []
-                    for (let members of findGroupMembers.rows) {
-                        let s9 = dbScript(db_sql['Q10'], { var1: members.user_id })
-                        let users = await connection.query(s9)
-                        userArr.push(users.rows[0])
-                    }
-                    if (chatsData.last_message != null) {
-                        let s6 = dbScript(db_sql['Q139'], { var1: chatsData.last_message })
-                        let lastMessage = await connection.query(s6)
-                        chatData.push({
-                            id: chatsData.id,
-                            chatName: chatsData.chat_name,
-                            profile: process.env.DEFAULT_GROUP_LOGO,
-                            isGroupChat: chatsData.is_group_chat,
-                            groupAdmin: chatsData.group_admin,
-                            users: userArr,
-                            lastMessage: {
-                                messageId: lastMessage.rows[0].id,
-                                sender: {
-                                    id: lastMessage.rows[0].sender_id,
-                                    name: lastMessage.rows[0].full_name,
-                                    avatar: lastMessage.rows[0].avatar
+            let s9 = dbScript(db_sql['Q143'], { var1: id })
+            let member = await connection.query(s9)
+            if (member.rowCount > 0) {
+                for (let user of member.rows) {
+                    let s1 = dbScript(db_sql['Q138'], { var1: user.room_id, var2: checkAdmin.rows[0].company_id, var3: true })
+                    let chats = await connection.query(s1)
+                    if (chats.rowCount > 0) {
+                        let s8 = dbScript(db_sql['Q134'], { var1: chats.rows[0].id })
+                        let findGroupMembers = await connection.query(s8)
+                        let userArr = []
+                        for (let members of findGroupMembers.rows) {
+                            let s9 = dbScript(db_sql['Q10'], { var1: members.user_id })
+                            let users = await connection.query(s9)
+                            userArr.push(users.rows[0])
+                        }
+                        if (chats.rows[0].last_message != null) {
+                            let s6 = dbScript(db_sql['Q139'], { var1: chats.rows[0].last_message })
+                            let lastMessage = await connection.query(s6)
+                            chatData.push({
+                                id: chats.rows[0].id,
+                                chatName: chats.rows[0].chat_name,
+                                profile: process.env.DEFAULT_GROUP_LOGO,
+                                isGroupChat: chats.rows[0].is_group_chat,
+                                groupAdmin: chats.rows[0].group_admin,
+                                users: userArr,
+                                lastMessage: {
+                                    messageId: lastMessage.rows[0].id,
+                                    sender: {
+                                        id: lastMessage.rows[0].sender_id,
+                                        name: lastMessage.rows[0].full_name,
+                                        avatar: lastMessage.rows[0].avatar
+                                    },
+                                    content: lastMessage.rows[0].content,
+                                    chatId: lastMessage.rows[0].chat_id,
+                                    readBy: lastMessage.rows[0].read_by,
                                 },
-                                content: lastMessage.rows[0].content,
-                                chatId: lastMessage.rows[0].chat_id,
-                                readBy: lastMessage.rows[0].read_by,
-                            },
-                        })
-                    } else {
-                        chatData.push({
-                            id: chatsData.id,
-                            chatName: chatsData.chat_name,
-                            profile: process.env.DEFAULT_GROUP_LOGO,
-                            isGroupChat: chatsData.is_group_chat,
-                            groupAdmin: chatsData.group_admin,
-                            users: userArr,
-                            lastMessage: {
-                                messageId: "",
-                                sender: {
-                                    id: "",
-                                    name: "",
-                                    avatar: ""
-                                },
-                                content: "",
-                                chatId: "",
-                                readBy: "",
-                            }
-                        })
+                            })
+                        } else {
+                            chatData.push({
+                                id: chats.rows[0].id,
+                                chatName: chats.rows[0].chat_name,
+                                profile: process.env.DEFAULT_GROUP_LOGO,
+                                isGroupChat: chats.rows[0].is_group_chat,
+                                groupAdmin: chats.rows[0].group_admin,
+                                users: userArr,
+                                lastMessage: {
+                                    messageId: "",
+                                    sender: {
+                                        id: "",
+                                        name: "",
+                                        avatar: ""
+                                    },
+                                    content: "",
+                                    chatId: "",
+                                    readBy: "",
+                                }
+                            })
+                        }
                     }
                 }
             }
@@ -289,9 +293,6 @@ module.exports.createGroupChat = async (req, res) => {
                 let supporters = await connection.query(s3)
                 for (let supporterData of supporters.rows) {
                     users.push(supporterData.supporter_id)
-                }
-                if(!users.includes(checkAdmin.rows[0])){
-                    users.push(checkAdmin.rows[0].id)
                 }
                 let s4 = dbScript(db_sql['Q137'], { var1: chatId, var2: name, var3: isGroupChat, var4: '', var5: '', var6: id, var7: salesId, var8: checkAdmin.rows[0].company_id })
                 let createGroup = await connection.query(s4)
