@@ -49,15 +49,17 @@ io.on("connection", (socket) => {
     socket.join(room);
     console.log("User Joined Room: " + room);
   });
-  socket.on("typing", (room) => socket.in(room).emit("typing"));
-  socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
+  // socket.on("typing", (room) => socket.in(room).emit("typing"));
+  // socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
 
   socket.on("new message", (newMessageRecieved) => {
     // var chat = newMessageRecieved.chat;
 
+    console.log(newMessageRecieved,"new message recieved");
     if (!newMessageRecieved.users) return console.log("chat.users not defined");
 
     newMessageRecieved.users.forEach((user) => {
+      console.log(user, "send to user");
       if (user.id == newMessageRecieved.sender.id) return;
 
       socket.in(user.id).emit("message recieved", newMessageRecieved);
