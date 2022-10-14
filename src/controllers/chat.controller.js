@@ -275,7 +275,7 @@ module.exports.createGroupChat = async (req, res) => {
         let s0 = dbScript(db_sql['Q10'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
-            let s1 = dbScript(db_sql['Q144'], { var1: salesId, var2: checkAdmin.rows[0].company_id })
+            let s1 = dbScript(db_sql['Q142'], { var1: salesId, var2: checkAdmin.rows[0].company_id })
             let findChat = await connection.query(s1)
             if (findChat.rowCount == 0) {
                 let users = []
@@ -370,7 +370,7 @@ module.exports.allMessages = async (req, res) => {
             let s1 = dbScript(db_sql['Q133'], { var1: chatId })
             let chatDetails = await connection.query(s1)
 
-            let s2 = dbScript(db_sql['Q143'], { var1: chatId })
+            let s2 = dbScript(db_sql['Q141'], { var1: chatId })
             let chatMessage = await connection.query(s2)
             for (messageData of chatMessage.rows) {
                 chatArr.push({
@@ -434,7 +434,7 @@ module.exports.sendMessage = async (req, res) => {
             let updateLastMessage = await connection.query(s2)
             if (message.rowCount > 0 && updateLastMessage.rowCount > 0) {
                 await connection.query('COMMIT')
-                let s3 = dbScript(db_sql['Q142'], { var1: chatId })
+                let s3 = dbScript(db_sql['Q140'], { var1: chatId })
                 let messageDetails = await connection.query(s3)
                 let messageObj = {}
                 if (messageDetails.rowCount > 0) {
