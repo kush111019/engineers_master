@@ -19,73 +19,12 @@ module.exports.accessChat = async (req, res) => {
             let s1 = dbScript(db_sql['Q128'], { var1: id, var2: userId })
             let findChat = await connection.query(s1)
             if (findChat.rowCount > 0) {
-                let s3 = dbScript(db_sql['Q10'], { var1: findChat.rows[0].user_a })
-                let userA = await connection.query(s3)
-
-                let s4 = dbScript(db_sql['Q10'], { var1: findChat.rows[0].user_b })
-                let userB = await connection.query(s4)
-
-                let profile = (findChat.rows[0].user_a == id) ? userB.rows[0].avatar : userA.rows[0].avatar
-
-                if (findChat.rows[0].last_message != null) {
-                    let s2 = dbScript(db_sql['Q139'], { var1: findChat.rows[0].last_message })
-                    let lastMessage = await connection.query(s2)
-                    chatData.push({
-                        id: findChat.rows[0].id,
-                        chatName: findChat.rows[0].chat_name,
-                        isGroupChat: findChat.rows[0].is_group_chat,
-                        profile : profile,
-                        groupAdmin: findChat.rows[0].group_admin,
-                        users: [userA.rows[0], userB.rows[0]],
-                        lastMessage: {
-                            messageId: lastMessage.rows[0].id,
-                            sender: {
-                                id: lastMessage.rows[0].sender_id,
-                                name: lastMessage.rows[0].full_name,
-                                avatar: lastMessage.rows[0].avatar
-                            },
-                            content: lastMessage.rows[0].content,
-                            chatId: lastMessage.rows[0].chat_id,
-                            readBy: lastMessage.rows[0].read_by,
-                        },
-                    })
-                }else{
-                    chatData.push({
-                        id: findChat.rows[0].id,
-                        chatName: findChat.rows[0].chat_name,
-                        isGroupChat: findChat.rows[0].is_group_chat,
-                        profile : profile,
-                        groupAdmin: findChat.rows[0].group_admin,
-                        users: [userA.rows[0], userB.rows[0]],
-                        lastMessage: {
-                            messageId: "",
-                            sender: {
-                                id: "",
-                                name: "",
-                                avatar: ""
-                            },
-                            content: "",
-                            chatId: "",
-                            readBy: "",
-                        },
-                    })
-                }
-               
-                if (chatData.length > 0) {
                     res.json({
                         status: 200,
                         success: true,
                         message: "chat already initiated",
-                        data: chatData
+                        data: ""
                     });
-                }else{
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "chat data not found",
-                        data: chatData
-                    });
-                }
             }
             else {
                 let chatId = uuid.v4()
@@ -109,7 +48,7 @@ module.exports.accessChat = async (req, res) => {
 
                     let profile = (chatDetails.rows[0].user_a == id) ? userB.rows[0].avatar : userA.rows[0].avatar
 
-                    chatData.push({
+                    chatData = {
                         id: chatDetails.rows[0].id,
                         chatName: chatDetails.rows[0].chat_name,
                         isGroupChat: chatDetails.rows[0].is_group_chat,
@@ -127,12 +66,11 @@ module.exports.accessChat = async (req, res) => {
                             chatId: "",
                             readBy: "",
                         },
-                    })
+                    }
 
-                    if(chatData.length > 0){
-                        
+                    if(chatData){
                         res.json({
-                            status: 200,
+                            status: 201,
                             success: true,
                             message: "chat initiated",
                             data: chatData
@@ -336,7 +274,6 @@ module.exports.createGroupChat = async (req, res) => {
             let findChat = await connection.query(s1)
             if (findChat.rowCount == 0) {
                 let users = []
-                let groupChatData = []
                 let chatId = uuid.v4()
                 let isGroupChat = true
 
@@ -365,19 +302,19 @@ module.exports.createGroupChat = async (req, res) => {
                     usersArr.push(userDetails.rows[0])
                 }
 
-                groupChatData.push({
+                let groupChatData = {
                     id: createGroup.rows[0].id,
                     chatName: createGroup.rows[0].chat_name,
                     profile : process.env.DEFAULT_GROUP_LOGO,
                     isGroupChat: isGroupChat,
                     groupAdmin: checkAdmin.rows[0],
                     users: usersArr
-                })
+                   }
 
-                if (groupChatData.length > 0) {
+                if (groupChatData) {
                     await connection.query('COMMIT')
                     res.json({
-                        status: 200,
+                        status: 201,
                         success: true,
                         message: "Group created",
                         data: groupChatData
@@ -395,6 +332,7 @@ module.exports.createGroupChat = async (req, res) => {
                     status: 200,
                     success: true,
                     message: "Group already created",
+                    data : ""
                 });
             }
         } else {
