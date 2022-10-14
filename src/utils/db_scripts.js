@@ -173,7 +173,7 @@ const db_sql = {
     "Q132" : `select id, chat_name, is_group_chat, last_message, group_admin,user_a, user_b, created_at from chat where (user_a = '{var1}' or user_b = '{var1}') and company_id = '{var2}' and is_group_chat = '{var3}' and deleted_at is null`,
     "Q133" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at from chat where id = '{var1}' and deleted_at is null `,
     "Q134" : `select room_id, user_id, group_name from chat_room_members where room_id = '{var1}' and deleted_at is null`,
-    "Q135" : `select sc.id,c.closer_id, u.full_name from sales_commission as sc 
+    "Q135" : `select sc.id,c.closer_id,sc.customer_id, u.full_name from sales_commission as sc 
               inner join sales_closer as c on sc.id = c.sales_commission_id 
               inner join users as u on c.closer_id = u.id where sc.id = '{var1}' 
               and sc.deleted_at is null and c.deleted_at is null and u.deleted_at is null`,
@@ -196,7 +196,7 @@ const db_sql = {
              inner join users as u on m.sender = u.id
             where chat_id = '{var1}' and m.deleted_at is null ORDER BY m.created_at ASC `,
     "Q142" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at from chat where sales_id = '{var1}' and company_id = '{var2}' and deleted_at is null`, 
-    "Q143" :`select room_id, user_id, group_name from chat_room_members where user_id = '{var1}' and deleted_at is null` 
+    "Q143" :`select room_id, user_id, group_name from chat_room_members where user_id = '{var1}' and deleted_at is null` ,
    
  }
 
