@@ -281,11 +281,20 @@ module.exports.totalRevenue = async (req, res) => {
                         })
                     }
                 } else {  
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
-                    })
+                    if(targetData.rows.length == 0){
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Empty Total revenue",
+                            data: totalRevenue
+                        })
+                    }else{
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Something went wrong"
+                        })
+                    } 
                 }
             } else {
                 res.status(403).json({
