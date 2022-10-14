@@ -75,6 +75,13 @@ module.exports.accessChat = async (req, res) => {
                             message: "chat initiated",
                             data: chatData
                         });
+                    }else{
+                        await connection.query('ROLLBACK')
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Something went wrong"
+                        });
                     }
                 } else {
                     await connection.query('ROLLBACK')
@@ -231,7 +238,7 @@ module.exports.fetchChats = async (req, res) => {
                     message: "chat data",
                     data: chatData
                 });
-            }else{
+            } else {
                 res.json({
                     status: 200,
                     success: false,
@@ -455,12 +462,27 @@ module.exports.sendMessage = async (req, res) => {
                         createdAt: messageDetails.rows[0].created_at,
                         users: userArr
                     }
+                    if(messageObj){
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Message sent",
+                            data: messageObj
+                        });
+                    }else{
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Something went wrong",
+                        });
+                    } 
+                }else{
+                    await connection.query('ROLLBACK')
                     res.json({
-                        status: 200,
-                        success: true,
-                        message: "Message sent",
-                        data: messageObj
-                    });
+                        status: 400,
+                        success: false,
+                        message: "Message not sent",
+                    }); 
                 }
             } else {
                 await connection.query('ROLLBACK')
