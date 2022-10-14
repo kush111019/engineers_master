@@ -224,12 +224,18 @@ module.exports.fetchChats = async (req, res) => {
                     }
                 }
             }
-
             if (chatData.length > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: "chat data",
+                    data: chatData
+                });
+            }else{
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty chat data ",
                     data: chatData
                 });
             }
