@@ -11,71 +11,83 @@ module.exports.accessChat = async (req, res) => {
         let s0 = dbScript(db_sql['Q10'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
-            if (!userId) {
-                console.log("UserId param not sent with request");
-                return res.sendStatus(400);
-            }
-            let chatData = []
-            let s1 = dbScript(db_sql['Q128'], { var1: id, var2: userId })
-            let findChat = await connection.query(s1)
-            if (findChat.rowCount > 0) {
+            if (userId == id) {
                 res.json({
                     status: 200,
-                    success: true,
-                    message: "chat already initiated",
+                    success: false,
+                    message: "Can not create chat with yourself",
                     data: ""
                 });
-            }
-            else {
-                let chatId = uuid.v4()
-                let chatName = "sender"
-                let isGroupChat = false
-                await connection.query('BEGIN')
-                let s1 = dbScript(db_sql['Q137'], { var1: chatId, var2: chatName, var3: isGroupChat, var4: id, var5: userId, var6: '', var7: '', var8: checkAdmin.rows[0].company_id })
-                let createdChat = await connection.query(s1)
-                if (createdChat.rowCount > 0) {
-                    await connection.query('COMMIT')
-                    let s2 = dbScript(db_sql['Q133'], { var1: createdChat.rows[0].id })
-                    let chatDetails = await connection.query(s2)
+            } else {
+                let chatData = []
+                let s1 = dbScript(db_sql['Q128'], { var1: id, var2: userId })
+                let findChat = await connection.query(s1)
+                if (findChat.rowCount > 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "chat already initiated",
+                        data: ""
+                    });
+                }
+                else {
+                    let chatId = uuid.v4()
+                    let chatName = "sender"
+                    let isGroupChat = false
+                    await connection.query('BEGIN')
+                    let s1 = dbScript(db_sql['Q137'], { var1: chatId, var2: chatName, var3: isGroupChat, var4: id, var5: userId, var6: '', var7: '', var8: checkAdmin.rows[0].company_id })
+                    let createdChat = await connection.query(s1)
+                    if (createdChat.rowCount > 0) {
+                        await connection.query('COMMIT')
+                        let s2 = dbScript(db_sql['Q133'], { var1: createdChat.rows[0].id })
+                        let chatDetails = await connection.query(s2)
 
-                    let s3 = dbScript(db_sql['Q10'], { var1: chatDetails.rows[0].user_a })
-                    let userA = await connection.query(s3)
+                        let s3 = dbScript(db_sql['Q10'], { var1: chatDetails.rows[0].user_a })
+                        let userA = await connection.query(s3)
 
-                    let s4 = dbScript(db_sql['Q10'], { var1: chatDetails.rows[0].user_b })
-                    let userB = await connection.query(s4)
+                        let s4 = dbScript(db_sql['Q10'], { var1: chatDetails.rows[0].user_b })
+                        let userB = await connection.query(s4)
 
-                    let userData = [userA.rows[0], userB.rows[0]]
+                        let userData = [userA.rows[0], userB.rows[0]]
 
-                    let profile = (chatDetails.rows[0].user_a == id) ? userB.rows[0].avatar : userA.rows[0].avatar
+                        let profile = (chatDetails.rows[0].user_a == id) ? userB.rows[0].avatar : userA.rows[0].avatar
 
-                    chatData = {
-                        id: chatDetails.rows[0].id,
-                        chatName: chatDetails.rows[0].chat_name,
-                        isGroupChat: chatDetails.rows[0].is_group_chat,
-                        profile: profile,
-                        groupAdmin: chatDetails.rows[0].group_admin,
-                        users: userData,
-                        lastMessage: {
-                            messageId: "",
-                            sender: {
-                                id: "",
-                                name: "",
-                                avatar: ""
+                        chatData = {
+                            id: chatDetails.rows[0].id,
+                            chatName: chatDetails.rows[0].chat_name,
+                            isGroupChat: chatDetails.rows[0].is_group_chat,
+                            profile: profile,
+                            groupAdmin: chatDetails.rows[0].group_admin,
+                            users: userData,
+                            lastMessage: {
+                                messageId: "",
+                                sender: {
+                                    id: "",
+                                    name: "",
+                                    avatar: ""
+                                },
+                                content: "",
+                                chatId: "",
+                                readBy: "",
                             },
-                            content: "",
-                            chatId: "",
-                            readBy: "",
-                        },
-                    }
+                        }
 
-                    if (chatData) {
-                        res.json({
-                            status: 201,
-                            success: true,
-                            message: "chat initiated",
-                            data: chatData
-                        });
-                    }else{
+                        if (chatData) {
+                            res.json({
+                                status: 201,
+                                success: true,
+                                message: "chat initiated",
+                                data: chatData
+                            });
+                        } else {
+                            await connection.query('ROLLBACK')
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: "Something went wrong"
+                            });
+                        }
+                    } else {
                         await connection.query('ROLLBACK')
                         res.json({
                             status: 400,
@@ -83,13 +95,6 @@ module.exports.accessChat = async (req, res) => {
                             message: "Something went wrong"
                         });
                     }
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
-                    });
                 }
             }
         } else {
