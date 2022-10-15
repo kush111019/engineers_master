@@ -316,7 +316,7 @@ module.exports.editCustomer = async (req, res) => {
                 if (findCustomerCom.rowCount > 0) {
                     compId = findCustomerCom.rows[0].customer_company_id
 
-                    for (businessData of businessContact) {
+                    for (let businessData of businessContact) {
                         if (businessData.businessId == '') {
                             let businessId = uuid.v4()
                             let s6 = dbScript(db_sql['Q76'], { var1: businessId, var2: mysql_real_escape_string(businessData.businessContactName), var3: businessData.businessEmail, var4: businessData.businessPhoneNumber, var5: compId })
@@ -329,7 +329,7 @@ module.exports.editCustomer = async (req, res) => {
                             bId.push(updateBusinessContact.rows[0].id)
                         }
                     }
-                    for (revenueData of revenueContact) {
+                    for (let revenueData of revenueContact) {
                         if (revenueData.revenueId == '') {
                             let revenueId = uuid.v4()
                             let s7 = dbScript(db_sql['Q77'], { var1: revenueId, var2: mysql_real_escape_string(revenueData.revenueContactName), var3: revenueData.revenueEmail, var4: revenueData.revenuePhoneNumber, var5: compId })
@@ -342,14 +342,13 @@ module.exports.editCustomer = async (req, res) => {
                             rId.push(updateRevenueContact.rows[0].id)
                         }
                     }
-
                 }
 
                 let _dt = new Date().toISOString();
                 let s5 = dbScript(db_sql['Q46'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: _dt, var6: customerId, var4: JSON.stringify(bId), var5: JSON.stringify(rId), var7: mysql_real_escape_string(address), var8: findAdmin.rows[0].company_id })
                 let updateCustomer = await connection.query(s5)
                 if (updateCustomer.rowCount > 0) {
-
+                    await connection.query('COMMIT')
                     res.json({
                         status: 200,
                         success: true,
