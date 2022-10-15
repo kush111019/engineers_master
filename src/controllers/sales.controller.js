@@ -79,13 +79,11 @@ module.exports.customerListforSales = async (req, res) => {
 }
 
 module.exports.customerContactDetailsForSales = async (req, res) => {
-
     try {
         let { customerId } = req.query
         let userEmail = req.user.email
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
-
         let moduleName = 'Customer management'
         if (findAdmin.rows.length > 0) {
             let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
@@ -93,8 +91,6 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
             let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
-
-
                 let s4 = dbScript(db_sql['Q60'], { var1: customerId })
                 let contactDetails = await connection.query(s4)
                 if (contactDetails.rowCount > 0) {
@@ -122,7 +118,6 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
                         message: "Something went wrong"
                     })
                 }
-
             } else {
                 res.status(403).json({
                     success: false,

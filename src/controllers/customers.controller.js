@@ -25,7 +25,6 @@ module.exports.createCustomer = async (req, res) => {
             let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_create) {
-
                 await connection.query('BEGIN')
                 let compId = ''
                 let s4 = dbScript(db_sql['Q42'], { var1: companyId })
@@ -40,12 +39,11 @@ module.exports.createCustomer = async (req, res) => {
                     }
 
                 } else {
-
                     compId = findCustomerCom.rows[0].id
                 }
                 let bId = [];
                 let rId = [];
-                for (businessData of businessContact) {
+                for (let businessData of businessContact) {
                     if (businessData.businessId == '') {
                         let businessId = uuid.v4()
                         let s6 = dbScript(db_sql['Q76'], { var1: businessId, var2: mysql_real_escape_string(businessData.businessContactName), var3: businessData.businessEmail, var4: businessData.businessPhoneNumber, var5: compId })
@@ -58,7 +56,7 @@ module.exports.createCustomer = async (req, res) => {
                         bId.push(updateBusinessContact.rows[0].id)
                     }
                 }
-                for (revenueData of revenueContact) {
+                for (let revenueData of revenueContact) {
                     if (revenueData.revenueId == '') {
                         let revenueId = uuid.v4()
                         let s7 = dbScript(db_sql['Q77'], { var1: revenueId, var2: mysql_real_escape_string(revenueData.revenueContactName), var3: revenueData.revenueEmail, var4: revenueData.revenuePhoneNumber, var5: compId })
@@ -74,9 +72,8 @@ module.exports.createCustomer = async (req, res) => {
                 let id = uuid.v4()
                 let s10 = dbScript(db_sql['Q40'], { var1: id, var2: findAdmin.rows[0].id, var3: compId, var4: mysql_real_escape_string(customerName), var5: mysql_real_escape_string(source), var6: findAdmin.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address) })
                 let createCustomer = await connection.query(s10)
-
-                await connection.query('COMMIT')
                 if (createCustomer.rowCount > 0) {
+                    await connection.query('COMMIT')
                     res.json({
                         status: 201,
                         success: true,
@@ -643,7 +640,6 @@ module.exports.deleteCustomer = async (req, res) => {
         })
     }
 }
-
 
 module.exports.addBusinessContact = async (req, res) => {
     try {
