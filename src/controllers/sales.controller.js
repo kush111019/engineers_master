@@ -312,18 +312,22 @@ module.exports.salesCommissionList = async (req, res) => {
                         let businessData = await connection.query(s8);
 
                         closer.businessContactId = businessData.rows[0].id,
-                            closer.businessContactName = businessData.rows[0].business_contact_name
+                        closer.businessContactName = businessData.rows[0].business_contact_name
+                        closer.businessContactEmail = businessData.rows[0].business_email
 
                         let s9 = dbScript(db_sql['Q83'], { var1: data.revenue_id })
                         let revenueData = await connection.query(s9);
 
                         closer.revenueContactId = revenueData.rows[0].id,
-                            closer.revenueContactName = revenueData.rows[0].revenue_contact_name
+                        closer.revenueContactName = revenueData.rows[0].revenue_contact_name
+                        closer.revenueContactEmail = revenueData.rows[0].revenue_email
                     } else {
                         closer.businessContactId = ""
                         closer.businessContactName = ""
+                        closer.businessContactEmail = ""
                         closer.revenueContactId = ""
                         closer.revenueContactName = ""
+                        closer.revenueContactEmail = ""
                     }
                     closer.id = data.id
                     closer.customerId = data.customer_id
