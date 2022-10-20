@@ -79,6 +79,8 @@ module.exports.fetchEmails = async () => {
                                         console.log("inside else 3");
                                         let s2 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
                                         let findByFrom = await connection.query(s2)
+                                        console.log(s2,"query s2");
+                                        console.log(findByFrom.rows,"findByFrom");
                                         if (findByFrom.rowCount > 0) {
                                             await connection.query('BEGIN')
                                             let id = uuid.v4()
