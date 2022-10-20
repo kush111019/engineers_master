@@ -175,7 +175,7 @@ module.exports.resetPasswordMail = async (email , link , userName) => {
     return sentdata
 }
 
-module.exports.sendEmailToContact = async (emails, subject, message) => {
+module.exports.sendEmailToContact = async (emails, subject, message, cc) => {
 
     let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
@@ -194,6 +194,17 @@ module.exports.sendEmailToContact = async (emails, subject, message) => {
         })
     }
     sendSmtpEmail.to = emailArr
+
+    if(cc.length > 0){
+        let ccArr = []
+        for(let ccEmail of cc){
+            ccArr.push({
+                "email" : ccEmail
+            })
+        }
+        sendSmtpEmail.cc = ccArr
+    }
+
     //Schedule the sending in one hour
     //scheduledAt = '2018-01-01 00:00:01'
 
@@ -210,7 +221,6 @@ module.exports.sendEmailToContact = async (emails, subject, message) => {
 
 
 //-----------------------------------------Local Email-------------------------------------
-
 
 
 module.exports.welcomeEmail2 = async (email , link, userName) => {
@@ -468,7 +478,7 @@ module.exports.contactUsMail2 = async (email,fullName,subject,message,address) =
 
 }
 
-module.exports.sendEmailToContact2 = async(emails, subject, message) => {
+module.exports.sendEmailToContact2 = async(emails, subject, message, cc) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
@@ -476,7 +486,7 @@ module.exports.sendEmailToContact2 = async(emails, subject, message) => {
 
     let sendEmail = emailToContactTemplate.emailToContact(message)
 
-    var ccAddresses = "";
+    let ccAddresses = (cc.length > 0) ? cc : "";
     var bccAddresses = "";
 
     const smtpUsername = process.env.SMTP_USERNAME;

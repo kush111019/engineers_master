@@ -200,19 +200,19 @@ module.exports.inbox = async(req, res) => {
 module.exports.sendEmail = async (req, res) => {
     try {
         let { id } = req.user
-        let { emails, subject, message } = req.body
+        let { emails, subject, message, cc } = req.body
         let s0 = dbScript(db_sql['Q10'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
             if (process.env.isLocalEmail == 'true') {
-                await sendEmailToContact2(emails, subject, message);
+                await sendEmailToContact2(emails, subject, message, cc);
                 res.json({
                     status: 200,
                     success: true,
                     message: "Email sent successfully!",
                 })
             } else {
-                let emailSend = await sendEmailToContact(emails, subject, message);
+                let emailSend = await sendEmailToContact(emails, subject, message, cc);
                 if (emailSend.status == 400) {
                     res.json({
                         status: 400,
