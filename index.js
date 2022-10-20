@@ -5,6 +5,7 @@ const cron = require('node-cron');
 require('dotenv').config()
 const logger = require('./middleware/logger');
 const { paymentReminder, upgradeSubscriptionCronFn } = require('./src/utils/paymentReminder')
+const { fetchEmails } = require('./src/controllers/email.controller')
 require('./src/database/connection')
 const path = require('path')
 const Router = require('./src/routes/index');
@@ -37,6 +38,11 @@ let cronJob = cron.schedule('59 59 23 * * *', async () => {
   await upgradeSubscriptionCronFn()
 });
 cronJob.start();
+
+let cronJob1 = cron.schedule('*/30 * * * *', async () => {
+   await fetchEmails()
+});
+cronJob1.start();
 
 io.on("connection", (socket) => {
   console.log("Connected to socket.io");

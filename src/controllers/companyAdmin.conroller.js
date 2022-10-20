@@ -333,17 +333,19 @@ module.exports.login = async (req, res) => {
                         if (configs.rowCount > 0) {
                             configuration.id = configs.rows[0].id
                             configuration.currency = configs.rows[0].currency,
-                                configuration.phoneFormat = configs.rows[0].phone_format,
-                                configuration.dateFormat = configs.rows[0].date_format,
-                                configuration.graphType = configs.rows[0].graph_type
-
+                            configuration.phoneFormat = configs.rows[0].phone_format,
+                            configuration.dateFormat = configs.rows[0].date_format,
+                            configuration.graphType = configs.rows[0].graph_type,
+                            configuration.email =  configs.rows[0].email,
+                            configuration.appPassword =  configs.rows[0].app_password
                         } else {
-
                             configuration.id = "",
-                                configuration.currency = "",
-                                configuration.phoneFormat = "",
-                                configuration.dateFormat = "",
-                                configuration.graphType = ""
+                            configuration.currency = "",
+                            configuration.phoneFormat = "",
+                            configuration.dateFormat = "",
+                            configuration.graphType = "",
+                            configuration.email = ""
+                            configuration.appPassword = ""
                         }
 
                         let moduleId = JSON.parse(checkRole.rows[0].module_ids)

@@ -103,8 +103,8 @@ const db_sql = {
     "Q86"  : `update customers set revenue_id = '{var2}' where id = '{var1}' returning *`,
     "Q87"  : `select id, supporter_id, supporter_percentage from sales_supporter where id = '{var1}'  `,
     "Q88"  : `select customer_id, sales_type, subscription_plan, recurring_date from sales_commission where deleted_at is null`,
-    "Q89"  : `insert into configurations(id, currency, phone_format, date_format,user_id, graph_type,  company_id ) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') returning *`,
-    "Q90"  : `select id, currency, phone_format, date_format,graph_type, user_id, company_id, created_at from configurations where company_id = '{var1}' and deleted_at is null `,
+    "Q89"  : `insert into configurations(id, currency, phone_format, date_format,user_id, graph_type,  company_id, email, app_password ) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var6}','{var7}') returning *`,
+    "Q90"  : `select id, currency, phone_format, date_format,graph_type,email, app_password, user_id, company_id, created_at from configurations where company_id = '{var1}' and deleted_at is null `,
     "Q91"  : `update configurations set deleted_at = '{var1}' where company_id = '{var2}' and deleted_at is null returning *`,
     "Q92"  : `select cr.closer_id,cr.closer_percentage, u.full_name from sales_closer as cr 
               inner join users as u on u.id = cr.closer_id where sales_commission_id = '{var1}'
@@ -197,6 +197,19 @@ const db_sql = {
             where chat_id = '{var1}' and m.deleted_at is null ORDER BY m.created_at ASC `,
     "Q142" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at from chat where sales_id = '{var1}' and company_id = '{var2}' and deleted_at is null`, 
     "Q143" :`select room_id, user_id, group_name from chat_room_members where user_id = '{var1}' and deleted_at is null` ,
+
+    "Q144" : `select id, message_id, to_mail, from_mail, mail_date, subject, mail_html, mail_text, mail_text_as_html, company_id, created_at from emails where company_id = '{var1}' and deleted_at is null`,
+    "Q145" : `select  b.email_address as business_email, r.email_address as revenue_email
+              from business_contact as b 
+              inner join customer_companies as c on c.id = b.customer_company_id
+              inner join revenue_contact as r on b.customer_company_id = r.customer_company_id
+              where '{var1}' IN (b.email_address, r.email_address) and company_id = '{var2}' and
+              b.deleted_at is null and c.deleted_at is null and r.deleted_at is null `,
+    "Q146" : `insert into emails (id, message_id, to_mail, from_mail, mail_date, subject, 
+              mail_html, mail_text, mail_text_as_html, company_id) values('{var1}', '{var2}', 
+              '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}', '{var10}') returning *` ,
+    "Q147" : `select c.id as company_id, c.company_name, cs.email, cs.app_password from companies as c
+              inner join configurations as cs on cs.company_id = c.id where c.deleted_at is null and cs.deleted_at is null`                              
    
  }
 
