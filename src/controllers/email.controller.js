@@ -38,7 +38,7 @@ module.exports.fetchEmails = async () => {
                     let year = date.getFullYear()
                     let day = date.getDate()
                     let formatedDate = `${month} ${day}, ${year}`
-                    imap.search(['ALL', ['SINCE', 'October 16, 2022']], function (err, results) {
+                    imap.search(['ALL', ['SINCE', formatedDate]], function (err, results) {
                         if (err) {
                             console.log('Search error : ', err)
                         }
@@ -48,7 +48,6 @@ module.exports.fetchEmails = async () => {
                                 let prefix = '(#' + seqno + ') ';
                                 msg.on('body', async function (stream, info) {
                                     let parsed = await simpleParser(stream)
-                                    console.log(parsed.from,"parsed data");
                                     let s1 = dbScript(db_sql['Q144'], { var1: company.company_id })
                                     let getEmails = await connection.query(s1)
                                     let text = (Buffer.from(parsed.text, "utf8")).toString('base64')
@@ -124,6 +123,7 @@ module.exports.inbox = async(req, res) => {
                         toMail : inboxData.to_mail,
                         fromMail : inboxData.from_mail,
                         fromName : inboxData.from_name,
+                        fromImage : process.env.DEFAULT_EMAIL_LOGO,
                         mailDate : inboxData.mail_date,
                         subject : inboxData.subject,
                         text : text,
