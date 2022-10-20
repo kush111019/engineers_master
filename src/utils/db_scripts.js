@@ -199,12 +199,12 @@ const db_sql = {
     "Q143" :`select room_id, user_id, group_name from chat_room_members where user_id = '{var1}' and deleted_at is null` ,
 
     "Q144" : `select id, message_id, to_mail, from_mail, mail_date, subject, mail_html, mail_text, mail_text_as_html, company_id, created_at from emails where company_id = '{var1}' and deleted_at is null`,
-    "Q145" : `select  b.email_address as business_email, r.email_address as revenue_email
+    "Q145" : `select b.email_address as business_email, r.email_address as revenue_email
               from business_contact as b 
               inner join customer_companies as c on c.id = b.customer_company_id
               inner join revenue_contact as r on b.customer_company_id = r.customer_company_id
-              where '{var1}' IN (b.email_address, r.email_address) and company_id = '{var2}' and
-              b.deleted_at is null and c.deleted_at is null and r.deleted_at is null `,
+              where '{var1}' IN (b.email_address, r.email_address) and c.company_id = '{var2}' and
+              b.deleted_at is null and c.deleted_at is null and r.deleted_at is null`,
     "Q146" : `insert into emails (id, message_id, to_mail, from_mail, mail_date, subject, 
               mail_html, mail_text, mail_text_as_html, company_id) values('{var1}', '{var2}', 
               '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}', '{var10}') returning *` ,
