@@ -12,7 +12,6 @@ module.exports.fetchEmails = async () => {
     if (findCompanies.rowCount > 0) {
         for (let company of findCompanies.rows) {
             if (company.email != null && company.app_password != null) {
-                console.log("inside if 1");
                 let imap = new Imap({
                     user: company.email,
                     password: company.app_password,
@@ -33,7 +32,6 @@ module.exports.fetchEmails = async () => {
                     })
                 }
                 openInbox(async function (err, box) {
-                    console.log("inside function");
                     if (err) throw err;
                     let date = new Date()
                     let month = date.toLocaleString('default', { month: 'long' });
@@ -45,7 +43,6 @@ module.exports.fetchEmails = async () => {
                             console.log('Search error : ', err)
                         }
                         else if (results.length > 0) {
-                            console.log("inside else if222");
                             let f = imap.fetch('1:*', { bodies: '' });
                             f.on('message', function (msg, seqno) {
                                 let prefix = '(#' + seqno + ') ';
@@ -58,7 +55,6 @@ module.exports.fetchEmails = async () => {
                                     let textAsHtml = (Buffer.from(parsed.textAsHtml, "utf8")).toString('base64')
                                     let date = parsed.date.toISOString()
                                     if (getEmails.rowCount > 0) {
-                                        console.log("getEmails.rowCount > 0");
                                         for (emailData of getEmails.rows) {
                                             if (emailData.message_id != parsed.messageId) {
                                                 let s2 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
@@ -70,17 +66,13 @@ module.exports.fetchEmails = async () => {
                                                     let insertEmail = await connection.query(s3)
                                                     if (insertEmail.rowCount > 0) {
                                                         await connection.query('COMMIT')
-                                                        console.log("inserted to db 1");
                                                     }
                                                 }
                                             }
                                         }
                                     } else {
-                                        console.log("inside else 3");
                                         let s2 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
                                         let findByFrom = await connection.query(s2)
-                                        console.log(s2,"query s2");
-                                        console.log(findByFrom.rows,"findByFrom");
                                         if (findByFrom.rowCount > 0) {
                                             await connection.query('BEGIN')
                                             let id = uuid.v4()
@@ -88,7 +80,6 @@ module.exports.fetchEmails = async () => {
                                             let insertEmail = await connection.query(s3)
                                             if (insertEmail.rowCount > 0) {
                                                 await connection.query('COMMIT')
-                                                console.log("inserted to db 2");
                                             }
                                         }
                                     }
