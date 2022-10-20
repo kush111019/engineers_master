@@ -198,16 +198,16 @@ const db_sql = {
     "Q142" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at from chat where sales_id = '{var1}' and company_id = '{var2}' and deleted_at is null`, 
     "Q143" :`select room_id, user_id, group_name from chat_room_members where user_id = '{var1}' and deleted_at is null` ,
 
-    "Q144" : `select id, message_id, to_mail, from_mail, mail_date, subject, mail_html, mail_text, mail_text_as_html, company_id, created_at from emails where company_id = '{var1}' and deleted_at is null`,
+    "Q144" : `select id, message_id, to_mail, from_mail,from_name, mail_date, subject, mail_html, mail_text, mail_text_as_html, company_id, created_at from emails where company_id = '{var1}' and deleted_at is null`,
     "Q145" : `select b.email_address as business_email, r.email_address as revenue_email
               from business_contact as b 
               inner join customer_companies as c on c.id = b.customer_company_id
               inner join revenue_contact as r on b.customer_company_id = r.customer_company_id
               where '{var1}' IN (b.email_address, r.email_address) and c.company_id = '{var2}' and
               b.deleted_at is null and c.deleted_at is null and r.deleted_at is null`,
-    "Q146" : `insert into emails (id, message_id, to_mail, from_mail, mail_date, subject, 
+    "Q146" : `insert into emails (id, message_id, to_mail, from_mail,from_name, mail_date, subject, 
               mail_html, mail_text, mail_text_as_html, company_id) values('{var1}', '{var2}', 
-              '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}', '{var10}') returning *` ,
+              '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}', '{var10}','{var11}') returning *` ,
     "Q147" : `select c.id as company_id, c.company_name, cs.email, cs.app_password from companies as c
               inner join configurations as cs on cs.company_id = c.id where c.deleted_at is null and cs.deleted_at is null`                              
    
