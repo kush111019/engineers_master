@@ -103,7 +103,7 @@ const db_sql = {
     "Q86"  : `update customers set revenue_id = '{var2}' where id = '{var1}' returning *`,
     "Q87"  : `select id, supporter_id, supporter_percentage from sales_supporter where id = '{var1}'  `,
     "Q88"  : `select customer_id, sales_type, subscription_plan, recurring_date from sales_commission where deleted_at is null`,
-    "Q89"  : `insert into configurations(id, currency, phone_format, date_format,user_id, graph_type,  company_id, email, app_password ) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var6}','{var7}') returning *`,
+    "Q89"  : `insert into configurations(id, currency, phone_format, date_format,user_id, graph_type,  company_id, email, app_password ) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') returning *`,
     "Q90"  : `select id, currency, phone_format, date_format,graph_type,email, app_password, user_id, company_id, created_at from configurations where company_id = '{var1}' and deleted_at is null `,
     "Q91"  : `update configurations set deleted_at = '{var1}' where company_id = '{var2}' and deleted_at is null returning *`,
     "Q92"  : `select cr.closer_id,cr.closer_percentage, u.full_name from sales_closer as cr 
