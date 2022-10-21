@@ -287,6 +287,7 @@ module.exports.salesCommissionList = async (req, res) => {
                                 supporters.push({
                                     id: supporterData.supporter_id,
                                     name: supporterName.rows[0].full_name,
+                                    email : supporterName.rows[0].email_address,
                                     percentage: supporterData.supporter_percentage
                                 })
 
@@ -341,6 +342,7 @@ module.exports.salesCommissionList = async (req, res) => {
                     closer.is_overwrite = data.is_overwrite
                     closer.closerId = data.closer_id
                     closer.closerName = (closerName.rowCount > 0) ? closerName.rows[0].full_name : ''
+                    closer.closerEmail = (closerName.rowCount > 0) ? closerName.rows[0].email_address : ''
                     closer.closerPercentage = data.closer_percentage
                     closer.supporters = supporters
                     closer.createdAt = data.created_at
