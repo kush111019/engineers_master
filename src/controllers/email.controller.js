@@ -144,6 +144,12 @@ module.exports.inbox = async(req, res) => {
                         companyId : inboxData.company_id
                     })
                 }
+
+                inboxArr = inboxArr.filter((value, index, self) =>
+                index === self.findIndex((t) => (
+                    t.messageId === value.messageId 
+                ))
+                )
                 if(inboxArr.length > 0){
                     res.json({
                         status: 200,
