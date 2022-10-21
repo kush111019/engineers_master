@@ -73,6 +73,7 @@ module.exports.fetchEmails = async () => {
                                             }
                                         }
                                     } else {
+                                        console.log(parsed.messageId,"111111111111111111111111111111111");
                                         let s5 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
                                         let findByFrom = await connection.query(s5)
                                         if (findByFrom.rowCount > 0) {
