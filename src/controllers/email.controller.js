@@ -48,8 +48,8 @@ module.exports.fetchEmails = async () => {
                                 let prefix = '(#' + seqno + ') ';
                                 msg.on('body', async function (stream, info) {
                                     let parsed = await simpleParser(stream)
-                                    let s1 = dbScript(db_sql['Q144'], { var1: company.company_id })
-                                    let getEmails = await connection.query(s1)
+                                    let s2 = dbScript(db_sql['Q144'], { var1: company.company_id })
+                                    let getEmails = await connection.query(s2)
                                     let text = (Buffer.from(parsed.text, "utf8")).toString('base64')
                                     let html = (Buffer.from(parsed.html, "utf8")).toString('base64')
                                     let textAsHtml = (Buffer.from(parsed.textAsHtml, "utf8")).toString('base64')
@@ -58,13 +58,14 @@ module.exports.fetchEmails = async () => {
                                         for (emailData of getEmails.rows) {
                                             console.log(emailData.message_id, '!=',parsed.messageId, '=>', (emailData.message_id != parsed.messageId) );
                                             if (emailData.message_id != parsed.messageId) {
-                                                let s2 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
-                                                let findByFrom = await connection.query(s2)
+                                                let s3 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
+                                                console.log(s3, "s2 query");
+                                                let findByFrom = await connection.query(s3)
                                                 if (findByFrom.rowCount > 0) {
                                                     await connection.query('BEGIN')
                                                     let id = uuid.v4()
-                                                    let s3 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5 : parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: company.company_id })
-                                                    let insertEmail = await connection.query(s3)
+                                                    let s4 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5 : parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: company.company_id })
+                                                    let insertEmail = await connection.query(s4)
                                                     if (insertEmail.rowCount > 0) {
                                                         await connection.query('COMMIT')
                                                     }
@@ -72,13 +73,13 @@ module.exports.fetchEmails = async () => {
                                             }
                                         }
                                     } else {
-                                        let s2 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
-                                        let findByFrom = await connection.query(s2)
+                                        let s5 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
+                                        let findByFrom = await connection.query(s5)
                                         if (findByFrom.rowCount > 0) {
                                             await connection.query('BEGIN')
                                             let id = uuid.v4()
-                                            let s3 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5 : parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: company.company_id })
-                                            let insertEmail = await connection.query(s3)
+                                            let s6 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5 : parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: company.company_id })
+                                            let insertEmail = await connection.query(s6)
                                             if (insertEmail.rowCount > 0) {
                                                 await connection.query('COMMIT')
                                             }
