@@ -7,6 +7,7 @@ const Imap = require('imap')
 
 
 module.exports.fetchEmails = async () => {
+    let j = 0;
     let s1 = dbScript(db_sql['Q147'], {})
     let findCompanies = await connection.query(s1)
     if (findCompanies.rowCount > 0) {
@@ -33,6 +34,7 @@ module.exports.fetchEmails = async () => {
                 }
                 openInbox(async function (err, box) {
                     if (err) throw err;
+                    let arr = []
                     let date = new Date()
                     let month = date.toLocaleString('default', { month: 'long' });
                     let year = date.getFullYear()
@@ -47,7 +49,12 @@ module.exports.fetchEmails = async () => {
                             f.on('message', function (msg, seqno) {
                                 let prefix = '(#' + seqno + ') ';
                                 msg.on('body', async function (stream, info) {
+                                    j += 1
                                     let parsed = await simpleParser(stream)
+                                    let obj = {
+                                        messageId: parsed.messageId
+                                    }
+                                    arr.push(obj)
                                     let s2 = dbScript(db_sql['Q144'], { var1: company.company_id })
                                     let getEmails = await connection.query(s2)
                                     let text = (Buffer.from(parsed.text, "utf8")).toString('base64')
@@ -93,6 +100,11 @@ module.exports.fetchEmails = async () => {
                             });
                             f.once('end', async function () {
                                 imap.end();
+                                let interval = setInterval(async () => {
+                                    if (arr.length == j) {
+                                        clearInterval(interval)
+                                    }
+                                }, 1000);
                             });
                         }
                     });
