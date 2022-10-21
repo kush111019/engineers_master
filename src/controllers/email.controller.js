@@ -56,6 +56,7 @@ module.exports.fetchEmails = async () => {
                                     let date = parsed.date.toISOString()
                                     if (getEmails.rowCount > 0) {
                                         for (emailData of getEmails.rows) {
+                                            console.log(emailData.message_id, '!=',parsed.messageId, '=>', (emailData.message_id != parsed.messageId) );
                                             if (emailData.message_id != parsed.messageId) {
                                                 let s2 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
                                                 let findByFrom = await connection.query(s2)
