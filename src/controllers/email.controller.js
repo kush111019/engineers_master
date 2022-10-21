@@ -56,10 +56,8 @@ module.exports.fetchEmails = async () => {
                                     let date = parsed.date.toISOString()
                                     if (getEmails.rowCount > 0) {
                                         for (emailData of getEmails.rows) {
-                                            console.log(emailData.message_id, '!=',parsed.messageId, '=>', (emailData.message_id != parsed.messageId) );
                                             if (emailData.message_id != parsed.messageId) {
                                                 let s3 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
-                                                console.log(s3, "s2 query");
                                                 let findByFrom = await connection.query(s3)
                                                 if (findByFrom.rowCount > 0) {
                                                     await connection.query('BEGIN')
@@ -73,7 +71,6 @@ module.exports.fetchEmails = async () => {
                                             }
                                         }
                                     } else {
-                                        console.log(parsed.messageId,"111111111111111111111111111111111");
                                         let s5 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
                                         let findByFrom = await connection.query(s5)
                                         if (findByFrom.rowCount > 0) {
