@@ -395,7 +395,7 @@ module.exports.deleteRole = async (req, res) => {
                     let s10 = dbScript(db_sql['Q31'], { var1: roleId, var2: _dt })
                     let updatePermission = await connection.query(s10)
                     console.log(updatePermission.rows, "updatePermission");
-                    if (updateRole.rowCount > 0 && updatePermission.rowCount > 0 && updateChildRole.rowCount > 0) {
+                    if (updateRole.rowCount > 0 && updatePermission.rowCount > 0 ) {
                         await connection.query('COMMIT')
                         res.json({
                             status: 200,
