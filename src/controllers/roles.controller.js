@@ -70,7 +70,6 @@ module.exports.rolesList = async (req, res) => {
                 let s4 = dbScript(db_sql['Q16'], { var1: findAdmin.rows[0].company_id })
                 let rolesList = await connection.query(s4)
                 for (let data of rolesList.rows) {
-                    console.log(data, "role data");
                     let modulePermissions = []
 
                     let s8 = dbScript(db_sql['Q24'], { var1: data.id, var2: findAdmin.rows[0].company_id })
@@ -97,8 +96,8 @@ module.exports.rolesList = async (req, res) => {
                         list.push({
                             roleId: data.id,
                             roleName: data.role_name,
-                            reporterId: reporterRole.rows[0].id,
-                            reporterRole: reporterRole.rows[0].role_name,
+                            reporterId: (reporterRole.rows[0].id != undefined) ? reporterRole.rows[0].id : "",
+                            reporterRole: (reporterRole.rows[0].role_name != undefined) ? reporterRole.rows[0].role_name : "",
                             modulePermissions: modulePermissions,
                             isUserAssigned: (getUser.rowCount > 0) ? true : false
                         })
