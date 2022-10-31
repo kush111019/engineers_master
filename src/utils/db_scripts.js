@@ -16,9 +16,9 @@ const db_sql = {
     "Q11"  : `select id, company_name, company_address, company_logo from companies where id = '{var1}' and deleted_at is null`,
     "Q12"  : `update users set full_name='{var1}',avatar = '{var2}', email_address = '{var3}',phone_number = '{var4}',mobile_number = '{var5}',address = '{var6}' ,updated_at = '{var7}' where email_address='{var8}' and company_id = '{var9}' and deleted_at is null RETURNING * `, 
     "Q13"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','Admin','','{var2}') RETURNING *`, 
-    "Q14"  : `select id, role_name, reporter, module_ids from roles where id = '{var1}' and deleted_at is null` ,
+    "Q14"  : `select id, role_name, reporter, module_ids from roles where id = '{var1}' ` ,
     "Q15"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','{var2}','{var3}','{var4}') RETURNING *`, 
-    "Q16"  : `select id, role_name, reporter , module_ids from roles where company_id = '{var1}' and deleted_at is null ` ,
+    "Q16"  : `select id, role_name, reporter , module_ids from roles where company_id = '{var1}' and deleted_at is null` ,
     "Q17"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at from users where company_id = '{var1}' and deleted_at is null`,
     "Q18"  : `select id, role_name ,  reporter from roles where reporter = '{var1}' and deleted_at is null`,
     "Q19"  : `select id, min_amount, max_amount, percentage, is_max from slabs where company_id ='{var1}' and deleted_at is null`,
@@ -209,7 +209,7 @@ const db_sql = {
               mail_html, mail_text, mail_text_as_html, company_id) values('{var1}', '{var2}', 
               '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}', '{var10}','{var11}') returning *` ,
     "Q147" : `select c.id as company_id, c.company_name, cs.email, cs.app_password from companies as c
-              inner join configurations as cs on cs.company_id = c.id where c.deleted_at is null and cs.deleted_at is null`                              
+              inner join configurations as cs on cs.company_id = c.id where c.id = '{var1}' and c.deleted_at is null and cs.deleted_at is null`                              
    
  }
 
