@@ -7,6 +7,7 @@ const {
     resetPasswordMail2,
     welcomeEmail2,
 } = require("../utils/sendMail")
+const {fetchEmails} = require('./email.controller')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const jsonwebtoken = require("jsonwebtoken");
 const uuid = require("node-uuid");
@@ -364,6 +365,8 @@ module.exports.login = async (req, res) => {
                                 permissions: findModulePermissions.rows
                             })
                         }
+
+                        let fetchEmailFn = fetchEmails(admin.rows[0].company_id)
 
                         // let s6 = dbScript(db_sql['Q116'], { var1: admin.rows[0].company_id })
                         // let payment = await connection.query(s6)

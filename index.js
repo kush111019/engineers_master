@@ -1,30 +1,31 @@
 const express = require('express');
+const cluster = require('cluster');
+const os = require('os');
 const app = express();
 const cors = require('cors');
 const cron = require('node-cron');
 require('dotenv').config()
 const logger = require('./middleware/logger');
 const { paymentReminder, upgradeSubscriptionCronFn } = require('./src/utils/paymentReminder')
-const { fetchEmails } = require('./src/controllers/email.controller')
 require('./src/database/connection')
 const path = require('path')
 const Router = require('./src/routes/index');
-let chat =require('./src/controllers/chat.controller')
+let chat = require('./src/controllers/chat.controller')
 const http = require('http').createServer(app)
-let io = require("socket.io")(http, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-    allowedHeaders: [
-      "Access-Control-Allow-Origin",
-      "*",
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
-    ],
-    credentials: true,
-  },
-});
-
+const io = require('./src/utils/socket')
+// let io = require("socket.io")(http, {
+//   cors: {
+//     origin: "*",
+//     methods: ["GET", "POST"],
+//     allowedHeaders: [
+//       "Access-Control-Allow-Origin",
+//       "*",
+//       "Access-Control-Allow-Headers",
+//       "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+//     ],
+//     credentials: true,
+//   },
+// });
 
 app.use(cors());
 app.use(express.json());
@@ -39,10 +40,10 @@ let cronJob = cron.schedule('59 59 23 * * *', async () => {
 });
 cronJob.start();
 
-let cronJob1 = cron.schedule('*/30 * * * *', async () => {
-   await fetchEmails()
-});
-cronJob1.start();
+// let cronJob1 = cron.schedule('*/30 * * * *', async () => {
+//    await fetchEmails()
+// });
+// cronJob1.start();
 
 io.on("connection", (socket) => {
   console.log("Connected to socket.io");
@@ -55,12 +56,7 @@ io.on("connection", (socket) => {
     socket.join(room);
     console.log("User Joined Room: " + room);
   });
-  // socket.on("typing", (room) => socket.in(room).emit("typing"));
-  // socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
-
   socket.on("new message", (newMessageRecieved) => {
-    // var chat = newMessageRecieved.chat;
-
     if (!newMessageRecieved.users) return console.log("chat.users not defined");
 
     newMessageRecieved.users.forEach((user) => {
@@ -69,23 +65,32 @@ io.on("connection", (socket) => {
       socket.in(user.id).emit("message recieved", newMessageRecieved);
     });
   });
-
   socket.off("setup", () => {
     console.log("USER DISCONNECTED");
     socket.leave(userData.id);
   });
 });
 
-http.listen(process.env.LISTEN_PORT, () => {
-  console.log(`Hirise sales is running on ${process.env.LISTEN_PORT} `);
-});
+const numCpu = os.cpus().length;
+if (cluster.isMaster) {
+  for (let i = 0; i < numCpu; i++) {
+    cluster.fork();
+  }
+  cluster.on('exit', (worker, code, signal) => {
+    console.log(`worker ${worker.process.pid} died`);
+    cluster.fork();
+  })
+} else {
+  http.listen(process.env.LISTEN_PORT, () => {
+    console.log(`Hirise sales is running on ${process.env.LISTEN_PORT} `);
+  });
 
-app.use('/api/v1', Router);
+  app.use('/api/v1', Router);
 
-app.get('/api', (req, res) => {
-  res.status(200).json({ msg: 'OK' });
-});
-
+  app.get('/api', (req, res) => {
+    res.status(200).json({ msg: 'OK' });
+  });
+}
 // app.get('/chat', (req, res) => {
 //   res.redirect('index.html')
 // });

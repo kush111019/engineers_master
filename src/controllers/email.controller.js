@@ -3,13 +3,14 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 const { sendEmailToContact2, sendEmailToContact } = require("../utils/sendMail")
 const uuid = require("node-uuid");
 const {simpleParser} = require('mailparser');
+const io = require('../utils/socket')
 const Imap = require('imap')
 
-
-module.exports.fetchEmails = async () => {
+module.exports.fetchEmails = async (companyId) => {
     let j = 0;
-    let s1 = dbScript(db_sql['Q147'], {})
+    let s1 = dbScript(db_sql['Q147'], {var1 : companyId})
     let findCompanies = await connection.query(s1)
+    let mainArray = []
     if (findCompanies.rowCount > 0) {
         for (let company of findCompanies.rows) {
             if (company.email != null && company.app_password != null) {
@@ -40,6 +41,7 @@ module.exports.fetchEmails = async () => {
                     let year = date.getFullYear()
                     let day = date.getDate()
                     let formatedDate = `${month} ${day}, ${year}`
+                    //console.log('October 28, 2021');
                     imap.search(['ALL', ['SINCE', formatedDate]], function (err, results) {
                         if (err) {
                             console.log('Search error : ', err)
@@ -51,16 +53,18 @@ module.exports.fetchEmails = async () => {
                                 msg.on('body', async function (stream, info) {
                                     j += 1
                                     let parsed = await simpleParser(stream)
+
+                                    let text = (Buffer.from(parsed.text, "utf8")).toString('base64')
+                                    let html = (Buffer.from(parsed.html, "utf8")).toString('base64')
+                                    let textAsHtml = (Buffer.from(parsed.textAsHtml, "utf8")).toString('base64')
+                                    let date = parsed.date.toISOString()
+
                                     let obj = {
                                         messageId: parsed.messageId
                                     }
                                     arr.push(obj)
                                     let s2 = dbScript(db_sql['Q144'], { var1: company.company_id })
                                     let getEmails = await connection.query(s2)
-                                    let text = (Buffer.from(parsed.text, "utf8")).toString('base64')
-                                    let html = (Buffer.from(parsed.html, "utf8")).toString('base64')
-                                    let textAsHtml = (Buffer.from(parsed.textAsHtml, "utf8")).toString('base64')
-                                    let date = parsed.date.toISOString()
                                     if (getEmails.rowCount > 0) {
                                         for (emailData of getEmails.rows) {
                                             if (emailData.message_id != parsed.messageId) {
@@ -70,8 +74,9 @@ module.exports.fetchEmails = async () => {
                                                     await connection.query('BEGIN')
                                                     let id = uuid.v4()
                                                     let s4 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5 : parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: company.company_id })
-                                                    let insertEmail = await connection.query(s4)
+                                                    let insertEmail = await connection.query(s4)                 
                                                     if (insertEmail.rowCount > 0) {
+                                                        mainArray.push(insertEmail);
                                                         await connection.query('COMMIT')
                                                     }
                                                 }
@@ -84,8 +89,9 @@ module.exports.fetchEmails = async () => {
                                             await connection.query('BEGIN')
                                             let id = uuid.v4()
                                             let s6 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5 : parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: company.company_id })
-                                            let insertEmail = await connection.query(s6)
+                                            let insertEmail = await connection.query(s6)                   
                                             if (insertEmail.rowCount > 0) {
+                                                mainArray.push(insertEmail);
                                                 await connection.query('COMMIT')
                                             }
                                         }
@@ -102,7 +108,22 @@ module.exports.fetchEmails = async () => {
                                 imap.end();
                                 let interval = setInterval(async () => {
                                     if (arr.length == j) {
-                                        clearInterval(interval)
+                                        console.log(arr.length,j,"arr.length,j");
+                                        if(mainArray.length > 0){
+                                            console.log(mainArray.length,"mainArray");
+                                            let emailObj = {
+                                                status : 200,
+                                                success : true,
+                                                message : "New email recieved"
+                                            }
+                                            io.on("connection", (socket) => {
+                                                socket.emit("new email", emailObj);
+                                            })
+                                            console.log(emailObj,"emailObj");
+                                            clearInterval(interval)
+                                        }else{
+                                            clearInterval(interval)
+                                        } 
                                     }
                                 }, 1000);
                             });
