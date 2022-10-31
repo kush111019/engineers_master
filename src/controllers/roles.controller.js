@@ -339,12 +339,8 @@ module.exports.deleteRole = async (req, res) => {
             let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_delete) {
-
                 let _dt = new Date().toISOString();
-
                 await connection.query('BEGIN')
-
-                
                 if (status.toLowerCase() == "child") {
                     let s4 = dbScript(db_sql['Q18'], { var1: roleId })
                     let roleData = await connection.query(s4)
@@ -387,14 +383,13 @@ module.exports.deleteRole = async (req, res) => {
                 } else if (status.toLowerCase() == "all") {
                     let s7 = dbScript(db_sql['Q30'], { var1: roleId, var2: _dt })
                     let updateRole = await connection.query(s7)
-                    console.log(updateRole.rows, "update role");
 
                     let s9 = dbScript(db_sql['Q50'], { var1: roleId, var2: _dt })
                     let updateChildRole = await connection.query(s9)
-                    console.log(updateChildRole.rows, "updateChildRole");
+
                     let s10 = dbScript(db_sql['Q31'], { var1: roleId, var2: _dt })
                     let updatePermission = await connection.query(s10)
-                    console.log(updatePermission.rows, "updatePermission");
+
                     if (updateRole.rowCount > 0 && updatePermission.rowCount > 0 ) {
                         await connection.query('COMMIT')
                         res.json({
