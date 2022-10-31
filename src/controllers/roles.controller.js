@@ -96,8 +96,8 @@ module.exports.rolesList = async (req, res) => {
                         list.push({
                             roleId: data.id,
                             roleName: data.role_name,
-                            reporterId: (reporterRole.rows[0].id != undefined) ? reporterRole.rows[0].id : "",
-                            reporterRole: (reporterRole.rows[0].role_name != undefined) ? reporterRole.rows[0].role_name : "",
+                            reporterId: (reporterRole.rowCount > 0) ? reporterRole.rows[0].id : "",
+                            reporterRole: (reporterRole.rowCount > 0) ? reporterRole.rows[0].role_name : "",
                             modulePermissions: modulePermissions,
                             isUserAssigned: (getUser.rowCount > 0) ? true : false
                         })
