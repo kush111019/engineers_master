@@ -344,14 +344,14 @@ module.exports.deleteRole = async (req, res) => {
 
                 await connection.query('BEGIN')
 
-                let updateRole;
-                let updatePermission;
-
+                
                 if (status.toLowerCase() == "child") {
                     let s4 = dbScript(db_sql['Q18'], { var1: roleId })
                     let roleData = await connection.query(s4)
                     if (roleData.rowCount > 0) {
-
+                        let updateRole;
+                        let updatePermission;
+        
                         for (data of roleData.rows) {
 
                             let s5 = dbScript(db_sql['Q30'], { var1: data.id, var2: _dt })
@@ -386,15 +386,15 @@ module.exports.deleteRole = async (req, res) => {
                     }
                 } else if (status.toLowerCase() == "all") {
                     let s7 = dbScript(db_sql['Q30'], { var1: roleId, var2: _dt })
-                    updateRole = await connection.query(s7)
-                    console.log(updateRole, "update role");
+                    let updateRole = await connection.query(s7)
+                    console.log(updateRole.rows, "update role");
 
                     let s9 = dbScript(db_sql['Q50'], { var1: roleId, var2: _dt })
                     let updateChildRole = await connection.query(s9)
-
+                    console.log(updateChildRole.rows, "updateChildRole");
                     let s10 = dbScript(db_sql['Q31'], { var1: roleId, var2: _dt })
-                    updatePermission = await connection.query(s10)
-
+                    let updatePermission = await connection.query(s10)
+                    console.log(updatePermission.rows, "updatePermission");
                     if (updateRole.rowCount > 0 && updatePermission.rowCount > 0 && updateChildRole.rowCount > 0) {
                         await connection.query('COMMIT')
                         res.json({
