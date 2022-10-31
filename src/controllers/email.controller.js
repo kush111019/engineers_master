@@ -115,6 +115,12 @@ module.exports.fetchEmails = async (companyId) => {
                                                 message : "New email recieved"
                                             }
                                             io.on("connection", (socket) => {
+                                                console.log("Connected to socket.io")
+                                                socket.on("setup", (userData) => {
+                                                    socket.join(userData.id);
+                                                    socket.emit("connected");
+                                                });
+                                                console.log(socket,"socket");
                                                 socket.emit("new email", emailObj);
                                             })
                                             clearInterval(interval)
