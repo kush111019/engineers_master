@@ -108,9 +108,7 @@ module.exports.fetchEmails = async (companyId) => {
                                 imap.end();
                                 let interval = setInterval(async () => {
                                     if (arr.length == j) {
-                                        console.log(arr.length,j,"arr.length,j");
                                         if(mainArray.length > 0){
-                                            console.log(mainArray.length,"mainArray");
                                             let emailObj = {
                                                 status : 200,
                                                 success : true,
@@ -119,7 +117,6 @@ module.exports.fetchEmails = async (companyId) => {
                                             io.on("connection", (socket) => {
                                                 socket.emit("new email", emailObj);
                                             })
-                                            console.log(emailObj,"emailObj");
                                             clearInterval(interval)
                                         }else{
                                             clearInterval(interval)
