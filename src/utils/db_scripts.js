@@ -198,7 +198,7 @@ const db_sql = {
     "Q142" : `select id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at from chat where sales_id = '{var1}' and company_id = '{var2}' and deleted_at is null`, 
     "Q143" :`select room_id, user_id, group_name from chat_room_members where user_id = '{var1}' and deleted_at is null` ,
 
-    "Q144" : `select id, message_id, to_mail, from_mail,from_name, mail_date, subject, mail_html, mail_text, mail_text_as_html, company_id, created_at from emails where company_id = '{var1}' and deleted_at is null order by mail_date desc`,
+    "Q144" : `select id, message_id, to_mail, from_mail,from_name, mail_date, subject, mail_html, mail_text, mail_text_as_html, company_id, created_at from emails where company_id = '{var1}' and deleted_at is null order by mail_date desc limit 25`,
     "Q145" : `select b.email_address as business_email, r.email_address as revenue_email
               from business_contact as b 
               inner join customer_companies as c on c.id = b.customer_company_id
