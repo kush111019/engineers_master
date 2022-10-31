@@ -40,7 +40,6 @@ module.exports.revenuePerCustomer = async (req, res) => {
                     if (revenuePerCustomer.length > 0) {
                         let custo = [];
                         for (let i = 0; i <= 100; i++ ) {
-                            console.log(custo,"custo1");
                             custo = custo.concat(revenuePerCustomer);
                         }
                         res.json({
