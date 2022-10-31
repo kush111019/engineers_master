@@ -68,8 +68,9 @@ module.exports.rolesList = async (req, res) => {
             if (checkPermission.rows[0].permission_to_view) {
 
                 let s4 = dbScript(db_sql['Q16'], { var1: findAdmin.rows[0].company_id })
-                let RolesList = await connection.query(s4)
-                for (let data of RolesList.rows) {
+                let rolesList = await connection.query(s4)
+                for (let data of rolesList.rows) {
+                    console.log(data, "role data");
                     let modulePermissions = []
 
                     let s8 = dbScript(db_sql['Q24'], { var1: data.id, var2: findAdmin.rows[0].company_id })
