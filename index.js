@@ -12,20 +12,20 @@ const path = require('path')
 const Router = require('./src/routes/index');
 let chat = require('./src/controllers/chat.controller')
 const http = require('http').createServer(app)
-const io = require('./src/utils/socket')
-// let io = require("socket.io")(http, {
-//   cors: {
-//     origin: "*",
-//     methods: ["GET", "POST"],
-//     allowedHeaders: [
-//       "Access-Control-Allow-Origin",
-//       "*",
-//       "Access-Control-Allow-Headers",
-//       "Origin, X-Requested-With, Content-Type, Accept, Authorization",
-//     ],
-//     credentials: true,
-//   },
-// });
+// const io = require('./src/utils/socket')
+let io = require("socket.io")(http, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+    allowedHeaders: [
+      "Access-Control-Allow-Origin",
+      "*",
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+    ],
+    credentials: true,
+  },
+});
 
 app.use(cors());
 app.use(express.json());
@@ -71,16 +71,16 @@ io.on("connection", (socket) => {
   });
 });
 
-const numCpu = os.cpus().length;
-if (cluster.isMaster) {
-  for (let i = 0; i < numCpu; i++) {
-    cluster.fork();
-  }
-  cluster.on('exit', (worker, code, signal) => {
-    console.log(`worker ${worker.process.pid} died`);
-    cluster.fork();
-  })
-} else {
+// const numCpu = os.cpus().length;
+// if (cluster.isMaster) {
+//   for (let i = 0; i < numCpu; i++) {
+//     cluster.fork();
+//   }
+//   cluster.on('exit', (worker, code, signal) => {
+//     console.log(`worker ${worker.process.pid} died`);
+//     cluster.fork();
+//   })
+// } else {
   http.listen(process.env.LISTEN_PORT, () => {
     console.log(`Hirise sales is running on ${process.env.LISTEN_PORT} `);
   });
@@ -90,7 +90,7 @@ if (cluster.isMaster) {
   app.get('/api', (req, res) => {
     res.status(200).json({ msg: 'OK' });
   });
-}
+// }
 // app.get('/chat', (req, res) => {
 //   res.redirect('index.html')
 // });
