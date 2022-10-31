@@ -387,14 +387,15 @@ module.exports.deleteRole = async (req, res) => {
                 } else if (status.toLowerCase() == "all") {
                     let s7 = dbScript(db_sql['Q30'], { var1: roleId, var2: _dt })
                     updateRole = await connection.query(s7)
+                    console.log(updateRole, "update role");
 
                     let s9 = dbScript(db_sql['Q50'], { var1: roleId, var2: _dt })
-                    updateChildRole = await connection.query(s9)
+                    let updateChildRole = await connection.query(s9)
 
                     let s10 = dbScript(db_sql['Q31'], { var1: roleId, var2: _dt })
                     updatePermission = await connection.query(s10)
 
-                    if (updateRole.rowCount > 0 && updatePermission.rowCount > 0) {
+                    if (updateRole.rowCount > 0 && updatePermission.rowCount > 0 && updateChildRole.rowCount > 0) {
                         await connection.query('COMMIT')
                         res.json({
                             status: 200,
