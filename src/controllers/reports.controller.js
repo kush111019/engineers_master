@@ -38,11 +38,15 @@ module.exports.revenuePerCustomer = async (req, res) => {
                         }
                     }
                     if (revenuePerCustomer.length > 0) {
+                        let cust = []
+                        for(let i = 0; i <= 10; i++){
+                            cust = cust.concat(revenuePerCustomer)
+                        }
                         res.json({
                             status: 200,
                             success: true,
                             message: "Revenue per customer",
-                            data: revenuePerCustomer
+                            data: cust
                         })
                     } else {
                         res.json({
