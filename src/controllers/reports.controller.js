@@ -2,33 +2,32 @@ const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 
 
-let paginatedResults = (model,page) => {
-    // middleware function
-      const limit = 1;
-   
-      // calculating the starting and ending index
-      const startIndex = (page - 1) * limit;
-      const endIndex = page * limit;
-   
-      const results = {};
-      if (endIndex < model.length) {
+let paginatedResults = (model, page) => {
+    const limit = 10;
+
+    // calculating the starting and ending index
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const results = {};
+    if (endIndex < model.length) {
         results.next = {
-          page: page + 1,
-          limit: limit
+            page: page + 1,
+            limit: limit
         };
-      }
-   
-      if (startIndex > 0) {
+    }
+
+    if (startIndex > 0) {
         results.previous = {
-          page: page - 1,
-          limit: limit
+            page: page - 1,
+            limit: limit
         };
-      }
-   
-      data = model.slice(startIndex, endIndex);
-      console.log(data,"data");
-      return data
-  }
+    }
+
+    data = model.slice(startIndex, endIndex);
+    console.log(data, "data");
+    return data
+}
 
 module.exports.revenuePerCustomer = async (req, res) => {
     try {
@@ -67,10 +66,6 @@ module.exports.revenuePerCustomer = async (req, res) => {
                         }
                     }
                     if (revenuePerCustomer.length > 0) {
-                        // let cust = []
-                        // for(let i = 0; i <= 100; i++){
-                        //     cust = cust.concat(revenuePerCustomer)
-                        // }
                         let result = paginatedResults(revenuePerCustomer,page)
                         res.json({
                             status: 200,
@@ -119,6 +114,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
 module.exports.revenuePerProduct = async (req, res) => {
     try {
         let userEmail = req.user.email
+        let {page} = req.query
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
         let moduleName = 'Reports'
@@ -148,11 +144,12 @@ module.exports.revenuePerProduct = async (req, res) => {
                         }
                     }
                     if (revenuePerProduct.length > 0) {
+                        let result = paginatedResults(revenuePerProduct,page)
                         res.json({
                             status: 200,
                             success: true,
                             message: "Revenue per product",
-                            data: revenuePerProduct
+                            data: result
                         })
                     } else {
                         res.json({
@@ -194,6 +191,7 @@ module.exports.revenuePerProduct = async (req, res) => {
 module.exports.revenuePerSalesRep = async (req, res) => {
     try {
         let userEmail = req.user.email
+        let {page} = req.query
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
         let moduleName = 'Reports'
@@ -230,11 +228,12 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         newArr.push({ salesRep: prop, revenue: holder[prop] });
                     }
                     if (newArr.length > 0) {
+                        let result = paginatedResults(newArr,page)
                         res.json({
                             status: 200,
                             success: true,
                             message: "Revenue per sales representative",
-                            data: newArr
+                            data: result
                         })
                     } else {
                         res.json({
