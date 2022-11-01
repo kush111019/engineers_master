@@ -66,7 +66,6 @@ module.exports.rolesList = async (req, res) => {
             let checkPermission = await connection.query(s3)
 
             if (checkPermission.rows[0].permission_to_view) {
-
                 let s4 = dbScript(db_sql['Q16'], { var1: findAdmin.rows[0].company_id })
                 let rolesList = await connection.query(s4)
                 for (let data of rolesList.rows) {
@@ -340,73 +339,104 @@ module.exports.deleteRole = async (req, res) => {
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_delete) {
                 let _dt = new Date().toISOString();
-                await connection.query('BEGIN')
                 if (status.toLowerCase() == "child") {
-                    let s4 = dbScript(db_sql['Q18'], { var1: roleId })
-                    let roleData = await connection.query(s4)
-                    if (roleData.rowCount > 0) {
-                        let updateRole;
-                        let updatePermission;
-        
-                        for (data of roleData.rows) {
-
-                            let s5 = dbScript(db_sql['Q30'], { var1: data.id, var2: _dt })
-                            updateRole = await connection.query(s5)
-
-                            let s6 = dbScript(db_sql['Q31'], { var1: data.id, var2: _dt })
-                            updatePermission = await connection.query(s6)
+                    let roleIds = []
+                    let getRoles = async (id) => {
+                        let s7 = dbScript(db_sql['Q18'], {var1 : id})
+                        let getChild = await connection.query(s7);
+                        if(getChild.rowCount > 0){
+                            for(let item of getChild.rows){
+                                if(roleIds.includes(item.id) == false){
+                                    roleIds.push(item.id)
+                                    await getRoles(item.id)
+                                }
+                            } 
                         }
-                        if (updateRole.rowCount > 0 && updatePermission.rowCount > 0) {
+                    }
+                    await getRoles(roleId)
+                    console.log(roleIds,"roleIds");
+                    if(roleIds.length > 0){
+                        for(let id of roleIds){
+                            await connection.query('BEGIN')
+                            let s5 = dbScript(db_sql['Q30'], { var1: id, var2: _dt })
+                            updateRole = await connection.query(s5)
+    
+                            let s6 = dbScript(db_sql['Q31'], { var1: id, var2: _dt })
+                            updatePermission = await connection.query(s6) 
+                        }
+                        if(updatePermission.rowCount > 0 && updateRole.rowCount > 0){
                             await connection.query('COMMIT')
                             res.json({
-                                status: 200,
-                                success: true,
-                                message: "Role deleted successfully"
-                            })
-                        } else {
+                                    status: 200,
+                                    success: true,
+                                    message: "Role deleted successfully"
+                                })
+                        }else{
                             await connection.query('ROLLBACK')
                             res.json({
-                                status: 400,
-                                success: false,
-                                message: "Something went wrong"
+                                    status: 200,
+                                    success: false,
+                                    message: "Something went wrong"
                             })
                         }
-
-                    } else {
-                        await connection.query('ROLLBACK')
-                        res.json({
-                            status: 400,
-                            success: false,
-                            message: "No child available for given role"
-                        })
-                    }
-                } else if (status.toLowerCase() == "all") {
-                    let s7 = dbScript(db_sql['Q30'], { var1: roleId, var2: _dt })
-                    let updateRole = await connection.query(s7)
-
-                    let s9 = dbScript(db_sql['Q50'], { var1: roleId, var2: _dt })
-                    let updateChildRole = await connection.query(s9)
-
-                    let s10 = dbScript(db_sql['Q31'], { var1: roleId, var2: _dt })
-                    let updatePermission = await connection.query(s10)
-
-                    if (updateRole.rowCount > 0 && updatePermission.rowCount > 0 ) {
-                        await connection.query('COMMIT')
+                    }else{
                         res.json({
                             status: 200,
-                            success: true,
-                            message: "Role deleted successfully"
-                        })
-                    } else {
-                        await connection.query('ROLLBACK')
-                        res.json({
-                            status: 400,
                             success: false,
-                            message: "Something went wrong"
-                        })
+                            message: "No child available for given role"
+                        }) 
+                    }
+                } else if (status.toLowerCase() == "all") {
+                    let roleIds = []
+                    roleIds.push(roleId)
+                    let getRoles = async (id) => {
+                        if(roleIds.includes(id) == false){
+                            roleIds.push(id)
+                        }
+                        let s7 = dbScript(db_sql['Q18'], {var1 : id})
+                        let getChild = await connection.query(s7);
+                        if(getChild.rowCount > 0){
+                            for(let item of getChild.rows){
+                                if(roleIds.includes(item.id) == false){
+                                    roleIds.push(item.id)
+                                    await getRoles(item.id)
+                                }
+                            } 
+                        }
+                    }
+                    await getRoles(roleId)
+                    if(roleIds.length > 0){
+                        for(let id of roleIds){
+                            await connection.query('BEGIN')
+                            let s5 = dbScript(db_sql['Q30'], { var1: id, var2: _dt })
+                            updateRole = await connection.query(s5)
+    
+                            let s6 = dbScript(db_sql['Q31'], { var1: id, var2: _dt })
+                            updatePermission = await connection.query(s6) 
+                        }
+                        if(updatePermission.rowCount > 0 && updateRole.rowCount > 0){
+                            await connection.query('COMMIT')
+                            res.json({
+                                    status: 200,
+                                    success: true,
+                                    message: "Role deleted successfully"
+                                })
+                        }else{
+                            await connection.query('ROLLBACK')
+                            res.json({
+                                    status: 200,
+                                    success: false,
+                                    message: "Something went wrong"
+                            })
+                        }
+                    }else{
+                        res.json({
+                            status: 200,
+                            success: false,
+                            message: "Role not found"
+                        }) 
                     }
                 }
-
             } else {
                 res.status(403).json({
                     success: false,
