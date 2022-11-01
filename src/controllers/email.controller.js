@@ -134,9 +134,27 @@ module.exports.fetchEmails = async (req, res) => {
                         });
                     })
                     imap.connect();
+                }else{
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Please add IMAP credentials"
+                    })
                 }
             }
+        }else{
+            res.json({
+                status: 400,
+                success: false,
+                message: "Company not found "
+            })
         }
+    }else{
+        res.json({
+            status: 400,
+            success: false,
+            message: "Admin not found"
+        })
     }
 }
 
