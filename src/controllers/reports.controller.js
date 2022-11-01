@@ -66,7 +66,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                         }
                     }
                     if (revenuePerCustomer.length > 0) {
-                        let result = paginatedResults(revenuePerCustomer,page)
+                        let result = await paginatedResults(revenuePerCustomer,page)
                         res.json({
                             status: 200,
                             success: true,
@@ -144,7 +144,7 @@ module.exports.revenuePerProduct = async (req, res) => {
                         }
                     }
                     if (revenuePerProduct.length > 0) {
-                        let result = paginatedResults(revenuePerProduct,page)
+                        let result = await paginatedResults(revenuePerProduct,page)
                         res.json({
                             status: 200,
                             success: true,
@@ -228,7 +228,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         newArr.push({ salesRep: prop, revenue: holder[prop] });
                     }
                     if (newArr.length > 0) {
-                        let result = paginatedResults(newArr,page)
+                        let result = await paginatedResults(newArr,page)
                         res.json({
                             status: 200,
                             success: true,
