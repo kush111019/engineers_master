@@ -261,29 +261,52 @@ module.exports.sendEmail = async (req, res) => {
         let s0 = dbScript(db_sql['Q10'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
-            if (process.env.isLocalEmail == 'true') {
-                await sendEmailToContact2(emails, subject, message, cc);
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "Email sent successfully!",
-                })
-            } else {
-                let emailSend = await sendEmailToContact(emails, subject, message, cc);
-                if (emailSend.status == 400) {
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong",
-                    })
+            let s1 = dbScript(db_sql['Q147'], { var1: checkAdmin.rows[0].company_id })
+            let findCompanies = await connection.query(s1)
+            if (findCompanies.rowCount > 0) {
+                if (process.env.isLocalEmail == 'true') {
+                    if (findCompanies.rows[0].email != null && findCompanies.rows[0].app_password != null) {
+                        let senderEmail = {
+                            email: findCompanies.rows[0].email,
+                            password: findCompanies.rows[0].app_password
+                        }
+                        await sendEmailToContact2(emails, subject, message, cc, senderEmail);
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Email sent successfully!",
+                        })
+                    }else{
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Please add IMAP credentials"
+                        })
+                    }
                 } else {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Email sent successfully",
-                    })
+                    let emailSend = await sendEmailToContact(emails, subject, message, cc);
+                    if (emailSend.status == 400) {
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Something went wrong",
+                        })
+                    } else {
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Email sent successfully",
+                        })
+                    }
                 }
+            } else {
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: 'Company not found'
+                })
             }
+
         } else {
             res.json({
                 status: 400,
@@ -381,13 +404,19 @@ module.exports.readEmail = async (req, res) => {
                         }
                     };
                     await setEmailRead(imapConfig, messageId, res) 
+                }else{
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Please add IMAP credentials"
+                    })
                 }
             }
         } else {
             res.json({
                 status: 400,
                 success: false,
-                message: "Company not found "
+                message: "Company not found"
             })
         }
     } else {

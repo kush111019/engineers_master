@@ -478,10 +478,10 @@ module.exports.contactUsMail2 = async (email,fullName,subject,message,address) =
 
 }
 
-module.exports.sendEmailToContact2 = async(emails, subject, message, cc) => {
+module.exports.sendEmailToContact2 = async(emails, subject, message, cc, senderEmail) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
-    const senderAddress = process.env.SMTP_USERNAME;
+    const senderAddress = senderEmail.email;
     let toAddresses = emails;
 
     let sendEmail = emailToContactTemplate.emailToContact(message)
@@ -489,8 +489,8 @@ module.exports.sendEmailToContact2 = async(emails, subject, message, cc) => {
     let ccAddresses = (cc.length > 0) ? cc : "";
     var bccAddresses = "";
 
-    const smtpUsername = process.env.SMTP_USERNAME;
-    const smtpPassword = process.env.SMTP_PASSWORD;
+    const smtpUsername = senderEmail.email;
+    const smtpPassword = senderEmail.password;
 
     // The subject line of the email
     //let subject = subject;
