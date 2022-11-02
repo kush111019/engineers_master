@@ -7,8 +7,7 @@ const {simpleParser} = require('mailparser');
 const Imap = require('imap')
 
 const containsObject = (obj, list) => {
-    var i;
-    for (i = 0; i < list.length; i++) {
+    for (let i = 0; i < list.length; i++) {
         if (list[i].message_id === obj.messageId) {
             return true;
         }
@@ -326,7 +325,7 @@ const setEmailRead = async(imapConfig, messageId, res) => {
                 imap.setFlags(results, ['\\Seen'], async(err) => {
                     if (err) {
                         // throw err
-                        res.json( {
+                        res.json({
                             status: 400,
                             success: false,
                             message: err
@@ -381,7 +380,6 @@ module.exports.readEmail = async (req, res) => {
                             rejectUnauthorized: false
                         }
                     };
-
                     await setEmailRead(imapConfig, messageId, res) 
                 }
             }
