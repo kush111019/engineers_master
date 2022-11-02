@@ -25,136 +25,134 @@ module.exports.fetchEmails = async (req, res) => {
         let findCompanies = await connection.query(s1)
         let mainArray = []
         if (findCompanies.rowCount > 0) {
-            for (let company of findCompanies.rows) {
-                if (company.email != null && company.app_password != null) {
-                    let imapConfig = {
-                        user: company.email,
-                        password: company.app_password,
-                        host: 'imap.gmail.com',
-                        port: 993,
-                        tls: true,
-                        tlsOptions: {
-                            rejectUnauthorized: false
+            if (findCompanies.rows[0].email != null && findCompanies.rows[0].app_password != null) {
+                let imapConfig = {
+                    user: findCompanies.rows[0].email,
+                    password: findCompanies.rows[0].app_password,
+                    host: 'imap.gmail.com',
+                    port: 993,
+                    tls: true,
+                    tlsOptions: {
+                        rejectUnauthorized: false
+                    }
+                }
+                let imap = new Imap(imapConfig);
+                imap.once('error', (err) => {
+                    console.log(err);
+                });
+
+                function openInbox(cb) {
+                    imap.once('ready', function () {
+                        imap.openBox('INBOX', true, cb);
+                    })
+                }
+                openInbox(async function (err, box) {
+                    if (err) throw err;
+                    let arr = []
+                    let date = new Date()
+                    let month = date.toLocaleString('default', { month: 'long' });
+                    let year = date.getFullYear()
+                    let day = date.getDate()
+                    let formatedDate = `${month} ${day}, ${year}`
+                    //console.log('October 28, 2021');
+                    imap.search(['ALL', ['SINCE', formatedDate]], function (err, results) {
+                        if (err) {
+                            console.log('Search error : ', err)
                         }
-                    }
-                    let imap = new Imap(imapConfig);
-                    imap.once('error', (err) => {
-                        console.log(err);
-                    });
+                        else if (results.length > 0) {
+                            let f = imap.fetch(results, { bodies: '' });
+                            f.on('message', function (msg, seqno) {
+                                let prefix = '(#' + seqno + ') ';
+                                msg.on('body', async function (stream, info) {
+                                    j += 1
+                                    let parsed = await simpleParser(stream)
 
-                    function openInbox(cb) {
-                        imap.once('ready', function () {
-                            imap.openBox('INBOX', true, cb);
-                        })
-                    }
-                    openInbox(async function (err, box) {
-                        if (err) throw err;
-                        let arr = []
-                        let date = new Date()
-                        let month = date.toLocaleString('default', { month: 'long' });
-                        let year = date.getFullYear()
-                        let day = date.getDate()
-                        let formatedDate = `${month} ${day}, ${year}`
-                        //console.log('October 28, 2021');
-                        imap.search(['ALL', ['SINCE', formatedDate]], function (err, results) {
-                            if (err) {
-                                console.log('Search error : ', err)
-                            }
-                            else if (results.length > 0) {
-                                let f = imap.fetch(results, { bodies: '' });
-                                f.on('message', function (msg, seqno) {
-                                    let prefix = '(#' + seqno + ') ';
-                                    msg.on('body', async function (stream, info) {
-                                        j += 1
-                                        let parsed = await simpleParser(stream)
-
-                                        let text = (Buffer.from(parsed.text, "utf8")).toString('base64')
-                                        let html = (Buffer.from(parsed.html, "utf8")).toString('base64')
-                                        let textAsHtml = (Buffer.from(parsed.textAsHtml, "utf8")).toString('base64')
-                                        let date = parsed.date.toISOString()
-                                        let obj = {
-                                            messageId: parsed.messageId
-                                        }
-                                        arr.push(obj)
-                                        let s2 = dbScript(db_sql['Q144'], { var1: company.company_id })
-                                        let getEmails = await connection.query(s2)
-                                        if (getEmails.rowCount > 0) {
-                                            let checkMail = containsObject(parsed, getEmails.rows)
-                                            if (!checkMail) {
-                                                let s3 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
-                                                let findByFrom = await connection.query(s3)
-                                                if (findByFrom.rowCount > 0) {
-                                                    await connection.query('BEGIN')
-                                                    let id = uuid.v4()
-                                                    let s4 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5: parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: company.company_id })
-                                                    let insertEmail = await connection.query(s4)
-                                                    if (insertEmail.rowCount > 0) {
-                                                        mainArray.push(insertEmail);
-                                                        await connection.query('COMMIT')
-                                                    }
-                                                }
-                                            }
-                                        } else {
-                                            let s5 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
-                                            let findByFrom = await connection.query(s5)
+                                    let text = (Buffer.from(parsed.text, "utf8")).toString('base64')
+                                    let html = (Buffer.from(parsed.html, "utf8")).toString('base64')
+                                    let textAsHtml = (Buffer.from(parsed.textAsHtml, "utf8")).toString('base64')
+                                    let date = parsed.date.toISOString()
+                                    let obj = {
+                                        messageId: parsed.messageId
+                                    }
+                                    arr.push(obj)
+                                    let s2 = dbScript(db_sql['Q144'], { var1: company.company_id })
+                                    let getEmails = await connection.query(s2)
+                                    if (getEmails.rowCount > 0) {
+                                        let checkMail = containsObject(parsed, getEmails.rows)
+                                        if (!checkMail) {
+                                            let s3 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
+                                            let findByFrom = await connection.query(s3)
                                             if (findByFrom.rowCount > 0) {
                                                 await connection.query('BEGIN')
                                                 let id = uuid.v4()
-                                                let s6 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5: parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: company.company_id })
-                                                let insertEmail = await connection.query(s6)
+                                                let s4 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5: parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: company.company_id })
+                                                let insertEmail = await connection.query(s4)
                                                 if (insertEmail.rowCount > 0) {
                                                     mainArray.push(insertEmail);
                                                     await connection.query('COMMIT')
                                                 }
                                             }
                                         }
-                                    });
-                                    msg.once('end', function () {
-                                        console.log(prefix + 'Finished');
-                                    });
-                                });
-                                f.once('error', function (err) {
-                                    console.log('Fetch error: ' + err);
-                                });
-                                f.once('end', async function () {
-                                    imap.end();
-                                    let interval = setInterval(async () => {
-                                        if (arr.length == j) {
-                                            if (mainArray.length > 0) {
-                                                res.json({
-                                                    status: 200,
-                                                    success: true,
-                                                    message: "New email recieved"
-                                                })
-                                                clearInterval(interval)
-                                            } else {
-                                                res.json({
-                                                    status: 200,
-                                                    success: false,
-                                                    message: "No new email recieved"
-                                                })
-                                                clearInterval(interval)
+                                    } else {
+                                        let s5 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
+                                        let findByFrom = await connection.query(s5)
+                                        if (findByFrom.rowCount > 0) {
+                                            await connection.query('BEGIN')
+                                            let id = uuid.v4()
+                                            let s6 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5: parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: company.company_id })
+                                            let insertEmail = await connection.query(s6)
+                                            if (insertEmail.rowCount > 0) {
+                                                mainArray.push(insertEmail);
+                                                await connection.query('COMMIT')
                                             }
                                         }
-                                    }, 1000);
+                                    }
                                 });
-                            } else {
-                                res.json({
-                                    status: 400,
-                                    success: false,
-                                    message: "No new email received"
-                                })
-                            }
-                        });
-                    })
-                    imap.connect();
-                } else {
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Please add IMAP credentials"
-                    })
-                }
+                                msg.once('end', function () {
+                                    console.log(prefix + 'Finished');
+                                });
+                            });
+                            f.once('error', function (err) {
+                                console.log('Fetch error: ' + err);
+                            });
+                            f.once('end', async function () {
+                                imap.end();
+                                let interval = setInterval(async () => {
+                                    if (arr.length == j) {
+                                        if (mainArray.length > 0) {
+                                            res.json({
+                                                status: 200,
+                                                success: true,
+                                                message: "New email recieved"
+                                            })
+                                            clearInterval(interval)
+                                        } else {
+                                            res.json({
+                                                status: 200,
+                                                success: false,
+                                                message: "No new email recieved"
+                                            })
+                                            clearInterval(interval)
+                                        }
+                                    }
+                                }, 1000);
+                            });
+                        } else {
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: "No new email received"
+                            })
+                        }
+                    });
+                })
+                imap.connect();
+            } else {
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Please add IMAP credentials"
+                })
             }
         } else {
             res.json({
@@ -391,25 +389,25 @@ module.exports.readEmail = async (req, res) => {
         let s1 = dbScript(db_sql['Q147'], { var1: checkAdmin.rows[0].company_id })
         let findCompanies = await connection.query(s1)
         if (findCompanies.rowCount > 0) {
-                if (findCompanies.rows[0].email != null && findCompanies.rows[0].app_password != null) {
-                    let imapConfig = {
-                        user:findCompanies.rows[0].email,
-                        password:findCompanies.rows[0].app_password,
-                        host: 'imap.gmail.com',
-                        port: 993,
-                        tls: true,
-                        tlsOptions: {
-                            rejectUnauthorized: false
-                        }
-                    };
-                    await setEmailRead(imapConfig, messageId, res) 
-                }else{
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Please add IMAP credentials"
-                    })
-                }
+            if (findCompanies.rows[0].email != null && findCompanies.rows[0].app_password != null) {
+                let imapConfig = {
+                    user: findCompanies.rows[0].email,
+                    password: findCompanies.rows[0].app_password,
+                    host: 'imap.gmail.com',
+                    port: 993,
+                    tls: true,
+                    tlsOptions: {
+                        rejectUnauthorized: false
+                    }
+                };
+                await setEmailRead(imapConfig, messageId, res)
+            } else {
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Please add IMAP credentials"
+                })
+            }
         } else {
             res.json({
                 status: 400,
