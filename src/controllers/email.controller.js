@@ -391,11 +391,10 @@ module.exports.readEmail = async (req, res) => {
         let s1 = dbScript(db_sql['Q147'], { var1: checkAdmin.rows[0].company_id })
         let findCompanies = await connection.query(s1)
         if (findCompanies.rowCount > 0) {
-            for (let company of findCompanies.rows) {
-                if (company.email != null && company.app_password != null) {
+                if (findCompanies.rows[0].email != null && findCompanies.rows[0].app_password != null) {
                     let imapConfig = {
-                        user: company.email,
-                        password: company.app_password,
+                        user:findCompanies.rows[0].email,
+                        password:findCompanies.rows[0].app_password,
                         host: 'imap.gmail.com',
                         port: 993,
                         tls: true,
@@ -411,7 +410,6 @@ module.exports.readEmail = async (req, res) => {
                         message: "Please add IMAP credentials"
                     })
                 }
-            }
         } else {
             res.json({
                 status: 400,
