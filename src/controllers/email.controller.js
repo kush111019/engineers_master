@@ -347,14 +347,14 @@ module.exports.SentEmailList = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: 'Inbox Data',
+                        message: 'Sent emails',
                         data : inboxArr
                     })
                 }else{
                     res.json({
                         status: 200,
                         success: false,
-                        message: 'Empty Inbox Data',
+                        message: 'Empty Sent emails',
                         data : inboxArr
                     })
                 }
@@ -364,7 +364,7 @@ module.exports.SentEmailList = async (req, res) => {
                 res.json({
                     status: 200,
                     success: false,
-                    message: 'Empty inbox data',
+                    message: 'Empty Sent emails',
                     data: []
                 })
             } else {
