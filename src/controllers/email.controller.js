@@ -56,6 +56,7 @@ module.exports.fetchEmails = async (req, res) => {
                     let formatedDate = `${month} ${day}, ${year}`
                     //console.log('October 28, 2021');
                     imap.search(['ALL', ['SINCE', formatedDate]], function (err, results) {
+                        console.log(results,"results");
                         if (err) {
                             console.log('Search error : ', err)
                         }
@@ -75,17 +76,17 @@ module.exports.fetchEmails = async (req, res) => {
                                         messageId: parsed.messageId
                                     }
                                     arr.push(obj)
-                                    let s2 = dbScript(db_sql['Q144'], { var1: company.company_id })
+                                    let s2 = dbScript(db_sql['Q144'], { var1: checkAdmin.rows[0].company_id })
                                     let getEmails = await connection.query(s2)
                                     if (getEmails.rowCount > 0) {
                                         let checkMail = containsObject(parsed, getEmails.rows)
                                         if (!checkMail) {
-                                            let s3 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
+                                            let s3 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: checkAdmin.rows[0].company_id })
                                             let findByFrom = await connection.query(s3)
                                             if (findByFrom.rowCount > 0) {
                                                 await connection.query('BEGIN')
                                                 let id = uuid.v4()
-                                                let s4 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5: parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: company.company_id })
+                                                let s4 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5: parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: checkAdmin.rows[0].company_id })
                                                 let insertEmail = await connection.query(s4)
                                                 if (insertEmail.rowCount > 0) {
                                                     mainArray.push(insertEmail);
@@ -94,12 +95,12 @@ module.exports.fetchEmails = async (req, res) => {
                                             }
                                         }
                                     } else {
-                                        let s5 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
+                                        let s5 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: checkAdmin.rows[0].company_id })
                                         let findByFrom = await connection.query(s5)
                                         if (findByFrom.rowCount > 0) {
                                             await connection.query('BEGIN')
                                             let id = uuid.v4()
-                                            let s6 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5: parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: company.company_id })
+                                            let s6 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5: parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: checkAdmin.rows[0].company_id })
                                             let insertEmail = await connection.query(s6)
                                             if (insertEmail.rowCount > 0) {
                                                 mainArray.push(insertEmail);
