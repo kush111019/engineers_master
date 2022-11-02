@@ -56,7 +56,7 @@ module.exports.fetchEmails = async (req, res) => {
                         let day = date.getDate()
                         let formatedDate = `${month} ${day}, ${year}`
                         //console.log('October 28, 2021');
-                        imap.search(['ALL', ['SINCE', 'November 01, 2021']], function (err, results) {
+                        imap.search(['ALL', ['SINCE', formatedDate]], function (err, results) {
                             if (err) {
                                 console.log('Search error : ', err)
                             }
