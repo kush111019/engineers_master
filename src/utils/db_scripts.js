@@ -211,8 +211,8 @@ const db_sql = {
     "Q147" : `select c.id as company_id, c.company_name, cs.email, cs.app_password from companies as c
               inner join configurations as cs on cs.company_id = c.id where c.id = '{var1}' and c.deleted_at is null and cs.deleted_at is null`,
     "Q148" : `update emails set read_status = '{var2}' where message_id = '{var1}' and deleted_at is null returning *`,
-    "Q149" : `insert into sent_email(id, from_email, to_email, cc, subject, message, company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') returning *`,    
-    "Q150" : `select id, to_email, from_email, cc, subject, message, company_id, created_at from sent_email where company_id = '{var1}' and deleted_at is null order by created_at desc`,                                    
+    "Q149" : `insert into sent_email(id, from_email, to_email, cc, subject, message, company_id, sales_id) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}', '{var8}') returning *`,    
+    "Q150" : `select id, to_email, from_email, cc, subject, message, company_id,sales_id, created_at from sent_email where company_id = '{var1}' and sales_id = '{var2}' and deleted_at is null order by created_at desc`,                                    
    
  }
 

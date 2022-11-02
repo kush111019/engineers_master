@@ -256,7 +256,7 @@ module.exports.inbox = async(req, res) => {
 module.exports.sendEmail = async (req, res) => {
     try {
         let { id } = req.user
-        let { emails, subject, message, cc } = req.body
+        let { emails, subject, message, cc, salesId } = req.body
         let s0 = dbScript(db_sql['Q10'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
@@ -271,7 +271,7 @@ module.exports.sendEmail = async (req, res) => {
                         let bufferedMessage = (Buffer.from(message, "utf8")).toString('base64')
                         
                         await connection.query('BEGIN')
-                        let s2 = dbScript(db_sql['Q149'],{var1 :id,var2 : findCompanies.rows[0].email, var3: JSON.stringify(emails),var4 : JSON.stringify(cc),  var5: subject, var6 : bufferedMessage, var7 : checkAdmin.rows[0].company_id })
+                        let s2 = dbScript(db_sql['Q149'],{var1 :id,var2 : findCompanies.rows[0].email, var3: JSON.stringify(emails),var4 : JSON.stringify(cc),  var5: subject, var6 : bufferedMessage, var7 : checkAdmin.rows[0].company_id, var8 : salesId })
                         let storeSentMail = await connection.query(s2)
 
                         if(storeSentMail.rowCount > 0){
@@ -324,10 +324,11 @@ module.exports.sendEmail = async (req, res) => {
 
 module.exports.SentEmailList = async (req, res) => {
     let { id } = req.user
+    let { salesId } = req.params
     let s0 = dbScript(db_sql['Q10'], { var1: id })
     let checkAdmin = await connection.query(s0)
     if (checkAdmin.rowCount > 0) {
-        let s1 = dbScript(db_sql['Q150'], { var1: checkAdmin.rows[0].company_id })
+        let s1 = dbScript(db_sql['Q150'], { var1: checkAdmin.rows[0].company_id, var2 : salesId })
         let findInbox = await connection.query(s1)
         if (findInbox.rowCount > 0) {
             let inboxArr = []
@@ -341,6 +342,7 @@ module.exports.SentEmailList = async (req, res) => {
                     subject : inboxData.subject,
                     message : message,
                     companyId : inboxData.company_id,
+                    salesId : inboxData.sales_id,
                     createdAt : inboxData.created_at
                 })
                 if(inboxArr.length > 0){

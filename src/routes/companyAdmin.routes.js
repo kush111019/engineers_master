@@ -124,7 +124,7 @@ router.post('/sendEmailToContact', verifyTokenFn, controller.email.sendEmail)
 router.get('/fetchEmails', verifyTokenFn, controller.email.fetchEmails)
 router.get('/inbox', verifyTokenFn, controller.email.inbox)
 router.post('/readEmail', verifyTokenFn, controller.email.readEmail)
-router.get('/SentEmailList', verifyTokenFn, controller.email.SentEmailList)
+router.get('/SentEmailList/:salesId', verifyTokenFn, controller.email.SentEmailList)
 
 
 
