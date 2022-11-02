@@ -209,7 +209,7 @@ module.exports.inbox = async(req, res) => {
                     )
                     res.json({
                         status: 200,
-                        success: false,
+                        success: true,
                         message: 'Inbox Data',
                         data : inboxArr
                     })
@@ -263,18 +263,33 @@ module.exports.sendEmail = async (req, res) => {
             let s1 = dbScript(db_sql['Q147'], { var1: checkAdmin.rows[0].company_id })
             let findCompanies = await connection.query(s1)
             if (findCompanies.rowCount > 0) {
-                if (process.env.isLocalEmail == 'true') {
                     if (findCompanies.rows[0].email != null && findCompanies.rows[0].app_password != null) {
                         let senderEmail = {
                             email: findCompanies.rows[0].email,
                             password: findCompanies.rows[0].app_password
                         }
-                        await sendEmailToContact2(emails, subject, message, cc, senderEmail);
-                        res.json({
-                            status: 200,
-                            success: true,
-                            message: "Email sent successfully!",
-                        })
+                        let bufferedMessage = (Buffer.from(message, "utf8")).toString('base64')
+                        
+                        await connection.query('BEGIN')
+                        let s2 = dbScript(db_sql['Q149'],{var1 :id,var2 : findCompanies.rows[0].email, var3: JSON.stringify(emails),var4 : JSON.stringify(cc),  var5: subject, var6 : bufferedMessage, var7 : checkAdmin.rows[0].company_id })
+                        let storeSentMail = await connection.query(s2)
+
+                        if(storeSentMail.rowCount > 0){
+                            await connection.query('COMMIT')
+                            await sendEmailToContact2(emails, subject, message, cc, senderEmail);
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "Email sent successfully!",
+                            })
+                        }else{
+                            await connection.query('ROLLBACK')
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "Something went wrong",
+                            })
+                        }
                     }else{
                         res.json({
                             status: 400,
@@ -282,22 +297,6 @@ module.exports.sendEmail = async (req, res) => {
                             message: "Please add IMAP credentials"
                         })
                     }
-                } else {
-                    let emailSend = await sendEmailToContact(emails, subject, message, cc);
-                    if (emailSend.status == 400) {
-                        res.json({
-                            status: 400,
-                            success: false,
-                            message: "Something went wrong",
-                        })
-                    } else {
-                        res.json({
-                            status: 200,
-                            success: true,
-                            message: "Email sent successfully",
-                        })
-                    }
-                }
             } else {
                 res.json({
                     status: 400,
@@ -320,6 +319,68 @@ module.exports.sendEmail = async (req, res) => {
             success: false,
             message: error.message
         });
+    }
+}
+
+module.exports.SentEmailList = async (req, res) => {
+    let { id } = req.user
+    let s0 = dbScript(db_sql['Q10'], { var1: id })
+    let checkAdmin = await connection.query(s0)
+    if (checkAdmin.rowCount > 0) {
+        let s1 = dbScript(db_sql['Q150'], { var1: checkAdmin.rows[0].company_id })
+        let findInbox = await connection.query(s1)
+        if (findInbox.rowCount > 0) {
+            let inboxArr = []
+            for (let inboxData of findInbox.rows) {
+                let message = (Buffer.from(inboxData.message, "base64")).toString('utf8')
+                inboxArr.push({
+                    id : inboxData.id,
+                    toMail : JSON.parse(inboxData.to_email),
+                    fromMail : inboxData.from_email,
+                    cc : JSON.parse(inboxData.cc),
+                    subject : inboxData.subject,
+                    message : message,
+                    companyId : inboxData.company_id,
+                    createdAt : inboxData.created_at
+                })
+                if(inboxArr.length > 0){
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: 'Inbox Data',
+                        data : inboxArr
+                    })
+                }else{
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: 'Empty Inbox Data',
+                        data : inboxArr
+                    })
+                }
+             }
+        } else {
+            if (findInbox.rowCount == 0) {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty inbox data',
+                    data: []
+                })
+            } else {
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: 'Something went wrong'
+                })
+            }
+        }
+    } else {
+        res.json({
+            status: 400,
+            success: false,
+            message: 'Admin not found'
+        })
     }
 }
 
