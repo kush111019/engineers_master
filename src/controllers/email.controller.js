@@ -6,6 +6,16 @@ const {simpleParser} = require('mailparser');
 // const io = require('../utils/socket')
 const Imap = require('imap')
 
+const containsObject = (obj, list) => {
+    var i;
+    for (i = 0; i < list.length; i++) {
+        if (list[i].message_id === obj.messageId) {
+            return true;
+        }
+    }
+    return false;
+}
+
 module.exports.fetchEmails = async (req, res) => {
     let { id } = req.user
     let s0 = dbScript(db_sql['Q10'], { var1: id })
@@ -46,12 +56,12 @@ module.exports.fetchEmails = async (req, res) => {
                         let day = date.getDate()
                         let formatedDate = `${month} ${day}, ${year}`
                         //console.log('October 28, 2021');
-                        imap.search(['ALL', ['SINCE', formatedDate]], function (err, results) {
+                        imap.search(['ALL', ['SINCE', 'November 01, 2021']], function (err, results) {
                             if (err) {
                                 console.log('Search error : ', err)
                             }
                             else if (results.length > 0) {
-                                let f = imap.fetch('1:*', { bodies: '' });
+                                let f = imap.fetch(results, { bodies: '' });
                                 f.on('message', function (msg, seqno) {
                                     let prefix = '(#' + seqno + ') ';
                                     msg.on('body', async function (stream, info) {
@@ -62,7 +72,6 @@ module.exports.fetchEmails = async (req, res) => {
                                         let html = (Buffer.from(parsed.html, "utf8")).toString('base64')
                                         let textAsHtml = (Buffer.from(parsed.textAsHtml, "utf8")).toString('base64')
                                         let date = parsed.date.toISOString()
-
                                         let obj = {
                                             messageId: parsed.messageId
                                         }
@@ -70,19 +79,18 @@ module.exports.fetchEmails = async (req, res) => {
                                         let s2 = dbScript(db_sql['Q144'], { var1: company.company_id })
                                         let getEmails = await connection.query(s2)
                                         if (getEmails.rowCount > 0) {
-                                            for (emailData of getEmails.rows) {
-                                                if (emailData.message_id != parsed.messageId) {
-                                                    let s3 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
-                                                    let findByFrom = await connection.query(s3)
-                                                    if (findByFrom.rowCount > 0) {
-                                                        await connection.query('BEGIN')
-                                                        let id = uuid.v4()
-                                                        let s4 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5: parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: company.company_id })
-                                                        let insertEmail = await connection.query(s4)
-                                                        if (insertEmail.rowCount > 0) {
-                                                            mainArray.push(insertEmail);
-                                                            await connection.query('COMMIT')
-                                                        }
+                                            let checkMail = containsObject(parsed, getEmails.rows)
+                                            if (!checkMail) {
+                                                let s3 = dbScript(db_sql['Q145'], { var1: parsed.from.value[0].address, var2: company.company_id })
+                                                let findByFrom = await connection.query(s3)
+                                                if (findByFrom.rowCount > 0) {
+                                                    await connection.query('BEGIN')
+                                                    let id = uuid.v4()
+                                                    let s4 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5: parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: company.company_id })
+                                                    let insertEmail = await connection.query(s4)
+                                                    if (insertEmail.rowCount > 0) {
+                                                        mainArray.push(insertEmail);
+                                                        await connection.query('COMMIT')
                                                     }
                                                 }
                                             }
@@ -123,18 +131,24 @@ module.exports.fetchEmails = async (req, res) => {
                                                 res.json({
                                                     status: 200,
                                                     success: false,
-                                                    message: "No email recieved"
+                                                    message: "No new email recieved"
                                                 })
                                                 clearInterval(interval)
                                             }
                                         }
                                     }, 1000);
                                 });
+                            } else {
+                                res.json({
+                                    status: 400,
+                                    success: false,
+                                    message: "No new email received"
+                                })
                             }
                         });
                     })
                     imap.connect();
-                }else{
+                } else {
                     res.json({
                         status: 400,
                         success: false,
@@ -142,14 +156,14 @@ module.exports.fetchEmails = async (req, res) => {
                     })
                 }
             }
-        }else{
+        } else {
             res.json({
                 status: 400,
                 success: false,
                 message: "Company not found "
             })
         }
-    }else{
+    } else {
         res.json({
             status: 400,
             success: false,
