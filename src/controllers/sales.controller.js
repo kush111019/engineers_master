@@ -79,13 +79,11 @@ module.exports.customerListforSales = async (req, res) => {
 }
 
 module.exports.customerContactDetailsForSales = async (req, res) => {
-
     try {
         let { customerId } = req.query
         let userEmail = req.user.email
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
-
         let moduleName = 'Customer management'
         if (findAdmin.rows.length > 0) {
             let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
@@ -93,8 +91,6 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
             let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
-
-
                 let s4 = dbScript(db_sql['Q60'], { var1: customerId })
                 let contactDetails = await connection.query(s4)
                 if (contactDetails.rowCount > 0) {
@@ -122,7 +118,6 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
                         message: "Something went wrong"
                     })
                 }
-
             } else {
                 res.status(403).json({
                     success: false,
@@ -292,6 +287,7 @@ module.exports.salesCommissionList = async (req, res) => {
                                 supporters.push({
                                     id: supporterData.supporter_id,
                                     name: supporterName.rows[0].full_name,
+                                    email : supporterName.rows[0].email_address,
                                     percentage: supporterData.supporter_percentage
                                 })
 
@@ -317,18 +313,22 @@ module.exports.salesCommissionList = async (req, res) => {
                         let businessData = await connection.query(s8);
 
                         closer.businessContactId = businessData.rows[0].id,
-                            closer.businessContactName = businessData.rows[0].business_contact_name
+                        closer.businessContactName = businessData.rows[0].business_contact_name
+                        closer.businessContactEmail = businessData.rows[0].business_email
 
                         let s9 = dbScript(db_sql['Q83'], { var1: data.revenue_id })
                         let revenueData = await connection.query(s9);
 
                         closer.revenueContactId = revenueData.rows[0].id,
-                            closer.revenueContactName = revenueData.rows[0].revenue_contact_name
+                        closer.revenueContactName = revenueData.rows[0].revenue_contact_name
+                        closer.revenueContactEmail = revenueData.rows[0].revenue_email
                     } else {
                         closer.businessContactId = ""
                         closer.businessContactName = ""
+                        closer.businessContactEmail = ""
                         closer.revenueContactId = ""
                         closer.revenueContactName = ""
+                        closer.revenueContactEmail = ""
                     }
                     closer.id = data.id
                     closer.customerId = data.customer_id
@@ -342,6 +342,7 @@ module.exports.salesCommissionList = async (req, res) => {
                     closer.is_overwrite = data.is_overwrite
                     closer.closerId = data.closer_id
                     closer.closerName = (closerName.rowCount > 0) ? closerName.rows[0].full_name : ''
+                    closer.closerEmail = (closerName.rowCount > 0) ? closerName.rows[0].email_address : ''
                     closer.closerPercentage = data.closer_percentage
                     closer.supporters = supporters
                     closer.createdAt = data.created_at

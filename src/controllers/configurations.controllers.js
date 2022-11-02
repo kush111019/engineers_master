@@ -6,7 +6,7 @@ const uuid = require("node-uuid");
 module.exports.addConfigs = async (req, res) => {
     try {
         let userEmail = req.user.email
-        let { currency, phoneFormat, dateFormat, graphType } = req.body
+        let { currency, phoneFormat, dateFormat, graphType, email, appPassword } = req.body
 
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -19,7 +19,7 @@ module.exports.addConfigs = async (req, res) => {
             let config = await connection.query(s2)
 
             let id = uuid.v4()
-            let s3 = dbScript(db_sql['Q89'], { var1: id, var2: currency, var3: phoneFormat, var4: dateFormat, var5: findAdmin.rows[0].id, var6: graphType, var7: findAdmin.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q89'], { var1: id, var2: currency, var3: phoneFormat, var4: dateFormat, var5: findAdmin.rows[0].id, var6: graphType, var7: findAdmin.rows[0].company_id, var8 : email, var9 : appPassword  })
 
             let addConfig = await connection.query(s3)
 
@@ -30,7 +30,6 @@ module.exports.addConfigs = async (req, res) => {
                     success: true,
                     message: "Configuration added successfully"
                 })
-
             } else {
                 await connection.query('ROLLBACK')
                 res.json({
@@ -39,7 +38,6 @@ module.exports.addConfigs = async (req, res) => {
                     message: "Something went wrong"
                 })
             }
-
         } else {
             res.json({
                 status: 400,
@@ -73,24 +71,23 @@ module.exports.configList = async (req, res) => {
 
                 configuration.id = configList.rows[0].id
                 configuration.currency = configList.rows[0].currency,
-                    configuration.phoneFormat = configList.rows[0].phone_format,
-                    configuration.dateFormat = configList.rows[0].date_format,
-                    configuration.graphType = configList.rows[0].graph_type
-
+                configuration.phoneFormat = configList.rows[0].phone_format,
+                configuration.dateFormat = configList.rows[0].date_format,
+                configuration.graphType = configList.rows[0].graph_type,
+                configuration.email =  configList.rows[0].email,
+                configuration.appPassword =  configList.rows[0].app_password
                 res.json({
                     status: 200,
                     success: true,
                     message: "Configuration List",
                     data: configuration
                 })
-
             } else {
                 configuration.id = "",
-                    configuration.currency = "",
-                    configuration.phoneFormat = "",
-                    configuration.dateFormat = "",
-                    configuration.graphType = ""
-
+                configuration.currency = "",
+                configuration.phoneFormat = "",
+                configuration.dateFormat = "",
+                configuration.graphType = ""
                 res.json({
                     status: 200,
                     success: false,
@@ -98,7 +95,6 @@ module.exports.configList = async (req, res) => {
                     data: configuration
                 })
             }
-
         } else {
             res.json({
                 status: 400,

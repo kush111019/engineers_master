@@ -1,4 +1,6 @@
 const express = require('express');
+const cluster = require('cluster');
+const os = require('os');
 const app = express();
 const cors = require('cors');
 const cron = require('node-cron');
@@ -8,8 +10,9 @@ const { paymentReminder, upgradeSubscriptionCronFn } = require('./src/utils/paym
 require('./src/database/connection')
 const path = require('path')
 const Router = require('./src/routes/index');
-let chat =require('./src/controllers/chat.controller')
+let chat = require('./src/controllers/chat.controller')
 const http = require('http').createServer(app)
+// const io = require('./src/utils/socket')
 let io = require("socket.io")(http, {
   cors: {
     origin: "*",
@@ -24,7 +27,6 @@ let io = require("socket.io")(http, {
   },
 });
 
-
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -38,69 +40,57 @@ let cronJob = cron.schedule('59 59 23 * * *', async () => {
 });
 cronJob.start();
 
+// let cronJob1 = cron.schedule('*/30 * * * *', async () => {
+//    await fetchEmails()
+// });
+// cronJob1.start();
 
-io.on('connection', (socket) => {
-  console.log("user connected", socket.id);
-  
-  socket.on('chat message', async (msg) => {
-    let res = await chat.sendMessage(msg)
-    res.socket_id = socket.id
-    if(res.data.chatType == 'one to one'){
-      socket.join(res.data.id)
-      socket.join(res.data.receiverId)
-      io.to(res.data.id).emit('chat message', res);
-      io.to(res.data.receiverId).emit('chat message', res);
-    }else{
-      for(resData of res.data.receiverId){
-        socket.join(res.data.id)
-        io.to(resData.id).emit('chat list', res);
-      }
-    }
-   
-    // io.emit('chat message', res)
-    // socket.join(res)
+io.on("connection", (socket) => {
+  console.log("Connected to socket.io");
+  socket.on("setup", (userData) => {
+    socket.join(userData.id);
+    socket.emit("connected");
   });
 
-  socket.on('chat list', async (msg) => {
-    let res = await chat.chatList(msg);
-    res.socket_id = socket.id;
-    // io.to(socket.id).emit('chat list', res);
-    // io.emit('chat list', res);
-    // io.join(res)
-    for(resData of res.data.users){
-      socket.join(res.data.id)
-      io.to(resData.id).emit('chat list', res);
-    }
-    //io.socket.in()
+  socket.on("join chat", (room) => {
+    socket.join(room);
+    console.log("User Joined Room: " + room);
   });
+  socket.on("new message", (newMessageRecieved) => {
+    if (!newMessageRecieved.users) return console.log("chat.users not defined");
 
-  socket.on('chat history', async (msg) => {
-    let res = await chat.chatHistory(msg)
-    res.socket_id = socket.id
-    io.to(socket.id).emit('chat history', res);
-    // io.emit('chat history', res)
+    newMessageRecieved.users.forEach((user) => {
+      if (user.id == newMessageRecieved.sender.id) return;
+
+      socket.in(user.id).emit("message recieved", newMessageRecieved);
+    });
   });
-
-  socket.on("disconnect", () => {
-    console.log("user disconnected", socket.id);
-  });
-
-  socket.on("error", (err) => {
-    console.log(err);
+  socket.off("setup", () => {
+    console.log("USER DISCONNECTED");
+    socket.leave(userData.id);
   });
 });
 
+const numCpu = os.cpus().length;
+if (cluster.isMaster) {
+  for (let i = 0; i < numCpu; i++) {
+    cluster.fork();
+  }
+  cluster.on('exit', (worker, code, signal) => {
+    console.log(`worker ${worker.process.pid} died`);
+    cluster.fork();
+  })
+} else {
+  http.listen(process.env.LISTEN_PORT, () => {
+    console.log(`Hirise sales is running on ${process.env.LISTEN_PORT} `);
+  });
 
-http.listen(process.env.LISTEN_PORT, () => {
-  console.log(`Hirise sales is running on ${process.env.LISTEN_PORT} `);
-});
+  app.use('/api/v1', Router);
 
-app.use('/api/v1', Router);
-
-app.get('/api', (req, res) => {
-  res.status(200).json({ msg: 'OK' });
-});
-
+  app.get('/api', (req, res) => {
+    res.status(200).json({ msg: 'OK' });
+  });
+}
 // app.get('/chat', (req, res) => {
 //   res.redirect('index.html')
 // });

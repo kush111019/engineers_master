@@ -14,6 +14,7 @@ const contactUs = require('./contactUs.controller')
 const dashboard = require('./dashboard.controller')
 const payment = require('./payment.controller')
 const chat = require('./chat.controller')
+const email = require('./email.controller')
 
 const controller = { 
     superAdmin,
@@ -31,7 +32,8 @@ const controller = {
     contactUs,
     dashboard,
     payment,
-    chat
+    chat,
+    email
 }
 
 module.exports = controller

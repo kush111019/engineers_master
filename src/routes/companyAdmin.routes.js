@@ -112,11 +112,21 @@ router.post('/upgradeSubscription', verifyTokenFn, controller.payment.upgradeSub
 
 
 //-----------------------------------Chat----------------------------------------------
-router.post('/createGroupRoom', verifyTokenFn, controller.chat.createGroupRoom)
-router.post('/createSingleRoom', verifyTokenFn, controller.chat.createSingleRoom)
-// router.post('/createGroupRoom', verifyTokenFn, controller.chat.createGroupRoom)
-// router.post('/sendMessage', verifyTokenFn, controller.chat.createChat)
-//router.get('/chatList', verifyTokenFn,controller.chat.chatList)
-//router.get('/chatHistory/:roomId', verifyTokenFn, controller.chat.chatHistory)
+router.post("/accessChat",verifyTokenFn, controller.chat.accessChat);
+router.get("/fetchChats", verifyTokenFn, controller.chat.fetchChats);
+router.post("/createGroupChat",verifyTokenFn, controller.chat.createGroupChat);
+
+router.get("/allMessages/:chatId", verifyTokenFn, controller.chat.allMessages);
+router.post("/sendMessage",verifyTokenFn, controller.chat.sendMessage);
+
+//-----------------------------Emails to business and revenue contacts------------------------
+router.post('/sendEmailToContact', verifyTokenFn, controller.email.sendEmail)
+router.get('/fetchEmails', verifyTokenFn, controller.email.fetchEmails)
+router.get('/inbox', verifyTokenFn, controller.email.inbox)
+router.post('/readEmail', verifyTokenFn, controller.email.readEmail)
+router.get('/SentEmailList', verifyTokenFn, controller.email.SentEmailList)
+
+
+
 
 module.exports = router;
