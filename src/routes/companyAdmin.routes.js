@@ -123,6 +123,7 @@ router.post("/sendMessage",verifyTokenFn, controller.chat.sendMessage);
 router.post('/sendEmailToContact', verifyTokenFn, controller.email.sendEmail)
 router.get('/fetchEmails', verifyTokenFn, controller.email.fetchEmails)
 router.get('/inbox', verifyTokenFn, controller.email.inbox)
+router.post('/readEmail', verifyTokenFn, controller.email.readEmail)
 
 
 

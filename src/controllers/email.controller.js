@@ -28,7 +28,7 @@ module.exports.fetchEmails = async (req, res) => {
         if (findCompanies.rowCount > 0) {
             for (let company of findCompanies.rows) {
                 if (company.email != null && company.app_password != null) {
-                    let imap = new Imap({
+                    let imapConfig = {
                         user: company.email,
                         password: company.app_password,
                         host: 'imap.gmail.com',
@@ -37,7 +37,8 @@ module.exports.fetchEmails = async (req, res) => {
                         tlsOptions: {
                             rejectUnauthorized: false
                         }
-                    });
+                    }
+                    let imap = new Imap(imapConfig);
                     imap.once('error', (err) => {
                         console.log(err);
                     });
@@ -198,10 +199,10 @@ module.exports.inbox = async(req, res) => {
                         text : text,
                         html : html,
                         textAsHtml : textAsHtml,
-                        companyId : inboxData.company_id
+                        companyId : inboxData.company_id,
+                        readStatus : inboxData.read_status
                     })
                 }
-               
                 if(inboxArr.length > 0){
                     inboxArr = inboxArr.filter((value, index, self) =>
                     index === self.findIndex((t) => (
@@ -300,3 +301,103 @@ module.exports.sendEmail = async (req, res) => {
         });
     }
 }
+
+const setEmailRead = async(imapConfig, messageId, res) => {
+    const imap = new Imap(imapConfig)
+    imap.once('error', err => {
+        console.log("fetch error :- ", err);
+    })
+    imap.once('ready',() => {
+       imap.openBox('INBOX', false, () => {
+
+            // here is how you fetch a single email by its messageId
+            const criteria = ["HEADER", "message-id", messageId]
+
+           imap.search([criteria],(err, results) => {
+                if (err || results.length === 0) {
+                    //throw "No email found for this ID"
+                    res.json( {
+                        status: 400,
+                        success: false,
+                        message: "No email found for this ID"
+                    })
+                }
+                // set mail as read
+                imap.setFlags(results, ['\\Seen'], async(err) => {
+                    if (err) {
+                        // throw err
+                        res.json( {
+                            status: 400,
+                            success: false,
+                            message: err
+                        })
+                    } else {
+                        await connection.query('BEGIN')
+                        let s2 = dbScript(db_sql['Q148'],{var1 : messageId, var2 : true})
+                        let updateReadStatus = await connection.query(s2)
+                        if(updateReadStatus.rowCount > 0){
+                            await connection.query('COMMIT')
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "Message seen"
+                            })
+                        }else{
+                            await connection.query('ROLLBACK')
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: "Something Went Wrong"
+                            })
+                        }  
+                    }
+                })
+            })
+        })
+    })
+    imap.once('close', () => {console.log("closed")})
+    imap.connect()
+   
+}
+
+module.exports.readEmail = async (req, res) => {
+    let { id } = req.user
+    let { messageId } = req.query
+    let s0 = dbScript(db_sql['Q10'], { var1: id })
+    let checkAdmin = await connection.query(s0)
+    if (checkAdmin.rowCount > 0) {
+        let s1 = dbScript(db_sql['Q147'], { var1: checkAdmin.rows[0].company_id })
+        let findCompanies = await connection.query(s1)
+        if (findCompanies.rowCount > 0) {
+            for (let company of findCompanies.rows) {
+                if (company.email != null && company.app_password != null) {
+                    let imapConfig = {
+                        user: company.email,
+                        password: company.app_password,
+                        host: 'imap.gmail.com',
+                        port: 993,
+                        tls: true,
+                        tlsOptions: {
+                            rejectUnauthorized: false
+                        }
+                    };
+
+                    await setEmailRead(imapConfig, messageId, res) 
+                }
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Company not found "
+            })
+        }
+    } else {
+        res.json({
+            status: 400,
+            success: false,
+            message: "Admin not found"
+        })
+    }
+}
+
