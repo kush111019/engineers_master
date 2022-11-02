@@ -382,7 +382,7 @@ const setEmailRead = async(imapConfig, messageId, res) => {
 
 module.exports.readEmail = async (req, res) => {
     let { id } = req.user
-    let { messageId } = req.query
+    let { messageId } = req.body
     let s0 = dbScript(db_sql['Q10'], { var1: id })
     let checkAdmin = await connection.query(s0)
     if (checkAdmin.rowCount > 0) {
