@@ -264,7 +264,8 @@ module.exports.uploadMailAttechment = async (req, res) => {
             uploadedArr.push(
                 {
                     filename : item.originalname,
-                    path : path
+                    path : path,
+                    mimetype : item.mimetype
                 }
             )
         }
@@ -307,9 +308,16 @@ module.exports.sendEmail = async (req, res) => {
                         let s2 = dbScript(db_sql['Q149'],{var1 :id,var2 : findCompanies.rows[0].email, var3: JSON.stringify(emails),var4 : JSON.stringify(cc),  var5: subject, var6 : bufferedMessage, var7 : checkAdmin.rows[0].company_id, var8 : salesId, var9 : JSON.stringify(attechments) })
                         let storeSentMail = await connection.query(s2)
 
+                        let attechmentsArr = [];
+                        for(let item of attechments){
+                            attechmentsArr.push({
+                                filename : item.filename,
+                                path : item.path
+                            })
+                        }
                         if(storeSentMail.rowCount > 0){
                             await connection.query('COMMIT')
-                            await sendEmailToContact2(emails, subject, message, cc, senderEmail, attechments);
+                            await sendEmailToContact2(emails, subject, message, cc, senderEmail, attechmentsArr);
                             res.json({
                                 status: 200,
                                 success: true,
