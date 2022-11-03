@@ -56,7 +56,6 @@ module.exports.fetchEmails = async (req, res) => {
                     let formatedDate = `${month} ${day}, ${year}`
                     //console.log('October 28, 2021');
                     imap.search(['ALL', ['SINCE', formatedDate]], function (err, results) {
-                        console.log(results,"results");
                         if (err) {
                             console.log('Search error : ', err)
                         }
@@ -67,7 +66,6 @@ module.exports.fetchEmails = async (req, res) => {
                                 msg.on('body', async function (stream, info) {
                                     j += 1
                                     let parsed = await simpleParser(stream)
-                                    console.log(parsed, "parsedData");
                                     let text = (Buffer.from(parsed.text, "utf8")).toString('base64')
                                     let html = (Buffer.from(parsed.html, "utf8")).toString('base64')
                                     let textAsHtml = (Buffer.from(parsed.textAsHtml, "utf8")).toString('base64')
@@ -348,7 +346,6 @@ module.exports.sendEmail = async (req, res) => {
             })
         }
     } catch (error) {
-        console.log(error);
         await connection.query('ROLLBACK')
         res.json({
             status: 400,
@@ -385,7 +382,6 @@ module.exports.SentEmailList = async (req, res) => {
                     createdAt : inboxData.created_at
                 })
             }
-             console.log(inboxArr,"inboxArr");
              if(inboxArr.length > 0){
                  res.json({
                      status: 200,
