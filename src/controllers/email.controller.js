@@ -23,7 +23,6 @@ module.exports.fetchEmails = async (req, res) => {
         let j = 0;
         let s1 = dbScript(db_sql['Q147'], { var1: checkAdmin.rows[0].company_id })
         let findCompanies = await connection.query(s1)
-        console.log(findCompanies.rows);
         let mainArray = []
         if (findCompanies.rowCount > 0) {
             if (findCompanies.rows[0].email != null && findCompanies.rows[0].app_password != null) {
@@ -205,11 +204,6 @@ module.exports.inbox = async(req, res) => {
                     })
                 }
                 if(inboxArr.length > 0){
-                    inboxArr = inboxArr.filter((value, index, self) =>
-                    index === self.findIndex((t) => (
-                        t.messageId === value.messageId 
-                    ))
-                    )
                     res.json({
                         status: 200,
                         success: true,
