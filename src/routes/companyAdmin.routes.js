@@ -122,7 +122,7 @@ router.get("/allMessages/:chatId", verifyTokenFn, controller.chat.allMessages);
 router.post("/sendMessage",verifyTokenFn, controller.chat.sendMessage);
 
 //-----------------------------Emails to business and revenue contacts------------------------
-router.post('/uploadAttechment', verifyTokenFn, uploadMailAttechments.array('attechments', 10), controller.email.uploadMailAttechment )
+router.post('/uploadAttechment', verifyTokenFn, uploadMailAttechments.array('attachments', 10), controller.email.uploadMailAttechment )
 router.post('/sendEmailToContact', verifyTokenFn, controller.email.sendEmail)
 router.get('/fetchEmails', verifyTokenFn, controller.email.fetchEmails)
 router.get('/inbox', verifyTokenFn, controller.email.inbox)
