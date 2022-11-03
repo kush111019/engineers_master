@@ -73,4 +73,19 @@ function checkFileType(file, cb){
     }
 }
 
-module.exports = { uploadLogo, uploadAvatar, uploadProductFile, uploadProductImage };
+const storage5 = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/mailAttechments')
+    },
+    filename: function (req, file, cb) {
+        //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, file.originalname)
+    }
+})
+const uploadMailAttechments = multer({
+    storage: storage5
+})
+
+
+
+module.exports = { uploadLogo, uploadAvatar, uploadProductFile, uploadProductImage, uploadMailAttechments };

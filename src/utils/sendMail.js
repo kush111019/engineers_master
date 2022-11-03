@@ -478,7 +478,7 @@ module.exports.contactUsMail2 = async (email,fullName,subject,message,address) =
 
 }
 
-module.exports.sendEmailToContact2 = async(emails, subject, message, cc, senderEmail) => {
+module.exports.sendEmailToContact2 = async(emails, subject, message, cc, senderEmail, attechments) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = senderEmail.email;
@@ -499,7 +499,6 @@ module.exports.sendEmailToContact2 = async(emails, subject, message, cc, senderE
     
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
-
     let transporter = nodemailer.createTransport({
         host: smtpEndpoint,
         port: port,
@@ -519,6 +518,7 @@ module.exports.sendEmailToContact2 = async(emails, subject, message, cc, senderE
         bcc: bccAddresses,
         text: body_text,
         html: sendEmail,
+        attachments : attechments,
         // Custom headers for configuration set and message tags.
         headers: {}
     };

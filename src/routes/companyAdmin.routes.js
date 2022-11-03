@@ -2,7 +2,7 @@ const express = require('express')
 var router = express.Router()
 var controller = require('../controllers/index')
 const { verifyTokenFn } = require('../utils/jwt')
-const {uploadAvatar , uploadProductImage,uploadProductFile} = require('../utils/uploadfiles')
+const {uploadAvatar , uploadProductImage, uploadProductFile, uploadMailAttechments } = require('../utils/uploadfiles')
 
 router.post('/upload',verifyTokenFn, uploadAvatar.single('image'),controller.companyAdmin.upload);
 router.get('/showProfile',verifyTokenFn, controller.companyAdmin.showProfile)
@@ -120,6 +120,7 @@ router.get("/allMessages/:chatId", verifyTokenFn, controller.chat.allMessages);
 router.post("/sendMessage",verifyTokenFn, controller.chat.sendMessage);
 
 //-----------------------------Emails to business and revenue contacts------------------------
+router.post('/uploadAttechment', verifyTokenFn, uploadMailAttechments.array('attechments', 10), controller.email.uploadMailAttechment )
 router.post('/sendEmailToContact', verifyTokenFn, controller.email.sendEmail)
 router.get('/fetchEmails', verifyTokenFn, controller.email.fetchEmails)
 router.get('/inbox', verifyTokenFn, controller.email.inbox)
