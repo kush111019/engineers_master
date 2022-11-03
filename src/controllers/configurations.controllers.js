@@ -73,9 +73,7 @@ module.exports.configList = async (req, res) => {
                 configuration.id = configList.rows[0].id
                 configuration.currency = configList.rows[0].currency,
                 configuration.phoneFormat = configList.rows[0].phone_format,
-                configuration.dateFormat = configList.rows[0].date_format,
-                configuration.email = configList.rows[0].email,
-                configuration.appPassword = configList.rows[0].app_password
+                configuration.dateFormat = configList.rows[0].date_format
                 res.json({
                     status: 200,
                     success: true,
@@ -86,9 +84,7 @@ module.exports.configList = async (req, res) => {
                 configuration.id = "",
                 configuration.currency = "",
                 configuration.phoneFormat = "",
-                configuration.dateFormat = "",
-                configuration.email = "",
-                configuration.appPassword = ""
+                configuration.dateFormat = ""
                 res.json({
                     status: 200,
                     success: false,
@@ -112,7 +108,6 @@ module.exports.configList = async (req, res) => {
         })
     }
 }
-
 
 module.exports.addImapCredentials = async (req, res) => {
     try {
@@ -166,4 +161,55 @@ module.exports.addImapCredentials = async (req, res) => {
         })
     }
 
+}
+
+module.exports.imapCredentials = async (req, res) => {
+    try {
+        let userEmail = req.user.email
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q153'], { var1: findAdmin.rows[0].company_id })
+            let credentials = await connection.query(s2)
+
+            let credentialObj = {}
+
+            if (credentials.rowCount > 0 ) {
+
+                credentialObj.id = credentials.rows[0].id
+                credentialObj.email = credentials.rows[0].email,
+                credentialObj.appPassword = credentials.rows[0].app_password
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "credential List",
+                    data: credentialObj
+                })
+            } else {
+                credentialObj.id = "",
+                credentialObj.email = "",
+                credentialObj.appPassword = ""
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty credential List",
+                    data: credentialObj
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
 }

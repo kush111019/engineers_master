@@ -336,16 +336,12 @@ module.exports.login = async (req, res) => {
                             configuration.id = configs.rows[0].id
                             configuration.currency = configs.rows[0].currency,
                             configuration.phoneFormat = configs.rows[0].phone_format,
-                            configuration.dateFormat = configs.rows[0].date_format,
-                            configuration.email = configs.rows[0].email,
-                            configuration.appPassword = configs.rows[0].app_password
+                            configuration.dateFormat = configs.rows[0].date_format
                         } else {
                             configuration.id = "",
                             configuration.currency = "",
                             configuration.phoneFormat = "",
-                            configuration.dateFormat = "",
-                            configuration.email = "",
-                            configuration.appPassword = ""
+                            configuration.dateFormat = ""
                         }
 
                         let moduleId = JSON.parse(checkRole.rows[0].module_ids)
