@@ -75,7 +75,7 @@ function checkFileType(file, cb){
 
 const storage5 = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads/mailAttechments')
+        cb(null, 'uploads/mailAttachments')
     },
     filename: function (req, file, cb) {
         //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
