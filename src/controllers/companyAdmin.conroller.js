@@ -330,22 +330,21 @@ module.exports.login = async (req, res) => {
 
                         let s4 = dbScript(db_sql['Q90'], { var1: admin.rows[0].company_id })
                         let configs = await connection.query(s4)
+
                         let configuration = {}
-                        if (configs.rowCount > 0) {
+                        if (configs.rowCount > 0 ) {
                             configuration.id = configs.rows[0].id
                             configuration.currency = configs.rows[0].currency,
                             configuration.phoneFormat = configs.rows[0].phone_format,
                             configuration.dateFormat = configs.rows[0].date_format,
-                            configuration.graphType = configs.rows[0].graph_type,
-                            configuration.email =  configs.rows[0].email,
-                            configuration.appPassword =  configs.rows[0].app_password
+                            configuration.email = configs.rows[0].email,
+                            configuration.appPassword = configs.rows[0].app_password
                         } else {
                             configuration.id = "",
                             configuration.currency = "",
                             configuration.phoneFormat = "",
                             configuration.dateFormat = "",
-                            configuration.graphType = "",
-                            configuration.email = ""
+                            configuration.email = "",
                             configuration.appPassword = ""
                         }
 

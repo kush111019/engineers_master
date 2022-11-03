@@ -103,8 +103,12 @@ const db_sql = {
     "Q86"  : `update customers set revenue_id = '{var2}' where id = '{var1}' returning *`,
     "Q87"  : `select id, supporter_id, supporter_percentage from sales_supporter where id = '{var1}'  `,
     "Q88"  : `select customer_id, sales_type, subscription_plan, recurring_date from sales_commission where deleted_at is null`,
-    "Q89"  : `insert into configurations(id, currency, phone_format, date_format,user_id, graph_type,  company_id, email, app_password ) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') returning *`,
-    "Q90"  : `select id, currency, phone_format, date_format,graph_type,email, app_password, user_id, company_id, created_at from configurations where company_id = '{var1}' and deleted_at is null `,
+    "Q89"  : `insert into configurations(id, currency, phone_format, date_format,user_id, company_id ) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') returning *`,
+    "Q90"  : `select c.id, c.currency, c.phone_format, c.date_format, c.user_id, c.company_id, c.created_at,
+    i.email, i.app_password
+    from configurations as c 
+    inner join imap_credentials as i on i.company_id  = c.company_id  where c.company_id = '{var1}' 
+    and c.deleted_at is null and i.deleted_at is null`,
     "Q91"  : `update configurations set deleted_at = '{var1}' where company_id = '{var2}' and deleted_at is null returning *`,
     "Q92"  : `select cr.closer_id,cr.closer_percentage, u.full_name from sales_closer as cr 
               inner join users as u on u.id = cr.closer_id where sales_commission_id = '{var1}'
@@ -212,7 +216,10 @@ const db_sql = {
               inner join configurations as cs on cs.company_id = c.id where c.id = '{var1}' and c.deleted_at is null and cs.deleted_at is null`,
     "Q148" : `update emails set read_status = '{var2}' where message_id = '{var1}' and deleted_at is null returning *`,
     "Q149" : `insert into sent_email(id, from_email, to_email, cc, subject, message, company_id, sales_id, attechments) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}', '{var8}','{var9}') returning *`,    
-    "Q150" : `select id, to_email, from_email, cc, subject, message,attechments, company_id,sales_id, created_at from sent_email where company_id = '{var1}' and sales_id = '{var2}' and deleted_at is null order by created_at desc`,                                    
+    "Q150" : `select id, to_email, from_email, cc, subject, message,attechments, company_id,sales_id, created_at from sent_email where company_id = '{var1}' and sales_id = '{var2}' and deleted_at is null order by created_at desc`, 
+    "Q151" : `update imap_credentials set deleted_at = '{var1}' where company_id = '{var2}' and deleted_at is null returning *`,
+    "Q152" : `insert into imap_credentials(id, email, app_password, company_id) values('{var1}','{var2}','{var3}','{var4}') returning *`  ,
+    "Q153" : `select id, email, app_password, company_id from imap_credentials where company_id = '{var1}' and deleted_at is null`                                 
    
  }
 

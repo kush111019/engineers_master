@@ -102,6 +102,7 @@ router.post('/addRevenueContact',verifyTokenFn, controller.customers.addRevenueC
 //-------------------------------------------Configurations----------------------------------
 router.post('/addConfigs', verifyTokenFn, controller.configuration.addConfigs)
 router.get('/configList', verifyTokenFn, controller.configuration.configList)
+router.post('/addImapCredentials', verifyTokenFn, controller.configuration.addImapCredentials)
 
 //------------------------------------Payment----------------------------------------
 router.post('/createPayment', controller.payment.createPayment)

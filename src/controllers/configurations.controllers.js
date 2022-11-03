@@ -6,7 +6,7 @@ const uuid = require("node-uuid");
 module.exports.addConfigs = async (req, res) => {
     try {
         let userEmail = req.user.email
-        let { currency, phoneFormat, dateFormat, graphType, email, appPassword } = req.body
+        let { currency, phoneFormat, dateFormat } = req.body
 
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -19,7 +19,7 @@ module.exports.addConfigs = async (req, res) => {
             let config = await connection.query(s2)
 
             let id = uuid.v4()
-            let s3 = dbScript(db_sql['Q89'], { var1: id, var2: currency, var3: phoneFormat, var4: dateFormat, var5: findAdmin.rows[0].id, var6: graphType, var7: findAdmin.rows[0].company_id, var8 : email, var9 : appPassword  })
+            let s3 = dbScript(db_sql['Q89'], { var1: id, var2: currency, var3: phoneFormat, var4: dateFormat, var5: findAdmin.rows[0].id, var6 :findAdmin.rows[0].company_id })
 
             let addConfig = await connection.query(s3)
 
@@ -65,17 +65,17 @@ module.exports.configList = async (req, res) => {
 
             let s2 = dbScript(db_sql['Q90'], { var1: findAdmin.rows[0].company_id })
             let configList = await connection.query(s2)
+
             let configuration = {}
 
-            if (configList.rowCount > 0) {
+            if (configList.rowCount > 0 ) {
 
                 configuration.id = configList.rows[0].id
                 configuration.currency = configList.rows[0].currency,
                 configuration.phoneFormat = configList.rows[0].phone_format,
                 configuration.dateFormat = configList.rows[0].date_format,
-                configuration.graphType = configList.rows[0].graph_type,
-                configuration.email =  configList.rows[0].email,
-                configuration.appPassword =  configList.rows[0].app_password
+                configuration.email = configList.rows[0].email,
+                configuration.appPassword = configList.rows[0].app_password
                 res.json({
                     status: 200,
                     success: true,
@@ -87,7 +87,8 @@ module.exports.configList = async (req, res) => {
                 configuration.currency = "",
                 configuration.phoneFormat = "",
                 configuration.dateFormat = "",
-                configuration.graphType = ""
+                configuration.email = "",
+                configuration.appPassword = ""
                 res.json({
                     status: 200,
                     success: false,
@@ -110,4 +111,59 @@ module.exports.configList = async (req, res) => {
             message: error.message,
         })
     }
+}
+
+
+module.exports.addImapCredentials = async (req, res) => {
+    try {
+        let userEmail = req.user.email
+        let { email, appPassword } = req.body
+
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+            await connection.query('BEGIN')
+
+            let _dt = new Date().toISOString();
+            let s2 = dbScript(db_sql['Q151'], { var1: _dt, var2: findAdmin.rows[0].company_id })
+            let updateCredential = await connection.query(s2)
+
+            let id = uuid.v4()
+            let s3 = dbScript(db_sql['Q152'], { var1 : id, var2 : email, var3 : appPassword, var4 : findAdmin.rows[0].company_id })
+            let addCredentails = await connection.query(s3)
+
+            if(addCredentails.rowCount > 0){
+                await connection.query('COMMIT')
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Credentials added successfully"
+                })
+            }else{
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+
 }
