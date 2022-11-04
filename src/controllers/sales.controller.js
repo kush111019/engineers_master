@@ -5,9 +5,7 @@ const { mysql_real_escape_string } = require('../utils/helper')
 
 
 module.exports.customerListforSales = async (req, res) => {
-
     try {
-
         let userEmail = req.user.email
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -156,6 +154,7 @@ module.exports.createSalesCommission = async (req, res) => {
             qualification,
             is_qualified,
             targetAmount,
+            currency,
             products,
             targetClosingDate,
             businessId,
@@ -182,7 +181,7 @@ module.exports.createSalesCommission = async (req, res) => {
                 revenueId = (revenueId == '') ? '' : revenueId
 
                 let id = uuid.v4()
-                let s5 = dbScript(db_sql['Q58'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: findAdmin.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var12: JSON.stringify(products), var13: salesType, var14: subscriptionPlan, var15: recurringDate })
+                let s5 = dbScript(db_sql['Q58'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: findAdmin.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var12: JSON.stringify(products), var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16 : currency })
                 let createSalesConversion = await connection.query(s5)
 
                 let s6 = dbScript(db_sql['Q61'], { var1: customerCommissionSplitId, var2: findAdmin.rows[0].company_id })
@@ -204,7 +203,7 @@ module.exports.createSalesCommission = async (req, res) => {
                 }
 
                 let logId = uuid.v4()
-                let s9 = dbScript(db_sql['Q47'], { var1: logId, var2: createSalesConversion.rows[0].id, var3: customerCommissionSplitId, var4: mysql_real_escape_string(qualification), var5: is_qualified, var6: targetAmount, var7: JSON.stringify(products), var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: findAdmin.rows[0].company_id, var12: revenueId, var13: businessId, var14: customerCloserId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate })
+                let s9 = dbScript(db_sql['Q47'], { var1: logId, var2: createSalesConversion.rows[0].id, var3: customerCommissionSplitId, var4: mysql_real_escape_string(qualification), var5: is_qualified, var6: targetAmount, var7: JSON.stringify(products), var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: findAdmin.rows[0].company_id, var12: revenueId, var13: businessId, var14: customerCloserId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate, var19: currency })
                 let createLog = await connection.query(s9)
 
 
@@ -337,6 +336,7 @@ module.exports.salesCommissionList = async (req, res) => {
                     closer.qualification = data.qualification
                     closer.is_qualified = data.is_qualified
                     closer.targetAmount = data.target_amount
+                    closer.currency = data.currency
                     closer.targetClosingDate = data.target_closing_date
                     closer.productMatch = data.product_match
                     closer.is_overwrite = data.is_overwrite
@@ -405,6 +405,7 @@ module.exports.updateSalesCommission = async (req, res) => {
             qualification,
             is_qualified,
             targetAmount,
+            currency,
             products,
             targetClosingDate,
             supporters,
@@ -433,7 +434,7 @@ module.exports.updateSalesCommission = async (req, res) => {
 
                 let _dt = new Date().toISOString();
 
-                let s5 = dbScript(db_sql['Q68'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: findAdmin.rows[0].company_id, var7: businessId, var8: revenueId, var9: qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var13: JSON.stringify(products), var14: salesType, var15: subscriptionPlan, var16: recurringDate })
+                let s5 = dbScript(db_sql['Q68'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: findAdmin.rows[0].company_id, var7: businessId, var8: revenueId, var9: qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var13: JSON.stringify(products), var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17 : currency })
                 let updateSalesCommission = await connection.query(s5)
 
                 let s6 = dbScript(db_sql['Q61'], { var1: customerCommissionSplitId, var2: findAdmin.rows[0].company_id })
@@ -457,7 +458,7 @@ module.exports.updateSalesCommission = async (req, res) => {
                 }
 
                 let logId = uuid.v4()
-                let s10 = dbScript(db_sql['Q47'], { var1: logId, var2: updateSalesCommission.rows[0].id, var3: customerCommissionSplitId, var4: mysql_real_escape_string(qualification), var5: is_qualified, var6: targetAmount, var7: JSON.stringify(products), var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: findAdmin.rows[0].company_id, var12: revenueId, var13: businessId, var14: customerCloserId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate })
+                let s10 = dbScript(db_sql['Q47'], { var1: logId, var2: updateSalesCommission.rows[0].id, var3: customerCommissionSplitId, var4: mysql_real_escape_string(qualification), var5: is_qualified, var6: targetAmount, var7: JSON.stringify(products), var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: findAdmin.rows[0].company_id, var12: revenueId, var13: businessId, var14: customerCloserId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate, var19 : currency })
                 let createLog = await connection.query(s10)
 
                 if (updateSalesCommission.rowCount > 0 && findSalesCommission.rowCount > 0 && updateSalesCloser.rowCount > 0 && updateSalesSupporter.rowCount > 0 && createLog.rowCount > 0) {
@@ -662,6 +663,7 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                     closer.qualification = data.qualification
                     closer.is_qualified = data.is_qualified
                     closer.targetAmount = data.target_amount
+                    closer.currency = data.currency
                     closer.targetClosingDate = data.target_closing_date
                     closer.productMatch = data.product_match
                     closer.is_overwrite = data.is_overwrite

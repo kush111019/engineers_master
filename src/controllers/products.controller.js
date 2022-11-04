@@ -14,7 +14,8 @@ module.exports.addProduct = async (req, res) => {
             description,
             availableQuantity,
             price,
-            tax
+            tax,
+            currency
         } = req.body
 
         productImage = (productImage == "") ? 'http://143.198.102.134:3003/productImages/defaultproductImage.png' : productImage;
@@ -30,7 +31,7 @@ module.exports.addProduct = async (req, res) => {
             if (checkPermission.rows[0].permission_to_create) {
                 await connection.query('BEGIN')
                 let id = uuid.v4()
-                let s4 = dbScript(db_sql['Q100'], { var1: id, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q100'], { var1: id, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: findAdmin.rows[0].company_id, var9 : currency })
                 let addProduct = await connection.query(s4)
                 if (addProduct.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -80,7 +81,8 @@ module.exports.updateProduct = async (req, res) => {
             description,
             availableQuantity,
             price,
-            tax
+            tax,
+            currency
         } = req.body
 
         productImage = (productImage == "") ? 'http://143.198.102.134:3003/productImages/defaultproductImage.png' : productImage;
@@ -96,7 +98,7 @@ module.exports.updateProduct = async (req, res) => {
             if (checkPermission.rows[0].permission_to_update) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q101'], { var1: productId, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: _dt, var9: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q101'], { var1: productId, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: _dt, var9: findAdmin.rows[0].company_id, var10 : currency })
                 let updateProduct = await connection.query(s4)
                 if (updateProduct.rowCount > 0) {
                     await connection.query('COMMIT')
