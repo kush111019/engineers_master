@@ -23,10 +23,8 @@ let io = require("socket.io")(http, {
       "Access-Control-Allow-Headers",
       "Origin, X-Requested-With, Content-Type, Accept, Authorization",
     ],
-    credentials: true,
-    transports: ['websocket', 'polling'],
-  },
-  allowEIO3 : true
+    credentials: true
+  }
 });
 
 app.use(cors());
