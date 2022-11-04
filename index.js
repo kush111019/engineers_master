@@ -27,7 +27,7 @@ cronJob.start();
 
 let options = {
     proxy: false,
-    num: require('os').cpus().length
+    num: os.cpus().length
 }
 
 let server = sticky(options, () => {
