@@ -9,6 +9,7 @@ module.exports.createRevenueForecast = async (req, res) => {
         let {
             timeline,
             revenue,
+            currency,
             growthWindow,
             growthPercentage,
             startDate,
@@ -29,7 +30,7 @@ module.exports.createRevenueForecast = async (req, res) => {
                 await connection.query('BEGIN')
 
                 let id = uuid.v4()
-                let s4 = dbScript(db_sql['Q72'], { var1: id, var2: timeline, var3: revenue, var4: growthWindow, var5: growthPercentage, var6: startDate, var7: endDate, var8: findAdmin.rows[0].id, var9: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q72'], { var1: id, var2: timeline, var3: revenue, var4: growthWindow, var5: growthPercentage, var6: startDate, var7: endDate, var8: findAdmin.rows[0].id, var9: findAdmin.rows[0].company_id, var10: currency })
 
                 let createForecast = await connection.query(s4)
 
@@ -136,6 +137,7 @@ module.exports.updateRevenueForecast = async (req, res) => {
             revenueForecastId,
             timeline,
             revenue,
+            currency,
             growthWindow,
             growthPercentage,
             startDate,
@@ -157,7 +159,7 @@ module.exports.updateRevenueForecast = async (req, res) => {
 
                 let _dt = new Date().toISOString();
 
-                let s4 = dbScript(db_sql['Q74'], { var1: revenueForecastId, var2: timeline, var3: revenue, var4: growthWindow, var5: growthPercentage, var6: startDate, var7: endDate, var8: _dt, var9: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q74'], { var1: revenueForecastId, var2: timeline, var3: revenue, var4: growthWindow, var5: growthPercentage, var6: startDate, var7: endDate, var8: _dt, var9: findAdmin.rows[0].company_id, var10 : currency })
 
                 let updateForecast = await connection.query(s4)
 
@@ -422,7 +424,8 @@ module.exports.actualVsForecast = async (req, res) => {
                     actualVsForecastObj = {
                         actualRevenue: (actualData.length > 0) ? actualData : [],
                         forecastRevenue: (revenueData.length > 0) ? revenueData : [],
-                        date: (dateArr.length > 0) ? dateArr : []
+                        date: (dateArr.length > 0) ? dateArr : [],
+                        currency : forecastRevenue.rows[0].currency
                     }
                     res.json({
                         status: 200,
@@ -436,7 +439,8 @@ module.exports.actualVsForecast = async (req, res) => {
                     actualVsForecastObj = {
                         actualRevenue: [],
                         forecastRevenue: [],
-                        date: []
+                        date: [],
+                        currency : ""
                     }
                     res.json({
                         status: 200,

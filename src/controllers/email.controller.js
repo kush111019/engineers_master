@@ -147,7 +147,7 @@ module.exports.fetchEmails = async (req, res) => {
             })
             imap.connect();
         } else {
-            if(findCredentials.rows.length == 0){
+            if(findCredentials.rowCount == 0){
                 res.json({
                     status: 400,
                     success: false,
@@ -303,12 +303,15 @@ module.exports.sendEmail = async (req, res) => {
                 let storeSentMail = await connection.query(s2)
 
                 let attachmentsArr = [];
-                for (let item of attachments) {
-                    attachmentsArr.push({
-                        filename: item.filename,
-                        path: item.path
-                    })
+                if(attachments.length > 0){
+                    for (let item of attachments) {
+                        attachmentsArr.push({
+                            filename: item.filename,
+                            path: item.path
+                        })
+                    }
                 }
+                
                 if (storeSentMail.rowCount > 0) {
                     await connection.query('COMMIT')
                     await sendEmailToContact2(emails, subject, message, cc, senderEmail, attachmentsArr);
@@ -326,7 +329,7 @@ module.exports.sendEmail = async (req, res) => {
                     })
                 }
             } else {
-                if(findCredentials.rows.length == 0){
+                if(findCredentials.rowCount == 0){
                     res.json({
                         status: 400,
                         success: false,
@@ -504,7 +507,7 @@ module.exports.readEmail = async (req, res) => {
             };
             await setEmailRead(imapConfig, messageId, res)
         } else {
-            if(findCredentials.rows.length == 0){
+            if(findCredentials.rowCount == 0){
                 res.json({
                     status: 400,
                     success: false,

@@ -7,7 +7,6 @@ const {
     resetPasswordMail2,
     welcomeEmail2,
 } = require("../utils/sendMail")
-const {fetchEmails} = require('./email.controller')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const jsonwebtoken = require("jsonwebtoken");
 const uuid = require("node-uuid");
@@ -38,6 +37,7 @@ let createAdmin = async (bodyData, cId, res) => {
         mobileNumber,
         companyAddress,
         phoneNumber,
+        countryCode,
         encryptedPassword
     } = bodyData
 
@@ -63,8 +63,12 @@ let createAdmin = async (bodyData, cId, res) => {
         let s5 = dbScript(db_sql['Q3'], { var1: id, var2: mysql_real_escape_string(name), 
                     var3: cId, var4: companyLogo, var5: emailAddress, var6: mobileNumber, 
                     var7: phoneNumber, var8: encryptedPassword, var9: role_id, 
-                    var10: mysql_real_escape_string(companyAddress), var11: expiryDate })
+                    var10: mysql_real_escape_string(companyAddress), var11: expiryDate, var12 : countryCode })
         let saveuser = await connection.query(s5)
+        
+        let configId = uuid.v4()
+        let s10 = dbScript(db_sql['Q89'], {var1 : configId, var2 : "$", var3 : "us", var4 : "MM-DD-YYYY", var5: cId})
+        let addConfig = await connection.query(s10)
 
         let s6 = dbScript(db_sql['Q7'], {})
         let findModules = await connection.query(s6)
@@ -81,7 +85,7 @@ let createAdmin = async (bodyData, cId, res) => {
                     var3: role_id })
         let updateModule = await connection.query(s8)
 
-        if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0) {
+        if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0 && addConfig.rowCount > 0) {
             await connection.query('COMMIT')
             const payload = {
                 id: saveuser.rows[0].id,
@@ -361,8 +365,6 @@ module.exports.login = async (req, res) => {
                             })
                         }
 
-                        let fetchEmailFn = fetchEmails(admin.rows[0].company_id)
-
                         // let s6 = dbScript(db_sql['Q116'], { var1: admin.rows[0].company_id })
                         // let payment = await connection.query(s6)
                         // let paymentStatus = 'pending';
@@ -555,6 +557,7 @@ module.exports.updateUserProfile = async (req, res) => {
             emailAddress,
             mobileNumber,
             phoneNumber,
+            countryCode,
             address
         } = req.body
 
@@ -564,7 +567,7 @@ module.exports.updateUserProfile = async (req, res) => {
         if (findUser.rows.length > 0) {
             await connection.query('BEGIN')
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q12'], { var1: mysql_real_escape_string(name), var2: avatar, var3: emailAddress, var4: phoneNumber, var5: mobileNumber, var6: mysql_real_escape_string(address), var7: _dt, var8: userMail, var9: findUser.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q12'], { var1: mysql_real_escape_string(name), var2: avatar, var3: emailAddress, var4: phoneNumber, var5: mobileNumber, var6: mysql_real_escape_string(address), var7: _dt, var8: userMail, var9: findUser.rows[0].company_id, var10 : countryCode })
             let updateUser = await connection.query(s2)
             await connection.query('COMMIT')
             if (updateUser.rowCount > 0) {
