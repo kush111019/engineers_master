@@ -13,19 +13,19 @@ const Router = require('./src/routes/index');
 let chat = require('./src/controllers/chat.controller')
 const http = require('http').createServer(app)
 // const io = require('./src/utils/socket')
-let io = require("socket.io")(http, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-    allowedHeaders: [
-      "Access-Control-Allow-Origin",
-      "*",
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
-    ],
-    credentials: true
-  }
-});
+// let io = require("socket.io")(http, {
+//   cors: {
+//     origin: "*",
+//     methods: ["GET", "POST"],
+//     allowedHeaders: [
+//       "Access-Control-Allow-Origin",
+//       "*",
+//       "Access-Control-Allow-Headers",
+//       "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+//     ],
+//     credentials: true
+//   }
+// });
 
 app.use(cors());
 app.use(express.json());
@@ -40,36 +40,31 @@ let cronJob = cron.schedule('59 59 23 * * *', async () => {
 });
 cronJob.start();
 
-// let cronJob1 = cron.schedule('*/30 * * * *', async () => {
-//    await fetchEmails()
+// io.on("connection", (socket) => {
+//   console.log("Connected to socket.io");
+//   socket.on("setup", (userData) => {
+//     socket.join(userData.id);
+//     socket.emit("connected");
+//   });
+
+//   socket.on("join chat", (room) => {
+//     socket.join(room);
+//     console.log("User Joined Room: " + room);
+//   });
+//   socket.on("new message", (newMessageRecieved) => {
+//     if (!newMessageRecieved.users) return console.log("chat.users not defined");
+
+//     newMessageRecieved.users.forEach((user) => {
+//       if (user.id == newMessageRecieved.sender.id) return;
+
+//       socket.in(user.id).emit("message recieved", newMessageRecieved);
+//     });
+//   });
+//   socket.off("setup", () => {
+//     console.log("USER DISCONNECTED");
+//     socket.leave(userData.id);
+//   });
 // });
-// cronJob1.start();
-
-io.on("connection", (socket) => {
-  console.log("Connected to socket.io");
-  socket.on("setup", (userData) => {
-    socket.join(userData.id);
-    socket.emit("connected");
-  });
-
-  socket.on("join chat", (room) => {
-    socket.join(room);
-    console.log("User Joined Room: " + room);
-  });
-  socket.on("new message", (newMessageRecieved) => {
-    if (!newMessageRecieved.users) return console.log("chat.users not defined");
-
-    newMessageRecieved.users.forEach((user) => {
-      if (user.id == newMessageRecieved.sender.id) return;
-
-      socket.in(user.id).emit("message recieved", newMessageRecieved);
-    });
-  });
-  socket.off("setup", () => {
-    console.log("USER DISCONNECTED");
-    socket.leave(userData.id);
-  });
-});
 
 // const numCpu = os.cpus().length;
 // if (cluster.isMaster) {
@@ -81,9 +76,9 @@ io.on("connection", (socket) => {
 //     cluster.fork();
 //   })
 // } else {
-  http.listen(process.env.LISTEN_PORT, () => {
-    console.log(`Hirise sales is running on ${process.env.LISTEN_PORT} `);
-  });
+  // http.listen(process.env.LISTEN_PORT, () => {
+  //   console.log(`Hirise sales is running on ${process.env.LISTEN_PORT} `);
+  // });
 
   app.use('/api/v1', Router);
 
@@ -94,3 +89,65 @@ io.on("connection", (socket) => {
 // app.get('/chat', (req, res) => {
 //   res.redirect('index.html')
 // });
+
+
+
+let sticky = require('socketio-sticky-session')
+let options = {
+    proxy: false,
+    num: require('os').cpus().length
+}
+
+let server = sticky(options, function() {
+
+    let server = app.listen();
+    // var io = require('socket.io').listen(server);
+    let io = require("socket.io")(http, {
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+        allowedHeaders: [
+          "Access-Control-Allow-Origin",
+          "*",
+          "Access-Control-Allow-Headers",
+          "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+        ],
+        credentials: true
+      }
+    });
+
+    let live_data = io.of('/live_data');
+    // live_data.on('connection',function(socket){
+    //     console.log('Connected: %s', socket.id);
+    // });
+    live_data.on("connection", (socket) => {
+      console.log("Connected to socket.io");
+      socket.on("setup", (userData) => {
+        socket.join(userData.id);
+        socket.emit("connected");
+      });
+    
+      socket.on("join chat", (room) => {
+        socket.join(room);
+        console.log("User Joined Room: " + room);
+      });
+      socket.on("new message", (newMessageRecieved) => {
+        if (!newMessageRecieved.users) return console.log("chat.users not defined");
+    
+        newMessageRecieved.users.forEach((user) => {
+          if (user.id == newMessageRecieved.sender.id) return;
+    
+          socket.in(user.id).emit("message recieved", newMessageRecieved);
+        });
+      });
+      socket.off("setup", () => {
+        console.log("USER DISCONNECTED");
+        socket.leave(userData.id);
+      });
+    });
+    return server
+})
+
+server.listen(process.env.LISTEN_PORT, () => {
+console.log((cluster.worker ? 'WORKER ' + cluster.worker.id : 'MASTER') + ' | PORT ' + process.env.LISTEN_PORT)
+})
