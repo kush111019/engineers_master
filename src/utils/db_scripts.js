@@ -209,14 +209,12 @@ const db_sql = {
     "Q146" : `insert into emails (id, message_id, to_mail, from_mail,from_name, mail_date, subject, 
               mail_html, mail_text, mail_text_as_html, company_id, attechments) values('{var1}', '{var2}', 
               '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}', '{var10}','{var11}', '{var12}') returning *` ,
-    "Q147" : `select c.id as company_id, c.company_name, i.email, i.app_password from companies as c
-              inner join imap_credentials as i on i.company_id = c.id where c.id = '{var1}' and c.deleted_at is null and i.deleted_at is null`,
+    "Q147" : `select id, email, app_password, company_id from imap_credentials where company_id = '{var1}' and deleted_at is null`,
     "Q148" : `update emails set read_status = '{var2}' where message_id = '{var1}' and deleted_at is null returning *`,
     "Q149" : `insert into sent_email(id, from_email, to_email, cc, subject, message, company_id, sales_id, attechments) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}', '{var8}','{var9}') returning *`,    
     "Q150" : `select id, to_email, from_email, cc, subject, message,attechments, company_id,sales_id, created_at from sent_email where company_id = '{var1}' and sales_id = '{var2}' and deleted_at is null order by created_at desc`, 
     "Q151" : `update imap_credentials set deleted_at = '{var1}' where company_id = '{var2}' and deleted_at is null returning *`,
-    "Q152" : `insert into imap_credentials(id, email, app_password, company_id) values('{var1}','{var2}','{var3}','{var4}') returning *`  ,
-    "Q153" : `select id, email, app_password, company_id from imap_credentials where company_id = '{var1}' and deleted_at is null`                                 
+    "Q152" : `insert into imap_credentials(id, email, app_password, company_id) values('{var1}','{var2}','{var3}','{var4}') returning *`                               
    
  }
 

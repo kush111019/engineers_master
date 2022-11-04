@@ -170,7 +170,7 @@ module.exports.imapCredentials = async (req, res) => {
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q153'], { var1: findAdmin.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q147'], { var1: findAdmin.rows[0].company_id })
             let credentials = await connection.query(s2)
 
             let credentialObj = {}
