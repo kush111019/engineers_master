@@ -8,11 +8,8 @@ require('dotenv').config()
 const logger = require('./middleware/logger');
 const { paymentReminder, upgradeSubscriptionCronFn } = require('./src/utils/paymentReminder')
 require('./src/database/connection')
-const path = require('path')
 const Router = require('./src/routes/index');
-let chat = require('./src/controllers/chat.controller')
 const http = require('http').createServer(app)
-
 let sticky = require('socketio-sticky-session')
 
 app.use(cors());
@@ -28,50 +25,13 @@ let cronJob = cron.schedule('59 59 23 * * *', async () => {
 });
 cronJob.start();
 
-
-
-// const numCpu = os.cpus().length;
-// if (cluster.isMaster) {
-//   for (let i = 0; i < numCpu; i++) {
-//     cluster.fork();
-//   }
-//   cluster.on('exit', (worker, code, signal) => {
-//     console.log(`worker ${worker.process.pid} died`);
-//     cluster.fork();
-//   })
-// } else {
-  // http.listen(process.env.LISTEN_PORT, () => {
-  //   console.log(`Hirise sales is running on ${process.env.LISTEN_PORT} `);
-  // });
-
-// app.use('/api/v1', Router);
-
-// app.get('/api', (req, res) => {
-//   res.status(200).json({ msg: 'OK' });
-// });
-
-
-// }
-// app.get('/chat', (req, res) => {
-//   res.redirect('index.html')
-// });
-
-
-
-
 let options = {
     proxy: false,
     num: require('os').cpus().length
 }
 
-let server = sticky(options, function() {
-
+let server = sticky(options, () => {
     let server = http.listen();
-    // var io = require('socket.io').listen(server);
-    // let live_data = io.of('/live_data');
-    // live_data.on('connection',function(socket){
-    //     console.log('Connected: %s', socket.id);
-    // });
     let io = require("socket.io")(server,{
       cors: {
         origin: "*",
@@ -114,11 +74,6 @@ let server = sticky(options, function() {
 
     return server
 })
-
-
-
-
-
 server.listen(process.env.LISTEN_PORT, () => {
     console.log((cluster.worker ? 'WORKER ' + cluster.worker.id : 'MASTER') + ' | PORT ' + process.env.LISTEN_PORT)
 })
