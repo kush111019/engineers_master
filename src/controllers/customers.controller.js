@@ -540,13 +540,13 @@ module.exports.customerContactDetails = async (req, res) => {
 
                 let s4 = dbScript(db_sql['Q80'], { var1: customerCompanyId })
                 let businessDetails = await connection.query(s4)
-                console.log(businessDetails.rows, "businessDetails");
+                
                 let s5 = dbScript(db_sql['Q81'], { var1: customerCompanyId })
                 let revenueDetails = await connection.query(s5)
-                console.log(revenueDetails.rows, "revenue");
+
                 customerContactDetails.businessDetails = (businessDetails.rowCount > 0) ? businessDetails.rows : []
                 customerContactDetails.revenueDetails = (revenueDetails.rowCount > 0) ? revenueDetails.rows : []
-                console.log(customerContactDetails,"customerContactDetails");
+
                 res.json({
                     status: 200,
                     success: true,
