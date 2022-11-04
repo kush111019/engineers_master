@@ -70,8 +70,7 @@ module.exports.addUser = async (req, res) => {
             address,
             roleId,
             avatar,
-            encryptedPassword,
-            countryCode
+            encryptedPassword
         } = req.body
 
         avatar = (avatar == "") ? 'http://143.198.102.134:3003/companyLogo/user.jpg' : avatar;
@@ -91,7 +90,7 @@ module.exports.addUser = async (req, res) => {
                 let checkPermission = await connection.query(s4)
                 if (checkPermission.rows[0].permission_to_create) {
                     await connection.query('BEGIN')
-                    let s5 = dbScript(db_sql['Q49'], { var1: id, var2: mysql_real_escape_string(name), var3: findAdmin.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address), var10 :countryCode })
+                    let s5 = dbScript(db_sql['Q49'], { var1: id, var2: mysql_real_escape_string(name), var3: findAdmin.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address) })
                     let addUser = await connection.query(s5)
                     let _dt = new Date().toISOString();
                     let s6 = dbScript(db_sql['Q37'], { var1: roleId, var2: addUser.rows[0].id, var3: _dt })
@@ -301,7 +300,6 @@ module.exports.updateUser = async (req, res) => {
             emailAddress,
             name,
             mobileNumber,
-            countryCode,
             address,
             roleId,
             avatar
@@ -319,7 +317,7 @@ module.exports.updateUser = async (req, res) => {
 
                 let _dt = new Date().toISOString();
                 await connection.query('BEGIN')
-                let s4 = dbScript(db_sql['Q25'], { var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: findAdmin.rows[0].company_id , var10 : countryCode})
+                let s4 = dbScript(db_sql['Q25'], { var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: findAdmin.rows[0].company_id })
                 let updateUser = await connection.query(s4)
                 await connection.query('COMMIT')
                 if (updateUser.rowCount > 0) {
