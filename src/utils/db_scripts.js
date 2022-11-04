@@ -6,8 +6,8 @@ const db_sql = {
               values('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
     "Q3"   : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,phone_number,encrypted_password,role_id,address,expiry_date,is_verified,is_admin) 
               values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}',false,true) RETURNING *`,          
-    "Q4"   : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar,expiry_date, is_verified, is_admin, is_locked, country_code from users where email_address = '{var1}' and deleted_at is null` ,
-    "Q5"   : `select id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,expiry_date,country_code from users where email_address = '{var1}' and deleted_at is null ` , 
+    "Q4"   : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar,expiry_date, is_verified, is_admin, is_locked from users where email_address = '{var1}' and deleted_at is null` ,
+    "Q5"   : `select id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,expiry_date from users where email_address = '{var1}' and deleted_at is null ` , 
     "Q6"   : `update users set encrypted_password = '{var2}', is_verified = true, updated_at = '{var3}' where email_address = '{var1}' and company_id = '{var4}' RETURNING *`, 
     "Q7"   : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where deleted_at is null` ,
     "Q8"   : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where id = '{var1}' and deleted_at is null`,  
@@ -19,17 +19,17 @@ const db_sql = {
     "Q14"  : `select id, role_name, reporter, module_ids from roles where id = '{var1}' and deleted_at is null`,
     "Q15"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','{var2}','{var3}','{var4}') RETURNING *`, 
     "Q16"  : `select id, role_name, reporter , module_ids from roles where company_id = '{var1}' and deleted_at is null` ,
-    "Q17"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date,country_code, created_at from users where company_id = '{var1}' and deleted_at is null`,
+    "Q17"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at from users where company_id = '{var1}' and deleted_at is null`,
     "Q18"  : `select id, role_name ,  reporter from roles where reporter = '{var1}' and deleted_at is null`,
-    "Q19"  : `select id, min_amount, max_amount, percentage, is_max, currency from slabs where company_id ='{var1}' and deleted_at is null`,
-    "Q20"  : `insert into slabs(id,min_amount, max_amount, percentage, is_max, company_id, currency) values('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}', '{var7}') returning * `,
+    "Q19"  : `select id, min_amount, max_amount, percentage, is_max from slabs where company_id ='{var1}' and deleted_at is null`,
+    "Q20"  : `insert into slabs(id,min_amount, max_amount, percentage, is_max, company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') returning * `,
     "Q21"  : `update slabs set deleted_at = '{var2}' where company_id = '{var1}' and deleted_at is null returning *`,
     "Q22"  : `insert into permissions(id, role_id, module_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') returning *`,
     "Q23"  : `insert into permissions(id, role_id, module_id,user_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view ) values('{var1}','{var2}','{var3}','{var4}',true, true,true,true) returning *`,
     "Q24"  : `select id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id from users where role_id = '{var1}' and company_id = '{var2}' and deleted_at is null `,
-    "Q25"  : `update users set email_address = '{var1}', full_name ='{var2}', mobile_number = '{var3}', address = '{var4}', role_id = '{var5}' , updated_at = '{var7}',avatar = '{var8}', country_code = '{var10}' where id = '{var6}' and company_id = '{var9}' and deleted_at is null RETURNING * `,
+    "Q25"  : `update users set email_address = '{var1}', full_name ='{var2}', mobile_number = '{var3}', address = '{var4}', role_id = '{var5}' , updated_at = '{var7}',avatar = '{var8}' where id = '{var6}' and company_id = '{var9}' and deleted_at is null RETURNING * `,
     "Q26"  : `update users set deleted_at = '{var1}' where id = '{var2}' and company_id = '{var3}' and deleted_at is null RETURNING * `,
-    "Q27"  : `select id,email_address, full_name, company_id, avatar,mobile_number,address,role_id, country_code from users where id = '{var1}' and deleted_at is null`,
+    "Q27"  : `select id,email_address, full_name, company_id, avatar,mobile_number,address,role_id from users where id = '{var1}' and deleted_at is null`,
     "Q28"  : `update roles set role_name = '{var1}', reporter = '{var2}',updated_at = '{var4}' where id = '{var3}' and company_id = '{var5}' and deleted_at is null returning *`,
     "Q29"  : `update permissions set permission_to_create= '{var1}', permission_to_view = '{var2}', permission_to_update = '{var3}', permission_to_delete = '{var4}',updated_at = '{var6}' where role_id = '{var5}' and module_id = '{var7}' and deleted_at is null `,
     "Q30"  : `update roles set deleted_at = '{var2}' where id = '{var1}' and deleted_at is null returning *`,
@@ -51,10 +51,10 @@ const db_sql = {
     "Q44"  : `update customers set closed_at = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
     "Q45"  : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where module_name = '{var1}' and deleted_at is null` ,
     "Q46"  : `update customers set customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', business_id = '{var4}', revenue_id = '{var5}', address = '{var7}' where id = '{var6}' and company_id = '{var8}' and deleted_at is null returning *`,
-    "Q47"  : `insert into sales_commission_logs(id,sales_commission_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_id, business_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date, currency) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}', '{var17}', '{var18}', '{var19}' ) returning *`,
-    "Q48"  : `select id,sales_commission_id, customer_commission_split_id,  qualification, is_qualified, target_amount,currency, products, target_closing_date,customer_id, is_overwrite, company_id, revenue_id, business_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date, created_at from sales_commission_logs where sales_commission_id = '{var1}' and deleted_at is null ORDER BY created_at desc`,
-    "Q49"  : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,encrypted_password,role_id,address,country_code,is_verified) 
-              values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}',false) RETURNING *`, 
+    "Q47"  : `insert into sales_commission_logs(id,sales_commission_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_id, business_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}', '{var17}', '{var18}' ) returning *`,
+    "Q48"  : `select id,sales_commission_id, customer_commission_split_id,  qualification, is_qualified, target_amount, products, target_closing_date,customer_id, is_overwrite, company_id, revenue_id, business_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date, created_at from sales_commission_logs where sales_commission_id = '{var1}' and deleted_at is null ORDER BY created_at desc`,
+    "Q49"  : `insert into users(id,full_name,company_id,avatar,email_address,mobile_number,encrypted_password,role_id,address,is_verified) 
+              values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}',false) RETURNING *`, 
     "Q50"  : `update roles set deleted_at = '{var2}' where reporter = '{var1}' and deleted_at is null returning *`,  
     "Q51"  : `select id, customer_company_name from customer_companies where company_id = '{var1}' and replace(customer_company_name, ' ', '') ILIKE '%{var2}%' and deleted_at is null`, 
     "Q52"  : `update customers set  deleted_at = '{var1}' where id = '{var2}' and company_id = '{var3}' and deleted_at is null returning *`,
@@ -63,8 +63,8 @@ const db_sql = {
     "Q55"  : `select id, closer_percentage, supporter_percentage from commission_split where company_id ='{var1}' and deleted_at is null`,
     "Q56"  : `update commission_split set deleted_at = '{var1}' where id = '{var2}' and company_id = '{var3}'  and deleted_at is null returning *`,
     "Q57"  : `select id,customer_company_id ,customer_name, source, closed_at , user_id,address from customers where company_id = '{var1}' and closed_at is null  and deleted_at is null`,
-    "Q58"  : `insert into sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_id, revenue_id, qualification, is_qualified, target_amount, target_closing_date, products, sales_type, subscription_plan, recurring_date, currency ) values ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}','{var12}', '{var13}', '{var14}', '{var15}','{var16}') returning *`,
-    "Q59"  : `select sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_id, sc.revenue_id,sc.qualification, sc.is_qualified, sc.target_amount,sc.currency, sc.target_closing_date, sc.products,sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, c.closer_id, c.closer_percentage from sales_commission as sc 
+    "Q58"  : `insert into sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_id, revenue_id, qualification, is_qualified, target_amount, target_closing_date, products, sales_type, subscription_plan, recurring_date ) values ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}','{var12}', '{var13}', '{var14}', '{var15}') returning *`,
+    "Q59"  : `select sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_id, sc.revenue_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.target_closing_date, sc.products,sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, c.closer_id, c.closer_percentage from sales_commission as sc 
               inner join sales_closer as c on sc.id = c.sales_commission_id
               where sc.company_id = '{var1}' and sc.deleted_at is null and c.deleted_at is null`,
     "Q60"  : `select id,customer_company_id ,customer_name, source, closed_at , user_id, business_id, revenue_id, address from customers where id = '{var1}' and deleted_at is null`,
@@ -75,28 +75,28 @@ const db_sql = {
     "Q65"  : `update sales_commission set deleted_at = '{var1}' where id = '{var2}' and company_id = '{var3}' and deleted_at is null returning * `,
     "Q66"  : `update sales_supporter set deleted_at = '{var1}' where sales_commission_id = '{var2}' and company_id = '{var3}' and deleted_at is null returning * `,
     "Q67"  : `update sales_closer set deleted_at = '{var1}' where sales_commission_id = '{var2}' and company_id = '{var3}' and deleted_at is null returning * `,
-    "Q68"  : `update sales_commission set customer_id = '{var1}', customer_commission_split_id = '{var2}', is_overwrite = '{var3}', updated_at = '{var4}',business_id = '{var7}', revenue_id = '{var8}', qualification = '{var9}', is_qualified = '{var10}', target_amount = '{var11}', target_closing_date = '{var12}',products = '{var13}', sales_type = '{var14}', subscription_plan = '{var15}', recurring_date = '{var16}', currency = '{var17}'  where id = '{var5}' and company_id = '{var6}' and deleted_at is null returning *`,
+    "Q68"  : `update sales_commission set customer_id = '{var1}', customer_commission_split_id = '{var2}', is_overwrite = '{var3}', updated_at = '{var4}',business_id = '{var7}', revenue_id = '{var8}', qualification = '{var9}', is_qualified = '{var10}', target_amount = '{var11}', target_closing_date = '{var12}',products = '{var13}', sales_type = '{var14}', subscription_plan = '{var15}', recurring_date = '{var16}'  where id = '{var5}' and company_id = '{var6}' and deleted_at is null returning *`,
     "Q69"  : `update sales_closer set closer_id = '{var1}', closer_percentage = '{var2}', commission_split_id = '{var3}', updated_at = '{var4}' where sales_commission_id = '{var5}' and company_id = '{var6}' and deleted_at is null returning *`,
     "Q70"  : `update sales_supporter set deleted_at = '{var3}' where sales_commission_id = '{var1}' and company_id = '{var2}' and deleted_at is null returning *`,
     "Q71"  : `update follow_up_notes set deleted_at = '{var1}' where id = '{var2}' and deleted_at is null`,
-    "Q72"  : `insert into revenue_forecast(id, timeline, revenue, growth_window, growth_percentage, start_date, end_date, user_id, company_id, currency)
-              values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}', '{var10}') returning * `,
-    "Q73"  : `select id, timeline, revenue,currency, growth_window, growth_percentage, start_date, end_date, created_at 
+    "Q72"  : `insert into revenue_forecast(id, timeline, revenue, growth_window, growth_percentage, start_date, end_date, user_id, company_id)
+              values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}') returning * `,
+    "Q73"  : `select id, timeline, revenue, growth_window, growth_percentage, start_date, end_date, created_at 
               from revenue_forecast where company_id = '{var1}' and deleted_at is null`,   
     "Q74"  : `update revenue_forecast set timeline = '{var2}', revenue = '{var3}', growth_window = '{var4}', growth_percentage = '{var5}',
-              start_date = '{var6}', end_date = '{var7}', updated_at = '{var8}', currency = '{var10}' where id = '{var1}' and company_id = '{var9}' and deleted_at is null returning *` ,   
-    "Q75"  : `select timeline, revenue, growth_window, growth_percentage, start_date, end_date, currency, created_at from revenue_forecast where id = '{var1}' and company_id = '{var2}' and deleted_at is null  ` ,            
+              start_date = '{var6}', end_date = '{var7}', updated_at = '{var8}' where id = '{var1}' and company_id = '{var9}' and deleted_at is null returning *` ,   
+    "Q75"  : `select timeline, revenue, growth_window, growth_percentage, start_date, end_date, created_at from revenue_forecast where id = '{var1}' and company_id = '{var2}' and deleted_at is null  ` ,            
     "Q76"  : `insert into business_contact(id, full_name, email_address, phone_number, customer_company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,
     "Q77"  : `insert into revenue_contact(id, full_name, email_address, phone_number, customer_company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,
     "Q78"  : `update business_contact set full_name = '{var2}', email_address = '{var3}', phone_number = '{var4}', updated_at = '{var5}' where id = '{var1}' and deleted_at is null returning *`,
-    "Q79"  : `update revenue_contact set full_name = '{var2}', email_address = '{var3}', phone_number = '{var4}', updated_at = '{var5}', country_code = '{var6}' where id = '{var1}' and deleted_at is null returning *`,
-    "Q80"  : `select id, full_name as business_contact_name, email_address as business_email, phone_number as business_phone_number, country_code as business_country_code
+    "Q79"  : `update revenue_contact set full_name = '{var2}', email_address = '{var3}', phone_number = '{var4}', updated_at = '{var5}' where id = '{var1}' and deleted_at is null returning *`,
+    "Q80"  : `select id, full_name as business_contact_name, email_address as business_email, phone_number as business_phone_number
               from business_contact where customer_company_id = '{var1}' and deleted_at is null`,
-    "Q81"  : `select id, full_name as revenue_contact_name, email_address as revenue_email, phone_number as revenue_phone_number, country_code as revenue_country_code
+    "Q81"  : `select id, full_name as revenue_contact_name, email_address as revenue_email, phone_number as revenue_phone_number
               from revenue_contact where customer_company_id = '{var1}' and deleted_at is null`,
-    "Q82"  : `select id, full_name as business_contact_name, email_address as business_email, phone_number as business_phone_number, country_code as business_country_code
+    "Q82"  : `select id, full_name as business_contact_name, email_address as business_email, phone_number as business_phone_number
               from business_contact where id = '{var1}' and deleted_at is null`,  
-    "Q83"  : `select id, full_name as revenue_contact_name, email_address as revenue_email, phone_number as revenue_phone_number, country_code as revenue_country_code
+    "Q83"  : `select id, full_name as revenue_contact_name, email_address as revenue_email, phone_number as revenue_phone_number
               from revenue_contact where id = '{var1}' and deleted_at is null`,
     "Q84"  : `select target_amount from sales_commission where company_id = '{var1}' and deleted_at is null and EXTRACT(MONTH FROM created_at) = '{var2}'`,
     "Q85"  : `update customers set business_id = '{var2}' where id = '{var1}' returning *`,
@@ -123,13 +123,13 @@ const db_sql = {
     "Q97"  : `select id, target_amount, target_closing_date from sales_commission where customer_id = '{var1}' and deleted_at is null`,
     "Q98"  : `select id, target_amount, target_closing_date, customer_id from sales_commission where company_id = '{var1}' and deleted_at is null`,
     "Q99"  : `insert into contact_us(id, full_name, email, subject, messages, address) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') returning *`,
-    "Q100" : `insert into products(id, product_name,product_image,description,available_quantity,price,tax,company_id, currency)values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}')`,
-    "Q101" : `update products set product_name = '{var2}',product_image = '{var3}', description = '{var4}',available_quantity = '{var5}', price = '{var6}', tax = '{var7}', updated_at = '{var8}', currency = '{var10}' where id = '{var1}' and company_id = '{var9}' and deleted_at is null returning * `,
-    "Q102" : `select id, product_name, product_image, description, available_quantity, price, tax, currency, company_id, created_at, updated_at from products where company_id = '{var1}' and deleted_at is null`,
+    "Q100" : `insert into products(id, product_name,product_image,description,available_quantity,price,tax,company_id)values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}')`,
+    "Q101" : `update products set product_name = '{var2}',product_image = '{var3}', description = '{var4}',available_quantity = '{var5}', price = '{var6}', tax = '{var7}', updated_at = '{var8}' where id = '{var1}' and company_id = '{var9}' and deleted_at is null returning * `,
+    "Q102" : `select id, product_name, product_image, description, available_quantity, price, tax, company_id, created_at, updated_at from products where company_id = '{var1}' and deleted_at is null`,
     "Q103" : `update products set deleted_at = '{var2}' where id = '{var1}' and company_id = '{var3}' and deleted_at is null returning * `,
     "Q104" : `select id, product_name, product_image, description, available_quantity, price, tax, company_id, created_at, updated_at from products where id = '{var1}' and company_id = '{var2}' and deleted_at is null`,
-    "Q105" : `insert into products(id, company_id, product_name, product_image, description, available_quantity, price, tax, currency) 
-              values ('{var1}','{var2}',$1,$2,$3,$4,$5,$6,$7)`,
+    "Q105" : `insert into products(id, company_id, product_name, product_image, description, available_quantity, price, tax) 
+              values ('{var1}','{var2}',$1,$2,$3,$4,$5,$6)`,
     "Q106" : `select id, name, email, encrypted_password from super_admin where email = '{var1}'`,
     "Q107" : `select id, company_name, company_logo, company_address, created_at from companies where deleted_at is null`,
     "Q108" : `update super_admin set encrypted_password = '{var2}' where email = '{var1}'`,
