@@ -15,7 +15,7 @@ const http = require('http').createServer(app)
 // const io = require('./src/utils/socket')
 let io = require("socket.io")(http, {
   cors: {
-    origin: "http://143.198.102.134:3003/",
+    origin: "*",
     methods: ["GET", "POST"],
     allowedHeaders: [
       "Access-Control-Allow-Origin",
