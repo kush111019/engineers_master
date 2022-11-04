@@ -71,16 +71,16 @@ io.on("connection", (socket) => {
   });
 });
 
-const numCpu = os.cpus().length;
-if (cluster.isMaster) {
-  for (let i = 0; i < numCpu; i++) {
-    cluster.fork();
-  }
-  cluster.on('exit', (worker, code, signal) => {
-    console.log(`worker ${worker.process.pid} died`);
-    cluster.fork();
-  })
-} else {
+// const numCpu = os.cpus().length;
+// if (cluster.isMaster) {
+//   for (let i = 0; i < numCpu; i++) {
+//     cluster.fork();
+//   }
+//   cluster.on('exit', (worker, code, signal) => {
+//     console.log(`worker ${worker.process.pid} died`);
+//     cluster.fork();
+//   })
+// } else {
   http.listen(process.env.LISTEN_PORT, () => {
     console.log(`Hirise sales is running on ${process.env.LISTEN_PORT} `);
   });
@@ -90,7 +90,7 @@ if (cluster.isMaster) {
   app.get('/api', (req, res) => {
     res.status(200).json({ msg: 'OK' });
   });
-}
+// }
 // app.get('/chat', (req, res) => {
 //   res.redirect('index.html')
 // });
