@@ -22,7 +22,7 @@ const db_sql = {
     "Q17"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at from users where company_id = '{var1}' and deleted_at is null`,
     "Q18"  : `select id, role_name ,  reporter from roles where reporter = '{var1}' and deleted_at is null`,
     "Q19"  : `select id, min_amount, max_amount, percentage, is_max, currency from slabs where company_id ='{var1}' and deleted_at is null`,
-    "Q20"  : `insert into slabs(id,min_amount, max_amount, percentage, is_max, company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') returning * `,
+    "Q20"  : `insert into slabs(id,min_amount, max_amount, percentage, is_max, company_id, currency) values('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}', '{var7}') returning * `,
     "Q21"  : `update slabs set deleted_at = '{var2}' where company_id = '{var1}' and deleted_at is null returning *`,
     "Q22"  : `insert into permissions(id, role_id, module_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') returning *`,
     "Q23"  : `insert into permissions(id, role_id, module_id,user_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view ) values('{var1}','{var2}','{var3}','{var4}',true, true,true,true) returning *`,
