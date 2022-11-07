@@ -1,6 +1,8 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
+const Imap = require('imap')
+const nodemailer = require("nodemailer");
 
 
 module.exports.addConfigs = async (req, res) => {
@@ -112,20 +114,20 @@ module.exports.configList = async (req, res) => {
 module.exports.addImapCredentials = async (req, res) => {
     try {
         let userEmail = req.user.email
-        let { email, appPassword, host } = req.body
+        let { email, appPassword, imapHost, imapPort, smtpHost, smtpPort } = req.body
 
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
             await connection.query('BEGIN')
-
+            
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q151'], { var1: _dt, var2: findAdmin.rows[0].company_id })
             let updateCredential = await connection.query(s2)
 
             let id = uuid.v4()
-            let s3 = dbScript(db_sql['Q152'], { var1 : id, var2 : email, var3 : appPassword, var4 : findAdmin.rows[0].company_id, var5 : host })
+            let s3 = dbScript(db_sql['Q152'], { var1 : id, var2 : email, var3 : appPassword, var4 : findAdmin.rows[0].company_id, var5 : imapHost, var6 : imapPort, var7 : smtpHost, var8 : smtpPort })
             let addCredentails = await connection.query(s3)
 
             if(addCredentails.rowCount > 0){
@@ -176,11 +178,14 @@ module.exports.imapCredentials = async (req, res) => {
             let credentialObj = {}
 
             if (credentials.rowCount > 0 ) {
-
                 credentialObj.id = credentials.rows[0].id
-                credentialObj.email = credentials.rows[0].email,
+                credentialObj.email = credentials.rows[0].email
                 credentialObj.appPassword = credentials.rows[0].app_password
-                credentialObj.host = credentials.rows[0].host
+                credentialObj.imapHost = credentials.rows[0].imap_host
+                credentialObj.imapPort = credentials.rows[0].imap_port
+                credentialObj.smtpHost = credentials.rows[0].smtp_host
+                credentialObj.smtpPort = credentials.rows[0].smtp_port
+
                 res.json({
                     status: 200,
                     success: true,
@@ -191,7 +196,10 @@ module.exports.imapCredentials = async (req, res) => {
                 credentialObj.id = "",
                 credentialObj.email = "",
                 credentialObj.appPassword = "",
-                credentialObj.host = ""
+                credentialObj.imapHost = ""
+                credentialObj.imapPort = ""
+                credentialObj.smtpHost = ""
+                credentialObj.smtpPort = ""
                 res.json({
                     status: 200,
                     success: false,

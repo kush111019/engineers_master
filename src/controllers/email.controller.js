@@ -26,11 +26,12 @@ module.exports.fetchEmails = async (req, res) => {
         let mainArray = []
         if (findCredentials.rowCount > 0) {
 
+            console.log(findCredentials.rows,"findCredentials.rows");
             let imapConfig = {
                 user: findCredentials.rows[0].email,
                 password: findCredentials.rows[0].app_password,
-                host: findCredentials.rows[0].host,
-                port: 993,
+                host: findCredentials.rows[0].imap_host,
+                port: Number(findCredentials.rows[0].imap_port),
                 tls: true,
                 tlsOptions: {
                     rejectUnauthorized: false
@@ -60,6 +61,7 @@ module.exports.fetchEmails = async (req, res) => {
                 let formatedDate = `${month} ${day}, ${year}`
                 //console.log('October 28, 2021');
                 imap.search(['ALL', ['SINCE', formatedDate]], function (err, results) {
+                    console.log(results,"result");
                     if (err) {
                         console.log('Search error : ', err)
                     }
@@ -70,11 +72,7 @@ module.exports.fetchEmails = async (req, res) => {
                             msg.on('body', async function (stream, info) {
                                 j += 1
                                 let parsed = await simpleParser(stream)
-                                let text = (Buffer.from(parsed.text, "utf8")).toString('base64')
-                                let html = (Buffer.from(parsed.html, "utf8")).toString('base64')
-                                let textAsHtml = (Buffer.from(parsed.textAsHtml, "utf8")).toString('base64')
-                                let attachments = (parsed.attachments.length > 0) ? (Buffer.from(JSON.stringify(parsed.attachments), "utf8")).toString('base64') : null
-                                let date = parsed.date.toISOString()
+                              
                                 let obj = {
                                     messageId: parsed.messageId
                                 }
@@ -88,6 +86,12 @@ module.exports.fetchEmails = async (req, res) => {
                                         let findByFrom = await connection.query(s3)
                                         if (findByFrom.rowCount > 0) {
                                             await connection.query('BEGIN')
+                                            let text = (Buffer.from(parsed.text, "utf8")).toString('base64')
+                                            let html = (Buffer.from(parsed.html, "utf8")).toString('base64')
+                                            let textAsHtml = (Buffer.from(parsed.textAsHtml, "utf8")).toString('base64')
+                                            let attachments = (parsed.attachments.length > 0) ? (Buffer.from(JSON.stringify(parsed.attachments), "utf8")).toString('base64') : null
+                                            let date = parsed.date.toISOString()
+
                                             let id = uuid.v4()
                                             let s4 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5: parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: checkAdmin.rows[0].company_id, var12: attachments })
                                             let insertEmail = await connection.query(s4)
@@ -102,6 +106,12 @@ module.exports.fetchEmails = async (req, res) => {
                                     let findByFrom = await connection.query(s5)
                                     if (findByFrom.rowCount > 0) {
                                         await connection.query('BEGIN')
+                                        let text = (Buffer.from(parsed.text, "utf8")).toString('base64')
+                                        let html = (Buffer.from(parsed.html, "utf8")).toString('base64')
+                                        let textAsHtml = (Buffer.from(parsed.textAsHtml, "utf8")).toString('base64')
+                                        let attachments = (parsed.attachments.length > 0) ? (Buffer.from(JSON.stringify(parsed.attachments), "utf8")).toString('base64') : null
+                                        let date = parsed.date.toISOString()
+                                        
                                         let id = uuid.v4()
                                         let s6 = dbScript(db_sql['Q146'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5: parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: checkAdmin.rows[0].company_id, var12: attachments })
                                         let insertEmail = await connection.query(s6)
@@ -299,7 +309,9 @@ module.exports.sendEmail = async (req, res) => {
             if (findCredentials.rowCount > 0) {
                 let senderEmail = {
                     email: findCredentials.rows[0].email,
-                    password: findCredentials.rows[0].app_password
+                    password: findCredentials.rows[0].app_password,
+                    smtpHost : findCredentials.rows[0].smtp_host,
+                    smtpPort : findCredentials.rows[0].smtp_port
                 }
                 let bufferedMessage = (Buffer.from(message, "utf8")).toString('base64')
 
