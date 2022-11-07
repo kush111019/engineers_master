@@ -25,17 +25,11 @@ module.exports.fetchEmails = async (req, res) => {
         let findCredentials = await connection.query(s1)
         let mainArray = []
         if (findCredentials.rowCount > 0) {
-            
-            let host = (findCredentials.rows[0].email.split('@')[1] == 'gmail.com') ? "imap.gmail.com" : 
-            (findCredentials.rows[0].email.split('@')[1] == 'yahoo.com') ? "imap.mail.yahoo.com" : 
-            (findCredentials.rows[0].email.split('@')[1] == 'outlook.com') ? "imap-mail.outlook.com" : 
-            (findCredentials.rows[0].email.split('@')[1] == 'mail.com') ? "imap.mail.com" : 
-            (findCredentials.rows[0].email.split('@')[1] == 'zoho.com') ? "imap.zoho.com" : ""
 
             let imapConfig = {
                 user: findCredentials.rows[0].email,
                 password: findCredentials.rows[0].app_password,
-                host: host,
+                host: findCredentials.rows[0].host,
                 port: 993,
                 tls: true,
                 tlsOptions: {
@@ -512,16 +506,10 @@ module.exports.readEmail = async (req, res) => {
         let findCredentials = await connection.query(s1)
         if (findCredentials.rowCount > 0) {
 
-            let host = (findCredentials.rows[0].email.split('@')[1] == 'gmail.com') ? "imap.gmail.com" : 
-            (findCredentials.rows[0].email.split('@')[1] == 'yahoo.com') ? "imap.mail.yahoo.com" : 
-            (findCredentials.rows[0].email.split('@')[1] == 'outlook.com') ? "imap-mail.outlook.com" : 
-            (findCredentials.rows[0].email.split('@')[1] == 'mail.com') ? "imap.mail.com" : 
-            (findCredentials.rows[0].email.split('@')[1] == 'zoho.com') ? "imap.zoho.com" : ""
-
             let imapConfig = {
                 user: findCredentials.rows[0].email,
                 password: findCredentials.rows[0].app_password,
-                host: host,
+                host: findCredentials.rows[0].host,
                 port: 993,
                 tls: true,
                 tlsOptions: {

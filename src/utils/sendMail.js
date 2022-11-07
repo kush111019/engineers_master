@@ -480,20 +480,22 @@ module.exports.contactUsMail2 = async (email,fullName,subject,message,address) =
 
 module.exports.sendEmailToContact2 = async(emails, subject, message, cc, senderEmail, attechments) => {
 
-    let smtp = (senderEmail.email.split('@')[1] == 'gmail.com') ? "smtp.gmail.com" : 
-               (senderEmail.email.split('@')[1] == 'yahoo.com') ? "smtp.mail.yahoo.com" : 
-               (senderEmail.email.split('@')[1] == 'outlook.com') ? "smtp-mail.outlook.com" : 
-               (senderEmail.email.split('@')[1] == 'mail.com') ? "smtp.mail.com" : 
-               (senderEmail.email.split('@')[1] == 'zoho.com') ? "smtp.zoho.com" : ""
+    let senderMail = senderEmail.email.split('@')[1]
 
-    let ports = (senderEmail.email.split('@')[1] == 'gmail.com') ? 587 : 
-                (senderEmail.email.split('@')[1] == 'yahoo.com') ? 465 : 
-                (senderEmail.email.split('@')[1] == 'outlook.com') ? 587 : 
-                (senderEmail.email.split('@')[1] == 'mail.com') ? 587 : 
-                (senderEmail.email.split('@')[1] == 'zoho.com') ? 465 : 587
+    let smtp = (senderMail == 'gmail.com') ? "smtp.gmail.com" : 
+               (senderMail == 'yahoo.com') ? "smtp.mail.yahoo.com" : 
+               (senderMail == 'outlook.com') ? "smtp-mail.outlook.com" : 
+               (senderMail == 'mail.com') ? "smtp.mail.com" : 
+               (senderMail == 'zoho.com') ? "smtp.zoho.com" : `smtp.${senderMail}`
 
-    const smtpEndpoint = smtp;
-    const port = ports;
+    let port = (senderMail == 'gmail.com') ? 587 : 
+                (senderMail == 'yahoo.com') ? 465 : 
+                (senderMail == 'outlook.com') ? 587 : 
+                (senderMail == 'mail.com') ? 587 : 
+                (senderMail == 'zoho.com') ? 465 : 587
+
+   // const smtpEndpoint = "smtp.gmail.com";
+   // const port = 587;
     const senderAddress = senderEmail.email;
     let toAddresses = emails;
 
@@ -513,9 +515,9 @@ module.exports.sendEmailToContact2 = async(emails, subject, message, cc, senderE
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
     let transporter = nodemailer.createTransport({
-        host: smtpEndpoint,
+        host: smtp,
         port: port,
-        secure: false, // true for 465, false for other ports
+        secure: (port == 465) ? true : false, // true for 465, false for other ports
         auth: {
             user: smtpUsername,
             pass: smtpPassword

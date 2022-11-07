@@ -112,7 +112,7 @@ module.exports.configList = async (req, res) => {
 module.exports.addImapCredentials = async (req, res) => {
     try {
         let userEmail = req.user.email
-        let { email, appPassword } = req.body
+        let { email, appPassword, host } = req.body
 
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let findAdmin = await connection.query(s1)
@@ -125,7 +125,7 @@ module.exports.addImapCredentials = async (req, res) => {
             let updateCredential = await connection.query(s2)
 
             let id = uuid.v4()
-            let s3 = dbScript(db_sql['Q152'], { var1 : id, var2 : email, var3 : appPassword, var4 : findAdmin.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q152'], { var1 : id, var2 : email, var3 : appPassword, var4 : findAdmin.rows[0].company_id, var5 : host })
             let addCredentails = await connection.query(s3)
 
             if(addCredentails.rowCount > 0){
@@ -180,6 +180,7 @@ module.exports.imapCredentials = async (req, res) => {
                 credentialObj.id = credentials.rows[0].id
                 credentialObj.email = credentials.rows[0].email,
                 credentialObj.appPassword = credentials.rows[0].app_password
+                credentialObj.host = credentials.rows[0].host
                 res.json({
                     status: 200,
                     success: true,
@@ -189,7 +190,8 @@ module.exports.imapCredentials = async (req, res) => {
             } else {
                 credentialObj.id = "",
                 credentialObj.email = "",
-                credentialObj.appPassword = ""
+                credentialObj.appPassword = "",
+                credentialObj.host = ""
                 res.json({
                     status: 200,
                     success: false,
