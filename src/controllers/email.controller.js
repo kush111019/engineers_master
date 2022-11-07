@@ -41,7 +41,7 @@ module.exports.fetchEmails = async (req, res) => {
                 res.json({
                     status: 400,
                     success: false,
-                    message: err.message
+                    message: `IMAP Error : ${err.message}`
                 })
             });
 
