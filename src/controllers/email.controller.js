@@ -25,12 +25,13 @@ module.exports.fetchEmails = async (req, res) => {
         let findCredentials = await connection.query(s1)
         let mainArray = []
         if (findCredentials.rowCount > 0) {
+            
             let host = (findCredentials.rows[0].email.split('@')[1] == 'gmail.com') ? "imap.gmail.com" : 
             (findCredentials.rows[0].email.split('@')[1] == 'yahoo.com') ? "imap.mail.yahoo.com" : 
             (findCredentials.rows[0].email.split('@')[1] == 'outlook.com') ? "imap-mail.outlook.com" : 
             (findCredentials.rows[0].email.split('@')[1] == 'mail.com') ? "imap.mail.com" : 
             (findCredentials.rows[0].email.split('@')[1] == 'zoho.com') ? "imap.zoho.com" : ""
-            
+
             let imapConfig = {
                 user: findCredentials.rows[0].email,
                 password: findCredentials.rows[0].app_password,
@@ -43,7 +44,6 @@ module.exports.fetchEmails = async (req, res) => {
             }
             let imap = new Imap(imapConfig);
             imap.once('error', (err) => {
-                console.log(err);
                 res.json({
                     status: 400,
                     success: false,
@@ -149,7 +149,7 @@ module.exports.fetchEmails = async (req, res) => {
                         });
                     } else {
                         res.json({
-                            status: 400,
+                            status: 200,
                             success: false,
                             message: "No new email received"
                         })
@@ -443,6 +443,11 @@ const setEmailRead = async(imapConfig, messageId, res) => {
     const imap = new Imap(imapConfig)
     imap.once('error', err => {
         console.log("fetch error :- ", err);
+        res.json({
+            status: 400,
+            success: false,
+            message: err.message
+        })
     })
     imap.once('ready',() => {
        imap.openBox('INBOX', false, () => {
@@ -506,10 +511,17 @@ module.exports.readEmail = async (req, res) => {
         let s1 = dbScript(db_sql['Q147'], { var1: checkAdmin.rows[0].company_id })
         let findCredentials = await connection.query(s1)
         if (findCredentials.rowCount > 0) {
+
+            let host = (findCredentials.rows[0].email.split('@')[1] == 'gmail.com') ? "imap.gmail.com" : 
+            (findCredentials.rows[0].email.split('@')[1] == 'yahoo.com') ? "imap.mail.yahoo.com" : 
+            (findCredentials.rows[0].email.split('@')[1] == 'outlook.com') ? "imap-mail.outlook.com" : 
+            (findCredentials.rows[0].email.split('@')[1] == 'mail.com') ? "imap.mail.com" : 
+            (findCredentials.rows[0].email.split('@')[1] == 'zoho.com') ? "imap.zoho.com" : ""
+
             let imapConfig = {
                 user: findCredentials.rows[0].email,
                 password: findCredentials.rows[0].app_password,
-                host: 'imap.gmail.com',
+                host: host,
                 port: 993,
                 tls: true,
                 tlsOptions: {

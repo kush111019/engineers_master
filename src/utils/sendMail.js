@@ -479,8 +479,21 @@ module.exports.contactUsMail2 = async (email,fullName,subject,message,address) =
 }
 
 module.exports.sendEmailToContact2 = async(emails, subject, message, cc, senderEmail, attechments) => {
-    const smtpEndpoint = "smtp.gmail.com";
-    const port = 587;
+    
+    let smtp = (senderEmail.email.split('@')[1] == 'gmail.com') ? "smtp.gmail.com" : 
+               (senderEmail.email.split('@')[1] == 'yahoo.com') ? "smtp.mail.yahoo.com" : 
+               (senderEmail.email.split('@')[1] == 'outlook.com') ? "smtp-mail.outlook.com" : 
+               (senderEmail.email.split('@')[1] == 'mail.com') ? "smtp.mail.com" : 
+               (senderEmail.email.split('@')[1] == 'zoho.com') ? "smtp.zoho.com" : ""
+
+    let ports = (senderEmail.email.split('@')[1] == 'gmail.com') ? 587 : 
+                (senderEmail.email.split('@')[1] == 'yahoo.com') ? 465 : 
+                (senderEmail.email.split('@')[1] == 'outlook.com') ? 587 : 
+                (senderEmail.email.split('@')[1] == 'mail.com') ? 587 : 
+                (senderEmail.email.split('@')[1] == 'zoho.com') ? 465 : ""
+
+    const smtpEndpoint = smtp;
+    const port = ports;
     const senderAddress = senderEmail.email;
     let toAddresses = emails;
 
