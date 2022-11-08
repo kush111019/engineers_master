@@ -156,6 +156,9 @@ module.exports.fetchEmails = async (req, res) => {
                     }
                 });
             })
+            imap.once('end', function() {
+                console.log('Connection ended');
+            });
             imap.connect();
         } else {
             if(findCredentials.rowCount == 0){
