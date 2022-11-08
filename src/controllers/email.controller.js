@@ -85,7 +85,7 @@ module.exports.fetchEmails = async (req, res) => {
                                             let text = (Buffer.from(parsed.text, "utf8")).toString('base64')
                                             let html = (Buffer.from(parsed.html, "utf8")).toString('base64')
                                             let textAsHtml = (Buffer.from(parsed.textAsHtml, "utf8")).toString('base64')
-                                            let attachments = (parsed.attachments.length > 0) ? (Buffer.from(JSON.stringify(parsed.attachments), "utf8")).toString('base64') : null
+                                            let attachments = (parsed.attachments.length > 0) ? (Buffer.from(JSON.stringify(parsed.attachments), "utf8")).toString('base64') : ""
                                             let date = parsed.date.toISOString()
 
                                             let id = uuid.v4()
@@ -105,7 +105,7 @@ module.exports.fetchEmails = async (req, res) => {
                                         let text = (Buffer.from(parsed.text, "utf8")).toString('base64')
                                         let html = (Buffer.from(parsed.html, "utf8")).toString('base64')
                                         let textAsHtml = (Buffer.from(parsed.textAsHtml, "utf8")).toString('base64')
-                                        let attachments = (parsed.attachments.length > 0) ? (Buffer.from(JSON.stringify(parsed.attachments), "utf8")).toString('base64') : null
+                                        let attachments = (parsed.attachments.length > 0) ? (Buffer.from(JSON.stringify(parsed.attachments), "utf8")).toString('base64') : ""
                                         let date = parsed.date.toISOString()
                                         
                                         let id = uuid.v4()
@@ -195,7 +195,7 @@ module.exports.inbox = async(req, res) => {
                     let text = (Buffer.from(inboxData.mail_text, "base64")).toString('utf8')
                     let html = (Buffer.from(inboxData.mail_html, "base64")).toString('utf8')
                     let textAsHtml = (Buffer.from(inboxData.mail_text_as_html, "base64")).toString('utf8')
-                    let attachments = (inboxData.attechments != null) ? JSON.parse((Buffer.from(inboxData.attechments, "base64")).toString('utf8')) : []
+                    let attachments = (inboxData.attechments != "") ? JSON.parse((Buffer.from(inboxData.attechments, "base64")).toString('utf8')) : []
 
                     inboxArr.push({
                         id : inboxData.id,
