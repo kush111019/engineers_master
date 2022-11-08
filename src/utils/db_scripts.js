@@ -128,8 +128,8 @@ const db_sql = {
     "Q102" : `select id, product_name, product_image, description, available_quantity, price, tax, currency, company_id, created_at, updated_at from products where company_id = '{var1}' and deleted_at is null`,
     "Q103" : `update products set deleted_at = '{var2}' where id = '{var1}' and company_id = '{var3}' and deleted_at is null returning * `,
     "Q104" : `select id, product_name, product_image, description, available_quantity, price, tax, company_id, created_at, updated_at from products where id = '{var1}' and company_id = '{var2}' and deleted_at is null`,
-    "Q105" : `insert into products(id, company_id, product_name, product_image, description, available_quantity, price, tax) 
-              values ('{var1}','{var2}',$1,$2,$3,$4,$5,$6)`,
+    "Q105" : `insert into products(id, company_id, product_name, product_image, description, available_quantity, price, tax, currency) 
+              values ('{var1}','{var2}',$1,$2,$3,$4,$5,$6,$7)`,
     "Q106" : `select id, name, email, encrypted_password from super_admin where email = '{var1}'`,
     "Q107" : `select id, company_name, company_logo, company_address, created_at from companies where deleted_at is null`,
     "Q108" : `update super_admin set encrypted_password = '{var2}' where email = '{var1}'`,

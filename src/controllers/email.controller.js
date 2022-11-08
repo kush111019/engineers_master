@@ -59,7 +59,6 @@ module.exports.fetchEmails = async (req, res) => {
                 let formatedDate = `${month} ${day}, ${year}`
                 //console.log('October 28, 2021');
                 imap.search(['ALL', ['SINCE', formatedDate]], function (err, results) {
-                    console.log(results,"result");
                     if (err) {
                         console.log('Search error : ', err)
                     }
@@ -70,7 +69,6 @@ module.exports.fetchEmails = async (req, res) => {
                             msg.on('body', async function (stream, info) {
                                 j += 1
                                 let parsed = await simpleParser(stream)
-                              
                                 let obj = {
                                     messageId: parsed.messageId
                                 }
