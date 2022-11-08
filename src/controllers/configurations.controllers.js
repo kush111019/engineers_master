@@ -134,7 +134,7 @@ module.exports.addImapCredentials = async (req, res) => {
                 res.json({
                     status: 400,
                     success: false,
-                    message: `Error : ${err.message}`
+                    message: `IMAP Error : ${err.message}`
                 })
             });
 
@@ -148,7 +148,7 @@ module.exports.addImapCredentials = async (req, res) => {
                         res.json({
                             status: 400,
                             success: false,
-                            message: `Error : ${err.message}`
+                            message: `IMAP Error : ${err.message}`
                         })
                     } else {
                         let transporter = nodemailer.createTransport({
@@ -210,7 +210,7 @@ module.exports.addImapCredentials = async (req, res) => {
                             res.json({
                                 status: 400,
                                 success: false,
-                                message: `Error : ${err.message}`
+                                message: `SMTP Error : ${err.message}`
                             })
                         )
                     }
