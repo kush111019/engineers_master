@@ -517,8 +517,8 @@ module.exports.readEmail = async (req, res) => {
             let imapConfig = {
                 user: findCredentials.rows[0].email,
                 password: findCredentials.rows[0].app_password,
-                host: findCredentials.rows[0].host,
-                port: 993,
+                host: findCredentials.rows[0].imap_host,
+                port: findCredentials.rows[0].imap_port,
                 tls: true,
                 tlsOptions: {
                     rejectUnauthorized: false
