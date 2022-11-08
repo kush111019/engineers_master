@@ -195,7 +195,7 @@ module.exports.inbox = async(req, res) => {
                     let text = (Buffer.from(inboxData.mail_text, "base64")).toString('utf8')
                     let html = (Buffer.from(inboxData.mail_html, "base64")).toString('utf8')
                     let textAsHtml = (Buffer.from(inboxData.mail_text_as_html, "base64")).toString('utf8')
-                    let attachments = (inboxData.attechments == "") ? []  : JSON.parse((Buffer.from(inboxData.attechments, "base64")).toString('utf8'))
+                    let attachments = inboxData.attechments ? JSON.parse((Buffer.from(inboxData.attechments, "base64")).toString('utf8')) : []
 
                     inboxArr.push({
                         id : inboxData.id,
