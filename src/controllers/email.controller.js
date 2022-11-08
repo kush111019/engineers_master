@@ -25,8 +25,6 @@ module.exports.fetchEmails = async (req, res) => {
         let findCredentials = await connection.query(s1)
         let mainArray = []
         if (findCredentials.rowCount > 0) {
-
-            console.log(findCredentials.rows,"findCredentials.rows");
             let imapConfig = {
                 user: findCredentials.rows[0].email,
                 password: findCredentials.rows[0].app_password,
