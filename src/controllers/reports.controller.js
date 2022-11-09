@@ -25,7 +25,6 @@ let paginatedResults = (model, page) => {
     }
 
     data = model.slice(startIndex, endIndex);
-    console.log(data, "data");
     return data
 }
 

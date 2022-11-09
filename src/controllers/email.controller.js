@@ -4,7 +4,7 @@ const { sendEmailToContact2, sendEmailToContact } = require("../utils/sendMail")
 const uuid = require("node-uuid");
 const {simpleParser} = require('mailparser');
 // const io = require('../utils/socket')
-const Imap = require('imap')
+const Imap = require('node-imap')
 
 const containsObject = (obj, list) => {
     for (let i = 0; i < list.length; i++) {

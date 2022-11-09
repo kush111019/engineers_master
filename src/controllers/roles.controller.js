@@ -354,7 +354,6 @@ module.exports.deleteRole = async (req, res) => {
                         }
                     }
                     await getRoles(roleId)
-                    console.log(roleIds,"roleIds");
                     if(roleIds.length > 0){
                         for(let id of roleIds){
                             await connection.query('BEGIN')

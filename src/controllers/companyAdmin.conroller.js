@@ -348,15 +348,19 @@ module.exports.login = async (req, res) => {
                             configuration.dateFormat = ""
                         }
 
+                        let s5 = dbScript(db_sql['Q147'],{var1: admin.rows[0].company_id})
+                        let imapCreds = await connection.query(s5)
+                        let isImapCred = (imapCreds.rowCount == 0) ? false : true
+
                         let moduleId = JSON.parse(checkRole.rows[0].module_ids)
                         let modulePemissions = []
                         for (data of moduleId) {
 
-                            let s4 = dbScript(db_sql['Q8'], { var1: data })
-                            let modules = await connection.query(s4)
+                            let s6 = dbScript(db_sql['Q8'], { var1: data })
+                            let modules = await connection.query(s6)
 
-                            let s5 = dbScript(db_sql['Q39'], { var1: checkRole.rows[0].id, var2: data })
-                            let findModulePermissions = await connection.query(s5)
+                            let s7 = dbScript(db_sql['Q39'], { var1: checkRole.rows[0].id, var2: data })
+                            let findModulePermissions = await connection.query(s7)
 
                             modulePemissions.push({
                                 moduleId: data,
@@ -391,6 +395,7 @@ module.exports.login = async (req, res) => {
                                 profileImage: profileImage,
                                 modulePermissions: modulePemissions,
                                 configuration: configuration,
+                                isImapCred : isImapCred,
                                 //paymentStatus: paymentStatus,
                                 expiryDate: (checkRole.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : ''
                             }
