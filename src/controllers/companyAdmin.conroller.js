@@ -348,7 +348,7 @@ module.exports.login = async (req, res) => {
                             configuration.dateFormat = ""
                         }
 
-                        let s5 = dbScript(db_sql['Q147'],{var1: admin.rows[0].company_id})
+                        let s5 = dbScript(db_sql['Q147'],{var1: admin.rows[0].id, var2: admin.rows[0].company_id })
                         let imapCreds = await connection.query(s5)
                         let isImapCred = (imapCreds.rowCount == 0) ? false : true
 
