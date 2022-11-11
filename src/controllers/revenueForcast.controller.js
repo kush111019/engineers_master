@@ -1,6 +1,7 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
+const {getMonthDifference, getYearDifference} = require('../utils/helper')
 
 module.exports.createRevenueForecast = async (req, res) => {
 
@@ -200,21 +201,6 @@ module.exports.updateRevenueForecast = async (req, res) => {
         })
     }
 
-}
-
-let getMonthDifference = async (startDate, endDate) => {
-    var months = endDate.getMonth() - startDate.getMonth()
-        + (12 * (endDate.getFullYear() - startDate.getFullYear()));
-
-    if (endDate.getDate() < startDate.getDate()) {
-        months--;
-    }
-    return months;
-}
-
-let getYearDifference = async (startDate, endDate) => {
-    let years = endDate.getFullYear() - startDate.getFullYear();;
-    return years;
 }
 
 module.exports.actualVsForecast = async (req, res) => {

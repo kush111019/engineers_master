@@ -7,27 +7,10 @@ const {
     resetPasswordMail2,
     welcomeEmail2,
 } = require("../utils/sendMail")
-const {fetchEmails} = require('./email.controller')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const jsonwebtoken = require("jsonwebtoken");
 const uuid = require("node-uuid");
-const { mysql_real_escape_string } = require('../utils/helper')
+const { mysql_real_escape_string, verifyTokenFn } = require('../utils/helper')
 
-let verifyTokenFn = async (req) => {
-    let { token } = req.body
-    let user = await jsonwebtoken.verify(token, 'KEy', function (err, decoded) {
-        if (err) {
-            return 0
-        } else {
-            var decoded = {
-                id: decoded.id,
-                email: decoded.email,
-            };
-            return decoded;
-        }
-    });
-    return user
-}
 
 let createAdmin = async (bodyData, cId, res) => {
     let id = uuid.v4()
@@ -67,7 +50,7 @@ let createAdmin = async (bodyData, cId, res) => {
         let saveuser = await connection.query(s5)
 
         let configId = uuid.v4()
-        let s10 = dbScript(db_sql['Q89'], {var1 : configId, var2 : "$", var3 : "us", var4 : "MM-DD-YYYY", var5: cId})
+        let s10 = dbScript(db_sql['Q89'], {var1 : configId, var2 : "$", var3 : "us", var4 : "MM-DD-YYYY", var5 : saveuser.rows[0].id, var6: cId})
         let addConfig = await connection.query(s10)
 
         let s6 = dbScript(db_sql['Q7'], {})

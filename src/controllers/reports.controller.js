@@ -1,32 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-
-
-let paginatedResults = (model, page) => {
-    const limit = 10;
-
-    // calculating the starting and ending index
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
-
-    const results = {};
-    if (endIndex < model.length) {
-        results.next = {
-            page: page + 1,
-            limit: limit
-        };
-    }
-
-    if (startIndex > 0) {
-        results.previous = {
-            page: page - 1,
-            limit: limit
-        };
-    }
-
-    data = model.slice(startIndex, endIndex);
-    return data
-}
+const {paginatedResults} = require('../utils/helper')
 
 module.exports.revenuePerCustomer = async (req, res) => {
     try {
@@ -84,7 +58,8 @@ module.exports.revenuePerCustomer = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "No customers available, hence no revenues"
+                        message: "No customers available",
+                        data: revenuePerCustomer
                     })
                 }
 
@@ -162,7 +137,8 @@ module.exports.revenuePerProduct = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "No customers available"
+                        message: "Empty revenue per product",
+                        data : []
                     })
                 }
             } else {
@@ -246,7 +222,8 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "No Sales data available"
+                        message: "No Sales data available",
+                        data : []
                     })
                 }
 

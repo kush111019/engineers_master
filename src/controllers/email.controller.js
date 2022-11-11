@@ -3,17 +3,8 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 const { sendEmailToContact2, sendEmailToContact } = require("../utils/sendMail")
 const uuid = require("node-uuid");
 const {simpleParser} = require('mailparser');
-// const io = require('../utils/socket')
 const Imap = require('node-imap')
-
-const containsObject = (obj, list) => {
-    for (let i = 0; i < list.length; i++) {
-        if (list[i].message_id === obj.messageId) {
-            return true;
-        }
-    }
-    return false;
-}
+const {containsObject, setEmailRead} = require('../utils/helper')
 
 module.exports.fetchEmails = async (req, res) => {
     try {
@@ -458,69 +449,6 @@ module.exports.SentEmailList = async (req, res) => {
             message: error.message
         })
     }
-
-}
-
-const setEmailRead = async (imapConfig, messageId, res) => {
-    const imap = new Imap(imapConfig)
-    imap.once('error', err => {
-        console.log("fetch error :- ", err);
-        res.json({
-            status: 400,
-            success: false,
-            message: err.message
-        })
-    })
-    imap.once('ready', () => {
-        imap.openBox('INBOX', false, () => {
-
-            // here is how you fetch a single email by its messageId
-            const criteria = ["HEADER", "message-id", messageId]
-
-            imap.search([criteria], (err, results) => {
-                if (err || results.length === 0) {
-                    //throw "No email found for this ID"
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "No email found for this ID"
-                    })
-                }
-                // set mail as read
-                imap.setFlags(results, ['\\Seen'], async (err) => {
-                    if (err) {
-                        // throw err
-                        res.json({
-                            status: 400,
-                            success: false,
-                            message: err.message
-                        })
-                    } else {
-                        await connection.query('BEGIN')
-                        let s2 = dbScript(db_sql['Q148'], { var1: messageId, var2: true })
-                        let updateReadStatus = await connection.query(s2)
-                        if (updateReadStatus.rowCount > 0) {
-                            await connection.query('COMMIT')
-                            res.json({
-                                status: 200,
-                                success: true,
-                                message: "Message seen"
-                            })
-                        } else {
-                            await connection.query('ROLLBACK')
-                            res.json({
-                                status: 400,
-                                success: false,
-                                message: "Something Went Wrong"
-                            })
-                        }
-                    }
-                })
-            })
-        })
-    })
-    imap.once('close', () => { console.log("closed") })
-    imap.connect()
 
 }
 

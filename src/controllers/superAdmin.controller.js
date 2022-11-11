@@ -3,7 +3,7 @@ const uuid = require("node-uuid")
 const { issueJWT } = require("../utils/jwt")
 const { resetPasswordMail, resetPasswordMail2 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const jsonwebtoken = require("jsonwebtoken");
+const {verifyTokenFn} = require('../utils/helper')
 const stripe = require('stripe')(process.env.SECRET_KEY)
 
 module.exports.login = async (req, res) => {
@@ -133,22 +133,6 @@ module.exports.forgotPassword = async (req, res) => {
             data: ""
         })
     }
-}
-
-let verifyTokenFn = async (req) => {
-    let { token } = req.body
-    let superAdmin = await jsonwebtoken.verify(token, 'KEy', function (err, decoded) {
-        if (err) {
-            return 0
-        } else {
-            var decoded = {
-                id: decoded.id,
-                email: decoded.email,
-            };
-            return decoded;
-        }
-    });
-    return superAdmin
 }
 
 module.exports.resetPassword = async (req, res) => {
@@ -568,68 +552,6 @@ module.exports.dashboard = async (req, res) => {
 
 
 //----------------------------------Stripe Plans----------------------------------------------
-
-// module.exports.addPlan = async (req, res) => {
-//     try {
-//         let { name, type, amount, description, currency } = req.body
-//         let sAEmail = req.user.email
-//         let s1 = dbScript(db_sql['Q106'], { var1: sAEmail })
-//         let checkSuperAdmin = await connection.query(s1)
-//         if (checkSuperAdmin.rowCount > 0) {
-//             const product = await stripe.products.create({
-//                 name: name,
-//                 description: description
-//             });
-
-//             let plan = await stripe.plans.create({
-//                 interval: type,
-//                 currency: currency,
-//                 amount: amount * 100,
-//                 product: product.id
-//             })
-//             await connection.query('BEGIN')
-//             let id = uuid.v4()
-//             let s2 = dbScript(db_sql['Q110'], {
-//                 var1: id, var2: product.id, var3: product.name,
-//                 var4: product.description, var5: product.active, var6: plan.id, var7: plan.interval,
-//                 var8: plan.amount, var9: plan.currency
-//             })
-//             let addPlan = await connection.query(s2)
-//             if (addPlan.rowCount > 0) {
-//                 await connection.query('COMMIT')
-//                 res.json({
-//                     status: 200,
-//                     success: true,
-//                     message: "Plan added successfully",
-//                     data: ""
-//                 })
-//             } else {
-//                 await connection.query('ROLLBACK')
-//                 res.json({
-//                     status: 400,
-//                     success: false,
-//                     message: "Something went wrong",
-//                     data: ""
-//                 })
-//             }
-//         } else {
-//             res.json({
-//                 status: 400,
-//                 success: false,
-//                 message: "Super Admin not found",
-//                 data: ""
-//             })
-//         }
-//     } catch (error) {
-//         await connection.query('ROLLBACK')
-//         res.json({
-//             status: 400,
-//             success: false,
-//             message: error.message,
-//         })
-//     }
-
-// }
 
 module.exports.addPlan = async (req, res) => {
     try {
