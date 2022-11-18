@@ -46,7 +46,7 @@ const db_sql = {
     "Q38"  : `select id, customer_company_name from customer_companies where id = '{var1}' and deleted_at is null`,
     "Q39"  : `select c.id, c.customer_company_id , c.customer_name, c.source, c.closed_at , c.user_id, c.business_id, c.revenue_id, c.created_at, c.address,
               u.full_name as created_by from customers as c inner join users as u on u.id = c.user_id
-              where c.company_id = '{var1}' and c.deleted_at is null and u.deleted_at is null ORDER BY created_at asc`,
+              where c.company_id = '{var1}' and c.deleted_at is null and u.deleted_at is null ORDER BY created_at desc`,
     "Q40"  : `update customers set closed_at = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
     "Q41"  : `select m.id as module_id, m.module_name, m.module_type, p.id as permission_id, p.permission_to_view, 
               p.permission_to_create, p.permission_to_update, p.permission_to_delete
@@ -81,7 +81,7 @@ const db_sql = {
               inner join sales_closer as c on sc.id = c.sales_commission_id
               inner join users as u on u.id = c.closer_id
               inner join customers as cus on cus.id = sc.customer_id
-              where sc.company_id = '{var1}' and sc.deleted_at is null and c.deleted_at is null and u.deleted_at is null and cus.deleted_at is null`,
+              where sc.company_id = '{var1}' and sc.deleted_at is null and c.deleted_at is null and u.deleted_at is null and cus.deleted_at is null ORDER BY created_at desc`,
     "Q55"  : `select id,customer_company_id ,customer_name, source, closed_at , user_id, business_id, revenue_id, address from customers where id = '{var1}' and deleted_at is null`,
     "Q56"  : `select id, closer_percentage, supporter_percentage from commission_split where id ='{var1}' and company_id = '{var2}' and deleted_at is null`,
     "Q57"  : `insert into sales_supporter(id, commission_split_id ,supporter_id, supporter_percentage, sales_commission_id, company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') returning *`,
@@ -142,7 +142,7 @@ const db_sql = {
     "Q91"  : `insert into contact_us(id, full_name, email, subject, messages, address) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') returning *`,
     "Q92"  : `insert into products(id, product_name,product_image,description,available_quantity,price,tax,company_id, currency)values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}')`,
     "Q93"  : `update products set product_name = '{var2}',product_image = '{var3}', description = '{var4}',available_quantity = '{var5}', price = '{var6}', tax = '{var7}', updated_at = '{var8}', currency = '{var10}' where id = '{var1}' and company_id = '{var9}' and deleted_at is null returning * `,
-    "Q94"  : `select id, product_name, product_image, description, available_quantity, price, tax, currency, company_id, created_at, updated_at from products where company_id = '{var1}' and deleted_at is null`,
+    "Q94"  : `select id, product_name, product_image, description, available_quantity, price, tax, currency, company_id, created_at, updated_at from products where company_id = '{var1}' and deleted_at is null ORDER BY created_at desc`,
     "Q95"  : `update products set deleted_at = '{var2}' where id = '{var1}' and company_id = '{var3}' and deleted_at is null returning * `,
     "Q96"  : `select id, product_name, product_image, description, available_quantity, price, tax, company_id, created_at, updated_at from products where id = '{var1}' and company_id = '{var2}' and deleted_at is null`,
     "Q97"  : `insert into products(id, company_id, product_name, product_image, description, available_quantity, price, tax, currency) 
