@@ -926,7 +926,6 @@ module.exports.subcribedCompaniesList = async (req, res) => {
         let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
-
             let s2 = dbScript(db_sql['Q110'], {})
             let users = await connection.query(s2)
             if (users.rowCount > 0) {
@@ -949,6 +948,7 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                                     companyName: companyDetails.rows[0].company_name,
                                     companyAddress: companyDetails.rows[0].company_address,
                                     companyLogo: companyDetails.rows[0].company_logo,
+                                    isImapEnable : companyDetails.rows[0].is_imap_enable,
                                     planName: plan.rows[0].name,
                                     planInterval: plan.rows[0].interval,
                                     PlanExpiryDate: userData.expiry_date,
@@ -961,6 +961,7 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                                 companyName: companyDetails.rows[0].company_name,
                                 companyAddress: companyDetails.rows[0].company_address,
                                 companyLogo: companyDetails.rows[0].company_logo,
+                                isImapEnable : companyDetails.rows[0].is_imap_enable,
                                 planName: "Trial",
                                 planInterval: `${configList.rows[0].trial_days} days`,
                                 PlanExpiryDate: userData.expiry_date,
@@ -1235,5 +1236,55 @@ module.exports.extendExpiryByCompanyId = async (req, res) => {
             success: false,
             message: error.message,
         })
+    }
+}
+
+//----------------------------------Enable/disable IMAP---------------------------------
+
+module.exports.enableDisableImapService = async (req, res) => {
+    try {
+        let sAEmail = req.user.email
+        let {
+            companyId,
+            isImapEnable
+        } = req.body
+        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
+
+            let _dt = new Date().toISOString();
+            let s2 = dbScript(db_sql['Q146'],{var1 : isImapEnable, var2 : _dt, var3 : companyId})
+            let updateImapService = await connection.query(s2)
+
+            if(updateImapService.rowCount > 0){
+                let enableOrDisable = (isImapEnable == true) ? 'enabled' : 'disabled'
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: `Imap service ${enableOrDisable}`,
+                    data: ""
+                })
+            }else{
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "something went wrong",
+                    data: ""
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Super Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        }) 
     }
 }

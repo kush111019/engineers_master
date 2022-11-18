@@ -66,7 +66,7 @@ let createAdmin = async (bodyData, cId, res) => {
                     var3: role_id })
         let updateModule = await connection.query(s8)
 
-        if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0) {
+        if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0 && addConfig.rowCount > 0) {
             await connection.query('COMMIT')
             const payload = {
                 id: saveuser.rows[0].id,
@@ -300,44 +300,27 @@ module.exports.verifyUser = async (req, res) => {
 module.exports.login = async (req, res) => {
     try {
         let { emailAddress, password } = req.body;
-        let s1 = dbScript(db_sql['Q4'], { var1: emailAddress })
+        let s1 = dbScript(db_sql['Q145'], { var1: emailAddress })
         let admin = await connection.query(s1)
         if (admin.rows.length > 0) {
             if (admin.rows[0].encrypted_password == password) {
                 if (admin.rows[0].is_verified == true) {
                     if (admin.rows[0].is_locked == false) {
-
-                        let s2 = dbScript(db_sql['Q9'], { var1: admin.rows[0].company_id })
-                        let company = await connection.query(s2)
-
-                        let s3 = dbScript(db_sql['Q12'], { var1: admin.rows[0].role_id })
-                        let checkRole = await connection.query(s3)
-
-                        let s4 = dbScript(db_sql['Q84'], { var1: admin.rows[0].company_id })
-                        let configs = await connection.query(s4)
-
                         let configuration = {}
-                        if (configs.rowCount > 0 ) {
-                            configuration.id = configs.rows[0].id
-                            configuration.currency = configs.rows[0].currency,
-                            configuration.phoneFormat = configs.rows[0].phone_format,
-                            configuration.dateFormat = configs.rows[0].date_format
-                        } else {
-                            configuration.id = "",
-                            configuration.currency = "",
-                            configuration.phoneFormat = "",
-                            configuration.dateFormat = ""
-                        }
+                        configuration.id = admin.rows[0].config_id
+                        configuration.currency = admin.rows[0].currency,
+                        configuration.phoneFormat = admin.rows[0].phone_format,
+                        configuration.dateFormat = admin.rows[0].date_format
 
-                        let s5 = dbScript(db_sql['Q138'],{var1: admin.rows[0].id, var2: admin.rows[0].company_id })
-                        let imapCreds = await connection.query(s5)
+                        let s2 = dbScript(db_sql['Q138'],{var1: admin.rows[0].id, var2: admin.rows[0].company_id })
+                        let imapCreds = await connection.query(s2)
                         let isImapCred = (imapCreds.rowCount == 0) ? false : true
 
-                        let moduleId = JSON.parse(checkRole.rows[0].module_ids)
+                        let moduleId = JSON.parse(admin.rows[0].module_ids)
                         let modulePemissions = []
                         for (data of moduleId) {
-                            let s7 = dbScript(db_sql['Q35'], { var1: data, var2: checkRole.rows[0].id })
-                            let findModulePermissions = await connection.query(s7)
+                            let s3 = dbScript(db_sql['Q35'], { var1: data, var2: admin.rows[0].role_id })
+                            let findModulePermissions = await connection.query(s3)
                             modulePemissions.push({
                                 moduleId: data,
                                 moduleName: findModulePermissions.rows[0].module_name,
@@ -345,18 +328,12 @@ module.exports.login = async (req, res) => {
                             })
                         }
 
-                        // let s6 = dbScript(db_sql['Q108'], { var1: admin.rows[0].company_id })
-                        // let payment = await connection.query(s6)
-                        // let paymentStatus = 'pending';
-                        // if (payment.rowCount > 0) {
-                        //     paymentStatus = payment.rows[0].payment_status
-                        // }
                         let payload = {
                             id: admin.rows[0].id,
                             email: admin.rows[0].email_address,
                         }
                         let jwtToken = await issueJWT(payload);
-                        let profileImage = (checkRole.rows[0].role_name == "Admin") ? company.rows[0].company_logo : admin.rows[0].avatar
+                        let profileImage = (admin.rows[0].role_name == "Admin") ? admin.rows[0].company_logo : admin.rows[0].avatar
 
                         res.send({
                             status: 200,
@@ -367,13 +344,13 @@ module.exports.login = async (req, res) => {
                                 id: admin.rows[0].id,
                                 name: admin.rows[0].full_name,
                                 isAdmin: admin.rows[0].is_admin,
-                                role: checkRole.rows[0].role_name,
+                                role: admin.rows[0].role_name,
                                 profileImage: profileImage,
                                 modulePermissions: modulePemissions,
                                 configuration: configuration,
                                 isImapCred : isImapCred,
-                                //paymentStatus: paymentStatus,
-                                expiryDate: (checkRole.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : ''
+                                isImapEnable : admin.rows[0].is_imap_enable,
+                                expiryDate: (admin.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : ''
                             }
                         });
                     } else {
@@ -417,11 +394,11 @@ module.exports.login = async (req, res) => {
 module.exports.showProfile = async (req, res) => {
     try {
         let userId = req.user.id
-        let s2 = dbScript(db_sql['Q8'], { var1: userId })
-        let checkUser = await connection.query(s2)
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
-            let s3 = dbScript(db_sql['Q9'], { var1: checkUser.rows[0].company_id })
-            let companyData = await connection.query(s3)
+            let s2 = dbScript(db_sql['Q9'], { var1: checkUser.rows[0].company_id })
+            let companyData = await connection.query(s2)
             if (companyData.rowCount > 0) {
                 checkUser.rows[0].companyName = companyData.rows[0].company_name
                 checkUser.rows[0].companyAddress = companyData.rows[0].company_address
@@ -445,8 +422,6 @@ module.exports.showProfile = async (req, res) => {
                 data: ""
             })
         }
-
-
     } catch (error) {
         res.json({
             status: 400,

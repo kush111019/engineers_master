@@ -11,7 +11,7 @@ const db_sql = {
     "Q6"   : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where deleted_at is null` ,
     "Q7"   : `update users set is_verified = true ,updated_at = '{var2}' where id = '{var1}' RETURNING *`, 
     "Q8"   : `select id, full_name,company_id, email_address,mobile_number,phone_number,address,role_id, avatar,expiry_date, is_verified, is_admin, is_locked from users where id = '{var1}' and deleted_at is null ` ,
-    "Q9"   : `select id, company_name, company_address, company_logo from companies where id = '{var1}' and deleted_at is null`,
+    "Q9"   : `select id, company_name, company_address, company_logo, is_imap_enable from companies where id = '{var1}' and deleted_at is null`,
     "Q10"  : `update users set full_name='{var1}',avatar = '{var2}', email_address = '{var3}',phone_number = '{var4}',mobile_number = '{var5}',address = '{var6}' ,updated_at = '{var7}' where id = '{var8}' and company_id = '{var9}' and deleted_at is null RETURNING * `, 
     "Q11"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','Admin','','{var2}') RETURNING *`, 
     "Q12"  : `select id, role_name, reporter, module_ids from roles where id = '{var1}' and deleted_at is null`,
@@ -148,7 +148,7 @@ const db_sql = {
     "Q97"  : `insert into products(id, company_id, product_name, product_image, description, available_quantity, price, tax, currency) 
               values ('{var1}','{var2}',$1,$2,$3,$4,$5,$6,$7)`,
     "Q98"  : `select id, name, email, encrypted_password from super_admin where email = '{var1}'`,
-    "Q99"  : `select id, company_name, company_logo, company_address, created_at from companies where deleted_at is null`,
+    "Q99"  : `select id, company_name, company_logo, company_address, is_imap_enable, created_at from companies where deleted_at is null`,
     "Q100" : `update super_admin set encrypted_password = '{var2}' where email = '{var1}'`,
     "Q101" : `select  sc.target_amount,  c.closed_at ,com.id as company_id, com.company_name from sales_commission as sc 
               inner join customers as c on sc.customer_id = c.id 
@@ -235,7 +235,16 @@ const db_sql = {
     "Q141" : `select id, to_email, from_email, cc, subject, message,attechments, company_id,sales_id, created_at from sent_email where company_id = '{var1}' and sales_id = '{var2}' and user_id = '{var3}' and deleted_at is null order by created_at desc`, 
     "Q142" : `update imap_credentials set deleted_at = '{var1}' where user_id = '{var2}' and company_id = '{var3}' and deleted_at is null returning *`,
     "Q143" : `insert into imap_credentials(id, email, app_password, user_id, imap_host, imap_port, smtp_host, smtp_port, company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}') returning *`,
-    "Q144" : `select id,full_name,avatar from users where id IN ('{var1}','{var2}') and deleted_at is null`
+    "Q144" : `select id,full_name,avatar from users where id IN ('{var1}','{var2}') and deleted_at is null`,
+    "Q145" : `select u.id, u.full_name, u.company_id, u.email_address, u.encrypted_password, u.mobile_number, u.role_id, 
+              u.avatar, u.expiry_date, u.is_verified, u.is_admin, u.is_locked, c.company_name, c.company_address, c.company_logo, c.is_imap_enable,
+              r.role_name, r.reporter, r.module_ids, con.id as config_id, con.currency, con.phone_format, con.date_format
+              from users as u inner join companies as c on c.id = u.company_id
+              inner join roles as r on r.id = u.role_id 
+              inner join configurations as con on con.company_id = u.company_id
+              where email_address = 'reshma@yopmail.com' and u.deleted_at is null 
+              and c.deleted_at is null and r.deleted_at is null and con.deleted_at is null`,
+    "Q146" : `update companies set is_imap_enable = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`
    
  }
 

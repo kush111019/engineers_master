@@ -18,7 +18,7 @@ module.exports.addProduct = async (req, res) => {
             currency
         } = req.body
 
-        productImage = (productImage == "") ? 'http://143.198.102.134:3003/productImages/defaultproductImage.png' : productImage;
+        productImage = (productImage == "") ? process.env.DEFAULT_PRODUCT_IMAGE : productImage;
 
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
@@ -83,7 +83,7 @@ module.exports.updateProduct = async (req, res) => {
             currency
         } = req.body
 
-        productImage = (productImage == "") ? 'http://143.198.102.134:3003/productImages/defaultproductImage.png' : productImage;
+        productImage = (productImage == "") ? process.env.DEFAULT_PRODUCT_IMAGE : productImage;
 
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
@@ -287,7 +287,7 @@ module.exports.uploadProductFile = async (req, res) => {
                         // insert csvData into DB 
                         csvData.forEach(row => {
                             //defualt product image 
-                            (row[1] == "") ? row[1] = 'http://143.198.102.134:3003/productImages/defaultproductImage.png' : row[1];
+                            (row[1] == "") ? row[1] = process.env.DEFAULT_PRODUCT_IMAGE : row[1];
                             
                             //unique id for every row 
                             id = uuid.v4()
