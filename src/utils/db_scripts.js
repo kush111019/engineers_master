@@ -17,7 +17,7 @@ const db_sql = {
     "Q12"  : `select id, role_name, reporter, module_ids from roles where id = '{var1}' and deleted_at is null`,
     "Q13"  : `insert into roles(id,role_name,reporter,company_id) values('{var1}','{var2}','{var3}','{var4}') RETURNING *`, 
     "Q14"  : `select id, role_name, reporter , module_ids from roles where company_id = '{var1}' and deleted_at is null` ,
-    "Q15"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at from users where company_id = '{var1}' and deleted_at is null`,
+    "Q15"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at from users where company_id = '{var1}' and deleted_at is null ORDER BY created_at desc`,
     "Q16"  : `select id, role_name, reporter from roles where reporter = '{var1}' and deleted_at is null`,
     "Q17"  : `select id, min_amount, max_amount, percentage, is_max, currency from slabs where company_id ='{var1}' and deleted_at is null`,
     "Q18"  : `insert into slabs(id,min_amount, max_amount, percentage, is_max, company_id, currency) values('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}', '{var7}') returning * `,
