@@ -242,7 +242,7 @@ const db_sql = {
               from users as u inner join companies as c on c.id = u.company_id
               inner join roles as r on r.id = u.role_id 
               inner join configurations as con on con.company_id = u.company_id
-              where email_address = 'reshma@yopmail.com' and u.deleted_at is null 
+              where email_address = '{var1}' and u.deleted_at is null 
               and c.deleted_at is null and r.deleted_at is null and con.deleted_at is null`,
     "Q146" : `update companies set is_imap_enable = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`
    
