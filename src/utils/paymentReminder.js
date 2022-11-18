@@ -5,14 +5,14 @@ const { recurringPaymentMail2, recurringPaymentMail } = require("../utils/sendMa
 
 module.exports.paymentReminder = async () => {
 
-    let s1 = dbScript(db_sql['Q119'], {})
+    let s1 = dbScript(db_sql['Q110'], {})
     let admindata = await connection.query(s1)
     for (let data of admindata.rows) {
-        let s3 = dbScript(db_sql['Q14'], { var1: data.role_id })
+        let s3 = dbScript(db_sql['Q12'], { var1: data.role_id })
         let checkRole = await connection.query(s3)
         if (checkRole.rows.length > 0) {
             if (checkRole.rows[0].role_name == 'Admin') {
-                let s2 = dbScript(db_sql['Q17'], { var1: data.company_id })
+                let s2 = dbScript(db_sql['Q15'], { var1: data.company_id })
                 let transaction = await connection.query(s2)
                 if (transaction.rowCount > 0) {
                     let currentDate = new Date()
@@ -41,7 +41,7 @@ module.exports.paymentReminder = async () => {
                     } else if (currentDate ==  endDate) {
                         let _dt = new Date().toISOString();
                         await connection.query('BEGIN')
-                        let s3 = dbScript(db_sql['Q33'], { var1: true, var2: data.company_id, var3: _dt })
+                        let s3 = dbScript(db_sql['Q30'], { var1: true, var2: data.company_id, var3: _dt })
                         let lockUser = await connection.query(s3)
                         if (lockUser.rowCount > 0) {
                             await connection.query('COMMIT')
@@ -55,7 +55,7 @@ module.exports.paymentReminder = async () => {
 
 module.exports.upgradeSubscriptionCronFn = async () => {
 
-    let s1 = dbScript(db_sql['Q123'], {})
+    let s1 = dbScript(db_sql['Q114'], {})
     let transaction = await connection.query(s1)
     if (transaction.rowCount > 0) {
         for (let transactionData of transaction.rows) {
@@ -74,7 +74,7 @@ module.exports.upgradeSubscriptionCronFn = async () => {
                 if (subscription && charge) {
                     let _dt = new Date().toISOString();
                     await connection.query('BEGIN')
-                    let s2 = dbScript(db_sql['Q126'], { var1: charge.id, var2: _dt, var3: transactionData.id, var4:charge.receipt_url })
+                    let s2 = dbScript(db_sql['Q117'], { var1: charge.id, var2: _dt, var3: transactionData.id, var4:charge.receipt_url })
                     let updateTransaction = await connection.query(s2)
                     if (updateTransaction.rowCount > 0) {
                         await connection.query('COMMIT')

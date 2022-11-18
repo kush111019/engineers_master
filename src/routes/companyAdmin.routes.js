@@ -25,8 +25,6 @@ router.get('/moduleList',verifyTokenFn, controller.roles.moduleList)
 router.get('/rolesList',verifyTokenFn, controller.roles.rolesList)
 router.post('/createRole',verifyTokenFn, controller.roles.createRole)
 router.put('/updateRole' , verifyTokenFn, controller.roles.updateRole)
-router.get('/usersListByRoleId',verifyTokenFn, controller.roles.usersListByRoleId)
-router.get('/userWiseRoleList',verifyTokenFn, controller.roles.userWiseRoleList)
 router.put('/deleteRole' , verifyTokenFn, controller.roles.deleteRole)
 router.put('/moveRole', verifyTokenFn, controller.roles.moveRole)
 
@@ -90,7 +88,6 @@ router.get('/revenues',verifyTokenFn, controller.dashboard.revenues)
 //-------------------------------------Revenue Forecast----------------------------------
 
 router.post('/createRevenueForecast',verifyTokenFn, controller.revenueForecast.createRevenueForecast)
-router.put('/updateRevenueForecast',verifyTokenFn, controller.revenueForecast.updateRevenueForecast)
 router.get('/revenueForecastList',verifyTokenFn, controller.revenueForecast.revenueForecastList)
 router.get('/actualVsForecast',verifyTokenFn, controller.revenueForecast.actualVsForecast)
 

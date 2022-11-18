@@ -2,7 +2,6 @@ const connection = require('../database/connection')
 const { issueJWT } = require("../utils/jwt")
 const {
     resetPasswordMail,
-    recurringPaymentMail,
     welcomeEmail,
     resetPasswordMail2,
     welcomeEmail2,
@@ -31,10 +30,10 @@ let createAdmin = async (bodyData, cId, res) => {
     if (findUser.rowCount == 0) {
         await connection.query('BEGIN')
         let roleId = uuid.v4()
-        let s4 = dbScript(db_sql['Q13'], { var1: roleId, var2: cId })
+        let s4 = dbScript(db_sql['Q11'], { var1: roleId, var2: cId })
         let createRole = await connection.query(s4)
 
-        let s9 = dbScript(db_sql['Q121'], {})
+        let s9 = dbScript(db_sql['Q112'], {})
         let trialDays = await connection.query(s9)
         let expiryDate = '';
         if (trialDays.rowCount > 0) {
@@ -50,21 +49,20 @@ let createAdmin = async (bodyData, cId, res) => {
         let saveuser = await connection.query(s5)
 
         let configId = uuid.v4()
-        let s10 = dbScript(db_sql['Q89'], {var1 : configId, var2 : "$", var3 : "us", var4 : "MM-DD-YYYY", var5 : saveuser.rows[0].id, var6: cId})
+        let s10 = dbScript(db_sql['Q83'], {var1 : configId, var2 : "$", var3 : "us", var4 : "MM-DD-YYYY", var5 : saveuser.rows[0].id, var6: cId})
         let addConfig = await connection.query(s10)
 
-        let s6 = dbScript(db_sql['Q7'], {})
+        let s6 = dbScript(db_sql['Q6'], {})
         let findModules = await connection.query(s6)
         let moduleArr = []
         for (data of findModules.rows) {
             moduleArr.push(data.id)
             let perId = uuid.v4()
-            let s7 = dbScript(db_sql['Q23'], { var1: perId, var2: role_id, var3: data.id, 
-                        var4: saveuser.rows[0].id })
+            let s7 = dbScript(db_sql['Q20'], { var1: perId, var2: createRole.rows[0].id, var3: data.id, var4: true, var5: true, var6:true, var7: true, var8: saveuser.rows[0].id })
             var addPermission = await connection.query(s7)
         }
         let _dt = new Date().toISOString();
-        let s8 = dbScript(db_sql['Q38'], { var1: JSON.stringify(moduleArr), var2: _dt, 
+        let s8 = dbScript(db_sql['Q34'], { var1: JSON.stringify(moduleArr), var2: _dt, 
                     var3: role_id })
         let updateModule = await connection.query(s8)
 
@@ -198,12 +196,12 @@ module.exports.setPasswordForLogin = async (req, res) => {
         } = req.body
         let user = await verifyTokenFn(req)
         if (user) {
-            let s1 = dbScript(db_sql['Q4'], { var1: user.email })
+            let s1 = dbScript(db_sql['Q8'], { var1: user.id })
             let checkuser = await connection.query(s1);
             if (checkuser.rows.length > 0) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s2 = dbScript(db_sql['Q6'], { var1: user.email, var2: password, var3: _dt, var4: checkuser.rows[0].company_id })
+                let s2 = dbScript(db_sql['Q5'], { var1: user.id, var2: password, var3: _dt, var4: checkuser.rows[0].company_id })
                 let updateuser = await connection.query(s2)
                 await connection.query('COMMIT')
                 if (updateuser.rowCount == 1) {
@@ -251,12 +249,12 @@ module.exports.verifyUser = async (req, res) => {
     try {
         let user = await verifyTokenFn(req)
         if (user) {
-            let s1 = dbScript(db_sql['Q4'], { var1: user.email })
-            let checkuser = await connection.query(s1);
+            let s1 = dbScript(db_sql['Q8'], { var1: user.id })
+            let checkuser = await connection.query(s1)
             if (checkuser.rows.length > 0) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s2 = dbScript(db_sql['Q9'], { var1: user.email, var2: _dt })
+                let s2 = dbScript(db_sql['Q7'], { var1: user.id, var2: _dt })
                 let updateuser = await connection.query(s2)
                 await connection.query('COMMIT')
                 if (updateuser.rowCount == 1) {
@@ -309,13 +307,13 @@ module.exports.login = async (req, res) => {
                 if (admin.rows[0].is_verified == true) {
                     if (admin.rows[0].is_locked == false) {
 
-                        let s2 = dbScript(db_sql['Q11'], { var1: admin.rows[0].company_id })
+                        let s2 = dbScript(db_sql['Q9'], { var1: admin.rows[0].company_id })
                         let company = await connection.query(s2)
 
-                        let s3 = dbScript(db_sql['Q14'], { var1: admin.rows[0].role_id })
+                        let s3 = dbScript(db_sql['Q12'], { var1: admin.rows[0].role_id })
                         let checkRole = await connection.query(s3)
 
-                        let s4 = dbScript(db_sql['Q90'], { var1: admin.rows[0].company_id })
+                        let s4 = dbScript(db_sql['Q84'], { var1: admin.rows[0].company_id })
                         let configs = await connection.query(s4)
 
                         let configuration = {}
@@ -331,28 +329,23 @@ module.exports.login = async (req, res) => {
                             configuration.dateFormat = ""
                         }
 
-                        let s5 = dbScript(db_sql['Q147'],{var1: admin.rows[0].id, var2: admin.rows[0].company_id })
+                        let s5 = dbScript(db_sql['Q138'],{var1: admin.rows[0].id, var2: admin.rows[0].company_id })
                         let imapCreds = await connection.query(s5)
                         let isImapCred = (imapCreds.rowCount == 0) ? false : true
 
                         let moduleId = JSON.parse(checkRole.rows[0].module_ids)
                         let modulePemissions = []
                         for (data of moduleId) {
-
-                            let s6 = dbScript(db_sql['Q8'], { var1: data })
-                            let modules = await connection.query(s6)
-
-                            let s7 = dbScript(db_sql['Q39'], { var1: checkRole.rows[0].id, var2: data })
+                            let s7 = dbScript(db_sql['Q35'], { var1: data, var2: checkRole.rows[0].id })
                             let findModulePermissions = await connection.query(s7)
-
                             modulePemissions.push({
                                 moduleId: data,
-                                moduleName: modules.rows[0].module_name,
+                                moduleName: findModulePermissions.rows[0].module_name,
                                 permissions: findModulePermissions.rows
                             })
                         }
 
-                        // let s6 = dbScript(db_sql['Q116'], { var1: admin.rows[0].company_id })
+                        // let s6 = dbScript(db_sql['Q108'], { var1: admin.rows[0].company_id })
                         // let payment = await connection.query(s6)
                         // let paymentStatus = 'pending';
                         // if (payment.rowCount > 0) {
@@ -423,12 +416,11 @@ module.exports.login = async (req, res) => {
 
 module.exports.showProfile = async (req, res) => {
     try {
-        let userEmail = req.user.email
-
-        let s2 = dbScript(db_sql['Q5'], { var1: userEmail })
+        let userId = req.user.id
+        let s2 = dbScript(db_sql['Q8'], { var1: userId })
         let checkUser = await connection.query(s2)
         if (checkUser.rows.length > 0) {
-            let s3 = dbScript(db_sql['Q11'], { var1: checkUser.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q9'], { var1: checkUser.rows[0].company_id })
             let companyData = await connection.query(s3)
             if (companyData.rowCount > 0) {
                 checkUser.rows[0].companyName = companyData.rows[0].company_name
@@ -474,7 +466,7 @@ module.exports.changePassword = async (req, res) => {
             if (user.rows[0].encrypted_password == oldPassword) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s2 = dbScript(db_sql['Q6'], { var1: userEmail, var2: newPassword, var3: _dt, var4: user.rows[0].company_id })
+                let s2 = dbScript(db_sql['Q5'], { var1: user.rows[0].id, var2: newPassword, var3: _dt, var4: user.rows[0].company_id })
                 let updatePass = await connection.query(s2)
                 await connection.query('COMMIT')
                 if (updatePass.rowCount > 0) {
@@ -538,7 +530,7 @@ module.exports.upload = async (req, res) => {
 
 module.exports.updateUserProfile = async (req, res) => {
     try {
-        let userMail = req.user.email
+        let userId = req.user.id
         let {
             name,
             avatar,
@@ -548,13 +540,13 @@ module.exports.updateUserProfile = async (req, res) => {
             address
         } = req.body
 
-        let s1 = dbScript(db_sql['Q4'], { var1: userMail })
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
 
         if (findUser.rows.length > 0) {
             await connection.query('BEGIN')
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q12'], { var1: mysql_real_escape_string(name), var2: avatar, var3: emailAddress, var4: phoneNumber, var5: mobileNumber, var6: mysql_real_escape_string(address), var7: _dt, var8: userMail, var9: findUser.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q10'], { var1: mysql_real_escape_string(name), var2: avatar, var3: emailAddress, var4: phoneNumber, var5: mobileNumber, var6: mysql_real_escape_string(address), var7: _dt, var8: userId, var9: findUser.rows[0].company_id })
             let updateUser = await connection.query(s2)
             await connection.query('COMMIT')
             if (updateUser.rowCount > 0) {
@@ -654,12 +646,12 @@ module.exports.resetPassword = async (req, res) => {
         } = req.body
         let user = await verifyTokenFn(req)
         if (user) {
-            let s1 = dbScript(db_sql['Q4'], { var1: user.email })
+            let s1 = dbScript(db_sql['Q8'], { var1: user.id })
             let checkuser = await connection.query(s1);
             if (checkuser.rows.length > 0) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s2 = dbScript(db_sql['Q6'], { var1: user.email, var2: password, var3: _dt, var4: checkuser.rows[0].company_id })
+                let s2 = dbScript(db_sql['Q5'], { var1: user.id, var2: password, var3: _dt, var4: checkuser.rows[0].company_id })
                 let updateuser = await connection.query(s2)
                 await connection.query('COMMIT')
                 if (updateuser.rowCount == 1) {
@@ -710,7 +702,7 @@ module.exports.resetPassword = async (req, res) => {
 
 // module.exports.recurringPaymentCron = async () => {
 
-//     let s1 = dbScript(db_sql['Q88'], {})
+//     let s1 = dbScript(db_sql['Q82'], {})
 //     let salesCommissionList = await connection.query(s1)
 //     if (salesCommissionList.rowCount > 0) {
 //         for (let data of salesCommissionList.rows) {
@@ -727,21 +719,21 @@ module.exports.resetPassword = async (req, res) => {
 //                     let date = currentDate.getDate()
 //                     let day = recurringDate.getDate()
 //                     if (date == day) {
-//                         let s2 = dbScript(db_sql['Q60'], { var1: data.customer_id })
+//                         let s2 = dbScript(db_sql['Q55'], { var1: data.customer_id })
 //                         let customers = await connection.query(s2)
 //                         for (let customerData of customers) {
-//                             let s3 = dbScript(db_sql['Q10'], { var1: customerData.user_id })
+//                             let s3 = dbScript(db_sql['Q8'], { var1: customerData.user_id })
 //                             let userData = await connection.query(s3)
-//                             let s4 = dbScript(db_sql['Q14'], { var1: userData.rows[0].role_id })
+//                             let s4 = dbScript(db_sql['Q12'], { var1: userData.rows[0].role_id })
 //                             let role = await connection.query(s4)
 //                             if (role.rows[0].role_name == 'Admin') {
 //                                 await recurringPaymentMail(userData.email_address, customerData.customer_name)
 //                             } else {
-//                                 let s5 = dbScript(db_sql['Q16'], { var1: userData.rows[0].company_id })
+//                                 let s5 = dbScript(db_sql['Q14'], { var1: userData.rows[0].company_id })
 //                                 let roleData = await connection.query(s5)
 //                                 for (role of roleData) {
 //                                     if (role.role_name == 'Admin') {
-//                                         let s6 = dbScript(db_sql['Q24'], { var1: role.id, var2: userData.rows[0].company_id })
+//                                         let s6 = dbScript(db_sql['Q21'], { var1: role.id, var2: userData.rows[0].company_id })
 //                                         let adminData = await connection.query(s6)
 //                                         await recurringPaymentMail(adminData.rows[0].email_address, customerData.customer_name)
 //                                         await recurringPaymentMail(userData.email_address, customerData.customer_name)
@@ -761,21 +753,21 @@ module.exports.resetPassword = async (req, res) => {
 //                     let futureDate = new Date(recurringDate.setFullYear(recurringDate.getFullYear() + difference))
 //                     let recurringDate1 = futureDate.toISOString().split('T');
 //                     if (currentDate1[0] == recurringDate1[0]) {
-//                         let s2 = dbScript(db_sql['Q60'], { var1: data.customer_id })
+//                         let s2 = dbScript(db_sql['Q55'], { var1: data.customer_id })
 //                         let customers = await connection.query(s2)
 //                         for (let customerData of customers) {
-//                             let s3 = dbScript(db_sql['Q10'], { var1: customerData.user_id })
+//                             let s3 = dbScript(db_sql['Q8'], { var1: customerData.user_id })
 //                             let userData = await connection.query(s3)
-//                             let s4 = dbScript(db_sql['Q14'], { var1: userData.rows[0].role_id })
+//                             let s4 = dbScript(db_sql['Q12'], { var1: userData.rows[0].role_id })
 //                             let role = await connection.query(s4)
 //                             if (role.rows[0].role_name == 'Admin') {
 //                                 await recurringPaymentMail(userData.email_address, customerData.customer_name)
 //                             } else {
-//                                 let s5 = dbScript(db_sql['Q16'], { var1: userData.rows[0].company_id })
+//                                 let s5 = dbScript(db_sql['Q14'], { var1: userData.rows[0].company_id })
 //                                 let roleData = await connection.query(s5)
 //                                 for (role of roleData) {
 //                                     if (role.role_name == 'Admin') {
-//                                         let s6 = dbScript(db_sql['Q24'], { var1: role.id })
+//                                         let s6 = dbScript(db_sql['Q21'], { var1: role.id })
 //                                         let adminData = await connection.query(s6)
 //                                         await recurringPaymentMail(adminData.rows[0].email_address, customerData.customer_name)
 //                                         await recurringPaymentMail(userData.email_address, customerData.customer_name)

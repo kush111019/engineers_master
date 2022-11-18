@@ -2,29 +2,25 @@ const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
 
-
-
 module.exports.commissionSplit = async (req, res) => {
     try {
-        userEmail = req.user.email
+        let userId = req.user.id
         let {
             closerPercentage,
             supporterPercentage
         } = req.body
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         let moduleName = 'Commission'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_create) {
                 await connection.query('BEGIN')
 
                 let id = uuid.v4()
-                let s4 = dbScript(db_sql['Q53'], { var1: id, var2: closerPercentage, var3: supporterPercentage, var4: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q48'], { var1: id, var2: closerPercentage, var3: supporterPercentage, var4: findAdmin.rows[0].company_id })
                 var createSlab = await connection.query(s4)
 
                 await connection.query('COMMIT')
@@ -69,27 +65,25 @@ module.exports.commissionSplit = async (req, res) => {
 
 module.exports.updatecommissionSplit = async (req, res) => {
     try {
-        let userEmail = req.user.email
+        let userId = req.user.id
         let {
             commissionId,
             closerPercentage,
             supporterPercentage
         } = req.body
 
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         let moduleName = 'Commission'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_update) {
 
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q54'], { var1: closerPercentage, var2: supporterPercentage, var3: commissionId, var4: _dt, var5: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q49'], { var1: closerPercentage, var2: supporterPercentage, var3: commissionId, var4: _dt, var5: findAdmin.rows[0].company_id })
 
                 var updatecommission = await connection.query(s4)
 
@@ -137,19 +131,17 @@ module.exports.updatecommissionSplit = async (req, res) => {
 
 module.exports.commissionSplitList = async (req, res) => {
     try {
-        let userEmail = req.user.email
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         let moduleName = 'Commission'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
 
-                let s4 = dbScript(db_sql['Q55'], { var1: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q50'], { var1: findAdmin.rows[0].company_id })
                 let commissionList = await connection.query(s4)
 
 
@@ -194,23 +186,21 @@ module.exports.commissionSplitList = async (req, res) => {
 
 module.exports.deletecommissionSplit = async (req, res) => {
     try {
-        let userEmail = req.user.email
+        let userId = req.user.id
         let {
             commissionId
         } = req.body
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         let moduleName = 'Commission'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_delete) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q56'], { var1: _dt, var2: commissionId, var3: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q51'], { var1: _dt, var2: commissionId, var3: findAdmin.rows[0].company_id })
                 var deleteSlab = await connection.query(s4)
                 await connection.query('COMMIT')
 

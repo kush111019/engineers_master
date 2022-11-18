@@ -19,7 +19,7 @@ module.exports.contactUs = async (req, res) => {
 
         await connection.query('BEGIN')
         let id = uuid.v4()
-        let s1 = dbScript(db_sql['Q99'], { var1: id, var2: fullName, var3: email, var4: subject, var5: mysql_real_escape_string(message), var6: address })
+        let s1 = dbScript(db_sql['Q91'], { var1: id, var2: fullName, var3: email, var4: subject, var5: mysql_real_escape_string(message), var6: address })
 
         let addContactUs = await connection.query(s1)
         if (addContactUs.rowCount > 0) {

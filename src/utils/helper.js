@@ -75,7 +75,7 @@ module.exports.setEmailRead = async (imapConfig, messageId, res) => {
                         })
                     } else {
                         await connection.query('BEGIN')
-                        let s2 = dbScript(db_sql['Q148'], { var1: messageId, var2: true })
+                        let s2 = dbScript(db_sql['Q139'], { var1: messageId, var2: true })
                         let updateReadStatus = await connection.query(s2)
                         if (updateReadStatus.rowCount > 0) {
                             await connection.query('COMMIT')
@@ -128,7 +128,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
         cvc
     } = req.body
     
-    let s2 = dbScript(db_sql['Q112'], { var1: planId })
+    let s2 = dbScript(db_sql['Q104'], { var1: planId })
     let planData = await connection.query(s2)
     if (planData.rowCount > 0) {
         const token = await stripe.tokens.create({
@@ -171,7 +171,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
         if (token && card && subscription && charge) {
             let _dt = new Date().toISOString();
 
-            let s3 = dbScript(db_sql['Q125'], {
+            let s3 = dbScript(db_sql['Q116'], {
                 var1: transaction.rows[0].stripe_customer_id, var2: subscription.id,
                 var3: card.id, var4: token.id, var5: charge.id, var6: subscription.current_period_end,
                 var7: _dt, var8: transaction.rows[0].id, var9:Math.round(totalAmount), var10: true,
@@ -181,7 +181,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
 
             let expiryDate = new Date(Number(subscription.current_period_end) * 1000).toISOString()
 
-            let s5 = dbScript(db_sql['Q122'], { var1: expiryDate, var2: user.rows[0].id, var3: _dt })
+            let s5 = dbScript(db_sql['Q113'], { var1: expiryDate, var2: user.rows[0].id, var3: _dt })
             let updateUserExpiryDate = await connection.query(s5)
 
             if (updateTransaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0) {
@@ -226,7 +226,7 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
         cvc
     } = req.body
 
-    let s2 = dbScript(db_sql['Q112'], { var1: planId })
+    let s2 = dbScript(db_sql['Q104'], { var1: planId })
     let planData = await connection.query(s2)
     if (planData.rowCount > 0) {
         const token = await stripe.tokens.create({
@@ -263,7 +263,7 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
         if (token && card && subscription) {
             let _dt = new Date().toISOString();
 
-            let s3 = dbScript(db_sql['Q125'], {
+            let s3 = dbScript(db_sql['Q116'], {
                 var1: transaction.rows[0].stripe_customer_id, var2: subscription.id,
                 var3: card.id, var4: token.id, var5: '', var6: subscription.current_period_end,
                 var7: _dt, var8: transaction.rows[0].id, var9:Math.round(totalAmount), var10: false,
@@ -340,5 +340,24 @@ module.exports.getMonthDifference = async (startDate, endDate) => {
 module.exports.getYearDifference = async (startDate, endDate) => {
     let years = endDate.getFullYear() - startDate.getFullYear();;
     return years;
+}
+
+module.exports.removeDuplicates = async(originalArray, prop) => {
+    var newArray = [];
+    var lookupObject  = {};
+
+    for(var i in originalArray) {
+       let mainValue =0;
+       if(lookupObject[originalArray[i][prop]]){
+           mainValue = lookupObject[originalArray[i][prop]].revenue + originalArray[i].revenue;
+           originalArray[i].revenue = mainValue;
+       }
+       lookupObject[originalArray[i][prop]] = originalArray[i];
+    }
+
+    for(i in lookupObject) {
+        newArray.push(lookupObject[i]);
+    }
+     return newArray;
 }
 

@@ -3,25 +3,22 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 
 
 module.exports.revenues = async (req, res) => {
-
     try {
-        let userEmail = req.user.email
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         let moduleName = 'Dashboard'
         if (findAdmin.rows.length > 0) {
 
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
 
                 let counts = {}
                 let revenueCommissionBydate = []
 
-                let s4 = dbScript(db_sql['Q93'], { var1: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q87'], { var1: findAdmin.rows[0].company_id })
                 let customers = await connection.query(s4)
                 if (customers.rowCount > 0) {
 
@@ -40,7 +37,7 @@ module.exports.revenues = async (req, res) => {
 
                             totalRevenue = Number(totalRevenue) + Number(data.target_amount);
 
-                            let s5 = dbScript(db_sql['Q19'], { var1: findAdmin.rows[0].company_id })
+                            let s5 = dbScript(db_sql['Q17'], { var1: findAdmin.rows[0].company_id })
                             let slab = await connection.query(s5)
                             if (slab.rowCount > 0) {
 

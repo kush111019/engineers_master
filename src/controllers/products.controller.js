@@ -7,7 +7,7 @@ const fastcsv = require("fast-csv");
 
 module.exports.addProduct = async (req, res) => {
     try {
-        userEmail = req.user.email
+        let userId = req.user.id
         let {
             productName,
             productImage,
@@ -20,18 +20,16 @@ module.exports.addProduct = async (req, res) => {
 
         productImage = (productImage == "") ? 'http://143.198.102.134:3003/productImages/defaultproductImage.png' : productImage;
 
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         let moduleName = 'Products'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_create) {
                 await connection.query('BEGIN')
                 let id = uuid.v4()
-                let s4 = dbScript(db_sql['Q100'], { var1: id, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: findAdmin.rows[0].company_id, var9 : currency })
+                let s4 = dbScript(db_sql['Q92'], { var1: id, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: findAdmin.rows[0].company_id, var9 : currency })
                 let addProduct = await connection.query(s4)
                 if (addProduct.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -73,7 +71,7 @@ module.exports.addProduct = async (req, res) => {
 
 module.exports.updateProduct = async (req, res) => {
     try {
-        userEmail = req.user.email
+        let userId = req.user.id
         let {
             productId,
             productName,
@@ -87,18 +85,16 @@ module.exports.updateProduct = async (req, res) => {
 
         productImage = (productImage == "") ? 'http://143.198.102.134:3003/productImages/defaultproductImage.png' : productImage;
 
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         let moduleName = 'Products'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_update) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q101'], { var1: productId, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: _dt, var9: findAdmin.rows[0].company_id, var10 : currency })
+                let s4 = dbScript(db_sql['Q93'], { var1: productId, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: _dt, var9: findAdmin.rows[0].company_id, var10 : currency })
                 let updateProduct = await connection.query(s4)
                 if (updateProduct.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -140,17 +136,15 @@ module.exports.updateProduct = async (req, res) => {
 
 module.exports.productList = async (req, res) => {
     try {
-        userEmail = req.user.email
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         let moduleName = 'Products'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
-                let s4 = dbScript(db_sql['Q102'], { var1: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q94'], { var1: findAdmin.rows[0].company_id })
                 let productList = await connection.query(s4)
                 if (productList.rowCount > 0) {
                     res.json({
@@ -191,20 +185,18 @@ module.exports.productList = async (req, res) => {
 
 module.exports.deleteProduct = async (req, res) => {
     try {
-        userEmail = req.user.email
+        let userId = req.user.id
         let { productId } = req.body
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         let moduleName = 'Products'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_delete) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q103'], { var1: productId, var2: _dt, var3: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q95'], { var1: productId, var2: _dt, var3: findAdmin.rows[0].company_id })
                 let deleteProduct = await connection.query(s4)
                 if (deleteProduct.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -267,16 +259,14 @@ module.exports.uploadProductImage = async (req, res) => {
 
 module.exports.uploadProductFile = async (req, res) => {
     try {
-        userEmail = req.user.email
+        let userId = req.user.id
         let file = req.file
 
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         let moduleName = 'Products'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_create) {
 
@@ -301,7 +291,7 @@ module.exports.uploadProductFile = async (req, res) => {
                             
                             //unique id for every row 
                             id = uuid.v4()
-                            let s4 = dbScript(db_sql['Q105'], { var1: id, var2: findAdmin.rows[0].company_id })
+                            let s4 = dbScript(db_sql['Q97'], { var1: id, var2: findAdmin.rows[0].company_id })
                             connection.query(s4, row, (err, res) => {
                                 if (err) {
                                     
