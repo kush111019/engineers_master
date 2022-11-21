@@ -41,10 +41,10 @@ const db_sql = {
               p.permission_to_update, p.permission_to_delete from modules as m inner join permissions as p on p.module_id = m.id
               inner join roles as r on r.id = p.role_id where m.id = '{var1}' and r.id = '{var2}' 
               and m.deleted_at is null and p.deleted_at is null`,
-    "Q36"  : `insert into customers(id, user_id,customer_company_id,customer_name, source, company_id, business_id, revenue_id, address) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}') returning *`,
+    "Q36"  : `insert into customers(id, user_id,customer_company_id,customer_name, source, company_id, business_id, revenue_id, address, currency) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}', '{var10}') returning *`,
     "Q37"  : `insert into customer_companies(id, customer_company_name, company_id) values('{var1}','{var2}','{var3}') returning *`,
     "Q38"  : `select id, customer_company_name from customer_companies where id = '{var1}' and deleted_at is null`,
-    "Q39"  : `select c.id, c.customer_company_id , c.customer_name, c.source, c.closed_at , c.user_id, c.business_id, c.revenue_id, c.created_at, c.address,
+    "Q39"  : `select c.id, c.customer_company_id , c.customer_name, c.source, c.closed_at , c.user_id, c.business_id, c.revenue_id, c.created_at, c.address, c.currency,
               u.full_name as created_by from customers as c inner join users as u on u.id = c.user_id
               where c.company_id = '{var1}' and c.deleted_at is null and u.deleted_at is null ORDER BY created_at desc`,
     "Q40"  : `update customers set closed_at = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
@@ -53,7 +53,7 @@ const db_sql = {
               from modules as m inner join permissions as p on p.module_id = m.id
               inner join users as u on u.role_id = p.role_id
               where m.module_name = '{var1}' and u.id = '{var2}' and m.deleted_at is null and p.deleted_at is null`,   
-    "Q42"  : `update customers set customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', business_id = '{var4}', revenue_id = '{var5}', address = '{var7}' where id = '{var6}' and company_id = '{var8}' and deleted_at is null returning *`,
+    "Q42"  : `update customers set customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', business_id = '{var4}', revenue_id = '{var5}', address = '{var7}', currency = '{var9}' where id = '{var6}' and company_id = '{var8}' and deleted_at is null returning *`,
     "Q43"  : `insert into sales_commission_logs(id,sales_commission_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_id, business_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date, currency) values ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}', '{var17}', '{var18}', '{var19}' ) returning *`,
     "Q44"  : `select sl.id, sl.sales_commission_id, sl.customer_commission_split_id, sl.qualification, sl.is_qualified, sl.target_amount, sl.currency, 
               sl.products, sl.target_closing_date, sl.customer_id, sl.is_overwrite, sl.company_id, sl.revenue_id, sl.business_id, sl.closer_id, 
@@ -244,7 +244,8 @@ const db_sql = {
               inner join configurations as con on con.company_id = u.company_id
               where email_address = '{var1}' and u.deleted_at is null 
               and c.deleted_at is null and r.deleted_at is null and con.deleted_at is null`,
-    "Q146" : `update companies set is_imap_enable = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`
+    "Q146" : `update companies set is_imap_enable = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
+    "Q147" : `select id, product_name, product_image, description, available_quantity, price, tax, currency, company_id, created_at, updated_at from products where product_name = '{var1}' and company_id = '{var2}' and deleted_at is null ORDER BY created_at desc `
    
  }
 

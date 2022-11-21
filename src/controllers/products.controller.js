@@ -24,26 +24,36 @@ module.exports.addProduct = async (req, res) => {
         let findAdmin = await connection.query(s1)
         let moduleName = 'Products'
         if (findAdmin.rows.length > 0) {
-            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s3)
+            let s2 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
+            let checkPermission = await connection.query(s2)
             if (checkPermission.rows[0].permission_to_create) {
-                await connection.query('BEGIN')
-                let id = uuid.v4()
-                let s4 = dbScript(db_sql['Q92'], { var1: id, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: findAdmin.rows[0].company_id, var9 : currency })
-                let addProduct = await connection.query(s4)
-                if (addProduct.rowCount > 0) {
-                    await connection.query('COMMIT')
-                    res.json({
-                        status: 201,
-                        success: true,
-                        message: "Product added successfully"
-                    })
-                } else {
-                    await connection.query('ROLLBACK')
+                let s3 = dbScript(db_sql['Q147'], { var1 : productName, var2 : findAdmin.rows[0].company_id  })
+                let findProduct = await connection.query(s3)
+                if(findProduct.rowCount == 0){
+                    await connection.query('BEGIN')
+                    let id = uuid.v4()
+                    let s4 = dbScript(db_sql['Q92'], { var1: id, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: findAdmin.rows[0].company_id, var9 : currency })
+                    let addProduct = await connection.query(s4)
+                    if (addProduct.rowCount > 0) {
+                        await connection.query('COMMIT')
+                        res.json({
+                            status: 201,
+                            success: true,
+                            message: "Product added successfully"
+                        })
+                    } else {
+                        await connection.query('ROLLBACK')
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Something went wrong"
+                        })
+                    }
+                }else{
                     res.json({
                         status: 400,
                         success: false,
-                        message: "Something went wrong"
+                        message: "Product Name already exists"
                     })
                 }
             } else {
@@ -266,8 +276,8 @@ module.exports.uploadProductFile = async (req, res) => {
         let findAdmin = await connection.query(s1)
         let moduleName = 'Products'
         if (findAdmin.rows.length > 0) {
-            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s3)
+            let s2 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
+            let checkPermission = await connection.query(s2)
             if (checkPermission.rows[0].permission_to_create) {
 
                 let promise = new Promise((resolve, reject) => {
@@ -285,18 +295,22 @@ module.exports.uploadProductFile = async (req, res) => {
                         csvData.shift();
                         // connect to the PostgreSQL database
                         // insert csvData into DB 
-                        csvData.forEach(row => {
+                        csvData.forEach(async(row) => {
                             //defualt product image 
                             if(row.length > 0){
-                                (row[1] == "") ? row[1] = process.env.DEFAULT_PRODUCT_IMAGE : row[1];
-                                //unique id for every row 
-                                id = uuid.v4()
-                                let s4 = dbScript(db_sql['Q97'], { var1: id, var2: findAdmin.rows[0].company_id })
-                                connection.query(s4, row, (err, res) => {
-                                    if (err) {
-                                        throw err
-                                    }
-                                });
+                                let s3 = dbScript(db_sql['Q147'], { var1 : row[0], var2 : findAdmin.rows[0].company_id  })
+                                let findProduct = await connection.query(s3)
+                                if(findProduct.rowCount == 0){
+                                    (row[1] == "") ? row[1] = process.env.DEFAULT_PRODUCT_IMAGE : row[1];
+                                    //unique id for every row 
+                                    id = uuid.v4()
+                                    let s4 = dbScript(db_sql['Q97'], { var1: id, var2: findAdmin.rows[0].company_id })
+                                    connection.query(s4, row, (err, res) => {
+                                        if (err) {
+                                            throw err
+                                        }
+                                    });
+                                } 
                             }
                         });
                     })

@@ -12,7 +12,8 @@ module.exports.createCustomer = async (req, res) => {
             source,
             businessContact,
             revenueContact,
-            address
+            address,
+            currency
         } = req.body
 
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
@@ -68,7 +69,7 @@ module.exports.createCustomer = async (req, res) => {
                     }
                 }
                 let id = uuid.v4()
-                let s10 = dbScript(db_sql['Q36'], { var1: id, var2: findAdmin.rows[0].id, var3: compId, var4: mysql_real_escape_string(customerName), var5: mysql_real_escape_string(source), var6: findAdmin.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address) })
+                let s10 = dbScript(db_sql['Q36'], { var1: id, var2: findAdmin.rows[0].id, var3: compId, var4: mysql_real_escape_string(customerName), var5: mysql_real_escape_string(source), var6: findAdmin.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10 : currency })
                 let createCustomer = await connection.query(s10)
                 if (createCustomer.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -254,7 +255,8 @@ module.exports.editCustomer = async (req, res) => {
             source,
             businessContact,
             revenueContact,
-            address
+            address,
+            currency
         } = req.body
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
@@ -303,7 +305,7 @@ module.exports.editCustomer = async (req, res) => {
                 }
 
                 let _dt = new Date().toISOString();
-                let s5 = dbScript(db_sql['Q42'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: _dt, var6: customerId, var4: JSON.stringify(bId), var5: JSON.stringify(rId), var7: mysql_real_escape_string(address), var8: findAdmin.rows[0].company_id })
+                let s5 = dbScript(db_sql['Q42'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: _dt, var6: customerId, var4: JSON.stringify(bId), var5: JSON.stringify(rId), var7: mysql_real_escape_string(address), var8: findAdmin.rows[0].company_id, var9 : currency})
                 let updateCustomer = await connection.query(s5)
                 if (updateCustomer.rowCount > 0) {
                     await connection.query('COMMIT')
