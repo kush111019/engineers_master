@@ -97,7 +97,7 @@ const db_sql = {
     "Q67"  : `insert into revenue_forecast(id, timeline, revenue, growth_window, growth_percentage, start_date, end_date, user_id, company_id, currency)
               values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}', '{var10}') returning * `,
     "Q68"  : `select id, timeline, revenue, currency, growth_window, growth_percentage, start_date, end_date, created_at 
-              from revenue_forecast where company_id = '{var1}' and deleted_at is null ORDER BY timeline`,  
+              from revenue_forecast where company_id = '{var1}' and deleted_at is null ORDER BY timeline asc`,  
     "Q69"  : `select timeline, revenue, growth_window, growth_percentage, start_date, end_date, created_at from revenue_forecast where id = '{var1}' and company_id = '{var2}' and deleted_at is null  ` ,            
     "Q70"  : `insert into business_contact(id, full_name, email_address, phone_number, customer_company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,
     "Q71"  : `insert into revenue_contact(id, full_name, email_address, phone_number, customer_company_id) values('{var1}','{var2}','{var3}','{var4}','{var5}') returning *`,
