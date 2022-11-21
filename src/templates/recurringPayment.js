@@ -39,8 +39,9 @@ module.exports.recurringPayment = function (customerName,endDate) {
                                             Hi ${customerName}, <br>
                                             <br/>
 
-                                            This Email is to inform you that your subscription plan is going to expire on ${endDate}. 
-                                            To continue the benefits of current subscription plan please pay your bill. <br>
+                                            This Email is to inform you that your subscription plan is going to expire on ${endDate}.  <br>
+                                            <br/>
+                                            To continue the benefits of current subscription plan please pay subscription amount. <br>
                                             <br/>
                                             
                                             If you have any questions. Please email us at <a href=""

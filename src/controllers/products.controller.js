@@ -287,17 +287,17 @@ module.exports.uploadProductFile = async (req, res) => {
                         // insert csvData into DB 
                         csvData.forEach(row => {
                             //defualt product image 
-                            (row[1] == "") ? row[1] = process.env.DEFAULT_PRODUCT_IMAGE : row[1];
-                            
-                            //unique id for every row 
-                            id = uuid.v4()
-                            let s4 = dbScript(db_sql['Q97'], { var1: id, var2: findAdmin.rows[0].company_id })
-                            connection.query(s4, row, (err, res) => {
-                                if (err) {
-                                    
-                                    throw err
-                                }
-                            });
+                            if(row.length > 0){
+                                (row[1] == "") ? row[1] = process.env.DEFAULT_PRODUCT_IMAGE : row[1];
+                                //unique id for every row 
+                                id = uuid.v4()
+                                let s4 = dbScript(db_sql['Q97'], { var1: id, var2: findAdmin.rows[0].company_id })
+                                connection.query(s4, row, (err, res) => {
+                                    if (err) {
+                                        throw err
+                                    }
+                                });
+                            }
                         });
                     })
                     let exportedData = stream.pipe(csvStream);

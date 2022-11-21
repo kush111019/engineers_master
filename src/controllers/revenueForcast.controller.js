@@ -29,11 +29,10 @@ module.exports.createRevenueForecast = async (req, res) => {
 
                 let id = uuid.v4()
                 let s4 = dbScript(db_sql['Q67'], { var1: id, var2: timeline, var3: revenue, var4: growthWindow, var5: growthPercentage, var6: startDate, var7: endDate, var8: findAdmin.rows[0].id, var9: findAdmin.rows[0].company_id, var10 : currency })
-
                 let createForecast = await connection.query(s4)
 
-                await connection.query('COMMIT')
                 if (createForecast.rowCount > 0) {
+                    await connection.query('COMMIT')
                     res.json({
                         status: 201,
                         success: true,
