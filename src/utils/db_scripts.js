@@ -8,7 +8,7 @@ const db_sql = {
               values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}',false,true) RETURNING *`,          
     "Q4"   : `select id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar,expiry_date, is_verified, is_admin, is_locked from users where email_address = '{var1}' and deleted_at is null` ,
     "Q5"   : `update users set encrypted_password = '{var2}', is_verified = true, updated_at = '{var3}' where id = '{var1}' and company_id = '{var4}' RETURNING *`, 
-    "Q6"   : `select id, module_name,module_type, is_read, is_create, is_update, is_delete, is_assign from modules where deleted_at is null` ,
+    "Q6"   : `select id, module_name,module_type from modules where deleted_at is null`,
     "Q7"   : `update users set is_verified = true ,updated_at = '{var2}' where id = '{var1}' RETURNING *`, 
     "Q8"   : `select id, full_name,company_id, email_address,mobile_number,phone_number,address,role_id, avatar,expiry_date, is_verified, is_admin, is_locked from users where id = '{var1}' and deleted_at is null ` ,
     "Q9"   : `select id, company_name, company_address, company_logo, is_imap_enable from companies where id = '{var1}' and deleted_at is null`,
@@ -192,7 +192,7 @@ const db_sql = {
     "Q125" : `select u.id, u.full_name, u.avatar from chat_room_members as cm 
               inner join users as u on u.id = cm.user_id
               where room_id = '{var1}' and cm.deleted_at is null and u.deleted_at is null`,
-   "Q126"  : `select sc.id,c.closer_id,sc.customer_id, u.full_name, cc.user_id as creator_id from sales_commission as sc 
+    "Q126" : `select sc.id,c.closer_id,sc.customer_id, u.full_name, cc.user_id as creator_id from sales_commission as sc 
               inner join sales_closer as c on sc.id = c.sales_commission_id 
               inner join users as u on c.closer_id = u.id 
               inner join customers as cc on cc.id = sc.customer_id where sc.id = '{var1}'

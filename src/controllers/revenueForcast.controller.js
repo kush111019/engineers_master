@@ -4,7 +4,6 @@ const uuid = require("node-uuid");
 const {getMonthDifference, getYearDifference} = require('../utils/helper')
 
 module.exports.createRevenueForecast = async (req, res) => {
-
     try {
         let userId = req.user.id
         let {
@@ -103,7 +102,6 @@ module.exports.revenueForecastList = async (req, res) => {
                         data: []
                     })
                 }
-
             } else {
                 res.status(403).json({
                     success: false,
