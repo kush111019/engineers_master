@@ -19,7 +19,7 @@ module.exports.createRevenueForecast = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
-        let moduleName = 'Revenue Management'
+        let moduleName = 'Forecast Management'
         if (findAdmin.rows.length > 0) {
 
             let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
@@ -76,7 +76,7 @@ module.exports.revenueForecastList = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
-        let moduleName = 'Revenue Management'
+        let moduleName = 'Forecast Management'
         if (findAdmin.rows.length > 0) {
 
             let s2 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
@@ -129,7 +129,7 @@ module.exports.deleteRevenueForecast = async(req, res) => {
         let {revenueId} = req.query
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        let moduleName = 'Revenue Management'
+        let moduleName = 'Forecast Management'
         if (findAdmin.rows.length > 0) {
             let s2 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s2)
@@ -186,7 +186,7 @@ module.exports.actualVsForecast = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
-        let moduleName = 'Revenue Management'
+        let moduleName = 'Forecast Management'
         if (findAdmin.rows.length > 0) {
 
             let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
