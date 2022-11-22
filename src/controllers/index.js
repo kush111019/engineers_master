@@ -1,6 +1,6 @@
 const superAdmin = require('./superAdmin.controller')
 const users = require('./user.controller')
-const companyAdmin = require('./companyAdmin.conroller')
+const companyAdmin = require('./companyAdmin.controller')
 const roles = require('./roles.controller')
 const slabs = require('./slabs.controller')
 const customers = require('./customers.controller')
