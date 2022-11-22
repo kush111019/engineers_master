@@ -89,6 +89,7 @@ router.get('/revenues',verifyTokenFn, controller.dashboard.revenues)
 
 router.post('/createRevenueForecast',verifyTokenFn, controller.revenueForecast.createRevenueForecast)
 router.get('/revenueForecastList',verifyTokenFn, controller.revenueForecast.revenueForecastList)
+router.put('/deleteRevenueForecast', verifyTokenFn, controller.revenueForecast.deleteRevenueForecast)
 router.get('/actualVsForecast',verifyTokenFn, controller.revenueForecast.actualVsForecast)
 
 //---------------------------------------Business and Revenue Contact-------------------------

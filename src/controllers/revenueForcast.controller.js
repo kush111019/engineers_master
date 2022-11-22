@@ -79,12 +79,12 @@ module.exports.revenueForecastList = async (req, res) => {
         let moduleName = 'Revenue Management'
         if (findAdmin.rows.length > 0) {
 
-            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s3)
+            let s2 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
+            let checkPermission = await connection.query(s2)
             if (checkPermission.rows[0].permission_to_view) {
 
-                let s4 = dbScript(db_sql['Q68'], { var1: findAdmin.rows[0].company_id })
-                let revenueForecastList = await connection.query(s4)
+                let s3 = dbScript(db_sql['Q68'], { var1: findAdmin.rows[0].company_id })
+                let revenueForecastList = await connection.query(s3)
 
                 if (revenueForecastList.rowCount > 0) {
                     res.json({
@@ -115,6 +115,61 @@ module.exports.revenueForecastList = async (req, res) => {
             })
         }
     } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.deleteRevenueForecast = async(req, res) => {
+    try {
+        let userId = req.user.id
+        let {revenueId} = req.query
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        let moduleName = 'Revenue Management'
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
+            let checkPermission = await connection.query(s2)
+            if (checkPermission.rows[0].permission_to_delete) {
+                await connection.query('BEGIN')
+
+                let _dt = new Date().toISOString();
+                let s3 = dbScript(db_sql['Q148'], {var1 : _dt, var2 : revenueId, var3 : findAdmin.rows[0].company_id})
+                let deleteRevenue = await connection.query(s3)
+
+                if(deleteRevenue.rowCount > 0){
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Forecast deleted successfully"
+                    }) 
+                }else{
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong!"
+                    }) 
+                }
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,

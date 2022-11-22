@@ -245,8 +245,8 @@ const db_sql = {
               where email_address = '{var1}' and u.deleted_at is null 
               and c.deleted_at is null and r.deleted_at is null and con.deleted_at is null`,
     "Q146" : `update companies set is_imap_enable = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
-    "Q147" : `select id, product_name, product_image, description, available_quantity, price, tax, currency, company_id, created_at, updated_at from products where product_name = '{var1}' and company_id = '{var2}' and deleted_at is null ORDER BY created_at desc `
-   
+    "Q147" : `select id, product_name, product_image, description, available_quantity, price, tax, currency, company_id, created_at, updated_at from products where product_name = '{var1}' and company_id = '{var2}' and deleted_at is null ORDER BY created_at desc `,
+    "Q148" : `update revenue_forecast set deleted_at = '{var1}' where id = '{var2}' and company_id = '{var3}' returning *`
  }
 
 
