@@ -153,6 +153,7 @@ module.exports.createSalesCommission = async (req, res) => {
 
                 businessId = (businessId == '') ? '' : businessId
                 revenueId = (revenueId == '') ? '' : revenueId
+                targetAmount = (targetAmount == '') ? '0' : targetAmount
 
                 let id = uuid.v4()
                 let s5 = dbScript(db_sql['Q53'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: findAdmin.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var12: JSON.stringify(products), var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16 : currency })
@@ -167,7 +168,6 @@ module.exports.createSalesCommission = async (req, res) => {
                 let addSalesCloser = await connection.query(s7)
 
                 if (supporters.length > 0) {
-
                     for (let supporterData of supporters) {
                         let supporterId = uuid.v4()
                         let s8 = dbScript(db_sql['Q57'], { var1: supporterId, var2: customerCommissionSplitId, var3: supporterData.id, var4: supporterData.percentage, var5: createSalesConversion.rows[0].id, var6: findAdmin.rows[0].company_id })
