@@ -208,6 +208,7 @@ module.exports.actualVsForecast = async (req, res) => {
                     let endDate = forecastRevenue.rows[0].end_date
 
                     let toDate = new Date(startDate)
+                    toDate.setDate(toDate.getDate() + 1);
                     let fromDate = new Date(endDate)
                     let difference = await getMonthDifference(toDate, fromDate)
                     let yearDifference = await getYearDifference(toDate, fromDate)
@@ -284,7 +285,7 @@ module.exports.actualVsForecast = async (req, res) => {
 
                                 } else {
                                     if (growthWindow != count) {
-                                        date = new Date(toDate.setMonth(toDate.getMonth() + 4));
+                                        date = new Date(toDate.setMonth(toDate.getMonth() + 3));
                                         for (let i = 1; i <= 3; i++) {
                                             let s5 = dbScript(db_sql['Q78'], { var1: findAdmin.rows[0].company_id, var2: month1 })
                                             let actualRevenue = await connection.query(s5)
@@ -302,7 +303,7 @@ module.exports.actualVsForecast = async (req, res) => {
 
                                     } else {
                                         count = 0;
-                                        date = new Date(toDate.setMonth(toDate.getMonth() + 4));
+                                        date = new Date(toDate.setMonth(toDate.getMonth() + 3));
                                         for (let i = 1; i <= 3; i++) {
                                             let s5 = dbScript(db_sql['Q78'], { var1: findAdmin.rows[0].company_id, var2: month1 })
                                             let actualRevenue = await connection.query(s5)
