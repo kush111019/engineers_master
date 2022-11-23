@@ -206,9 +206,7 @@ module.exports.actualVsForecast = async (req, res) => {
                     let timeline = forecastRevenue.rows[0].timeline
                     let startDate = forecastRevenue.rows[0].start_date
                     let endDate = forecastRevenue.rows[0].end_date
-
                     let toDate = new Date(startDate)
-                    toDate.setDate(toDate.getDate() + 1);
                     let fromDate = new Date(endDate)
                     let difference = await getMonthDifference(toDate, fromDate)
                     let yearDifference = await getYearDifference(toDate, fromDate)
