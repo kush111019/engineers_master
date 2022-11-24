@@ -550,10 +550,11 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                 for (data of salesCommissionlogList.rows) {
                     let closer = {}
                     let supporters = []
-
+                    console.log(data.supporter_id, "data.supporter_id");
                     for (let supporterId of JSON.parse(data.supporter_id)) {
                         let s4 = dbScript(db_sql['Q81'], { var1: supporterId })
                         let supporter = await connection.query(s4)
+                        console.log(supporter.rows, "supporter.rows");
                         if (supporter.rowCount > 0) {
                             supporters.push({
                                 id: supporter.rows[0].supporter_id,
@@ -562,7 +563,7 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                             })
                         }
                     }
-
+                    console.log(supporters,"supporter");
                     let productName = []
                     for (let productIds of JSON.parse(data.products)) {
                         let s6 = dbScript(db_sql['Q96'], { var1: productIds, var2: findAdmin.rows[0].company_id })
