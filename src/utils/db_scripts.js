@@ -115,8 +115,7 @@ const db_sql = {
     "Q79"  : `update customers set business_id = '{var2}' where id = '{var1}' returning *`,
     "Q80"  : `update customers set revenue_id = '{var2}' where id = '{var1}' returning *`,
     "Q81"  : `select s.id, s.supporter_id, s.supporter_percentage, u.full_name from sales_supporter as s 
-              inner join users as u on u.id = s.supporter_id 
-              where s.id ='{var1}' and s.deleted_at is null and u.deleted_at is null `,
+              inner join users as u on u.id = s.supporter_id where s.id ='{var1}' `,
     "Q82"  : `select customer_id, sales_type, subscription_plan, recurring_date from sales_commission where deleted_at is null`,
     "Q83"  : `insert into configurations(id, currency, phone_format, date_format,user_id, company_id ) values('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') returning *`,
     "Q84"  : `select id,currency,phone_format,date_format,user_id,company_id,created_at
