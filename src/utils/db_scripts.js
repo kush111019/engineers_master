@@ -174,11 +174,11 @@ const db_sql = {
     "Q111" : `insert into superadmin_config(id, trial_days) values('{var1}', '{var2}') returning *`,
     "Q112" : `select id, trial_days, created_at from superadmin_config where deleted_at is null ORDER BY created_at desc ` ,
     "Q113" : `update users set expiry_date = '{var1}', updated_at = '{var3}' where id = '{var2}' and deleted_at is null returning *`,
-    "Q114" : `select id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id,total_amount, immediate_upgrade from transactions where deleted_at is null`,
+    "Q114" : `select id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id,total_amount, immediate_upgrade, upgraded_transaction_id from transactions where deleted_at is null and upgraded_transaction_id is not null`,
     "Q115" : `select id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade  from transactions where plan_id = '{var1}' and deleted_at is null`,  
     "Q116" : `update transactions set stripe_customer_id = '{var1}', stripe_subscription_id = '{var2}', 
               stripe_card_id = '{var3}', stripe_token_id = '{var4}', stripe_charge_id = '{var5}', 
-              expiry_date = '{var6}', updated_at = '{var7}', total_amount = '{var9}', immediate_upgrade = '{var10}', payment_receipt = '{var11}', user_count = '{var12}', plan_id = '{var13}' where id = '{var8}' and deleted_at is null returning *`,
+              expiry_date = '{var6}', updated_at = '{var7}', total_amount = '{var9}', immediate_upgrade = '{var10}', payment_receipt = '{var11}', user_count = '{var12}', plan_id = '{var13}', upgraded_transaction_id = '{var14}'  where id = '{var8}' and deleted_at is null returning *`,
     "Q117" : `update transactions set stripe_charge_id = '{var1}', payment_receipt = '{var4}', immediate_upgrade = '', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`,
     "Q118" : `update transactions set is_canceled = '{var1}', updated_at = '{var2}' where id = '{var3}' and deleted_at is null returning *`,
     
@@ -245,7 +245,15 @@ const db_sql = {
               and c.deleted_at is null and r.deleted_at is null and con.deleted_at is null`,
     "Q146" : `update companies set is_imap_enable = '{var1}', updated_at = '{var2}' where id = '{var3}' returning *`,
     "Q147" : `select id, product_name, product_image, description, available_quantity, price, tax, currency, company_id, created_at, updated_at from products where product_name = '{var1}' and company_id = '{var2}' and deleted_at is null ORDER BY created_at desc `,
-    "Q148" : `update revenue_forecast set deleted_at = '{var1}' where id = '{var2}' and company_id = '{var3}' returning *`
+    "Q148" : `update revenue_forecast set deleted_at = '{var1}' where id = '{var2}' and company_id = '{var3}' returning *`,
+    "Q149" : `insert into upgraded_transactions(id, user_id, company_id, plan_id, stripe_customer_id,
+              stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, expiry_date,
+              user_count, payment_status,total_amount, payment_receipt) values('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', 
+              '{var6}', '{var7}','{var8}', '{var9}', '{var10}','{var11}','{var12}','{var13}','{var14}') returning *`, 
+    "Q150" : `select id, user_id, company_id, plan_id, stripe_customer_id,
+              stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, expiry_date,
+              user_count, payment_status,total_amount, payment_receipt from upgraded_transactions where id = '{var1}' and deleted_at is null`,
+    "Q151" : `update upgraded_transactions set deleted_at = '{var1}' where id = '{var2}' returning *`                           
  }
 
 

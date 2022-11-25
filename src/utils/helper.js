@@ -3,6 +3,7 @@ const jsonwebtoken = require("jsonwebtoken");
 const stripe = require('stripe')(process.env.SECRET_KEY)
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
+const uuid = require("node-uuid")
 
 module.exports.mysql_real_escape_string = (str) =>{
     return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
@@ -175,7 +176,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
                 var1: transaction.rows[0].stripe_customer_id, var2: subscription.id,
                 var3: card.id, var4: token.id, var5: charge.id, var6: subscription.current_period_end,
                 var7: _dt, var8: transaction.rows[0].id, var9:Math.round(totalAmount), var10: true,
-                var11 : charge.receipt_url, var12 : userCount, var13 : planId
+                var11 : charge.receipt_url, var12 : userCount, var13 : planId, var14 : ""
             })
             let updateTransaction = await connection.query(s3)
 
@@ -262,15 +263,16 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
         }
         if (token && card && subscription) {
             let _dt = new Date().toISOString();
+            let upTransId = uuid.v4()
 
-            let s3 = dbScript(db_sql['Q116'], {
-                var1: transaction.rows[0].stripe_customer_id, var2: subscription.id,
-                var3: card.id, var4: token.id, var5: '', var6: subscription.current_period_end,
-                var7: _dt, var8: transaction.rows[0].id, var9:Math.round(totalAmount), var10: false,
-                var11 : '', var12: userCount, var13:planId
-            })
-            let updateTransaction = await connection.query(s3)
-            if(updateTransaction.rowCount > 0){
+            let s3 = dbScript(db_sql['Q149'], {var1 : upTransId, var2 : user.rows[0].id, var3:   transaction.rows[0].company_id, var4: planId, var5: transaction.rows[0].stripe_customer_id, var6: subscription.id, var7: card.id, var8: token.id, var9: "", var10: subscription.current_period_end, var11: userCount, var12: "",
+            var13: Math.round(totalAmount), var14: "" })
+            let createUpgradedTransaction = await connection.query(s3)
+
+            let s4 = dbScript(db_sql['Q116'], { var1: transaction.rows[0].stripe_customer_id, var2 : transaction.rows[0].stripe_subscription_id, var3 : transaction.rows[0].stripe_card_id, var4 : transaction.rows[0].stripe_token_id, var5 : transaction.rows[0].stripe_charge_id, var6 : transaction.rows[0].expiry_date, var7 : _dt, var8 : transaction.rows[0].id, var9 : transaction.rows[0].total_amount, var10 : false, var11 : transaction.rows[0].payment_receipt, var12 : transaction.rows[0].user_count, var13 : transaction.rows[0].plan_id, var14 : createUpgradedTransaction.rows[0].id})
+            let updateTransaction = await connection.query(s4)
+
+            if(createUpgradedTransaction.rowCount > 0 && updateTransaction.rowCount > 0){
                 res.json({
                     status: 200,
                     success: true,
