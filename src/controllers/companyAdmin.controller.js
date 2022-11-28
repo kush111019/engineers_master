@@ -692,14 +692,14 @@ module.exports.countryDetails = async(req, res) => {
         let details = await connection.query(s1)
         if(details.rowCount > 0){
             let countries = []
-            let currency = []
+            let currencies = []
             let dateFormat = []
             for(let data of details.rows){
                 countries.push({
                     countryName : data.country_name,
                     countryValue : data.country_value
                 })
-                currency.push({
+                currencies.push({
                     currencyName : data.currency_name,
                     currencySymbol : data.currency_symbol
                 })
@@ -712,7 +712,7 @@ module.exports.countryDetails = async(req, res) => {
                 message: "Country details",
                 data:  {
                     countries,
-                    currency,
+                    currencies,
                     dateFormat
                 }
             })
