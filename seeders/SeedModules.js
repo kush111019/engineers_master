@@ -4,7 +4,7 @@ const uuid = require("node-uuid");
 var connection = new Pool({
     host: "localhost",
     user:"postgres",
-    password:"root",
+    password:"postgres",
     database: "hirise_sales1",
     charset: 'utf8mb4'
 });

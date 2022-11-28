@@ -5,7 +5,7 @@ const { sha3_512 } = require('js-sha3')
 var connection = new Pool({
     host: "localhost",
     user:"postgres",
-    password:"root",
+    password:"postgres",
     database: "hirise_sales1",
     charset: 'utf8mb4'
 });
