@@ -4,7 +4,7 @@
       "_postman_id": "81faff46-376b-41ba-9393-f57ec4898302",
       "name": "hirise_sales",
       "schema": "https://api.postman.com/collections/20053051-81faff46-376b-41ba-9393-f57ec4898302?access_key=PMAT-01GJCAC0YS099J6R32JPQ44QCQ",
-      "updatedAt": "2022-11-11T05:43:13.000Z"
+      "updatedAt": "2022-11-28T09:05:36.000Z"
     },
     "item": [
       {
@@ -664,10 +664,32 @@
               "disableBodyPruning": true
             },
             "request": {
-              "method": "GET",
+              "method": "PUT",
               "header": [
-                
-              ]
+                {
+                  "key": "Authorization",
+                  "value": "{{SAtoken}}",
+                  "type": "text"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\r\n    \"companyId\" : \"29321f7b-9e4c-404d-91d9-40fb27b2f594\",\r\n    \"isImapEnable\" : false\r\n}",
+                "options": {
+                  "raw": {
+                    "language": "json"
+                  }
+                }
+              },
+              "url": {
+                "raw": "{{superAdmin}}/enableDisableImapService",
+                "host": [
+                  "{{superAdmin}}"
+                ],
+                "path": [
+                  "enableDisableImapService"
+                ]
+              }
             },
             "response": [
               
@@ -851,7 +873,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"emailAddress\" : \"robert@yopmail.com\",\r\n    \"password\" : \"dell@123#\"\r\n}",
+                    "raw": "{\r\n    \"emailAddress\" : \"reshma@yopmail.com\",\r\n    \"password\" : \"499221285cc3e9333341bd37ea044d09537cd084ef7e95cb7fdeb305f3c3c501735e953b93e6182273a7a4119b5ddeafa041745264959f84c9e9f75a5fa6f2ea\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -1320,7 +1342,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "\r\n        {\r\n            \"roleName\" : \"Employee 223\",\r\n            \"reporter\" : \"e6216ede-a08d-45e0-abac-691d871e0163\",\r\n            \"modulePermissions\" : [\r\n                {\r\n                    \"moduleId\" : \"85d5a1aa-8eed-439e-be9c-17f7bf4c3f43\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"f40d0d01-d77a-4eca-9d0f-0a1e22606a62\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"f674eb9a-975a-47c6-aa2b-20a86ecf896b\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"2ec14d7f-daa4-4908-83b6-fe1023b17ca8\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"a8252ca9-e471-4a1d-848d-aef386a4d71c\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"86407ba7-a064-4f7b-ab0c-fcb75807c3a3\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"d3009aa6-05c8-46dc-8dc2-b4af0688a352\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"42489bd9-1474-4a5d-a832-49ef5dd8ced9\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"17ac6db2-17a1-4010-8598-2364db8e9634\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"7d06a08e-3c12-45a8-af98-7b30fe03ee4e\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                }\r\n            ]\r\n     \r\n        }",
+                    "raw": "\r\n        {\r\n            \"roleName\" : \"Employee 1\",\r\n            \"reporter\" : \"524232ac-b486-40ad-828c-ca4ec00cdab8\",\r\n            \"modulePermissions\" : [\r\n                {\r\n                    \"moduleId\" : \"85d5a1aa-8eed-439e-be9c-17f7bf4c3f43\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"f40d0d01-d77a-4eca-9d0f-0a1e22606a62\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"f674eb9a-975a-47c6-aa2b-20a86ecf896b\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"2ec14d7f-daa4-4908-83b6-fe1023b17ca8\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"a8252ca9-e471-4a1d-848d-aef386a4d71c\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"86407ba7-a064-4f7b-ab0c-fcb75807c3a3\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"d3009aa6-05c8-46dc-8dc2-b4af0688a352\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"42489bd9-1474-4a5d-a832-49ef5dd8ced9\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"17ac6db2-17a1-4010-8598-2364db8e9634\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"7d06a08e-3c12-45a8-af98-7b30fe03ee4e\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                }\r\n            ]\r\n     \r\n        }",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -2156,7 +2178,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"productName\" : \"test product\",\r\n    \"productImage\" : \"\",\r\n    \"description\" : \"this is a test product\",\r\n    \"availableQuantity\" : \"10\",\r\n    \"price\" : \"1000\",\r\n    \"tax\" : \"10\"\r\n}",
+                    "raw": "{\r\n    \"productName\" : \"test product\",\r\n    \"productImage\" : \"\",\r\n    \"description\" : \"this is a test product\",\r\n    \"availableQuantity\" : \"10\",\r\n    \"price\" : \"1000\",\r\n    \"tax\" : \"10\",\r\n    \"currency\" : \"$\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -2805,7 +2827,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"customerId\" : \"b0d87571-3d7c-4af1-b38b-48a2018c1538\",\r\n    \"customerCommissionSplitId\" : \"3bb97e14-4aa0-4e3c-9a5e-7f0188fb2e3a\",\r\n    \"customerCloserId\" : \"978072d4-d1f6-49a4-b5e7-d33f3f2a1017\",\r\n    \"supporters\" : [\r\n        {\r\n            \"id\" : \"d9c2b293-be2f-4a49-aa2b-17371d974f38\",\r\n            \"percentage\" : 40\r\n        }\r\n    ],\r\n    \"qualification\" : \"qualifications \",\r\n    \"is_qualified\" : false ,\r\n    \"targetAmount\" : \"9000\",\r\n    \"products\" : [\"07e04aae-97e2-42d3-bc39-05862693e449\"],\r\n    \"targetClosingDate\" : \"10/12/2022\",\r\n    \"is_overwrite\" : false,\r\n    \"closerPercentage\" : 60,\r\n    \"businessId\" : \"\",\r\n    \"revenueId\" : \"\",\r\n    \"subscriptionPlan\" : \"\",\r\n    \"recurringDate\" : \"\",\r\n    \"salesType\" : \"Perpectual\"\r\n}",
+                    "raw": "{\r\n    \"customerId\" : \"b0d87571-3d7c-4af1-b38b-48a2018c1538\",\r\n    \"customerCommissionSplitId\" : \"3bb97e14-4aa0-4e3c-9a5e-7f0188fb2e3a\",\r\n    \"customerCloserId\" : \"978072d4-d1f6-49a4-b5e7-d33f3f2a1017\",\r\n    \"supporters\" : [\r\n        {\r\n            \"id\" : \"d9c2b293-be2f-4a49-aa2b-17371d974f38\",\r\n            \"percentage\" : 40\r\n        }\r\n    ],\r\n    \"qualification\" : \"qualifications \",\r\n    \"is_qualified\" : false ,\r\n    \"targetAmount\" : \"\",\r\n    \"products\" : [],\r\n    \"targetClosingDate\" : \"\",\r\n    \"is_overwrite\" : false,\r\n    \"closerPercentage\" : 60,\r\n    \"businessId\" : \"\",\r\n    \"revenueId\" : \"\",\r\n    \"subscriptionPlan\" : \"\",\r\n    \"recurringDate\" : \"\",\r\n    \"salesType\" : \"Perpectual\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -3322,7 +3344,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"timeline\" : \"Annual\",\r\n    \"revenue\" : 10000,\r\n    \"growthWindow\" : 1,\r\n    \"growthPercentage\" : 2.5,\r\n    \"startDate\" : \"08/05/2022\",\r\n    \"endDate\" : \"09/05/2022\"\r\n}",
+                    "raw": "{\r\n    \"timeline\" : \"Quarterly\",\r\n    \"revenue\" : 2000000,\r\n    \"growthWindow\" : 1,\r\n    \"growthPercentage\" : 6,\r\n    \"startDate\" : \"01-01-2022\",\r\n    \"endDate\" : \"01-31-2024\",\r\n    \"currency\" : \"$\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -3336,44 +3358,6 @@
                     ],
                     "path": [
                       "createRevenueForecast"
-                    ]
-                  }
-                },
-                "response": [
-                  
-                ]
-              },
-              {
-                "name": "Update Revenue Forecast",
-                "id": "f4e6bce7-96cf-430f-a8cd-4bd9e61b5130",
-                "protocolProfileBehavior": {
-                  "disableBodyPruning": true
-                },
-                "request": {
-                  "method": "PUT",
-                  "header": [
-                    {
-                      "key": "Authorization",
-                      "value": "{{token}}",
-                      "type": "text"
-                    }
-                  ],
-                  "body": {
-                    "mode": "raw",
-                    "raw": "{\r\n    \"revenueForecastId\" : \"b84dfb77-61fa-4ba0-b625-6d4ff298e519\",\r\n    \"timeline\" : \"Quarterly\",\r\n    \"revenue\" : 15000,\r\n    \"growthWindow\" : 0,\r\n    \"growthPercentage\" : 3,\r\n    \"startDate\" : \"08/05/2022\",\r\n    \"endDate\" : \"08/05/2023\"\r\n}",
-                    "options": {
-                      "raw": {
-                        "language": "json"
-                      }
-                    }
-                  },
-                  "url": {
-                    "raw": "{{companyAdmin}}/updateRevenueForecast",
-                    "host": [
-                      "{{companyAdmin}}"
-                    ],
-                    "path": [
-                      "updateRevenueForecast"
                     ]
                   }
                 },
@@ -3397,7 +3381,7 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/actualVsForecast?id=b84dfb77-61fa-4ba0-b625-6d4ff298e519",
+                    "raw": "{{companyAdmin}}/actualVsForecast?id=f92284bc-a5cf-4a75-a1c1-a9b9c3f751e5",
                     "host": [
                       "{{companyAdmin}}"
                     ],
@@ -3407,7 +3391,42 @@
                     "query": [
                       {
                         "key": "id",
-                        "value": "b84dfb77-61fa-4ba0-b625-6d4ff298e519"
+                        "value": "f92284bc-a5cf-4a75-a1c1-a9b9c3f751e5"
+                      }
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "delete Revenue Forecast",
+                "id": "93ff2473-e001-45ce-9241-f47bf5f5a51e",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/deleteRevenueForecast?revenueId=f63eac27-9933-492a-82d8-4ba715731bdb",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "deleteRevenueForecast"
+                    ],
+                    "query": [
+                      {
+                        "key": "revenueId",
+                        "value": "f63eac27-9933-492a-82d8-4ba715731bdb"
                       }
                     ]
                   }
@@ -4078,6 +4097,39 @@
               "v1",
               "auth",
               "contactUs"
+            ]
+          }
+        },
+        "response": [
+          
+        ]
+      },
+      {
+        "name": "country details",
+        "id": "ac2faf6e-e42e-4c62-9f0c-027dda098103",
+        "protocolProfileBehavior": {
+          "disableBodyPruning": true
+        },
+        "request": {
+          "method": "GET",
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "{{token}}",
+              "type": "text"
+            }
+          ],
+          "url": {
+            "raw": "http://localhost:3003/api/v1/countryDetails",
+            "protocol": "http",
+            "host": [
+              "localhost"
+            ],
+            "port": "3003",
+            "path": [
+              "api",
+              "v1",
+              "countryDetails"
             ]
           }
         },
