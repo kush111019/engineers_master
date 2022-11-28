@@ -10,13 +10,21 @@ var connection = new Pool({
 });
 
 connection.connect()
-let id = uuid.v4()
+
 console.log("running seed");
 
-connection.query(`insert into modules (id,module_name,module_type ) values('${id}','Sales management','Sales Module')`, err => {
-    if(err){
-        throw err
-    }
-    console.log("seed complete");
-    connection.end()
-})
+let moduleName = ['users','Role','Sales management','Reports','Dashboard','Slab Configuration','Customer management','Commission','Products','Forecast Management'];
+
+let moduleType = ['company users','Roles Module','Sales Module','Reports  Module','Dashboard Module','Slabs Module','Customers Module','Commission Module','products','Forecast']
+
+for(let i = 0; i<= moduleName.length; i++){
+    let id = uuid.v4()
+    connection.query(`insert into modules (id,module_name,module_type ) values('${id}','${moduleName[i]}','${moduleType[i]}')`, err => {
+        if(err){
+            throw err
+        }  
+    })
+}
+
+console.log("seed complete");
+connection.end()

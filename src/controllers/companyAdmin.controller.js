@@ -39,74 +39,87 @@ let createAdmin = async (bodyData, cId, res) => {
         if (trialDays.rowCount > 0) {
             let currentDate = new Date()
             expiryDate = new Date(currentDate.setDate(currentDate.getDate() + Number(trialDays.rows[0].trial_days))).toISOString()
-        }
 
-        let role_id = createRole.rows[0].id
-        let s5 = dbScript(db_sql['Q3'], { var1: id, var2: mysql_real_escape_string(name), 
-                    var3: cId, var4: companyLogo, var5: emailAddress, var6: mobileNumber, 
-                    var7: phoneNumber, var8: encryptedPassword, var9: role_id, 
-                    var10: mysql_real_escape_string(companyAddress), var11: expiryDate })
-        let saveuser = await connection.query(s5)
 
-        let configId = uuid.v4()
-        let s10 = dbScript(db_sql['Q83'], {var1 : configId, var2 : "$", var3 : "us", var4 : "MM-DD-YYYY", var5 : saveuser.rows[0].id, var6: cId})
-        let addConfig = await connection.query(s10)
+            let role_id = createRole.rows[0].id
+            let s5 = dbScript(db_sql['Q3'], {
+                var1: id, var2: mysql_real_escape_string(name),
+                var3: cId, var4: companyLogo, var5: emailAddress, var6: mobileNumber,
+                var7: phoneNumber, var8: encryptedPassword, var9: role_id,
+                var10: mysql_real_escape_string(companyAddress), var11: expiryDate
+            })
+            let saveuser = await connection.query(s5)
 
-        let s6 = dbScript(db_sql['Q6'], {})
-        let findModules = await connection.query(s6)
-        let moduleArr = []
-        for (data of findModules.rows) {
-            moduleArr.push(data.id)
-            let perId = uuid.v4()
-            let s7 = dbScript(db_sql['Q20'], { var1: perId, var2: createRole.rows[0].id, var3: data.id, var4: true, var5: true, var6:true, var7: true, var8: saveuser.rows[0].id })
-            var addPermission = await connection.query(s7)
-        }
-        let _dt = new Date().toISOString();
-        let s8 = dbScript(db_sql['Q34'], { var1: JSON.stringify(moduleArr), var2: _dt, 
-                    var3: role_id })
-        let updateModule = await connection.query(s8)
+            let configId = uuid.v4()
+            let s10 = dbScript(db_sql['Q83'], { var1: configId, var2: "$", var3: "us", var4: "MM-DD-YYYY", var5: saveuser.rows[0].id, var6: cId })
+            let addConfig = await connection.query(s10)
 
-        if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0 && addConfig.rowCount > 0) {
-            await connection.query('COMMIT')
-            const payload = {
-                id: saveuser.rows[0].id,
-                email: saveuser.rows[0].email_address
+            let s6 = dbScript(db_sql['Q6'], {})
+            let findModules = await connection.query(s6)
+            let moduleArr = []
+            for (data of findModules.rows) {
+                moduleArr.push(data.id)
+                let perId = uuid.v4()
+                let s7 = dbScript(db_sql['Q20'], { var1: perId, var2: createRole.rows[0].id, var3: data.id, var4: true, var5: true, var6: true, var7: true, var8: saveuser.rows[0].id })
+                var addPermission = await connection.query(s7)
             }
-            let token = await issueJWT(payload)
-            link = `http://143.198.102.134:8080/auth/verify-email/${token}`
-            if (process.env.isLocalEmail == 'true') {
-                await welcomeEmail2(emailAddress, link, name);
+            let _dt = new Date().toISOString();
+            let s8 = dbScript(db_sql['Q34'], {
+                var1: JSON.stringify(moduleArr), var2: _dt,
+                var3: role_id
+            })
+            let updateModule = await connection.query(s8)
+
+            if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0 && addConfig.rowCount > 0) {
                 await connection.query('COMMIT')
-                return res.json({
-                    status: 201,
-                    success: true,
-                    message: ` User Created Successfully and verification link send on registered email `,
-                })
-            } else {
-                let emailSent = await welcomeEmail(emailAddress, link, name);
-                if (emailSent.status == 400) {
-                    await connection.query('ROLLBACK')
-                    return res.json({
-                        status: 400,
-                        success: false,
-                        message: `Something went wrong`,
-                    })
+                const payload = {
+                    id: saveuser.rows[0].id,
+                    email: saveuser.rows[0].email_address
                 }
-                else {
+                let token = await issueJWT(payload)
+                link = `http://143.198.102.134:8080/auth/verify-email/${token}`
+                if (process.env.isLocalEmail == 'true') {
+                    await welcomeEmail2(emailAddress, link, name);
                     await connection.query('COMMIT')
                     return res.json({
                         status: 201,
                         success: true,
                         message: ` User Created Successfully and verification link send on registered email `,
                     })
+                } else {
+                    let emailSent = await welcomeEmail(emailAddress, link, name);
+                    if (emailSent.status == 400) {
+                        await connection.query('ROLLBACK')
+                        return res.json({
+                            status: 400,
+                            success: false,
+                            message: `Something went wrong`,
+                        })
+                    }
+                    else {
+                        await connection.query('COMMIT')
+                        return res.json({
+                            status: 201,
+                            success: true,
+                            message: ` User Created Successfully and verification link send on registered email `,
+                        })
+                    }
                 }
+            } else {
+                await connection.query('ROLLBACK')
+                return res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something Went Wrong",
+                    data: ""
+                })
             }
         } else {
             await connection.query('ROLLBACK')
             return res.json({
                 status: 400,
                 success: false,
-                message: "Something Went Wrong",
+                message: "Trial days are not added by Super admin",
                 data: ""
             })
         }
@@ -161,6 +174,7 @@ module.exports.signUp = async (req, res) => {
             let s3 = dbScript(db_sql['Q2'], { var1: cId, var2: mysql_real_escape_string(companyName), var3: companyLogo, var4: mysql_real_escape_string(companyAddress) })
             let saveCompanyDetails = await connection.query(s3)
             if (saveCompanyDetails.rowCount > 0) {
+                console.log(saveCompanyDetails.rows,"saveCompanyDetails.rows");
                 await createAdmin(req.body, saveCompanyDetails.rows[0].id, res)
             } else {
                 await connection.query('ROLLBACK')
