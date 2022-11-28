@@ -253,7 +253,8 @@ const db_sql = {
     "Q150" : `select id, user_id, company_id, plan_id, stripe_customer_id,
               stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, expiry_date,
               user_count, payment_status,total_amount, payment_receipt from upgraded_transactions where id = '{var1}' and deleted_at is null`,
-    "Q151" : `update upgraded_transactions set deleted_at = '{var1}' where id = '{var2}' returning *`                           
+    "Q151" : `update upgraded_transactions set deleted_at = '{var1}' where id = '{var2}' returning *`,
+    "Q152" : `select id,country_name,country_value,currency_name,currency_symbol,date_format,created_at from country_details where deleted_at is null`                           
  }
 
 

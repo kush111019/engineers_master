@@ -19,6 +19,7 @@ router.post('/auth/resetPassword',controller.companyAdmin.resetPassword)
 router.post('/auth/contactUs', controller.contactUs.contactUs)
 
 router.get('/plansList',controller.payment.plansList)
+router.get('/countryDetails', controller.companyAdmin.countryDetails)
 
 
 
