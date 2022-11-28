@@ -2,6 +2,7 @@ const express = require('express');
 const controller = require('../controllers');
 const router = express.Router();
 const {uploadLogo} = require('../utils/uploadfiles')
+const { verifyTokenFn } = require('../utils/jwt')
 
 
 
@@ -19,8 +20,8 @@ router.post('/auth/resetPassword',controller.companyAdmin.resetPassword)
 router.post('/auth/contactUs', controller.contactUs.contactUs)
 
 router.get('/plansList',controller.payment.plansList)
-router.get('/countryDetails', controller.companyAdmin.countryDetails)
 
+router.get('/countryDetails',verifyTokenFn, controller.companyAdmin.countryDetails)
 
 
 module.exports = router;

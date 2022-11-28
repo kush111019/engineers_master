@@ -13,13 +13,54 @@ connection.connect()
 
 console.log("running seed");
 
-let moduleName = ['users','Role','Sales management','Reports','Dashboard','Slab Configuration','Customer management','Commission','Products','Forecast Management'];
+let modules = [
+    {
+        moduleName : 'users',
+        moduleType : 'company users'
+    },
+    {
+        moduleName : 'Role',
+        moduleType : 'Roles Module'
+    },
+    {
+        moduleName : 'Sales management',
+        moduleType : 'Sales Module'
+    },
+    {
+        moduleName : 'Reports',
+        moduleType : 'Reports Module'
+    },
+    {
+        moduleName : 'Dashboard',
+        moduleType : 'Dashboard Module'
+    },
+    {
+        moduleName : 'Slab Configuration',
+        moduleType : 'Slabs Module'
+    },
+    {
+        moduleName : 'Customer management',
+        moduleType : 'Customers Module'
+    },
+    {
+        moduleName : 'Commission',
+        moduleType : 'Commission Module'
+    },
+    {
+        moduleName : 'Products',
+        moduleType : 'products'
+    },
+    {
+        moduleName : 'Forecast Management',
+        moduleType : 'Forecast' 
+    }
+]
 
-let moduleType = ['company users','Roles Module','Sales Module','Reports  Module','Dashboard Module','Slabs Module','Customers Module','Commission Module','products','Forecast']
-
-for(let i = 0; i<= moduleName.length; i++){
+for(let data of modules){
     let id = uuid.v4()
-    connection.query(`insert into modules (id,module_name,module_type ) values('${id}','${moduleName[i]}','${moduleType[i]}')`, err => {
+    connection.query(`insert into modules (id,module_name,module_type ) 
+                      values('${id}','${data.moduleName}','${data.moduleType}')`, 
+    err => {
         if(err){
             throw err
         }  

@@ -686,51 +686,66 @@ module.exports.resetPassword = async (req, res) => {
     }
 }
 
-module.exports.countryDetails = async(req, res) => {
+module.exports.countryDetails = async (req, res) => {
     try {
-        let s1 = dbScript(db_sql['Q152'], {})
-        let details = await connection.query(s1)
-        if(details.rowCount > 0){
-            let countries = []
-            let currencies = []
-            let dateFormat = []
-            for(let data of details.rows){
-                countries.push({
-                    countryName : data.country_name,
-                    countryValue : data.country_value
-                })
-                currencies.push({
-                    currencyName : data.currency_name,
-                    currencySymbol : data.currency_symbol
-                })
-                dateFormat.push(data.date_format)
-            }
-
-            res.json({
-                status: 200,
-                success: true,
-                message: "Country details",
-                data:  {
-                    countries,
-                    currencies,
-                    dateFormat
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let checkUser = await connection.query(s1)
+        if (checkUser.rows.length > 0) {
+            let s1 = dbScript(db_sql['Q152'], {})
+            let details = await connection.query(s1)
+            if (details.rowCount > 0) {
+                let countries = []
+                let currencies = []
+                let dateFormat = []
+                for (let data of details.rows) {
+                    countries.push({
+                        countryName: data.country_name,
+                        countryValue: data.country_value
+                    })
+                    currencies.push({
+                        currencyName: data.currency_name,
+                        currencySymbol: data.currency_symbol
+                    })
+                    dateFormat.push(data.date_format)
                 }
-            })
-        }else{
-            if(details.rowCount == 0){
                 res.json({
                     status: 200,
                     success: true,
-                    message: "Empty Country details",
-                    data: []
+                    message: "Country details",
+                    data: {
+                        countries,
+                        currencies,
+                        dateFormat
+                    }
                 })
-            }else{
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Something went wrong"
-                })
+            } else {
+                if (details.rowCount == 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Empty Country details",
+                        data: {
+                            countries : [],
+                            currencies : [],
+                            dateFormat : []
+                        }
+                    })
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
             }
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: "User not found",
+                data: ""
+            })
         }
     } catch (error) {
         res.json({
