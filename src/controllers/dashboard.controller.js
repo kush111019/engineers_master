@@ -40,11 +40,11 @@ module.exports.revenues = async (req, res) => {
                             let slab = await connection.query(s5)
                             if (slab.rowCount > 0) {
                                 let remainingAmont = data.target_amount;
-                                let amount = 0
+                                let commission = 0
                                 for(let i = 0; i < slab.rows.length; i++){
                                     if( Number(remainingAmont) > 0){
                                         let percentage = slab.rows[i].percentage
-                                        amount = amount + ((Number(percentage) / 100) * Number(remainingAmont))
+                                        commission = commission + ((Number(percentage) / 100) * Number(remainingAmont))
                                         if(i == (slab.rows.length-1)){
                                             remainingAmont = Number(remainingAmont) - Number(slab.rows[i].min_amount)
                                         }else{
@@ -53,15 +53,15 @@ module.exports.revenues = async (req, res) => {
                                         remainingAmont = (remainingAmont < 0) ? 0 : remainingAmont;
                                     }
                                 }
-                                revenueCommissionByDateObj.commission = amount.toFixed(2)
-                                totalCommission = totalCommission + amount
+                                revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
+                                totalCommission = totalCommission + commission
                             }
                             revenueCommissionBydate.push(revenueCommissionByDateObj)
                         }
                     }
                     counts.expectedRevenue = expectedRevenue
-                    counts.totalRevenue = totalRevenue.toFixed(2)
-                    counts.totalCommission = totalCommission.toFixed(2)
+                    counts.totalRevenue = Number(totalRevenue.toFixed(2))
+                    counts.totalCommission = Number(totalCommission.toFixed(2))
                     counts.revenueCommissionBydate = revenueCommissionBydate
                 } else {
                     counts.totalRevenue = 0

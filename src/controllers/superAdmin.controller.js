@@ -449,7 +449,6 @@ module.exports.dashboard = async (req, res) => {
                     let s3 = dbScript(db_sql['Q87'], { var1: comData.id })
                     let salesData = await connection.query(s3)
                     if (salesData.rowCount > 0) {
-                        console.log(salesData.rows.length,salesData.rows);
                         for (data of salesData.rows) {
                             if (data.closed_at != null) {
                                 targetAmount = targetAmount + Number(data.target_amount)
@@ -477,8 +476,8 @@ module.exports.dashboard = async (req, res) => {
                             }
                         }
                         revenueCommissionObj.name = comData.company_name
-                        revenueCommissionObj.revenue = targetAmount
-                        revenueCommissionObj.commission = commission
+                        revenueCommissionObj.revenue = Number(targetAmount)
+                        revenueCommissionObj.commission = Number(commission)
                         revenueCommissionObj.date = comData.created_at
                         revenueCommission.push(revenueCommissionObj)
                     }

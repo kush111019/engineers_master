@@ -378,7 +378,7 @@
               ],
               "body": {
                 "mode": "raw",
-                "raw": "{\r\n    \"email\" : \"superadmin@yopmail.com\",\r\n    \"password\" : \"4ff3e8922e53309578d694c2dafb41d744af5c4004716f178552449149cd502e9c7022d18cdef4bbe796652d0862f019653e96796ad5d05bffb0f44baaa33528\"\r\n    \r\n}",
+                "raw": "{\r\n    \"email\" : \"superadmin@yopmail.com\",\r\n    \"password\" : \"606f3a6f10ca691dd72913176d919f1fd2857c258d54a0f194217ff0973e1d527a1d60d60a54b9809b07fca39922af644c643e2543911160893a9964b2237ad9\"\r\n    \r\n}",
                 "options": {
                   "raw": {
                     "language": "json"
@@ -386,9 +386,12 @@
                 }
               },
               "url": {
-                "raw": "localhost:3003/api/v1/superAdmin/login",
+                "raw": "143.198.102.134:3003/api/v1/superAdmin/login",
                 "host": [
-                  "localhost"
+                  "143",
+                  "198",
+                  "102",
+                  "134"
                 ],
                 "port": "3003",
                 "path": [
@@ -873,7 +876,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"emailAddress\" : \"reshma@yopmail.com\",\r\n    \"password\" : \"499221285cc3e9333341bd37ea044d09537cd084ef7e95cb7fdeb305f3c3c501735e953b93e6182273a7a4119b5ddeafa041745264959f84c9e9f75a5fa6f2ea\"\r\n}",
+                    "raw": "{\r\n    \"emailAddress\" : \"gomez@yopmail.com\",\r\n    \"password\" : \"36dde7d288a2166a651d51ec6ded9e70e72cf6b366293d6f513c75393c57d6f33b949879b9d5e7f7c21cd8c02ede75e74fc54ea15bd043b4df008533fc68ae69\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -881,10 +884,13 @@
                     }
                   },
                   "url": {
-                    "raw": "http://localhost:3003/api/v1/auth/login",
+                    "raw": "http://143.198.102.134:3003/api/v1/auth/login",
                     "protocol": "http",
                     "host": [
-                      "localhost"
+                      "143",
+                      "198",
+                      "102",
+                      "134"
                     ],
                     "port": "3003",
                     "path": [
@@ -3060,7 +3066,7 @@
                     }
                   },
                   "url": {
-                    "raw": "http://localhost:3003/api/v1/companyAdmin/salesCommissionLogsList?salesCommissionId=2eadb892-ce40-4d5d-ae66-6ddebbfce64d",
+                    "raw": "http://localhost:3003/api/v1/companyAdmin/salesCommissionLogsList?salesCommissionId=ad3a8e4c-67a9-47b6-8ac2-0536c8faa691",
                     "protocol": "http",
                     "host": [
                       "localhost"
@@ -3075,7 +3081,7 @@
                     "query": [
                       {
                         "key": "salesCommissionId",
-                        "value": "2eadb892-ce40-4d5d-ae66-6ddebbfce64d"
+                        "value": "ad3a8e4c-67a9-47b6-8ac2-0536c8faa691"
                       }
                     ]
                   }
