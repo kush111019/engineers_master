@@ -46,7 +46,11 @@ module.exports.revenues = async (req, res) => {
                                         let percentage = slab.rows[i].percentage
                                         commission = commission + ((Number(percentage) / 100) * Number(remainingAmont))
                                         if(i == (slab.rows.length-1)){
-                                            remainingAmont = Number(remainingAmont) - Number(slab.rows[i].min_amount)
+                                            if(slab.rows[i].max_amount == ''){
+                                                remainingAmont = Number(remainingAmont) - Number(slab.rows[i].min_amount)
+                                            }else{
+                                                remainingAmont = Number(remainingAmont) - Number(slab.rows[i].max_amount)
+                                            }
                                         }else{
                                             remainingAmont = Number(remainingAmont) - Number(slab.rows[i].max_amount)
                                         }
