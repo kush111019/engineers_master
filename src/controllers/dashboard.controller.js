@@ -39,7 +39,7 @@ module.exports.revenues = async (req, res) => {
                             let s5 = dbScript(db_sql['Q17'], { var1: findAdmin.rows[0].company_id })
                             let slab = await connection.query(s5)
                             if (slab.rowCount > 0) {
-                                let remainingAmount = 41000
+                                let remainingAmount = Number(data.target_amount);
                                 let commission = 0
                                 for(let i = 0; i < slab.rows.length; i++){
                                     let percentage = Number(slab.rows[i].percentage) 
