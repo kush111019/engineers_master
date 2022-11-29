@@ -41,17 +41,19 @@ module.exports.revenues = async (req, res) => {
                             if (slab.rowCount > 0) {
                                 let remainingAmount = Number(data.target_amount);
                                 let commission = 0
+                                let count = 0
                                 for(let i = 0; i < slab.rows.length; i++){
                                     let percentage = Number(slab.rows[i].percentage) 
                                     let maxAmount = Number(slab.rows[i].max_amount) 
-                                    let minAmount = i == 0 ? Number(slab.rows[i].min_amount) : Number(slab.rows[i-1].max_amount)
-                                    if(remainingAmount > maxAmount && !slab.rows[i].is_max ){
-                                        commission = commission + ((percentage / 100) * (maxAmount-minAmount))
-                                        remainingAmount = remainingAmount - (maxAmount - minAmount)    
+                                    let minAmount = Number(slab.rows[i].min_amount)
+                                    if(remainingAmount > maxAmount && !slab.rows[i].is_max && count == 0 ){
+                                        commission = commission + ((percentage / 100) * maxAmount)
+                                        remainingAmount = remainingAmount - maxAmount   
+                                        count = count + 1
                                     }else if(remainingAmount >= minAmount && remainingAmount <= maxAmount && !slab.rows[i].is_max){
                                         commission = commission + ((percentage / 100) * remainingAmount)
-                                        remainingAmount = remainingAmount - (maxAmount - minAmount)
-                                    }else if(slab.rows[i].is_max ){
+                                        remainingAmount = remainingAmount - maxAmount 
+                                    }else if( remainingAmount > minAmount && slab.rows[i].is_max ){
                                         commission = commission + ((percentage / 100) * remainingAmount)
                                         remainingAmount = 0 
                                     }
