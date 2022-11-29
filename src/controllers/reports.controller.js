@@ -1,72 +1,32 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-
-
-let paginatedResults = (model, page) => {
-    const limit = 10;
-
-    // calculating the starting and ending index
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
-
-    const results = {};
-    if (endIndex < model.length) {
-        results.next = {
-            page: page + 1,
-            limit: limit
-        };
-    }
-
-    if (startIndex > 0) {
-        results.previous = {
-            page: page - 1,
-            limit: limit
-        };
-    }
-
-    data = model.slice(startIndex, endIndex);
-    console.log(data, "data");
-    return data
-}
+const {paginatedResults, removeDuplicates} = require('../utils/helper')
 
 module.exports.revenuePerCustomer = async (req, res) => {
     try {
-        let userEmail = req.user.email
+        let userId = req.user.id
         let {page} = req.query
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         let moduleName = 'Reports'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
-            let checkPermission = await connection.query(s3)
+            let s2 = dbScript(db_sql['Q41'], {  var1: moduleName , var2: findAdmin.rows[0].id })
+            let checkPermission = await connection.query(s2)
             if (checkPermission.rows[0].permission_to_view) {
                 let revenuePerCustomer = []
-                let s4 = dbScript(db_sql['Q95'], { var1: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q89'], { var1: findAdmin.rows[0].company_id })
                 let customerCompanies = await connection.query(s4)
                 if (customerCompanies.rowCount > 0) {
-                    for (company of customerCompanies.rows) {
-                        let s5 = dbScript(db_sql['Q96'], { var1: company.id })
-                        let customers = await connection.query(s5)
-                        if (customers.rows.length > 0) {
-                            let revenue = 0
-                            let obj = {}
-                            for (data of customers.rows) {
-                                let s6 = dbScript(db_sql['Q97'], { var1: data.id })
-                                let amount = await connection.query(s6)
-                                if (amount.rowCount > 0) {
-                                    revenue = revenue + Number(amount.rows[0].target_amount)
-                                }
-                            }
-                            obj.customerId = company.id
-                            obj.customerName = company.customer_company_name
-                            obj.revenue = revenue
-                            revenuePerCustomer.push(obj)
-                        }
+                    for (data of customerCompanies.rows) {
+                        let obj = {}
+                        obj.customerId = data.customer_company_id
+                        obj.customerName = data.customer_company_name
+                        obj.revenue = Number(data.target_amount)
+                        revenuePerCustomer.push(obj)
                     }
-                    if (revenuePerCustomer.length > 0) {
-                        let result = await paginatedResults(revenuePerCustomer,page)
+                    let uniqueArray = await removeDuplicates(revenuePerCustomer, "customerId");
+                    if (uniqueArray.length > 0) {
+                        let result = await paginatedResults(uniqueArray,page)
                         res.json({
                             status: 200,
                             success: true,
@@ -85,7 +45,8 @@ module.exports.revenuePerCustomer = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "No customers available, hence no revenues"
+                        message: "No customers available",
+                        data: revenuePerCustomer
                     })
                 }
 
@@ -113,18 +74,16 @@ module.exports.revenuePerCustomer = async (req, res) => {
 
 module.exports.revenuePerProduct = async (req, res) => {
     try {
-        let userEmail = req.user.email
+        let userId = req.user.id
         let {page} = req.query
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         let moduleName = 'Reports'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
-                let s4 = dbScript(db_sql['Q93'], { var1: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q87'], { var1: findAdmin.rows[0].company_id })
                 let customers = await connection.query(s4)
                 if (customers.rowCount > 0) {
                     let revenuePerProduct = []
@@ -132,7 +91,7 @@ module.exports.revenuePerProduct = async (req, res) => {
                         if (data.closed_at != null) {
                             let products = JSON.parse(data.products)
                             for (let productIds of products) {
-                                let s10 = dbScript(db_sql['Q104'], { var1: productIds, var2: findAdmin.rows[0].company_id })
+                                let s10 = dbScript(db_sql['Q96'], { var1: productIds, var2: findAdmin.rows[0].company_id })
                                 let product = await connection.query(s10)
                                 if(product.rowCount > 0){
                                     revenuePerProduct.push({
@@ -163,7 +122,8 @@ module.exports.revenuePerProduct = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "No customers available"
+                        message: "Empty revenue per product",
+                        data : []
                     })
                 }
             } else {
@@ -190,25 +150,23 @@ module.exports.revenuePerProduct = async (req, res) => {
 
 module.exports.revenuePerSalesRep = async (req, res) => {
     try {
-        let userEmail = req.user.email
+        let userId = req.user.id
         let {page} = req.query
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         let moduleName = 'Reports'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
                 let salesRepArr = []
-                let s4 = dbScript(db_sql['Q98'], { var1: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q90'], { var1: findAdmin.rows[0].company_id })
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0) {
                     let holder = {};
                     let newArr = []
                     for (let sales of salesData.rows) {
-                        let s5 = dbScript(db_sql['Q92'], { var1: sales.id })
+                        let s5 = dbScript(db_sql['Q86'], { var1: sales.id })
                         let salesRep = await connection.query(s5)
                         if (salesRep.rows.length > 0) {
                             salesRepArr.push({
@@ -247,7 +205,8 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "No Sales data available"
+                        message: "No Sales data available",
+                        data : []
                     })
                 }
 
@@ -276,20 +235,18 @@ module.exports.revenuePerSalesRep = async (req, res) => {
 
 module.exports.totalRevenue = async (req, res) => {
     try {
-        let userEmail = req.user.email
+        let userId = req.user.id
         let { status } = req.query
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         let moduleName = 'Reports'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
                 totalRevenue = [];
                 let format = (status == 'Monthly') ? 'month' : (status == 'Quarterly') ? 'quarter' : 'year'
-                let s4 = dbScript(db_sql['Q94'], { var1: findAdmin.rows[0].company_id, var2: format })
+                let s4 = dbScript(db_sql['Q88'], { var1: findAdmin.rows[0].company_id, var2: format })
                 let targetData = await connection.query(s4)
                 if (targetData.rowCount > 0) {
                     for (data of targetData.rows) {

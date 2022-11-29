@@ -32,5 +32,7 @@ router.get('/activeAndCanceledCompanies', verifyTokenFn , controller.superAdmin.
 router.get('/planwiseCompaniesList/:planId', verifyTokenFn, controller.superAdmin.planwiseCompaniesList)
 router.put('/extendExpiryByCompanyId/:companyId', verifyTokenFn, controller.superAdmin.extendExpiryByCompanyId)
 
+//-----------------------------Enable/disable Imap service--------------------
+router.put('/enableDisableImapService', verifyTokenFn, controller.superAdmin.enableDisableImapService)
 
 module.exports = router;

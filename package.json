@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.js",
     "seedSuperAdmin": "node seeders/seedSuperAdmin.js",
-    "seedModules": "node seeders/seedModules.js"
+    "seedModules": "node seeders/seedModules.js",
+    "seedCountryDetails" : "node seeders/seedCountryDetails.js"
   },
   "author": "",
   "license": "ISC",
@@ -17,12 +18,13 @@
     "express": "^4.18.1",
     "fast-csv": "^4.3.6",
     "fs": "^0.0.1-security",
-    "imap": "^0.8.19",
+    "js-sha3": "^0.8.0",
     "jsonwebtoken": "^8.5.1",
     "mailparser": "^3.5.0",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.2",
+    "node-imap": "^0.9.6",
     "node-uuid": "^1.4.8",
     "nodemailer": "^6.7.5",
     "nodemon": "^2.0.16",
@@ -31,6 +33,7 @@
     "sha3": "^2.1.4",
     "sib-api-v3-sdk": "^8.4.2",
     "socket.io": "^4.5.2",
+    "socketio-sticky-session": "^0.4.3",
     "stripe": "^10.10.0"
   }
 }

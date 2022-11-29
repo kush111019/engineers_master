@@ -2,7 +2,7 @@ const express = require('express')
 var router = express.Router()
 var controller = require('../controllers/index')
 const { verifyTokenFn } = require('../utils/jwt')
-const {uploadAvatar , uploadProductImage,uploadProductFile} = require('../utils/uploadfiles')
+const {uploadAvatar , uploadProductImage, uploadProductFile, uploadMailAttechments } = require('../utils/uploadfiles')
 
 router.post('/upload',verifyTokenFn, uploadAvatar.single('image'),controller.companyAdmin.upload);
 router.get('/showProfile',verifyTokenFn, controller.companyAdmin.showProfile)
@@ -25,8 +25,6 @@ router.get('/moduleList',verifyTokenFn, controller.roles.moduleList)
 router.get('/rolesList',verifyTokenFn, controller.roles.rolesList)
 router.post('/createRole',verifyTokenFn, controller.roles.createRole)
 router.put('/updateRole' , verifyTokenFn, controller.roles.updateRole)
-router.get('/usersListByRoleId',verifyTokenFn, controller.roles.usersListByRoleId)
-router.get('/userWiseRoleList',verifyTokenFn, controller.roles.userWiseRoleList)
 router.put('/deleteRole' , verifyTokenFn, controller.roles.deleteRole)
 router.put('/moveRole', verifyTokenFn, controller.roles.moveRole)
 
@@ -90,8 +88,8 @@ router.get('/revenues',verifyTokenFn, controller.dashboard.revenues)
 //-------------------------------------Revenue Forecast----------------------------------
 
 router.post('/createRevenueForecast',verifyTokenFn, controller.revenueForecast.createRevenueForecast)
-router.put('/updateRevenueForecast',verifyTokenFn, controller.revenueForecast.updateRevenueForecast)
 router.get('/revenueForecastList',verifyTokenFn, controller.revenueForecast.revenueForecastList)
+router.put('/deleteRevenueForecast', verifyTokenFn, controller.revenueForecast.deleteRevenueForecast)
 router.get('/actualVsForecast',verifyTokenFn, controller.revenueForecast.actualVsForecast)
 
 //---------------------------------------Business and Revenue Contact-------------------------
@@ -102,6 +100,8 @@ router.post('/addRevenueContact',verifyTokenFn, controller.customers.addRevenueC
 //-------------------------------------------Configurations----------------------------------
 router.post('/addConfigs', verifyTokenFn, controller.configuration.addConfigs)
 router.get('/configList', verifyTokenFn, controller.configuration.configList)
+router.post('/addImapCredentials', verifyTokenFn, controller.configuration.addImapCredentials)
+router.get('/imapCredentialsList', verifyTokenFn, controller.configuration.imapCredentials)
 
 //------------------------------------Payment----------------------------------------
 router.post('/createPayment', controller.payment.createPayment)
@@ -120,11 +120,12 @@ router.get("/allMessages/:chatId", verifyTokenFn, controller.chat.allMessages);
 router.post("/sendMessage",verifyTokenFn, controller.chat.sendMessage);
 
 //-----------------------------Emails to business and revenue contacts------------------------
+router.post('/uploadAttechment', verifyTokenFn, uploadMailAttechments.array('attachments', 10), controller.email.uploadMailAttechment )
 router.post('/sendEmailToContact', verifyTokenFn, controller.email.sendEmail)
 router.get('/fetchEmails', verifyTokenFn, controller.email.fetchEmails)
 router.get('/inbox', verifyTokenFn, controller.email.inbox)
 router.post('/readEmail', verifyTokenFn, controller.email.readEmail)
-router.get('/SentEmailList', verifyTokenFn, controller.email.SentEmailList)
+router.get('/SentEmailList/:salesId', verifyTokenFn, controller.email.SentEmailList)
 
 
 

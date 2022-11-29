@@ -10,17 +10,17 @@ const { mysql_real_escape_string } = require('../utils/helper')
 
 module.exports.userCount = async (req, res) => {
     try {
-        let userEmail = req.user.email
+        let userId = req.user.id
 
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
 
-            let s2 = dbScript(db_sql['Q17'], { var1: findAdmin.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q15'], { var1: findAdmin.rows[0].company_id })
             let users = await connection.query(s2)
 
-            let s3 = dbScript(db_sql['Q116'], { var1: findAdmin.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q108'], { var1: findAdmin.rows[0].company_id })
             let count = await connection.query(s3)
 
             if (count.rows.length > 0) {
@@ -62,7 +62,7 @@ module.exports.userCount = async (req, res) => {
 
 module.exports.addUser = async (req, res) => {
     try {
-        let userEmail = req.user.email
+        let userId = req.user.id
         let {
             name,
             emailAddress,
@@ -76,7 +76,7 @@ module.exports.addUser = async (req, res) => {
         avatar = (avatar == "") ? 'http://143.198.102.134:3003/companyLogo/user.jpg' : avatar;
 
         let id = uuid.v4()
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         let moduleName = 'users'
@@ -84,16 +84,14 @@ module.exports.addUser = async (req, res) => {
             let s2 = dbScript(db_sql['Q4'], { var1: emailAddress })
             let findUser = await connection.query(s2)
             if (findUser.rowCount == 0) {
-                let s3 = dbScript(db_sql['Q45'], { var1: moduleName })
-                let findModule = await connection.query(s3)
-                let s4 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
-                let checkPermission = await connection.query(s4)
+                let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
+                let checkPermission = await connection.query(s3)
                 if (checkPermission.rows[0].permission_to_create) {
                     await connection.query('BEGIN')
-                    let s5 = dbScript(db_sql['Q49'], { var1: id, var2: mysql_real_escape_string(name), var3: findAdmin.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address) })
+                    let s5 = dbScript(db_sql['Q45'], { var1: id, var2: mysql_real_escape_string(name), var3: findAdmin.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address) })
                     let addUser = await connection.query(s5)
                     let _dt = new Date().toISOString();
-                    let s6 = dbScript(db_sql['Q37'], { var1: roleId, var2: addUser.rows[0].id, var3: _dt })
+                    let s6 = dbScript(db_sql['Q33'], { var1: roleId, var2: addUser.rows[0].id, var3: _dt })
                     let addPermission = await connection.query(s6)
                     await connection.query('COMMIT')
                     if (addUser.rowCount > 0 && addPermission.rowCount > 0) {
@@ -173,19 +171,17 @@ module.exports.addUser = async (req, res) => {
 
 module.exports.showUserById = async (req, res) => {
     try {
-        let userEmail = req.user.email
+        let id = req.user.id
         let { userId } = req.body
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: id })
         let findAdmin = await connection.query(s1)
 
         let moduleName = 'users'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
-                let s4 = dbScript(db_sql['Q27'], { var1: userId })
+                let s4 = dbScript(db_sql['Q24'], { var1: userId })
                 let findUser = await connection.query(s4)
                 if (findUser.rows.length > 0) {
                     res.json({
@@ -226,28 +222,23 @@ module.exports.showUserById = async (req, res) => {
 
 module.exports.usersList = async (req, res) => {
     try {
-        let email = req.user.email
-        let s1 = dbScript(db_sql['Q5'], { var1: email })
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1);
         let moduleName = 'users'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
 
-                let s4 = dbScript(db_sql['Q17'], { var1: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q15'], { var1: findAdmin.rows[0].company_id })
                 let findUsers = await connection.query(s4);
                 if (findUsers.rows.length > 0) {
-
                     for (data of findUsers.rows) {
-                        let s5 = dbScript(db_sql['Q14'], { var1: data.role_id })
+                        let s5 = dbScript(db_sql['Q12'], { var1: data.role_id })
                         let findRole = await connection.query(s5);
                         if (findRole.rowCount > 0) {
-
                             data.roleName = findRole.rows[0].role_name
-
                         } else {
                             data.roleName = null
                         }
@@ -294,7 +285,7 @@ module.exports.usersList = async (req, res) => {
 module.exports.updateUser = async (req, res) => {
 
     try {
-        let userEmail = req.user.email
+        let id = req.user.id
         let {
             userId,
             emailAddress,
@@ -304,20 +295,18 @@ module.exports.updateUser = async (req, res) => {
             roleId,
             avatar
         } = req.body
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: id })
         let findAdmin = await connection.query(s1)
 
         let moduleName = 'users'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_update) {
 
                 let _dt = new Date().toISOString();
                 await connection.query('BEGIN')
-                let s4 = dbScript(db_sql['Q25'], { var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q22'], { var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: findAdmin.rows[0].company_id })
                 let updateUser = await connection.query(s4)
                 await connection.query('COMMIT')
                 if (updateUser.rowCount > 0) {
@@ -359,23 +348,21 @@ module.exports.updateUser = async (req, res) => {
 
 module.exports.lockUserAccount = async (req, res) => {
     try {
-        let userEmail = req.user.email
+        let id = req.user.id
         let {
             userId,
             isLocked
         } = req.body
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: id })
         let findAdmin = await connection.query(s1)
         let moduleName = 'users'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_update) {
                 let _dt = new Date().toISOString();
                 await connection.query('BEGIN')
-                let s4 = dbScript(db_sql['Q33'], { var1: isLocked, var2: userId, var3: _dt })
+                let s4 = dbScript(db_sql['Q30'], { var1: isLocked, var2: userId, var3: _dt })
                 let updateUser = await connection.query(s4)
                 await connection.query('COMMIT')
                 if (updateUser.rowCount > 0) {
@@ -417,23 +404,21 @@ module.exports.lockUserAccount = async (req, res) => {
 
 module.exports.deleteUser = async (req, res) => {
     try {
-        let userEmail = req.user.email
+        let id = req.user.id
         let {
             userId
         } = req.body
-        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let s1 = dbScript(db_sql['Q8'], { var1: id })
         let findAdmin = await connection.query(s1)
 
         let moduleName = 'users'
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q45'], { var1: moduleName })
-            let findModule = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q39'], { var1: findAdmin.rows[0].role_id, var2: findModule.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_delete) {
                 let _dt = new Date().toISOString();
                 await connection.query('BEGIN')
-                let s4 = dbScript(db_sql['Q26'], { var1: _dt, var2: userId, var3: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q23'], { var1: _dt, var2: userId, var3: findAdmin.rows[0].company_id })
                 let updateUser = await connection.query(s4)
                 await connection.query('COMMIT')
                 if (updateUser.rowCount > 0) {
