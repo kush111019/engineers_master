@@ -39,22 +39,37 @@ module.exports.revenues = async (req, res) => {
                             let s5 = dbScript(db_sql['Q17'], { var1: findAdmin.rows[0].company_id })
                             let slab = await connection.query(s5)
                             if (slab.rowCount > 0) {
-                                let remainingAmont = data.target_amount;
+                                let remainingAmount = 41000
                                 let commission = 0
                                 for(let i = 0; i < slab.rows.length; i++){
-                                    if( Number(remainingAmont) > 0){
-                                        let percentage = slab.rows[i].percentage
-                                        commission = commission + ((Number(percentage) / 100) * Number(remainingAmont))
-                                        if(i == (slab.rows.length-1)){
-                                            if(slab.rows[i].max_amount == ''){
-                                                remainingAmont = Number(remainingAmont) - Number(slab.rows[i].min_amount)
-                                            }else{
-                                                remainingAmont = Number(remainingAmont) - Number(slab.rows[i].max_amount)
-                                            }
-                                        }else{
-                                            remainingAmont = Number(remainingAmont) - Number(slab.rows[i].max_amount)
-                                        }
-                                        remainingAmont = (remainingAmont < 0) ? 0 : remainingAmont;
+                                    // if( Number(remainingAmount) > 0){
+                                    //     let percentage = slab.rows[i].percentage
+                                    //     commission = commission + ((Number(percentage) / 100) * Number(slab.rows[i].max_amount))
+                                    //     if(i == (slab.rows.length-1)){
+                                    //         if(slab.rows[i].max_amount == ''){
+                                    //             remainingAmount = Number(remainingAmount) - Number(slab.rows[i].min_amount)
+                                    //         }else{
+                                    //             remainingAmount = Number(remainingAmount) - Number(slab.rows[i].max_amount)
+                                    //         }
+                                    //     }else{
+                                    //         remainingAmount = Number(remainingAmount) - Number(slab.rows[i].max_amount)
+                                    //     }
+                                    //     remainingAmount = (remainingAmount < 0) ? 0 : remainingAmount;
+                                    // }
+                                    let percentage = Number(slab.rows[i].percentage)
+                                    let maxAmount = Number(slab.rows[i].max_amount)
+                                    let minAmount = Number(slab.rows[i].min_amount)
+                                    if(remainingAmount > maxAmount){
+                                        commission = commission + ((percentage / 100) * maxAmount)
+                                        remainingAmount = remainingAmount - maxAmount
+                                    }else if(remainingAmount >= minAmount && remainingAmount <= maxAmount){
+                                        commission = commission + ((percentage / 100) * remainingAmount)
+                                        remainingAmount = remainingAmount - maxAmount
+                                    }else if(remainingAmount > minAmount && slab.rows[i].is_max ){
+                                        commission = commission + ((percentage / 100) * remainingAmount)
+                                        remainingAmount = minAmount - remainingAmount   
+                                    }else{
+                                        remainingAmount = (remainingAmount < 0) ? 0 : remainingAmount;
                                     }
                                 }
                                 revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
