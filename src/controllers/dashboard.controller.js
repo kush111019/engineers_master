@@ -39,19 +39,18 @@ module.exports.revenues = async (req, res) => {
                             let s5 = dbScript(db_sql['Q17'], { var1: findAdmin.rows[0].company_id })
                             let slab = await connection.query(s5)
                             if (slab.rowCount > 0) {
-                                let remainingAmount = Number(data.target_amount)
+                                let remainingAmount = 41000
                                 let commission = 0
                                 for(let i = 0; i < slab.rows.length; i++){
-                                    let percentage = Number(slab.rows[i].percentage) //10% //5% //3%
-                                    let maxAmount = Number(slab.rows[i].max_amount) //10000 //20000 //
-                                    let minAmount = Number(slab.rows[i].min_amount)
-
+                                    let percentage = Number(slab.rows[i].percentage) 
+                                    let maxAmount = Number(slab.rows[i].max_amount) 
+                                    let minAmount = i == 0 ? Number(slab.rows[i].min_amount) : Number(slab.rows[i-1].max_amount)
                                     if(remainingAmount > maxAmount && !slab.rows[i].is_max ){
-                                        commission = commission + ((percentage / 100) * maxAmount) //1000 
-                                        remainingAmount = remainingAmount - maxAmount //31000
+                                        commission = commission + ((percentage / 100) * (maxAmount-minAmount))
+                                        remainingAmount = remainingAmount - (maxAmount - minAmount)    
                                     }else if(remainingAmount >= minAmount && remainingAmount <= maxAmount && !slab.rows[i].is_max){
                                         commission = commission + ((percentage / 100) * remainingAmount)
-                                        remainingAmount = remainingAmount - maxAmount
+                                        remainingAmount = remainingAmount - (maxAmount - minAmount)
                                     }else if(slab.rows[i].is_max ){
                                         commission = commission + ((percentage / 100) * remainingAmount)
                                         remainingAmount = 0 
