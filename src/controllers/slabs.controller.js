@@ -22,14 +22,12 @@ module.exports.createSlab = async (req, res) => {
                 let s4 = dbScript(db_sql['Q19'], { var1: findAdmin.rows[0].company_id, var2: _dt })
                 let slabList = await connection.query(s4)
 
-                for (data of slabs) {
+                for (let data of slabs) {
                     id = uuid.v4()
-                    let s5 = dbScript(db_sql['Q18'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: findAdmin.rows[0].company_id, var7 : data.currency })
+                    let s5 = dbScript(db_sql['Q18'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: findAdmin.rows[0].company_id, var7 : data.currency, var8 : data.counter })
                     var createSlab = await connection.query(s5)
-
                     await connection.query('COMMIT')
                 }
-
                 if (createSlab.rowCount > 0) {
                     res.json({
                         status: 201,
@@ -44,7 +42,6 @@ module.exports.createSlab = async (req, res) => {
                         message: "Something went wrong"
                     })
                 }
-
             } else {
                 res.status(403).json({
                     success: false,
@@ -71,7 +68,6 @@ module.exports.createSlab = async (req, res) => {
 module.exports.slabList = async (req, res) => {
     try {
         let userId = req.user.id
-        let id = uuid.v4()
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
@@ -98,14 +94,12 @@ module.exports.slabList = async (req, res) => {
                         data: []
                     })
                 }
-
             } else {
                 res.status(403).json({
                     success: false,
                     message: "UnAthorised"
                 })
             }
-
         } else {
             res.json({
                 status: 400,

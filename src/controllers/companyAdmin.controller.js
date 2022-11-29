@@ -174,7 +174,6 @@ module.exports.signUp = async (req, res) => {
             let s3 = dbScript(db_sql['Q2'], { var1: cId, var2: mysql_real_escape_string(companyName), var3: companyLogo, var4: mysql_real_escape_string(companyAddress) })
             let saveCompanyDetails = await connection.query(s3)
             if (saveCompanyDetails.rowCount > 0) {
-                console.log(saveCompanyDetails.rows,"saveCompanyDetails.rows");
                 await createAdmin(req.body, saveCompanyDetails.rows[0].id, res)
             } else {
                 await connection.query('ROLLBACK')

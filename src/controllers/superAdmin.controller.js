@@ -442,47 +442,44 @@ module.exports.dashboard = async (req, res) => {
             let revenueCommission = []
             let totalRevenue = 0;
             if (companyData.rowCount > 0) {
-                for (let data of companyData.rows) {
+                for (let comData of companyData.rows) {
                     let targetAmount = 0;
                     let commission = 0;
                     let revenueCommissionObj = {}
-                    let s3 = dbScript(db_sql['Q87'], { var1: data.id })
-                    let customers = await connection.query(s3)
-                    if (customers.rowCount > 0) {
-                        for (customerData of customers.rows) {
-                            if (customerData.closed_at != null) {
-                                targetAmount = targetAmount + Number(customerData.target_amount)
-                                let s5 = dbScript(db_sql['Q17'], { var1: data.id })
+                    let s3 = dbScript(db_sql['Q87'], { var1: comData.id })
+                    let salesData = await connection.query(s3)
+                    if (salesData.rowCount > 0) {
+                        console.log(salesData.rows.length,salesData.rows);
+                        for (data of salesData.rows) {
+                            if (data.closed_at != null) {
+                                targetAmount = targetAmount + Number(data.target_amount)
+                                let s5 = dbScript(db_sql['Q17'], { var1: comData.id })
                                 let slab = await connection.query(s5)
                                 if (slab.rowCount > 0) {
-                                    for (slabData of slab.rows) {
+                                    let remainingAmont = data.target_amount;
+                                    let amount = 0
+                                    for(let i = 0; i < slab.rows.length; i++){
+                                        if( Number(remainingAmont) > 0){
+                                            let percentage = slab.rows[i].percentage
+                                            amount = amount + ((Number(percentage) / 100) * Number(remainingAmont))
 
-                                        if ((Number(customerData.target_amount) >= Number(slabData.min_amount)) && slabData.is_max == true) {
-                                            let percentage = slabData.percentage
-                                            let amount = ((Number(percentage) / 100) * Number(customerData.target_amount))
-                                            commission = commission + amount
-                                        }
-                                        else if ((Number(customerData.target_amount) >= Number(slabData.min_amount)) && (Number(customerData.target_amount) <= Number(slabData.max_amount))) {
+                                            if(i == (slab.rows.length-1)){
+                                                remainingAmont = Number(remainingAmont) - Number(slab.rows[i].min_amount)
+                                            }else{
+                                                remainingAmont = Number(remainingAmont) - Number(slab.rows[i].max_amount)
+                                            }
 
-                                            let percentage = slabData.percentage
-                                            let amount = ((Number(percentage) / 100) * Number(customerData.target_amount))
-                                            commission = commission + amount
-                                        }
+                                            remainingAmont = remainingAmont < 0 ? 0 : remainingAmont;
+                                        } 
                                     }
-                                } else {
-                                    res.json({
-                                        status: 400,
-                                        success: false,
-                                        message: "Slab not found"
-                                    })
+                                    commission = commission + amount 
                                 }
-
                             }
                         }
-                        revenueCommissionObj.name = data.company_name
+                        revenueCommissionObj.name = comData.company_name
                         revenueCommissionObj.revenue = targetAmount
                         revenueCommissionObj.commission = commission
-                        revenueCommissionObj.date = data.created_at
+                        revenueCommissionObj.date = comData.created_at
                         revenueCommission.push(revenueCommissionObj)
                     }
                     totalRevenue = totalRevenue + targetAmount
@@ -551,7 +548,7 @@ module.exports.dashboard = async (req, res) => {
 }
 
 
-//----------------------------------Stripe Plans----------------------------------------------
+//----------------------------------Stripe Plans-------------------------------------
 
 module.exports.addPlan = async (req, res) => {
     try {
