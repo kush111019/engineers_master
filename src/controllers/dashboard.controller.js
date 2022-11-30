@@ -18,44 +18,43 @@ module.exports.revenues = async (req, res) => {
                 let counts = {}
                 let revenueCommissionBydate = []
 
+                let s5 = dbScript(db_sql['Q17'], { var1: findAdmin.rows[0].company_id })
+                let slab = await connection.query(s5)
+
                 let s4 = dbScript(db_sql['Q87'], { var1: findAdmin.rows[0].company_id })
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0) {
                     let expectedRevenue = 0;
                     let totalRevenue = 0;
                     let totalCommission = 0;
-
                     for (data of salesData.rows) {
                         if (data.closed_at == null) {
                             expectedRevenue = Number(expectedRevenue) + Number(data.target_amount);
                         } else {
                             let revenueCommissionByDateObj = {}
-
                             revenueCommissionByDateObj.revenue = Number(data.target_amount)
                             revenueCommissionByDateObj.date = data.closed_at
-
                             totalRevenue = Number(totalRevenue) + Number(data.target_amount);
-
-                            let s5 = dbScript(db_sql['Q17'], { var1: findAdmin.rows[0].company_id })
-                            let slab = await connection.query(s5)
                             if (slab.rowCount > 0) {
-                                let remainingAmount = Number(data.target_amount);
+                                let remainingAmount = Number(data.target_amount); 
                                 let commission = 0
-                                let count = 0
-                                for(let i = 0; i < slab.rows.length; i++){
-                                    let percentage = Number(slab.rows[i].percentage) 
-                                    let maxAmount = Number(slab.rows[i].max_amount) 
-                                    let minAmount = Number(slab.rows[i].min_amount)
-                                    if(remainingAmount > maxAmount && !slab.rows[i].is_max && count == 0 ){
-                                        commission = commission + ((percentage / 100) * maxAmount)
-                                        remainingAmount = remainingAmount - maxAmount   
-                                        count = count + 1
-                                    }else if(remainingAmount >= minAmount && remainingAmount <= maxAmount && !slab.rows[i].is_max){
-                                        commission = commission + ((percentage / 100) * remainingAmount)
-                                        remainingAmount = remainingAmount - maxAmount 
-                                    }else if( remainingAmount > minAmount && slab.rows[i].is_max ){
-                                        commission = commission + ((percentage / 100) * remainingAmount)
+                                //if remainning amount is 0 then no reason to check 
+                                for(let i = 0; i < slab.rows.length && remainingAmount > 0; i++){
+                                    let slab_percentage = Number(slab.rows[i].percentage)       
+                                    let slab_maxAmount = Number(slab.rows[i].max_amount) 
+                                    let slab_minAmount = Number(slab.rows[i].min_amount)
+                                    if(slab.rows[i].is_max){
+                                        commission = commission + ((slab_percentage / 100) * remainingAmount)
                                         remainingAmount = 0 
+                                    }
+                                    else{
+                                        if(remainingAmount >= slab_maxAmount ){
+                                            commission = commission + ((slab_percentage / 100) * (slab_maxAmount - slab_minAmount))
+                                            remainingAmount = remainingAmount - (slab_maxAmount - slab_minAmount)  
+                                        }else{
+                                            commission = commission + ((slab_percentage / 100) * remainingAmount)
+                                            remainingAmount = 0 
+                                        }
                                     }
                                 }
                                 revenueCommissionByDateObj.commission = Number(commission.toFixed(2))

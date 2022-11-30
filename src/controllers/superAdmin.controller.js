@@ -446,32 +446,39 @@ module.exports.dashboard = async (req, res) => {
                     let targetAmount = 0;
                     let commission = 0;
                     let revenueCommissionObj = {}
+
+                    let s5 = dbScript(db_sql['Q17'], { var1: comData.id })
+                    let slab = await connection.query(s5)
+
                     let s3 = dbScript(db_sql['Q87'], { var1: comData.id })
                     let salesData = await connection.query(s3)
                     if (salesData.rowCount > 0) {
                         for (data of salesData.rows) {
                             if (data.closed_at != null) {
                                 targetAmount = targetAmount + Number(data.target_amount)
-                                let s5 = dbScript(db_sql['Q17'], { var1: comData.id })
-                                let slab = await connection.query(s5)
                                 if (slab.rowCount > 0) {
-                                    let remainingAmont = data.target_amount;
+                                    let remainingAmount = Number(data.target_amount);
                                     let amount = 0
-                                    for(let i = 0; i < slab.rows.length; i++){
-                                        if( Number(remainingAmont) > 0){
-                                            let percentage = slab.rows[i].percentage
-                                            amount = amount + ((Number(percentage) / 100) * Number(remainingAmont))
-
-                                            if(i == (slab.rows.length-1)){
-                                                remainingAmont = Number(remainingAmont) - Number(slab.rows[i].min_amount)
-                                            }else{
-                                                remainingAmont = Number(remainingAmont) - Number(slab.rows[i].max_amount)
+                                    //if remainning amount is 0 then no reason to check 
+                                    for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
+                                        let slab_percentage = Number(slab.rows[i].percentage)
+                                        let slab_maxAmount = Number(slab.rows[i].max_amount)
+                                        let slab_minAmount = Number(slab.rows[i].min_amount)
+                                        if (slab.rows[i].is_max) {
+                                            amount = amount + ((slab_percentage / 100) * remainingAmount)
+                                            remainingAmount = 0
+                                        }
+                                        else {
+                                            if (remainingAmount >= slab_maxAmount) {
+                                                amount = amount + ((slab_percentage / 100) * (slab_maxAmount - slab_minAmount))
+                                                remainingAmount = remainingAmount - (slab_maxAmount - slab_minAmount)
+                                            } else {
+                                                amount = amount + ((slab_percentage / 100) * remainingAmount)
+                                                remainingAmount = 0
                                             }
-
-                                            remainingAmont = remainingAmont < 0 ? 0 : remainingAmont;
-                                        } 
+                                        }
                                     }
-                                    commission = commission + amount 
+                                    commission = commission + amount
                                 }
                             }
                         }
