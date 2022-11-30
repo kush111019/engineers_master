@@ -5,7 +5,7 @@
 -- Dumped from database version 14.2
 -- Dumped by pg_dump version 14.2
 
--- Started on 2022-11-29 15:17:44
+-- Started on 2022-11-30 16:59:19
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -887,7 +887,7 @@ ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) NOT VALID;
 
 
--- Completed on 2022-11-29 15:17:45
+-- Completed on 2022-11-30 16:59:20
 
 --
 -- PostgreSQL database dump complete

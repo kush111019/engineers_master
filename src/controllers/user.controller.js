@@ -181,7 +181,7 @@ module.exports.showUserById = async (req, res) => {
             let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
-                let s4 = dbScript(db_sql['Q24'], { var1: userId })
+                let s4 = dbScript(db_sql['Q8'], { var1: userId })
                 let findUser = await connection.query(s4)
                 if (findUser.rows.length > 0) {
                     res.json({
