@@ -606,7 +606,7 @@ CREATE TABLE public.slabs (
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     currency character varying,
-    counter numeric
+    slab_ctr numeric
 );
 
 
