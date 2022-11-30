@@ -7,11 +7,11 @@ module.exports.revenues = async (req, res) => {
         let userId = req.user.id
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        
+
         let moduleName = 'Dashboard'
         if (findAdmin.rows.length > 0) {
 
-            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: findAdmin.rows[0].id })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
 
@@ -20,66 +20,72 @@ module.exports.revenues = async (req, res) => {
 
                 let s5 = dbScript(db_sql['Q17'], { var1: findAdmin.rows[0].company_id })
                 let slab = await connection.query(s5)
+                if (slab.rowCount > 0) {
+                    let s4 = dbScript(db_sql['Q87'], { var1: findAdmin.rows[0].company_id })
+                    let salesData = await connection.query(s4)
+                    if (salesData.rowCount > 0) {
+                        let expectedRevenue = 0;
+                        let totalRevenue = 0;
+                        let totalCommission = 0;
+                        for (data of salesData.rows) {
+                            if (data.closed_at == null) {
+                                expectedRevenue = Number(expectedRevenue) + Number(data.target_amount);
+                            } else {
+                                let revenueCommissionByDateObj = {}
+                                
+                                revenueCommissionByDateObj.revenue = Number(data.target_amount)
+                                revenueCommissionByDateObj.date = data.closed_at
+                                totalRevenue = Number(totalRevenue) + Number(data.target_amount);
 
-                let s4 = dbScript(db_sql['Q87'], { var1: findAdmin.rows[0].company_id })
-                let salesData = await connection.query(s4)
-                if (salesData.rowCount > 0) {
-                    let expectedRevenue = 0;
-                    let totalRevenue = 0;
-                    let totalCommission = 0;
-                    for (data of salesData.rows) {
-                        if (data.closed_at == null) {
-                            expectedRevenue = Number(expectedRevenue) + Number(data.target_amount);
-                        } else {
-                            let revenueCommissionByDateObj = {}
-                            revenueCommissionByDateObj.revenue = Number(data.target_amount)
-                            revenueCommissionByDateObj.date = data.closed_at
-                            totalRevenue = Number(totalRevenue) + Number(data.target_amount);
-                            if (slab.rowCount > 0) {
-                                let remainingAmount = Number(data.target_amount); 
+                                let remainingAmount = Number(data.target_amount);
                                 let commission = 0
                                 //if remainning amount is 0 then no reason to check 
-                                for(let i = 0; i < slab.rows.length && remainingAmount > 0; i++){
-                                    let slab_percentage = Number(slab.rows[i].percentage)       
-                                    let slab_maxAmount = Number(slab.rows[i].max_amount) 
+                                for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
+                                    let slab_percentage = Number(slab.rows[i].percentage)
+                                    let slab_maxAmount = Number(slab.rows[i].max_amount)
                                     let slab_minAmount = Number(slab.rows[i].min_amount)
-                                    if(slab.rows[i].is_max){
+                                    if (slab.rows[i].is_max) {
                                         commission = commission + ((slab_percentage / 100) * remainingAmount)
-                                        remainingAmount = 0 
+                                        remainingAmount = 0
                                     }
-                                    else{
-                                        if(remainingAmount >= slab_maxAmount ){
+                                    else {
+                                        if (remainingAmount >= slab_maxAmount) {
                                             commission = commission + ((slab_percentage / 100) * (slab_maxAmount - slab_minAmount))
-                                            remainingAmount = remainingAmount - (slab_maxAmount - slab_minAmount)  
-                                        }else{
+                                            remainingAmount = remainingAmount - (slab_maxAmount - slab_minAmount)
+                                        } else {
                                             commission = commission + ((slab_percentage / 100) * remainingAmount)
-                                            remainingAmount = 0 
+                                            remainingAmount = 0
                                         }
                                     }
                                 }
                                 revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
                                 totalCommission = totalCommission + commission
+                                revenueCommissionBydate.push(revenueCommissionByDateObj)
                             }
-                            revenueCommissionBydate.push(revenueCommissionByDateObj)
                         }
+                        counts.expectedRevenue = expectedRevenue
+                        counts.totalRevenue = Number(totalRevenue.toFixed(2))
+                        counts.totalCommission = Number(totalCommission.toFixed(2))
+                        counts.revenueCommissionBydate = revenueCommissionBydate
+                    } else {
+                        counts.totalRevenue = 0
+                        counts.expectedRevenue = 0
+                        counts.totalCommission = 0
+                        counts.revenueCommissionBydate = revenueCommissionBydate
                     }
-                    counts.expectedRevenue = expectedRevenue
-                    counts.totalRevenue = Number(totalRevenue.toFixed(2))
-                    counts.totalCommission = Number(totalCommission.toFixed(2))
-                    counts.revenueCommissionBydate = revenueCommissionBydate
-                } else {
-                    counts.totalRevenue = 0
-                    counts.expectedRevenue = 0
-                    counts.totalCommission = 0
-                    counts.revenueCommissionBydate = revenueCommissionBydate
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Revenues and Commissions",
+                        data: counts
+                    })
+                }else{
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Slabs not found"
+                    })
                 }
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "Revenues and Commissions",
-                    data: counts
-                })
-
             } else {
                 res.status(403).json({
                     success: false,
