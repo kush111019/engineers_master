@@ -338,10 +338,11 @@ module.exports.actualVsForecast = async (req, res) => {
                 }
                 let actualResult = await paginatedResults(actualData, page)
                 let forecastResult = await paginatedResults(revenueData, page)
+                let dateResult = await paginatedResults(dateArr,page)
                 actualVsForecastObj = {
                     actualRevenue: (actualResult.length > 0) ? actualResult : [],
                     forecastRevenue: (forecastResult.length > 0) ? forecastResult : [],
-                    date: (dateArr.length > 0) ? dateArr : []
+                    date: (dateResult.length > 0) ? dateResult : []
                 }
                 res.json({
                     status: 200,
