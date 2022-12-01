@@ -112,7 +112,7 @@ const db_sql = {
               FROM business_contact WHERE id = '{var1}' AND deleted_at IS NULL`,  
     "Q77"  : `SELECT id, full_name AS revenue_contact_name, email_address AS revenue_email, phone_number AS revenue_phone_number
               FROM revenue_contact WHERE id = '{var1}' AND deleted_at IS NULL`,
-    "Q78"  : `SELECT target_amount FROM sales_commission WHERE company_id = '{var1}' AND deleted_at IS NULL AND EXTRACT(MONTH FROM created_at) = '{var2}'`,
+    "Q78"  : `SELECT target_amount FROM sales_commission WHERE company_id = '{var1}' AND deleted_at IS NULL AND EXTRACT(MONTH FROM created_at) = '{var2}' ORDER BY created_at DESC`,
     "Q79"  : `UPDATE customers SET business_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
     "Q80"  : `UPDATE customers SET revenue_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
     "Q81"  : `SELECT s.id, s.supporter_id, s.supporter_percentage, u.full_name FROM sales_supporter AS s 
@@ -132,7 +132,7 @@ const db_sql = {
     "Q88"  : `SELECT DATE_TRUNC('{var2}',c.closed_at) AS  date, sum(sc.target_amount::decimal) AS target_amount
               FROM sales_commission AS sc INNER JOIN customers AS c ON sc.customer_id = c.id
               WHERE sc.company_id = '{var1}' AND c.deleted_at IS NULL AND sc.deleted_at IS NULL 
-              AND c.closed_at is not null GROUP BY DATE_TRUNC('{var2}',c.closed_at) ORDER BY date`,
+              AND c.closed_at is not null GROUP BY DATE_TRUNC('{var2}',c.closed_at) ORDER BY date DESC`,
     "Q89"  : `SELECT cc.id as	customer_company_id, cc.customer_company_name, c.id AS customer_id, c.closed_at, sc.id AS sales_commission_id,
               sc.target_amount, sc.target_closing_date FROM customer_companies AS cc 
               INNER JOIN customers AS c ON c.customer_company_id = cc.id
