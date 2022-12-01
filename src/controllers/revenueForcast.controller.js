@@ -1,7 +1,7 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
-const {getMonthDifference, getYearDifference} = require('../utils/helper')
+const {getMonthDifference, getYearDifference, paginatedResults} = require('../utils/helper')
 const moduleName = process.env.FORECAST_MODULE
 
 module.exports.createRevenueForecast = async (req, res) => {
@@ -143,8 +143,7 @@ module.exports.deleteRevenueForecast = async (req, res) => {
 
 module.exports.actualVsForecast = async (req, res) => {
     try {
-        let { id } = req.query
-
+        let { id, page } = req.query
         let userId = req.user.id
 
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
@@ -337,9 +336,11 @@ module.exports.actualVsForecast = async (req, res) => {
                         }
                         break;
                 }
+                let actualResult = await paginatedResults(actualData, page)
+                let forecastResult = await paginatedResults(revenueData, page)
                 actualVsForecastObj = {
-                    actualRevenue: (actualData.length > 0) ? actualData : [],
-                    forecastRevenue: (revenueData.length > 0) ? revenueData : [],
+                    actualRevenue: (actualResult.length > 0) ? actualResult : [],
+                    forecastRevenue: (forecastResult.length > 0) ? forecastResult : [],
                     date: (dateArr.length > 0) ? dateArr : []
                 }
                 res.json({

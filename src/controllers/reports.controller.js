@@ -203,7 +203,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
 module.exports.totalRevenue = async (req, res) => {
     try {
         let userId = req.user.id
-        let { status } = req.query
+        let { status, page } = req.query
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view) {
@@ -219,11 +219,12 @@ module.exports.totalRevenue = async (req, res) => {
                     })
                 }
                 if (totalRevenue.length > 0) {
+                    let result = await paginatedResults(totalRevenue, page)
                     res.json({
                         status: 200,
                         success: true,
                         message: "Total revenue",
-                        data: totalRevenue
+                        data: result
                     })
                 } else {
                     res.json({
