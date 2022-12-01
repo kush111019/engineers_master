@@ -10,7 +10,7 @@ const { paymentReminder, upgradeSubscriptionCronFn } = require('./src/utils/paym
 require('./src/database/connection')
 const Router = require('./src/routes/index');
 const http = require('http').createServer(app)
-let sticky = require('socketio-sticky-session')
+const sticky = require('socketio-sticky-session')
 
 app.use(cors());
 app.use(express.json());
@@ -20,8 +20,10 @@ app.use(express.static('public'))
 app.use(logger);
 
 let cronJob = cron.schedule('59 59 23 * * *', async () => {
-  await paymentReminder();
-  await upgradeSubscriptionCronFn()
+  if (cluster.isMaster) {
+    await paymentReminder();
+    await upgradeSubscriptionCronFn()
+  }
 });
 cronJob.start();
 

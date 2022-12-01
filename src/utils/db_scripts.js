@@ -48,11 +48,13 @@ const db_sql = {
               u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.company_id = '{var1}' AND c.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`,
     "Q40"  : `UPDATE customers SET closed_at = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
-    "Q41"  : `SELECT m.id AS module_id, m.module_name, m.module_type, p.id AS permission_id, p.permission_to_view, 
+    "Q41"  : `SELECT u.id, u.company_id, u.role_id, u.avatar, u.full_name,u.email_address,u.mobile_number,u.phone_number,u.address,
+              m.id AS module_id, m.module_name, m.module_type, p.id AS permission_id, p.permission_to_view, 
               p.permission_to_create, p.permission_to_update, p.permission_to_delete
               FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
               INNER JOIN users AS u ON u.role_id = p.role_id
-              WHERE m.module_name = '{var1}' AND u.id = '{var2}' AND m.deleted_at IS NULL AND p.deleted_at IS NULL`,   
+              WHERE m.module_name = '{var1}' AND u.id = '{var2}' AND m.deleted_at IS NULL 
+              AND p.deleted_at IS NULL AND u.deleted_at IS NULL`,   
     "Q42"  : `UPDATE customers SET customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', business_id = '{var4}', revenue_id = '{var5}', address = '{var7}', currency = '{var9}' WHERE id = '{var6}' AND company_id = '{var8}' AND deleted_at IS NULL RETURNING *`,
     "Q43"  : `INSERT INTO sales_commission_logs(id,sales_commission_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_id, business_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date, currency) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}', '{var17}', '{var18}', '{var19}' ) RETURNING *`,
     "Q44"  : `SELECT sl.id, sl.sales_commission_id, sl.customer_commission_split_id, sl.qualification, sl.is_qualified, sl.target_amount, sl.currency, 
@@ -126,11 +128,11 @@ const db_sql = {
     "Q87"  : `SELECT sc.id AS sales_commission_id, sc.target_amount, sc.target_closing_date,sc.products, c.id AS customer_id,
               c.closed_at, c.customer_name  FROM sales_commission AS sc INNER JOIN customers AS c
               ON sc.customer_id = c.id WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL 
-              AND c.deleted_at IS NULL Order by c.closed_at asc`,
+              AND c.deleted_at IS NULL Order by c.closed_at DESC`,
     "Q88"  : `SELECT DATE_TRUNC('{var2}',c.closed_at) AS  date, sum(sc.target_amount::decimal) AS target_amount
               FROM sales_commission AS sc INNER JOIN customers AS c ON sc.customer_id = c.id
               WHERE sc.company_id = '{var1}' AND c.deleted_at IS NULL AND sc.deleted_at IS NULL 
-              AND c.closed_at is not null GROUP BY DATE_TRUNC('{var2}',c.closed_at) ORDER BY date`,
+              AND c.closed_at is not null GROUP BY DATE_TRUNC('{var2}',c.closed_at) ORDER BY date DESC`,
     "Q89"  : `SELECT cc.id as	customer_company_id, cc.customer_company_name, c.id AS customer_id, c.closed_at, sc.id AS sales_commission_id,
               sc.target_amount, sc.target_closing_date FROM customer_companies AS cc 
               INNER JOIN customers AS c ON c.customer_company_id = cc.id

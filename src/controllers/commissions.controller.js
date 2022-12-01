@@ -1,6 +1,7 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
+const moduleName = process.env.COMMISSIONS_MODULE
 
 module.exports.commissionSplit = async (req, res) => {
     try {
@@ -9,48 +10,36 @@ module.exports.commissionSplit = async (req, res) => {
             closerPercentage,
             supporterPercentage
         } = req.body
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findAdmin = await connection.query(s1)
+        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s3)
+        if (checkPermission.rows[0].permission_to_create) {
+            await connection.query('BEGIN')
 
-        let moduleName = 'Commission'
-        if (findAdmin.rows.length > 0) {
-            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s3)
-            if (checkPermission.rows[0].permission_to_create) {
-                await connection.query('BEGIN')
+            let id = uuid.v4()
+            let s4 = dbScript(db_sql['Q48'], { var1: id, var2: closerPercentage, var3: supporterPercentage, var4: checkPermission.rows[0].company_id })
+            var createSlab = await connection.query(s4)
 
-                let id = uuid.v4()
-                let s4 = dbScript(db_sql['Q48'], { var1: id, var2: closerPercentage, var3: supporterPercentage, var4: findAdmin.rows[0].company_id })
-                var createSlab = await connection.query(s4)
+            await connection.query('COMMIT')
 
-                await connection.query('COMMIT')
-
-                if (createSlab.rowCount > 0) {
-                    res.json({
-                        status: 201,
-                        success: true,
-                        message: "Commission created successfully"
-                    })
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
-                    })
-                }
-
+            if (createSlab.rowCount > 0) {
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Commission created successfully"
+                })
             } else {
-                res.status(403).json({
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
                     success: false,
-                    message: "Unathorised"
+                    message: "Something went wrong"
                 })
             }
+
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "Admin not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -71,54 +60,39 @@ module.exports.updatecommissionSplit = async (req, res) => {
             closerPercentage,
             supporterPercentage
         } = req.body
+        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s3)
+        if (checkPermission.rows[0].permission_to_update) {
 
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findAdmin = await connection.query(s1)
+            await connection.query('BEGIN')
+            let _dt = new Date().toISOString();
+            let s4 = dbScript(db_sql['Q49'], { var1: closerPercentage, var2: supporterPercentage, var3: commissionId, var4: _dt, var5: checkPermission.rows[0].company_id })
 
-        let moduleName = 'Commission'
-        if (findAdmin.rows.length > 0) {
-            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s3)
-            if (checkPermission.rows[0].permission_to_update) {
+            var updatecommission = await connection.query(s4)
 
-                await connection.query('BEGIN')
-                let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q49'], { var1: closerPercentage, var2: supporterPercentage, var3: commissionId, var4: _dt, var5: findAdmin.rows[0].company_id })
+            await connection.query('COMMIT')
 
-                var updatecommission = await connection.query(s4)
+            if (updatecommission.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Commission updated Successfully"
+                })
 
-                await connection.query('COMMIT')
-
-                if (updatecommission.rowCount > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Commission updated Successfully"
-                    })
-
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
-                    })
-                }
             } else {
-                res.status(403).json({
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
                     success: false,
-                    message: "Unathorised"
+                    message: "Something went wrong"
                 })
             }
-
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "Admin not found"
+                message: "Unathorised"
             })
         }
-
     } catch (error) {
         await connection.query('ROLLBACK')
         res.json({
@@ -132,16 +106,11 @@ module.exports.updatecommissionSplit = async (req, res) => {
 module.exports.commissionSplitList = async (req, res) => {
     try {
         let userId = req.user.id
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findAdmin = await connection.query(s1)
-
-        let moduleName = 'Commission'
-        if (findAdmin.rows.length > 0) {
-            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view) {
 
-                let s4 = dbScript(db_sql['Q50'], { var1: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q50'], { var1: checkPermission.rows[0].company_id })
                 let commissionList = await connection.query(s4)
 
 
@@ -167,14 +136,6 @@ module.exports.commissionSplitList = async (req, res) => {
                     message: "UnAthorised"
                 })
             }
-
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Admin not found"
-            })
-        }
     } catch (error) {
         res.json({
             status: 400,
@@ -190,47 +151,33 @@ module.exports.deletecommissionSplit = async (req, res) => {
         let {
             commissionId
         } = req.body
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findAdmin = await connection.query(s1)
-
-        let moduleName = 'Commission'
-        if (findAdmin.rows.length > 0) {
-            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: findAdmin.rows[0].id })
-            let checkPermission = await connection.query(s3)
-            if (checkPermission.rows[0].permission_to_delete) {
-                await connection.query('BEGIN')
-                let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q51'], { var1: _dt, var2: commissionId, var3: findAdmin.rows[0].company_id })
-                var deleteSlab = await connection.query(s4)
+        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s3)
+        if (checkPermission.rows[0].permission_to_delete) {
+            await connection.query('BEGIN')
+            let _dt = new Date().toISOString();
+            let s4 = dbScript(db_sql['Q51'], { var1: _dt, var2: commissionId, var3: checkPermission.rows[0].company_id })
+            var deleteSlab = await connection.query(s4)
+            if (deleteSlab.rowCount > 0) {
                 await connection.query('COMMIT')
-
-                if (deleteSlab.rowCount > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Commission deleted Successfully"
-                    })
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
-                    })
-
-                }
-
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Commission deleted Successfully"
+                })
             } else {
-                res.status(403).json({
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
                     success: false,
-                    message: "Unathorised"
+                    message: "Something went wrong"
                 })
             }
+
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "Admin not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
