@@ -326,6 +326,7 @@ module.exports.paginatedResults = (model, page) => {
     }
 
     data = model.slice(startIndex, endIndex);
+    console.log(data);
     return data
 }
 
@@ -361,5 +362,22 @@ module.exports.removeDuplicates = async(originalArray, prop) => {
         newArray.push(lookupObject[i]);
     }
      return newArray;
+}
+
+module.exports.reduceArray = async(arr) =>{
+    const reducedArray = arr.reduce((acc, next) => { // acc stands for accumulator
+        const lastItemIndex = acc.length -1;
+        const accHasContent = acc.length >= 1;
+        if(accHasContent && acc[lastItemIndex].date == next.date) {
+          acc[lastItemIndex].revenue += next.revenue;
+          acc[lastItemIndex].commission += next.commission;
+
+        } else {
+          // first time seeing this entry. add it!
+          acc[lastItemIndex +1] = next;
+        }
+        return acc;
+    }, []);
+    return reducedArray
 }
 
