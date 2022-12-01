@@ -391,7 +391,7 @@ module.exports.recurringPaymentMail2 = async (email,customerName,endDate) => {
     const smtpPassword = process.env.SMTP_PASSWORD;
 
     // The subject line of the email
-    var subject = "Recurring payment Mail";
+    var subject = "Plan expiry reminder";
     // The email body for recipients with non-HTML email clients.
     var body_text = ``;
     

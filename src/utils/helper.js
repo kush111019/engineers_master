@@ -326,7 +326,6 @@ module.exports.paginatedResults = (model, page) => {
     }
 
     data = model.slice(startIndex, endIndex);
-    console.log(data);
     return data
 }
 
