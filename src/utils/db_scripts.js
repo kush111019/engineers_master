@@ -134,11 +134,11 @@ const db_sql = {
               WHERE sc.company_id = '{var1}' AND c.deleted_at IS NULL AND sc.deleted_at IS NULL 
               AND c.closed_at is not null GROUP BY DATE_TRUNC('{var2}',c.closed_at) ORDER BY date DESC`,
     "Q89"  : `SELECT cc.id as	customer_company_id, cc.customer_company_name, c.id AS customer_id, c.closed_at, sc.id AS sales_commission_id,
-              sc.target_amount, sc.target_closing_date FROM customer_companies AS cc 
+              sc.target_amount::DECIMAL, sc.target_closing_date FROM customer_companies AS cc 
               INNER JOIN customers AS c ON c.customer_company_id = cc.id
               INNER JOIN sales_commission AS sc ON sc.customer_id = c.id 
               WHERE cc.company_id = '{var1}' AND cc.deleted_at IS NULL AND c.deleted_at IS NULL	
-              AND	sc.deleted_at IS NULL ORDER BY sc.target_amount {var2} LIMIT {var3} OFFSET {var4}`,
+              AND	sc.deleted_at IS NULL ORDER BY sc.target_amount::DECIMAL {var2} LIMIT {var3} OFFSET {var4}`,
     "Q90"  : `SELECT id, target_amount, target_closing_date, customer_id FROM sales_commission WHERE company_id = '{var1}' AND deleted_at IS NULL`,
     "Q91"  : `INSERT INTO contact_us(id, full_name, email, subject, messages, address) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
     "Q92"  : `INSERT INTO products(id, product_name,product_image,description,available_quantity,price,tax,company_id, currency)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}')`,
@@ -256,11 +256,11 @@ const db_sql = {
               user_count, payment_status,total_amount, payment_receipt FROM upgraded_transactions WHERE id = '{var1}' AND deleted_at IS NULL`,
     "Q151" : `UPDATE upgraded_transactions SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
     "Q152" : `SELECT id,country_name,country_value,currency_name,currency_symbol,date_format,created_at FROM country_details WHERE deleted_at IS NULL`,
-    "Q153" : `SELECT sc.id AS sales_commission_id, sc.target_amount, sc.target_closing_date,sc.products, c.id AS customer_id,
+    "Q153" : `SELECT sc.id AS sales_commission_id, sc.target_amount::DECIMAL, sc.target_closing_date,sc.products, c.id AS customer_id,
               c.closed_at, c.customer_name  FROM sales_commission AS sc INNER JOIN customers AS c
               ON sc.customer_id = c.id WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL 
-              AND c.deleted_at IS NULL ORDER BY sc.target_amount {var2}`,
-    "Q154" : `SELECT id, target_amount, target_closing_date, customer_id FROM sales_commission WHERE company_id = '{var1}' AND deleted_at IS NULL ORDER BY target_amount {var2} LIMIT {var3} OFFSET {var4}`,                           
+              AND c.deleted_at IS NULL ORDER BY sc.target_amount::DECIMAL {var2}`,
+    "Q154" : `SELECT id, target_amount::DECIMAL, target_closing_date, customer_id FROM sales_commission WHERE company_id = '{var1}' AND deleted_at IS NULL ORDER BY target_amount::DECIMAL {var2} LIMIT {var3} OFFSET {var4}`,                           
  }
 
 

@@ -14,7 +14,6 @@ module.exports.revenuePerCustomer = async (req, res) => {
         if (checkPermission.rows[0].permission_to_view) {
             let revenuePerCustomer = []
             let s4 = dbScript(db_sql['Q89'], { var1: checkPermission.rows[0].company_id, var2 : orderBy, var3 : limit, var4 : offset })
-            console.log(s4);
             let customerCompanies = await connection.query(s4)
             if (customerCompanies.rowCount > 0) {
                 for (data of customerCompanies.rows) {
