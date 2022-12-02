@@ -206,7 +206,7 @@ module.exports.deleteProduct = async (req, res) => {
 module.exports.uploadProductImage = async (req, res) => {
     try {
         let file = req.file
-        let path = `http://143.198.102.134:3003/productImages/${file.originalname}`;
+        let path = `${process.env.PRODUCT_IMAGE_PATH}/${file.originalname}`;
         res.json({
             status: 201,
             success: true,

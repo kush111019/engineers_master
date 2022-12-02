@@ -93,7 +93,7 @@ module.exports.forgotPassword = async (req, res) => {
                 email: findSuperAdmin.rows[0].email
             }
             let token = await issueJWT(payload)
-            let link = `http://143.198.102.134:8080/auth/reset-password/${token}`
+            let link = `${process.env.AUTH_LINK}/reset-password/${token}`
             if (process.env.isLocalEmail == 'true') {
                 await resetPasswordMail2(email, link, findSuperAdmin.rows[0].name);
                 res.json({

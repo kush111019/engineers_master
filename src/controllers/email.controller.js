@@ -268,7 +268,7 @@ module.exports.uploadMailAttechment = async (req, res) => {
         let files = req.files
         uploadedArr = []
         for(item of files){
-            let path = `http://143.198.102.134:3003/mailAttachments/${item.originalname}`
+            let path = `${MAIL_ATTECHMENT_PATH}/${item.originalname}`
             uploadedArr.push(
                 {
                     filename : item.originalname,

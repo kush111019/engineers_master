@@ -77,7 +77,7 @@ let createAdmin = async (bodyData, cId, res) => {
                     email: saveuser.rows[0].email_address
                 }
                 let token = await issueJWT(payload)
-                link = `http://143.198.102.134:8080/auth/verify-email/${token}`
+                link = `${process.env.AUTH_LINK}/verify-email/${token}`
                 if (process.env.isLocalEmail == 'true') {
                     await welcomeEmail2(emailAddress, link, name);
                     await connection.query('COMMIT')
@@ -138,7 +138,7 @@ let createAdmin = async (bodyData, cId, res) => {
 module.exports.uploadLogo = async (req, res) => {
     try {
         let file = req.file
-        let path = `http://143.198.102.134:3003/companyLogo/${file.originalname}`;
+        let path = `${COMPANY_LOGO_LINK}/${file.originalname}`;
         res.json({
             status: 201,
             success: true,
@@ -164,7 +164,7 @@ module.exports.signUp = async (req, res) => {
             companyAddress,
         } = req.body
 
-        companyLogo = companyLogo == "" ? 'http://143.198.102.134:3003/companyLogo/user.jpg' : companyLogo;
+        companyLogo = companyLogo == "" ? process.env.DEFAULT_LOGO : companyLogo;
 
         let s2 = dbScript(db_sql['Q1'], { var1: companyName })
         let checkCompany = await connection.query(s2);
@@ -500,7 +500,7 @@ module.exports.changePassword = async (req, res) => {
 module.exports.upload = async (req, res) => {
     try {
         let file = req.file
-        let path = `http://143.198.102.134:3003/avatar/${file.originalname}`;
+        let path = `${process.env.AVATAR_LOGO_LINK}/${file.originalname}`;
         res.json({
             success: true,
             status: 201,
@@ -585,7 +585,7 @@ module.exports.forgotPassword = async (req, res) => {
                 email: checkuser.rows[0].email_address
             }
             let token = await issueJWT(payload)
-            let link = `http://143.198.102.134:8080/auth/reset-password/${token}`
+            let link = `${process.env.AUTH_LINK}/reset-password/${token}`
             if (process.env.isLocalEmail == 'true') {
                 await resetPasswordMail2(emailAddress, link, checkuser.rows[0].full_name);
                 res.json({
