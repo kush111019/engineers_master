@@ -139,7 +139,7 @@ const db_sql = {
               INNER JOIN sales_commission AS sc ON sc.customer_id = c.id 
               WHERE cc.company_id = '{var1}' AND cc.deleted_at IS NULL AND c.deleted_at IS NULL	
               AND	sc.deleted_at IS NULL ORDER BY sc.target_amount::DECIMAL {var2} LIMIT {var3} OFFSET {var4}`,
-    "Q90"  : `SELECT id, target_amount::DECIMAL, target_closing_date, customer_id FROM sales_commission WHERE company_id = '{var1}' AND deleted_at IS NULL ORDER BY target_amount::DECIMAL {var2} LIMIT {var3} OFFSET {var4}`,
+    "Q90"  : `SELECT id, target_amount::DECIMAL, target_closing_date, customer_id FROM sales_commission WHERE company_id = '{var1}' AND deleted_at IS NULL ORDER BY target_amount::DECIMAL {var2}`,
     "Q91"  : `INSERT INTO contact_us(id, full_name, email, subject, messages, address) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
     "Q92"  : `INSERT INTO products(id, product_name,product_image,description,available_quantity,price,tax,company_id, currency)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}')`,
     "Q93"  : `UPDATE products SET product_name = '{var2}',product_image = '{var3}', description = '{var4}',available_quantity = '{var5}', price = '{var6}', tax = '{var7}', updated_at = '{var8}', currency = '{var10}' WHERE id = '{var1}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `,

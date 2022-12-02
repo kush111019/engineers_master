@@ -132,13 +132,11 @@ module.exports.revenuePerSalesRep = async (req, res) => {
     try {
         let userId = req.user.id
         let { page, orderBy } = req.query
-        let limit = 10;
-        let offset = (page - 1) * limit
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view) {
             let salesRepArr = []
-            let s4 = dbScript(db_sql['Q90'], { var1: checkPermission.rows[0].company_id, var2 : orderBy, var3 : limit, var4 : offset })
+            let s4 = dbScript(db_sql['Q90'], { var1: checkPermission.rows[0].company_id, var2 : orderBy })
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
                 let holder = {};
@@ -173,11 +171,12 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                             return Number(b.revenue) - Number(a.revenue)
                         })
                     }
+                    let result = await paginatedResults(newArr, page)
                     res.json({
                         status: 200,
                         success: true,
                         message: "Revenue per sales representative",
-                        data: newArr
+                        data: result
                     })
                 } else {
                     res.json({
