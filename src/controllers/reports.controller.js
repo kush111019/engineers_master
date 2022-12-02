@@ -164,6 +164,15 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                     newArr.push({ salesRep: prop, revenue: holder[prop] });
                 }
                 if (newArr.length > 0) {
+                    if(orderBy.toLowerCase() == 'asc' ){
+                        newArr = newArr.sort((a, b) => {
+                            return Number(a.revenue) - Number(b.revenue)
+                        })
+                    }else{
+                        newArr = newArr.sort((a, b) => {
+                            return Number(b.revenue) - Number(a.revenue)
+                        })
+                    }
                     res.json({
                         status: 200,
                         success: true,
