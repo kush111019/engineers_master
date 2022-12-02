@@ -351,12 +351,14 @@ module.exports.companyWiseTotalRevenue = async (req, res) => {
 module.exports.userWiseCompanyRevenue = async (req, res) => {
     try {
         let sAEmail = req.user.email
-        let { companyId } = req.query
+        let { companyId, page, orderBy } = req.query
+        let limit = 10;
+        let offset = (page - 1) * limit
         let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
             let salesRepArr = []
-            let s4 = dbScript(db_sql['Q90'], { var1: companyId })
+            let s4 = dbScript(db_sql['Q90'], { var1: companyId, var2 : orderBy, var3 : limit, var4 : offset })
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
                 let holder = {};
@@ -382,6 +384,15 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
                     newArr.push({ user: prop, revenue: holder[prop] });
                 }
                 if (newArr.length > 0) {
+                    if(orderBy.toLowerCase() == 'asc' ){
+                        newArr = newArr.sort((a, b) => {
+                            return Number(a.revenue) - Number(b.revenue)
+                        })
+                    }else{
+                        newArr = newArr.sort((a, b) => {
+                            return Number(b.revenue) - Number(a.revenue)
+                        })
+                    }
                     res.json({
                         status: 200,
                         success: true,

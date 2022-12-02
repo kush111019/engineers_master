@@ -138,7 +138,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view) {
             let salesRepArr = []
-            let s4 = dbScript(db_sql['Q154'], { var1: checkPermission.rows[0].company_id, var2 : orderBy, var3 : limit, var4 : offset })
+            let s4 = dbScript(db_sql['Q90'], { var1: checkPermission.rows[0].company_id, var2 : orderBy, var3 : limit, var4 : offset })
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
                 let holder = {};
