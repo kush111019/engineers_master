@@ -107,7 +107,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                     status: 200,
                     success: true,
                     message: "Empty revenue per sales representative",
-                    data: newArr
+                    data: salesData.rows
                 })
             }
         } else {
