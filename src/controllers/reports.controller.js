@@ -6,12 +6,14 @@ const moduleName = process.env.REPORTS_MODULE
 module.exports.revenuePerCustomer = async (req, res) => {
     try {
         let userId = req.user.id
-        let { page } = req.query
+        let { page, orderBy } = req.query
+        let limit = 10;
+        let offset = (page - 1) * limit
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view) {
             let revenuePerCustomer = []
-            let s4 = dbScript(db_sql['Q89'], { var1: checkPermission.rows[0].company_id })
+            let s4 = dbScript(db_sql['Q89'], { var1: checkPermission.rows[0].company_id, var2 : orderBy, var3 : limit, var4 : offset })
             let customerCompanies = await connection.query(s4)
             if (customerCompanies.rowCount > 0) {
                 for (data of customerCompanies.rows) {
@@ -23,12 +25,11 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 }
                 let uniqueArray = await removeDuplicates(revenuePerCustomer, "customerId");
                 if (uniqueArray.length > 0) {
-                    let result = await paginatedResults(uniqueArray, page)
                     res.json({
                         status: 200,
                         success: true,
                         message: "Revenue per customer",
-                        data: result
+                        data: uniqueArray
                     })
                 } else {
                     res.json({
@@ -65,11 +66,11 @@ module.exports.revenuePerCustomer = async (req, res) => {
 module.exports.revenuePerProduct = async (req, res) => {
     try {
         let userId = req.user.id
-        let { page } = req.query
+        let { page, orderBy } = req.query
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view) {
-            let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id })
+            let s4 = dbScript(db_sql['Q153'], { var1: checkPermission.rows[0].company_id, var2 : orderBy })
             let customers = await connection.query(s4)
             if (customers.rowCount > 0) {
                 let revenuePerProduct = []
@@ -130,12 +131,12 @@ module.exports.revenuePerProduct = async (req, res) => {
 module.exports.revenuePerSalesRep = async (req, res) => {
     try {
         let userId = req.user.id
-        let { page } = req.query
+        let { page, orderBy } = req.query
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view) {
             let salesRepArr = []
-            let s4 = dbScript(db_sql['Q90'], { var1: checkPermission.rows[0].company_id })
+            let s4 = dbScript(db_sql['Q90'], { var1: checkPermission.rows[0].company_id, var2 : orderBy })
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
                 let holder = {};
@@ -161,6 +162,15 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                     newArr.push({ salesRep: prop, revenue: holder[prop] });
                 }
                 if (newArr.length > 0) {
+                    if(orderBy.toLowerCase() == 'asc' ){
+                        newArr = newArr.sort((a, b) => {
+                            return Number(a.revenue) - Number(b.revenue)
+                        })
+                    }else{
+                        newArr = newArr.sort((a, b) => {
+                            return Number(b.revenue) - Number(a.revenue)
+                        })
+                    }
                     let result = await paginatedResults(newArr, page)
                     res.json({
                         status: 200,
@@ -204,12 +214,14 @@ module.exports.totalRevenue = async (req, res) => {
     try {
         let userId = req.user.id
         let { status, page } = req.query
+        let limit = 10;
+        let offset = (page - 1) * limit
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view) {
             totalRevenue = [];
             let format = (status == 'Monthly') ? 'month' : (status == 'Quarterly') ? 'quarter' : 'year'
-            let s4 = dbScript(db_sql['Q88'], { var1: checkPermission.rows[0].company_id, var2: format })
+            let s4 = dbScript(db_sql['Q88'], { var1: checkPermission.rows[0].company_id, var2: format, var3 : limit, var4 : offset })
             let targetData = await connection.query(s4)
             if (targetData.rowCount > 0) {
                 for (data of targetData.rows) {
@@ -219,12 +231,11 @@ module.exports.totalRevenue = async (req, res) => {
                     })
                 }
                 if (totalRevenue.length > 0) {
-                    let result = await paginatedResults(totalRevenue, page)
                     res.json({
                         status: 200,
                         success: true,
                         message: "Total revenue",
-                        data: result
+                        data: totalRevenue
                     })
                 } else {
                     res.json({

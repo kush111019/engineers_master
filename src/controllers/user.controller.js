@@ -74,7 +74,7 @@ module.exports.addUser = async (req, res) => {
             encryptedPassword
         } = req.body
 
-        avatar = (avatar == "") ? 'http://143.198.102.134:3003/companyLogo/user.jpg' : avatar;
+        avatar = (avatar == "") ? process.env.DEFAULT_LOGO : avatar;
 
         let id = uuid.v4()
         let s2 = dbScript(db_sql['Q4'], { var1: emailAddress })
@@ -96,7 +96,7 @@ module.exports.addUser = async (req, res) => {
                         email: addUser.rows[0].email_address
                     }
                     let token = await issueJWT(payload)
-                    link = `http://143.198.102.134:8080/auth/reset-password/${token}`
+                    link = `${process.env.AUTH_LINK}/reset-password/${token}`
                     if (process.env.isLocalEmail == 'true') {
                         await setPasswordMail2(emailAddress, link, name);
                         await connection.query('COMMIT')

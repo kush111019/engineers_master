@@ -132,13 +132,14 @@ const db_sql = {
     "Q88"  : `SELECT DATE_TRUNC('{var2}',c.closed_at) AS  date, sum(sc.target_amount::decimal) AS target_amount
               FROM sales_commission AS sc INNER JOIN customers AS c ON sc.customer_id = c.id
               WHERE sc.company_id = '{var1}' AND c.deleted_at IS NULL AND sc.deleted_at IS NULL 
-              AND c.closed_at is not null GROUP BY DATE_TRUNC('{var2}',c.closed_at) ORDER BY date DESC`,
+              AND c.closed_at is not null GROUP BY DATE_TRUNC('{var2}',c.closed_at) ORDER BY date DESC LIMIT {var3} OFFSET {var4}`,
     "Q89"  : `SELECT cc.id as	customer_company_id, cc.customer_company_name, c.id AS customer_id, c.closed_at, sc.id AS sales_commission_id,
-              sc.target_amount, sc.target_closing_date FROM customer_companies AS cc 
+              sc.target_amount::DECIMAL, sc.target_closing_date FROM customer_companies AS cc 
               INNER JOIN customers AS c ON c.customer_company_id = cc.id
               INNER JOIN sales_commission AS sc ON sc.customer_id = c.id 
-              WHERE cc.company_id = '{var1}' AND cc.deleted_at IS NULL AND c.deleted_at IS NULL	AND	sc.deleted_at IS NULL`,
-    "Q90"  : `SELECT id, target_amount, target_closing_date, customer_id FROM sales_commission WHERE company_id = '{var1}' AND deleted_at IS NULL`,
+              WHERE cc.company_id = '{var1}' AND cc.deleted_at IS NULL AND c.deleted_at IS NULL	
+              AND	sc.deleted_at IS NULL ORDER BY sc.target_amount::DECIMAL {var2} LIMIT {var3} OFFSET {var4}`,
+    "Q90"  : `SELECT id, target_amount::DECIMAL, target_closing_date, customer_id FROM sales_commission WHERE company_id = '{var1}' AND deleted_at IS NULL ORDER BY target_amount::DECIMAL {var2}`,
     "Q91"  : `INSERT INTO contact_us(id, full_name, email, subject, messages, address) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
     "Q92"  : `INSERT INTO products(id, product_name,product_image,description,available_quantity,price,tax,company_id, currency)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}')`,
     "Q93"  : `UPDATE products SET product_name = '{var2}',product_image = '{var3}', description = '{var4}',available_quantity = '{var5}', price = '{var6}', tax = '{var7}', updated_at = '{var8}', currency = '{var10}' WHERE id = '{var1}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `,
@@ -254,7 +255,11 @@ const db_sql = {
               stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, expiry_date,
               user_count, payment_status,total_amount, payment_receipt FROM upgraded_transactions WHERE id = '{var1}' AND deleted_at IS NULL`,
     "Q151" : `UPDATE upgraded_transactions SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
-    "Q152" : `SELECT id,country_name,country_value,currency_name,currency_symbol,date_format,created_at FROM country_details WHERE deleted_at IS NULL`                           
+    "Q152" : `SELECT id,country_name,country_value,currency_name,currency_symbol,date_format,created_at FROM country_details WHERE deleted_at IS NULL`,
+    "Q153" : `SELECT sc.id AS sales_commission_id, sc.target_amount::DECIMAL, sc.target_closing_date,sc.products, c.id AS customer_id,
+              c.closed_at, c.customer_name  FROM sales_commission AS sc INNER JOIN customers AS c
+              ON sc.customer_id = c.id WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL 
+              AND c.deleted_at IS NULL ORDER BY sc.target_amount::DECIMAL {var2}`,          
  }
 
 

@@ -3,7 +3,7 @@ const uuid = require("node-uuid")
 const { issueJWT } = require("../utils/jwt")
 const { resetPasswordMail, resetPasswordMail2 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const {verifyTokenFn} = require('../utils/helper')
+const { verifyTokenFn, paginatedResults } = require('../utils/helper')
 const stripe = require('stripe')(process.env.SECRET_KEY)
 
 module.exports.login = async (req, res) => {
@@ -93,7 +93,7 @@ module.exports.forgotPassword = async (req, res) => {
                 email: findSuperAdmin.rows[0].email
             }
             let token = await issueJWT(payload)
-            let link = `http://143.198.102.134:8080/auth/reset-password/${token}`
+            let link = `${process.env.AUTH_LINK}/reset-password/${token}`
             if (process.env.isLocalEmail == 'true') {
                 await resetPasswordMail2(email, link, findSuperAdmin.rows[0].name);
                 res.json({
@@ -194,33 +194,21 @@ module.exports.resetPassword = async (req, res) => {
 
 module.exports.companiesList = async (req, res) => {
     try {
-        let email = req.user.email
-
-        let s1 = dbScript(db_sql['Q98'], { var1: email })
-        let checkSuperAdmin = await connection.query(s1);
-        if (checkSuperAdmin.rowCount != 0) {
-            let s2 = dbScript(db_sql['Q99'], {})
-            let findCompanies = await connection.query(s2);
-            if (findCompanies.rowCount > 0) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: 'Companies List',
-                    data: findCompanies.rows
-                })
-            } else {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "Empty Company list",
-                    data: []
-                })
-            }
+        let s2 = dbScript(db_sql['Q99'], {})
+        let findCompanies = await connection.query(s2);
+        if (findCompanies.rowCount > 0) {
+            res.json({
+                status: 200,
+                success: true,
+                message: 'Companies List',
+                data: findCompanies.rows
+            })
         } else {
             res.json({
-                status: 400,
-                success: false,
-                message: "Super Admin not found",
+                status: 200,
+                success: true,
+                message: "Empty Company list",
+                data: []
             })
         }
     } catch (error) {
@@ -234,111 +222,40 @@ module.exports.companiesList = async (req, res) => {
 
 module.exports.showUsersByCompanyId = async (req, res) => {
     try {
-        let sAEmail = req.user.email
         let {
             companyId,
         } = req.query
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
-        let checkSuperAdmin = await connection.query(s1)
-        if (checkSuperAdmin.rowCount > 0) {
-            let s2 = dbScript(db_sql['Q15'], { var1: companyId })
-            let findUser = await connection.query(s2);
-            if (findUser.rowCount > 0) {
-                let role;
-                for (let userData of findUser.rows) {
-                    let s3 = dbScript(db_sql['Q12'], { var1: userData.role_id })
-                    role = await connection.query(s3);
-                    userData.roleName = role.rows[0].role_name
-                }
-                if (role.rowCount > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: 'Company users list',
-                        data: findUser.rows
-                    })
-                } else {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Empty company users list",
-                        data: []
-                    })
-                }
+        let s2 = dbScript(db_sql['Q15'], { var1: companyId })
+        let findUser = await connection.query(s2);
+        if (findUser.rowCount > 0) {
+            let role;
+            for (let userData of findUser.rows) {
+                let s3 = dbScript(db_sql['Q12'], { var1: userData.role_id })
+                role = await connection.query(s3);
+                userData.roleName = role.rows[0].role_name
+            }
+            if (role.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Company users list',
+                    data: findUser.rows
+                })
             } else {
                 res.json({
                     status: 200,
                     success: true,
-                    message: "Something went wrong"
-                })
-            }
-
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Super Admin not found",
-                data: ""
-            })
-        }
-
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
-
-module.exports.companyWiseTotalRevenue = async (req, res) => {
-    try {
-        let sAEmail = req.user.email
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
-        let checkSuperAdmin = await connection.query(s1)
-        if (checkSuperAdmin.rowCount > 0) {
-            let s2 = dbScript(db_sql['Q99'], {})
-            let companies = await connection.query(s2)
-            let revenue = []
-            for (let data of companies.rows) {
-                let s3 = dbScript(db_sql['Q101'], { var1: data.id })
-                let revenueByCompany = await connection.query(s3)
-                let sum = 0
-                if (revenueByCompany.rowCount > 0) {
-                    for (amount of revenueByCompany.rows) {
-                        sum = sum + Number(amount.target_amount)
-                    }
-                    revenue.push({
-                        companyId: revenueByCompany.rows[0].company_id,
-                        companyName: revenueByCompany.rows[0].company_name,
-                        revenue: sum
-                    })
-                }
-            }
-            if (revenue.length > 0) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "Company wise total revenue",
-                    data: revenue
-                })
-            } else {
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Empty Company wise total revenue",
-                    data: revenue
+                    message: "Empty company users list",
+                    data: []
                 })
             }
         } else {
             res.json({
-                status: 400,
-                success: false,
-                message: "Super Admin not found",
-                data: ""
+                status: 200,
+                success: true,
+                message: "Something went wrong"
             })
         }
-
     } catch (error) {
         res.json({
             status: 400,
@@ -350,77 +267,74 @@ module.exports.companyWiseTotalRevenue = async (req, res) => {
 
 module.exports.userWiseCompanyRevenue = async (req, res) => {
     try {
-        let sAEmail = req.user.email
-        let { companyId } = req.query
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
-        let checkSuperAdmin = await connection.query(s1)
-        if (checkSuperAdmin.rowCount > 0) {
-            let salesRepArr = []
-            let s4 = dbScript(db_sql['Q90'], { var1: companyId })
-            let salesData = await connection.query(s4)
-            if (salesData.rowCount > 0) {
-                let holder = {};
-                let newArr = []
-                for (let sales of salesData.rows) {
-                    let s5 = dbScript(db_sql['Q86'], { var1: sales.id })
-                    let salesRep = await connection.query(s5)
-                    if (salesRep.rows.length > 0) {
-                        salesRepArr.push({
-                            user: salesRep.rows[0].full_name,
-                            revenue: sales.target_amount
-                        })
-                    }
-                }
-                salesRepArr.forEach((d) => {
-                    if (holder.hasOwnProperty(d.user)) {
-                        holder[d.user] = holder[d.user] + Number(d.revenue);
-                    } else {
-                        holder[d.user] = Number(d.revenue);
-                    }
-                });
-                for (let prop in holder) {
-                    newArr.push({ user: prop, revenue: holder[prop] });
-                }
-                if (newArr.length > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Revenue per user",
-                        data: newArr
-                    })
-                } else {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Empty revenue per user",
-                        data: newArr
-                    })
-                }
-            } else {
-                if (salesData.rows.length == 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Empty revenue per user",
-                        data: []
-                    })
-                } else {
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
+        let { companyId, page, orderBy } = req.query
+        let salesRepArr = []
+        let s4 = dbScript(db_sql['Q90'], { var1: companyId, var2: orderBy })
+        let salesData = await connection.query(s4)
+        if (salesData.rowCount > 0) {
+            let holder = {};
+            let newArr = []
+            for (let sales of salesData.rows) {
+                let s5 = dbScript(db_sql['Q86'], { var1: sales.id })
+                let salesRep = await connection.query(s5)
+                if (salesRep.rows.length > 0) {
+                    salesRepArr.push({
+                        user: salesRep.rows[0].full_name,
+                        revenue: sales.target_amount
                     })
                 }
             }
+            salesRepArr.forEach((d) => {
+                if (holder.hasOwnProperty(d.user)) {
+                    holder[d.user] = holder[d.user] + Number(d.revenue);
+                } else {
+                    holder[d.user] = Number(d.revenue);
+                }
+            });
+            for (let prop in holder) {
+                newArr.push({ user: prop, revenue: holder[prop] });
+            }
+            if (newArr.length > 0) {
+                if (orderBy.toLowerCase() == 'asc') {
+                    newArr = newArr.sort((a, b) => {
+                        return Number(a.revenue) - Number(b.revenue)
+                    })
+                } else {
+                    newArr = newArr.sort((a, b) => {
+                        return Number(b.revenue) - Number(a.revenue)
+                    })
+                }
+                let result = await paginatedResults(newArr, page)
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Revenue per user",
+                    data: result
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Empty revenue per user",
+                    data: newArr
+                })
+            }
         } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Super Admin not found",
-                data: ""
-            })
+            if (salesData.rows.length == 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Empty revenue per user",
+                    data: []
+                })
+            } else {
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
         }
-
     } catch (error) {
         res.json({
             status: 400,
@@ -432,117 +346,105 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
 
 module.exports.dashboard = async (req, res) => {
     try {
-        let sAEmail = req.user.email
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
-        let checkSuperAdmin = await connection.query(s1)
-        if (checkSuperAdmin.rowCount > 0) {
-            let s2 = dbScript(db_sql['Q99'], {})
-            let companyData = await connection.query(s2)
+        let { page } = req.query
+        let s1 = dbScript(db_sql['Q99'], {})
+        let companyData = await connection.query(s1)
+        if (companyData.rowCount > 0) {
             let totalCommission = 0;
             let revenueCommission = []
             let totalRevenue = 0;
-            if (companyData.rowCount > 0) {
-                for (let comData of companyData.rows) {
-                    let targetAmount = 0;
-                    let commission = 0;
-                    let revenueCommissionObj = {}
+            for (let comData of companyData.rows) {
+                let targetAmount = 0;
+                let commission = 0;
+                let revenueCommissionObj = {}
 
-                    let s5 = dbScript(db_sql['Q17'], { var1: comData.id })
-                    let slab = await connection.query(s5)
+                let s2 = dbScript(db_sql['Q17'], { var1: comData.id })
+                let slab = await connection.query(s2)
 
-                    let s3 = dbScript(db_sql['Q87'], { var1: comData.id })
-                    let salesData = await connection.query(s3)
-                    if (salesData.rowCount > 0) {
-                        for (data of salesData.rows) {
-                            if (data.closed_at != null) {
-                                targetAmount = targetAmount + Number(data.target_amount)
-                                if (slab.rowCount > 0) {
-                                    let remainingAmount = Number(data.target_amount);
-                                    let amount = 0
-                                    //if remainning amount is 0 then no reason to check 
-                                    for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
-                                        let slab_percentage = Number(slab.rows[i].percentage)
-                                        let slab_maxAmount = Number(slab.rows[i].max_amount)
-                                        let slab_minAmount = Number(slab.rows[i].min_amount)
-                                        if (slab.rows[i].is_max) {
+                let s3 = dbScript(db_sql['Q87'], { var1: comData.id })
+                let salesData = await connection.query(s3)
+                if (salesData.rowCount > 0) {
+                    for (data of salesData.rows) {
+                        if (data.closed_at != null) {
+                            targetAmount = targetAmount + Number(data.target_amount)
+                            if (slab.rowCount > 0) {
+                                let remainingAmount = Number(data.target_amount);
+                                let amount = 0
+                                //if remainning amount is 0 then no reason to check 
+                                for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
+                                    let slab_percentage = Number(slab.rows[i].percentage)
+                                    let slab_maxAmount = Number(slab.rows[i].max_amount)
+                                    let slab_minAmount = Number(slab.rows[i].min_amount)
+                                    if (slab.rows[i].is_max) {
+                                        amount = amount + ((slab_percentage / 100) * remainingAmount)
+                                        remainingAmount = 0
+                                    }
+                                    else {
+                                        if (remainingAmount >= slab_maxAmount) {
+                                            amount = amount + ((slab_percentage / 100) * (slab_maxAmount - slab_minAmount))
+                                            remainingAmount = remainingAmount - (slab_maxAmount - slab_minAmount)
+                                        } else {
                                             amount = amount + ((slab_percentage / 100) * remainingAmount)
                                             remainingAmount = 0
                                         }
-                                        else {
-                                            if (remainingAmount >= slab_maxAmount) {
-                                                amount = amount + ((slab_percentage / 100) * (slab_maxAmount - slab_minAmount))
-                                                remainingAmount = remainingAmount - (slab_maxAmount - slab_minAmount)
-                                            } else {
-                                                amount = amount + ((slab_percentage / 100) * remainingAmount)
-                                                remainingAmount = 0
-                                            }
-                                        }
                                     }
-                                    commission = commission + amount
                                 }
+                                commission = commission + amount
                             }
                         }
-                        revenueCommissionObj.name = comData.company_name
-                        revenueCommissionObj.revenue = Number(targetAmount)
-                        revenueCommissionObj.commission = Number(commission)
-                        revenueCommissionObj.date = comData.created_at
-                        revenueCommission.push(revenueCommissionObj)
                     }
-                    totalRevenue = totalRevenue + targetAmount
-                    totalCommission = totalCommission + commission
+                    revenueCommissionObj.name = comData.company_name
+                    revenueCommissionObj.revenue = Number(targetAmount)
+                    revenueCommissionObj.commission = Number(commission)
+                    revenueCommissionObj.date = comData.created_at
+                    revenueCommission.push(revenueCommissionObj)
                 }
-                if (revenueCommission.length > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "total revenue and total commission",
-                        data: {
-                            totalRevenue: totalRevenue,
-                            totalCommission: totalCommission,
-                            revenueCommission: revenueCommission
-                        }
-                    })
-                } else {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Empty total revenue and total commission",
-                        data: {
-                            totalRevenue: 0,
-                            totalCommission: 0,
-                            revenueCommission: revenueCommission
-                        }
-                    })
-                }
-            } else {
-                if (companyData.rows.length == 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Empty total revenue and total commission",
-                        data: {
-                            totalRevenue: 0,
-                            totalCommission: 0,
-                            revenueCommission: revenueCommission
-                        }
-                    })
-                } else {
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
-                    })
-                }
+                totalRevenue = totalRevenue + targetAmount
+                totalCommission = totalCommission + commission
             }
-
-
+            if (revenueCommission.length > 0) {
+                result = await paginatedResults(revenueCommission, page)
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "total revenue and total commission",
+                    data: {
+                        totalRevenue: totalRevenue,
+                        totalCommission: totalCommission,
+                    },
+                    revenues: result
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Empty total revenue and total commission",
+                    data: {
+                        totalRevenue: 0,
+                        totalCommission: 0
+                    },
+                    revenues: revenueCommission
+                })
+            }
         } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Super Admin not found",
-                data: ""
-            })
+            if (companyData.rows.length == 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Empty total revenue and total commission",
+                    data: {
+                        totalRevenue: 0,
+                        totalCommission: 0,
+                        revenueCommission: revenueCommission
+                    }
+                })
+            } else {
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
         }
     } catch (error) {
         res.json({
@@ -552,7 +454,6 @@ module.exports.dashboard = async (req, res) => {
         })
     }
 }
-
 
 //----------------------------------Stripe Plans-------------------------------------
 
