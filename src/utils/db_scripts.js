@@ -129,17 +129,43 @@ const db_sql = {
               c.closed_at, c.customer_name  FROM sales_commission AS sc INNER JOIN customers AS c
               ON sc.customer_id = c.id WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL 
               AND c.deleted_at IS NULL Order by c.closed_at DESC`,
-    "Q88"  : `SELECT DATE_TRUNC('{var2}',c.closed_at) AS  date, sum(sc.target_amount::decimal) AS target_amount
+    "Q88"  : `SELECT DATE_TRUNC('{var2}',c.closed_at) AS  date, sum(sc.target_amount::decimal) AS revenue
               FROM sales_commission AS sc INNER JOIN customers AS c ON sc.customer_id = c.id
               WHERE sc.company_id = '{var1}' AND c.deleted_at IS NULL AND sc.deleted_at IS NULL 
               AND c.closed_at is not null GROUP BY DATE_TRUNC('{var2}',c.closed_at) ORDER BY date DESC LIMIT {var3} OFFSET {var4}`,
-    "Q89"  : `SELECT cc.id as	customer_company_id, cc.customer_company_name, c.id AS customer_id, c.closed_at, sc.id AS sales_commission_id,
-              sc.target_amount::DECIMAL, sc.target_closing_date FROM customer_companies AS cc 
-              INNER JOIN customers AS c ON c.customer_company_id = cc.id
-              INNER JOIN sales_commission AS sc ON sc.customer_id = c.id 
-              WHERE cc.company_id = '{var1}' AND cc.deleted_at IS NULL AND c.deleted_at IS NULL	
-              AND	sc.deleted_at IS NULL ORDER BY sc.target_amount::DECIMAL {var2} LIMIT {var3} OFFSET {var4}`,
-    "Q90"  : `SELECT id, target_amount::DECIMAL, target_closing_date, customer_id FROM sales_commission WHERE company_id = '{var1}' AND deleted_at IS NULL ORDER BY target_amount::DECIMAL {var2}`,
+    "Q89"  : `SELECT 
+	            cc.id  AS customer_id,
+	            cc.customer_company_name AS customer_name,
+	            ( SELECT SUM(scq.target_amount::DECIMAL) FROM sales_commission scq 
+                  WHERE c.id = scq.customer_id)  AS revenue
+              FROM customer_companies cc
+                LEFT JOIN customers c ON c.customer_company_id = cc.id
+                LEFT JOIN sales_commission sc ON sc.customer_id = c.id 
+              WHERE 
+  	            c.closed_at is not null AND 
+	            cc.company_id = '{var1}' AND 
+	            cc.deleted_at IS NULL AND c.deleted_at IS NULL AND
+	            sc.deleted_at IS NULL 
+              ORDER BY sc.target_amount::DECIMAL {var2} LIMIT {var3} OFFSET {var4}`,
+
+    "Q90"  : `SELECT 
+                  u.full_name AS sales_rep,
+                  SUM(sc.target_amount::DECIMAL) AS revenue
+              FROM  
+                  sales_commission AS sc 
+                  INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
+                  INNER JOIN users AS u ON u.id = cr.closer_id
+              WHERE 
+                  sc.company_id = '{var1}' 
+                  AND sc.deleted_at IS NULL 
+                  AND cr.deleted_at IS NULL
+                  AND U.deleted_at IS NULL
+              GROUP BY 
+                  u.full_name 
+              ORDER BY 
+                  revenue {var2}
+              LIMIT {var3} OFFSET {var4}`,
+
     "Q91"  : `INSERT INTO contact_us(id, full_name, email, subject, messages, address) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
     "Q92"  : `INSERT INTO products(id, product_name,product_image,description,available_quantity,price,tax,company_id, currency)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}')`,
     "Q93"  : `UPDATE products SET product_name = '{var2}',product_image = '{var3}', description = '{var4}',available_quantity = '{var5}', price = '{var6}', tax = '{var7}', updated_at = '{var8}', currency = '{var10}' WHERE id = '{var1}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `,
@@ -256,10 +282,33 @@ const db_sql = {
               user_count, payment_status,total_amount, payment_receipt FROM upgraded_transactions WHERE id = '{var1}' AND deleted_at IS NULL`,
     "Q151" : `UPDATE upgraded_transactions SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
     "Q152" : `SELECT id,country_name,country_value,currency_name,currency_symbol,date_format,created_at FROM country_details WHERE deleted_at IS NULL`,
-    "Q153" : `SELECT sc.id AS sales_commission_id, sc.target_amount::DECIMAL, sc.target_closing_date,sc.products, c.id AS customer_id,
-              c.closed_at, c.customer_name  FROM sales_commission AS sc INNER JOIN customers AS c
-              ON sc.customer_id = c.id WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL 
-              AND c.deleted_at IS NULL ORDER BY sc.target_amount::DECIMAL {var2}`,          
+    "Q153" : `SELECT 
+                  SUM(sc.target_amount::DECIMAL) as revenue, 
+                  p.product_name
+              FROM 
+                  sales_commission AS sc 
+              INNER JOIN 
+                  customers AS c ON sc.customer_id = c.id 
+              INNER JOIN 
+                  product_in_sales AS ps ON sc.id = ps.sales_commission_id
+              INNER JOIN 
+                  products AS p ON p.id = ps.product_id
+              WHERE 
+                  sc.company_id = '{var1}'
+                  AND sc.deleted_at IS NULL 
+                  AND c.deleted_at IS NULL
+                  AND c.closed_at IS NOT NULL
+              GROUP BY 
+                  p.product_name
+              ORDER BY 
+                  revenue {var2}
+              LIMIT {var3} OFFSET {var4}`,    
+    "Q154" : `SELECT COUNT(*) AS actual_count FROM users WHERE company_id = '{var1}' AND deleted_at IS NULL`,
+    "Q155" : `INSERT INTO product_in_sales(id,product_id,sales_commission_id, company_id) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`,  
+    "Q156" : `UPDATE product_in_sales SET deleted_at = '{var3}' WHERE sales_commission_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL RETURNING *`,  
+    "Q157" : `SELECT ps.product_id AS id, p.product_name AS name FROM product_in_sales AS ps 
+              INNER JOIN products as p ON p.id = ps.product_id
+              WHERE ps.sales_commission_id = '{var1}' AND ps.deleted_at IS NULL and p.deleted_at IS NULL` 
  }
 
 

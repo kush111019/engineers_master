@@ -128,7 +128,6 @@ module.exports.createSalesCommission = async (req, res) => {
             let id = uuid.v4()
             let s5 = dbScript(db_sql['Q53'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: checkPermission.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var12: JSON.stringify(products), var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16: currency })
             let createSalesConversion = await connection.query(s5)
-
             let s6 = dbScript(db_sql['Q56'], { var1: customerCommissionSplitId, var2: checkPermission.rows[0].company_id })
             let findSalescommission = await connection.query(s6)
             let closer_percentage = is_overwrite ? closerPercentage : findSalescommission.rows[0].closer_percentage
@@ -143,6 +142,14 @@ module.exports.createSalesCommission = async (req, res) => {
                     let s8 = dbScript(db_sql['Q57'], { var1: supporterId, var2: customerCommissionSplitId, var3: supporterData.id, var4: supporterData.percentage, var5: createSalesConversion.rows[0].id, var6: checkPermission.rows[0].company_id })
                     addSalesSupporter = await connection.query(s8)
                     supporterIds.push(addSalesSupporter.rows[0].id)
+                }
+            }
+
+            if (products.length > 0) {
+                for (let productId of products) {
+                    let prId = uuid.v4()
+                    let s9 = dbScript(db_sql['Q155'], { var1: prId, var2 : productId, var3: createSalesConversion.rows[0].id, var4 : checkPermission.rows[0].company_id })
+                    addProduct = await connection.query(s9)
                 }
             }
 
@@ -214,32 +221,23 @@ module.exports.salesCommissionList = async (req, res) => {
                     }
                 }
 
-                let products = JSON.parse(data.products)
-                let productName = []
-                for (let productIds of products) {
-                    let s6 = dbScript(db_sql['Q96'], { var1: productIds, var2: checkPermission.rows[0].company_id })
-                    let product = await connection.query(s6)
-                    if (product.rowCount > 0) {
-                        productName.push({
-                            id: product.rows[0].id,
-                            name: product.rows[0].product_name
-                        })
-                    }
-                }
+                let s9 = dbScript(db_sql['Q157'], { var1 : data.id})
+                let productData = await connection.query(s9)
+
                 if (data.business_id != '' && data.revenue_id != '') {
 
                     let s7 = dbScript(db_sql['Q76'], { var1: data.business_id })
                     let businessData = await connection.query(s7);
 
                     closer.businessContactId = businessData.rows[0].id,
-                        closer.businessContactName = businessData.rows[0].business_contact_name
+                    closer.businessContactName = businessData.rows[0].business_contact_name
                     closer.businessContactEmail = businessData.rows[0].business_email
 
                     let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_id })
                     let revenueData = await connection.query(s8);
 
                     closer.revenueContactId = revenueData.rows[0].id,
-                        closer.revenueContactName = revenueData.rows[0].revenue_contact_name
+                    closer.revenueContactName = revenueData.rows[0].revenue_contact_name
                     closer.revenueContactEmail = revenueData.rows[0].revenue_email
                 } else {
                     closer.businessContactId = ""
@@ -270,7 +268,7 @@ module.exports.salesCommissionList = async (req, res) => {
                 closer.salesType = data.sales_type
                 closer.subscriptionPlan = data.subscription_plan
                 closer.recurringDate = data.recurring_date
-                closer.products = productName
+                closer.products = (productData.rowCount > 0) ? productData.rows : []
 
                 commissionList.push(closer)
             }
@@ -307,7 +305,6 @@ module.exports.salesCommissionList = async (req, res) => {
 }
 
 module.exports.updateSalesCommission = async (req, res) => {
-
     try {
         let userId = req.user.id
         let {
@@ -329,7 +326,6 @@ module.exports.updateSalesCommission = async (req, res) => {
             salesType,
             subscriptionPlan,
             recurringDate
-
         } = req.body
             let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
             let checkPermission = await connection.query(s3)
@@ -353,19 +349,26 @@ module.exports.updateSalesCommission = async (req, res) => {
                 let s8 = dbScript(db_sql['Q65'], { var1: salesCommissionId, var2: checkPermission.rows[0].company_id, var3: _dt })
                 let updateSupporter = await connection.query(s8)
                 for (let supporterData of supporters) {
-
                     let supporterId = uuid.v4()
                     let s9 = dbScript(db_sql['Q57'], { var1: supporterId, var2: customerCommissionSplitId, var3: supporterData.id, var4: supporterData.percentage, var5: salesCommissionId, var6: checkPermission.rows[0].company_id })
                     updateSalesSupporter = await connection.query(s9)
                     supporterIds.push(updateSalesSupporter.rows[0].id)
-
                 }
 
+                let s9 = dbScript(db_sql['Q156'], { var1: salesCommissionId, var2: checkPermission.rows[0].company_id, var3: _dt })
+                let updateProduct = await connection.query(s9)
+                if(products.rowCount > 0){
+                    for (let productId of products) {
+                        let prId = uuid.v4()
+                        let s9 = dbScript(db_sql['Q155'], { var1: prId, var2: productId, var3 :  salesCommissionId, var4 : checkPermission.rows[0].company_id })
+                        addProduct = await connection.query(s9)
+                    }
+                }
                 let logId = uuid.v4()
                 let s10 = dbScript(db_sql['Q43'], { var1: logId, var2: updateSalesCommission.rows[0].id, var3: customerCommissionSplitId, var4: mysql_real_escape_string(qualification), var5: is_qualified, var6: targetAmount, var7: JSON.stringify(products), var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: checkPermission.rows[0].company_id, var12: revenueId, var13: businessId, var14: customerCloserId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate, var19 : currency })
                 let createLog = await connection.query(s10)
 
-                if (updateSalesCommission.rowCount > 0 && findSalesCommission.rowCount > 0 && updateSalesCloser.rowCount > 0 && updateSalesSupporter.rowCount > 0 && createLog.rowCount > 0) {
+                if (updateSalesCommission.rowCount > 0 && findSalesCommission.rowCount > 0 && updateSalesCloser.rowCount > 0 && updateSalesSupporter.rowCount > 0 && createLog.rowCount > 0 && updateProduct.rowCount > 0) {
                     await connection.query('COMMIT')
                     res.json({
                         status: 200,
@@ -380,7 +383,6 @@ module.exports.updateSalesCommission = async (req, res) => {
                         message: "Something went wrong"
                     })
                 }
-
             } else {
                 res.status(403).json({
                     success: false,
@@ -418,12 +420,12 @@ module.exports.deleteSalesCommission = async (req, res) => {
             let s5 = dbScript(db_sql['Q61'], { var1: _dt, var2: salesCommissionId, var3: checkPermission.rows[0].company_id })
             let deleteSalesSupporter = await connection.query(s5)
 
-            let s6 = dbScript(db_sql['Q62'], { var1: _dt, var2: salesCommissionId, var3: checkPermission.rows[0].company_id })
-            let deleteSalesCloser = await connection.query(s6)
+            let s6 = dbScript(db_sql['Q156'], { var1: _dt, var2: salesCommissionId, var3: checkPermission.rows[0].company_id })
+            let deleteSalesProduct = await connection.query(s6)
 
             await connection.query('COMMIT')
 
-            if (deleteSalesConversion.rowCount > 0 && deleteSalesSupporter.rowCount >= 0, deleteSalesCloser.rowCount > 0) {
+            if (deleteSalesConversion.rowCount > 0 && deleteSalesSupporter.rowCount >= 0, deleteSalesCloser.rowCount > 0 && deleteSalesProduct.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
@@ -438,7 +440,6 @@ module.exports.deleteSalesCommission = async (req, res) => {
                 })
 
             }
-
         } else {
             res.status(403).json({
                 success: false,
