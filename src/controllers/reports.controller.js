@@ -109,7 +109,6 @@ module.exports.revenuePerSalesRep = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view) {
-            console.log((startDate != undefined && startDate != '') && (endDate != undefined && endDate != ''));
             if((startDate != undefined && startDate != '') && (endDate != undefined && endDate != '')){
                 let s4 = dbScript(db_sql['Q90'], { var1: checkPermission.rows[0].company_id, var2 : orderBy, var3 : limit, var4 : offset, var5: startDate, var6: endDate  })
                 let salesData = await connection.query(s4)

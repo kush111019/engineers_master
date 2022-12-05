@@ -378,7 +378,7 @@
               ],
               "body": {
                 "mode": "raw",
-                "raw": "{\r\n    \"email\" : \"superadmin@yopmail.com\",\r\n    \"password\" : \"606f3a6f10ca691dd72913176d919f1fd2857c258d54a0f194217ff0973e1d527a1d60d60a54b9809b07fca39922af644c643e2543911160893a9964b2237ad9\"\r\n    \r\n}",
+                "raw": "{\r\n    \"email\" : \"superadmin@yopmail.com\",\r\n    \"password\" : \"4ff3e8922e53309578d694c2dafb41d744af5c4004716f178552449149cd502e9c7022d18cdef4bbe796652d0862f019653e96796ad5d05bffb0f44baaa33528\"\r\n    \r\n}",
                 "options": {
                   "raw": {
                     "language": "json"
@@ -386,12 +386,9 @@
                 }
               },
               "url": {
-                "raw": "143.198.102.134:3003/api/v1/superAdmin/login",
+                "raw": "localhost:3003/api/v1/superAdmin/login",
                 "host": [
-                  "143",
-                  "198",
-                  "102",
-                  "134"
+                  "localhost"
                 ],
                 "port": "3003",
                 "path": [
@@ -612,7 +609,7 @@
                 }
               ],
               "url": {
-                "raw": "{{superAdmin}}/userWiseCompanyRevenue?companyId=558fa965-b996-4c79-9b0f-6ea2dd77e47b",
+                "raw": "{{superAdmin}}/userWiseCompanyRevenue?companyId=29321f7b-9e4c-404d-91d9-40fb27b2f594&page=1&orderBy=desc&startDate&endDate",
                 "host": [
                   "{{superAdmin}}"
                 ],
@@ -622,7 +619,25 @@
                 "query": [
                   {
                     "key": "companyId",
-                    "value": "558fa965-b996-4c79-9b0f-6ea2dd77e47b"
+                    "value": "29321f7b-9e4c-404d-91d9-40fb27b2f594"
+                  },
+                  {
+                    "key": "page",
+                    "value": "1"
+                  },
+                  {
+                    "key": "orderBy",
+                    "value": "desc"
+                  },
+                  {
+                    "key": "startDate",
+                    "value": null,
+                    "type": "text"
+                  },
+                  {
+                    "key": "endDate",
+                    "value": null,
+                    "type": "text"
                   }
                 ]
               }
@@ -647,12 +662,19 @@
                 }
               ],
               "url": {
-                "raw": "{{superAdmin}}/dashboard",
+                "raw": "{{superAdmin}}/dashboard?page=1",
                 "host": [
                   "{{superAdmin}}"
                 ],
                 "path": [
                   "dashboard"
+                ],
+                "query": [
+                  {
+                    "key": "page",
+                    "value": "1",
+                    "type": "text"
+                  }
                 ]
               }
             },
@@ -876,7 +898,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"emailAddress\" : \"gomez@yopmail.com\",\r\n    \"password\" : \"36dde7d288a2166a651d51ec6ded9e70e72cf6b366293d6f513c75393c57d6f33b949879b9d5e7f7c21cd8c02ede75e74fc54ea15bd043b4df008533fc68ae69\"\r\n}",
+                    "raw": "{\r\n    \"emailAddress\" : \"reshma@yopmail.com\",\r\n    \"password\" : \"499221285cc3e9333341bd37ea044d09537cd084ef7e95cb7fdeb305f3c3c501735e953b93e6182273a7a4119b5ddeafa041745264959f84c9e9f75a5fa6f2ea\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -884,13 +906,10 @@
                     }
                   },
                   "url": {
-                    "raw": "http://143.198.102.134:3003/api/v1/auth/login",
+                    "raw": "http://localhost:3003/api/v1/auth/login",
                     "protocol": "http",
                     "host": [
-                      "143",
-                      "198",
-                      "102",
-                      "134"
+                      "localhost"
                     ],
                     "port": "3003",
                     "path": [
@@ -993,7 +1012,7 @@
                       {
                         "key": "image",
                         "type": "file",
-                        "src": "/C:/Users/kkard/Downloads/backgroud.png"
+                        "src": "/C:/Users/kkard/Downloads/emaster-logo.png"
                       }
                     ]
                   },
@@ -1024,7 +1043,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"emailAddress\" : \"robert@yopmail.com\"\r\n}",
+                    "raw": "{\r\n    \"emailAddress\" : \"reshma@yopmail.com\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -1063,7 +1082,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"token\" : \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZkMjZiNDgwLTgxOGMtNDQ3NS1iNmQ0LTZjNWM4NWU5YmJkYyIsImVtYWlsIjoic3RldmVAeW9wbWFpbC5jb20iLCJpYXQiOjE2NjgxNDg2NjksImV4cCI6MTY2ODIzNTA2OX0.Qgjyf0zfLmuTq4v4_ZXjlDEpkUv3UfY1C1yOIZa-2to\",\r\n    \"password\" : \"steve@123#\"\r\n}",
+                    "raw": "{\r\n    \"token\" : \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjdjMDBmYTgwLTBhZTktNDk0NC1iNzRjLTM2MjUzYTQwYmNhNiIsImVtYWlsIjoicmVzaG1hQHlvcG1haWwuY29tIiwiaWF0IjoxNjY5OTg3MTkzLCJleHAiOjE2NzAwNzM1OTN9.mL5RPIfe61C4_RVKKTP1JAQ0i3Khw3qX71-kAY6ZInw\",\r\n    \"password\" : \"Reshma@123#\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -1451,82 +1470,6 @@
                 ]
               },
               {
-                "name": "user Wise Role List",
-                "id": "361f7541-6f10-4b2e-9980-68d3fb169c5a",
-                "protocolProfileBehavior": {
-                  "disableBodyPruning": true
-                },
-                "request": {
-                  "method": "GET",
-                  "header": [
-                    {
-                      "key": "Authorization",
-                      "value": "{{token}}",
-                      "type": "text"
-                    }
-                  ],
-                  "body": {
-                    "mode": "raw",
-                    "raw": "",
-                    "options": {
-                      "raw": {
-                        "language": "json"
-                      }
-                    }
-                  },
-                  "url": {
-                    "raw": "{{companyAdmin}}/userWiseRoleList",
-                    "host": [
-                      "{{companyAdmin}}"
-                    ],
-                    "path": [
-                      "userWiseRoleList"
-                    ]
-                  }
-                },
-                "response": [
-                  
-                ]
-              },
-              {
-                "name": "user List By Role Id",
-                "id": "e216974f-0fd2-4514-93c4-387f0b060a24",
-                "protocolProfileBehavior": {
-                  "disableBodyPruning": true
-                },
-                "request": {
-                  "method": "GET",
-                  "header": [
-                    {
-                      "key": "Authorization",
-                      "value": "{{token}}",
-                      "type": "text"
-                    }
-                  ],
-                  "body": {
-                    "mode": "raw",
-                    "raw": "{\r\n    \"roleId\" : \"802e2c69-fae8-4c5a-bf1e-67034c38f8df\"\r\n}",
-                    "options": {
-                      "raw": {
-                        "language": "json"
-                      }
-                    }
-                  },
-                  "url": {
-                    "raw": "{{companyAdmin}}/usersListByRoleId",
-                    "host": [
-                      "{{companyAdmin}}"
-                    ],
-                    "path": [
-                      "usersListByRoleId"
-                    ]
-                  }
-                },
-                "response": [
-                  
-                ]
-              },
-              {
                 "name": "delete role",
                 "id": "f3624748-aecd-4df1-a721-7692166754eb",
                 "protocolProfileBehavior": {
@@ -1660,7 +1603,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"userId\" : \"b212e945-44b1-4302-bb78-9814bfaf0400\"\r\n}",
+                    "raw": "{\r\n    \"userId\" : \"4fc42d69-a3b3-4b26-8c79-9ca5852fd06a\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -2073,7 +2016,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"slabs\": [\r\n        {\r\n            \"minAmount\": \"0\",\r\n            \"maxAmount\" : \"100000\",\r\n            \"percentage\": 10,\r\n            \"isMax\" : false,\r\n            \"currency\" : \"us\"\r\n        },\r\n        {\r\n            \"minAmount\": \"100010\",\r\n            \"maxAmount\" : \"1000000\",\r\n            \"percentage\": 8,\r\n            \"isMax\" : false,\r\n            \"currency\" : \"us\"\r\n        },\r\n        {\r\n            \"minAmount\": \"1000010\",\r\n            \"maxAmount\" : \"\",\r\n            \"percentage\": 5,\r\n            \"isMax\" : true,\r\n            \"currency\" : \"us\"\r\n        }\r\n    ]\r\n}",
+                    "raw": "{\r\n    \"slabs\": [\r\n        {\r\n            \"minAmount\": \"0\",\r\n            \"maxAmount\" : \"10000\",\r\n            \"percentage\": 10,\r\n            \"isMax\" : false,\r\n            \"currency\" : \"us\",\r\n            \"counter\" : 1\r\n        },\r\n        {\r\n            \"minAmount\": \"10001\",\r\n            \"maxAmount\" : \"50000\",\r\n            \"percentage\": 5,\r\n            \"isMax\" : false,\r\n            \"currency\" : \"us\",\r\n            \"counter\" : 2\r\n        },\r\n        {\r\n            \"minAmount\": \"50001\",\r\n            \"maxAmount\" : \"\",\r\n            \"percentage\": 3,\r\n            \"isMax\" : true,\r\n            \"currency\" : \"us\",\r\n            \"counter\" : 3\r\n        }\r\n    ]\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -3066,7 +3009,7 @@
                     }
                   },
                   "url": {
-                    "raw": "http://localhost:3003/api/v1/companyAdmin/salesCommissionLogsList?salesCommissionId=ad3a8e4c-67a9-47b6-8ac2-0536c8faa691",
+                    "raw": "http://localhost:3003/api/v1/companyAdmin/salesCommissionLogsList?salesCommissionId=ad3a8e4c-67a9-47b6-8ac2-0536c8faa69",
                     "protocol": "http",
                     "host": [
                       "localhost"
@@ -3081,7 +3024,7 @@
                     "query": [
                       {
                         "key": "salesCommissionId",
-                        "value": "ad3a8e4c-67a9-47b6-8ac2-0536c8faa691"
+                        "value": "ad3a8e4c-67a9-47b6-8ac2-0536c8faa69"
                       }
                     ]
                   }
@@ -3150,7 +3093,7 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/revenuePerCustomer?page=1",
+                    "raw": "{{companyAdmin}}/revenuePerCustomer?page=1&orderBy=asc&startDate=&endDate=",
                     "host": [
                       "{{companyAdmin}}"
                     ],
@@ -3161,6 +3104,18 @@
                       {
                         "key": "page",
                         "value": "1"
+                      },
+                      {
+                        "key": "orderBy",
+                        "value": "asc"
+                      },
+                      {
+                        "key": "startDate",
+                        "value": ""
+                      },
+                      {
+                        "key": "endDate",
+                        "value": ""
                       }
                     ]
                   }
@@ -3185,7 +3140,7 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/totalRevenue?status=Monthly",
+                    "raw": "{{companyAdmin}}/totalRevenue?status=Monthly&page=1",
                     "host": [
                       "{{companyAdmin}}"
                     ],
@@ -3197,6 +3152,10 @@
                         "key": "status",
                         "value": "Monthly",
                         "description": "Monthly/Quarterly/Yearly"
+                      },
+                      {
+                        "key": "page",
+                        "value": "1"
                       }
                     ]
                   }
@@ -3221,12 +3180,32 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/revenuePerProduct",
+                    "raw": "{{companyAdmin}}/revenuePerProduct?page=1&orderBy=asc&startDate&endDate",
                     "host": [
                       "{{companyAdmin}}"
                     ],
                     "path": [
                       "revenuePerProduct"
+                    ],
+                    "query": [
+                      {
+                        "key": "page",
+                        "value": "1"
+                      },
+                      {
+                        "key": "orderBy",
+                        "value": "asc"
+                      },
+                      {
+                        "key": "startDate",
+                        "value": null,
+                        "type": "text"
+                      },
+                      {
+                        "key": "endDate",
+                        "value": null,
+                        "type": "text"
+                      }
                     ]
                   }
                 },
@@ -3250,12 +3229,32 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/revenuePerSalesRep",
+                    "raw": "{{companyAdmin}}/revenuePerSalesRep?page=1&orderBy=asc&startDate=10-10-2022&endDate=10-12-2023",
                     "host": [
                       "{{companyAdmin}}"
                     ],
                     "path": [
                       "revenuePerSalesRep"
+                    ],
+                    "query": [
+                      {
+                        "key": "page",
+                        "value": "1"
+                      },
+                      {
+                        "key": "orderBy",
+                        "value": "asc"
+                      },
+                      {
+                        "key": "startDate",
+                        "value": "10-10-2022",
+                        "type": "text"
+                      },
+                      {
+                        "key": "endDate",
+                        "value": "10-12-2023",
+                        "type": "text"
+                      }
                     ]
                   }
                 },
@@ -3285,12 +3284,19 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/revenues",
+                    "raw": "{{companyAdmin}}/revenues?page=1",
                     "host": [
                       "{{companyAdmin}}"
                     ],
                     "path": [
                       "revenues"
+                    ],
+                    "query": [
+                      {
+                        "key": "page",
+                        "value": "1",
+                        "type": "text"
+                      }
                     ]
                   }
                 },
