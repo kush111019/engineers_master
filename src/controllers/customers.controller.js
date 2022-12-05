@@ -98,51 +98,6 @@ module.exports.createCustomer = async (req, res) => {
     }
 }
 
-module.exports.closeCustomer = async (req, res) => {
-    try {
-        let userId = req.user.id
-        let {
-            customerId
-        } = req.body
-        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_update) {
-
-            let _dt = new Date().toISOString();
-            let s4 = dbScript(db_sql['Q40'], { var1: _dt, var2: _dt, var3: customerId })
-            let closeCustomer = await connection.query(s4)
-
-            if (closeCustomer.rowCount > 0) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "Customer closed successfully"
-                })
-            } else {
-                await connection.query('ROLLBACK')
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "something went wrong"
-                })
-            }
-
-        } else {
-            res.status(403).json({
-                success: false,
-                message: "Unathorised"
-            })
-        }
-    } catch (error) {
-        await connection.query('ROLLBACK')
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
-
 module.exports.customerList = async (req, res) => {
     try {
         let userId = req.user.id

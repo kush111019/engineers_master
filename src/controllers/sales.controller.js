@@ -357,7 +357,7 @@ module.exports.updateSalesCommission = async (req, res) => {
                         supporterIds.push(updateSalesSupporter.rows[0].id)
                     }
                 }
-                
+
                 let s9 = dbScript(db_sql['Q156'], { var1: salesCommissionId, var2: checkPermission.rows[0].company_id, var3: _dt })
                 let updateProduct = await connection.query(s9)
                 if(products.rowCount > 0){
@@ -679,6 +679,54 @@ module.exports.deleteNote = async (req, res) => {
                     status: 400,
                     success: false,
                     message: "Something went wrong"
+                })
+            }
+
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.closeSales = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let {
+            salesCommissionId
+        } = req.body
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_update) {
+
+            let _dt = new Date().toISOString();
+            let s2 = dbScript(db_sql['Q40'], { var1: _dt, var2: _dt, var3: salesCommissionId })
+            let closeSales = await connection.query(s2)
+
+            let s3 = dbScript(db_sql[''], { var1: _dt, var2: _dt, var3: salesCommissionId })
+            let updateSalesLog = await connection.query(s3)
+
+            if (closeSales.rowCount > 0 && updateSalesLog.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Sales closed successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "something went wrong"
                 })
             }
 

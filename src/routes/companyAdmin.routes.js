@@ -43,7 +43,6 @@ router.put('/deleteNotes',verifyTokenFn, controller.sales.deleteNote)
 //------------------------------------customers---------------------------------------
 
 router.post('/createCustomer',verifyTokenFn, controller.customers.createCustomer)
-router.post('/closeCustomer',verifyTokenFn, controller.customers.closeCustomer)
 router.get('/customerList',verifyTokenFn, controller.customers.customerList)
 router.put('/editCustomer',verifyTokenFn, controller.customers.editCustomer)
 router.put('/deleteContactForCustomer',verifyTokenFn, controller.customers.deleteContactForCustomer)
@@ -75,6 +74,8 @@ router.get('/salesCommissionList',verifyTokenFn, controller.sales.salesCommissio
 router.put('/updateSalesCommission',verifyTokenFn, controller.sales.updateSalesCommission)
 router.put('/deleteSalesCommission',verifyTokenFn, controller.sales.deleteSalesCommission)
 router.get('/salesCommissionLogsList',verifyTokenFn, controller.sales.salesCommissionLogsList)
+
+router.post('/closeSales',verifyTokenFn, controller.sales.closeSales)
 //----------------------------------------Reports------------------------------------------
 router.get('/revenuePerCustomer',verifyTokenFn, controller.reports.revenuePerCustomer)
 router.get('/revenuePerProduct',verifyTokenFn, controller.reports.revenuePerProduct)

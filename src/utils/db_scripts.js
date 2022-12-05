@@ -44,10 +44,10 @@ const db_sql = {
     "Q36"  : `INSERT INTO customers(id, user_id,customer_company_id,customer_name, source, company_id, business_contact_id, revenue_contact_id, address, currency) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}', '{var10}') RETURNING *`,
     "Q37"  : `INSERT INTO customer_companies(id, customer_company_name, company_id) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
     "Q38"  : `SELECT id, customer_company_name FROM customer_companies WHERE id = '{var1}' AND deleted_at IS NULL`,
-    "Q39"  : `SELECT c.id, c.customer_company_id , c.customer_name, c.source, c.closed_at , c.user_id, c.business_contact_id, c.revenue_contact_id, c.created_at, c.address, c.currency,
+    "Q39"  : `SELECT c.id, c.customer_company_id , c.customer_name, c.source, c.user_id, c.business_contact_id, c.revenue_contact_id, c.created_at, c.address, c.currency,
               u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.company_id = '{var1}' AND c.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`,
-    "Q40"  : `UPDATE customers SET closed_at = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
+    "Q40"  : `UPDATE sales_commission SET closed_at = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q41"  : `SELECT u.id, u.company_id, u.role_id, u.avatar, u.full_name,u.email_address,u.mobile_number,u.phone_number,u.address,
               m.id AS module_id, m.module_name, m.module_type, p.id AS permission_id, p.permission_to_view, 
               p.permission_to_create, p.permission_to_update, p.permission_to_delete
@@ -59,7 +59,7 @@ const db_sql = {
     "Q43"  : `INSERT INTO sales_commission_logs(id,sales_commission_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_contact_id, business_contact_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date, currency) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}', '{var17}', '{var18}', '{var19}' ) RETURNING *`,
     "Q44"  : `SELECT sl.id, sl.sales_commission_id, sl.customer_commission_split_id, sl.qualification, sl.is_qualified, sl.target_amount, sl.currency, 
               sl.products, sl.target_closing_date, sl.customer_id, sl.is_overwrite, sl.company_id, sl.revenue_contact_id, sl.business_contact_id, sl.closer_id, 
-              sl.supporter_id, sl.sales_type, sl.subscription_plan, sl.recurring_date, sl.created_at, u.full_name AS closer_name, c.customer_name, c.closed_at, cr.closer_percentage
+              sl.supporter_id, sl.sales_type, sl.subscription_plan, sl.recurring_date, sl.created_at,sl.closed_at, u.full_name AS closer_name, c.customer_name,  cr.closer_percentage
               FROM sales_commission_logs AS sl INNER JOIN users AS u ON u.id = sl.closer_id
               INNER JOIN customers AS c ON c.id = sl.customer_id
               INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sl.sales_commission_id
@@ -72,14 +72,14 @@ const db_sql = {
     "Q49"  : `UPDATE commission_split SET closer_percentage = '{var1}', supporter_percentage = '{var2}' , updated_at = '{var4}'  WHERE  id = '{var3}' AND company_id = '{var5}' AND deleted_at IS NULL RETURNING *`,
     "Q50"  : `SELECT id, closer_percentage, supporter_percentage FROM commission_split WHERE company_id ='{var1}' AND deleted_at IS NULL`,
     "Q51"  : `UPDATE commission_split SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}'  AND deleted_at IS NULL RETURNING *`,
-    "Q52"  : `SELECT c.id, c.customer_company_id ,c.customer_name, c.source, c.closed_at , c.user_id, c.address,
+    "Q52"  : `SELECT c.id, c.customer_company_id ,c.customer_name, c.source, c.user_id, c.address,
               u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
-              WHERE c.company_id = '{var1}' AND c.closed_at IS NULL  AND c.deleted_at IS NULL AND u.deleted_at IS NULL`,
+              WHERE c.company_id = '{var1}' AND  c.deleted_at IS NULL AND u.deleted_at IS NULL`,
     "Q53"  : `INSERT INTO sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency ) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var13}', '{var14}', '{var15}', '{var16}') RETURNING *`,
     "Q54"  : `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, 
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.closed_at FROM sales_commission AS sc 
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
@@ -126,13 +126,13 @@ const db_sql = {
               INNER JOIN users AS u ON u.id = cr.closer_id WHERE sales_commission_id = '{var1}'
               AND cr.deleted_at IS NULL AND u.deleted_at IS NULL`,
     "Q87"  : `SELECT sc.id AS sales_commission_id, sc.target_amount, sc.target_closing_date,sc.products, c.id AS customer_id,
-              c.closed_at, c.customer_name  FROM sales_commission AS sc INNER JOIN customers AS c
+              sc.closed_at, c.customer_name  FROM sales_commission AS sc INNER JOIN customers AS c
               ON sc.customer_id = c.id WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL 
-              AND c.deleted_at IS NULL Order by c.closed_at DESC`,
-    "Q88"  : `SELECT DATE_TRUNC('{var2}',c.closed_at) AS  date, sum(sc.target_amount::decimal) AS revenue
+              AND c.deleted_at IS NULL Order by sc.closed_at DESC`,
+    "Q88"  : `SELECT DATE_TRUNC('{var2}',sc.closed_at) AS  date, sum(sc.target_amount::decimal) AS revenue
               FROM sales_commission AS sc INNER JOIN customers AS c ON sc.customer_id = c.id
               WHERE sc.company_id = '{var1}' AND c.deleted_at IS NULL AND sc.deleted_at IS NULL 
-              AND c.closed_at is not null GROUP BY DATE_TRUNC('{var2}',c.closed_at) ORDER BY date DESC LIMIT {var3} OFFSET {var4}`,
+              AND sc.closed_at is not null GROUP BY DATE_TRUNC('{var2}',sc.closed_at) ORDER BY date DESC LIMIT {var3} OFFSET {var4}`,
     "Q89"  : `SELECT 
 	            cc.id  AS customer_id,
 	            cc.customer_company_name AS customer_name,
@@ -144,9 +144,9 @@ const db_sql = {
                 LEFT JOIN customers c ON c.customer_company_id = cc.id
                 LEFT JOIN sales_commission sc ON sc.customer_id = c.id 
               WHERE 
-  	            c.closed_at is not null AND 
+  	            sc.closed_at is not null AND 
 	            cc.company_id = '{var1}' AND 
-                c.closed_at BETWEEN '{var5}' AND '{var6}' AND
+                sc.closed_at BETWEEN '{var5}' AND '{var6}' AND
 	            cc.deleted_at IS NULL AND c.deleted_at IS NULL AND
 	            sc.deleted_at IS NULL 
               ORDER BY 
@@ -162,11 +162,11 @@ const db_sql = {
                   INNER JOIN users AS u ON u.id = cr.closer_id
                   INNER JOIN customers AS c ON c.id = sc.customer_id
               WHERE 
-                  c.closed_at is not null 
+                  sc.closed_at is not null 
                   AND sc.company_id = '{var1}' 
-                  AND c.closed_at BETWEEN '{var5}' AND '{var6}'
+                  AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
                   AND sc.deleted_at IS NULL AND c.deleted_at IS NULL
-                  AND cr.deleted_at IS NULL AND U.deleted_at IS NULL
+                  AND cr.deleted_at IS NULL AND u.deleted_at IS NULL
               GROUP BY 
                   u.full_name 
               ORDER BY 
@@ -184,10 +184,10 @@ const db_sql = {
     "Q98"  : `SELECT id, name, email, encrypted_password FROM super_admin WHERE email = '{var1}'`,
     "Q99"  : `SELECT id, company_name, company_logo, company_address, is_imap_enable, created_at FROM companies WHERE deleted_at IS NULL`,
     "Q100" : `UPDATE super_admin SET encrypted_password = '{var2}' WHERE email = '{var1}'`,
-    "Q101" : `SELECT  sc.target_amount,  c.closed_at ,com.id AS company_id, com.company_name FROM sales_commission AS sc 
+    "Q101" : `SELECT  sc.target_amount,  sc.closed_at ,com.id AS company_id, com.company_name FROM sales_commission AS sc 
               INNER JOIN customers AS c ON sc.customer_id = c.id 
               INNER JOIN companies AS com ON sc.company_id = com.id 
-              WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND c.deleted_at IS NULL Order by c.closed_at asc`,
+              WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND c.deleted_at IS NULL Order by sc.closed_at asc`,
     "Q102" : `INSERT INTO payment_plans(id, product_id, name, description, active_status,
               admin_price_id, admin_amount,user_price_id, user_amount, interval, currency) 
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', 
@@ -302,10 +302,10 @@ const db_sql = {
                   products AS p ON p.id = ps.product_id
               WHERE 
                   sc.company_id = '{var1}'
-                  AND c.closed_at BETWEEN '{var5}' AND '{var6}'
+                  AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
                   AND sc.deleted_at IS NULL 
                   AND c.deleted_at IS NULL
-                  AND c.closed_at IS NOT NULL
+                  AND sc.closed_at IS NOT NULL
               GROUP BY 
                   p.product_name
               ORDER BY 
