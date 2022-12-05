@@ -150,7 +150,7 @@ const db_sql = {
 	            cc.deleted_at IS NULL AND c.deleted_at IS NULL AND
 	            sc.deleted_at IS NULL 
               ORDER BY 
-                sc.target_amount::DECIMAL {var2}
+              revenue {var2}
               LIMIT {var3} OFFSET {var4}`,
 
     "Q90"  : `SELECT 
