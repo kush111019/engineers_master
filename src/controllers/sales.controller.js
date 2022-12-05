@@ -712,7 +712,7 @@ module.exports.closeSales = async (req, res) => {
             let s2 = dbScript(db_sql['Q40'], { var1: _dt, var2: _dt, var3: salesCommissionId })
             let closeSales = await connection.query(s2)
 
-            let s3 = dbScript(db_sql[''], { var1: _dt, var2: _dt, var3: salesCommissionId })
+            let s3 = dbScript(db_sql['Q158'], { var1: _dt, var2: _dt, var3: salesCommissionId })
             let updateSalesLog = await connection.query(s3)
 
             if (closeSales.rowCount > 0 && updateSalesLog.rowCount > 0) {

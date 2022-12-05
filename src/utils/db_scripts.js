@@ -316,7 +316,8 @@ const db_sql = {
     "Q156" : `UPDATE product_in_sales SET deleted_at = '{var3}' WHERE sales_commission_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL RETURNING *`,  
     "Q157" : `SELECT ps.product_id AS id, p.product_name AS name FROM product_in_sales AS ps 
               INNER JOIN products as p ON p.id = ps.product_id
-              WHERE ps.sales_commission_id = '{var1}' AND ps.deleted_at IS NULL and p.deleted_at IS NULL` 
+              WHERE ps.sales_commission_id = '{var1}' AND ps.deleted_at IS NULL and p.deleted_at IS NULL` ,
+    "Q158" : `UPDATE sales_commission_log SET closed_at = '{var1}', updated_at = '{var2}' WHERE sales_commission_id = '{var3}' RETURNING *`          
  }
 
 
