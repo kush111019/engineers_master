@@ -78,7 +78,7 @@ const db_sql = {
     "Q53"  : `INSERT INTO sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency ) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var13}', '{var14}', '{var15}', '{var16}') RETURNING *`,
     "Q54"  : `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
