@@ -707,7 +707,7 @@ module.exports.closeSales = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
-
+            await connection.query('BEGIN')
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q40'], { var1: _dt, var2: _dt, var3: salesCommissionId })
             let closeSales = await connection.query(s2)
@@ -716,6 +716,7 @@ module.exports.closeSales = async (req, res) => {
             let updateSalesLog = await connection.query(s3)
 
             if (closeSales.rowCount > 0 && updateSalesLog.rowCount > 0) {
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
