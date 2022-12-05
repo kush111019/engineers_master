@@ -138,7 +138,7 @@ const db_sql = {
 	            cc.customer_company_name AS customer_name,
 	            (SELECT SUM(scq.target_amount::DECIMAL) FROM sales_commission scq 
               WHERE 
-                c.id = scq.customer_id)  AS revenue
+                c.id = scq.customer_id AND scq.closed_at IS NOT NULL)  AS revenue
               FROM 
                 customer_companies cc
                 LEFT JOIN customers c ON c.customer_company_id = cc.id
