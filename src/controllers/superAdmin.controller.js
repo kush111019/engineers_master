@@ -267,24 +267,32 @@ module.exports.showUsersByCompanyId = async (req, res) => {
 
 module.exports.userWiseCompanyRevenue = async (req, res) => {
     try {
-        let { companyId, page, orderBy } = req.query
+        let { companyId, page, orderBy, startDate, endDate } = req.query
         let limit = 10;
         let offset = (page - 1) * limit
-        let s4 = dbScript(db_sql['Q90'], { var1: companyId, var2: orderBy, var3 : limit, var4 : offset })
-        let salesData = await connection.query(s4)
-        if (salesData.rowCount > 0) {
+        if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
+            let s4 = dbScript(db_sql['Q90'], { var1: companyId, var2: orderBy, var3 : limit, var4 : offset, var5 : startDate, var6 : endDate })
+            let salesData = await connection.query(s4)
+            if (salesData.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Revenue per user",
+                    data: salesData.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Empty revenue per user",
+                    data: salesData.rows
+                })
+            }
+        }else{
             res.json({
-                status: 200,
-                success: true,
-                message: "Revenue per user",
-                data: salesData.rows
-            })
-        } else {
-            res.json({
-                status: 200,
-                success: true,
-                message: "Empty revenue per user",
-                data: salesData.rows
+                status: 400,
+                success: false,
+                message: "Start date and End date required",
             })
         }
     } catch (error) {
