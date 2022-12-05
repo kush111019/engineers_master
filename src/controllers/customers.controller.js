@@ -154,9 +154,9 @@ module.exports.customerList = async (req, res) => {
             let customerList = await connection.query(s4)
             if (customerList.rowCount > 0) {
                 for (let data of customerList.rows) {
-                    if (data.business_id != null && data.revenue_id != null) {
-                        let businessIds = JSON.parse(data.business_id)
-                        let revenueIds = JSON.parse(data.revenue_id)
+                    if (data.business_contact_id != null && data.revenue_contact_id != null) {
+                        let businessIds = JSON.parse(data.business_contact_id)
+                        let revenueIds = JSON.parse(data.revenue_contact_id)
                         let businessContact = [];
                         let revenueContact = [];
                         for (let id of businessIds) {
