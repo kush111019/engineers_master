@@ -224,16 +224,16 @@ module.exports.salesCommissionList = async (req, res) => {
                 let s9 = dbScript(db_sql['Q157'], { var1 : data.id})
                 let productData = await connection.query(s9)
 
-                if (data.business_id != '' && data.revenue_id != '') {
+                if (data.business_contact_id != '' && data.revenue_contact_id != '') {
 
-                    let s7 = dbScript(db_sql['Q76'], { var1: data.business_id })
+                    let s7 = dbScript(db_sql['Q76'], { var1: data.business_contact_id })
                     let businessData = await connection.query(s7);
 
                     closer.businessContactId = businessData.rows[0].id,
                     closer.businessContactName = businessData.rows[0].business_contact_name
                     closer.businessContactEmail = businessData.rows[0].business_email
 
-                    let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_id })
+                    let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_contact_id })
                     let revenueData = await connection.query(s8);
 
                     closer.revenueContactId = revenueData.rows[0].id,
@@ -493,15 +493,15 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                         }
                     }
 
-                    if (data.business_id != '' && data.revenue_id != '') {
+                    if (data.business_contact_id != '' && data.revenue_contact_id != '') {
 
-                        let s7 = dbScript(db_sql['Q76'], { var1: data.business_id })
+                        let s7 = dbScript(db_sql['Q76'], { var1: data.business_contact_id })
                         let businessData = await connection.query(s7);
 
                         closer.businessContactId = businessData.rows[0].id,
                         closer.businessContactName = businessData.rows[0].business_contact_name
 
-                        let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_id })
+                        let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_contact_id })
                         let revenueData = await connection.query(s8);
 
                         closer.revenueContactId = revenueData.rows[0].id,
