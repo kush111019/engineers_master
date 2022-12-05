@@ -136,17 +136,22 @@ const db_sql = {
     "Q89"  : `SELECT 
 	            cc.id  AS customer_id,
 	            cc.customer_company_name AS customer_name,
-	            ( SELECT SUM(scq.target_amount::DECIMAL) FROM sales_commission scq 
-                  WHERE c.id = scq.customer_id)  AS revenue
-              FROM customer_companies cc
+	            (SELECT SUM(scq.target_amount::DECIMAL) FROM sales_commission scq 
+              WHERE 
+                c.id = scq.customer_id)  AS revenue
+              FROM 
+                customer_companies cc
                 LEFT JOIN customers c ON c.customer_company_id = cc.id
                 LEFT JOIN sales_commission sc ON sc.customer_id = c.id 
               WHERE 
   	            c.closed_at is not null AND 
 	            cc.company_id = '{var1}' AND 
+                c.closed_at BETWEEN '{var5}' AND '{var6}' AND
 	            cc.deleted_at IS NULL AND c.deleted_at IS NULL AND
 	            sc.deleted_at IS NULL 
-              ORDER BY sc.target_amount::DECIMAL {var2} LIMIT {var3} OFFSET {var4}`,
+              ORDER BY 
+                sc.target_amount::DECIMAL {var2}
+              LIMIT {var3} OFFSET {var4}`,
 
     "Q90"  : `SELECT 
                   u.full_name AS sales_rep,
@@ -155,11 +160,13 @@ const db_sql = {
                   sales_commission AS sc 
                   INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
                   INNER JOIN users AS u ON u.id = cr.closer_id
+                  INNER JOIN customers AS c ON c.id = sc.customer_id
               WHERE 
-                  sc.company_id = '{var1}' 
-                  AND sc.deleted_at IS NULL 
-                  AND cr.deleted_at IS NULL
-                  AND U.deleted_at IS NULL
+                  c.closed_at is not null 
+                  AND sc.company_id = '{var1}' 
+                  AND c.closed_at BETWEEN '{var5}' AND '{var6}'
+                  AND sc.deleted_at IS NULL AND c.deleted_at IS NULL
+                  AND cr.deleted_at IS NULL AND U.deleted_at IS NULL
               GROUP BY 
                   u.full_name 
               ORDER BY 
@@ -295,6 +302,7 @@ const db_sql = {
                   products AS p ON p.id = ps.product_id
               WHERE 
                   sc.company_id = '{var1}'
+                  AND c.closed_at BETWEEN '{var5}' AND '{var6}'
                   AND sc.deleted_at IS NULL 
                   AND c.deleted_at IS NULL
                   AND c.closed_at IS NOT NULL
