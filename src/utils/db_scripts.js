@@ -41,10 +41,10 @@ const db_sql = {
               p.permission_to_update, p.permission_to_delete FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
               INNER JOIN roles AS r ON r.id = p.role_id WHERE m.id = '{var1}' AND r.id = '{var2}' 
               AND m.deleted_at IS NULL AND p.deleted_at IS NULL`,
-    "Q36"  : `INSERT INTO customers(id, user_id,customer_company_id,customer_name, source, company_id, business_id, revenue_id, address, currency) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}', '{var10}') RETURNING *`,
+    "Q36"  : `INSERT INTO customers(id, user_id,customer_company_id,customer_name, source, company_id, business_contact_id, revenue_contact_id, address, currency) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}', '{var10}') RETURNING *`,
     "Q37"  : `INSERT INTO customer_companies(id, customer_company_name, company_id) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
     "Q38"  : `SELECT id, customer_company_name FROM customer_companies WHERE id = '{var1}' AND deleted_at IS NULL`,
-    "Q39"  : `SELECT c.id, c.customer_company_id , c.customer_name, c.source, c.closed_at , c.user_id, c.business_id, c.revenue_id, c.created_at, c.address, c.currency,
+    "Q39"  : `SELECT c.id, c.customer_company_id , c.customer_name, c.source, c.closed_at , c.user_id, c.business_contact_id, c.revenue_contact_id, c.created_at, c.address, c.currency,
               u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.company_id = '{var1}' AND c.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`,
     "Q40"  : `UPDATE customers SET closed_at = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
@@ -55,10 +55,10 @@ const db_sql = {
               INNER JOIN users AS u ON u.role_id = p.role_id
               WHERE m.module_name = '{var1}' AND u.id = '{var2}' AND m.deleted_at IS NULL 
               AND p.deleted_at IS NULL AND u.deleted_at IS NULL`,   
-    "Q42"  : `UPDATE customers SET customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', business_id = '{var4}', revenue_id = '{var5}', address = '{var7}', currency = '{var9}' WHERE id = '{var6}' AND company_id = '{var8}' AND deleted_at IS NULL RETURNING *`,
-    "Q43"  : `INSERT INTO sales_commission_logs(id,sales_commission_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_id, business_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date, currency) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}', '{var17}', '{var18}', '{var19}' ) RETURNING *`,
+    "Q42"  : `UPDATE customers SET customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', business_contact_id = '{var4}', revenue_contact_id = '{var5}', address = '{var7}', currency = '{var9}' WHERE id = '{var6}' AND company_id = '{var8}' AND deleted_at IS NULL RETURNING *`,
+    "Q43"  : `INSERT INTO sales_commission_logs(id,sales_commission_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_contact_id, business_contact_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date, currency) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}', '{var17}', '{var18}', '{var19}' ) RETURNING *`,
     "Q44"  : `SELECT sl.id, sl.sales_commission_id, sl.customer_commission_split_id, sl.qualification, sl.is_qualified, sl.target_amount, sl.currency, 
-              sl.products, sl.target_closing_date, sl.customer_id, sl.is_overwrite, sl.company_id, sl.revenue_id, sl.business_id, sl.closer_id, 
+              sl.products, sl.target_closing_date, sl.customer_id, sl.is_overwrite, sl.company_id, sl.revenue_contact_id, sl.business_contact_id, sl.closer_id, 
               sl.supporter_id, sl.sales_type, sl.subscription_plan, sl.recurring_date, sl.created_at, u.full_name AS closer_name, c.customer_name, c.closed_at, cr.closer_percentage
               FROM sales_commission_logs AS sl INNER JOIN users AS u ON u.id = sl.closer_id
               INNER JOIN customers AS c ON c.id = sl.customer_id
@@ -75,9 +75,9 @@ const db_sql = {
     "Q52"  : `SELECT c.id, c.customer_company_id ,c.customer_name, c.source, c.closed_at , c.user_id, c.address,
               u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.company_id = '{var1}' AND c.closed_at IS NULL  AND c.deleted_at IS NULL AND u.deleted_at IS NULL`,
-    "Q53"  : `INSERT INTO sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_id, revenue_id, qualification, is_qualified, target_amount, target_closing_date, products, sales_type, subscription_plan, recurring_date, currency ) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}','{var12}', '{var13}', '{var14}', '{var15}', '{var16}') RETURNING *`,
-    "Q54"  : `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_id, 
-              sc.revenue_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
+    "Q53"  : `INSERT INTO sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, products, sales_type, subscription_plan, recurring_date, currency ) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}','{var12}', '{var13}', '{var14}', '{var15}', '{var16}') RETURNING *`,
+    "Q54"  : `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
+              sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.products,sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, 
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.closed_at FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
@@ -92,7 +92,7 @@ const db_sql = {
     "Q60"  : `UPDATE sales_commission SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
     "Q61"  : `UPDATE sales_supporter SET deleted_at = '{var1}' WHERE sales_commission_id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
     "Q62"  : `UPDATE sales_closer SET deleted_at = '{var1}' WHERE sales_commission_id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
-    "Q63"  : `UPDATE sales_commission SET customer_id = '{var1}', customer_commission_split_id = '{var2}', is_overwrite = '{var3}', updated_at = '{var4}',business_id = '{var7}', revenue_id = '{var8}', qualification = '{var9}', is_qualified = '{var10}', target_amount = '{var11}', target_closing_date = '{var12}',products = '{var13}', sales_type = '{var14}', subscription_plan = '{var15}', recurring_date = '{var16}', currency = '{var17}'  WHERE id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
+    "Q63"  : `UPDATE sales_commission SET customer_id = '{var1}', customer_commission_split_id = '{var2}', is_overwrite = '{var3}', updated_at = '{var4}',business_contact_id = '{var7}', revenue_contact_id = '{var8}', qualification = '{var9}', is_qualified = '{var10}', target_amount = '{var11}', target_closing_date = '{var12}',products = '{var13}', sales_type = '{var14}', subscription_plan = '{var15}', recurring_date = '{var16}', currency = '{var17}'  WHERE id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
     "Q64"  : `UPDATE sales_closer SET closer_id = '{var1}', closer_percentage = '{var2}', commission_split_id = '{var3}', updated_at = '{var4}' WHERE sales_commission_id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
     "Q65"  : `UPDATE sales_supporter SET deleted_at = '{var3}' WHERE sales_commission_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
     "Q66"  : `UPDATE follow_up_notes SET deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL`,
@@ -113,8 +113,8 @@ const db_sql = {
     "Q77"  : `SELECT id, full_name AS revenue_contact_name, email_address AS revenue_email, phone_number AS revenue_phone_number
               FROM revenue_contact WHERE id = '{var1}' AND deleted_at IS NULL`,
     "Q78"  : `SELECT target_amount FROM sales_commission WHERE company_id = '{var1}' AND deleted_at IS NULL AND EXTRACT(MONTH FROM created_at) = '{var2}'`,
-    "Q79"  : `UPDATE customers SET business_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
-    "Q80"  : `UPDATE customers SET revenue_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
+    "Q79"  : `UPDATE customers SET business_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
+    "Q80"  : `UPDATE customers SET revenue_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
     "Q81"  : `SELECT s.id, s.supporter_id, s.supporter_percentage, u.full_name FROM sales_supporter AS s 
               INNER JOIN users AS u ON u.id = s.supporter_id WHERE s.id ='{var1}' `,
     "Q82"  : `SELECT customer_id, sales_type, subscription_plan, recurring_date FROM sales_commission WHERE deleted_at IS NULL`,
