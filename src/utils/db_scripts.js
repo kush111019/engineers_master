@@ -129,10 +129,24 @@ const db_sql = {
               sc.closed_at, c.customer_name  FROM sales_commission AS sc INNER JOIN customers AS c
               ON sc.customer_id = c.id WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL 
               AND c.deleted_at IS NULL Order by sc.closed_at DESC`,
-    "Q88"  : `SELECT DATE_TRUNC('{var2}',sc.closed_at) AS  date, sum(sc.target_amount::decimal) AS revenue
-              FROM sales_commission AS sc INNER JOIN customers AS c ON sc.customer_id = c.id
-              WHERE sc.company_id = '{var1}' AND c.deleted_at IS NULL AND sc.deleted_at IS NULL 
-              AND sc.closed_at is not null GROUP BY DATE_TRUNC('{var2}',sc.closed_at) ORDER BY date DESC LIMIT {var3} OFFSET {var4}`,
+    "Q88"  : `SELECT 
+                DATE_TRUNC('{var2}',sc.closed_at) AS  date, 
+                sum(sc.target_amount::decimal) AS revenue
+              FROM 
+                sales_commission AS sc 
+              INNER JOIN 
+                customers AS c ON sc.customer_id = c.id
+              WHERE 
+                sc.company_id = '{var1}' AND 
+                c.deleted_at IS NULL AND 
+                sc.deleted_at IS NULL AND 
+                sc.closed_at IS NOT NULL 
+              GROUP BY 
+                DATE_TRUNC('{var2}',sc.closed_at) 
+              ORDER BY 
+                date DESC 
+              LIMIT {var3} OFFSET {var4}`,
+
     "Q89"  : `SELECT 
 	            cc.id  AS customer_id,
 	            cc.customer_company_name AS customer_name,
@@ -313,7 +327,7 @@ const db_sql = {
               LIMIT {var3} OFFSET {var4}`,    
     "Q154" : `SELECT COUNT(*) AS actual_count FROM users WHERE company_id = '{var1}' AND deleted_at IS NULL`,
     "Q155" : `INSERT INTO product_in_sales(id,product_id,sales_commission_id, company_id) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`,  
-    "Q156" : `UPDATE product_in_sales SET deleted_at = '{var3}' WHERE sales_commission_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL RETURNING *`,  
+    "Q156" : `UPDATE product_in_sales SET deleted_at = '{var1}' WHERE sales_commission_id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING *`,  
     "Q157" : `SELECT ps.product_id AS id, p.product_name AS name FROM product_in_sales AS ps 
               INNER JOIN products as p ON p.id = ps.product_id
               WHERE ps.sales_commission_id = '{var1}' AND ps.deleted_at IS NULL and p.deleted_at IS NULL` ,

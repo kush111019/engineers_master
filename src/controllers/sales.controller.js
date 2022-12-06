@@ -358,7 +358,7 @@ module.exports.updateSalesCommission = async (req, res) => {
                     }
                 }
 
-                let s9 = dbScript(db_sql['Q156'], { var1: salesCommissionId, var2: checkPermission.rows[0].company_id, var3: _dt })
+                let s9 = dbScript(db_sql['Q156'], { var1: _dt, var2: salesCommissionId, var3: checkPermission.rows[0].company_id })
                 let updateProduct = await connection.query(s9)
                 if(products.length > 0){
                     for (let productId of products) {
