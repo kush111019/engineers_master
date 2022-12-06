@@ -347,9 +347,9 @@ module.exports.updateSalesCommission = async (req, res) => {
                 let s7 = dbScript(db_sql['Q64'], { var1: customerCloserId, var2: closer_percentage, var3: customerCommissionSplitId, var4: _dt, var5: salesCommissionId, var6: checkPermission.rows[0].company_id })
                 let updateSalesCloser = await connection.query(s7)
 
-                let s8 = dbScript(db_sql['Q65'], { var1: salesCommissionId, var2: checkPermission.rows[0].company_id, var3: _dt })
+                let s8 = dbScript(db_sql['Q61'], { var1: _dt, var2: salesCommissionId, var3: checkPermission.rows[0].company_id })
                 let updateSupporter = await connection.query(s8)
-                if(supporters.rowCount > 0){
+                if(supporters.length > 0){
                     for (let supporterData of supporters) {
                         let supporterId = uuid.v4()
                         let s9 = dbScript(db_sql['Q57'], { var1: supporterId, var2: customerCommissionSplitId, var3: supporterData.id, var4: supporterData.percentage, var5: salesCommissionId, var6: checkPermission.rows[0].company_id })
@@ -360,7 +360,7 @@ module.exports.updateSalesCommission = async (req, res) => {
 
                 let s9 = dbScript(db_sql['Q156'], { var1: salesCommissionId, var2: checkPermission.rows[0].company_id, var3: _dt })
                 let updateProduct = await connection.query(s9)
-                if(products.rowCount > 0){
+                if(products.length > 0){
                     for (let productId of products) {
                         let prId = uuid.v4()
                         let s9 = dbScript(db_sql['Q155'], { var1: prId, var2: productId, var3 :  salesCommissionId, var4 : checkPermission.rows[0].company_id })
