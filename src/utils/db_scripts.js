@@ -147,24 +147,22 @@ const db_sql = {
                 date DESC 
               LIMIT {var3} OFFSET {var4}`,
 
-    "Q89"  : `SELECT 
-	            cc.id  AS customer_id,
-	            cc.customer_company_name AS customer_name,
-	            (SELECT SUM(scq.target_amount::DECIMAL) FROM sales_commission scq 
-              WHERE 
-                c.id = scq.customer_id AND scq.closed_at IS NOT NULL)  AS revenue
+    "Q89"  : `SELECT            
+                  c.customer_name,
+                  SUM(sc.target_amount::DECIMAL) AS revenue
               FROM 
-                customer_companies cc
-                LEFT JOIN customers c ON c.customer_company_id = cc.id
-                LEFT JOIN sales_commission sc ON sc.customer_id = c.id 
+                  sales_commission sc
+                  LEFT JOIN customers c ON c.id = sc.customer_id
               WHERE 
-  	            sc.closed_at is not null AND 
-	            cc.company_id = '{var1}' AND 
-                sc.closed_at BETWEEN '{var5}' AND '{var6}' AND
-	            cc.deleted_at IS NULL AND c.deleted_at IS NULL AND
-	            sc.deleted_at IS NULL 
+                  sc.closed_at is not null AND 
+                  sc.company_id = '{var1}' AND 
+                  sc.closed_at BETWEEN '{var5}' AND '{var6}' AND
+                  c.deleted_at IS NULL AND
+                  sc.deleted_at IS NULL 
+              GROUP BY 
+                  c.customer_name 
               ORDER BY 
-              revenue {var2}
+                  revenue {var2}
               LIMIT {var3} OFFSET {var4}`,
 
     "Q90"  : `SELECT 
