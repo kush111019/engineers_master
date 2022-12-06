@@ -5,7 +5,7 @@
 -- Dumped from database version 14.2
 -- Dumped by pg_dump version 14.2
 
--- Started on 2022-11-30 16:59:19
+-- Started on 2022-12-05 16:33:46
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -209,13 +209,12 @@ CREATE TABLE public.customers (
     customer_company_id character varying,
     customer_name character varying,
     source character varying,
-    closed_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     company_id character varying,
-    business_id character varying,
-    revenue_id character varying,
+    business_contact_id character varying,
+    revenue_contact_id character varying,
     address character varying,
     currency character varying
 );
@@ -377,6 +376,24 @@ CREATE TABLE public.permissions (
 ALTER TABLE public.permissions OWNER TO postgres;
 
 --
+-- TOC entry 241 (class 1259 OID 426193)
+-- Name: product_in_sales; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.product_in_sales (
+    id character varying NOT NULL,
+    product_id character varying,
+    sales_commission_id character varying,
+    company_id character varying,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+);
+
+
+ALTER TABLE public.product_in_sales OWNER TO postgres;
+
+--
 -- TOC entry 228 (class 1259 OID 278723)
 -- Name: products; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -497,8 +514,8 @@ CREATE TABLE public.sales_commission (
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    business_id character varying,
-    revenue_id character varying,
+    business_contact_id character varying,
+    revenue_revenue_id character varying,
     qualification character varying,
     is_qualified boolean,
     target_amount character varying,
@@ -506,8 +523,8 @@ CREATE TABLE public.sales_commission (
     subscription_plan character varying,
     sales_type character varying,
     recurring_date character varying,
-    products character varying,
-    currency character varying
+    currency character varying,
+    closed_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
 );
 
 
@@ -532,15 +549,16 @@ CREATE TABLE public.sales_commission_logs (
     customer_id character varying,
     is_overwrite boolean,
     company_id character varying,
-    business_id character varying,
-    revenue_id character varying,
+    business_contact_id character varying,
+    revenue_contact_id character varying,
     closer_id character varying,
     supporter_id character varying,
     subscription_plan character varying,
     sales_type character varying,
     recurring_date character varying,
     products character varying,
-    currency character varying
+    currency character varying,
+    closed_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
 );
 
 
@@ -735,7 +753,7 @@ CREATE TABLE public.users (
 ALTER TABLE public.users OWNER TO postgres;
 
 --
--- TOC entry 3413 (class 2606 OID 344268)
+-- TOC entry 3421 (class 2606 OID 344268)
 -- Name: chat_room_members chat_room_members_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -744,7 +762,7 @@ ALTER TABLE ONLY public.chat_room_members
 
 
 --
--- TOC entry 3393 (class 2606 OID 123143)
+-- TOC entry 3401 (class 2606 OID 123143)
 -- Name: companies companies_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -753,7 +771,7 @@ ALTER TABLE ONLY public.companies
 
 
 --
--- TOC entry 3417 (class 2606 OID 368845)
+-- TOC entry 3425 (class 2606 OID 368845)
 -- Name: emails emails_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -762,7 +780,7 @@ ALTER TABLE ONLY public.emails
 
 
 --
--- TOC entry 3405 (class 2606 OID 196869)
+-- TOC entry 3413 (class 2606 OID 196869)
 -- Name: follow_up_notes follow_up_notes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -771,7 +789,7 @@ ALTER TABLE ONLY public.follow_up_notes
 
 
 --
--- TOC entry 3415 (class 2606 OID 360652)
+-- TOC entry 3423 (class 2606 OID 360652)
 -- Name: modules modules_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -780,7 +798,7 @@ ALTER TABLE ONLY public.modules
 
 
 --
--- TOC entry 3407 (class 2606 OID 319692)
+-- TOC entry 3415 (class 2606 OID 319692)
 -- Name: payment_plans payment_plans_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -789,7 +807,7 @@ ALTER TABLE ONLY public.payment_plans
 
 
 --
--- TOC entry 3403 (class 2606 OID 131276)
+-- TOC entry 3411 (class 2606 OID 131276)
 -- Name: permissions permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -798,7 +816,7 @@ ALTER TABLE ONLY public.permissions
 
 
 --
--- TOC entry 3397 (class 2606 OID 123173)
+-- TOC entry 3405 (class 2606 OID 123173)
 -- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -807,7 +825,7 @@ ALTER TABLE ONLY public.roles
 
 
 --
--- TOC entry 3399 (class 2606 OID 123193)
+-- TOC entry 3407 (class 2606 OID 123193)
 -- Name: slabs slaps_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -816,7 +834,7 @@ ALTER TABLE ONLY public.slabs
 
 
 --
--- TOC entry 3401 (class 2606 OID 123252)
+-- TOC entry 3409 (class 2606 OID 123252)
 -- Name: super_admin super_admin_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -825,7 +843,7 @@ ALTER TABLE ONLY public.super_admin
 
 
 --
--- TOC entry 3411 (class 2606 OID 327884)
+-- TOC entry 3419 (class 2606 OID 327884)
 -- Name: superadmin_config superadmin_config_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -834,7 +852,7 @@ ALTER TABLE ONLY public.superadmin_config
 
 
 --
--- TOC entry 3409 (class 2606 OID 319702)
+-- TOC entry 3417 (class 2606 OID 319702)
 -- Name: transactions transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -843,7 +861,7 @@ ALTER TABLE ONLY public.transactions
 
 
 --
--- TOC entry 3395 (class 2606 OID 123153)
+-- TOC entry 3403 (class 2606 OID 123153)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -852,7 +870,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 3420 (class 2606 OID 196875)
+-- TOC entry 3428 (class 2606 OID 196875)
 -- Name: follow_up_notes company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -861,7 +879,7 @@ ALTER TABLE ONLY public.follow_up_notes
 
 
 --
--- TOC entry 3419 (class 2606 OID 131277)
+-- TOC entry 3427 (class 2606 OID 131277)
 -- Name: permissions permissions_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -870,7 +888,7 @@ ALTER TABLE ONLY public.permissions
 
 
 --
--- TOC entry 3421 (class 2606 OID 196880)
+-- TOC entry 3429 (class 2606 OID 196880)
 -- Name: follow_up_notes user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -879,7 +897,7 @@ ALTER TABLE ONLY public.follow_up_notes
 
 
 --
--- TOC entry 3418 (class 2606 OID 123214)
+-- TOC entry 3426 (class 2606 OID 123214)
 -- Name: users users_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -887,7 +905,7 @@ ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) NOT VALID;
 
 
--- Completed on 2022-11-30 16:59:20
+-- Completed on 2022-12-05 16:33:48
 
 --
 -- PostgreSQL database dump complete
