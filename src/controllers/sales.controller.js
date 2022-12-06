@@ -371,7 +371,7 @@ module.exports.updateSalesCommission = async (req, res) => {
                 let s10 = dbScript(db_sql['Q43'], { var1: logId, var2: updateSalesCommission.rows[0].id, var3: customerCommissionSplitId, var4: mysql_real_escape_string(qualification), var5: is_qualified, var6: targetAmount, var7: JSON.stringify(products), var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: checkPermission.rows[0].company_id, var12: revenueId, var13: businessId, var14: customerCloserId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate, var19 : currency })
                 let createLog = await connection.query(s10)
 
-                if (updateSalesCommission.rowCount > 0 && findSalesCommission.rowCount > 0 && updateSalesCloser.rowCount > 0 && updateSalesSupporter.rowCount > 0 && createLog.rowCount > 0 ) {
+                if (updateSalesCommission.rowCount > 0 && findSalesCommission.rowCount > 0 && updateSalesCloser.rowCount > 0 && createLog.rowCount > 0 ) {
                     await connection.query('COMMIT')
                     res.json({
                         status: 200,
