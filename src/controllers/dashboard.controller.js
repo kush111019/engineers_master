@@ -7,7 +7,7 @@ const moment = require('moment')
 module.exports.revenues = async (req, res) => {
     try {
         let userId = req.user.id
-        let { page } = req.query
+        let { page, startDate, endDate, orderBy } = req.query
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view) {
@@ -19,24 +19,47 @@ module.exports.revenues = async (req, res) => {
             let s5 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
             let slab = await connection.query(s5)
 
-            let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id })
+            let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2 : orderBy, var3 : startDate, var4 : endDate })
+            console.log();
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0 && slab.rowCount > 0) {
-                let expectedRevenue = 0;
-                let totalRevenue = 0;
-                let totalCommission = 0;
+                let totalExpectedRevenue = 0;
+                let totalExpectedCommission = 0;
+                let totalClosedRevenue = 0;
+                let totalClosedCommission = 0;
                 for (data of salesData.rows) {
-
                     if (data.closed_at == null) {
-                        expectedRevenue = Number(expectedRevenue) + Number(data.target_amount);
+                        totalExpectedRevenue = Number(totalExpectedRevenue) + Number(data.amount);
+                        let expectedRemainingAmount = Number(data.amount);
+                        let expectedCommission = 0
+                        //if remainning amount is 0 then no reason to check 
+                        for (let i = 0; i < slab.rows.length && expectedRemainingAmount > 0; i++) {
+                            let slab_percentage = Number(slab.rows[i].percentage)
+                            let slab_maxAmount = Number(slab.rows[i].max_amount)
+                            let slab_minAmount = Number(slab.rows[i].min_amount)
+                            if (slab.rows[i].is_max) {
+                                expectedCommission = expectedCommission + ((slab_percentage / 100) * expectedRemainingAmount)
+                                expectedRemainingAmount = 0
+                            }
+                            else {
+                                if (expectedRemainingAmount >= slab_maxAmount) {
+                                    expectedCommission = expectedCommission + ((slab_percentage / 100) * (slab_maxAmount - slab_minAmount))
+                                    expectedRemainingAmount = expectedRemainingAmount - (slab_maxAmount - slab_minAmount)
+                                } else {
+                                    expectedCommission = expectedCommission + ((slab_percentage / 100) * expectedRemainingAmount)
+                                    expectedRemainingAmount = 0
+                                }
+                            }
+                        }
+                        totalExpectedCommission = totalExpectedCommission + expectedCommission
                     } else {
                         let revenueCommissionByDateObj = {}
 
-                        revenueCommissionByDateObj.revenue = Number(data.target_amount)
+                        revenueCommissionByDateObj.revenue = Number(data.amount)
                         revenueCommissionByDateObj.date = moment(data.closed_at).format('MM/DD/YYYY')
-                        totalRevenue = Number(totalRevenue) + Number(data.target_amount);
+                        totalClosedRevenue = Number(totalClosedRevenue.toFixed(2)) + Number(data.amount);
 
-                        let remainingAmount = Number(data.target_amount);
+                        let remainingAmount = Number(data.amount);
                         let commission = 0
                         //if remainning amount is 0 then no reason to check 
                         for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
@@ -58,20 +81,21 @@ module.exports.revenues = async (req, res) => {
                             }
                         }
                         revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
-
-                        totalCommission = totalCommission + commission
+                        totalClosedCommission = totalClosedCommission + commission
                         revenueCommissionBydate.push(revenueCommissionByDateObj)
                     }
                 }
-                let reducedArray = await reduceArray(revenueCommissionBydate)
-                result = await paginatedResults(reducedArray, page)
-                counts.expectedRevenue = expectedRevenue
-                counts.totalRevenue = Number(totalRevenue.toFixed(2))
-                counts.totalCommission = Number(totalCommission.toFixed(2))
+                // let reducedArray = await reduceArray(revenueCommissionBydate)
+                result = await paginatedResults(revenueCommissionBydate, page)
+                counts.totalExpectedRevenue = totalExpectedRevenue + totalClosedRevenue
+                counts.totalExpectedCommission = totalExpectedCommission + totalClosedCommission
+                counts.totalClosedRevenue = Number(totalClosedRevenue.toFixed(2))
+                counts.totalClosedCommission = Number(totalClosedCommission.toFixed(2))
             } else {
-                counts.totalRevenue = 0
-                counts.expectedRevenue = 0
-                counts.totalCommission = 0
+                counts.totalExpectedRevenue = 0
+                counts.totalExpectedCommission = 0
+                counts.totalClosedRevenue = 0
+                counts.totalClosedCommission = 0
                 result = []
             }
             res.json({
@@ -79,7 +103,7 @@ module.exports.revenues = async (req, res) => {
                 success: true,
                 message: "Revenues and Commissions",
                 data: counts,
-                revenues: result
+                revenues: revenueCommissionBydate
             })
         } else {
             res.status(403).json({
@@ -94,7 +118,5 @@ module.exports.revenues = async (req, res) => {
             message: error.message,
         })
     }
-
-
 }
 

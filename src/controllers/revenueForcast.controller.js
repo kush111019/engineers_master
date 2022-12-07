@@ -145,7 +145,6 @@ module.exports.actualVsForecast = async (req, res) => {
     try {
         let { id, page } = req.query
         let userId = req.user.id
-
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view) {
@@ -164,7 +163,9 @@ module.exports.actualVsForecast = async (req, res) => {
                 let startDate = forecastRevenue.rows[0].start_date
                 let endDate = forecastRevenue.rows[0].end_date
                 let toDate = new Date(startDate)
+                toDate.setDate(toDate.getDate() + 1);
                 let fromDate = new Date(endDate)
+                fromDate.setDate(fromDate.getDate() + 1);
                 let difference = await getMonthDifference(toDate, fromDate)
                 let yearDifference = await getYearDifference(toDate, fromDate)
                 let count = 0;
@@ -185,7 +186,7 @@ module.exports.actualVsForecast = async (req, res) => {
                                 }
                                 actualData.push(sum)
                             } else {
-                                if (growthWindow != count) {
+                                if (growthWindow != count+1) {
 
                                     month = month + 1;
                                     date = new Date(toDate.setMonth(toDate.getMonth() + 1));
@@ -239,7 +240,7 @@ module.exports.actualVsForecast = async (req, res) => {
                                 actualData.push(sum)
 
                             } else {
-                                if (growthWindow != count) {
+                                if (growthWindow != count+1) {
                                     date = new Date(toDate.setMonth(toDate.getMonth() + 3));
                                     for (let i = 1; i <= 3; i++) {
                                         let s5 = dbScript(db_sql['Q78'], { var1: checkPermission.rows[0].company_id, var2: month1 })
@@ -297,7 +298,7 @@ module.exports.actualVsForecast = async (req, res) => {
                                 actualData.push(sum)
 
                             } else {
-                                if (growthWindow != count) {
+                                if (growthWindow != count+1) {
                                     date = new Date(toDate.setFullYear(toDate.getFullYear() + 1))
                                     for (let i = 1; i <= 12; i++) {
                                         let s5 = dbScript(db_sql['Q78'], { var1: checkPermission.rows[0].company_id, var2: month2 })
