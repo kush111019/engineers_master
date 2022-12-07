@@ -112,7 +112,11 @@ const db_sql = {
               FROM business_contact WHERE id = '{var1}' AND deleted_at IS NULL`,  
     "Q77"  : `SELECT id, full_name AS revenue_contact_name, email_address AS revenue_email, phone_number AS revenue_phone_number
               FROM revenue_contact WHERE id = '{var1}' AND deleted_at IS NULL`,
-    "Q78"  : `SELECT target_amount FROM sales_commission WHERE company_id = '{var1}' AND deleted_at IS NULL AND EXTRACT(MONTH FROM created_at) = '{var2}'`,
+    "Q78"  : `SELECT 
+                target_amount
+              FROM sales_commission 
+              WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_at BETWEEN '{var2}' AND '{var3}' 
+              LIMIT {var4} OFFSET {var5}`,
     "Q79"  : `UPDATE customers SET business_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
     "Q80"  : `UPDATE customers SET revenue_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
     "Q81"  : `SELECT s.id, s.supporter_id, s.supporter_percentage, u.full_name FROM sales_supporter AS s 
