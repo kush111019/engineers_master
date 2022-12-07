@@ -132,17 +132,16 @@ const db_sql = {
                 sc.closed_at
               FROM
                 sales_commission AS sc 
-              INNER JOIN 
-                customers AS c ON sc.customer_id = c.id 
               WHERE 
                 sc.company_id = '{var1}' AND 
-                sc.created_at BETWEEN '{var3}' AND '{var4}' AND
-                sc.deleted_at IS NULL 
+                sc.created_at BETWEEN '{var5}' AND '{var6}' AND
+                sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
               GROUP BY 
                 sc.closed_at,
                 sc.id 
               ORDER BY 
-                amount {var2}`,
+                amount {var2}
+              LIMIT {var3} OFFSET {var4}  `,
 
     "Q88"  : `SELECT 
                 DATE_TRUNC('{var2}',sc.closed_at) AS  date, 
@@ -344,7 +343,10 @@ const db_sql = {
     "Q157" : `SELECT ps.product_id AS id, p.product_name AS name FROM product_in_sales AS ps 
               INNER JOIN products as p ON p.id = ps.product_id
               WHERE ps.sales_commission_id = '{var1}' AND ps.deleted_at IS NULL and p.deleted_at IS NULL` ,
-    "Q158" : `UPDATE sales_commission_logs SET closed_at = '{var1}', updated_at = '{var2}' WHERE sales_commission_id = '{var3}' RETURNING *`          
+    "Q158" : `UPDATE sales_commission_logs SET closed_at = '{var1}', updated_at = '{var2}' WHERE sales_commission_id = '{var3}' RETURNING *`,
+    "Q159" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount,
+              sc.closed_at FROM sales_commission AS sc WHERE sc.company_id = '{var1}' 
+              AND sc.deleted_at IS NULL `         
  }
 
 
