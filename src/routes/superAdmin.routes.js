@@ -13,6 +13,7 @@ router.get('/companiesList',verifyTokenFn,controller.superAdmin.companiesList)
 router.get('/showUsersByCompanyId',verifyTokenFn,controller.superAdmin.showUsersByCompanyId)
 router.get('/userWiseCompanyRevenue', verifyTokenFn, controller.superAdmin.userWiseCompanyRevenue)
 router.get('/dashboard', verifyTokenFn, controller.superAdmin.dashboard)
+router.get('/totalExpectedRevenueCounts', verifyTokenFn, controller.superAdmin.totalExpectedRevenueCounts)
 
 //------------------------------------------plans----------------------------------------
 
