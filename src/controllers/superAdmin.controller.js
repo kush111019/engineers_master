@@ -364,11 +364,11 @@ module.exports.dashboard = async (req, res) => {
             if (revenueCommission.length > 0) {
                 if(orderBy.toLowerCase() == 'asc'){
                     revenueCommission = revenueCommission.sort((a,b) => {
-                        a.revenue - b.revenue
+                        return a.revenue - b.revenue
                     })
                 }else{
                     revenueCommission = revenueCommission.sort((a,b) => {
-                        b.revenue - a.revenue
+                        return b.revenue - a.revenue
                     })
                 }
                 res.json({
