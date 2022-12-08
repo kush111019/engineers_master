@@ -112,7 +112,11 @@ const db_sql = {
               FROM business_contact WHERE id = '{var1}' AND deleted_at IS NULL`,  
     "Q77"  : `SELECT id, full_name AS revenue_contact_name, email_address AS revenue_email, phone_number AS revenue_phone_number
               FROM revenue_contact WHERE id = '{var1}' AND deleted_at IS NULL`,
-    "Q78"  : `SELECT target_amount FROM sales_commission WHERE company_id = '{var1}' AND deleted_at IS NULL AND EXTRACT(MONTH FROM created_at) = '{var2}'`,
+    "Q78"  : `SELECT 
+                target_amount
+              FROM sales_commission 
+              WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_at BETWEEN '{var2}' AND '{var3}' 
+              LIMIT {var4} OFFSET {var5}`,
     "Q79"  : `UPDATE customers SET business_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
     "Q80"  : `UPDATE customers SET revenue_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
     "Q81"  : `SELECT s.id, s.supporter_id, s.supporter_percentage, u.full_name FROM sales_supporter AS s 
@@ -125,10 +129,24 @@ const db_sql = {
     "Q86"  : `SELECT cr.closer_id,cr.closer_percentage, u.full_name FROM sales_closer AS cr 
               INNER JOIN users AS u ON u.id = cr.closer_id WHERE sales_commission_id = '{var1}'
               AND cr.deleted_at IS NULL AND u.deleted_at IS NULL`,
-    "Q87"  : `SELECT sc.id AS sales_commission_id, sc.target_amount, sc.target_closing_date, c.id AS customer_id,
-              sc.closed_at, c.customer_name  FROM sales_commission AS sc INNER JOIN customers AS c
-              ON sc.customer_id = c.id WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL 
-              AND c.deleted_at IS NULL Order by sc.closed_at DESC`,
+
+    "Q87"  : `SELECT 
+                sc.id AS sales_commission_id, 
+                SUM(sc.target_amount::DECIMAL) as amount,
+                sc.closed_at
+              FROM
+                sales_commission AS sc 
+              WHERE 
+                sc.company_id = '{var1}' AND 
+                sc.created_at BETWEEN '{var5}' AND '{var6}' AND
+                sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
+              GROUP BY 
+                sc.closed_at,
+                sc.id 
+              ORDER BY 
+                amount {var2}
+              LIMIT {var3} OFFSET {var4}`,
+
     "Q88"  : `SELECT 
                 DATE_TRUNC('{var2}',sc.closed_at) AS  date, 
                 sum(sc.target_amount::decimal) AS revenue
@@ -329,7 +347,28 @@ const db_sql = {
     "Q157" : `SELECT ps.product_id AS id, p.product_name AS name FROM product_in_sales AS ps 
               INNER JOIN products as p ON p.id = ps.product_id
               WHERE ps.sales_commission_id = '{var1}' AND ps.deleted_at IS NULL and p.deleted_at IS NULL` ,
-    "Q158" : `UPDATE sales_commission_logs SET closed_at = '{var1}', updated_at = '{var2}' WHERE sales_commission_id = '{var3}' RETURNING *`          
+    "Q158" : `UPDATE sales_commission_logs SET closed_at = '{var1}', updated_at = '{var2}' WHERE sales_commission_id = '{var3}' RETURNING *`,
+    "Q159" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount,
+              sc.closed_at FROM sales_commission AS sc WHERE sc.company_id = '{var1}' 
+              AND sc.deleted_at IS NULL`,
+    "Q160" : `SELECT 
+                id, company_name, company_logo, company_address, is_imap_enable, created_at 
+              FROM companies 
+              WHERE deleted_at IS NULL AND created_at BETWEEN '{var3}' AND '{var4}' 
+              LIMIT {var1} OFFSET {var2}`,
+    "Q161"  : `SELECT 
+                  sc.id AS sales_commission_id, 
+                  SUM(sc.target_amount::DECIMAL) as amount,
+                  sc.closed_at
+                FROM
+                  sales_commission AS sc 
+                WHERE 
+                  sc.company_id = '{var1}' AND 
+                  sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
+                GROUP BY 
+                  sc.closed_at,
+                  sc.id`
+
  }
 
 

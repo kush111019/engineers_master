@@ -286,6 +286,9 @@ module.exports.createGroupChat = async (req, res) => {
                 let s4 = dbScript(db_sql['Q128'], { var1: chatId, var2: name, var3: isGroupChat, var4: '', var5: '', var6: id, var7: salesId, var8: checkAdmin.rows[0].company_id })
                 let createGroup = await connection.query(s4)
 
+                users = users.filter((item,
+                    index) => users.indexOf(item) === index);
+
                 let usersArr = []
                 for (userId of users) {
                     await connection.query('BEGIN')

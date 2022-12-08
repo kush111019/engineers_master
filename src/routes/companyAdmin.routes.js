@@ -84,6 +84,7 @@ router.get('/totalRevenue',verifyTokenFn, controller.reports.totalRevenue)
 //---------------------------------------DashBoard counts -------------------------------
 
 router.get('/revenues',verifyTokenFn, controller.dashboard.revenues)
+router.get('/totalExpectedRevenueCounts', verifyTokenFn, controller.dashboard.totalExpectedRevenueCounts)
 
 
 //-------------------------------------Revenue Forecast----------------------------------
