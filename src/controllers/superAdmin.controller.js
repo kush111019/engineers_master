@@ -321,9 +321,7 @@ module.exports.dashboard = async (req, res) => {
 
                 let s2 = dbScript(db_sql['Q17'], { var1: comData.id })
                 let slab = await connection.query(s2)
-                console.log(s2,"s2");
                 let s3 = dbScript(db_sql['Q87'], { var1: comData.id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
-                console.log(s3,"s2");
                 let salesData = await connection.query(s3)
                 if (salesData.rowCount > 0) {
                     for (data of salesData.rows) {
@@ -337,16 +335,19 @@ module.exports.dashboard = async (req, res) => {
                                 let slab_maxAmount = Number(slab.rows[i].max_amount)
                                 let slab_minAmount = Number(slab.rows[i].min_amount)
                                 if (slab.rows[i].is_max) {
-                                    amount = amount + ((slab_percentage / 100) * remainingAmount)
-                                    remainingAmount = 0
+                                     // Reached the last slab
+                                     amount += ((slab_percentage / 100) * remainingAmount)
+                                    break;
                                 }
                                 else {
-                                    if (remainingAmount >= slab_maxAmount) {
-                                        amount = amount + ((slab_percentage / 100) * (slab_maxAmount - slab_minAmount))
-                                        remainingAmount = remainingAmount - (slab_maxAmount - slab_minAmount)
-                                    } else {
-                                        amount = amount + ((slab_percentage / 100) * remainingAmount)
-                                        remainingAmount = 0
+                                    // This is not the last slab
+                                    let diff = slab_minAmount == 0 ? 0 : 1
+                                    let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                                    slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+                                    amount += ((slab_percentage / 100) * slab_diff)
+                                    remainingAmount -= slab_diff
+                                    if (remainingAmount <= 0) {
+                                        break;
                                     }
                                 }
                             }
@@ -438,16 +439,19 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                                 let slab_maxAmount = Number(slab.rows[i].max_amount)
                                 let slab_minAmount = Number(slab.rows[i].min_amount)
                                 if (slab.rows[i].is_max) {
-                                    expectedCommission = expectedCommission + ((slab_percentage / 100) * expectedRemainingAmount)
-                                    expectedRemainingAmount = 0
+                                     // Reached the last slab
+                                     expectedCommission += ((slab_percentage / 100) * expectedRemainingAmount)
+                                    break;
                                 }
                                 else {
-                                    if (expectedRemainingAmount >= slab_maxAmount) {
-                                        expectedCommission = expectedCommission + ((slab_percentage / 100) * (slab_maxAmount - slab_minAmount))
-                                        expectedRemainingAmount = expectedRemainingAmount - (slab_maxAmount - slab_minAmount)
-                                    } else {
-                                        expectedCommission = expectedCommission + ((slab_percentage / 100) * expectedRemainingAmount)
-                                        expectedRemainingAmount = 0
+                                    // This is not the last slab
+                                    let diff = slab_minAmount == 0 ? 0 : 1
+                                    let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                                    slab_diff = (slab_diff > expectedRemainingAmount) ? expectedRemainingAmount : slab_diff
+                                    expectedCommission += ((slab_percentage / 100) * slab_diff)
+                                    expectedRemainingAmount -= slab_diff
+                                    if (expectedRemainingAmount <= 0) {
+                                        break;
                                     }
                                 }
                             }
@@ -463,16 +467,19 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                                 let slab_maxAmount = Number(slab.rows[i].max_amount)
                                 let slab_minAmount = Number(slab.rows[i].min_amount)
                                 if (slab.rows[i].is_max) {
-                                    commission = commission + ((slab_percentage / 100) * remainingAmount)
-                                    remainingAmount = 0
+                                     // Reached the last slab
+                                    commission += ((slab_percentage / 100) * remainingAmount)
+                                    break;
                                 }
                                 else {
-                                    if (remainingAmount >= slab_maxAmount) {
-                                        commission = commission + ((slab_percentage / 100) * (slab_maxAmount - slab_minAmount))
-                                        remainingAmount = remainingAmount - (slab_maxAmount - slab_minAmount)
-                                    } else {
-                                        commission = commission + ((slab_percentage / 100) * remainingAmount)
-                                        remainingAmount = 0
+                                    // This is not the last slab
+                                    let diff = slab_minAmount == 0 ? 0 : 1
+                                    let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                                    slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+                                    commission += ((slab_percentage / 100) * slab_diff)
+                                    remainingAmount -= slab_diff
+                                    if (remainingAmount <= 0) {
+                                        break;
                                     }
                                 }
                             }
