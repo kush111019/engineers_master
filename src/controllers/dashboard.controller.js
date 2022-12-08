@@ -41,7 +41,7 @@ module.exports.revenues = async (req, res) => {
                             let diff = slab_minAmount == 0 ? 0 : 1
                             let slab_diff = (slab_maxAmount - slab_minAmount + diff)
                             slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-                            commission += (slab_percentage * slab_diff)
+                            commission += ((slab_percentage / 100) * slab_diff)
                             remainingAmount -= slab_diff
                             if (remainingAmount <= 0) {
                                 break;
