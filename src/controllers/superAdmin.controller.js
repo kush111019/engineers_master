@@ -320,7 +320,7 @@ module.exports.dashboard = async (req, res) => {
 
                 let s2 = dbScript(db_sql['Q17'], { var1: comData.id })
                 let slab = await connection.query(s2)
-                let s3 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
+                let s3 = dbScript(db_sql['Q87'], { var1: comData.id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
                 let salesData = await connection.query(s3)
                 if (salesData.rowCount > 0) {
                     for (data of salesData.rows) {

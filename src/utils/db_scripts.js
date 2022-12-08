@@ -350,7 +350,7 @@ const db_sql = {
     "Q158" : `UPDATE sales_commission_logs SET closed_at = '{var1}', updated_at = '{var2}' WHERE sales_commission_id = '{var3}' RETURNING *`,
     "Q159" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount,
               sc.closed_at FROM sales_commission AS sc WHERE sc.company_id = '{var1}' 
-              AND sc.deleted_at IS NULL `         
+              AND sc.deleted_at IS NULL`         
  }
 
 
