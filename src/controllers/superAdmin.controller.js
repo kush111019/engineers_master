@@ -309,7 +309,7 @@ module.exports.dashboard = async (req, res) => {
         let { page, startDate, endDate, orderBy } = req.query
         let limit = 12;
         let offset = (page - 1) * limit
-        let s1 = dbScript(db_sql['Q99'], {})
+        let s1 = dbScript(db_sql['Q160'], {var1 : limit, var2 : offset})
         let companyData = await connection.query(s1)
         if (companyData.rowCount > 0) {
             let revenueCommission = []
