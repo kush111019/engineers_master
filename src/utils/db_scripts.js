@@ -351,7 +351,24 @@ const db_sql = {
     "Q159" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount,
               sc.closed_at FROM sales_commission AS sc WHERE sc.company_id = '{var1}' 
               AND sc.deleted_at IS NULL`,
-    "Q160" : `SELECT id, company_name, company_logo, company_address, is_imap_enable, created_at FROM companies WHERE deleted_at IS NULL LIMIT {var1} OFFSET {var2}`                   
+    "Q160" : `SELECT 
+                id, company_name, company_logo, company_address, is_imap_enable, created_at 
+              FROM companies 
+              WHERE deleted_at IS NULL AND created_at BETWEEN '{var3}' AND '{var4}' 
+              LIMIT {var1} OFFSET {var2}`,
+    "Q161"  : `SELECT 
+                  sc.id AS sales_commission_id, 
+                  SUM(sc.target_amount::DECIMAL) as amount,
+                  sc.closed_at
+                FROM
+                  sales_commission AS sc 
+                WHERE 
+                  sc.company_id = '{var1}' AND 
+                  sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
+                GROUP BY 
+                  sc.closed_at,
+                  sc.id`
+
  }
 
 
