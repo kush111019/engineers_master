@@ -307,10 +307,9 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
 module.exports.dashboard = async (req, res) => {
     try {
         let { page, startDate, endDate, orderBy } = req.query
-        let limit = 10;
+        let limit = 12;
         let offset = (page - 1) * limit
         let s1 = dbScript(db_sql['Q99'], {})
-        console.log(s1,"s1");
         let companyData = await connection.query(s1)
         if (companyData.rowCount > 0) {
             let revenueCommission = []
@@ -321,7 +320,7 @@ module.exports.dashboard = async (req, res) => {
 
                 let s2 = dbScript(db_sql['Q17'], { var1: comData.id })
                 let slab = await connection.query(s2)
-                let s3 = dbScript(db_sql['Q87'], { var1: comData.id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
+                let s3 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
                 let salesData = await connection.query(s3)
                 if (salesData.rowCount > 0) {
                     for (data of salesData.rows) {
@@ -382,11 +381,7 @@ module.exports.dashboard = async (req, res) => {
                     status: 200,
                     success: true,
                     message: "Empty total revenue and total commission",
-                    data: {
-                        totalRevenue: 0,
-                        totalCommission: 0,
-                        revenueCommission: revenueCommission
-                    }
+                    data: revenueCommission
                 })
             } else {
                 res.json({
