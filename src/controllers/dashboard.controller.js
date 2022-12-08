@@ -17,37 +17,38 @@ module.exports.revenues = async (req, res) => {
             let s5 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
             let slab = await connection.query(s5)
 
-            let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2 : orderBy, var3 : limit, var4 : offset, var5 : startDate, var6 : endDate  })
+            let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0 && slab.rowCount > 0) {
                 for (data of salesData.rows) {
-                        let revenueCommissionByDateObj = {}
-                        revenueCommissionByDateObj.revenue = Number(data.amount)
-                        revenueCommissionByDateObj.date = moment(data.closed_at).format('MM/DD/YYYY')
+                    let revenueCommissionByDateObj = {}
+                    revenueCommissionByDateObj.revenue = Number(data.amount)
+                    revenueCommissionByDateObj.date = moment(data.closed_at).format('MM/DD/YYYY')
 
-                        let remainingAmount = Number(data.amount);
-                        let commission = 0
-                        //if remainning amount is 0 then no reason to check 
-                        for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
-                            let slab_percentage = Number(slab.rows[i].percentage)
-                            let slab_maxAmount = Number(slab.rows[i].max_amount)
-                            let slab_minAmount = Number(slab.rows[i].min_amount)
-                            if (slab.rows[i].is_max) {
+                    let remainingAmount = Number(data.amount);  //200000   190000
+                    let commission = 0
+                    //if remainning amount is 0 then no reason to check 
+                    for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
+                        let slab_percentage = Number(slab.rows[i].percentage) //10   5
+                        let slab_maxAmount = Number(slab.rows[i].max_amount) //10000
+                        let slab_minAmount = Number(slab.rows[i].min_amount) // 0
+                        if (slab.rows[i].is_max) {
+                            commission = commission + ((slab_percentage / 100) * remainingAmount)
+                            remainingAmount = 0
+                        }
+                        else {
+                            if (remainingAmount >= slab_maxAmount) { //15000 >= 10000   190000 >= 10000
+                                let diff = slab_minAmount == 0 ? 0 : 1
+                                commission = commission + ((slab_percentage / 100) * (slab_maxAmount - slab_minAmount + diff)) //1000
+                                remainingAmount = remainingAmount - (slab_maxAmount - slab_minAmount + diff) //15000 - (100000 - 10001) = 5000
+                            } else {
                                 commission = commission + ((slab_percentage / 100) * remainingAmount)
                                 remainingAmount = 0
                             }
-                            else {
-                                if (remainingAmount >= slab_maxAmount) {
-                                    commission = commission + ((slab_percentage / 100) * (slab_maxAmount - slab_minAmount))
-                                    remainingAmount = remainingAmount - (slab_maxAmount - slab_minAmount)
-                                } else {
-                                    commission = commission + ((slab_percentage / 100) * remainingAmount)
-                                    remainingAmount = 0
-                                }
-                            }
                         }
-                        revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
-                        revenueCommissionBydate.push(revenueCommissionByDateObj)
+                    }
+                    revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
+                    revenueCommissionBydate.push(revenueCommissionByDateObj)
                 }
             }
             res.json({
