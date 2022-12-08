@@ -310,12 +310,10 @@ module.exports.dashboard = async (req, res) => {
         let limit = 10;
         let offset = (page - 1) * limit
         let s1 = dbScript(db_sql['Q160'], {var1: limit, var2: offset, var3: startDate, var4: endDate})
-        console.log(s1, "s1");
         let companyData = await connection.query(s1)
         if (companyData.rowCount > 0) {
             let revenueCommission = []
             for (let comData of companyData.rows) {
-                console.log(comData,"company data");
                 let targetAmount = 0;
                 let commission = 0;
                 let revenueCommissionObj = {}
@@ -326,7 +324,6 @@ module.exports.dashboard = async (req, res) => {
                 let salesData = await connection.query(s3)
                 if (salesData.rowCount > 0) {
                     for (data of salesData.rows) {
-                        console.log(data,"sales data");
                         targetAmount = targetAmount + Number(data.amount)
                         if (slab.rowCount > 0) {
                             let remainingAmount = Number(data.amount);
@@ -364,17 +361,16 @@ module.exports.dashboard = async (req, res) => {
                 }
                 
             }
-            console.log(revenueCommission,"final data")
             if (revenueCommission.length > 0) {
-                // if(orderBy.toLowerCase() == 'asc'){
-                //     revenueCommission = revenueCommission.sort((a,b) => {
-                //         a.revenue - b.revenue
-                //     })
-                // }else{
-                //     revenueCommission = revenueCommission.sort((a,b) => {
-                //         b.revenue - a.revenue
-                //     })
-                // }
+                if(orderBy.toLowerCase() == 'asc'){
+                    revenueCommission = revenueCommission.sort((a,b) => {
+                        a.revenue - b.revenue
+                    })
+                }else{
+                    revenueCommission = revenueCommission.sort((a,b) => {
+                        b.revenue - a.revenue
+                    })
+                }
                 res.json({
                     status: 200,
                     success: true,
