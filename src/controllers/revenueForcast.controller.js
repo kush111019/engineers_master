@@ -3,7 +3,6 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
 const {getMonthDifference, getYearDifference, paginatedResults} = require('../utils/helper')
 const moduleName = process.env.FORECAST_MODULE
-const moment = require('moment')
 
 module.exports.createRevenueForecast = async (req, res) => {
     try {

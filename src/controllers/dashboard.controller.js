@@ -26,33 +26,40 @@ module.exports.revenues = async (req, res) => {
                     revenueCommissionByDateObj.date = moment(data.closed_at).format('MM/DD/YYYY')
 
                     let remainingAmount = Number(data.amount);  //200000   190000
-                    console.log(remainingAmount,"start remainingAmount")
                     let commission = 0
                     //if remainning amount is 0 then no reason to check 
                     for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
-                        console.log(i, `iteration ${i}`)
                         let slab_percentage = Number(slab.rows[i].percentage) //10   5
                         let slab_maxAmount = Number(slab.rows[i].max_amount) //10000
                         let slab_minAmount = Number(slab.rows[i].min_amount) // 0
-                        console.log("maxAmount ->", slab_maxAmount,"...", "minAmount -> ", slab_minAmount, "..", "Percentage->", slab_percentage ) 
                         if (slab.rows[i].is_max) {
-                            commission = commission + ((slab_percentage / 100) * remainingAmount)
-                            remainingAmount = 0
+                             // Reached the last slab
+                            commission += ((slab_percentage / 100) * remainingAmount)
+                            break;
                         }
                         else {
-                            if (remainingAmount >= slab_maxAmount) { //15000 >= 10000   190000 >= 10000
-                                let diff = slab_minAmount == 0 ? 0 : 1
-                                commission = commission + ((slab_percentage / 100) * (slab_maxAmount - slab_minAmount + diff)) //1000
-                                console.log(commission,"commission in if");
-                                remainingAmount = remainingAmount - (slab_maxAmount - slab_minAmount + diff) //15000 - (100000 - 10001) = 5000
-                                console.log(remainingAmount,"remainingAmount in for loop ");
-                            } else {
-                                console.log(remainingAmount, "remaining amount in else....");
-                                commission = commission + ((slab_percentage / 100) * remainingAmount)
-                                console.log(commission, "commission in else");
-                                remainingAmount = 0
-                                
+                            let diff = slab_minAmount == 0 ? 0 : 1
+                            let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                            slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+                            commission += (slab_percentage * slab_diff)
+                            remainingAmount -= slab_diff
+                            if (remainingAmount <= 0) {
+                                break;
                             }
+                              // This is not the last slab
+                            // if(runner <= Number(data.amount)){
+                            //     if (remainingAmount >= slab_maxAmount) { //15000 >= 10000   190000 >= 10000
+                            //         let diff = slab_minAmount == 0 ? 0 : 1
+                            //         runner += (slab_maxAmount - slab_minAmount + diff)
+                            //         commission = commission + ((slab_percentage / 100) * (slab_maxAmount - slab_minAmount + diff)) //1000
+                            //         remainingAmount = remainingAmount - (slab_maxAmount - slab_minAmount + diff) //15000 - (100000 - 10001) = 5000
+                            //     } else {
+                            //         commission = commission + ((slab_percentage / 100) * remainingAmount)
+                            //         remainingAmount = 0
+                            //     }
+                            // }else{
+                            //     remainingAmount = 0
+                            // }
                         }
                     }
                     revenueCommissionByDateObj.commission = Number(commission.toFixed(2))

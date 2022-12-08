@@ -145,7 +145,7 @@ const db_sql = {
                 sc.id 
               ORDER BY 
                 amount {var2}
-              LIMIT {var3} OFFSET {var4}  `,
+              LIMIT {var3} OFFSET {var4}`,
 
     "Q88"  : `SELECT 
                 DATE_TRUNC('{var2}',sc.closed_at) AS  date, 
