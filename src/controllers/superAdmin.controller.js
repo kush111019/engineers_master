@@ -624,44 +624,31 @@ module.exports.addPlan = async (req, res) => {
 
 module.exports.plansList = async (req, res) => {
     try {
-        let sAEmail = req.user.email
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
-        let checkSuperAdmin = await connection.query(s1)
-        if (checkSuperAdmin.rowCount > 0) {
-            let s2 = await dbScript(db_sql['Q109'], {})
-            let planData = await connection.query(s2)
-            if (planData.rowCount > 0) {
+        let s2 = await dbScript(db_sql['Q109'], {})
+        let planData = await connection.query(s2)
+        if (planData.rowCount > 0) {
+            res.json({
+                status: 200,
+                success: true,
+                message: "Plans list",
+                data: planData.rows
+            })
+        } else {
+            if (planData.rows.length == 0) {
                 res.json({
                     status: 200,
                     success: true,
-                    message: "Plans list",
-                    data: planData.rows
+                    message: "Empty Plans list",
+                    data: []
                 })
             } else {
-                if (planData.rows.length == 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Empty Plans list",
-                        data: []
-                    })
-                } else {
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong",
-                        data: ""
-                    })
-                }
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong",
+                    data: ""
+                })
             }
-
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Super Admin not found",
-                data: ""
-            })
         }
     } catch (error) {
         res.json({
