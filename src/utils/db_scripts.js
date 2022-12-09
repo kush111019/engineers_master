@@ -84,7 +84,7 @@ const db_sql = {
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
               WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL ORDER BY sc.created_at desc`,
-    "Q55"  : `SELECT * FROM customers WHERE id = '{var1}' AND deleted_at IS NULL`,
+    "Q55"  : `SELECT * FROM customers WHERE id = '{var1}'`,
     "Q56"  : `SELECT id, closer_percentage, supporter_percentage FROM commission_split WHERE id ='{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
     "Q57"  : `INSERT INTO sales_supporter(id, commission_split_id ,supporter_id, supporter_percentage, sales_commission_id, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') RETURNING *`,
     "Q58"  : `INSERT INTO sales_closer(id, closer_id, closer_percentage, commission_split_id, sales_commission_id, company_id) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') RETURNING *`,
