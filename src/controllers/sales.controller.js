@@ -746,3 +746,51 @@ module.exports.closeSales = async (req, res) => {
         })
     }
 }
+
+module.exports.usersListForSales = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s3)
+        if (checkPermission.rows[0].permission_to_view) {
+            let s4 = dbScript(db_sql['Q24'], { var1: checkPermission.rows[0].company_id })
+            let findUsers = await connection.query(s4);
+            if (findUsers.rows.length > 0) {
+                for (data of findUsers.rows) {
+                    let s5 = dbScript(db_sql['Q12'], { var1: data.role_id })
+                    let findRole = await connection.query(s5);
+                    if (findRole.rowCount > 0) {
+                        data.roleName = findRole.rows[0].role_name
+                    } else {
+                        data.roleName = null
+                    }
+                }
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Users list',
+                    data: findUsers.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty users list",
+                    data: []
+                })
+            }
+        } else {
+            res.json({
+                status: 403,
+                success: false,
+                message: "Unathorized",
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
