@@ -10,7 +10,7 @@ const db_sql = {
     "Q5"   : `UPDATE users SET encrypted_password = '{var2}', is_verified = true, updated_at = '{var3}' WHERE id = '{var1}' AND company_id = '{var4}' RETURNING *`, 
     "Q6"   : `SELECT id, module_name,module_type FROM modules WHERE deleted_at IS NULL`,
     "Q7"   : `UPDATE users SET is_verified = true ,updated_at = '{var2}' WHERE id = '{var1}' RETURNING *`, 
-    "Q8"   : `SELECT id, full_name,company_id, email_address,mobile_number,phone_number,address,role_id, avatar,expiry_date, is_verified, is_admin, is_locked FROM users WHERE id = '{var1}'` ,
+    "Q8"   : `SELECT id, full_name,company_id, email_address,mobile_number,phone_number,address,role_id, avatar,expiry_date, is_verified, is_admin, is_locked FROM users WHERE id = '{var1}' and deleted_at IS NULL` ,
     "Q9"   : `SELECT * FROM companies WHERE id = '{var1}' AND deleted_at IS NULL`,
     "Q10"  : `UPDATE users SET full_name='{var1}',avatar = '{var2}', email_address = '{var3}',phone_number = '{var4}',mobile_number = '{var5}',address = '{var6}' ,updated_at = '{var7}' WHERE id = '{var8}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `, 
     "Q11"  : `INSERT INTO roles(id,role_name,reporter,company_id) VALUES('{var1}','Admin','','{var2}') RETURNING *`, 
@@ -119,7 +119,7 @@ const db_sql = {
               LIMIT {var4} OFFSET {var5}`,
     "Q79"  : `UPDATE customers SET business_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
     "Q80"  : `UPDATE customers SET revenue_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
-    "Q81"  : `SELECT s.id, s.supporter_id, s.supporter_percentage, u.full_name FROM sales_supporter AS s 
+    "Q81"  : `SELECT s.id, s.supporter_id, s.supporter_percentage, u.full_name, u.email_address FROM sales_supporter AS s 
               INNER JOIN users AS u ON u.id = s.supporter_id WHERE s.id ='{var1}' `,
     "Q82"  : `SELECT customer_id, sales_type, subscription_plan, recurring_date FROM sales_commission WHERE deleted_at IS NULL`,
     "Q83"  : `INSERT INTO configurations(id, currency, phone_format, date_format,user_id, company_id ) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
@@ -368,8 +368,8 @@ const db_sql = {
                 GROUP BY 
                   sc.closed_at,
                   sc.id`,
-    "Q162" : `SELECT id, closer_percentage, supporter_percentage, deleted_at FROM commission_split WHERE company_id ='{var1}'`,  
-
+    "Q162" : `SELECT id, closer_percentage, supporter_percentage, deleted_at FROM commission_split WHERE company_id ='{var1}'`,
+ 
  }
 
 

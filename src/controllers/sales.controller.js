@@ -209,15 +209,16 @@ module.exports.salesCommissionList = async (req, res) => {
                 if (supporter.rowCount > 0) {
                     if (supporter.rows[0].supporter_id != "") {
                         for (let supporterData of supporter.rows) {
-                            let s5 = dbScript(db_sql['Q8'], { var1: supporterData.supporter_id })
+                            let s5 = dbScript(db_sql['Q81'], { var1: supporterData.supporter_id })
                             let supporterName = await connection.query(s5)
-                            supporters.push({
-                                id: supporterData.supporter_id,
-                                name: supporterName.rows[0].full_name,
-                                email: supporterName.rows[0].email_address,
-                                percentage: supporterData.supporter_percentage
-                            })
-
+                            if (supporterName.rowCount > 0) {
+                                supporters.push({
+                                    id: supporterName.rows[0].supporter_id,
+                                    name: supporterName.rows[0].full_name,
+                                    email: supporterName.rows[0].email_address,
+                                    percentage: supporterName.rows[0].supporter_percentage
+                                })
+                            }
                         }
                     }
                 }
