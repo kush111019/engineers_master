@@ -10,7 +10,7 @@ const db_sql = {
     "Q5"   : `UPDATE users SET encrypted_password = '{var2}', is_verified = true, updated_at = '{var3}' WHERE id = '{var1}' AND company_id = '{var4}' RETURNING *`, 
     "Q6"   : `SELECT id, module_name,module_type FROM modules WHERE deleted_at IS NULL`,
     "Q7"   : `UPDATE users SET is_verified = true ,updated_at = '{var2}' WHERE id = '{var1}' RETURNING *`, 
-    "Q8"   : `SELECT id, full_name,company_id, email_address,mobile_number,phone_number,address,role_id, avatar,expiry_date, is_verified, is_admin, is_locked FROM users WHERE id = '{var1}' AND deleted_at IS NULL ` ,
+    "Q8"   : `SELECT id, full_name,company_id, email_address,mobile_number,phone_number,address,role_id, avatar,expiry_date, is_verified, is_admin, is_locked FROM users WHERE id = '{var1}'` ,
     "Q9"   : `SELECT * FROM companies WHERE id = '{var1}' AND deleted_at IS NULL`,
     "Q10"  : `UPDATE users SET full_name='{var1}',avatar = '{var2}', email_address = '{var3}',phone_number = '{var4}',mobile_number = '{var5}',address = '{var6}' ,updated_at = '{var7}' WHERE id = '{var8}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `, 
     "Q11"  : `INSERT INTO roles(id,role_name,reporter,company_id) VALUES('{var1}','Admin','','{var2}') RETURNING *`, 
@@ -83,7 +83,7 @@ const db_sql = {
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
-              WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND c.deleted_at IS NULL AND u.deleted_at IS NULL AND cus.deleted_at IS NULL ORDER BY created_at desc`,
+              WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND c.deleted_at IS NULL  AND cus.deleted_at IS NULL ORDER BY created_at desc`,
     "Q55"  : `SELECT * FROM customers WHERE id = '{var1}' AND deleted_at IS NULL`,
     "Q56"  : `SELECT id, closer_percentage, supporter_percentage FROM commission_split WHERE id ='{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
     "Q57"  : `INSERT INTO sales_supporter(id, commission_split_id ,supporter_id, supporter_percentage, sales_commission_id, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') RETURNING *`,
