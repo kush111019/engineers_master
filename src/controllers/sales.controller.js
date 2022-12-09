@@ -419,16 +419,15 @@ module.exports.deleteSalesCommission = async (req, res) => {
             let _dt = new Date().toISOString();
             let s4 = dbScript(db_sql['Q60'], { var1: _dt, var2: salesCommissionId, var3: checkPermission.rows[0].company_id })
             let deleteSalesConversion = await connection.query(s4)
-
+            
             let s5 = dbScript(db_sql['Q61'], { var1: _dt, var2: salesCommissionId, var3: checkPermission.rows[0].company_id })
             let deleteSalesSupporter = await connection.query(s5)
 
             let s6 = dbScript(db_sql['Q156'], { var1: _dt, var2: salesCommissionId, var3: checkPermission.rows[0].company_id })
             let deleteSalesProduct = await connection.query(s6)
-
-            await connection.query('COMMIT')
-
-            if (deleteSalesConversion.rowCount > 0 && deleteSalesSupporter.rowCount >= 0 && deleteSalesProduct.rowCount > 0) {
+           
+            if (deleteSalesConversion.rowCount > 0 && deleteSalesSupporter.rowCount >= 0 && deleteSalesProduct.rowCount >= 0) {
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
