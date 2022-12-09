@@ -794,3 +794,42 @@ module.exports.usersListForSales = async (req, res) => {
         })
     }
 }
+
+module.exports.commissionSplitListForSales = async (req, res) => {
+    try {
+        let userId = req.user.id
+            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_view) {
+
+                let s4 = dbScript(db_sql['Q162'], { var1: checkPermission.rows[0].company_id })
+                let commissionList = await connection.query(s4)
+                if (commissionList.rows.length > 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Commission split list",
+                        data: commissionList.rows
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty commission split list",
+                        data: []
+                    })
+                }
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: "UnAthorised"
+                })
+            }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
