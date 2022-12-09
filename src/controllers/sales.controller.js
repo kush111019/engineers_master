@@ -428,7 +428,7 @@ module.exports.deleteSalesCommission = async (req, res) => {
 
             await connection.query('COMMIT')
 
-            if (deleteSalesConversion.rowCount > 0 && deleteSalesSupporter.rowCount >= 0 && deleteSalesProduct.rowCount > 0) {
+            if (deleteSalesConversion.rowCount > 0 && deleteSalesSupporter.rowCount > 0 && deleteSalesProduct.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
@@ -441,7 +441,6 @@ module.exports.deleteSalesCommission = async (req, res) => {
                     success: false,
                     message: "Something went wrong"
                 })
-
             }
         } else {
             res.status(403).json({
