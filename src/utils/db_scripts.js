@@ -138,7 +138,7 @@ const db_sql = {
                 sales_commission AS sc 
               WHERE 
                 sc.company_id = '{var1}' AND 
-                sc.created_at BETWEEN '{var5}' AND '{var6}' AND
+                sc.closed_at BETWEEN '{var5}' AND '{var6}' AND
                 sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
               GROUP BY 
                 sc.closed_at,
