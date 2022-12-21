@@ -63,7 +63,7 @@ const db_sql = {
               FROM sales_commission_logs AS sl INNER JOIN users AS u ON u.id = sl.closer_id
               INNER JOIN customers AS c ON c.id = sl.customer_id
               INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sl.sales_commission_id
-              WHERE sl.sales_commission_id = '{var1}' AND sl.deleted_at IS NULL AND u.deleted_at IS NULL AND c.deleted_at IS NULL AND cr.deleted_at IS NULL ORDER BY sl.created_at desc`,
+              WHERE sl.sales_commission_id = '{var1}' AND sl.deleted_at IS NULL ORDER BY sl.created_at desc`,
     "Q45"  : `INSERT INTO users(id,full_name,company_id,avatar,email_address,mobile_number,encrypted_password,role_id,address,is_verified) 
               VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}',false) RETURNING *`, 
     "Q46"  : `SELECT id, customer_company_name FROM customer_companies WHERE company_id = '{var1}' AND replace(customer_company_name, ' ', '') ILIKE '%{var2}%' AND deleted_at IS NULL`, 
