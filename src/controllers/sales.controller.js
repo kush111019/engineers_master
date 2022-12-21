@@ -55,26 +55,25 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
                     let customerContactDetails = {};
                     let businessContactIds = JSON.parse(contactDetails.rows[0].business_contact_id)
                     if(businessContactIds.length > 0){
-                        let businessDetails = []
+                        let businessContact = []
                         for(id of businessContactIds){
                             let s4 = dbScript(db_sql['Q163'], { var1: id })
                             let businessDetails = await connection.query(s4)
-                            businessDetails.push(businessDetails.rows[0])
-                            
+                            businessContact.push(businessDetails.rows[0])  
                         }
-                        customerContactDetails.businessDetails = (businessDetails.length > 0) ? businessDetails : []
+                        customerContactDetails.businessDetails = (businessContact.length > 0) ? businessContact : []
                        
                     }
                     let revenueContactIds = JSON.parse(contactDetails.rows[0].revenue_contact_id)
                     if(revenueContactIds.length > 0){
-                        let revenueDetails = []
+                        let revenuContact = []
                         for(id of revenueContactIds){
                             let s4 = dbScript(db_sql['Q164'], { var1: id })
                             let revenueDetails = await connection.query(s4)
-                            revenueDetails.push(revenueDetails.rows[0])
+                            revenuContact.push(revenueDetails.rows[0])
                             
                         }
-                        customerContactDetails.revenueDetails = (revenueDetails.length > 0) ? revenueDetails : []
+                        customerContactDetails.revenueDetails = (revenuContact.length > 0) ? revenuContact : []
                     }
                     res.json({
                         status: 200,
