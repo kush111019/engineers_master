@@ -70,8 +70,7 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
                         for(id of revenueContactIds){
                             let s4 = dbScript(db_sql['Q77'], { var1: id })
                             let revenueDetails = await connection.query(s4)
-                            revenuContact.push(revenueDetails.rows[0])
-                            
+                            revenuContact.push(revenueDetails.rows[0])  
                         }
                         customerContactDetails.revenueDetails = (revenuContact.length > 0) ? revenuContact : []
                     }

@@ -108,10 +108,10 @@ const db_sql = {
               FROM business_contact WHERE customer_company_id = '{var1}' AND deleted_at IS NULL`,
     "Q75"  : `SELECT id, full_name AS revenue_contact_name, email_address AS revenue_email, phone_number AS revenue_phone_number
               FROM revenue_contact WHERE customer_company_id = '{var1}' AND deleted_at IS NULL`,
-    "Q76"  : `SELECT id, full_name AS business_contact_name, email_address AS business_email, phone_number AS business_phone_number, deleted_at
-              FROM business_contact WHERE id = '{var1}'`,  
-    "Q77"  : `SELECT id, full_name AS revenue_contact_name, email_address AS revenue_email, phone_number AS revenue_phone_number, deleted_at
-              FROM revenue_contact WHERE id = '{var1}'`,
+    "Q76"  : `SELECT id, full_name AS business_contact_name, email_address AS business_email, phone_number AS business_phone_number
+              FROM business_contact WHERE id = '{var1}' AND deleted_at is NULL`,  
+    "Q77"  : `SELECT id, full_name AS revenue_contact_name, email_address AS revenue_email, phone_number AS revenue_phone_number
+              FROM revenue_contact WHERE id = '{var1}' AND deleted_at is NULL`,
     "Q78"  : `SELECT 
                 target_amount
               FROM sales_commission 
@@ -369,7 +369,6 @@ const db_sql = {
                   sc.closed_at,
                   sc.id`,
     "Q162" : `SELECT id, closer_percentage, supporter_percentage, deleted_at FROM commission_split WHERE company_id ='{var1}'`,
- 
  }
 
 
