@@ -369,6 +369,10 @@ const db_sql = {
                   sc.closed_at,
                   sc.id`,
     "Q162" : `SELECT id, closer_percentage, supporter_percentage, deleted_at FROM commission_split WHERE company_id ='{var1}'`,
+    "Q163" : `SELECT id, full_name AS business_contact_name, email_address AS business_email, phone_number AS business_phone_number
+              FROM business_contact WHERE id = '{var1}' AND deleted_at IS NULL`,
+    "Q164" : `SELECT id, full_name AS revenue_contact_name, email_address AS revenue_email, phone_number AS revenue_phone_number
+            FROM revenue_contact WHERE id = '{var1}' AND deleted_at IS NULL`
  
  }
 
