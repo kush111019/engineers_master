@@ -57,7 +57,7 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
                     if(businessContactIds.length > 0){
                         let businessContact = []
                         for(id of businessContactIds){
-                            let s4 = dbScript(db_sql['Q163'], { var1: id })
+                            let s4 = dbScript(db_sql['Q76'], { var1: id })
                             let businessDetails = await connection.query(s4)
                             businessContact.push(businessDetails.rows[0])  
                         }
@@ -68,7 +68,7 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
                     if(revenueContactIds.length > 0){
                         let revenuContact = []
                         for(id of revenueContactIds){
-                            let s4 = dbScript(db_sql['Q164'], { var1: id })
+                            let s4 = dbScript(db_sql['Q77'], { var1: id })
                             let revenueDetails = await connection.query(s4)
                             revenuContact.push(revenueDetails.rows[0])
                             
