@@ -23,9 +23,11 @@ module.exports.mysql_real_escape_string = (str) =>{
             case "\"":
                 return "\"" + char;
             case "'":
+                return "'" + char;
             case "\\":
+                return "'" + char;
             case "%":
-                return "'" + char; // prepends a backslash to backslash, percent,
+                return "\"" + char; // prepends a backslash to backslash, percent,
             // and double/single quotes
         }
     })
