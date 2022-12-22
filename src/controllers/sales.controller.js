@@ -586,12 +586,9 @@ module.exports.addfollowUpNotes = async (req, res) => {
             let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_create) {
-                console.log(note,"note")
                 let id = uuid.v4()
                 let s4 = dbScript(db_sql['Q31'], { var1: id, var2: salesCommissionId, var3: checkPermission.rows[0].company_id, var4: userId, var5: mysql_real_escape_string(note) })
-                console.log(s4,"s4")
                 let addNote = await connection.query(s4)
-
                 if (addNote.rowCount > 0) {
                     res.json({
                         status: 201,
