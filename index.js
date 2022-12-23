@@ -14,7 +14,11 @@ const http = require('http').createServer(app)
 const sticky = require('socketio-sticky-session')
 
 app.use(cors());
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('uploads'))
