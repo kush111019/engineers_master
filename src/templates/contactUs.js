@@ -20,7 +20,7 @@ module.exports.contactUs = function (email, fullName, subject, message, address)
         <tr>
           <td>
             <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
-              <img crossorigin="anonymous" src="https://www.engineermaster.in/images/hiriselogo.png" alt="logo" 
+              <img src="http://143.198.102.134:3003/companyLogo/hiriselogo1.png" alt="logo" 
               style=" width: 120px;">
             </a>
           </td>
