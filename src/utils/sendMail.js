@@ -4,7 +4,7 @@ const welcomeTemplate = require('../templates/welcome')
 const resetPassTemplate = require('../templates/resetPassword')
 const setPassTemp = require('../templates/setPassword')
 const contactUsTemplate = require('../templates/contactUs')
-const recurringPaymentTemplate = require('../templates/recurringPayment')
+const paymentReminderTemplate = require('../templates/paymentReminder')
 const emailToContactTemplate = require('../templates/emailToContact')
 require('dotenv').config()
 
@@ -94,7 +94,7 @@ module.exports.setPasswordMail = async (email , link, userName) => {
     return sentdata
 }
 
-module.exports.recurringPaymentMail = async (email,customerName,endDate) => {
+module.exports.paymentReminderMail = async (email,customerName,endDate) => {
     let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     //Define the campaign settings\
@@ -103,7 +103,7 @@ module.exports.recurringPaymentMail = async (email,customerName,endDate) => {
     sendSmtpEmail.sender = { "name": "Hirise Tech", "email": process.env.SMTP_EMAIL };
     sendSmtpEmail.type = "classic";
     //Content that will be sent
-    sendSmtpEmail.htmlContent = recurringPaymentTemplate.recurringPayment(customerName,endDate)
+    sendSmtpEmail.htmlContent = paymentReminderTemplate.paymentReminder(customerName,endDate)
     //Select the recipients
     sendSmtpEmail.to = [{ "email" : email }]
     //Schedule the sending in one hour
@@ -376,13 +376,13 @@ module.exports.setPasswordMail2 = async (email , link, userName) => {
 
 }
 
-module.exports.recurringPaymentMail2 = async (email,customerName,endDate) => {
+module.exports.paymentReminderMail2 = async (email,customerName,endDate) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
     var toAddresses = email;
 
-    let payment = recurringPaymentTemplate.recurringPayment(customerName,endDate)
+    let payment = paymentReminderTemplate.paymentReminder(customerName,endDate)
 
     var ccAddresses = "";
     var bccAddresses = "";

@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { sendEmailToContact2, sendEmailToContact } = require("../utils/sendMail")
+const { sendEmailToContact2 } = require("../utils/sendMail")
 const uuid = require("node-uuid");
 const {simpleParser} = require('mailparser');
 const Imap = require('node-imap')
