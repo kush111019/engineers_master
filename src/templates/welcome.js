@@ -23,7 +23,7 @@ module.exports.welcome = function (link, userName) {
                         <tr>
                             <td style="text-align:left; padding-top: 20px; padding-left: 50px;" >
                               <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
-                                <img src="https://www.engineermaster.in/images/hiriselogo.png" alt="logo" 
+                                <img crossorigin="anonymous" src="https://www.engineermaster.in/images/hiriselogo.png" alt="logo" 
                                 style=" width: 120px;">
                               </a>
                             </td>
