@@ -363,7 +363,8 @@ module.exports.login = async (req, res) => {
                                 configuration: configuration,
                                 isImapCred : isImapCred,
                                 isImapEnable : admin.rows[0].is_imap_enable,
-                                expiryDate: (admin.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : ''
+                                expiryDate: (admin.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : '',
+                                isMainAdmin : admin.rows[0].is_main_admin
                             }
                         });
                     } else {
