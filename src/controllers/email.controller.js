@@ -5,6 +5,7 @@ const uuid = require("node-uuid");
 const {simpleParser} = require('mailparser');
 const Imap = require('node-imap')
 const {containsObject, setEmailRead} = require('../utils/helper')
+const { decrypt } = require('../utils/crypto')
 
 module.exports.fetchEmails = async (req, res) => {
     try {
@@ -17,9 +18,10 @@ module.exports.fetchEmails = async (req, res) => {
             let findCredentials = await connection.query(s1)
             let mainArray = []
             if (findCredentials.rowCount > 0) {
+                let dpass = await decrypt(findCredentials.rows[0].app_password)
                 let imapConfig = {
                     user: findCredentials.rows[0].email,
-                    password: findCredentials.rows[0].app_password,
+                    password: dpass,
                     host: findCredentials.rows[0].imap_host,
                     port: Number(findCredentials.rows[0].imap_port),
                     tls: true,
@@ -305,9 +307,10 @@ module.exports.sendEmail = async (req, res) => {
             let s1 = dbScript(db_sql['Q138'], { var1: checkAdmin.rows[0].id, var2: checkAdmin.rows[0].company_id  })
             let findCredentials = await connection.query(s1)
             if (findCredentials.rowCount > 0) {
+                let dpass = await decrypt(findCredentials.rows[0].app_password)
                 let senderEmail = {
                     email: findCredentials.rows[0].email,
-                    password: findCredentials.rows[0].app_password,
+                    password: dpass,
                     smtpHost : findCredentials.rows[0].smtp_host,
                     smtpPort : findCredentials.rows[0].smtp_port
                 }
@@ -462,10 +465,10 @@ module.exports.readEmail = async (req, res) => {
         let s1 = dbScript(db_sql['Q138'], { var1: checkAdmin.rows[0].id, var2: checkAdmin.rows[0].company_id  })
         let findCredentials = await connection.query(s1)
         if (findCredentials.rowCount > 0) {
-
+            let dpass = await decrypt(findCredentials.rows[0].app_password)
             let imapConfig = {
                 user: findCredentials.rows[0].email,
-                password: findCredentials.rows[0].app_password,
+                password: dpass,
                 host: findCredentials.rows[0].imap_host,
                 port: findCredentials.rows[0].imap_port,
                 tls: true,
