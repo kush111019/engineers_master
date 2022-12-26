@@ -175,50 +175,6 @@ module.exports.resetPasswordMail = async (email , link , userName) => {
     return sentdata
 }
 
-module.exports.sendEmailToContact = async (emails, subject, message, cc) => {
-
-    let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-    let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-    //Define the campaign settings\
-    sendSmtpEmail.name = "Email sent via the API";
-    sendSmtpEmail.subject = subject;
-    sendSmtpEmail.sender = { "name": "Hirise Tech", "email": process.env.SMTP_EMAIL };
-    sendSmtpEmail.type = "classic";
-    //Content that will be sent
-    sendSmtpEmail.htmlContent = emailToContactTemplate.emailToContact(message)
-    //Select the recipients
-    let emailArr = []
-    for(let email of emails){
-        emailArr.push({
-            "email" : email
-        })
-    }
-    sendSmtpEmail.to = emailArr
-
-    if(cc.length > 0){
-        let ccArr = []
-        for(let ccEmail of cc){
-            ccArr.push({
-                "email" : ccEmail
-            })
-        }
-        sendSmtpEmail.cc = ccArr
-    }
-
-    //Schedule the sending in one hour
-    //scheduledAt = '2018-01-01 00:00:01'
-
-    //Make the call to the client
-    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data)=> {
-        console.log('API called successfully. Returned data: ' + JSON.stringify(data));
-        return JSON.stringify(data)
-      }).catch((error)=> {
-        console.error(error);
-        return error
-      });
-    return sentdata
-}
-
 
 //-----------------------------------------Local Email-------------------------------------
 
