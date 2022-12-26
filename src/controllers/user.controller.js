@@ -261,9 +261,13 @@ module.exports.updateUser = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_update) {
 
+            let s5 = dbScript(db_sql['Q12'],{var1 : roleId})
+            let findRole = await connection.query(s5)
+            let isAdmin = findRole.rows[0].role_name == 'Admin' ? true : false;
+
             let _dt = new Date().toISOString();
             await connection.query('BEGIN')
-            let s4 = dbScript(db_sql['Q22'], { var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: checkPermission.rows[0].company_id })
+            let s4 = dbScript(db_sql['Q22'], { var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: checkPermission.rows[0].company_id, var10 : isAdmin })
             let updateUser = await connection.query(s4)
             await connection.query('COMMIT')
             if (updateUser.rowCount > 0) {
