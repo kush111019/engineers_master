@@ -18,7 +18,7 @@ module.exports.fetchEmails = async (req, res) => {
             let findCredentials = await connection.query(s1)
             let mainArray = []
             if (findCredentials.rowCount > 0) {
-                let dpass = await decrypt(findCredentials.rows[0].app_password)
+                let dpass = decrypt(findCredentials.rows[0].app_password)
                 let imapConfig = {
                     user: findCredentials.rows[0].email,
                     password: dpass,
@@ -307,7 +307,7 @@ module.exports.sendEmail = async (req, res) => {
             let s1 = dbScript(db_sql['Q138'], { var1: checkAdmin.rows[0].id, var2: checkAdmin.rows[0].company_id  })
             let findCredentials = await connection.query(s1)
             if (findCredentials.rowCount > 0) {
-                let dpass = await decrypt(findCredentials.rows[0].app_password)
+                let dpass = decrypt(findCredentials.rows[0].app_password)
                 let senderEmail = {
                     email: findCredentials.rows[0].email,
                     password: dpass,
@@ -465,7 +465,7 @@ module.exports.readEmail = async (req, res) => {
         let s1 = dbScript(db_sql['Q138'], { var1: checkAdmin.rows[0].id, var2: checkAdmin.rows[0].company_id  })
         let findCredentials = await connection.query(s1)
         if (findCredentials.rowCount > 0) {
-            let dpass = await decrypt(findCredentials.rows[0].app_password)
+            let dpass = decrypt(findCredentials.rows[0].app_password)
             let imapConfig = {
                 user: findCredentials.rows[0].email,
                 password: dpass,
