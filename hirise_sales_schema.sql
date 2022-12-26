@@ -515,7 +515,7 @@ CREATE TABLE public.sales_commission (
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     business_contact_id character varying,
-    revenue_revenue_id character varying,
+    revenue_contact_id character varying,
     qualification character varying,
     is_qualified boolean,
     target_amount character varying,

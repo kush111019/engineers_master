@@ -1,7 +1,7 @@
 const connection = require("../database/connection");
 const stripe = require('stripe')(process.env.SECRET_KEY)
 const { dbScript, db_sql } = require("./db_scripts");
-const { recurringPaymentMail2, recurringPaymentMail } = require("../utils/sendMail")
+const { paymentReminderMail2, paymentReminderMail } = require("../utils/sendMail")
 const moment = require('moment')
 
 module.exports.paymentReminder = async () => {
@@ -20,21 +20,21 @@ module.exports.paymentReminder = async () => {
             beforeWeek = moment(beforeWeek).format('MM/DD/YYYY')
             if (currentDate == beforeWeek) {
                 if (process.env.isLocalEmail == 'true') {
-                    await recurringPaymentMail2(data.email_address, data.full_name, new Date(data.expiry_date));
+                    await paymentReminderMail2(data.email_address, data.full_name, new Date(data.expiry_date));
                 } else {
-                    await recurringPaymentMail(data.email_address, data.full_name, new Date(data.expiry_date));
+                    await paymentReminderMail(data.email_address, data.full_name, new Date(data.expiry_date));
                 }
             } else if (currentDate == beforeThreeDays) {
                 if (process.env.isLocalEmail == 'true') {
-                    await recurringPaymentMail2(data.email_address, data.full_name, new Date(data.expiry_date));
+                    await paymentReminderMail2(data.email_address, data.full_name, new Date(data.expiry_date));
                 } else {
-                    await recurringPaymentMail(data.email_address, data.full_name, new Date(data.expiry_date));
+                    await paymentReminderMail(data.email_address, data.full_name, new Date(data.expiry_date));
                 }
             } else if (currentDate == beforeOneDay) {
                 if (process.env.isLocalEmail == 'true') {
-                    await recurringPaymentMail2(data.email_address, data.full_name, new Date(data.expiry_date));
+                    await paymentReminderMail2(data.email_address, data.full_name, new Date(data.expiry_date));
                 } else {
-                    await recurringPaymentMail(data.email_address, data.full_name, new Date(data.expiry_date));
+                    await paymentReminderMail(data.email_address, data.full_name, new Date(data.expiry_date));
                 }
             } else if (currentDate == moment(new Date(data.expiry_date)).format('MM/DD/YYYY')) {
                 let _dt = new Date().toISOString();

@@ -4,7 +4,7 @@ const welcomeTemplate = require('../templates/welcome')
 const resetPassTemplate = require('../templates/resetPassword')
 const setPassTemp = require('../templates/setPassword')
 const contactUsTemplate = require('../templates/contactUs')
-const recurringPaymentTemplate = require('../templates/recurringPayment')
+const paymentReminderTemplate = require('../templates/paymentReminder')
 const emailToContactTemplate = require('../templates/emailToContact')
 require('dotenv').config()
 
@@ -94,7 +94,7 @@ module.exports.setPasswordMail = async (email , link, userName) => {
     return sentdata
 }
 
-module.exports.recurringPaymentMail = async (email,customerName,endDate) => {
+module.exports.paymentReminderMail = async (email,customerName,endDate) => {
     let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     //Define the campaign settings\
@@ -103,7 +103,7 @@ module.exports.recurringPaymentMail = async (email,customerName,endDate) => {
     sendSmtpEmail.sender = { "name": "Hirise Tech", "email": process.env.SMTP_EMAIL };
     sendSmtpEmail.type = "classic";
     //Content that will be sent
-    sendSmtpEmail.htmlContent = recurringPaymentTemplate.recurringPayment(customerName,endDate)
+    sendSmtpEmail.htmlContent = paymentReminderTemplate.paymentReminder(customerName,endDate)
     //Select the recipients
     sendSmtpEmail.to = [{ "email" : email }]
     //Schedule the sending in one hour
@@ -161,50 +161,6 @@ module.exports.resetPasswordMail = async (email , link , userName) => {
     sendSmtpEmail.htmlContent = emailToContactTemplate.emailToContact(message)
     //Select the recipients
     sendSmtpEmail.to = [{ "email" : email }]
-    //Schedule the sending in one hour
-    //scheduledAt = '2018-01-01 00:00:01'
-
-    //Make the call to the client
-    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data)=> {
-        console.log('API called successfully. Returned data: ' + JSON.stringify(data));
-        return JSON.stringify(data)
-      }).catch((error)=> {
-        console.error(error);
-        return error
-      });
-    return sentdata
-}
-
-module.exports.sendEmailToContact = async (emails, subject, message, cc) => {
-
-    let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-    let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-    //Define the campaign settings\
-    sendSmtpEmail.name = "Email sent via the API";
-    sendSmtpEmail.subject = subject;
-    sendSmtpEmail.sender = { "name": "Hirise Tech", "email": process.env.SMTP_EMAIL };
-    sendSmtpEmail.type = "classic";
-    //Content that will be sent
-    sendSmtpEmail.htmlContent = emailToContactTemplate.emailToContact(message)
-    //Select the recipients
-    let emailArr = []
-    for(let email of emails){
-        emailArr.push({
-            "email" : email
-        })
-    }
-    sendSmtpEmail.to = emailArr
-
-    if(cc.length > 0){
-        let ccArr = []
-        for(let ccEmail of cc){
-            ccArr.push({
-                "email" : ccEmail
-            })
-        }
-        sendSmtpEmail.cc = ccArr
-    }
-
     //Schedule the sending in one hour
     //scheduledAt = '2018-01-01 00:00:01'
 
@@ -376,13 +332,13 @@ module.exports.setPasswordMail2 = async (email , link, userName) => {
 
 }
 
-module.exports.recurringPaymentMail2 = async (email,customerName,endDate) => {
+module.exports.paymentReminderMail2 = async (email,customerName,endDate) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
     var toAddresses = email;
 
-    let payment = recurringPaymentTemplate.recurringPayment(customerName,endDate)
+    let payment = paymentReminderTemplate.paymentReminder(customerName,endDate)
 
     var ccAddresses = "";
     var bccAddresses = "";

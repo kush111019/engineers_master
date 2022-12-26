@@ -76,6 +76,8 @@ router.put('/deleteSalesCommission',verifyTokenFn, controller.sales.deleteSalesC
 router.get('/salesCommissionLogsList',verifyTokenFn, controller.sales.salesCommissionLogsList)
 
 router.post('/closeSales',verifyTokenFn, controller.sales.closeSales)
+router.get('/usersListForSales', verifyTokenFn, controller.sales.usersListForSales)
+router.get('/commissionSplitListForSales', verifyTokenFn, controller.sales.commissionSplitListForSales)
 //----------------------------------------Reports------------------------------------------
 router.get('/revenuePerCustomer',verifyTokenFn, controller.reports.revenuePerCustomer)
 router.get('/revenuePerProduct',verifyTokenFn, controller.reports.revenuePerProduct)

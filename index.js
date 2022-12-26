@@ -3,6 +3,7 @@ const cluster = require('cluster');
 const os = require('os');
 const app = express();
 const cors = require('cors');
+const helmet = require('helmet')
 const cron = require('node-cron');
 require('dotenv').config()
 const logger = require('./middleware/logger');
@@ -13,6 +14,11 @@ const http = require('http').createServer(app)
 const sticky = require('socketio-sticky-session')
 
 app.use(cors());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('uploads'))

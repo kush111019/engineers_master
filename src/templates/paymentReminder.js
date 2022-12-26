@@ -1,5 +1,5 @@
-module.exports.recurringPayment = function (customerName,endDate) {
-    let recurringTemp = `
+module.exports.paymentReminder = function (customerName,endDate) {
+    let paymentReminderTemp = `
     <!doctype html>
     <html lang="en-US">
     
@@ -69,7 +69,7 @@ module.exports.recurringPayment = function (customerName,endDate) {
     
     </html>`
 
-    return recurringTemp
+    return paymentReminderTemp
 }
 
 

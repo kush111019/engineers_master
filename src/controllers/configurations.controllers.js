@@ -3,6 +3,7 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
 const Imap = require('node-imap')
 const nodemailer = require("nodemailer");
+const { encrypt, decrypt } = require('../utils/crypto')
 
 
 module.exports.addConfigs = async (req, res) => {
@@ -184,9 +185,9 @@ module.exports.addImapCredentials = async (req, res) => {
                             let _dt = new Date().toISOString();
                             let s2 = dbScript(db_sql['Q142'], { var1: _dt, var2: findAdmin.rows[0].id, var3 : findAdmin.rows[0].company_id })
                             let updateCredential = await connection.query(s2)
-
+                            let encryptedAppPassword = JSON.stringify(encrypt(appPassword))
                             let id = uuid.v4()
-                            let s3 = dbScript(db_sql['Q143'], { var1: id, var2: email, var3: appPassword, var4: findAdmin.rows[0].id, var5: imapHost, var6: imapPort, var7: smtpHost, var8: smtpPort, var9 : findAdmin.rows[0].company_id })
+                            let s3 = dbScript(db_sql['Q143'], { var1: id, var2: email, var3: encryptedAppPassword, var4: findAdmin.rows[0].id, var5: imapHost, var6: imapPort, var7: smtpHost, var8: smtpPort, var9 : findAdmin.rows[0].company_id })
                             let addCredentails = await connection.query(s3)
 
                             if (addCredentails.rowCount > 0) {
@@ -247,9 +248,10 @@ module.exports.imapCredentials = async (req, res) => {
             let credentialObj = {}
 
             if (credentials.rowCount > 0 ) {
+                let dpass = decrypt(JSON.parse(credentials.rows[0].app_password)) 
                 credentialObj.id = credentials.rows[0].id
                 credentialObj.email = credentials.rows[0].email
-                credentialObj.appPassword = credentials.rows[0].app_password
+                credentialObj.appPassword = dpass
                 credentialObj.imapHost = credentials.rows[0].imap_host
                 credentialObj.imapPort = credentials.rows[0].imap_port
                 credentialObj.smtpHost = credentials.rows[0].smtp_host

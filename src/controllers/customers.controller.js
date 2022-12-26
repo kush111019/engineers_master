@@ -273,7 +273,7 @@ module.exports.deleteContactForCustomer = async (req, res) => {
                 let updateCustomer
                 await connection.query('BEGIN')
                 if (type == 'business') {
-                    let businessIds = JSON.parse(customerData.rows[0].business_id)
+                    let businessIds = JSON.parse(customerData.rows[0].business_contact_id)
                     let index = businessIds.indexOf(id);
                     businessIds.splice(index, 1)
 
@@ -281,7 +281,7 @@ module.exports.deleteContactForCustomer = async (req, res) => {
                     updateCustomer = await connection.query(s5)
                 }
                 else if (type == 'revenue') {
-                    let revenueIds = JSON.parse(customerData.rows[0].revenue_id)
+                    let revenueIds = JSON.parse(customerData.rows[0].revenue_contact_id)
                     let index = revenueIds.indexOf(id);
                     revenueIds.splice(index, 1)
 

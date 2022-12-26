@@ -38,7 +38,7 @@ module.exports.resetPassword = function (link, email, userName) {
                                             <br style="color:#455056; font-size:15px;line-height:24px; margin:0;">
                                             Hello ${userName}, <br>
                                             <br/>
-                                          <center> <img src="https://www.engineermaster.in/images/eyes.png" alt="eyes" style="width: 5%;" > </center>
+                                            <center> <img  src="https://www.engineermaster.in/images/eyes.png" alt="eyes" style="width: 5%;" > </center>
                                             <h4 style="text-align:center;">Password Reset</h4>
 
 
