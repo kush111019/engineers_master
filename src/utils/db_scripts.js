@@ -32,7 +32,7 @@ const db_sql = {
     "Q27"  : `UPDATE roles SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at IS NULL RETURNING *`,
     "Q28"  : `UPDATE permissions SET deleted_at = '{var2}' WHERE role_id = '{var1}' AND deleted_at IS NULL RETURNING * `,
     "Q29"  : `UPDATE slabs SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL`,
-    "Q30"  : `UPDATE users SET is_locked = '{var1}', updated_at = '{var3}' WHERE company_id = '{var2}' AND deleted_at IS NULL  RETURNING * `,
+    "Q30"  : `UPDATE users SET is_locked = '{var1}', updated_at = '{var3}' WHERE company_id = '{var2}' AND is_main_admin = false AND deleted_at IS NULL RETURNING * `,
     "Q31"  : `INSERT INTO follow_up_notes (id, sales_commission_id, company_id, user_id, notes) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
     "Q32"  : `SELECT id, notes, created_at FROM follow_up_notes WHERE sales_commission_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at DESC`,
     "Q33"  : `UPDATE permissions SET user_id = '{var2}' WHERE role_id = '{var1}' AND deleted_at IS NULL RETURNING *`,

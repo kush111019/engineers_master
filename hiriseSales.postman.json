@@ -543,7 +543,7 @@
               ],
               "body": {
                 "mode": "raw",
-                "raw": "{\r\n    \"token\" : \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFlNThjNmI1LTFiZWEtNDFjMC04ODNiLTUzYTljMzA2OWFmMyIsImVtYWlsIjoic3VwZXJhZG1pbkB5b3BtYWlsLmNvbSIsImlhdCI6MTY2MzA3MTA2MiwiZXhwIjoxNjYzMTU3NDYyfQ.eVBT2HahOfPmHeLwnIygEbEmLZkNLFCz-KObLnbNE9M\",\r\n    \"password\" : \"606f3a6f10ca691dd72913176d919f1fd2857c258d54a0f194217ff0973e1d527a1d60d60a54b9809b07fca39922af644c643e2543911160893a9964b2237ad9\"\r\n}",
+                "raw": "{\r\n    \"token\" : \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFlNThjNmI1LTFiZWEtNDFjMC04ODNiLTUzYTljMzA2OWFmMyIsImVtYWlsIjoic3VwZXJhZG1pbkB5b3BtYWlsLmNvbSIsImlhdCI6MTY2MzA3MTA2MiwiZXhwIjoxNjYzMTU3NDYyfQ.eVBT2HahOfPmHeLwnIygEbEmLZkNLFCz-KObLnbNE9M\",\r\n    \"password\" : \"\"\r\n}",
                 "options": {
                   "raw": {
                     "language": "json"
@@ -662,7 +662,7 @@
                 }
               ],
               "url": {
-                "raw": "{{superAdmin}}/dashboard?page=1",
+                "raw": "{{superAdmin}}/dashboard?page=1&orderBy=ASC&startDate=10-10-2021&endDate=10-10-2023",
                 "host": [
                   "{{superAdmin}}"
                 ],
@@ -672,7 +672,21 @@
                 "query": [
                   {
                     "key": "page",
-                    "value": "1",
+                    "value": "1"
+                  },
+                  {
+                    "key": "orderBy",
+                    "value": "ASC",
+                    "type": "text"
+                  },
+                  {
+                    "key": "startDate",
+                    "value": "10-10-2021",
+                    "type": "text"
+                  },
+                  {
+                    "key": "endDate",
+                    "value": "10-10-2023",
                     "type": "text"
                   }
                 ]
@@ -713,6 +727,35 @@
                 ],
                 "path": [
                   "enableDisableImapService"
+                ]
+              }
+            },
+            "response": [
+              
+            ]
+          },
+          {
+            "name": "totalExpectedRevenueCounts",
+            "id": "3ed71e72-b1a7-445d-8b2c-5aa6916834b0",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "{{SAtoken}}",
+                  "type": "text"
+                }
+              ],
+              "url": {
+                "raw": "{{superAdmin}}/totalExpectedRevenueCounts",
+                "host": [
+                  "{{superAdmin}}"
+                ],
+                "path": [
+                  "totalExpectedRevenueCounts"
                 ]
               }
             },
@@ -2016,7 +2059,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"slabs\": [\r\n        {\r\n            \"minAmount\": \"0\",\r\n            \"maxAmount\" : \"10000\",\r\n            \"percentage\": 10,\r\n            \"isMax\" : false,\r\n            \"currency\" : \"us\",\r\n            \"counter\" : 1\r\n        },\r\n        {\r\n            \"minAmount\": \"10001\",\r\n            \"maxAmount\" : \"50000\",\r\n            \"percentage\": 5,\r\n            \"isMax\" : false,\r\n            \"currency\" : \"us\",\r\n            \"counter\" : 2\r\n        },\r\n        {\r\n            \"minAmount\": \"50001\",\r\n            \"maxAmount\" : \"\",\r\n            \"percentage\": 3,\r\n            \"isMax\" : true,\r\n            \"currency\" : \"us\",\r\n            \"counter\" : 3\r\n        }\r\n    ]\r\n}",
+                    "raw": "{\r\n    \"slabs\": [\r\n        {\r\n            \"minAmount\": \"0\",\r\n            \"maxAmount\" : \"1000\",\r\n            \"percentage\": 10,\r\n            \"isMax\" : false,\r\n            \"currency\" : \"us\",\r\n            \"counter\" : 1\r\n        },\r\n        {\r\n            \"minAmount\": \"10001\",\r\n            \"maxAmount\" : \"50000\",\r\n            \"percentage\": 5,\r\n            \"isMax\" : false,\r\n            \"currency\" : \"us\",\r\n            \"counter\" : 2\r\n        },\r\n        {\r\n            \"minAmount\": \"50001\",\r\n            \"maxAmount\" : \"\",\r\n            \"percentage\": 3,\r\n            \"isMax\" : true,\r\n            \"currency\" : \"us\",\r\n            \"counter\" : 3\r\n        }\r\n    ]\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -3070,6 +3113,64 @@
                 "response": [
                   
                 ]
+              },
+              {
+                "name": "usersListForSales",
+                "id": "4ddd9ef8-d9b3-434a-8970-c2c8ea25c54b",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/usersListForSales",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "usersListForSales"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "commissionSplitListForSales",
+                "id": "93f29b99-f53e-45eb-983b-01c22e48bd29",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/commissionSplitListForSales",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "commissionSplitListForSales"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
               }
             ],
             "id": "9e3124f7-fc22-4691-b3b5-47add98bfbfa"
@@ -3284,7 +3385,7 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/revenues?page=1",
+                    "raw": "{{companyAdmin}}/revenues?page=1&orderBy=ASC&startDate=10-10-2021&endDate=10-12-2023",
                     "host": [
                       "{{companyAdmin}}"
                     ],
@@ -3294,9 +3395,49 @@
                     "query": [
                       {
                         "key": "page",
-                        "value": "1",
-                        "type": "text"
+                        "value": "1"
+                      },
+                      {
+                        "key": "orderBy",
+                        "value": "ASC"
+                      },
+                      {
+                        "key": "startDate",
+                        "value": "10-10-2021"
+                      },
+                      {
+                        "key": "endDate",
+                        "value": "10-12-2023"
                       }
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "totalExpectedRevenueCounts",
+                "id": "a9c95fd1-82e9-4d98-9163-f69f765be634",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/totalExpectedRevenueCounts",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "totalExpectedRevenueCounts"
                     ]
                   }
                 },
@@ -3356,7 +3497,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"timeline\" : \"Quarterly\",\r\n    \"revenue\" : 2000000,\r\n    \"growthWindow\" : 1,\r\n    \"growthPercentage\" : 6,\r\n    \"startDate\" : \"01-01-2022\",\r\n    \"endDate\" : \"01-31-2024\",\r\n    \"currency\" : \"$\"\r\n}",
+                    "raw": "{\r\n    \"timeline\" : \"Monthly\",\r\n    \"revenue\" : 10000,\r\n    \"growthWindow\" : 2,\r\n    \"growthPercentage\" : 5,\r\n    \"startDate\" : \"01-01-2020\",\r\n    \"endDate\" : \"12-31-2023\",\r\n    \"currency\" : \"$\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -3393,7 +3534,7 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/actualVsForecast?id=f92284bc-a5cf-4a75-a1c1-a9b9c3f751e5",
+                    "raw": "{{companyAdmin}}/actualVsForecast?id=c862c0f8-3b79-4d6d-bc97-b58492e9c93d&page=2",
                     "host": [
                       "{{companyAdmin}}"
                     ],
@@ -3403,7 +3544,12 @@
                     "query": [
                       {
                         "key": "id",
-                        "value": "f92284bc-a5cf-4a75-a1c1-a9b9c3f751e5"
+                        "value": "c862c0f8-3b79-4d6d-bc97-b58492e9c93d"
+                      },
+                      {
+                        "key": "page",
+                        "value": "2",
+                        "type": "text"
                       }
                     ]
                   }

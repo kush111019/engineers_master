@@ -5,7 +5,7 @@
 -- Dumped from database version 14.2
 -- Dumped by pg_dump version 14.2
 
--- Started on 2022-12-05 16:33:46
+-- Started on 2022-12-27 11:11:46
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -746,14 +746,15 @@ CREATE TABLE public.users (
     is_locked boolean DEFAULT false,
     is_admin boolean DEFAULT false,
     expiry_date timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    country_code character varying
+    country_code character varying,
+    is_main_admin boolean DEFAULT false
 );
 
 
 ALTER TABLE public.users OWNER TO postgres;
 
 --
--- TOC entry 3421 (class 2606 OID 344268)
+-- TOC entry 3422 (class 2606 OID 344268)
 -- Name: chat_room_members chat_room_members_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -762,7 +763,7 @@ ALTER TABLE ONLY public.chat_room_members
 
 
 --
--- TOC entry 3401 (class 2606 OID 123143)
+-- TOC entry 3402 (class 2606 OID 123143)
 -- Name: companies companies_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -771,7 +772,7 @@ ALTER TABLE ONLY public.companies
 
 
 --
--- TOC entry 3425 (class 2606 OID 368845)
+-- TOC entry 3426 (class 2606 OID 368845)
 -- Name: emails emails_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -780,7 +781,7 @@ ALTER TABLE ONLY public.emails
 
 
 --
--- TOC entry 3413 (class 2606 OID 196869)
+-- TOC entry 3414 (class 2606 OID 196869)
 -- Name: follow_up_notes follow_up_notes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -789,7 +790,7 @@ ALTER TABLE ONLY public.follow_up_notes
 
 
 --
--- TOC entry 3423 (class 2606 OID 360652)
+-- TOC entry 3424 (class 2606 OID 360652)
 -- Name: modules modules_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -798,7 +799,7 @@ ALTER TABLE ONLY public.modules
 
 
 --
--- TOC entry 3415 (class 2606 OID 319692)
+-- TOC entry 3416 (class 2606 OID 319692)
 -- Name: payment_plans payment_plans_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -807,7 +808,7 @@ ALTER TABLE ONLY public.payment_plans
 
 
 --
--- TOC entry 3411 (class 2606 OID 131276)
+-- TOC entry 3412 (class 2606 OID 131276)
 -- Name: permissions permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -816,7 +817,7 @@ ALTER TABLE ONLY public.permissions
 
 
 --
--- TOC entry 3405 (class 2606 OID 123173)
+-- TOC entry 3406 (class 2606 OID 123173)
 -- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -825,7 +826,7 @@ ALTER TABLE ONLY public.roles
 
 
 --
--- TOC entry 3407 (class 2606 OID 123193)
+-- TOC entry 3408 (class 2606 OID 123193)
 -- Name: slabs slaps_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -834,7 +835,7 @@ ALTER TABLE ONLY public.slabs
 
 
 --
--- TOC entry 3409 (class 2606 OID 123252)
+-- TOC entry 3410 (class 2606 OID 123252)
 -- Name: super_admin super_admin_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -843,7 +844,7 @@ ALTER TABLE ONLY public.super_admin
 
 
 --
--- TOC entry 3419 (class 2606 OID 327884)
+-- TOC entry 3420 (class 2606 OID 327884)
 -- Name: superadmin_config superadmin_config_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -852,7 +853,7 @@ ALTER TABLE ONLY public.superadmin_config
 
 
 --
--- TOC entry 3417 (class 2606 OID 319702)
+-- TOC entry 3418 (class 2606 OID 319702)
 -- Name: transactions transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -861,7 +862,7 @@ ALTER TABLE ONLY public.transactions
 
 
 --
--- TOC entry 3403 (class 2606 OID 123153)
+-- TOC entry 3404 (class 2606 OID 123153)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -870,7 +871,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 3428 (class 2606 OID 196875)
+-- TOC entry 3429 (class 2606 OID 196875)
 -- Name: follow_up_notes company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -879,7 +880,7 @@ ALTER TABLE ONLY public.follow_up_notes
 
 
 --
--- TOC entry 3427 (class 2606 OID 131277)
+-- TOC entry 3428 (class 2606 OID 131277)
 -- Name: permissions permissions_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -888,7 +889,7 @@ ALTER TABLE ONLY public.permissions
 
 
 --
--- TOC entry 3429 (class 2606 OID 196880)
+-- TOC entry 3430 (class 2606 OID 196880)
 -- Name: follow_up_notes user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -897,7 +898,7 @@ ALTER TABLE ONLY public.follow_up_notes
 
 
 --
--- TOC entry 3426 (class 2606 OID 123214)
+-- TOC entry 3427 (class 2606 OID 123214)
 -- Name: users users_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -905,7 +906,7 @@ ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) NOT VALID;
 
 
--- Completed on 2022-12-05 16:33:48
+-- Completed on 2022-12-27 11:11:46
 
 --
 -- PostgreSQL database dump complete
