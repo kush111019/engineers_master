@@ -83,8 +83,12 @@ module.exports.addUser = async (req, res) => {
             let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_create) {
+                let s4 = dbScript(db_sql['Q12'],{var1 : roleId})
+                let findRole = await connection.query(s4)
+                let isAdmin = findRole.rows[0].role_name == 'Admin' ? true : false;
+
                 await connection.query('BEGIN')
-                let s5 = dbScript(db_sql['Q45'], { var1: id, var2: mysql_real_escape_string(name), var3: checkPermission.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address) })
+                let s5 = dbScript(db_sql['Q45'], { var1: id, var2: mysql_real_escape_string(name), var3: checkPermission.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address), var10 : isAdmin })
                 let addUser = await connection.query(s5)
                 let _dt = new Date().toISOString();
                 let s6 = dbScript(db_sql['Q33'], { var1: roleId, var2: addUser.rows[0].id, var3: _dt })
