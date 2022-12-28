@@ -103,7 +103,7 @@ module.exports.customerList = async (req, res) => {
         let userId = req.user.id
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_view) {
+        if (checkPermission.rows[0].permission_to_view_global) {
             let customerArr = []
             let s4 = dbScript(db_sql['Q39'], { var1: checkPermission.rows[0].company_id })
             let customerList = await connection.query(s4)
@@ -325,7 +325,7 @@ module.exports.customerCompanyList = async (req, res) => {
         let userId = req.user.id
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_view) {
+        if (checkPermission.rows[0].permission_to_view_global) {
 
             let s4 = dbScript(db_sql['Q46'], { var1: checkPermission.rows[0].company_id, var2: companyName })
             let customerList = await connection.query(s4)
@@ -366,7 +366,7 @@ module.exports.customerContactDetails = async (req, res) => {
         let userId = req.user.id
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_view) {
+        if (checkPermission.rows[0].permission_to_view_global) {
             let customerContactDetails = {};
 
             let s4 = dbScript(db_sql['Q74'], { var1: customerCompanyId })

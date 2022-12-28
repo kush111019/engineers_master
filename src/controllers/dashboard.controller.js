@@ -11,7 +11,7 @@ module.exports.revenues = async (req, res) => {
         let offset = (page - 1) * limit
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_view) {
+        if (checkPermission.rows[0].permission_to_view_global) {
             let revenueCommissionBydate = []
 
             let s5 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
@@ -79,7 +79,7 @@ module.exports.totalExpectedRevenueCounts = async(req, res) => {
         let userId = req.user.id
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_view) {
+        if (checkPermission.rows[0].permission_to_view_global) {
 
             let counts = {}
 

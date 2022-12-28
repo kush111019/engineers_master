@@ -58,7 +58,7 @@ module.exports.slabList = async (req, res) => {
         let userId = req.user.id
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_view) {
+        if (checkPermission.rows[0].permission_to_view_global) {
 
             let s4 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
             let slabList = await connection.query(s4)

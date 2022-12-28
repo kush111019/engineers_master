@@ -60,7 +60,7 @@ let createAdmin = async (bodyData, cId, res) => {
             for (data of findModules.rows) {
                 moduleArr.push(data.id)
                 let perId = uuid.v4()
-                let s7 = dbScript(db_sql['Q20'], { var1: perId, var2: createRole.rows[0].id, var3: data.id, var4: true, var5: true, var6: true, var7: true, var8: saveuser.rows[0].id })
+                let s7 = dbScript(db_sql['Q20'], { var1: perId, var2: createRole.rows[0].id, var3: data.id, var4: true, var5: true, var6: true, var7: true, var8: true, var9: saveuser.rows[0].id })
                 var addPermission = await connection.query(s7)
             }
             let _dt = new Date().toISOString();

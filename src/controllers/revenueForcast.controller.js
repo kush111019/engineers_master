@@ -62,7 +62,7 @@ module.exports.revenueForecastList = async (req, res) => {
         let userId = req.user.id
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
-        if (checkPermission.rows[0].permission_to_view) {
+        if (checkPermission.rows[0].permission_to_view_global) {
 
             let s3 = dbScript(db_sql['Q68'], { var1: checkPermission.rows[0].company_id })
             let revenueForecastList = await connection.query(s3)
@@ -149,7 +149,7 @@ module.exports.actualVsForecast = async (req, res) => {
         let offset = (page - 1) * limit;
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_view) {
+        if (checkPermission.rows[0].permission_to_view_global) {
             let actualVsForecastObj = {}
             let revenueData = [];
             let actualData = []
