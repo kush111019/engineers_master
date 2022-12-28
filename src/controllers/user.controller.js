@@ -209,7 +209,6 @@ module.exports.usersList = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
-
             let s4 = dbScript(db_sql['Q15'], { var1: checkPermission.rows[0].company_id })
             let findUsers = await connection.query(s4);
             if (findUsers.rows.length > 0) {
@@ -237,8 +236,7 @@ module.exports.usersList = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 403,
+            res.status(403).json({
                 success: false,
                 message: "Unathorized",
             })
