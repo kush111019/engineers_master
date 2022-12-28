@@ -26,7 +26,9 @@ module.exports.accessChat = async (req, res) => {
                         status: 200,
                         success: true,
                         message: "chat already initiated",
-                        data: ""
+                        data: {
+                            id : findChat.rows[0].id
+                        }
                     });
                 }
                 else {
