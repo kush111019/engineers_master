@@ -46,7 +46,7 @@ let createAdmin = async (bodyData, cId, res) => {
                 var1: id, var2: mysql_real_escape_string(name),
                 var3: cId, var4: companyLogo, var5: emailAddress, var6: mobileNumber,
                 var7: phoneNumber, var8: encryptedPassword, var9: role_id,
-                var10: mysql_real_escape_string(companyAddress), var11: expiryDate
+                var10: mysql_real_escape_string(companyAddress), var11: expiryDate, var12 : id
             })
             let saveuser = await connection.query(s5)
 

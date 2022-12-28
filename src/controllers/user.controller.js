@@ -88,13 +88,16 @@ module.exports.addUser = async (req, res) => {
                 let isAdmin = findRole.rows[0].role_name == 'Admin' ? true : false;
 
                 await connection.query('BEGIN')
-                let s5 = dbScript(db_sql['Q45'], { var1: id, var2: mysql_real_escape_string(name), var3: checkPermission.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address), var10 : isAdmin })
+                let s5 = dbScript(db_sql['Q45'], { var1: id, var2: mysql_real_escape_string(name), var3: checkPermission.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address), var10 : isAdmin, var11 : userId })
                 let addUser = await connection.query(s5)
+
                 let _dt = new Date().toISOString();
                 let s6 = dbScript(db_sql['Q33'], { var1: roleId, var2: addUser.rows[0].id, var3: _dt })
                 let addPermission = await connection.query(s6)
-                await connection.query('COMMIT')
+
+                
                 if (addUser.rowCount > 0 && addPermission.rowCount > 0) {
+                    await connection.query('COMMIT')
                     const payload = {
                         id: addUser.rows[0].id,
                         email: addUser.rows[0].email_address
