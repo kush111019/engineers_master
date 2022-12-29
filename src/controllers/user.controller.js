@@ -246,9 +246,23 @@ module.exports.usersList = async (req, res) => {
                     userIds.push(user.id)
                 }
             }
+            let s4 = dbScript(db_sql['Q8'], { var1: userId })
+            let self = await connection.query(s4);
+            if (self.rowCount > 0) {
+                for (let user of self.rows) {
+                    let s5 = dbScript(db_sql['Q12'], { var1: user.role_id })
+                    let findRole = await connection.query(s5);
+                    if (findRole.rowCount > 0) {
+                        user.roleName = findRole.rows[0].role_name
+                    } else {
+                        user.roleName = null
+                    }
+                    userListArr.push(user)
+                }
+            }
             for (let id of userIds) {
-                let s4 = dbScript(db_sql['Q176'], { var1: id })
-                let findUsers = await connection.query(s4);
+                let s5 = dbScript(db_sql['Q176'], { var1: id })
+                let findUsers = await connection.query(s5);
                 if (findUsers.rowCount > 0) {
                     for (let user of findUsers.rows) {
                         let s5 = dbScript(db_sql['Q12'], { var1: user.role_id })
