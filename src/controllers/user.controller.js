@@ -247,7 +247,7 @@ module.exports.usersList = async (req, res) => {
                 }
             }
             for (let id of userIds) {
-                let s4 = dbScript(db_sql['Q175'], { var1: id })
+                let s4 = dbScript(db_sql['Q176'], { var1: id })
                 let findUsers = await connection.query(s4);
                 if (findUsers.rowCount > 0) {
                     for (let user of findUsers.rows) {

@@ -94,7 +94,7 @@ module.exports.revenueForecastList = async (req, res) => {
                 }
             }
             for(let id of userIds){
-                let s3 = dbScript(db_sql['Q173'], { var1: id })
+                let s3 = dbScript(db_sql['Q174'], { var1: id })
                 let revenueForecastList = await connection.query(s3)
                 if(revenueForecastList.rowCount > 0){
                     for(let forecast of revenueForecastList.rows ){

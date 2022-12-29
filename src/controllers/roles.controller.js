@@ -150,7 +150,7 @@ module.exports.rolesList = async (req, res) => {
                 }
             }
             for (let id of userIds) {
-                let s3 = dbScript(db_sql['Q174'], { var1: id })
+                let s3 = dbScript(db_sql['Q175'], { var1: id })
                 let rolesList = await connection.query(s3)
                 for (let data of rolesList.rows) {
                     let modulePermissions = []

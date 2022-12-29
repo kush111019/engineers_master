@@ -39,7 +39,7 @@ module.exports.customerListforSales = async (req, res) => {
                 }
             }
             for(let id of userIds){
-                let s4 = dbScript(db_sql['Q176'], { var1: id })
+                let s4 = dbScript(db_sql['Q177'], { var1: id })
                 let customerList = await connection.query(s4)
                 if(customerList.rowCount > 0){
                     for(let customer of customerList.rows){
@@ -349,7 +349,7 @@ module.exports.salesCommissionList = async (req, res) => {
                 }
             }
             for (let id of userIds) {
-                let s3 = dbScript(db_sql['Q177'], { var1: id })
+                let s3 = dbScript(db_sql['Q178'], { var1: id })
                 let salesCommissionList = await connection.query(s3)
                 for (data of salesCommissionList.rows) {
                     let closer = {}

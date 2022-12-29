@@ -436,7 +436,7 @@ const db_sql = {
               ORDER BY 
                   revenue {var2}
               LIMIT {var3} OFFSET {var4}`, 
-    "Q171" : `SELECT 
+    "Q172" : `SELECT 
                   u.full_name AS sales_rep,
                   SUM(sc.target_amount::DECIMAL) AS revenue
               FROM  
@@ -455,7 +455,7 @@ const db_sql = {
               ORDER BY 
                   revenue {var2}
               LIMIT {var3} OFFSET {var4}`,
-    "Q172"  : `SELECT 
+    "Q173"  : `SELECT 
                 DATE_TRUNC('{var2}',sc.closed_at) AS  date, 
                 sum(sc.target_amount::decimal) AS revenue
               FROM 
@@ -472,13 +472,13 @@ const db_sql = {
               ORDER BY 
                 date DESC 
               LIMIT {var3} OFFSET {var4}`,
-    "Q173" : `SELECT * FROM revenue_forecast WHERE user_id = '{var1}' AND deleted_at IS NULL ORDER BY timeline asc`,  
-    "Q174" : `SELECT * FROM roles WHERE user_id = '{var1}' AND deleted_at IS NULL`,
-    "Q175" : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at, is_main_admin, created_by FROM users WHERE created_by = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,
-    "Q176" : `SELECT c.id, c.customer_company_id ,c.customer_name, c.source, c.user_id, c.address, c.deleted_at,
+    "Q174" : `SELECT * FROM revenue_forecast WHERE user_id = '{var1}' AND deleted_at IS NULL ORDER BY timeline asc`,  
+    "Q175" : `SELECT * FROM roles WHERE user_id = '{var1}' AND deleted_at IS NULL`,
+    "Q176" : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at, is_main_admin, created_by FROM users WHERE created_by = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,
+    "Q177" : `SELECT c.id, c.customer_company_id ,c.customer_name, c.source, c.user_id, c.address, c.deleted_at,
               u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.user_id = '{var1}'`,
-    "Q177" : `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
+    "Q178" : `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name FROM sales_commission AS sc 

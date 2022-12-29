@@ -234,7 +234,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
             }
             if ((startDate != undefined && startDate != '') && (endDate != undefined && endDate != '')) {
                 for (let id of userIds) {
-                    let s4 = dbScript(db_sql['Q171'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
+                    let s4 = dbScript(db_sql['Q172'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
                     let salesData = await connection.query(s4)
                     if (salesData.rowCount > 0) {
                         for (let sales of salesData.rows) {
@@ -319,7 +319,7 @@ module.exports.totalRevenue = async (req, res) => {
             }
             for(let id of userIds){
                 let format = (status == 'Monthly') ? 'month' : (status == 'Quarterly') ? 'quarter' : 'year'
-                let s4 = dbScript(db_sql['Q172'], { var1: id, var2: format, var3: limit, var4: offset })
+                let s4 = dbScript(db_sql['Q173'], { var1: id, var2: format, var3: limit, var4: offset })
                 let targetData = await connection.query(s4)
                 if (targetData.rowCount > 0) {
                     for (let total of targetData.rows) {
