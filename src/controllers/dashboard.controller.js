@@ -246,7 +246,6 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                 let s4 = dbScript(db_sql['Q168'], { var1: id })
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0 && slab.rowCount > 0) {
-                    
                     for (let data of salesData.rows) {
                         if (data.closed_at == null) {
                             totalExpectedRevenue = Number(totalExpectedRevenue) + Number(data.amount);
@@ -309,29 +308,29 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                     counts.totalExpectedCommission = totalExpectedCommission + totalClosedCommission
                     counts.totalClosedRevenue = Number(totalClosedRevenue.toFixed(2))
                     counts.totalClosedCommission = Number(totalClosedCommission.toFixed(2))
-
-                    console.log(totalExpectedRevenue,"totalExpectedRevenue000000");
-                    console.log(totalExpectedCommission,"totalExpectedCommission00000");
-                    console.log(totalClosedRevenue,"totalClosedRevenue0000000");
-                    console.log(totalClosedCommission,"totalClosedCommission000000");
-                } else {
-                    counts.totalExpectedRevenue = 0
-                    counts.totalExpectedCommission = 0
-                    counts.totalClosedRevenue = 0
-                    counts.totalClosedCommission = 0
                 }
             }
-            console.log(totalExpectedRevenue,"totalExpectedRevenue");
-            console.log(totalExpectedCommission,"totalExpectedCommission");
-            console.log(totalClosedRevenue,"totalClosedRevenue");
-            console.log(totalClosedCommission,"totalClosedCommission");
-
-            res.json({
-                status: 200,
-                success: true,
-                message: "Revenues and Commissions",
-                data: counts
-            })
+            if(counts){
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Revenues and Commissions",
+                    data: counts
+                })
+            }else{
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Revenues and Commissions",
+                    data: {
+                        totalExpectedRevenue : 0,
+                        totalExpectedCommission : 0,
+                        totalClosedRevenue : 0,
+                        totalClosedCommission : 0
+                    }
+                })
+            }
+            
         } else {
             res.status(403).json({
                 success: false,
