@@ -184,7 +184,7 @@ module.exports.actualVsForecast = async (req, res) => {
         let offset = (page - 1) * limit;
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_view_global) {
+        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own ) {
             let actualVsForecastObj = {}
             let revenueData = [];
             let actualData = []
