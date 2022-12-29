@@ -237,14 +237,15 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             }
             let s5 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
             let slab = await connection.query(s5)
+            let totalExpectedRevenue = 0;
+            let totalExpectedCommission = 0;
+            let totalClosedRevenue = 0;
+            let totalClosedCommission = 0;
             for (id of userIds) {
                 let s4 = dbScript(db_sql['Q168'], { var1: id })
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0 && slab.rowCount > 0) {
-                    let totalExpectedRevenue = 0;
-                    let totalExpectedCommission = 0;
-                    let totalClosedRevenue = 0;
-                    let totalClosedCommission = 0;
+                    
                     for (data of salesData.rows) {
                         if (data.closed_at == null) {
                             totalExpectedRevenue = Number(totalExpectedRevenue) + Number(data.amount);
