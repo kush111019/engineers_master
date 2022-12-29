@@ -56,10 +56,10 @@ module.exports.createSlab = async (req, res) => {
 module.exports.slabList = async (req, res) => {
     try {
         let userId = req.user.id
+        let userIds = []
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
-
             let s4 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
             let slabList = await connection.query(s4)
             if (slabList.rows.length > 0) {
@@ -68,6 +68,40 @@ module.exports.slabList = async (req, res) => {
                     success: true,
                     message: "Slab list",
                     data: slabList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Slab list",
+                    data: []
+                })
+            }
+        }else if(checkPermission.rows[0].permission_to_view_own){
+            userIds.push(userId)
+            let slabList = []
+            let s3 = dbScript(db_sql['Q163'],{var1 : checkPermission.rows[0].role_id})
+            let findUsers = await connection.query(s3)
+            if(findUsers.rowCount > 0){
+                for(user of findUsers.rows){
+                    userIds.push(user.id)
+                }
+            }
+            for(id of userIds){
+                let s4 = dbScript(db_sql['Q165'],{var1 : id})
+                let findSlabs = await connection.query(s4)
+                if(findSlabs.rowCount > 0){
+                    findSlabs.rows.map(value => {
+                        slabList.push(value)
+                    })
+                }
+            }
+            if (slabList.length > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Slab list",
+                    data: slabList
                 })
             } else {
                 res.json({

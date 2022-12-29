@@ -60,6 +60,7 @@ module.exports.createRevenueForecast = async (req, res) => {
 module.exports.revenueForecastList = async (req, res) => {
     try {
         let userId = req.user.id
+        let userIds = []
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global) {
@@ -73,6 +74,40 @@ module.exports.revenueForecastList = async (req, res) => {
                     success: true,
                     message: 'Revenue forecast list',
                     data: revenueForecastList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Empty revenue forecast list',
+                    data: []
+                })
+            }
+        }else if(checkPermission.rows[0].permission_to_view_own){
+            userIds.push(userId)
+            let revenueForecastListArr = []
+            let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
+            let findUsers = await connection.query(s3)
+            if (findUsers.rowCount > 0) {
+                for (user of findUsers.rows) {
+                    userIds.push(user.id)
+                }
+            }
+            for(let id of userIds){
+                let s3 = dbScript(db_sql['Q173'], { var1: id })
+                let revenueForecastList = await connection.query(s3)
+                if(revenueForecastList.rowCount > 0){
+                    for(let forecast of revenueForecastList.rows ){
+                        revenueForecastListArr.push(forecast)
+                    }
+                }
+            }
+            if (revenueForecastListArr.length > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Revenue forecast list',
+                    data: revenueForecastListArr
                 })
             } else {
                 res.json({

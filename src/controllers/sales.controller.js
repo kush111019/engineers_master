@@ -7,32 +7,67 @@ const moduleName = process.env.SALES_MODULE
 module.exports.customerListforSales = async (req, res) => {
     try {
         let userId = req.user.id
-            let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-            let checkPermission = await connection.query(s3)
-            if (checkPermission.rows[0].permission_to_view_global) {
-                let s4 = dbScript(db_sql['Q52'], { var1: checkPermission.rows[0].company_id })
-                let customerList = await connection.query(s4)
-                if (customerList.rowCount > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: 'Customers list',
-                        data: customerList.rows
-                    })
-                } else {
-                    res.json({
-                        status: 200,
-                        success: false,
-                        message: 'Empty customers list',
-                        data: []
-                    })
-                }
+        let userIds = []
+        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s3)
+        if (checkPermission.rows[0].permission_to_view_global) {
+            let s4 = dbScript(db_sql['Q52'], { var1: checkPermission.rows[0].company_id })
+            let customerList = await connection.query(s4)
+            if (customerList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Customers list',
+                    data: customerList.rows
+                })
             } else {
-                res.status(403).json({
+                res.json({
+                    status: 200,
                     success: false,
-                    message: "Unathorised"
+                    message: 'Empty customers list',
+                    data: []
                 })
             }
+        } else if (checkPermission.rows[0].permission_to_view_own) {
+            userIds.push(userId)
+            let customerListForSalesArr = []
+            let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
+            let findUsers = await connection.query(s3)
+            if (findUsers.rowCount > 0) {
+                for (user of findUsers.rows) {
+                    userIds.push(user.id)
+                }
+            }
+            for(let id of userIds){
+                let s4 = dbScript(db_sql['Q176'], { var1: id })
+                let customerList = await connection.query(s4)
+                if(customerList.rowCount > 0){
+                    for(let customer of customerList.rows){
+                        customerListForSalesArr.push(customer)
+                    }
+                }
+            }
+            if (customerListForSalesArr.length > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Customers list',
+                    data: customerListForSalesArr
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty customers list',
+                    data: []
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
     } catch (error) {
         res.json({
             status: 400,
@@ -48,7 +83,7 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
         let userId = req.user.id
             let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
             let checkPermission = await connection.query(s3)
-            if (checkPermission.rows[0].permission_to_view_global) {
+            if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
                 let s4 = dbScript(db_sql['Q55'], { var1: customerId })
                 let contactDetails = await connection.query(s4)
                 if (contactDetails.rowCount > 0) {
@@ -137,8 +172,9 @@ module.exports.createSalesCommission = async (req, res) => {
             targetAmount = (targetAmount == '') ? '0' : targetAmount
 
             let id = uuid.v4()
-            let s5 = dbScript(db_sql['Q53'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: checkPermission.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16: currency })
+            let s5 = dbScript(db_sql['Q53'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: checkPermission.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16: currency, var17 : userId })
             let createSalesConversion = await connection.query(s5)
+
             let s6 = dbScript(db_sql['Q56'], { var1: customerCommissionSplitId, var2: checkPermission.rows[0].company_id })
             let findSalescommission = await connection.query(s6)
             let closer_percentage = is_overwrite ? closerPercentage : findSalescommission.rows[0].closer_percentage
@@ -204,6 +240,7 @@ module.exports.createSalesCommission = async (req, res) => {
 module.exports.salesCommissionList = async (req, res) => {
     try {
         let userId = req.user.id
+        let userIds = []
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global) {
@@ -234,7 +271,7 @@ module.exports.salesCommissionList = async (req, res) => {
                     }
                 }
 
-                let s9 = dbScript(db_sql['Q157'], { var1 : data.id})
+                let s9 = dbScript(db_sql['Q157'], { var1: data.id })
                 let productData = await connection.query(s9)
 
                 if (data.business_contact_id != '' && data.revenue_contact_id != '') {
@@ -243,14 +280,14 @@ module.exports.salesCommissionList = async (req, res) => {
                     let businessData = await connection.query(s7);
 
                     closer.businessContactId = businessData.rows[0].id,
-                    closer.businessContactName = businessData.rows[0].business_contact_name
+                        closer.businessContactName = businessData.rows[0].business_contact_name
                     closer.businessContactEmail = businessData.rows[0].business_email
 
                     let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_contact_id })
                     let revenueData = await connection.query(s8);
 
                     closer.revenueContactId = revenueData.rows[0].id,
-                    closer.revenueContactName = revenueData.rows[0].revenue_contact_name
+                        closer.revenueContactName = revenueData.rows[0].revenue_contact_name
                     closer.revenueContactEmail = revenueData.rows[0].revenue_email
                 } else {
                     closer.businessContactId = ""
@@ -301,6 +338,109 @@ module.exports.salesCommissionList = async (req, res) => {
                 })
             }
 
+        } else if (checkPermission.rows[0].permission_to_view_own) {
+            userIds.push(userId)
+            let salesListArr = []
+            let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
+            let findUsers = await connection.query(s3)
+            if (findUsers.rowCount > 0) {
+                for (user of findUsers.rows) {
+                    userIds.push(user.id)
+                }
+            }
+            for (let id of userIds) {
+                let s3 = dbScript(db_sql['Q177'], { var1: id })
+                let salesCommissionList = await connection.query(s3)
+                for (data of salesCommissionList.rows) {
+                    let closer = {}
+                    let supporters = []
+
+                    let s4 = dbScript(db_sql['Q59'], { var1: data.id })
+                    let supporter = await connection.query(s4)
+                    if (supporter.rowCount > 0) {
+                        if (supporter.rows[0].supporter_id != "") {
+                            for (let supporterData of supporter.rows) {
+                                let s5 = dbScript(db_sql['Q81'], { var1: supporterData.id })
+                                let supporterName = await connection.query(s5)
+                                if (supporterName.rowCount > 0) {
+                                    supporters.push({
+                                        id: supporterName.rows[0].supporter_id,
+                                        name: supporterName.rows[0].full_name,
+                                        email: supporterName.rows[0].email_address,
+                                        percentage: supporterName.rows[0].supporter_percentage
+                                    })
+                                }
+                            }
+                        }
+                    }
+
+                    let s9 = dbScript(db_sql['Q157'], { var1: data.id })
+                    let productData = await connection.query(s9)
+
+                    if (data.business_contact_id != '' && data.revenue_contact_id != '') {
+
+                        let s7 = dbScript(db_sql['Q76'], { var1: data.business_contact_id })
+                        let businessData = await connection.query(s7);
+
+                        closer.businessContactId = businessData.rows[0].id,
+                            closer.businessContactName = businessData.rows[0].business_contact_name
+                        closer.businessContactEmail = businessData.rows[0].business_email
+
+                        let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_contact_id })
+                        let revenueData = await connection.query(s8);
+
+                        closer.revenueContactId = revenueData.rows[0].id,
+                            closer.revenueContactName = revenueData.rows[0].revenue_contact_name
+                        closer.revenueContactEmail = revenueData.rows[0].revenue_email
+                    } else {
+                        closer.businessContactId = ""
+                        closer.businessContactName = ""
+                        closer.businessContactEmail = ""
+                        closer.revenueContactId = ""
+                        closer.revenueContactName = ""
+                        closer.revenueContactEmail = ""
+                    }
+                    closer.id = data.id
+                    closer.customerId = data.customer_id
+                    closer.customerName = data.customer_name
+                    closer.commissionSplitId = data.customer_commission_split_id
+                    closer.qualification = data.qualification
+                    closer.is_qualified = data.is_qualified
+                    closer.targetAmount = data.target_amount
+                    closer.currency = data.currency
+                    closer.targetClosingDate = data.target_closing_date
+                    closer.productMatch = data.product_match
+                    closer.is_overwrite = data.is_overwrite
+                    closer.closerId = data.closer_id
+                    closer.closerName = data.full_name
+                    closer.closerEmail = data.email_address
+                    closer.closerPercentage = data.closer_percentage
+                    closer.supporters = supporters
+                    closer.createdAt = data.created_at
+                    closer.closedAt = data.closed_at
+                    closer.salesType = data.sales_type
+                    closer.subscriptionPlan = data.subscription_plan
+                    closer.recurringDate = data.recurring_date
+                    closer.products = (productData.rowCount > 0) ? productData.rows : []
+
+                    salesListArr.push(closer)
+                }
+            }
+            if (salesListArr.length > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Sales commission list',
+                    data: salesListArr
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty sales commission list',
+                    data: []
+                })
+            }
         } else {
             res.status(403).json({
                 success: false,
@@ -476,7 +616,7 @@ module.exports.salesCommissionLogsList = async (req, res) => {
         let userId = req.user.id
             let s2 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
             let checkPermission = await connection.query(s2)
-            if (checkPermission.rows[0].permission_to_view_global) {
+            if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
                 let commissionList = []
                 let s3 = dbScript(db_sql['Q44'], { var1: salesCommissionId })
                 let salesCommissionlogList = await connection.query(s3)
@@ -624,7 +764,7 @@ module.exports.notesList = async (req, res) => {
         let { salesCommissionId } = req.query
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_view_global) {
+        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
             let s4 = dbScript(db_sql['Q32'], { var1: salesCommissionId })
             let findNOtes = await connection.query(s4)
             if (findNOtes.rows.length > 0) {
@@ -808,7 +948,7 @@ module.exports.commissionSplitListForSales = async (req, res) => {
         let userId = req.user.id
             let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
             let checkPermission = await connection.query(s3)
-            if (checkPermission.rows[0].permission_to_view_global) {
+            if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
 
                 let s4 = dbScript(db_sql['Q162'], { var1: checkPermission.rows[0].company_id })
                 let commissionList = await connection.query(s4)

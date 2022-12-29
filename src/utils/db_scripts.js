@@ -15,12 +15,12 @@ const db_sql = {
     "Q10"  : `UPDATE users SET full_name='{var1}',avatar = '{var2}', email_address = '{var3}',phone_number = '{var4}',mobile_number = '{var5}',address = '{var6}' ,updated_at = '{var7}' WHERE id = '{var8}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `, 
     "Q11"  : `INSERT INTO roles(id,role_name,reporter,company_id) VALUES('{var1}','Admin','','{var2}') RETURNING *`, 
     "Q12"  : `SELECT * FROM roles WHERE id = '{var1}' AND deleted_at IS NULL`,
-    "Q13"  : `INSERT INTO roles(id,role_name,reporter,company_id) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`, 
+    "Q13"  : `INSERT INTO roles(id,role_name,reporter,company_id,user_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`, 
     "Q14"  : `SELECT * FROM roles WHERE company_id = '{var1}' AND deleted_at IS NULL` ,
     "Q15"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at, is_main_admin, created_by FROM users WHERE company_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,
     "Q16"  : `SELECT * FROM roles WHERE reporter = '{var1}' AND deleted_at IS NULL`,
     "Q17"  : `SELECT * FROM slabs WHERE company_id ='{var1}' AND deleted_at IS NULL ORDER BY slab_ctr ASC`,
-    "Q18"  : `INSERT INTO slabs(id,min_amount, max_amount, percentage, is_max, company_id, currency, slab_ctr) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}', '{var7}', '{var8}') RETURNING * `,
+    "Q18"  : `INSERT INTO slabs(id,min_amount, max_amount, percentage, is_max, company_id, currency, slab_ctr, user_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}', '{var7}', '{var8}','{var9}') RETURNING * `,
     "Q19"  : `UPDATE slabs SET deleted_at = '{var2}' WHERE company_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
     "Q20"  : `INSERT INTO permissions(id, role_id, module_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view_global,permission_to_view_own, user_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') RETURNING *`,
     "Q21"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id FROM users WHERE role_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL `,
@@ -68,14 +68,14 @@ const db_sql = {
               VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}',false,'{var11}') RETURNING *`, 
     "Q46"  : `SELECT id, customer_company_name FROM customer_companies WHERE company_id = '{var1}' AND replace(customer_company_name, ' ', '') ILIKE '%{var2}%' AND deleted_at IS NULL`, 
     "Q47"  : `UPDATE customers SET  deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING *`,
-    "Q48"  : `INSERT INTO commission_split(id, closer_percentage,  supporter_percentage, company_id) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING * `,
+    "Q48"  : `INSERT INTO commission_split(id, closer_percentage,  supporter_percentage, company_id, user_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING * `,
     "Q49"  : `UPDATE commission_split SET closer_percentage = '{var1}', supporter_percentage = '{var2}' , updated_at = '{var4}'  WHERE  id = '{var3}' AND company_id = '{var5}' AND deleted_at IS NULL RETURNING *`,
     "Q50"  : `SELECT id, closer_percentage, supporter_percentage FROM commission_split WHERE company_id ='{var1}' AND deleted_at IS NULL`,
     "Q51"  : `UPDATE commission_split SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}'  AND deleted_at IS NULL RETURNING *`,
     "Q52"  : `SELECT c.id, c.customer_company_id ,c.customer_name, c.source, c.user_id, c.address, c.deleted_at,
               u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.company_id = '{var1}' `,
-    "Q53"  : `INSERT INTO sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency ) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var13}', '{var14}', '{var15}', '{var16}') RETURNING *`,
+    "Q53"  : `INSERT INTO sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency, user_id ) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var13}', '{var14}', '{var15}', '{var16}', '{var17}') RETURNING *`,
     "Q54"  : `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,
@@ -204,13 +204,13 @@ const db_sql = {
               LIMIT {var3} OFFSET {var4}`,
 
     "Q91"  : `INSERT INTO contact_us(id, full_name, email, subject, messages, address) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
-    "Q92"  : `INSERT INTO products(id, product_name,product_image,description,available_quantity,price,tax,company_id, currency)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}')`,
+    "Q92"  : `INSERT INTO products(id, product_name,product_image,description,available_quantity,price,tax,company_id, currency, user_id)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}', '{var10}') RETURNING *`,
     "Q93"  : `UPDATE products SET product_name = '{var2}',product_image = '{var3}', description = '{var4}',available_quantity = '{var5}', price = '{var6}', tax = '{var7}', updated_at = '{var8}', currency = '{var10}' WHERE id = '{var1}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `,
     "Q94"  : `SELECT id, product_name, product_image, description, available_quantity, price, tax, currency, company_id, created_at, updated_at FROM products WHERE company_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,
     "Q95"  : `UPDATE products SET deleted_at = '{var2}' WHERE id = '{var1}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
     "Q96"  : `SELECT id, product_name, product_image, description, available_quantity, price, tax, company_id, created_at, updated_at FROM products WHERE id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
-    "Q97"  : `INSERT INTO products(id, company_id, product_name, product_image, description, available_quantity, price, tax, currency) 
-              VALUES ('{var1}','{var2}',$1,$2,$3,$4,$5,$6,$7)`,
+    "Q97"  : `INSERT INTO products(id, company_id,user_id, product_name, product_image, description, available_quantity, price, tax, currency) 
+              VALUES ('{var1}','{var2}','{var3}',$1,$2,$3,$4,$5,$6,$7)`,
     "Q98"  : `SELECT id, name, email, encrypted_password FROM super_admin WHERE email = '{var1}'`,
     "Q99"  : `SELECT id, company_name, company_logo, company_address, is_imap_enable, created_at FROM companies WHERE deleted_at IS NULL`,
     "Q100" : `UPDATE super_admin SET encrypted_password = '{var2}' WHERE email = '{var1}'`,
@@ -369,17 +369,132 @@ const db_sql = {
                   sc.closed_at,
                   sc.id`,
     "Q162" : `SELECT id, closer_percentage, supporter_percentage, deleted_at FROM commission_split WHERE company_id ='{var1}'`,
+    "Q163" : `SELECT u.id, u.full_name, r.id as role_id  FROM roles AS r 
+              INNER JOIN users AS u ON u.role_id = r.id 
+              WHERE reporter = '{var1}' AND r.deleted_at IS NULL`,
+    "Q164" : `SELECT * FROM commission_split WHERE user_id = '{var1}' AND deleted_at IS NULL`,
+    "Q165" : `SELECT * FROM slabs WHERE user_id = '{var1}' AND deleted_at IS NULL`,
+    "Q166" : `SELECT c.id, c.customer_company_id , c.customer_name, c.source, c.user_id, c.business_contact_id, c.revenue_contact_id, c.created_at, c.address, c.currency,
+              u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
+              WHERE c.user_id = '{var1}' AND c.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`,
+    "Q167" : `SELECT 
+                sc.id AS sales_commission_id, 
+                SUM(sc.target_amount::DECIMAL) as amount,
+                sc.closed_at
+              FROM
+                sales_commission AS sc 
+              WHERE 
+                sc.user_id = '{var1}' AND 
+                sc.closed_at BETWEEN '{var5}' AND '{var6}' AND
+                sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
+              GROUP BY 
+                sc.closed_at,
+                sc.id 
+              ORDER BY 
+                amount {var2}
+              LIMIT {var3} OFFSET {var4}`   ,
+    "Q168" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount,
+              sc.closed_at FROM sales_commission AS sc WHERE sc.user_id = '{var1}' 
+              AND sc.deleted_at IS NULL` ,
+    "Q169" : `SELECT id, product_name, product_image, description, available_quantity, price, tax, currency, company_id, created_at, updated_at FROM products WHERE user_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,      
+    "Q170" : `SELECT            
+                  c.customer_name,
+                  SUM(sc.target_amount::DECIMAL) AS revenue
+              FROM 
+                  sales_commission sc
+                  LEFT JOIN customers c ON c.id = sc.customer_id
+              WHERE 
+                  sc.closed_at is not null AND 
+                  sc.user_id = '{var1}' AND 
+                  sc.closed_at BETWEEN '{var5}' AND '{var6}' AND
+                  c.deleted_at IS NULL AND
+                  sc.deleted_at IS NULL 
+              GROUP BY 
+                  c.customer_name 
+              ORDER BY 
+                  revenue {var2}
+              LIMIT {var3} OFFSET {var4}`,
+    "Q171" : `SELECT 
+                  SUM(sc.target_amount::DECIMAL) as revenue, 
+                  p.product_name
+              FROM 
+                  sales_commission AS sc 
+              INNER JOIN 
+                  customers AS c ON sc.customer_id = c.id 
+              INNER JOIN 
+                  product_in_sales AS ps ON sc.id = ps.sales_commission_id
+              INNER JOIN 
+                  products AS p ON p.id = ps.product_id
+              WHERE 
+                  sc.user_id = '{var1}'
+                  AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
+                  AND sc.deleted_at IS NULL 
+                  AND c.deleted_at IS NULL
+                  AND sc.closed_at IS NOT NULL
+              GROUP BY 
+                  p.product_name
+              ORDER BY 
+                  revenue {var2}
+              LIMIT {var3} OFFSET {var4}`, 
+    "Q171" : `SELECT 
+                  u.full_name AS sales_rep,
+                  SUM(sc.target_amount::DECIMAL) AS revenue
+              FROM  
+                  sales_commission AS sc 
+                  INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
+                  INNER JOIN users AS u ON u.id = cr.closer_id
+                  INNER JOIN customers AS c ON c.id = sc.customer_id
+              WHERE 
+                  sc.closed_at is not null 
+                  AND sc.user_id = '{var1}' 
+                  AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
+                  AND sc.deleted_at IS NULL AND c.deleted_at IS NULL
+                  AND cr.deleted_at IS NULL AND u.deleted_at IS NULL
+              GROUP BY 
+                  u.full_name 
+              ORDER BY 
+                  revenue {var2}
+              LIMIT {var3} OFFSET {var4}`,
+    "Q172"  : `SELECT 
+                DATE_TRUNC('{var2}',sc.closed_at) AS  date, 
+                sum(sc.target_amount::decimal) AS revenue
+              FROM 
+                sales_commission AS sc 
+              INNER JOIN 
+                customers AS c ON sc.customer_id = c.id
+              WHERE 
+                sc.user_id = '{var1}' AND 
+                c.deleted_at IS NULL AND 
+                sc.deleted_at IS NULL AND 
+                sc.closed_at IS NOT NULL 
+              GROUP BY 
+                DATE_TRUNC('{var2}',sc.closed_at) 
+              ORDER BY 
+                date DESC 
+              LIMIT {var3} OFFSET {var4}`,
+    "Q173" : `SELECT * FROM revenue_forecast WHERE user_id = '{var1}' AND deleted_at IS NULL ORDER BY timeline asc`,  
+    "Q174" : `SELECT * FROM roles WHERE user_id = '{var1}' AND deleted_at IS NULL`,
+    "Q175" : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at, is_main_admin, created_by FROM users WHERE created_by = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,
+    "Q176" : `SELECT c.id, c.customer_company_id ,c.customer_name, c.source, c.user_id, c.address, c.deleted_at,
+              u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
+              WHERE c.user_id = '{var1}'`,
+    "Q177" : `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
+              sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name FROM sales_commission AS sc 
+              INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
+              INNER JOIN users AS u ON u.id = c.closer_id
+              INNER JOIN customers AS cus ON cus.id = sc.customer_id
+              WHERE sc.user_id = '{var1}' AND sc.deleted_at IS NULL ORDER BY sc.created_at desc`
  }
 
-
-
-function dbScript(template, variables) {
-    if (variables != null && Object.keys(variables).length > 0) {
-        return template.replace(new RegExp("\{([^\{]+)\}", "g"),  (_unused, varName) => {
-            return variables[varName];
-        });
-    }
-    return template
+ function dbScript(template, variables) {
+  if (variables != null && Object.keys(variables).length > 0) {
+      return template.replace(new RegExp("\{([^\{]+)\}", "g"),  (_unused, varName) => {
+          return variables[varName];
+      });
+  }
+  return template
 }
 
 module.exports = { db_sql, dbScript };

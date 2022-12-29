@@ -365,20 +365,24 @@ module.exports.removeDuplicates = async(originalArray, prop) => {
      return newArray;
 }
 
-module.exports.reduceArray = async(arr) =>{
-    const reducedArray = arr.reduce((acc, next) => { // acc stands for accumulator
-        const lastItemIndex = acc.length -1;
-        const accHasContent = acc.length >= 1;
-        if(accHasContent && acc[lastItemIndex].date == next.date) {
-          acc[lastItemIndex].revenue += next.revenue;
-          acc[lastItemIndex].commission += next.commission;
+module.exports.reduceArray = async (data) => {
 
-        } else {
-          // first time seeing this entry. add it!
-          acc[lastItemIndex +1] = next;
+    let returnData = [];
+    for (let i = 0; i < data.length; i++) {
+        let found = 0;
+        for (let j = 0; j < returnData.length; j++) {
+            let date1 = (data[i].date).toISOString();
+            let date2 = (returnData[j].date).toISOString();
+            if (date1.slice(0, 10) === date2.slice(0, 10)) {
+                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
+                returnData[j].revenue = revenueOfJ;
+                found = 1;
+            }
         }
-        return acc;
-    }, []);
-    return reducedArray
+        if (found === 0) {
+            returnData.push(data[i]);
+        }
+    }
+    return returnData
 }
 
