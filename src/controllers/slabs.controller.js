@@ -19,7 +19,7 @@ module.exports.createSlab = async (req, res) => {
 
                 for (let data of slabs) {
                     id = uuid.v4()
-                    let s5 = dbScript(db_sql['Q18'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: data.slab_ctr })
+                    let s5 = dbScript(db_sql['Q18'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: data.slab_ctr, var9 : userId })
                     var createSlab = await connection.query(s5)
                     await connection.query('COMMIT')
                 }

@@ -242,14 +242,12 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             let totalExpectedCommission = 0;
             let totalClosedRevenue = 0;
             let totalClosedCommission = 0;
-            for (id of userIds) {
-                console.log(id,"userId");
+            for (let id of userIds) {
                 let s4 = dbScript(db_sql['Q168'], { var1: id })
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0 && slab.rowCount > 0) {
                     
-                    for (data of salesData.rows) {
-                        console.log(data,"sales data");
+                    for (let data of salesData.rows) {
                         if (data.closed_at == null) {
                             totalExpectedRevenue = Number(totalExpectedRevenue) + Number(data.amount);
                             let expectedRemainingAmount = Number(data.amount);
@@ -311,6 +309,11 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                     counts.totalExpectedCommission = totalExpectedCommission + totalClosedCommission
                     counts.totalClosedRevenue = Number(totalClosedRevenue.toFixed(2))
                     counts.totalClosedCommission = Number(totalClosedCommission.toFixed(2))
+
+                    console.log(totalExpectedRevenue,"totalExpectedRevenue000000");
+                    console.log(totalExpectedCommission,"totalExpectedCommission00000");
+                    console.log(totalClosedRevenue,"totalClosedRevenue0000000");
+                    console.log(totalClosedCommission,"totalClosedCommission000000");
                 } else {
                     counts.totalExpectedRevenue = 0
                     counts.totalExpectedCommission = 0
@@ -318,6 +321,10 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                     counts.totalClosedCommission = 0
                 }
             }
+            console.log(totalExpectedRevenue,"totalExpectedRevenue");
+            console.log(totalExpectedCommission,"totalExpectedCommission");
+            console.log(totalClosedRevenue,"totalClosedRevenue");
+            console.log(totalClosedCommission,"totalClosedCommission");
 
             res.json({
                 status: 200,
