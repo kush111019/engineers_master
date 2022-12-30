@@ -82,8 +82,8 @@ let server = sticky(options, () => {
 
     return server
 })
-server.listen(process.env.LISTEN_PORT, () => {
-    console.log((cluster.worker ? 'WORKER ' + cluster.worker.id : 'MASTER') + ' | PORT ' + process.env.LISTEN_PORT)
+server.listen(0, () => {
+    console.log((cluster.worker ? 'WORKER ' + cluster.worker.id : 'MASTER') + ' | PORT ' + 0)
 })
 
 app.use('/api/v1', Router);
