@@ -11,11 +11,11 @@ module.exports.contactUs = function (email, fullName, subject, message, address)
     </style>
 </head>
   <body>
-    <table cellspacing="0" border="0" cellpadding="0" bgcolor="#f2f3f8"
+    <table cellspacing="0" border="0" cellpadding="0" bgcolor="#ededed"
             style="@import url(https://fonts.googleapis.com/css?family=Rubik:300,400,500,700|Open+Sans:300,400,600,700); font-family: 'Open Sans', sans-serif; width: 100%;">
         <tr>
         <td>
-          <table style="background-color: #fff; max-width:670px;  margin-top:25px; margin-bottom:25px; padding: 25px;" width="100%" border="0"
+          <table style="background-color: #ededed; max-width:670px;  margin-top:25px; margin-bottom:25px; padding: 25px;" width="100%" border="0"
           align="center" cellpadding="0" cellspacing="0">
         <tr>
           <td>

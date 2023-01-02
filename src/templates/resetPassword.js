@@ -12,13 +12,13 @@ module.exports.resetPassword = function (link, email, userName) {
         </style>
     </head>
     
-    <body marginheight="0" topmargin="0" marginwidth="0" style="margin: 0px; background-color: #f2f3f8;" leftmargin="0">
+    <body marginheight="0" topmargin="0" marginwidth="0" style="margin: 0px; background-color: #ededed;" leftmargin="0">
         <!--100% body table-->
-        <table cellspacing="0" border="0" cellpadding="0" width="100%" bgcolor="#f2f3f8"
+        <table cellspacing="0" border="0" cellpadding="0" width="100%" bgcolor="#ededed"
             style="@import url(https://fonts.googleapis.com/css?family=Rubik:300,400,500,700|Open+Sans:300,400,600,700); font-family: 'Open Sans', sans-serif;">
             <tr>
                 <td>
-                    <table style="background-color: #fff; max-width:670px;  margin-top:25px; margin-bottom:25px; " width="100%" border="0"
+                    <table style="background-color: #ededed; max-width:670px;  margin-top:25px; margin-bottom:25px; " width="100%" border="0"
                         align="center" cellpadding="0" cellspacing="0">
                         <tr>
                             <td style="text-align:left; padding-top: 20px; padding-left: 50px;">
@@ -31,7 +31,7 @@ module.exports.resetPassword = function (link, email, userName) {
                         <tr>
                             <td>
                                 <table width="95%" border="0" align="center" cellpadding="0" cellspacing="0"
-                                    style="max-width:670px;background:#fff; border-radius:3px; text-align:left;-webkit-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);-moz-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);box-shadow:0 6px 18px 0 rgba(0,0,0,.06);">
+                                    style="max-width:670px;background:#ededed; border-radius:3px; text-align:left;-webkit-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);-moz-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);box-shadow:0 6px 18px 0 rgba(0,0,0,.06);">
                                     <tr>
                                         <td style="padding:0 35px;">
                                             
@@ -45,7 +45,7 @@ module.exports.resetPassword = function (link, email, userName) {
                                             Someone requested that the password be reset for the following account:<br>
                                             To reset your password, please click the below blue button <br>
                                              
-                                            <a href= ${link} style="background:#4285f4;text-decoration:none !important; font-weight:500; margin-top:15px; color:#fff;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:8px;">Click here to reset your password</a><br>
+                                            <a href= ${link} style="background:#4285f4;text-decoration:none !important; font-weight:500; margin-top:15px; color:#ededed;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:8px;">Click here to reset your password</a><br>
                                              <p>Your email:<a href="" style="color:#1bb2cc;"><u>${email}</u></a></p>
                                                 <br>
                                              <p>If this was a mistake, then just ignore this email.</p>
