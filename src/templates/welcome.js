@@ -31,15 +31,15 @@ module.exports.welcome = function (link, userName) {
                         <tr>
                             <td>
                                 <table width="95%" border="0" align="center" cellpadding="0" cellspacing="0"
-                                    style="max-width:670px;background:#ededed; border-radius:3px; text-align:left;-webkit-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);">
+                                    style="max-width:670px;background:#ededed; border-radius:3px; text-align:left;">
                                     <tr>
                                         <td style="padding:0 35px;">
                                             
-
+    
                                             <br style="color:#455056; font-size:15px;line-height:24px; margin:0;">
                                             Hi ${userName}, <br>
                                             <br/>
-
+    
                                             Welcome to HiRise Technologies :). We are incredibly excited to have you on board and to 
                                             help you start building stronger customer relationships across sales, revenue and 
                                             commission management. <br>
@@ -47,12 +47,12 @@ module.exports.welcome = function (link, userName) {
                                             Please click on the given link for <a href="${link}" style="color:#1bb2cc;"><u>verify</u></a><br/>
                                             If you have any questions. Please email us at <a href=""
                                             style="text-decoration:none !important; font-weight:500; margin-top:30px; color: #1bb2cc; font-size:14px;padding:4px 4px;display:inline-block;"><u>Hirise@contactus.com</u></a><br>
-
+    
                                             <br>
                                             Cheers,
                                             <br/>
                                             HiRise Team <br>
-
+    
                                         
                                             </p>
                                             

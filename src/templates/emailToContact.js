@@ -31,7 +31,7 @@ module.exports.emailToContact = function (message) {
                         <tr>
                             <td>
                                 <table width="95%" border="0" align="center" cellpadding="0" cellspacing="0"
-                                    style="max-width:670px;background:#ededed; border-radius:3px; text-align:left;-webkit-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);margin-top : 20px;">
+                                    style="max-width:670px;background:#ededed; border-radius:3px; text-align:left;margin-top : 20px;">
                                     <tr>
                                         <td style="padding:0 35px;">
                                             ${message}
