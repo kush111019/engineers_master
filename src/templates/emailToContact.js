@@ -21,7 +21,7 @@ module.exports.emailToContact = function (message) {
                     <table style="background-color: #ededed; max-width:670px;  margin-top:25px; margin-bottom:25px; " width="100%" border="0"
                         align="center" cellpadding="0" cellspacing="0">
                         <tr>
-                            <td style="text-align:left; padding-top: 20px; padding-left: 50px;">
+                            <td style="text-align:left; padding-top: 20px; padding-left: 35px;">
                               <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
                                 <img src="https://hirisetech.com/img/core-img/logo.png" alt="logo" 
                                 style=" width: 120px;">
@@ -31,7 +31,7 @@ module.exports.emailToContact = function (message) {
                         <tr>
                             <td>
                                 <table width="95%" border="0" align="center" cellpadding="0" cellspacing="0"
-                                    style="max-width:670px;background:#ededed; border-radius:3px; text-align:left;-webkit-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);-moz-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);box-shadow:0 6px 18px 0 rgba(0,0,0,.06);margin-top : 20px;">
+                                    style="max-width:670px;background:#ededed; border-radius:3px; text-align:left;-webkit-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);margin-top : 20px;">
                                     <tr>
                                         <td style="padding:0 35px;">
                                             ${message}

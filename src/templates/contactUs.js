@@ -21,7 +21,7 @@ module.exports.contactUs = function (email, fullName, subject, message, address)
           <td>
             <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
               <img src="https://hirisetech.com/img/core-img/logo.png" alt="logo" 
-              style=" width: 120px;">
+              style=" width: 120px;margin-left: -10px;">
             </a>
           </td>
       </tr>

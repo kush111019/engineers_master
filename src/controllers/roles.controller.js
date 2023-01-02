@@ -55,7 +55,6 @@ module.exports.moduleList = async (req, res) => {
 module.exports.rolesList = async (req, res) => {
     try {
         let userId = req.user.id
-        let userIds = []
 
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
