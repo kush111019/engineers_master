@@ -160,6 +160,7 @@ module.exports.createSalesCommission = async (req, res) => {
             salesType,
             subscriptionPlan,
             recurringDate,
+            slabId
         } = req.body
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
@@ -172,7 +173,7 @@ module.exports.createSalesCommission = async (req, res) => {
             targetAmount = (targetAmount == '') ? '0' : targetAmount
 
             let id = uuid.v4()
-            let s5 = dbScript(db_sql['Q53'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: checkPermission.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16: currency, var17 : userId })
+            let s5 = dbScript(db_sql['Q53'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: checkPermission.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16: currency, var17 : userId, var18 : slabId })
             let createSalesConversion = await connection.query(s5)
 
             let s6 = dbScript(db_sql['Q56'], { var1: customerCommissionSplitId, var2: checkPermission.rows[0].company_id })
@@ -202,7 +203,7 @@ module.exports.createSalesCommission = async (req, res) => {
 
             let logId = uuid.v4()
             let s9 = dbScript(db_sql['Q43'], { var1: logId, var2: createSalesConversion.rows[0].id, var3: customerCommissionSplitId, var4: mysql_real_escape_string(qualification), var5: is_qualified, var6: targetAmount, var7: JSON.stringify(products), 
-                var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: checkPermission.rows[0].company_id, var12: revenueId, var13: businessId, var14: customerCloserId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate, var19: currency })
+                var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: checkPermission.rows[0].company_id, var12: revenueId, var13: businessId, var14: customerCloserId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate, var19: currency, var20 : slabId , var21 : closer_percentage})
             let createLog = await connection.query(s9)
 
             if (createSalesConversion.rowCount > 0 && findSalescommission.rowCount > 0 && addSalesCloser.rowCount > 0 && createLog.rowCount > 0) {
@@ -270,7 +271,12 @@ module.exports.allSalesCommissionList = async (req, res) => {
                         }
                     }
                 }
-
+                let slabName = ''
+                if(data.slab_id){
+                    let s6 = dbScript(db_sql['Q184'],{var1 : data.slab_id})
+                    let slabData = await connection.query(s6)
+                    slabName = slabData.rows[0].slab_name;
+                }
                 let s9 = dbScript(db_sql['Q157'], { var1: data.id })
                 let productData = await connection.query(s9)
 
@@ -319,6 +325,8 @@ module.exports.allSalesCommissionList = async (req, res) => {
                 closer.subscriptionPlan = data.subscription_plan
                 closer.recurringDate = data.recurring_date
                 closer.products = (productData.rowCount > 0) ? productData.rows : []
+                closer.slabId = (data.slab_id) ? data.slab_id : ''
+                closer.slabName = slabName
 
                 commissionList.push(closer)
             }
@@ -374,6 +382,13 @@ module.exports.allSalesCommissionList = async (req, res) => {
                         }
                     }
 
+                    let slabName = ''
+                    if(data.slab_id){
+                        let s6 = dbScript(db_sql['Q184'],{var1 : data.slab_id})
+                        let slabData = await connection.query(s6)
+                        slabName = slabData.rows[0].slab_name;
+                    }
+
                     let s9 = dbScript(db_sql['Q157'], { var1: data.id })
                     let productData = await connection.query(s9)
 
@@ -422,6 +437,8 @@ module.exports.allSalesCommissionList = async (req, res) => {
                     closer.subscriptionPlan = data.subscription_plan
                     closer.recurringDate = data.recurring_date
                     closer.products = (productData.rowCount > 0) ? productData.rows : []
+                    closer.slabId = (data.slab_id) ? data.slab_id : ''
+                    closer.slabName = slabName
 
                     salesListArr.push(closer)
                 }
@@ -490,7 +507,12 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                         }
                     }
                 }
-
+                let slabName = ''
+                if(data.slab_id){
+                    let s6 = dbScript(db_sql['Q184'],{var1 : data.slab_id})
+                    let slabData = await connection.query(s6)
+                    slabName = slabData.rows[0].slab_name;
+                }
                 let s9 = dbScript(db_sql['Q157'], { var1: data.id })
                 let productData = await connection.query(s9)
 
@@ -539,6 +561,8 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                 closer.subscriptionPlan = data.subscription_plan
                 closer.recurringDate = data.recurring_date
                 closer.products = (productData.rowCount > 0) ? productData.rows : []
+                closer.slabId = (data.slab_id) ? data.slab_id : ''
+                closer.slabName = slabName
 
                 commissionList.push(closer)
             }
@@ -594,6 +618,13 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                         }
                     }
 
+                    let slabName = ''
+                    if(data.slab_id){
+                        let s6 = dbScript(db_sql['Q184'],{var1 : data.slab_id})
+                        let slabData = await connection.query(s6)
+                        slabName = slabData.rows[0].slab_name;
+                    }
+
                     let s9 = dbScript(db_sql['Q157'], { var1: data.id })
                     let productData = await connection.query(s9)
 
@@ -642,6 +673,8 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                     closer.subscriptionPlan = data.subscription_plan
                     closer.recurringDate = data.recurring_date
                     closer.products = (productData.rowCount > 0) ? productData.rows : []
+                    closer.slabId = (data.slab_id) ? data.slab_id : ''
+                    closer.slabName = slabName
 
                     salesListArr.push(closer)
                 }
@@ -692,6 +725,38 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                 let closer = {}
                 let supporters = []
 
+                let slabName = ''
+                let remainingAmount = Number(data.target_amount);
+                let commission = 0
+                if(data.slab_id){
+                    let s6 = dbScript(db_sql['Q184'],{var1 : data.slab_id})
+                    let slabData = await connection.query(s6)
+                    slabName = slabData.rows[0].slab_name;
+                    //if remainning amount is 0 then no reason to check 
+                    for (let i = 0; i < slabData.rows.length && remainingAmount > 0; i++) {
+                        let slab_percentage = Number(slabData.rows[i].percentage)
+                        let slab_maxAmount = Number(slabData.rows[i].max_amount)
+                        let slab_minAmount = Number(slabData.rows[i].min_amount)
+                        if (slabData.rows[i].is_max) {
+                            // Reached the last slab
+                            commission += ((slab_percentage / 100) * remainingAmount)
+                            break;
+                        }
+                        else {
+                            // This is not the last slab
+                            let diff = slab_minAmount == 0 ? 0 : 1
+                            let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                            slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+                            commission += ((slab_percentage / 100) * slab_diff)
+                            remainingAmount -= slab_diff
+                            if (remainingAmount <= 0) {
+                                break;
+                            }
+                        }
+                    }
+
+                }
+
                 let s4 = dbScript(db_sql['Q59'], { var1: data.id })
                 let supporter = await connection.query(s4)
                 if (supporter.rowCount > 0) {
@@ -704,7 +769,8 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                                     id: supporterName.rows[0].supporter_id,
                                     name: supporterName.rows[0].full_name,
                                     email: supporterName.rows[0].email_address,
-                                    percentage: supporterName.rows[0].supporter_percentage
+                                    percentage: supporterName.rows[0].supporter_percentage,
+                                    supporterCommissionAmount : ((Number(supporterName.rows[0].supporter_percentage)/100)*commission)
                                 })
                             }
                         }
@@ -752,6 +818,7 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                 closer.closerName = data.full_name
                 closer.closerEmail = data.email_address
                 closer.closerPercentage = data.closer_percentage
+                closer.closerCommissionAmount = ((Number(data.closer_percentage)/100)*commission)
                 closer.supporters = supporters
                 closer.createdAt = data.created_at
                 closer.closedAt = data.closed_at
@@ -759,6 +826,8 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                 closer.subscriptionPlan = data.subscription_plan
                 closer.recurringDate = data.recurring_date
                 closer.products = (productData.rowCount > 0) ? productData.rows : []
+                closer.slabId = (data.slab_id) ? data.slab_id : ''
+                closer.slabName = slabName
 
                 commissionList.push(closer)
             }
@@ -814,6 +883,13 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                         }
                     }
 
+                    let slabName = ''
+                    if(data.slab_id){
+                        let s6 = dbScript(db_sql['Q184'],{var1 : data.slab_id})
+                        let slabData = await connection.query(s6)
+                        slabName = slabData.rows[0].slab_name;
+                    }
+
                     let s9 = dbScript(db_sql['Q157'], { var1: data.id })
                     let productData = await connection.query(s9)
 
@@ -862,6 +938,8 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                     closer.subscriptionPlan = data.subscription_plan
                     closer.recurringDate = data.recurring_date
                     closer.products = (productData.rowCount > 0) ? productData.rows : []
+                    closer.slabId = (data.slab_id) ? data.slab_id : ''
+                    closer.slabName = slabName
 
                     salesListArr.push(closer)
                 }
@@ -918,7 +996,8 @@ module.exports.updateSalesCommission = async (req, res) => {
             revenueId,
             salesType,
             subscriptionPlan,
-            recurringDate
+            recurringDate,
+            slabId
         } = req.body
             let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
             let checkPermission = await connection.query(s3)
@@ -928,7 +1007,7 @@ module.exports.updateSalesCommission = async (req, res) => {
 
                 let _dt = new Date().toISOString();
 
-                let s5 = dbScript(db_sql['Q63'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17 : currency })
+                let s5 = dbScript(db_sql['Q63'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17 : currency, var18 : slabId })
                 let updateSalesCommission = await connection.query(s5)
 
                 let s6 = dbScript(db_sql['Q56'], { var1: customerCommissionSplitId, var2: checkPermission.rows[0].company_id })
@@ -960,7 +1039,7 @@ module.exports.updateSalesCommission = async (req, res) => {
                     }
                 }
                 let logId = uuid.v4()
-                let s10 = dbScript(db_sql['Q43'], { var1: logId, var2: updateSalesCommission.rows[0].id, var3: customerCommissionSplitId, var4: mysql_real_escape_string(qualification), var5: is_qualified, var6: targetAmount, var7: JSON.stringify(products), var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: checkPermission.rows[0].company_id, var12: revenueId, var13: businessId, var14: customerCloserId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate, var19 : currency })
+                let s10 = dbScript(db_sql['Q43'], { var1: logId, var2: updateSalesCommission.rows[0].id, var3: customerCommissionSplitId, var4: mysql_real_escape_string(qualification), var5: is_qualified, var6: targetAmount, var7: JSON.stringify(products), var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: checkPermission.rows[0].company_id, var12: revenueId, var13: businessId, var14: customerCloserId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate, var19 : currency , var20 : slabId, var21 : closer_percentage})
                 let createLog = await connection.query(s10)
 
                 if (updateSalesCommission.rowCount > 0 && findSalesCommission.rowCount > 0 && updateSalesCloser.rowCount > 0 && createLog.rowCount > 0 ) {
@@ -1074,6 +1153,14 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                             })
                         }
                     }
+
+                    let slabName = ''
+                    if(data.slab_id){
+                        let s6 = dbScript(db_sql['Q184'],{var1 : data.slab_id})
+                        let slabData = await connection.query(s6)
+                        slabName = slabData.rows[0].slab_name;
+                    }
+
                     let productName = []
                     for (let productIds of JSON.parse(data.products)) {
                         let s6 = dbScript(db_sql['Q96'], { var1: productIds, var2: checkPermission.rows[0].company_id })
@@ -1126,6 +1213,8 @@ module.exports.salesCommissionLogsList = async (req, res) => {
                     closer.subscriptionPlan = data.subscription_plan
                     closer.recurringDate = data.recurring_date
                     closer.products = productName
+                    closer.slabId = (data.slab_id) ? data.slab_id : ''
+                    closer.slabName = slabName
 
                     commissionList.push(closer)
                 }

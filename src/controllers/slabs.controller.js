@@ -51,43 +51,48 @@ module.exports.createSlab = async (req, res) => {
     }
 }
 
-module.exports.updateSlab = async(req,res) => {
+module.exports.updateSlab = async (req, res) => {
     try {
         let userId = req.user.id
         let {
             slabsData
         } = req.body
-            let s1 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
-            let checkPermission = await connection.query(s1)
-            if (checkPermission.rows[0].permission_to_update) {
-                await connection.query('BEGIN')
-                for (let data of slabsData.slabs) {
-                    let _dt = new Date().toISOString()
-                    let s2 = dbScript(db_sql['Q19'], { var1: slabsData.slabName, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: Number(data.slab_ctr), var9 : userId,
-                    var10 : data.id, var11 : slabsData.id , var12 : _dt})
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_update) {
+            await connection.query('BEGIN')
+            for (let data of slabsData.slabs) {
+                let _dt = new Date().toISOString()
+                if (data.id != '') {
+                    let s2 = dbScript(db_sql['Q19'], { var1: slabsData.slabName, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: Number(data.slab_ctr), var9: userId, var10: data.id, var11: slabsData.slabId, var12: _dt })
                     var updateSlab = await connection.query(s2)
-                    await connection.query('COMMIT')
-                }
-                if (updateSlab.rowCount > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Slab updated successfully"
-                    })
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
-                    })
-                }
+                }else{
+                    let id = uuid.v4()
+                    let s5 = dbScript(db_sql['Q18'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: Number(data.slab_ctr), var9 : userId, var10 : slabsData.slabId, var11 : slabsData.slabName })
+                    var createSlab = await connection.query(s5)
+                } 
+            }
+            if (updateSlab.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Slab updated successfully"
+                })
             } else {
-                res.status(403).json({
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
                     success: false,
-                    message: "Unathorised"
+                    message: "Something went wrong"
                 })
             }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
     } catch (error) {
         await connection.query('ROLLBACK')
         res.json({

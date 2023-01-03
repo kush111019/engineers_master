@@ -15,13 +15,14 @@ module.exports.revenues = async (req, res) => {
         if (checkPermission.rows[0].permission_to_view_global) {
             let revenueCommissionBydate = []
 
-            let s5 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
-            let slab = await connection.query(s5)
-
             let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
             let salesData = await connection.query(s4)
-            if (salesData.rowCount > 0 && slab.rowCount > 0) {
+            if (salesData.rowCount > 0 ) {
                 for (data of salesData.rows) {
+
+                    let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
+                    let slab = await connection.query(s5)
+
                     let revenueCommissionByDateObj = {}
                     revenueCommissionByDateObj.revenue = Number(data.amount)
                     revenueCommissionByDateObj.date = moment(data.closed_at).format('MM/DD/YYYY')
@@ -54,12 +55,41 @@ module.exports.revenues = async (req, res) => {
                     revenueCommissionBydate.push(revenueCommissionByDateObj)
                 }
             }
-            res.json({
-                status: 200,
-                success: true,
-                message: "Revenues and Commissions",
-                data: revenueCommissionBydate
-            })
+            
+            if(revenueCommissionBydate.length > 0){
+                let returnData = [];
+                for (let i = 0; i < revenueCommissionBydate.length; i++) {
+                    let found = 0;
+                    for (let j = 0; j < returnData.length; j++) {
+                        let date1 = (revenueCommissionBydate[i].date).toString();
+                        let date2 = (returnData[j].date).toString();
+                        if (date1.slice(0, 10) === date2.slice(0, 10)) {
+                            let revenueOfJ = Number(returnData[j].revenue) + Number(revenueCommissionBydate[i].revenue)
+                            returnData[j].revenue = revenueOfJ;
+                            let commissionOfJ = Number(returnData[j].commission) + Number(revenueCommissionBydate[i].commission)
+                            returnData[j].commission = commissionOfJ;
+                            found = 1;
+                        }
+                    }
+                    if (found === 0) {
+                        returnData.push(revenueCommissionBydate[i]);
+                    }
+                }
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Revenues and Commissions",
+                    data: returnData
+                })
+            }else{
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Revenues and Commissions",
+                    data: []
+                })
+            }
+           
         } else if (checkPermission.rows[0].permission_to_view_own) {
             userIds.push(userId)
             let revenueCommissionBydate = []
@@ -70,13 +100,15 @@ module.exports.revenues = async (req, res) => {
                     userIds.push(user.id)
                 }
             }
-            let s5 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
-            let slab = await connection.query(s5)
             for (id of userIds) {
                 let s4 = dbScript(db_sql['Q167'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
                 let salesData = await connection.query(s4)
-                if (salesData.rowCount > 0 && slab.rowCount > 0) {
+                if (salesData.rowCount > 0 ) {
                     for (data of salesData.rows) {
+
+                        let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
+                        let slab = await connection.query(s5)
+
                         let revenueCommissionByDateObj = {}
                         revenueCommissionByDateObj.revenue = Number(data.amount)
                         revenueCommissionByDateObj.date = moment(data.closed_at).format('MM/DD/YYYY')
@@ -110,12 +142,39 @@ module.exports.revenues = async (req, res) => {
                     }
                 }
             }
-            res.json({
-                status: 200,
-                success: true,
-                message: "Revenues and Commissions",
-                data: revenueCommissionBydate
-            })
+            if(revenueCommissionBydate.length > 0){
+                let returnData = [];
+                for (let i = 0; i < revenueCommissionBydate.length; i++) {
+                    let found = 0;
+                    for (let j = 0; j < returnData.length; j++) {
+                        let date1 = (revenueCommissionBydate[i].date).toString();
+                        let date2 = (returnData[j].date).toString();
+                        if (date1.slice(0, 10) === date2.slice(0, 10)) {
+                            let revenueOfJ = Number(returnData[j].revenue) + Number(revenueCommissionBydate[i].revenue)
+                            returnData[j].revenue = revenueOfJ;
+                            let commissionOfJ = Number(returnData[j].commission) + Number(revenueCommissionBydate[i].commission)
+                            returnData[j].commission = commissionOfJ;
+                            found = 1;
+                        }
+                    }
+                    if (found === 0) {
+                        returnData.push(revenueCommissionBydate[i]);
+                    }
+                }
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Revenues and Commissions",
+                    data: returnData
+                })
+            }else{
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Revenues and Commissions",
+                    data: []
+                })
+            }
         } else {
             res.status(403).json({
                 success: false,
@@ -141,17 +200,18 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
 
             let counts = {}
 
-            let s5 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
-            let slab = await connection.query(s5)
-
             let s4 = dbScript(db_sql['Q159'], { var1: checkPermission.rows[0].company_id })
             let salesData = await connection.query(s4)
-            if (salesData.rowCount > 0 && slab.rowCount > 0) {
+            if (salesData.rowCount > 0 ) {
                 let totalExpectedRevenue = 0;
                 let totalExpectedCommission = 0;
                 let totalClosedRevenue = 0;
                 let totalClosedCommission = 0;
                 for (data of salesData.rows) {
+
+                    let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
+                    let slab = await connection.query(s5)
+
                     if (data.closed_at == null) {
                         totalExpectedRevenue = Number(totalExpectedRevenue) + Number(data.amount);
                         let expectedRemainingAmount = Number(data.amount);

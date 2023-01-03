@@ -31,7 +31,7 @@ router.put('/moveRole', verifyTokenFn, controller.roles.moveRole)
 //-------------------------------------Slabs-------------------------------------------------
 router.get('/slabList',verifyTokenFn, controller.slabs.slabList)
 router.post('/createSlab',verifyTokenFn, controller.slabs.createSlab)
-router.post('/updateSlab',verifyTokenFn, controller.slabs.updateSlab)
+router.put('/updateSlab',verifyTokenFn, controller.slabs.updateSlab)
 router.put('/deleteSlab',verifyTokenFn, controller.slabs.deleteSlab)
 router.put('/deleteSlabLayer',verifyTokenFn, controller.slabs.deleteSlabLayer)
 
@@ -89,6 +89,7 @@ router.get('/commissionSplitListForSales', verifyTokenFn, controller.sales.commi
 router.get('/revenuePerCustomer',verifyTokenFn, controller.reports.revenuePerCustomer)
 router.get('/revenuePerProduct',verifyTokenFn, controller.reports.revenuePerProduct)
 router.get('/revenuePerSalesRep',verifyTokenFn, controller.reports.revenuePerSalesRep)
+router.get('/roleWiseRevenue',verifyTokenFn, controller.reports.roleWiseRevenue)
 router.get('/totalRevenue',verifyTokenFn, controller.reports.totalRevenue)
 //---------------------------------------DashBoard counts -------------------------------
 

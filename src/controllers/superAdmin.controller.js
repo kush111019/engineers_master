@@ -318,12 +318,14 @@ module.exports.dashboard = async (req, res) => {
                 let commission = 0;
                 let revenueCommissionObj = {}
 
-                let s2 = dbScript(db_sql['Q17'], { var1: comData.id })
-                let slab = await connection.query(s2)
                 let s3 = dbScript(db_sql['Q161'], { var1: comData.id })
                 let salesData = await connection.query(s3)
                 if (salesData.rowCount > 0) {
                     for (data of salesData.rows) {
+
+                        let s2 = dbScript(db_sql['Q184'], { var1: data.slab_id })
+                        let slab = await connection.query(s2)
+
                         targetAmount = targetAmount + Number(data.amount)
                         if (slab.rowCount > 0) {
                             let remainingAmount = Number(data.amount);
@@ -421,8 +423,6 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             let totalCommission = 0
 
             for (let comData of companyData.rows) {
-                let s2 = dbScript(db_sql['Q17'], { var1: comData.id })
-                let slab = await connection.query(s2)
 
                 let s3 = dbScript(db_sql['Q159'], { var1: comData.id })
                 let salesData = await connection.query(s3)
@@ -432,8 +432,12 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                 let totalClosedRevenue = 0;
                 let totalClosedCommission = 0;
 
-                if (salesData.rowCount > 0 && slab.rowCount > 0) {
+                if (salesData.rowCount > 0 ) {
                     for (data of salesData.rows) {
+
+                        let s2 = dbScript(db_sql['Q184'], { var1: data.slab_id })
+                        let slab = await connection.query(s2)
+                        
                         if (data.closed_at == null) {
                             totalExpectedRevenue = Number(totalExpectedRevenue) + Number(data.amount);
                             let expectedRemainingAmount = Number(data.amount);
