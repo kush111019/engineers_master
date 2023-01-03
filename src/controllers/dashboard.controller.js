@@ -161,12 +161,22 @@ module.exports.revenues = async (req, res) => {
                         returnData.push(revenueCommissionBydate[i]);
                     }
                 }
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "Revenues and Commissions",
-                    data: returnData
-                })
+                if(returnData.length > 0){
+                    returnData.sort(function(a,b){
+                        if(orderBy.toLowerCase() == 'asc'){
+                            return b.revenue - a.revenue
+                        }else{
+                            return a.revenue - b.revenue
+                        }
+                        
+                    });
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Revenues and Commissions",
+                        data: returnData
+                    })
+                }
             }else{
                 res.json({
                     status: 200,
@@ -297,7 +307,6 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             }
             let s5 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
             let slab = await connection.query(s5)
-            console.log(slab.rows,"slab data");
             let totalExpectedRevenue = 0;
             let totalExpectedCommission = 0;
             let totalClosedRevenue = 0;
