@@ -1,5 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
+const {paginatedResults} = require('../utils/helper')
 const moduleName = process.env.DASHBOARD_MODULE
 const moment = require('moment')
 
@@ -76,7 +77,8 @@ module.exports.revenues = async (req, res) => {
                     }
                 }
                 if(returnData.length > 0){
-                    returnData.sort(function(a,b){
+                    let paginatedArr = await paginatedResults(returnData, page)
+                    paginatedArr.sort(function(a,b){
                         if(orderBy.toLowerCase() == 'asc'){
                             return a.revenue - b.revenue
                         }else{
@@ -88,7 +90,7 @@ module.exports.revenues = async (req, res) => {
                         status: 200,
                         success: true,
                         message: "Revenues and Commissions",
-                        data: returnData
+                        data: paginatedArr
                     })
                 }
             }else{
