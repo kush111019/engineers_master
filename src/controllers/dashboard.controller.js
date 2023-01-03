@@ -75,12 +75,22 @@ module.exports.revenues = async (req, res) => {
                         returnData.push(revenueCommissionBydate[i]);
                     }
                 }
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "Revenues and Commissions",
-                    data: returnData
-                })
+                if(returnData.length > 0){
+                    returnData.sort(function(a,b){
+                        if(orderBy.toLowerCase() == 'asc'){
+                            return a.revenue - b.revenue
+                        }else{
+                            return b.revenue - a.revenue
+                        }
+                        
+                    });
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Revenues and Commissions",
+                        data: returnData
+                    })
+                }
             }else{
                 res.json({
                     status: 200,
