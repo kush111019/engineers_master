@@ -523,7 +523,26 @@ const db_sql = {
     "Q184"  :`SELECT * FROM slabs WHERE slab_id ='{var1}' AND deleted_at IS NULL ORDER BY slab_ctr ASC`,
     "Q185"  :`SELECT u.id, u.full_name, r.id as role_id  FROM roles AS r 
               INNER JOIN users AS u ON u.role_id = r.id 
-              WHERE (role_id = '{var1}' or reporter = '{var1}') AND r.deleted_at IS NULL`
+              WHERE (role_id = '{var1}' or reporter = '{var1}') AND r.deleted_at IS NULL`,
+    "Q186"  : `SELECT 
+                  u.full_name AS user,
+                  SUM(sc.target_amount::DECIMAL) AS revenue
+              FROM  
+                  sales_commission AS sc 
+                  INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
+                  INNER JOIN users AS u ON u.id = sc.user_id
+                  INNER JOIN customers AS c ON c.id = sc.customer_id
+              WHERE 
+                  sc.closed_at is not null 
+                  AND sc.user_id = '{var1}' 
+                  AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
+                  AND sc.deleted_at IS NULL AND c.deleted_at IS NULL
+                  AND cr.deleted_at IS NULL AND u.deleted_at IS NULL
+              GROUP BY 
+                  u.full_name 
+              ORDER BY 
+                  revenue {var2}
+              LIMIT {var3} OFFSET {var4}`
     
  }
 
