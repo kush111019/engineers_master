@@ -19,9 +19,10 @@ const db_sql = {
     "Q14"  : `SELECT * FROM roles WHERE company_id = '{var1}' AND deleted_at IS NULL` ,
     "Q15"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at, is_main_admin, created_by FROM users WHERE company_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,
     "Q16"  : `SELECT * FROM roles WHERE reporter = '{var1}' AND deleted_at IS NULL`,
-    "Q17"  : `SELECT * FROM slabs WHERE company_id ='{var1}' AND deleted_at IS NULL ORDER BY slab_ctr ASC`,
-    "Q18"  : `INSERT INTO slabs(id,min_amount, max_amount, percentage, is_max, company_id, currency, slab_ctr, user_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}', '{var7}', '{var8}','{var9}') RETURNING * `,
-    "Q19"  : `UPDATE slabs SET deleted_at = '{var2}' WHERE company_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
+    //"Q17"  : `SELECT * FROM slabs WHERE company_id ='{var1}' AND deleted_at IS NULL ORDER BY slab_ctr ASC`,
+    "Q17"  : `SELECT * FROM slabs WHERE company_id ='{var1}' AND deleted_at IS NULL GROUP BY slab_id, id ORDER BY slab_ctr ASC`,
+    "Q18"  : `INSERT INTO slabs(id,min_amount, max_amount, percentage, is_max, company_id, currency, slab_ctr, user_id, slab_id, slab_name) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}') RETURNING * `,
+    "Q19"  : `UPDATE slabs SET slab_name = '{var1}', min_amount = '{var2}', max_amount = '{var3}', percentage = '{var4}', is_max = '{var5}', company_id = '{var6}',currency = '{var7}', slab_ctr = '{var8}', user_id = '{var9}', updated_at = '{var12}' WHERE id = '{var10}' AND slab_id = '{var11}' AND deleted_at IS NULL RETURNING *`,
     "Q20"  : `INSERT INTO permissions(id, role_id, module_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view_global,permission_to_view_own, user_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') RETURNING *`,
     "Q21"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id FROM users WHERE role_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL `,
     "Q22"  : `UPDATE users SET email_address = '{var1}', full_name ='{var2}', mobile_number = '{var3}', address = '{var4}', role_id = '{var5}' , updated_at = '{var7}',avatar = '{var8}', is_admin = '{var10}' WHERE id = '{var6}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `,
@@ -204,12 +205,12 @@ const db_sql = {
               LIMIT {var3} OFFSET {var4}`,
 
     "Q91"  : `INSERT INTO contact_us(id, full_name, email, subject, messages, address) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
-    "Q92"  : `INSERT INTO products(id, product_name,product_image,description,available_quantity,price,tax,company_id, currency, user_id)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}', '{var10}') RETURNING *`,
-    "Q93"  : `UPDATE products SET product_name = '{var2}',product_image = '{var3}', description = '{var4}',available_quantity = '{var5}', price = '{var6}', tax = '{var7}', updated_at = '{var8}', currency = '{var10}' WHERE id = '{var1}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `,
-    "Q94"  : `SELECT id, product_name, product_image, description, available_quantity, price, tax, currency, company_id, created_at, updated_at FROM products WHERE company_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,
+    "Q92"  : `INSERT INTO products(id, product_name,product_image,description,available_quantity,price,end_of_life,company_id, currency, user_id)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}', '{var10}') RETURNING *`,
+    "Q93"  : `UPDATE products SET product_name = '{var2}',product_image = '{var3}', description = '{var4}',available_quantity = '{var5}', price = '{var6}', end_of_life = '{var7}', updated_at = '{var8}', currency = '{var10}' WHERE id = '{var1}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `,
+    "Q94"  : `SELECT id, product_name, product_image, description, available_quantity, price, end_of_life, currency, company_id, created_at, updated_at FROM products WHERE company_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,
     "Q95"  : `UPDATE products SET deleted_at = '{var2}' WHERE id = '{var1}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
-    "Q96"  : `SELECT id, product_name, product_image, description, available_quantity, price, tax, company_id, created_at, updated_at FROM products WHERE id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
-    "Q97"  : `INSERT INTO products(id, company_id,user_id, product_name, product_image, description, available_quantity, price, tax, currency) 
+    "Q96"  : `SELECT id, product_name, product_image, description, available_quantity, price, end_of_life, company_id, created_at, updated_at FROM products WHERE id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
+    "Q97"  : `INSERT INTO products(id, company_id,user_id, product_name, product_image, description, available_quantity, price, end_of_life, currency) 
               VALUES ('{var1}','{var2}','{var3}',$1,$2,$3,$4,$5,$6,$7)`,
     "Q98"  : `SELECT id, name, email, encrypted_password FROM super_admin WHERE email = '{var1}'`,
     "Q99"  : `SELECT id, company_name, company_logo, company_address, is_imap_enable, created_at FROM companies WHERE deleted_at IS NULL`,
@@ -308,7 +309,7 @@ const db_sql = {
               WHERE email_address = '{var1}' AND u.deleted_at IS NULL 
               AND c.deleted_at IS NULL AND r.deleted_at IS NULL AND con.deleted_at IS NULL`,
     "Q146" : `UPDATE companies SET is_imap_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
-    "Q147" : `SELECT id, product_name, product_image, description, available_quantity, price, tax, currency, company_id, created_at, updated_at FROM products WHERE product_name = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL ORDER BY created_at desc `,
+    "Q147" : `SELECT id, product_name, product_image, description, available_quantity, price, end_of_life, currency, company_id, created_at, updated_at FROM products WHERE product_name = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL ORDER BY created_at desc `,
     "Q148" : `UPDATE revenue_forecast SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' RETURNING *`,
     "Q149" : `INSERT INTO upgraded_transactions(id, user_id, company_id, plan_id, stripe_customer_id,
               stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, expiry_date,
@@ -373,7 +374,7 @@ const db_sql = {
               INNER JOIN users AS u ON u.role_id = r.id 
               WHERE reporter = '{var1}' AND r.deleted_at IS NULL`,
     "Q164" : `SELECT * FROM commission_split WHERE user_id = '{var1}' AND deleted_at IS NULL`,
-    "Q165" : `SELECT * FROM slabs WHERE user_id = '{var1}' AND deleted_at IS NULL`,
+    "Q165" : `SELECT * FROM slabs WHERE user_id ='{var1}' AND deleted_at IS NULL GROUP BY slab_id, id ORDER BY slab_ctr ASC`,
     "Q166" : `SELECT c.id, c.customer_company_id , c.customer_name, c.source, c.user_id, c.business_contact_id, c.revenue_contact_id, c.created_at, c.address, c.currency,
               u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.user_id = '{var1}' AND c.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`,
@@ -396,7 +397,7 @@ const db_sql = {
     "Q168" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount,
               sc.closed_at FROM sales_commission AS sc WHERE sc.user_id = '{var1}' 
               AND sc.deleted_at IS NULL` ,
-    "Q169" : `SELECT id, product_name, product_image, description, available_quantity, price, tax, currency, company_id, created_at, updated_at FROM products WHERE user_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,      
+    "Q169" : `SELECT id, product_name, product_image, description, available_quantity, price, end_of_life, currency, company_id, created_at, updated_at FROM products WHERE user_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,      
     "Q170" : `SELECT            
                   c.customer_name,
                   SUM(sc.target_amount::DECIMAL) AS revenue
@@ -485,7 +486,41 @@ const db_sql = {
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
-              WHERE sc.user_id = '{var1}' AND sc.deleted_at IS NULL ORDER BY sc.created_at desc`
+              WHERE sc.user_id = '{var1}' AND sc.deleted_at IS NULL ORDER BY sc.created_at desc`,
+    "Q179"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
+              sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name FROM sales_commission AS sc 
+              INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
+              INNER JOIN users AS u ON u.id = c.closer_id
+              INNER JOIN customers AS cus ON cus.id = sc.customer_id
+              WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL and sc.closed_at IS NULL  ORDER BY sc.created_at desc`,
+    "Q180"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
+              sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name FROM sales_commission AS sc 
+              INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
+              INNER JOIN users AS u ON u.id = c.closer_id
+              INNER JOIN customers AS cus ON cus.id = sc.customer_id
+              WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL and sc.closed_at IS NOT NULL  ORDER BY sc.created_at desc`,
+    "Q181"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
+              sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name FROM sales_commission AS sc 
+              INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
+              INNER JOIN users AS u ON u.id = c.closer_id
+              INNER JOIN customers AS cus ON cus.id = sc.customer_id
+              WHERE sc.user_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NULL ORDER BY sc.created_at desc`,
+    "Q182"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
+              sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name FROM sales_commission AS sc 
+              INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
+              INNER JOIN users AS u ON u.id = c.closer_id
+              INNER JOIN customers AS cus ON cus.id = sc.customer_id
+              WHERE sc.user_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL ORDER BY sc.created_at desc`,
+    "Q183"  :`UPDATE slabs SET deleted_at = '{var1}' WHERE slab_id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL`
+    
  }
 
  function dbScript(template, variables) {

@@ -15,7 +15,7 @@ module.exports.addProduct = async (req, res) => {
             description,
             availableQuantity,
             price,
-            tax,
+            EndOfLife,
             currency
         } = req.body
 
@@ -29,7 +29,7 @@ module.exports.addProduct = async (req, res) => {
             if (findProduct.rowCount == 0) {
                 await connection.query('BEGIN')
                 let id = uuid.v4()
-                let s4 = dbScript(db_sql['Q92'], { var1: id, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: checkPermission.rows[0].company_id, var9: currency, var10 : userId })
+                let s4 = dbScript(db_sql['Q92'], { var1: id, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: EndOfLife, var8: checkPermission.rows[0].company_id, var9: currency, var10 : userId })
                 let addProduct = await connection.query(s4)
                 if (addProduct.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -79,7 +79,7 @@ module.exports.updateProduct = async (req, res) => {
             description,
             availableQuantity,
             price,
-            tax,
+            EndOfLife,
             currency
         } = req.body
 
@@ -90,7 +90,7 @@ module.exports.updateProduct = async (req, res) => {
         if (checkPermission.rows[0].permission_to_update) {
             await connection.query('BEGIN')
             let _dt = new Date().toISOString();
-            let s4 = dbScript(db_sql['Q93'], { var1: productId, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: _dt, var9: checkPermission.rows[0].company_id, var10: currency })
+            let s4 = dbScript(db_sql['Q93'], { var1: productId, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: EndOfLife, var8: _dt, var9: checkPermission.rows[0].company_id, var10: currency })
             let updateProduct = await connection.query(s4)
             if (updateProduct.rowCount > 0) {
                 await connection.query('COMMIT')

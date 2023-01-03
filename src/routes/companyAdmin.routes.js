@@ -31,7 +31,10 @@ router.put('/moveRole', verifyTokenFn, controller.roles.moveRole)
 //-------------------------------------Slabs-------------------------------------------------
 router.get('/slabList',verifyTokenFn, controller.slabs.slabList)
 router.post('/createSlab',verifyTokenFn, controller.slabs.createSlab)
+router.post('/updateSlab',verifyTokenFn, controller.slabs.updateSlab)
 router.put('/deleteSlab',verifyTokenFn, controller.slabs.deleteSlab)
+router.put('/deleteSlabLayer',verifyTokenFn, controller.slabs.deleteSlabLayer)
+
 
 //--------------------------------------followUpNotes--------------------------------------------
 
@@ -70,7 +73,11 @@ router.get('/customerListforSales',verifyTokenFn, controller.sales.customerListf
 router.get('/customerContactDetailsForSales',verifyTokenFn, controller.sales.customerContactDetailsForSales)
 
 router.post('/createSalesCommission',verifyTokenFn, controller.sales.createSalesCommission)
-router.get('/salesCommissionList',verifyTokenFn, controller.sales.salesCommissionList)
+
+router.get('/allSalesCommissionList',verifyTokenFn, controller.sales.allSalesCommissionList)
+router.get('/activeSalesCommissionList',verifyTokenFn, controller.sales.activeSalesCommissionList)
+router.get('/closedSalesCommissionList',verifyTokenFn, controller.sales.closedSalesCommissionList)
+
 router.put('/updateSalesCommission',verifyTokenFn, controller.sales.updateSalesCommission)
 router.put('/deleteSalesCommission',verifyTokenFn, controller.sales.deleteSalesCommission)
 router.get('/salesCommissionLogsList',verifyTokenFn, controller.sales.salesCommissionLogsList)
