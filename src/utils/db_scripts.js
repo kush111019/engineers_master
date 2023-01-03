@@ -59,7 +59,7 @@ const db_sql = {
     "Q43"  : `INSERT INTO sales_commission_logs(id,sales_commission_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_contact_id, business_contact_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date, currency, slab_id, closer_percentage) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}', '{var17}', '{var18}', '{var19}', '{var20}', '{var21}' ) RETURNING *`,
     "Q44"  : `SELECT sl.id, sl.sales_commission_id, sl.customer_commission_split_id, sl.qualification, sl.is_qualified, sl.target_amount, sl.currency, 
               sl.products, sl.target_closing_date, sl.customer_id, sl.is_overwrite, sl.company_id, sl.revenue_contact_id, sl.business_contact_id, sl.closer_id, 
-              sl.supporter_id, sl.sales_type, sl.subscription_plan, sl.recurring_date, sl.created_at,sl.closed_at, u.full_name AS closer_name, c.customer_name,  cr.closer_percentage
+              sl.supporter_id, sl.sales_type, sl.subscription_plan, sl.recurring_date, sl.created_at,sl.closed_at, u.full_name AS closer_name, c.customer_name, sl.closer_percentage
               FROM sales_commission_logs AS sl INNER JOIN users AS u ON u.id = sl.closer_id
               INNER JOIN customers AS c ON c.id = sl.customer_id
               INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sl.sales_commission_id
