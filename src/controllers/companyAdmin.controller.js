@@ -357,6 +357,7 @@ module.exports.login = async (req, res) => {
                                 id: admin.rows[0].id,
                                 name: admin.rows[0].full_name,
                                 isAdmin: admin.rows[0].is_admin,
+                                roleId : admin.rows[0].role_id,
                                 role: admin.rows[0].role_name,
                                 profileImage: profileImage,
                                 modulePermissions: modulePemissions,

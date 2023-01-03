@@ -382,7 +382,7 @@ module.exports.roleWiseRevenue = async (req, res) => {
                     let s4 = dbScript(db_sql['Q186'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
                     let salesData = await connection.query(s4)
                     if(salesData.rowCount > 0){
-                        revenueList.push(salesData.rows)
+                        revenueList.push(salesData.rows[0])
                     }
                 }
                 if (revenueList.length > 0) {
