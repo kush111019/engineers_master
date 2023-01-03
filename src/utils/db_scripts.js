@@ -138,15 +138,14 @@ const db_sql = {
                 sales_commission AS sc 
               WHERE 
                 sc.company_id = '{var1}' AND 
-                sc.closed_at BETWEEN '{var5}' AND '{var6}' AND
+                sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
                 sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
               GROUP BY 
                 sc.closed_at,
                 sc.id,
                 sc.slab_id 
               ORDER BY 
-                amount {var2}
-              LIMIT {var3} OFFSET {var4}`,
+                amount {var2}`,
 
     "Q88"  : `SELECT 
                 DATE_TRUNC('{var2}',sc.closed_at) AS  date, 

@@ -9,14 +9,12 @@ module.exports.revenues = async (req, res) => {
         let userId = req.user.id
         let userIds = []
         let { page, startDate, endDate, orderBy } = req.query
-        let limit = 10;
-        let offset = (page - 1) * limit
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
             let revenueCommissionBydate = []
 
-            let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
+            let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy,var3: startDate, var4: endDate })
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0 ) {
                 for (data of salesData.rows) {
