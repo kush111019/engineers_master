@@ -389,14 +389,14 @@ module.exports.roleWiseRevenue = async (req, res) => {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "Revenue per sales representative",
+                        message: "Revenue per role wise user",
                         data: revenueList
                     })
                 } else {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "Empty revenue per sales representative",
+                        message: "Empty revenue per role wise user",
                         data: revenueList
                     })
                 }

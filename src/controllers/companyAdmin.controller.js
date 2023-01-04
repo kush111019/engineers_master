@@ -44,7 +44,7 @@ let createAdmin = async (bodyData, cId, res) => {
             let role_id = createRole.rows[0].id
             let s5 = dbScript(db_sql['Q3'], {
                 var1: id, var2: mysql_real_escape_string(name),
-                var3: cId, var4: companyLogo, var5: emailAddress, var6: mobileNumber,
+                var3: cId, var4: companyLogo, var5: emailAddress.toLowerCase(), var6: mobileNumber,
                 var7: phoneNumber, var8: encryptedPassword, var9: role_id,
                 var10: mysql_real_escape_string(companyAddress), var11: expiryDate, var12 : id
             })
@@ -84,7 +84,7 @@ let createAdmin = async (bodyData, cId, res) => {
                     return res.json({
                         status: 201,
                         success: true,
-                        message: ` User Created Successfully and verification link send on registered email `,
+                        message: ` User Created Successfully and verification link send on ${emailAddress.toLowerCase()} `,
                     })
                 } else {
                     let emailSent = await welcomeEmail(emailAddress, link, name);
@@ -372,7 +372,7 @@ module.exports.login = async (req, res) => {
                         res.json({
                             status: 400,
                             success: false,
-                            message: "not subscribed for any plan"
+                            message: "Not subscribed for any plan"
                         })
                     }
                 } else {
@@ -393,7 +393,7 @@ module.exports.login = async (req, res) => {
             res.json({
                 status: 400,
                 success: false,
-                message: "Admin not found"
+                message: "Invalid credentials"
             })
         }
     }

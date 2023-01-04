@@ -305,7 +305,7 @@ const db_sql = {
               FROM users AS u INNER JOIN companies AS c ON c.id = u.company_id
               INNER JOIN roles AS r ON r.id = u.role_id 
               INNER JOIN configurations AS con ON con.company_id = u.company_id
-              WHERE email_address = '{var1}' AND u.deleted_at IS NULL 
+              WHERE LOWER(email_address) = LOWER('{var1}') AND u.deleted_at IS NULL 
               AND c.deleted_at IS NULL AND r.deleted_at IS NULL AND con.deleted_at IS NULL`,
     "Q146" : `UPDATE companies SET is_imap_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q147" : `SELECT id, product_name, product_image, description, available_quantity, price, end_of_life, currency, company_id, created_at, updated_at FROM products WHERE product_name = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL ORDER BY created_at desc `,
@@ -520,7 +520,7 @@ const db_sql = {
               WHERE sc.user_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL ORDER BY sc.created_at desc`,
     "Q183"  :`UPDATE slabs SET deleted_at = '{var1}' WHERE slab_id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL`,
     "Q184"  :`SELECT * FROM slabs WHERE slab_id ='{var1}' AND deleted_at IS NULL ORDER BY slab_ctr ASC`,
-    "Q185"  :`SELECT u.id, u.full_name, r.id as role_id  FROM roles AS r 
+    "Q185"  :`SELECT u.id, u.full_name, r.id as role_id,r.role_name, r.module_ids, r.reporter  FROM roles AS r 
               INNER JOIN users AS u ON u.role_id = r.id 
               WHERE (role_id = '{var1}' or reporter = '{var1}') AND r.deleted_at IS NULL`,
     "Q186"  : `SELECT 
@@ -528,15 +528,12 @@ const db_sql = {
                   SUM(sc.target_amount::DECIMAL) AS revenue
               FROM  
                   sales_commission AS sc 
-                  INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
                   INNER JOIN users AS u ON u.id = sc.user_id
-                  INNER JOIN customers AS c ON c.id = sc.customer_id
               WHERE 
                   sc.closed_at is not null 
                   AND sc.user_id = '{var1}' 
                   AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
-                  AND sc.deleted_at IS NULL AND c.deleted_at IS NULL
-                  AND cr.deleted_at IS NULL AND u.deleted_at IS NULL
+                  AND sc.deleted_at IS NULL AND u.deleted_at IS NULL
               GROUP BY 
                   u.full_name 
               ORDER BY 

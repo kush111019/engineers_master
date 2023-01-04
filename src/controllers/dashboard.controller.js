@@ -76,14 +76,15 @@ module.exports.revenues = async (req, res) => {
                 }
                 if(returnData.length > 0){
                     let paginatedArr = await paginatedResults(returnData, page)
-                    paginatedArr.sort(function(a,b){
-                        if(orderBy.toLowerCase() == 'asc'){
+                    if(orderBy.toLowerCase() == 'asc'){
+                        paginatedArr = paginatedArr.sort((a,b) => {
                             return a.revenue - b.revenue
-                        }else{
+                        })
+                    }else{
+                        paginatedArr = paginatedArr.sort((a,b) => {
                             return b.revenue - a.revenue
-                        }
-                        
-                    });
+                        })
+                    }
                     res.json({
                         status: 200,
                         success: true,

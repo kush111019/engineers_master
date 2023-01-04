@@ -88,7 +88,7 @@ module.exports.addUser = async (req, res) => {
                 let isAdmin = findRole.rows[0].role_name == 'Admin' ? true : false;
 
                 await connection.query('BEGIN')
-                let s5 = dbScript(db_sql['Q45'], { var1: id, var2: mysql_real_escape_string(name), var3: checkPermission.rows[0].company_id, var4: avatar, var5: emailAddress, var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address), var10 : isAdmin, var11 : userId })
+                let s5 = dbScript(db_sql['Q45'], { var1: id, var2: mysql_real_escape_string(name), var3: checkPermission.rows[0].company_id, var4: avatar, var5: emailAddress.toLowerCase(), var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address), var10 : isAdmin, var11 : userId })
                 let addUser = await connection.query(s5)
 
                 let _dt = new Date().toISOString();
@@ -110,7 +110,7 @@ module.exports.addUser = async (req, res) => {
                         res.json({
                             status: 201,
                             success: true,
-                            message: `User created successfully and link send for set password on ${emailAddress} `
+                            message: `User created successfully and link send for set password on ${emailAddress.toLowerCase()} `
                         })
                     } else {
                         let emailSent = await setPasswordMail(emailAddress, link, name);

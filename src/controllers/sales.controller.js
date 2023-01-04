@@ -253,6 +253,38 @@ module.exports.allSalesCommissionList = async (req, res) => {
                 let closer = {}
                 let supporters = []
 
+                let slabName = ''
+                let remainingAmount = Number(data.target_amount);
+                let commission = 0
+                if(data.slab_id){
+                    let s6 = dbScript(db_sql['Q184'],{var1 : data.slab_id})
+                    let slabData = await connection.query(s6)
+                    slabName = slabData.rows[0].slab_name;
+                    //if remainning amount is 0 then no reason to check 
+                    for (let i = 0; i < slabData.rows.length && remainingAmount > 0; i++) {
+                        let slab_percentage = Number(slabData.rows[i].percentage)
+                        let slab_maxAmount = Number(slabData.rows[i].max_amount)
+                        let slab_minAmount = Number(slabData.rows[i].min_amount)
+                        if (slabData.rows[i].is_max) {
+                            // Reached the last slab
+                            commission += ((slab_percentage / 100) * remainingAmount)
+                            break;
+                        }
+                        else {
+                            // This is not the last slab
+                            let diff = slab_minAmount == 0 ? 0 : 1
+                            let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                            slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+                            commission += ((slab_percentage / 100) * slab_diff)
+                            remainingAmount -= slab_diff
+                            if (remainingAmount <= 0) {
+                                break;
+                            }
+                        }
+                    }
+
+                }
+
                 let s4 = dbScript(db_sql['Q59'], { var1: data.id })
                 let supporter = await connection.query(s4)
                 if (supporter.rowCount > 0) {
@@ -261,22 +293,29 @@ module.exports.allSalesCommissionList = async (req, res) => {
                             let s5 = dbScript(db_sql['Q81'], { var1: supporterData.id })
                             let supporterName = await connection.query(s5)
                             if (supporterName.rowCount > 0) {
-                                supporters.push({
-                                    id: supporterName.rows[0].supporter_id,
-                                    name: supporterName.rows[0].full_name,
-                                    email: supporterName.rows[0].email_address,
-                                    percentage: supporterName.rows[0].supporter_percentage
-                                })
+                                if(data.closed_at != null){
+                                    closer.closerCommissionAmount = ((Number(data.closer_percentage)/100)*commission)
+                                    supporters.push({
+                                        id: supporterName.rows[0].supporter_id,
+                                        name: supporterName.rows[0].full_name,
+                                        email: supporterName.rows[0].email_address,
+                                        percentage: supporterName.rows[0].supporter_percentage,
+                                        supporterCommissionAmount : ((Number(supporterName.rows[0].supporter_percentage)/100)*commission)
+                                    })
+                                }else{
+                                     supporters.push({
+                                        id: supporterName.rows[0].supporter_id,
+                                        name: supporterName.rows[0].full_name,
+                                        email: supporterName.rows[0].email_address,
+                                        percentage: supporterName.rows[0].supporter_percentage
+                                    })
+                                }
+                                
                             }
                         }
                     }
                 }
-                let slabName = ''
-                if(data.slab_id){
-                    let s6 = dbScript(db_sql['Q184'],{var1 : data.slab_id})
-                    let slabData = await connection.query(s6)
-                    slabName = slabData.rows[0].slab_name;
-                }
+                
                 let s9 = dbScript(db_sql['Q157'], { var1: data.id })
                 let productData = await connection.query(s9)
 
@@ -363,6 +402,38 @@ module.exports.allSalesCommissionList = async (req, res) => {
                     let closer = {}
                     let supporters = []
 
+                    let slabName = ''
+                    let remainingAmount = Number(data.target_amount);
+                    let commission = 0
+                    if(data.slab_id){
+                        let s6 = dbScript(db_sql['Q184'],{var1 : data.slab_id})
+                        let slabData = await connection.query(s6)
+                        slabName = slabData.rows[0].slab_name;
+                        //if remainning amount is 0 then no reason to check 
+                        for (let i = 0; i < slabData.rows.length && remainingAmount > 0; i++) {
+                            let slab_percentage = Number(slabData.rows[i].percentage)
+                            let slab_maxAmount = Number(slabData.rows[i].max_amount)
+                            let slab_minAmount = Number(slabData.rows[i].min_amount)
+                            if (slabData.rows[i].is_max) {
+                                // Reached the last slab
+                                commission += ((slab_percentage / 100) * remainingAmount)
+                                break;
+                            }
+                            else {
+                                // This is not the last slab
+                                let diff = slab_minAmount == 0 ? 0 : 1
+                                let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                                slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+                                commission += ((slab_percentage / 100) * slab_diff)
+                                remainingAmount -= slab_diff
+                                if (remainingAmount <= 0) {
+                                    break;
+                                }
+                            }
+                        }
+
+                    }
+
                     let s4 = dbScript(db_sql['Q59'], { var1: data.id })
                     let supporter = await connection.query(s4)
                     if (supporter.rowCount > 0) {
@@ -371,22 +442,26 @@ module.exports.allSalesCommissionList = async (req, res) => {
                                 let s5 = dbScript(db_sql['Q81'], { var1: supporterData.id })
                                 let supporterName = await connection.query(s5)
                                 if (supporterName.rowCount > 0) {
-                                    supporters.push({
-                                        id: supporterName.rows[0].supporter_id,
-                                        name: supporterName.rows[0].full_name,
-                                        email: supporterName.rows[0].email_address,
-                                        percentage: supporterName.rows[0].supporter_percentage
-                                    })
+                                    if(data.closed_at != null){
+                                        closer.closerCommissionAmount = ((Number(data.closer_percentage)/100)*commission)
+                                        supporters.push({
+                                            id: supporterName.rows[0].supporter_id,
+                                            name: supporterName.rows[0].full_name,
+                                            email: supporterName.rows[0].email_address,
+                                            percentage: supporterName.rows[0].supporter_percentage,
+                                            supporterCommissionAmount : ((Number(supporterName.rows[0].supporter_percentage)/100)*commission)
+                                        })
+                                    }else{
+                                         supporters.push({
+                                            id: supporterName.rows[0].supporter_id,
+                                            name: supporterName.rows[0].full_name,
+                                            email: supporterName.rows[0].email_address,
+                                            percentage: supporterName.rows[0].supporter_percentage
+                                        })
+                                    }
                                 }
                             }
                         }
-                    }
-
-                    let slabName = ''
-                    if(data.slab_id){
-                        let s6 = dbScript(db_sql['Q184'],{var1 : data.slab_id})
-                        let slabData = await connection.query(s6)
-                        slabName = slabData.rows[0].slab_name;
                     }
 
                     let s9 = dbScript(db_sql['Q157'], { var1: data.id })
