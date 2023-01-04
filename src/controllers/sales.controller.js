@@ -1504,7 +1504,7 @@ module.exports.usersListForSales = async (req, res) => {
         let userId = req.user.id
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_view_global) {
+        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
             let s4 = dbScript(db_sql['Q24'], { var1: checkPermission.rows[0].company_id })
             let findUsers = await connection.query(s4);
             if (findUsers.rows.length > 0) {
@@ -1532,8 +1532,7 @@ module.exports.usersListForSales = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 403,
+            res.status(403).json({
                 success: false,
                 message: "Unathorized",
             })
