@@ -112,7 +112,7 @@ module.exports.revenues = async (req, res) => {
                 }
             }
             for (id of userIds) {
-                let s4 = dbScript(db_sql['Q167'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
+                let s4 = dbScript(db_sql['Q167'], { var1: id, var2: orderBy, var3: startDate, var4: endDate })
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0 ) {
                     for (data of salesData.rows) {
@@ -173,19 +173,21 @@ module.exports.revenues = async (req, res) => {
                     }
                 }
                 if(returnData.length > 0){
-                    returnData.sort(function(a,b){
-                        if(orderBy.toLowerCase() == 'asc'){
-                            return b.revenue - a.revenue
-                        }else{
+                    let paginatedArr = await paginatedResults(returnData, page)
+                    if(orderBy.toLowerCase() == 'asc'){
+                        paginatedArr = paginatedArr.sort((a,b) => {
                             return a.revenue - b.revenue
-                        }
-                        
-                    });
+                        })
+                    }else{
+                        paginatedArr = paginatedArr.sort((a,b) => {
+                            return b.revenue - a.revenue
+                        })
+                    }
                     res.json({
                         status: 200,
                         success: true,
                         message: "Revenues and Commissions",
-                        data: returnData
+                        data: paginatedArr
                     })
                 }
             }else{
