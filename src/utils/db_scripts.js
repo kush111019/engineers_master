@@ -391,7 +391,7 @@ const db_sql = {
                 sc.closed_at,
                 sc.id 
               ORDER BY 
-                amount {var2}`   ,
+              sc.closed_at {var2}`   ,
     "Q168" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount,
               sc.closed_at FROM sales_commission AS sc WHERE sc.user_id = '{var1}' 
               AND sc.deleted_at IS NULL` ,

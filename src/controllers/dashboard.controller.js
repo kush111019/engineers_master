@@ -56,24 +56,7 @@ module.exports.revenues = async (req, res) => {
             }
             
             if(revenueCommissionBydate.length > 0){
-                let returnData = [];
-                for (let i = 0; i < revenueCommissionBydate.length; i++) {
-                    let found = 0;
-                    for (let j = 0; j < returnData.length; j++) {
-                        let date1 = (revenueCommissionBydate[i].date).toString();
-                        let date2 = (returnData[j].date).toString();
-                        if (date1.slice(0, 10) === date2.slice(0, 10)) {
-                            let revenueOfJ = Number(returnData[j].revenue) + Number(revenueCommissionBydate[i].revenue)
-                            returnData[j].revenue = revenueOfJ;
-                            let commissionOfJ = Number(returnData[j].commission) + Number(revenueCommissionBydate[i].commission)
-                            returnData[j].commission = commissionOfJ;
-                            found = 1;
-                        }
-                    }
-                    if (found === 0) {
-                        returnData.push(revenueCommissionBydate[i]);
-                    }
-                }
+                let returnData = await reduceArrayWithCommission(revenueCommissionBydate)
                 if(returnData.length > 0){
                     let paginatedArr = await paginatedResults(returnData, page)
                     if(orderBy.toLowerCase() == 'asc'){
