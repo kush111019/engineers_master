@@ -145,7 +145,7 @@ const db_sql = {
                 sc.id,
                 sc.slab_id 
               ORDER BY 
-                amount {var2}`,
+              sc.closed_at {var2}`,
 
     "Q88"  : `SELECT 
                 DATE_TRUNC('{var2}',sc.closed_at) AS  date, 
