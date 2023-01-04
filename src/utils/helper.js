@@ -386,3 +386,24 @@ module.exports.reduceArray = async (data) => {
     return returnData
 }
 
+module.exports.reduceArrayWithCommission = async (data) => {
+    let returnData = [];
+    for (let i = 0; i < data.length; i++) {
+        let found = 0;
+        for (let j = 0; j < returnData.length; j++) {
+            let date1 = (data[i].date).toString();
+            let date2 = (returnData[j].date).toString();
+            if (date1.slice(0, 10) === date2.slice(0, 10)) {
+                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
+                returnData[j].revenue = revenueOfJ;
+                let commissionOfJ = Number(returnData[j].commission) + Number(data[i].commission)
+                returnData[j].commission = commissionOfJ;
+                found = 1;
+            }
+        }
+        if (found === 0) {
+            returnData.push(data[i]);
+        }
+    }
+    return returnData
+}
