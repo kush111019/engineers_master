@@ -6,7 +6,6 @@ const moduleName = process.env.REPORTS_MODULE
 module.exports.revenuePerCustomer = async (req, res) => {
     try {
         let userId = req.user.id
-        let userIds = []
         let { page, orderBy, startDate, endDate } = req.query
         let limit = 10;
         let offset = (page - 1) * limit
@@ -39,17 +38,34 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 })
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            userIds.push(userId)
             let revenuePerCustomerArr = []
-            let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
-            let findUsers = await connection.query(s3)
-            if (findUsers.rowCount > 0) {
-                for (user of findUsers.rows) {
-                    userIds.push(user.id)
+            let roleUsers = []
+            let roleIds = []
+            roleIds.push(checkPermission.rows[0].role_id)
+            let getRoles = async (id) => {
+                let s7 = dbScript(db_sql['Q16'], { var1: id })
+                let getChild = await connection.query(s7);
+                if (getChild.rowCount > 0) {
+                    for (let item of getChild.rows) {
+                        if (roleIds.includes(item.id) == false) {
+                            roleIds.push(item.id)
+                            await getRoles(item.id)
+                        }
+                    }
+                }
+            }
+            await getRoles(checkPermission.rows[0].role_id)
+            for (let roleId of roleIds) {
+                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
+                let findUsers = await connection.query(s3)
+                if (findUsers.rowCount > 0) {
+                    for (let user of findUsers.rows) {
+                        roleUsers.push(user.id)
+                    }
                 }
             }
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
-                for (id of userIds) {
+                for (id of roleUsers) {
                     let s2 = dbScript(db_sql['Q170'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
                     let customerCompanies = await connection.query(s2)
                     if(customerCompanies.rowCount > 0){
@@ -98,7 +114,6 @@ module.exports.revenuePerCustomer = async (req, res) => {
 module.exports.revenuePerProduct = async (req, res) => {
     try {
         let userId = req.user.id
-        let userIds = []
         let { page, orderBy, startDate, endDate} = req.query
         let limit = 10;
         let offset = (page - 1) * limit
@@ -131,17 +146,34 @@ module.exports.revenuePerProduct = async (req, res) => {
                 })
             }
         }else if(checkPermission.rows[0].permission_to_view_own){
-            userIds.push(userId)
             let revenuePerProductArr = []
-            let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
-            let findUsers = await connection.query(s3)
-            if (findUsers.rowCount > 0) {
-                for (user of findUsers.rows) {
-                    userIds.push(user.id)
+            let roleUsers = []
+            let roleIds = []
+            roleIds.push(checkPermission.rows[0].role_id)
+            let getRoles = async (id) => {
+                let s7 = dbScript(db_sql['Q16'], { var1: id })
+                let getChild = await connection.query(s7);
+                if (getChild.rowCount > 0) {
+                    for (let item of getChild.rows) {
+                        if (roleIds.includes(item.id) == false) {
+                            roleIds.push(item.id)
+                            await getRoles(item.id)
+                        }
+                    }
+                }
+            }
+            await getRoles(checkPermission.rows[0].role_id)
+            for (let roleId of roleIds) {
+                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
+                let findUsers = await connection.query(s3)
+                if (findUsers.rowCount > 0) {
+                    for (let user of findUsers.rows) {
+                        roleUsers.push(user.id)
+                    }
                 }
             }
             if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
-                for(let id of userIds){
+                for(let id of roleUsers){
                     let s4 = dbScript(db_sql['Q171'], { var1: id, var2 : orderBy, var3 : limit, var4 : offset, var5: startDate, var6: endDate })
                     let revenuePerProduct = await connection.query(s4)
                     if(revenuePerProduct.rowCount > 0){
@@ -190,7 +222,6 @@ module.exports.revenuePerProduct = async (req, res) => {
 module.exports.revenuePerSalesRep = async (req, res) => {
     try {
         let userId = req.user.id
-        let userIds = []
         let { page, orderBy, startDate, endDate } = req.query
         let limit = 10;
         let offset = (page - 1) * limit
@@ -223,17 +254,35 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                 })
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            userIds.push(userId)
             let revenuePerSalesRepArr = []
-            let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
-            let findUsers = await connection.query(s3)
-            if (findUsers.rowCount > 0) {
-                for (user of findUsers.rows) {
-                    userIds.push(user.id)
+            let roleUsers = []
+            let roleIds = []
+            roleIds.push(checkPermission.rows[0].role_id)
+            let getRoles = async (id) => {
+                let s7 = dbScript(db_sql['Q16'], { var1: id })
+                let getChild = await connection.query(s7);
+                if (getChild.rowCount > 0) {
+                    for (let item of getChild.rows) {
+                        if (roleIds.includes(item.id) == false) {
+                            roleIds.push(item.id)
+                            await getRoles(item.id)
+                        }
+                    }
                 }
             }
+            await getRoles(checkPermission.rows[0].role_id)
+            for (let roleId of roleIds) {
+                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
+                let findUsers = await connection.query(s3)
+                if (findUsers.rowCount > 0) {
+                    for (let user of findUsers.rows) {
+                        roleUsers.push(user.id)
+                    }
+                }
+            }
+            
             if ((startDate != undefined && startDate != '') && (endDate != undefined && endDate != '')) {
-                for (let id of userIds) {
+                for (let id of roleUsers) {
                     let s4 = dbScript(db_sql['Q172'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
                     let salesData = await connection.query(s4)
                     if (salesData.rowCount > 0) {
@@ -282,7 +331,6 @@ module.exports.revenuePerSalesRep = async (req, res) => {
 module.exports.totalRevenue = async (req, res) => {
     try {
         let userId = req.user.id
-        let userIds = []
         let { status, page } = req.query
         let limit = 10;
         let offset = (page - 1) * limit
@@ -307,17 +355,34 @@ module.exports.totalRevenue = async (req, res) => {
                     data: targetData.rows
                 })
             }
-        }else if(checkPermission.rows[0].permission_to_view_own){
+        } else if (checkPermission.rows[0].permission_to_view_own) {
             let totalRevenue = [];
-            userIds.push(userId)
-            let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
-            let findUsers = await connection.query(s3)
-            if (findUsers.rowCount > 0) {
-                for (user of findUsers.rows) {
-                    userIds.push(user.id)
+            let roleUsers = []
+            let roleIds = []
+            roleIds.push(checkPermission.rows[0].role_id)
+            let getRoles = async (id) => {
+                let s7 = dbScript(db_sql['Q16'], { var1: id })
+                let getChild = await connection.query(s7);
+                if (getChild.rowCount > 0) {
+                    for (let item of getChild.rows) {
+                        if (roleIds.includes(item.id) == false) {
+                            roleIds.push(item.id)
+                            await getRoles(item.id)
+                        }
+                    }
                 }
             }
-            for(let id of userIds){
+            await getRoles(checkPermission.rows[0].role_id)
+            for (let roleId of roleIds) {
+                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
+                let findUsers = await connection.query(s3)
+                if (findUsers.rowCount > 0) {
+                    for (let user of findUsers.rows) {
+                        roleUsers.push(user.id)
+                    }
+                }
+            }
+            for (let id of roleUsers) {
                 let format = (status == 'Monthly') ? 'month' : (status == 'Quarterly') ? 'quarter' : 'year'
                 let s4 = dbScript(db_sql['Q173'], { var1: id, var2: format, var3: limit, var4: offset })
                 let targetData = await connection.query(s4)
@@ -392,7 +457,7 @@ module.exports.roleWiseRevenue = async (req, res) => {
                     let s3 = dbScript(db_sql['Q185'], { var1: roleId })
                     let findUsers = await connection.query(s3)
                     if (findUsers.rowCount > 0) {
-                        for (user of findUsers.rows) {
+                        for (let user of findUsers.rows) {
                             roleUsers.push(user.id)
                         }
                     }
@@ -419,7 +484,6 @@ module.exports.roleWiseRevenue = async (req, res) => {
                         data: revenueList
                     })
                 }
-                
             } else {
                 res.json({
                     status: 400,

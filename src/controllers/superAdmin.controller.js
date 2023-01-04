@@ -319,7 +319,7 @@ module.exports.dashboard = async (req, res) => {
                 let s3 = dbScript(db_sql['Q161'], { var1: comData.id })
                 let salesData = await connection.query(s3)
                 if (salesData.rowCount > 0) {
-                    for (data of salesData.rows) {
+                    for (let data of salesData.rows) {
 
                         let s2 = dbScript(db_sql['Q184'], { var1: data.slab_id })
                         let slab = await connection.query(s2)
@@ -432,7 +432,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                 let totalClosedCommission = 0;
 
                 if (salesData.rowCount > 0 ) {
-                    for (data of salesData.rows) {
+                    for (let data of salesData.rows) {
 
                         let s2 = dbScript(db_sql['Q184'], { var1: data.slab_id })
                         let slab = await connection.query(s2)

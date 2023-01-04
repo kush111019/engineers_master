@@ -17,7 +17,7 @@ module.exports.revenues = async (req, res) => {
             let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy,var3: startDate, var4: endDate })
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0 ) {
-                for (data of salesData.rows) {
+                for (let data of salesData.rows) {
 
                     let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
                     let slab = await connection.query(s5)
@@ -90,15 +90,15 @@ module.exports.revenues = async (req, res) => {
             let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
             let findUsers = await connection.query(s3)
             if (findUsers.rowCount > 0) {
-                for (user of findUsers.rows) {
+                for (let user of findUsers.rows) {
                     userIds.push(user.id)
                 }
             }
-            for (id of userIds) {
+            for (let id of userIds) {
                 let s4 = dbScript(db_sql['Q167'], { var1: id, var2: orderBy, var3: startDate, var4: endDate })
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0 ) {
-                    for (data of salesData.rows) {
+                    for (let data of salesData.rows) {
 
                         let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
                         let slab = await connection.query(s5)
@@ -196,7 +196,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                 let totalExpectedCommission = 0;
                 let totalClosedRevenue = 0;
                 let totalClosedCommission = 0;
-                for (data of salesData.rows) {
+                for (let data of salesData.rows) {
 
                     let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
                     let slab = await connection.query(s5)
@@ -280,7 +280,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
             let findUsers = await connection.query(s3)
             if (findUsers.rowCount > 0) {
-                for (user of findUsers.rows) {
+                for (let user of findUsers.rows) {
                     userIds.push(user.id)
                 }
             }
