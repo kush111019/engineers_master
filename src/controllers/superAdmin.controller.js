@@ -307,9 +307,7 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
 module.exports.dashboard = async (req, res) => {
     try {
         let { page, startDate, endDate, orderBy } = req.query
-        let limit = 10;
-        let offset = (page - 1) * limit
-        let s1 = dbScript(db_sql['Q160'], {var1: limit, var2: offset, var3: startDate, var4: endDate})
+        let s1 = dbScript(db_sql['Q160'], {var1: startDate, var2: endDate})
         let companyData = await connection.query(s1)
         if (companyData.rowCount > 0) {
             let revenueCommission = []
@@ -364,12 +362,13 @@ module.exports.dashboard = async (req, res) => {
                 
             }
             if (revenueCommission.length > 0) {
+                let paginatedArr = await paginatedResults(revenueCommission, page)
                 if(orderBy.toLowerCase() == 'asc'){
-                    revenueCommission = revenueCommission.sort((a,b) => {
+                    paginatedArr = paginatedArr.sort((a,b) => {
                         return a.revenue - b.revenue
                     })
                 }else{
-                    revenueCommission = revenueCommission.sort((a,b) => {
+                    paginatedArr = paginatedArr.sort((a,b) => {
                         return b.revenue - a.revenue
                     })
                 }
@@ -377,7 +376,7 @@ module.exports.dashboard = async (req, res) => {
                     status: 200,
                     success: true,
                     message: "total revenue and total commission",
-                    data: revenueCommission
+                    data: paginatedArr
                 })
             } else {
                 res.json({

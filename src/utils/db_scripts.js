@@ -354,8 +354,7 @@ const db_sql = {
     "Q160" : `SELECT 
                 id, company_name, company_logo, company_address, is_imap_enable, created_at 
               FROM companies 
-              WHERE deleted_at IS NULL AND created_at BETWEEN '{var3}' AND '{var4}' 
-              LIMIT {var1} OFFSET {var2}`,
+              WHERE deleted_at IS NULL AND created_at BETWEEN '{var1}' AND '{var2}'`,
     "Q161"  : `SELECT 
                   sc.id AS sales_commission_id, 
                   SUM(sc.target_amount::DECIMAL) as amount,
