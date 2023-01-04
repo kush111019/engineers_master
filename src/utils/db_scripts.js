@@ -530,13 +530,11 @@ const db_sql = {
               WHERE 
                   sc.closed_at is not null 
                   AND sc.user_id = '{var1}' 
-                  AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
+                  AND sc.closed_at BETWEEN '{var4}' AND '{var5}'
                   AND sc.deleted_at IS NULL AND u.deleted_at IS NULL
               GROUP BY 
                   u.full_name 
-              ORDER BY 
-                  revenue {var2}
-              LIMIT {var3} OFFSET {var4}`
+              LIMIT {var2} OFFSET {var3}`
     
  }
 
