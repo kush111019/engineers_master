@@ -522,7 +522,7 @@ const db_sql = {
     "Q184"  :`SELECT * FROM slabs WHERE slab_id ='{var1}' AND deleted_at IS NULL ORDER BY slab_ctr ASC`,
     "Q185"  :`SELECT u.id, u.full_name, r.id as role_id,r.role_name, r.module_ids, r.reporter  FROM roles AS r 
               INNER JOIN users AS u ON u.role_id = r.id 
-              WHERE (role_id = '{var1}' or reporter = '{var1}') AND r.deleted_at IS NULL`,
+              WHERE r.id = '{var1}'  AND r.deleted_at IS NULL`,
     "Q186"  : `SELECT 
                   u.full_name AS user,
                   SUM(sc.target_amount::DECIMAL) AS revenue
