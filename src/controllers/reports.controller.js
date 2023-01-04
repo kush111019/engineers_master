@@ -362,7 +362,7 @@ module.exports.totalRevenue = async (req, res) => {
 module.exports.roleWiseRevenue = async (req, res) => {
     try {
         let userId = req.user.id
-        let { page, orderBy, startDate, endDate, role_id } = req.query
+        let { page, orderBy, startDate, endDate, role_id, isAll } = req.query
         let limit = 10;
         let offset = (page - 1) * limit
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
@@ -372,20 +372,22 @@ module.exports.roleWiseRevenue = async (req, res) => {
                 let roleIds = []
                 let roleUsers = []
                 let revenueList = []
-                roleIds.push(checkPermission.rows[0].role_id)
-                let getRoles = async (id) => {
-                    let s7 = dbScript(db_sql['Q16'], { var1: id })
-                    let getChild = await connection.query(s7);
-                    if (getChild.rowCount > 0) {
-                        for (let item of getChild.rows) {
-                            if (roleIds.includes(item.id) == false) {
-                                roleIds.push(item.id)
-                                await getRoles(item.id)
+                roleIds.push(role_id)
+                if(isAll == 'true'){
+                    let getRoles = async (id) => {
+                        let s7 = dbScript(db_sql['Q16'], { var1: id })
+                        let getChild = await connection.query(s7);
+                        if (getChild.rowCount > 0) {
+                            for (let item of getChild.rows) {
+                                if (roleIds.includes(item.id) == false) {
+                                    roleIds.push(item.id)
+                                    await getRoles(item.id)
+                                }
                             }
                         }
                     }
+                    await getRoles(role_id)
                 }
-                await getRoles(checkPermission.rows[0].role_id)
                 for(let roleId of roleIds){
                     let s3 = dbScript(db_sql['Q185'], { var1: roleId })
                     let findUsers = await connection.query(s3)
