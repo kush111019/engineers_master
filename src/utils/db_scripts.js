@@ -79,7 +79,7 @@ const db_sql = {
     "Q54"  : `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at, sc.slab_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name FROM sales_commission AS sc 
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
@@ -479,7 +479,7 @@ const db_sql = {
     "Q178" : `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,sc.slab_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name FROM sales_commission AS sc 
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
@@ -487,7 +487,7 @@ const db_sql = {
     "Q179"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,sc.slab_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name FROM sales_commission AS sc 
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
@@ -495,7 +495,7 @@ const db_sql = {
     "Q180"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,sc.slab_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name FROM sales_commission AS sc 
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
@@ -503,7 +503,7 @@ const db_sql = {
     "Q181"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,sc.slab_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name FROM sales_commission AS sc 
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
@@ -511,7 +511,7 @@ const db_sql = {
     "Q182"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,sc.slab_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name FROM sales_commission AS sc 
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id

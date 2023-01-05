@@ -345,6 +345,7 @@ module.exports.allSalesCommissionList = async (req, res) => {
                 closer.id = data.id
                 closer.customerId = data.customer_id
                 closer.customerName = data.customer_name
+                closer.customerCreator = data.creater_id
                 closer.commissionSplitId = data.customer_commission_split_id
                 closer.qualification = data.qualification
                 closer.is_qualified = data.is_qualified
@@ -493,6 +494,7 @@ module.exports.allSalesCommissionList = async (req, res) => {
                     closer.id = data.id
                     closer.customerId = data.customer_id
                     closer.customerName = data.customer_name
+                    closer.customerCreator = data.creator_id
                     closer.commissionSplitId = data.customer_commission_split_id
                     closer.qualification = data.qualification
                     closer.is_qualified = data.is_qualified
@@ -617,6 +619,7 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                 closer.id = data.id
                 closer.customerId = data.customer_id
                 closer.customerName = data.customer_name
+                closer.customerCreator = data.creater_id
                 closer.commissionSplitId = data.customer_commission_split_id
                 closer.qualification = data.qualification
                 closer.is_qualified = data.is_qualified
@@ -729,6 +732,7 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                     closer.id = data.id
                     closer.customerId = data.customer_id
                     closer.customerName = data.customer_name
+                    closer.customerCreator = data.creater_id
                     closer.commissionSplitId = data.customer_commission_split_id
                     closer.qualification = data.qualification
                     closer.is_qualified = data.is_qualified
@@ -881,6 +885,7 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                 closer.id = data.id
                 closer.customerId = data.customer_id
                 closer.customerName = data.customer_name
+                closer.customerCreator = data.creater_id
                 closer.commissionSplitId = data.customer_commission_split_id
                 closer.qualification = data.qualification
                 closer.is_qualified = data.is_qualified
@@ -994,6 +999,7 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                     closer.id = data.id
                     closer.customerId = data.customer_id
                     closer.customerName = data.customer_name
+                    closer.customerCreator = data.creater_id
                     closer.commissionSplitId = data.customer_commission_split_id
                     closer.qualification = data.qualification
                     closer.is_qualified = data.is_qualified

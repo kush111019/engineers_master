@@ -311,8 +311,6 @@ module.exports.fetchChats = async (req, res) => {
                     data: chatData
                 });
             }
-
-
         } else {
             res.json({
                 status: 400,
