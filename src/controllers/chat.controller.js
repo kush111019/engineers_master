@@ -488,6 +488,7 @@ module.exports.sendMessage = async (req, res) => {
     try {
         let { content, chatId } = req.body;
         let id = req.user.id
+        let profile = ''
         let s0 = dbScript(db_sql['Q8'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
@@ -506,6 +507,7 @@ module.exports.sendMessage = async (req, res) => {
                 if (messageDetails.rowCount > 0) {
                     let userArr = []
                     if (messageDetails.rows[0].is_group_chat == true) {
+                        profile = process.env.DEFAULT_GROUP_LOGO
                         let s8 = dbScript(db_sql['Q125'], { var1: chatId })
                         let findGroupMembers = await connection.query(s8)
                         for (let members of findGroupMembers.rows) {
@@ -515,6 +517,7 @@ module.exports.sendMessage = async (req, res) => {
                         let s2 = dbScript(db_sql['Q144'], { var1 : messageDetails.rows[0].user_a, var2 :messageDetails.rows[0].user_b } )
                         let users = await connection.query(s2)
                         userArr = [users.rows[0], users.rows[1]]
+                        profile = (messageDetails.rows[0].user_a == id) ? users.rows[1].avatar : users.rows[0].avatar;
                     }
                     messageObj = {
                         sender: {
@@ -528,7 +531,26 @@ module.exports.sendMessage = async (req, res) => {
                         chatName: messageDetails.rows[0].chat_name,
                         isGroupChat: messageDetails.rows[0].is_group_chat,
                         createdAt: messageDetails.rows[0].created_at,
-                        users: userArr
+                        users: userArr,
+                        chatData : {
+                            id:  messageDetails.rows[0].chat_id,
+                            chatName: messageDetails.rows[0].chat_name,
+                            isGroupChat:messageDetails.rows[0].is_group_chat,
+                            profile: profile,
+                            groupAdmin: messageDetails.rows[0].group_admin,
+                            users: userArr,
+                            lastMessage: {
+                                messageId:messageDetails.rows[0].messageid,
+                                sender: {
+                                    id: messageDetails.rows[0].senderid,
+                                    full_name: messageDetails.rows[0].full_name,
+                                    avatar: messageDetails.rows[0].avatar
+                                },
+                                content:  messageDetails.rows[0].content,
+                                chatId: messageDetails.rows[0].chat_id,
+                                readBy: messageDetails.rows[0].read_by,
+                            },
+                        }
                     }
                     if(messageObj){
                         res.json({
