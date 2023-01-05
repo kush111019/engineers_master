@@ -1266,3 +1266,33 @@ module.exports.enableDisableImapService = async (req, res) => {
         }) 
     }
 }
+
+//--------------------------------Contact us Mail List---------------------------------
+
+module.exports.contactUsQueriesList = async(req, res) => {
+    try {
+        let s1 = dbScript(db_sql['Q187'], {})
+        let queries = await connection.query(s1)
+        if(queries.rowCount > 0){
+            res.json({
+                status: 200,
+                success: true,
+                message: "Queries List",
+                data : queries.rows
+            })
+        }else{
+            res.json({
+                status: 200,
+                success: false,
+                message: "Empty Queries List",
+                data : []
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}

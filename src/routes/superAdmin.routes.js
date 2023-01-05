@@ -35,4 +35,7 @@ router.put('/extendExpiryByCompanyId/:companyId', verifyTokenFn, controller.supe
 //-----------------------------Enable/disable Imap service--------------------
 router.put('/enableDisableImapService', verifyTokenFn, controller.superAdmin.enableDisableImapService)
 
+//----------------------------Contact us Queries List-------------------------
+router.get('/contactUsQueriesList', verifyTokenFn,controller.superAdmin.contactUsQueriesList)
+
 module.exports = router;
