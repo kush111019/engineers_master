@@ -324,7 +324,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             for (let id of roleUsers) {
                 let s4 = dbScript(db_sql['Q168'], { var1: id })
                 let salesData = await connection.query(s4)
-                if (salesData.rowCount > 0 && slab.rowCount > 0) {
+                if (salesData.rowCount > 0 ) {
                     for (let data of salesData.rows) {
                         let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
                         let slab = await connection.query(s5)
