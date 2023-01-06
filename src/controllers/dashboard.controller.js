@@ -316,8 +316,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                     }
                 }
             }
-            let s5 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
-            let slab = await connection.query(s5)
+        
             let totalExpectedRevenue = 0;
             let totalExpectedCommission = 0;
             let totalClosedRevenue = 0;
@@ -327,6 +326,8 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0 && slab.rowCount > 0) {
                     for (let data of salesData.rows) {
+                        let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
+                        let slab = await connection.query(s5)
                         if (data.closed_at == null) {
                             totalExpectedRevenue = Number(totalExpectedRevenue) + Number(data.amount);
                             let expectedRemainingAmount = Number(data.amount);

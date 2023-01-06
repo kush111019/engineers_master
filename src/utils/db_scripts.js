@@ -379,7 +379,7 @@ const db_sql = {
     "Q167" : `SELECT 
                 sc.id AS sales_commission_id, 
                 SUM(sc.target_amount::DECIMAL) as amount,
-                sc.closed_at
+                sc.closed_at,sc.slab_id
               FROM
                 sales_commission AS sc 
               WHERE 
@@ -388,11 +388,12 @@ const db_sql = {
                 sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
               GROUP BY 
                 sc.closed_at,
-                sc.id 
+                sc.id,
+                sc.slab_id 
               ORDER BY 
               sc.closed_at {var2}`   ,
     "Q168" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount,
-              sc.closed_at FROM sales_commission AS sc WHERE sc.user_id = '{var1}' 
+              sc.closed_at,sc.slab_id FROM sales_commission AS sc WHERE sc.user_id = '{var1}' 
               AND sc.deleted_at IS NULL` ,
     "Q169" : `SELECT id, product_name, product_image, description, available_quantity, price, end_of_life, currency, company_id, created_at, updated_at FROM products WHERE user_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,      
     "Q170" : `SELECT            
