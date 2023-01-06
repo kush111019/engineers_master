@@ -7,16 +7,15 @@ const moment = require('moment')
 module.exports.revenues = async (req, res) => {
     try {
         let userId = req.user.id
-        let userIds = []
         let { page, startDate, endDate, orderBy } = req.query
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
             let revenueCommissionBydate = []
 
-            let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy,var3: startDate, var4: endDate })
+            let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: startDate, var4: endDate })
             let salesData = await connection.query(s4)
-            if (salesData.rowCount > 0 ) {
+            if (salesData.rowCount > 0) {
                 for (let data of salesData.rows) {
 
                     let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
@@ -54,17 +53,17 @@ module.exports.revenues = async (req, res) => {
                     revenueCommissionBydate.push(revenueCommissionByDateObj)
                 }
             }
-            
-            if(revenueCommissionBydate.length > 0){
+
+            if (revenueCommissionBydate.length > 0) {
                 let returnData = await reduceArrayWithCommission(revenueCommissionBydate)
-                if(returnData.length > 0){
+                if (returnData.length > 0) {
                     let paginatedArr = await paginatedResults(returnData, page)
-                    if(orderBy.toLowerCase() == 'asc'){
-                        paginatedArr = paginatedArr.sort((a,b) => {
+                    if (orderBy.toLowerCase() == 'asc') {
+                        paginatedArr = paginatedArr.sort((a, b) => {
                             return a.revenue - b.revenue
                         })
-                    }else{
-                        paginatedArr = paginatedArr.sort((a,b) => {
+                    } else {
+                        paginatedArr = paginatedArr.sort((a, b) => {
                             return b.revenue - a.revenue
                         })
                     }
@@ -75,7 +74,7 @@ module.exports.revenues = async (req, res) => {
                         data: paginatedArr
                     })
                 }
-            }else{
+            } else {
                 res.json({
                     status: 200,
                     success: true,
@@ -83,21 +82,38 @@ module.exports.revenues = async (req, res) => {
                     data: []
                 })
             }
-           
+
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            userIds.push(userId)
             let revenueCommissionBydate = []
-            let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
-            let findUsers = await connection.query(s3)
-            if (findUsers.rowCount > 0) {
-                for (let user of findUsers.rows) {
-                    userIds.push(user.id)
+            let roleUsers = []
+            let roleIds = []
+            roleIds.push(checkPermission.rows[0].role_id)
+            let getRoles = async (id) => {
+                let s7 = dbScript(db_sql['Q16'], { var1: id })
+                let getChild = await connection.query(s7);
+                if (getChild.rowCount > 0) {
+                    for (let item of getChild.rows) {
+                        if (roleIds.includes(item.id) == false) {
+                            roleIds.push(item.id)
+                            await getRoles(item.id)
+                        }
+                    }
                 }
             }
-            for (let id of userIds) {
+            await getRoles(checkPermission.rows[0].role_id)
+            for (let roleId of roleIds) {
+                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
+                let findUsers = await connection.query(s3)
+                if (findUsers.rowCount > 0) {
+                    for (let user of findUsers.rows) {
+                        roleUsers.push(user.id)
+                    }
+                }
+            }
+            for (let id of roleUsers) {
                 let s4 = dbScript(db_sql['Q167'], { var1: id, var2: orderBy, var3: startDate, var4: endDate })
                 let salesData = await connection.query(s4)
-                if (salesData.rowCount > 0 ) {
+                if (salesData.rowCount > 0) {
                     for (let data of salesData.rows) {
 
                         let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
@@ -136,16 +152,16 @@ module.exports.revenues = async (req, res) => {
                     }
                 }
             }
-            if(revenueCommissionBydate.length > 0){
+            if (revenueCommissionBydate.length > 0) {
                 let returnData = await reduceArrayWithCommission(revenueCommissionBydate)
-                if(returnData.length > 0){
+                if (returnData.length > 0) {
                     let paginatedArr = await paginatedResults(returnData, page)
-                    if(orderBy.toLowerCase() == 'asc'){
-                        paginatedArr = paginatedArr.sort((a,b) => {
+                    if (orderBy.toLowerCase() == 'asc') {
+                        paginatedArr = paginatedArr.sort((a, b) => {
                             return a.revenue - b.revenue
                         })
-                    }else{
-                        paginatedArr = paginatedArr.sort((a,b) => {
+                    } else {
+                        paginatedArr = paginatedArr.sort((a, b) => {
                             return b.revenue - a.revenue
                         })
                     }
@@ -156,7 +172,7 @@ module.exports.revenues = async (req, res) => {
                         data: paginatedArr
                     })
                 }
-            }else{
+            } else {
                 res.json({
                     status: 200,
                     success: true,
@@ -182,7 +198,6 @@ module.exports.revenues = async (req, res) => {
 module.exports.totalExpectedRevenueCounts = async (req, res) => {
     try {
         let userId = req.user.id
-        let userIds = []
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
@@ -191,7 +206,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
 
             let s4 = dbScript(db_sql['Q159'], { var1: checkPermission.rows[0].company_id })
             let salesData = await connection.query(s4)
-            if (salesData.rowCount > 0 ) {
+            if (salesData.rowCount > 0) {
                 let totalExpectedRevenue = 0;
                 let totalExpectedCommission = 0;
                 let totalClosedRevenue = 0;
@@ -276,12 +291,29 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             })
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let counts = {}
-            userIds.push(userId)
-            let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
-            let findUsers = await connection.query(s3)
-            if (findUsers.rowCount > 0) {
-                for (let user of findUsers.rows) {
-                    userIds.push(user.id)
+            let roleUsers = []
+            let roleIds = []
+            roleIds.push(checkPermission.rows[0].role_id)
+            let getRoles = async (id) => {
+                let s7 = dbScript(db_sql['Q16'], { var1: id })
+                let getChild = await connection.query(s7);
+                if (getChild.rowCount > 0) {
+                    for (let item of getChild.rows) {
+                        if (roleIds.includes(item.id) == false) {
+                            roleIds.push(item.id)
+                            await getRoles(item.id)
+                        }
+                    }
+                }
+            }
+            await getRoles(checkPermission.rows[0].role_id)
+            for (let roleId of roleIds) {
+                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
+                let findUsers = await connection.query(s3)
+                if (findUsers.rowCount > 0) {
+                    for (let user of findUsers.rows) {
+                        roleUsers.push(user.id)
+                    }
                 }
             }
             let s5 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
@@ -290,7 +322,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             let totalExpectedCommission = 0;
             let totalClosedRevenue = 0;
             let totalClosedCommission = 0;
-            for (let id of userIds) {
+            for (let id of roleUsers) {
                 let s4 = dbScript(db_sql['Q168'], { var1: id })
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0 && slab.rowCount > 0) {
@@ -358,27 +390,27 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                     counts.totalClosedCommission = Number(totalClosedCommission.toFixed(2))
                 }
             }
-            if(counts){
+            if (counts) {
                 res.json({
                     status: 200,
                     success: true,
                     message: "Revenues and Commissions",
                     data: counts
                 })
-            }else{
+            } else {
                 res.json({
                     status: 200,
                     success: true,
                     message: "Revenues and Commissions",
                     data: {
-                        totalExpectedRevenue : 0,
-                        totalExpectedCommission : 0,
-                        totalClosedRevenue : 0,
-                        totalClosedCommission : 0
+                        totalExpectedRevenue: 0,
+                        totalExpectedCommission: 0,
+                        totalClosedRevenue: 0,
+                        totalClosedCommission: 0
                     }
                 })
             }
-            
+
         } else {
             res.status(403).json({
                 success: false,
