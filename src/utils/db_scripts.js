@@ -548,6 +548,7 @@ const db_sql = {
     "Q196" : `SELECT * FROM revenue_forecast WHERE user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NULL ORDER BY timeline asc`,
     "Q197" : `SELECT * FROM revenue_forecast WHERE user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NOT NULL ORDER BY timeline asc`,   
     "Q198" : `UPDATE revenue_forecast SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' RETURNING *`,
+    "Q199" :  `UPDATE revenue_forecast SET timeline = '{var2}', revenue = '{var3}', growth_window = '{var4}', growth_percentage = '{var5}', start_date = '{var6}', end_date = '{var7}', user_id = '{var8}', company_id = '{var9}', currency = '{var10}' WHERE id = '{var1}' and deleted_at is null RETURNING *`
 
  }
 

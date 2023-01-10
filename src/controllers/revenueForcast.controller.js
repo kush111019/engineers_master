@@ -208,6 +208,57 @@ module.exports.activeForecastList = async(req, res) => {
     }
 }
 
+module.exports.editRevenueForecast = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let {
+            forecastId,
+            timeline,
+            revenue,
+            currency,
+            growthWindow,
+            growthPercentage,
+            startDate,
+            endDate
+        } = req.body
+
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_update) {
+            await connection.query('BEGIN')
+            let s2 = dbScript(db_sql['Q199'], { var1: forecastId, var2: timeline, var3: revenue, var4: growthWindow, var5: growthPercentage, var6: startDate, var7: endDate, var8: checkPermission.rows[0].id, var9: checkPermission.rows[0].company_id, var10: currency })
+            let updateForecast = await connection.query(s2)
+            if (updateForecast.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Revenue forecast updated successfully'
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+
+}
+
 module.exports.closedForecastList = async(req, res) => {
     try {
         let userId = req.user.id
