@@ -309,7 +309,7 @@ const db_sql = {
               AND c.deleted_at IS NULL AND r.deleted_at IS NULL AND con.deleted_at IS NULL`,
     "Q146" : `UPDATE companies SET is_imap_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q147" : `SELECT id, product_name, product_image, description, available_quantity, price, end_of_life, currency, company_id, created_at, updated_at FROM products WHERE product_name = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL ORDER BY created_at desc `,
-    "Q148" : `UPDATE revenue_forecast SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' RETURNING *`,
+    "Q148" : `UPDATE revenue_forecast SET closed_date = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' AND company_id = '{var4}' RETURNING *`,
     "Q149" : `INSERT INTO upgraded_transactions(id, user_id, company_id, plan_id, stripe_customer_id,
               stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, expiry_date,
               user_count, payment_status,total_amount, payment_receipt) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', 
@@ -538,8 +538,16 @@ const db_sql = {
               LIMIT {var2} OFFSET {var3}`,
     "Q187"  :`SELECT * FROM contact_us WHERE deleted_at IS NULL`,
     "Q188"  :`SELECT * from chat where is_group_chat = 'true' AND company_id = '{var1}' AND deleted_at IS NULL`,
-    "Q189"  :`SELECT user_id FROM chat_room_members where room_id = '{var1}' AND deleted_at IS NULL`
-    
+    "Q189"  :`SELECT user_id FROM chat_room_members where room_id = '{var1}' AND deleted_at IS NULL`,
+    "Q190"  :`SELECT * FROM actual_forecast_data WHERE revenue_forecast_id = '{var1}' and deleted_at IS null`,
+    "Q191"  :`INSERT INTO actual_forecast_data(id, revenue_forecast_id, actual_revenue, forecast_revenue, forecast_date)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
+    "Q192"  :`UPDATE actual_forecast_data SET actual_revenue = '{var1}', forecast_revenue = '{var2}', forecast_date = '{var3}' , updated_at = '{var4}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *`,
+    "Q193"  :`SELECT * FROM actual_forecast_data WHERE revenue_forecast_id = '{var1}' and deleted_at IS null AND forecast_date BETWEEN '{var4}' AND '{var5}' LIMIT '{var2}' OFFSET '{var3}'`,
+    "Q194"  :`SELECT * FROM revenue_forecast WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NULL ORDER BY timeline asc`, 
+    "Q195"  :`SELECT * FROM revenue_forecast WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NOT NULL ORDER BY timeline asc`,
+    "Q196" : `SELECT * FROM revenue_forecast WHERE user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NULL ORDER BY timeline asc`,
+    "Q197" : `SELECT * FROM revenue_forecast WHERE user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NOT NULL ORDER BY timeline asc`,   
+    "Q198" : `UPDATE revenue_forecast SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' RETURNING *`,
 
  }
 

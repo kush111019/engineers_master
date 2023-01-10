@@ -100,9 +100,12 @@ router.get('/totalExpectedRevenueCounts', verifyTokenFn, controller.dashboard.to
 //-------------------------------------Revenue Forecast----------------------------------
 
 router.post('/createRevenueForecast',verifyTokenFn, controller.revenueForecast.createRevenueForecast)
-router.get('/revenueForecastList',verifyTokenFn, controller.revenueForecast.revenueForecastList)
-router.put('/deleteRevenueForecast', verifyTokenFn, controller.revenueForecast.deleteRevenueForecast)
+router.get('/revenueForecastList',verifyTokenFn, controller.revenueForecast.allRevenueForecastList)
+router.get('/activeForecastList',verifyTokenFn, controller.revenueForecast.activeForecastList)
+router.get('/closedForecastList',verifyTokenFn, controller.revenueForecast.closedForecastList)
 router.get('/actualVsForecast',verifyTokenFn, controller.revenueForecast.actualVsForecast)
+router.put('/closeRevenueForecast', verifyTokenFn, controller.revenueForecast.closeRevenueForecast)
+router.put('/deleteRevenueForecast', verifyTokenFn, controller.revenueForecast.deleteRevenueForecast)
 
 //---------------------------------------Business and Revenue Contact-------------------------
 
