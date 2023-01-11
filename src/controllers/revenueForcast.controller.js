@@ -598,19 +598,30 @@ module.exports.actualVsForecast = async (req, res) => {
                 if (!forecastRevenue.rows[0].closed_date) {
                     if (findForecastData.rowCount > 0) {
                         let _dt = new Date().toISOString()
-                        for (let i = 0; i < actualData.length; i++) {
-                            let s7 = dbScript(db_sql['Q192'], { var1: actualData[i], var2: revenueData[i], var3: dateArr[i].toISOString(), var4: _dt, var5: findForecastData.rows[i].id })
-                            let updateForecastData = await connection.query(s7)
+                        let s7 = dbScript(db_sql['Q192'], { var1:  _dt, var2: id})
+                        let updateForecastData = await connection.query(s7)
+                        if(updateForecastData.rowCount > 0){
+                            for (let i = 0; i < actualData.length; i++) {
+                                let fId = uuid.v4()
+                                let s7 = dbScript(db_sql['Q191'], { var1: fId, var2: id, var3: actualData[i], var4: revenueData[i], var5: dateArr[i].toISOString() })
+                                let insertForecastData = await connection.query(s7)
+                            }
+                        }else{
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: "Something went wrong",
+                            })
                         }
                     } else {
                         for (let i = 0; i < actualData.length; i++) {
                             let fId = uuid.v4()
-                            let s7 = dbScript(db_sql['Q191'], { var1: fId, var2: id, var3: actualData[i], var4: revenueData[i], var5: dateArr[i].toISOString() })
-                            var insertForecastData = await connection.query(s7)
+                            let s8 = dbScript(db_sql['Q191'], { var1: fId, var2: id, var3: actualData[i], var4: revenueData[i], var5: dateArr[i].toISOString() })
+                            let insertForecastData = await connection.query(s8)
                         }
                     }
                 }
-                let end = (forecastRevenue.rows[0].closed_date) ? forecastRevenue.rows[0].closed_date : forecastRevenue.rows[0].end_date;
+                let end = (forecastRevenue.rows[0].closed_date) ? forecastRevenue.rows[0].closed_date : new Date(forecastRevenue.rows[0].end_date);
                 let eDate = moment(end).format("MM-DD-YYYY")
                 let s8 = dbScript(db_sql['Q193'], { var1: id, var2: limit, var3: offset, var4: startDate, var5: eDate })
                 let actualVsForecastData = await connection.query(s8)

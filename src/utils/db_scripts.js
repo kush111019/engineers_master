@@ -541,7 +541,7 @@ const db_sql = {
     "Q189"  :`SELECT user_id FROM chat_room_members where room_id = '{var1}' AND deleted_at IS NULL`,
     "Q190"  :`SELECT * FROM actual_forecast_data WHERE revenue_forecast_id = '{var1}' and deleted_at IS null`,
     "Q191"  :`INSERT INTO actual_forecast_data(id, revenue_forecast_id, actual_revenue, forecast_revenue, forecast_date)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
-    "Q192"  :`UPDATE actual_forecast_data SET actual_revenue = '{var1}', forecast_revenue = '{var2}', forecast_date = '{var3}' , updated_at = '{var4}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *`,
+    "Q192"  :`UPDATE actual_forecast_data SET deleted_at = '{var1}' WHERE revenue_forecast_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
     "Q193"  :`SELECT * FROM actual_forecast_data WHERE revenue_forecast_id = '{var1}' and deleted_at IS null AND forecast_date BETWEEN '{var4}' AND '{var5}' LIMIT '{var2}' OFFSET '{var3}'`,
     "Q194"  :`SELECT * FROM revenue_forecast WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NULL ORDER BY timeline asc`, 
     "Q195"  :`SELECT * FROM revenue_forecast WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NOT NULL ORDER BY timeline asc`,
