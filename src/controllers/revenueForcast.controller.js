@@ -694,8 +694,241 @@ module.exports.closeRevenueForecast = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
-            await connection.query('BEGIN')
+            let revenueData = [];
+            let actualData = []
+            let dateArr = []
+            let s2 = dbScript(db_sql['Q69'], { var1: fId, var2: checkPermission.rows[0].company_id })
+            let forecastRevenue = await connection.query(s2)
+            if (forecastRevenue.rowCount > 0) {
+                let revenue = forecastRevenue.rows[0].revenue
+                let growthWindow = forecastRevenue.rows[0].growth_window
+                let growthPercentage = forecastRevenue.rows[0].growth_percentage
+                let timeline = forecastRevenue.rows[0].timeline
+                let startDate = forecastRevenue.rows[0].start_date
+                let endDate = forecastRevenue.rows[0].end_date
+                let toDate = new Date(startDate)
+                toDate.setDate(toDate.getDate() + 1);
+                let fromDate = new Date(endDate)
+                fromDate.setDate(fromDate.getDate() + 1);
+                let difference = await getMonthDifference(toDate, fromDate)
+                let yearDifference = await getYearDifference(toDate, fromDate)
+                let count = 0;
+                switch (timeline) {
+                    case 'Monthly':
+                        let month = toDate.getMonth();
+                        let firstDay = new Date(toDate.getFullYear(), month, 1).toISOString()
+                        let lastDay = new Date(toDate.getFullYear(), month + 1, 0).toISOString()
+                        for (let i = 1; i <= difference; i++) {
+                            let sum = 0
+                            if (i == 1) {
+                                dateArr.push(new Date(toDate))
+                                revenueData.push(Number(revenue))
+                                let s5 = dbScript(db_sql['Q200'], { var1: checkPermission.rows[0].company_id, var2: firstDay, var3: lastDay})
+                                let actualRevenue = await connection.query(s5)
+                                if (actualRevenue.rowCount > 0) {
+                                    actualRevenue.rows.map(index => {
+                                        sum = sum + Number(index.target_amount);
+                                    })
+                                }
+                                actualData.push(sum)
+                            } else {
+                                if (growthWindow != count + 1) {
+                                    month = month + 1;
+                                    let firstDay = new Date(toDate.getFullYear(), month, 1).toISOString()
+                                    let lastDay = new Date(toDate.getFullYear(), month + 1, 0).toISOString()
+                                    date = new Date(toDate.setMonth(toDate.getMonth() + 1));
+                                    dateArr.push(date)
+                                    revenueData.push(Number(Number(revenue).toFixed(2)))
+                                    let s5 = dbScript(db_sql['Q200'], { var1: checkPermission.rows[0].company_id, var2: firstDay, var3: lastDay })
+                                    let actualRevenue = await connection.query(s5)
+                                    if (actualRevenue.rowCount > 0) {
+                                        actualRevenue.rows.map(index => {
+                                            sum = sum + Number(index.target_amount);
+                                        })
+                                    }
+                                    actualData.push(sum)
+                                    count++;
+                                } else {
+                                    count = 0;
+                                    month = month + 1;
+                                    let firstDay = new Date(toDate.getFullYear(), month, 1).toISOString()
+                                    let lastDay = new Date(toDate.getFullYear(), month + 1, 0).toISOString()
+                                    date = new Date(toDate.setMonth(toDate.getMonth() + 1));
+                                    dateArr.push(date)
+                                    revenue = (Number(revenue) + Number(revenue) * (Number(growthPercentage) / 100))
+                                    revenueData.push(Number(revenue.toFixed(2)))
+                                    let s5 = dbScript(db_sql['Q200'], { var1: checkPermission.rows[0].company_id, var2: firstDay, var3: lastDay })
+                                    let actualRevenue = await connection.query(s5)
+                                    if (actualRevenue.rowCount > 0) {
+                                        actualRevenue.rows.map(index => {
+                                            sum = sum + Number(index.target_amount);
+                                        })
+                                    }
+                                    actualData.push(sum)
+                                }
+                            }
+                        }
+                        break;
+                    case 'Quarterly':
+                        let month1 = (toDate.getMonth() + 1);
+                        for (let i = 1; i <= difference / 3; i++) {
+                            let sum = 0
+                            if (i == 1) {
+                                for (let i = 1; i <= 3; i++) {
+                                    let firstDay1 = new Date(toDate.getFullYear(), month1, 1).toISOString()
+                                    let lastDay1 = new Date(toDate.getFullYear(), month1 + 1, 0).toISOString()
+                                    let s5 = dbScript(db_sql['Q200'], { var1: checkPermission.rows[0].company_id, var2: firstDay1, var3: lastDay1})
+                                    let actualRevenue = await connection.query(s5)
+                                    if (actualRevenue.rowCount > 0) {
+                                        actualRevenue.rows.map(index => {
+                                            sum = sum + Number(index.target_amount);
+                                        })
+                                    }
+                                    month1++;
+                                }
+                                dateArr.push(new Date(toDate))
+                                revenueData.push(Number(revenue))
+                                actualData.push(sum)
 
+                            } else {
+                                if (growthWindow != count + 1) {
+                                    date = new Date(toDate.setMonth(toDate.getMonth() + 3));
+                                    for (let i = 1; i <= 3; i++) {
+                                        let firstDay1 = new Date(toDate.getFullYear(), month1, 1).toISOString()
+                                        let lastDay1 = new Date(toDate.getFullYear(), month1 + 1, 0).toISOString()
+                                        let s5 = dbScript(db_sql['Q200'], { var1: checkPermission.rows[0].company_id, var2: firstDay1, var3: lastDay1 })
+                                        let actualRevenue = await connection.query(s5)
+                                        if (actualRevenue.rowCount > 0) {
+                                            actualRevenue.rows.map(index => {
+                                                sum = sum + Number(index.target_amount);
+                                            })
+                                        }
+                                        month1++;
+                                    }
+                                    dateArr.push(new Date(date))
+                                    revenueData.push(Number(revenue))
+                                    actualData.push(sum)
+                                    count++;
+
+                                } else {
+                                    count = 0;
+                                    date = new Date(toDate.setMonth(toDate.getMonth() + 3));
+
+                                    for (let i = 1; i <= 3; i++) {
+                                        let firstDay1 = new Date(toDate.getFullYear(), month1, 1).toISOString()
+                                        let lastDay1 = new Date(toDate.getFullYear(), month1 + 1, 0).toISOString()
+                                        let s5 = dbScript(db_sql['Q200'], { var1: checkPermission.rows[0].company_id, var2: firstDay1, var3: lastDay1 })
+                                        let actualRevenue = await connection.query(s5)
+                                        if (actualRevenue.rowCount > 0) {
+                                            actualRevenue.rows.map(index => {
+                                                sum = sum + Number(index.target_amount);
+                                            })
+                                        }
+                                        month1++;
+                                    }
+                                    dateArr.push(new Date(date))
+                                    revenue = (Number(revenue) + Number(revenue) * (Number(growthPercentage) / 100))
+                                    revenueData.push(Number(revenue.toFixed(2)))
+                                    actualData.push(sum)
+                                }
+                            }
+                        }
+                        break;
+                    case "Annual":
+                        let month2 = (toDate.getMonth() + 1);
+                        for (let i = 1; i <= yearDifference; i++) {
+                            let sum = 0
+                            if (i == 1) {
+                                for (let i = 1; i <= 12; i++) {
+                                    let firstDay1 = new Date(toDate.getFullYear(), month2, 1).toISOString()
+                                    let lastDay1 = new Date(toDate.getFullYear(), month2 + 1, 0).toISOString()
+                                    let s5 = dbScript(db_sql['Q200'], { var1: checkPermission.rows[0].company_id, var2: firstDay1, var3: lastDay1 })
+                                    let actualRevenue = await connection.query(s5)
+                                    if (actualRevenue.rowCount > 0) {
+                                        actualRevenue.rows.map(index => {
+                                            sum = sum + Number(index.target_amount);
+                                        })
+                                    }
+                                    month2++;
+                                }
+                                dateArr.push(new Date(toDate))
+                                revenueData.push(Number(revenue))
+                                actualData.push(sum)
+                            } else {
+                                if (growthWindow != count + 1) {
+                                    date = new Date(toDate.setFullYear(toDate.getFullYear() + 1))
+                                    for (let i = 1; i <= 12; i++) {
+                                        let firstDay1 = new Date(toDate.getFullYear(), month2, 1).toISOString()
+                                        let lastDay1 = new Date(toDate.getFullYear(), month2 + 1, 0).toISOString()
+                                        let s5 = dbScript(db_sql['Q200'], { var1: checkPermission.rows[0].company_id, var2: firstDay1, var3: lastDay1 })
+                                        let actualRevenue = await connection.query(s5)
+                                        if (actualRevenue.rowCount > 0) {
+                                            actualRevenue.rows.map(index => {
+                                                sum = sum + Number(index.target_amount);
+                                            })
+                                        }
+                                        month2++;
+                                    }
+                                    dateArr.push(new Date(date))
+                                    revenueData.push(Number(revenue))
+                                    actualData.push(sum)
+                                    count++;
+
+                                } else {
+                                    count = 0;
+                                    date = new Date(toDate.setFullYear(toDate.getFullYear() + 1))
+                                    for (let i = 1; i <= 12; i++) {
+                                        let firstDay1 = new Date(toDate.getFullYear(), month2, 1).toISOString()
+                                        let lastDay1 = new Date(toDate.getFullYear(), month2 + 1, 0).toISOString()
+                                        let s5 = dbScript(db_sql['Q200'], { var1: checkPermission.rows[0].company_id, var2: firstDay1, var3: lastDay1 })
+                                        let actualRevenue = await connection.query(s5)
+                                        if (actualRevenue.rowCount > 0) {
+                                            actualRevenue.rows.map(index => {
+                                                sum = sum + Number(index.target_amount);
+                                            })
+                                        }
+                                        month2++;
+                                    }
+                                    dateArr.push(new Date(date))
+                                    revenue = (Number(revenue) + Number(revenue) * (Number(growthPercentage) / 100))
+                                    revenueData.push(Number(revenue.toFixed(2)))
+                                    actualData.push(sum)
+                                }
+                            }
+                            //actualData.push(sum)
+                        }
+                        break;
+                }
+                let s6 = dbScript(db_sql['Q190'], { var1: fId })
+                let findForecastData = await connection.query(s6)
+                if (!forecastRevenue.rows[0].closed_date) {
+                    if (findForecastData.rowCount > 0) {
+                        let _dt = new Date().toISOString()
+                        let s7 = dbScript(db_sql['Q192'], { var1:  _dt, var2: fId})
+                        let updateForecastData = await connection.query(s7)
+                        if(updateForecastData.rowCount > 0){
+                            for (let i = 0; i < actualData.length; i++) {
+                                let aId = uuid.v4()
+                                let s7 = dbScript(db_sql['Q191'], { var1: aId, var2: fId, var3: actualData[i], var4: revenueData[i], var5: dateArr[i].toISOString() })
+                                let insertForecastData = await connection.query(s7)
+                            }
+                        }else{
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: "Something went wrong",
+                            })
+                        }
+                    } else {
+                        for (let i = 0; i < actualData.length; i++) {
+                            let aId = uuid.v4()
+                            let s8 = dbScript(db_sql['Q191'], { var1: aId, var2: fId, var3: actualData[i], var4: revenueData[i], var5: dateArr[i].toISOString() })
+                            let insertForecastData = await connection.query(s8)
+                        }
+                    }
+                }
+            }
+            await connection.query('BEGIN')
             let _dt = new Date().toISOString()
             // let eDate = new Date()
             // let en = new Date(eDate.getFullYear(),eDate.getMonth()+1, 0)
