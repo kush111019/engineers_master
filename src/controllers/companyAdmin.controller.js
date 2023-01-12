@@ -330,13 +330,10 @@ module.exports.login = async (req, res) => {
                         let isImapCred = (imapCreds.rowCount == 0) ? false : true
 
                         let moduleId = JSON.parse(admin.rows[0].module_ids)
-                        console.log(moduleId,"moduleId");
                         let modulePemissions = []
                         for (data of moduleId) {
                             let s3 = dbScript(db_sql['Q35'], { var1: data, var2: admin.rows[0].role_id })
-                            console.log(s3,"s3");
                             let findModulePermissions = await connection.query(s3)
-                            console.log(findModulePermissions,"findModulePermissions");
                             modulePemissions.push({
                                 moduleId: data,
                                 moduleName: findModulePermissions.rows[0].module_name,
