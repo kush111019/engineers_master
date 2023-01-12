@@ -545,14 +545,39 @@ const db_sql = {
     "Q193"  :`SELECT * FROM actual_forecast_data WHERE revenue_forecast_id = '{var1}' and deleted_at IS null AND forecast_date BETWEEN '{var4}' AND '{var5}' LIMIT '{var2}' OFFSET '{var3}'`,
     "Q194"  :`SELECT * FROM revenue_forecast WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NULL ORDER BY timeline asc`, 
     "Q195"  :`SELECT * FROM revenue_forecast WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NOT NULL ORDER BY timeline asc`,
-    "Q196" : `SELECT * FROM revenue_forecast WHERE user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NULL ORDER BY timeline asc`,
-    "Q197" : `SELECT * FROM revenue_forecast WHERE user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NOT NULL ORDER BY timeline asc`,   
-    "Q198" : `UPDATE revenue_forecast SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' RETURNING *`,
-    "Q199" :  `UPDATE revenue_forecast SET timeline = '{var2}', revenue = '{var3}', growth_window = '{var4}', growth_percentage = '{var5}', start_date = '{var6}', end_date = '{var7}', user_id = '{var8}', company_id = '{var9}', currency = '{var10}' WHERE id = '{var1}' and deleted_at is null RETURNING *`,
-    "Q200" : `SELECT 
+    "Q196"  :`SELECT * FROM revenue_forecast WHERE user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NULL ORDER BY timeline asc`,
+    "Q197"  :`SELECT * FROM revenue_forecast WHERE user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NOT NULL ORDER BY timeline asc`,   
+    "Q198"  :`UPDATE revenue_forecast SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' RETURNING *`,
+    "Q199"  :`UPDATE revenue_forecast SET timeline = '{var2}', revenue = '{var3}', growth_window = '{var4}', growth_percentage = '{var5}', start_date = '{var6}', end_date = '{var7}', user_id = '{var8}', company_id = '{var9}', currency = '{var10}' WHERE id = '{var1}' and deleted_at is null RETURNING *`,
+    "Q200"  :`SELECT 
                 target_amount
               FROM sales_commission 
-              WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_at BETWEEN '{var2}' AND '{var3}' `
+              WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_at BETWEEN '{var2}' AND '{var3}' `,
+
+    "Q201"  :`INSERT INTO marketing_leads(id,full_name,title,email_address,phone_number,
+              address,organization_name,source,linkedin_url,website,targeted_value,industry_type,lead_status,
+              assigned_sales_lead_to,additional_marketing_notes,user_id,company_id)
+              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
+              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}') RETURNING *`,
+
+    "Q202"  :`SELECT l.id, l.full_name,l.title,l.email_address,l.phone_number,l.address,l.organization_name,
+              l.source,l.linkedin_url,l.website,l.targeted_value,l.industry_type,l.lead_status,
+              l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,
+              u.full_name AS user_name FROM marketing_leads AS l INNER JOIN users AS u ON u.id = l.assigned_sales_lead_to
+              WHERE l.company_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`, 
+
+    "Q203"  :`SELECT l.id, l.full_name,l.title,l.email_address,l.phone_number,l.address,l.organization_name,
+              l.source,l.linkedin_url,l.website,l.targeted_value,l.industry_type,l.lead_status,
+              l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at, u.full_name
+              AS user_name FROM marketing_leads AS l INNER JOIN users AS u ON u.id = l.assigned_sales_lead_to
+              WHERE l.user_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`,
+    
+    "Q204"  :`UPDATE marketing_leads SET full_name = '{var2}', title = '{var3}',email_address = '{var4}',phone_number = '{var5}',
+              address = '{var6}', organization_name = '{var7}',source = '{var8}',linkedin_url = '{var9}',website = '{var10}',targeted_value = '{var11}',
+              industry_type = '{var12}',lead_status = '{var13}',assigned_sales_lead_to = '{var14}',additional_marketing_notes = '{var15}',
+              updated_at = '{var16}' WHERE id = '{var1}' AND deleted_at is null`,
+              
+    "Q205"  :`UPDATE marketing_leads SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at is null`                            
 
  }
 

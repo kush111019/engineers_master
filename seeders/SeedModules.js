@@ -53,6 +53,10 @@ let modules = [
     {
         moduleName : 'Forecast Management',
         moduleType : 'Forecast' 
+    },
+    {
+        moduleName : 'Marketing Strategy',
+        moduleType : 'Marketing'
     }
 ]
 
