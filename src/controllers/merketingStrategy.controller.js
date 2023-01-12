@@ -15,7 +15,7 @@ module.exports.createLead = async (req, res) => {
             address,
             organizationName,
             source,
-            linkedin_url,
+            linkedinUrl,
             website,
             targetedValue,
             industryType,
@@ -31,7 +31,7 @@ module.exports.createLead = async (req, res) => {
             await connection.query('BEGIN')
             let id = uuid.v4()
 
-            let s2 = dbScript(db_sql['Q201'], { var1: id, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: mysql_real_escape_string(organizationName), var8: source, var9: linkedin_url, var10: website, var11: targetedValue, var12: industryType, var13: leadStatus, var14: assignedSalesLeadTo, var15: mysql_real_escape_string(additionalMarketingNotes), var16 : userId, var17 : checkPermission.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q201'], { var1: id, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: mysql_real_escape_string(organizationName), var8: source, var9: linkedinUrl, var10: website, var11: targetedValue, var12: industryType, var13: leadStatus, var14: assignedSalesLeadTo, var15: mysql_real_escape_string(additionalMarketingNotes), var16 : userId, var17 : checkPermission.rows[0].company_id })
             let createLead = await connection.query(s2)
 
             if (createLead.rowCount > 0 ) {
@@ -169,7 +169,7 @@ module.exports.updateLead = async (req, res) => {
             address,
             organizationName,
             source,
-            linkedin_url,
+            linkedinUrl,
             website,
             targetedValue,
             industryType,
@@ -184,7 +184,7 @@ module.exports.updateLead = async (req, res) => {
             await connection.query('BEGIN')
 
             let _dt = new Date().toISOString();
-            let s5 = dbScript(db_sql['Q204'], { var1: leadId, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: mysql_real_escape_string(organizationName), var8: source, var9: linkedin_url, var10: website, var11: targetedValue, var12: industryType, var13: leadStatus, var14: assignedSalesLeadTo, var15: mysql_real_escape_string(additionalMarketingNotes), var16 : _dt })
+            let s5 = dbScript(db_sql['Q204'], { var1: leadId, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: mysql_real_escape_string(organizationName), var8: source, var9: linkedinUrl, var10: website, var11: targetedValue, var12: industryType, var13: leadStatus, var14: assignedSalesLeadTo, var15: mysql_real_escape_string(additionalMarketingNotes), var16 : _dt })
             let updateLead = await connection.query(s5)
 
             if (updateLead.rowCount > 0) {
