@@ -611,7 +611,7 @@ const db_sql = {
               GROUP BY 
                 u.full_name
               ORDER BY 
-                u.full_name {var4}
+                count {var4}
               LIMIT {var2} OFFSET {var3}`,
     "Q208"  :`SELECT 
                 COUNT(*),
@@ -625,7 +625,7 @@ const db_sql = {
               GROUP BY 
                 u.full_name
               ORDER BY 
-                u.full_name {var4}
+                count {var4}
               LIMIT {var2} OFFSET {var3}`,
 
     "Q209"  :`SELECT COUNT(*) from marketing_leads WHERE user_id = '{var1}' AND deleted_at IS NULL`,
