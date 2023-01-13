@@ -560,25 +560,75 @@ const db_sql = {
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
               '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}') RETURNING *`,
 
-    "Q202"  :`SELECT l.id, l.full_name,l.title,l.email_address,l.phone_number,l.address,l.organization_name,
-              l.source,l.linkedin_url,l.website,l.targeted_value,l.industry_type,l.lead_status,
-              l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,
-              u.full_name AS user_name FROM marketing_leads AS l INNER JOIN users AS u ON u.id = l.assigned_sales_lead_to
-              WHERE l.company_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`, 
+    "Q202"  :`SELECT 
+                l.id, l.full_name,l.title,l.email_address,l.phone_number,l.address,l.organization_name,
+                l.source,l.linkedin_url,l.website,l.targeted_value,l.industry_type,l.lead_status,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,
+                u.full_name AS user_name,u.role_id, r.role_name 
+              FROM 
+                marketing_leads AS l 
+              INNER JOIN 
+                users AS u ON u.id = l.assigned_sales_lead_to
+              INNER JOIN
+                roles AS r ON r.id = u.role_id
+              WHERE 
+                l.company_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+              ORDER BY l.created_at desc`, 
 
-    "Q203"  :`SELECT l.id, l.full_name,l.title,l.email_address,l.phone_number,l.address,l.organization_name,
-              l.source,l.linkedin_url,l.website,l.targeted_value,l.industry_type,l.lead_status,
-              l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at, u.full_name
-              AS user_name FROM marketing_leads AS l INNER JOIN users AS u ON u.id = l.assigned_sales_lead_to
-              WHERE l.user_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`,
+    "Q203"  :`SELECT 
+                l.id, l.full_name,l.title,l.email_address,l.phone_number,l.address,l.organization_name,
+                l.source,l.linkedin_url,l.website,l.targeted_value,l.industry_type,l.lead_status,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at, u.full_name
+                AS user_name, u.role_id, r.role_name 
+              FROM 
+                marketing_leads AS l 
+              INNER JOIN 
+                users AS u ON u.id = l.assigned_sales_lead_to
+              INNER JOIN 
+                roles AS r ON r.id = u.role_id
+              WHERE 
+                l.user_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+              ORDER BY l.created_at desc`,
     
     "Q204"  :`UPDATE marketing_leads SET full_name = '{var2}', title = '{var3}',email_address = '{var4}',phone_number = '{var5}',
               address = '{var6}', organization_name = '{var7}',source = '{var8}',linkedin_url = '{var9}',website = '{var10}',targeted_value = '{var11}',
               industry_type = '{var12}',lead_status = '{var13}',assigned_sales_lead_to = '{var14}',additional_marketing_notes = '{var15}',
               updated_at = '{var16}' WHERE id = '{var1}' AND deleted_at is null`,
               
-    "Q205"  :`UPDATE marketing_leads SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at is null`                            
+    "Q205"  :`UPDATE marketing_leads SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at is null`,
+    
+    "Q206"  :`SELECT COUNT(*) from marketing_leads WHERE company_id = '{var1}' AND deleted_at IS NULL`,
 
+    "Q207"  :`SELECT 
+                COUNT(*),
+                u.full_name AS created_by
+              FROM 
+                marketing_leads AS l 
+              INNER JOIN 
+                users AS u ON u.id = l.user_id
+              WHERE 
+                l.company_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+              GROUP BY 
+                u.full_name
+              ORDER BY 
+                u.full_name {var4}
+              LIMIT {var2} OFFSET {var3}`,
+    "Q208"  :`SELECT 
+                COUNT(*),
+                u.full_name AS created_by
+              FROM 
+                marketing_leads AS l 
+              INNER JOIN 
+                users AS u ON u.id = l.user_id
+              WHERE 
+                l.user_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+              GROUP BY 
+                u.full_name
+              ORDER BY 
+                u.full_name {var4}
+              LIMIT {var2} OFFSET {var3}`,
+
+    "Q209"  :`SELECT COUNT(*) from marketing_leads WHERE user_id = '{var1}' AND deleted_at IS NULL`,
  }
 
  function dbScript(template, variables) {

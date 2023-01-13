@@ -148,6 +148,7 @@ router.post('/createLead',verifyTokenFn, controller.marketingStrategy.createLead
 router.get('/leadsList',verifyTokenFn, controller.marketingStrategy.leadsList)
 router.put('/updateLead',verifyTokenFn, controller.marketingStrategy.updateLead)
 router.put('/deleteLead',verifyTokenFn, controller.marketingStrategy.deleteLead)
+router.get('/marketingDashboard',verifyTokenFn, controller.marketingStrategy.marketingDashboard)
 
 
 
