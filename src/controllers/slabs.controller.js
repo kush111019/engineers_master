@@ -56,6 +56,7 @@ module.exports.updateSlab = async (req, res) => {
         let {
             slabsData
         } = req.body
+        console.log(slabsData,"slabsData");
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
@@ -207,13 +208,26 @@ module.exports.slabList = async (req, res) => {
                 }
             }
             if (slabList.length > 0) {
-                const transformedArray = slabList.reduce((acc, curr) => {
-                    let cs = []
-                    if(curr.commission_split_id && curr.commission_split_id != ''){
-                        let s5 = dbScript(db_sql['Q56'],{var1 : curr.commission_split_id, var2 : curr.company_id})
-                        let commissionSplit = connection.query(s5)
-                        cs.push(commissionSplit.rows[0])
+                for (let item of slabList) {
+                    if (item.commission_split_id) {
+                        let s5 = dbScript(db_sql['Q56'],{var1 : item.commission_split_id, var2 : item.company_id})
+                        let commissionSplit = await connection.query(s5);
+                        closerPercent= item
+                        if (commissionSplit.rows.length > 0) {
+                            for (let commission of commissionSplit.rows) {
+                                if (item.commission_split_id === commission.id) {
+                                    item.closerPercentage = commission.closer_percentage;
+                                    item.supporterPercentage = commission.supporter_percentage;
+                                }
+                            }
+                        }
+                    } else {
+                        item.closerPercentage = '';
+                        item.supporterPercentage = '';
                     }
+                    
+                }
+                const transformedArray = slabList.reduce((acc, curr) => {
                     const existingSlab = acc.find(s => s.slab_id === curr.slab_id);
                     if (existingSlab) {
                         existingSlab.slabs.push({
@@ -235,8 +249,8 @@ module.exports.slabList = async (req, res) => {
                             slab_id: curr.slab_id,
                             slab_name: curr.slab_name,
                             commissionSplitId : (curr.commission_split_id && curr.commission_split_id != '') ? curr.commission_split_id : '',
-                            closerPercentage : (cs.length > 0) ? cs[0].closer_percentage : '',
-                            supporterPercentage : (cs.length > 0) ? cs[0].supporter_percentage : '',
+                            closerPercentage : curr.closerPercentage,
+                            supporterPercentage : curr.supporterPercentage,
                             slabs: [
                                 {
                                     id: curr.id,
