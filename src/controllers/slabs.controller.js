@@ -113,7 +113,25 @@ module.exports.slabList = async (req, res) => {
             let s4 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
             let slabList = await connection.query(s4)
             if (slabList.rowCount > 0) {
-                
+                for (let item of slabList.rows) {
+                    if (item.commission_split_id) {
+                        let s5 = dbScript(db_sql['Q56'],{var1 : item.commission_split_id, var2 : item.company_id})
+                        let commissionSplit = await connection.query(s5);
+                        closerPercent= item
+                        if (commissionSplit.rows.length > 0) {
+                            for (let commission of commissionSplit.rows) {
+                                if (item.commission_split_id === commission.id) {
+                                    item.closerPercentage = commission.closer_percentage;
+                                    item.supporterPercentage = commission.supporter_percentage;
+                                }
+                            }
+                        }
+                    } else {
+                        item.closerPercentage = '';
+                        item.supporterPercentage = '';
+                    }
+                    
+                }
                 const transformedArray = slabList.rows.reduce((acc, curr) => {
                     let cs = []
                     if(curr.commission_split_id && curr.commission_split_id != ''){
