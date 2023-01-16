@@ -115,7 +115,7 @@ module.exports.slabList = async (req, res) => {
                 
                 const transformedArray = slabList.rows.reduce((acc, curr) => {
                     let cs = []
-                    if(curr.commission_split_id){
+                    if(curr.commission_split_id && curr.commission_split_id != ''){
                         let s5 = dbScript(db_sql['Q56'],{var1 : curr.commission_split_id, var2 : curr.company_id})
                         let commissionSplit = connection.query(s5)
                         cs.push(commissionSplit.rows[0])
@@ -140,7 +140,7 @@ module.exports.slabList = async (req, res) => {
                         acc.push({
                             slab_id: curr.slab_id,
                             slab_name: curr.slab_name,
-                            commissionSplitId : (curr.commission_split_id) ? curr.commission_split_id : '',
+                            commissionSplitId : (curr.commission_split_id && curr.commission_split_id != '') ? curr.commission_split_id : '',
                             closerPercentage : (cs.length > 0) ? cs[0].closer_percentage : '',
                             supporterPercentage : (cs.length > 0) ? cs[0].supporter_percentage : '',
                             slabs: [
@@ -209,7 +209,7 @@ module.exports.slabList = async (req, res) => {
             if (slabList.length > 0) {
                 const transformedArray = slabList.reduce((acc, curr) => {
                     let cs = []
-                    if(curr.commission_split_id){
+                    if(curr.commission_split_id && curr.commission_split_id != ''){
                         let s5 = dbScript(db_sql['Q56'],{var1 : curr.commission_split_id, var2 : curr.company_id})
                         let commissionSplit = connection.query(s5)
                         cs.push(commissionSplit.rows[0])
@@ -234,7 +234,7 @@ module.exports.slabList = async (req, res) => {
                         acc.push({
                             slab_id: curr.slab_id,
                             slab_name: curr.slab_name,
-                            commissionSplitId : (curr.commission_split_id) ? curr.commission_split_id : '',
+                            commissionSplitId : (curr.commission_split_id && curr.commission_split_id != '') ? curr.commission_split_id : '',
                             closerPercentage : (cs.length > 0) ? cs[0].closer_percentage : '',
                             supporterPercentage : (cs.length > 0) ? cs[0].supporter_percentage : '',
                             slabs: [
