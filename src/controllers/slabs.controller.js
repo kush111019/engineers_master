@@ -16,8 +16,7 @@ module.exports.createSlab = async (req, res) => {
                 let slabId = uuid.v4()
                 for (let data of slabsData.slabs) {
                     id = uuid.v4()
-                    let s5 = dbScript(db_sql['Q18'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: Number(data.slab_ctr), var9 : userId,
-                    var10 : slabId, var11 : slabsData.slabName })
+                    let s5 = dbScript(db_sql['Q18'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: Number(data.slab_ctr), var9 : userId, var10 : slabId, var11 : slabsData.slabName, var12 : slabsData.commissionSplitId })
                     var createSlab = await connection.query(s5)
                     await connection.query('COMMIT')
                 }
@@ -64,11 +63,11 @@ module.exports.updateSlab = async (req, res) => {
             for (let data of slabsData.slabs) {
                 let _dt = new Date().toISOString()
                 if (data.id != '') {
-                    let s2 = dbScript(db_sql['Q19'], { var1: slabsData.slabName, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: Number(data.slab_ctr), var9: userId, var10: data.id, var11: slabsData.slabId, var12: _dt })
+                    let s2 = dbScript(db_sql['Q19'], { var1: slabsData.slabName, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: Number(data.slab_ctr), var9: userId, var10: data.id, var11: slabsData.slabId, var12: _dt, var13 : slabsData.commissionSplitId })
                     var updateSlab = await connection.query(s2)
                 }else{
                     let id = uuid.v4()
-                    let s5 = dbScript(db_sql['Q18'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: Number(data.slab_ctr), var9 : userId, var10 : slabsData.slabId, var11 : slabsData.slabName })
+                    let s5 = dbScript(db_sql['Q18'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: Number(data.slab_ctr), var9 : userId, var10 : slabsData.slabId, var11 : slabsData.slabName, var12 : slabsData.commissionSplitId })
                     var createSlab = await connection.query(s5)
                 } 
             }
@@ -113,7 +112,14 @@ module.exports.slabList = async (req, res) => {
             let s4 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
             let slabList = await connection.query(s4)
             if (slabList.rowCount > 0) {
+                
                 const transformedArray = slabList.rows.reduce((acc, curr) => {
+                    let cs = []
+                    if(curr.commission_split_id){
+                        let s5 = dbScript(db_sql['Q56'],{var1 : curr.commission_split_id, var2 : curr.company_id})
+                        let commissionSplit = connection.query(s5)
+                        cs.push(commissionSplit.rows[0])
+                    }
                     const existingSlab = acc.find(s => s.slab_id === curr.slab_id);
                     if (existingSlab) {
                         existingSlab.slabs.push({
@@ -134,6 +140,9 @@ module.exports.slabList = async (req, res) => {
                         acc.push({
                             slab_id: curr.slab_id,
                             slab_name: curr.slab_name,
+                            commissionSplitId : (curr.commission_split_id) ? curr.commission_split_id : '',
+                            closerPercentage : (cs.length > 0) ? cs[0].closer_percentage : '',
+                            supporterPercentage : (cs.length > 0) ? cs[0].supporter_percentage : '',
                             slabs: [
                                 {
                                     id: curr.id,
@@ -199,6 +208,12 @@ module.exports.slabList = async (req, res) => {
             }
             if (slabList.length > 0) {
                 const transformedArray = slabList.reduce((acc, curr) => {
+                    let cs = []
+                    if(curr.commission_split_id){
+                        let s5 = dbScript(db_sql['Q56'],{var1 : curr.commission_split_id, var2 : curr.company_id})
+                        let commissionSplit = connection.query(s5)
+                        cs.push(commissionSplit.rows[0])
+                    }
                     const existingSlab = acc.find(s => s.slab_id === curr.slab_id);
                     if (existingSlab) {
                         existingSlab.slabs.push({
@@ -219,6 +234,9 @@ module.exports.slabList = async (req, res) => {
                         acc.push({
                             slab_id: curr.slab_id,
                             slab_name: curr.slab_name,
+                            commissionSplitId : (curr.commission_split_id) ? curr.commission_split_id : '',
+                            closerPercentage : (cs.length > 0) ? cs[0].closer_percentage : '',
+                            supporterPercentage : (cs.length > 0) ? cs[0].supporter_percentage : '',
                             slabs: [
                                 {
                                     id: curr.id,
@@ -239,7 +257,6 @@ module.exports.slabList = async (req, res) => {
                     }
                     return acc;
                 }, []);
-
                 res.json({
                     status: 200,
                     success: true,
