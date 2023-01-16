@@ -602,7 +602,7 @@ module.exports.deleteLeadIndustry = async (req, res) => {
             if (deleteLeadIndustry.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
-                    status: 201,
+                    status: 200,
                     success: true,
                     message: "Lead industry deleted successfully"
                 })
