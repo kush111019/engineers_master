@@ -554,7 +554,7 @@ module.exports.updateLeadIndustry = async (req, res) => {
             if (updateTitle.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
-                    status: 201,
+                    status: 200,
                     success: true,
                     message: "Lead industry updated successfully"
                 })
@@ -744,7 +744,7 @@ module.exports.updateLeadSource = async (req, res) => {
             if (updateSource.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
-                    status: 201,
+                    status: 200,
                     success: true,
                     message: "Lead source updated successfully"
                 })
