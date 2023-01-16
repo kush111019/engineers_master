@@ -294,3 +294,573 @@ module.exports.imapCredentials = async (req, res) => {
         })
     }
 }
+
+//-----------------------------------------------------------------------------------------
+
+module.exports.addLeadTitle = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { leadTitle } = req.body
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+            await connection.query('BEGIN')
+
+            let id = uuid.v4()
+            let s3 = dbScript(db_sql['Q210'], { var1: id, var2: leadTitle, var3: findAdmin.rows[0].company_id })
+
+            let addTitle = await connection.query(s3)
+
+            if (addTitle.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Lead title added successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.updateLeadTitle = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { titleId, leadTitle} = req.body
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+            await connection.query('BEGIN')
+
+            let _dt = new Date().toISOString()
+            let s3 = dbScript(db_sql['Q211'], { var1: leadTitle, var2: _dt, var3: titleId })
+
+            let updateTitle = await connection.query(s3)
+
+            if (updateTitle.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Lead title updated successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.deleteLeadTitle = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { titleId } = req.body
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+            await connection.query('BEGIN')
+
+            let _dt = new Date().toISOString()
+            let s3 = dbScript(db_sql['Q212'], { var1:  _dt, var2: titleId })
+
+            let deleteTitle = await connection.query(s3)
+
+            if (deleteTitle.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Lead title deleted successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.leadTitleList = async (req, res) => {
+    try {
+        let userId = req.user.id
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+
+            let s3 = dbScript(db_sql['Q213'], { var1: findAdmin.rows[0].company_id  })
+            let leadTitles = await connection.query(s3)
+
+            if (leadTitles.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Lead title list",
+                    data : leadTitles.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Lead title list",
+                    data : []
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//-----------------------------------------------------------------------------------------
+
+module.exports.addLeadIndustry = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { leadIndustry } = req.body
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+            await connection.query('BEGIN')
+
+            let id = uuid.v4()
+            let s3 = dbScript(db_sql['Q214'], { var1: id, var2: leadIndustry, var3: findAdmin.rows[0].company_id })
+
+            let addIndustry = await connection.query(s3)
+
+            if (addIndustry.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Lead industry added successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.updateLeadIndustry = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { industryId, leadIndustry} = req.body
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+            await connection.query('BEGIN')
+
+            let _dt = new Date().toISOString()
+            let s3 = dbScript(db_sql['Q215'], { var1: leadIndustry, var2: _dt, var3: industryId })
+
+            let updateTitle = await connection.query(s3)
+
+            if (updateTitle.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Lead industry updated successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.deleteLeadIndustry = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { industryId } = req.body
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+            await connection.query('BEGIN')
+
+            let _dt = new Date().toISOString()
+            let s3 = dbScript(db_sql['Q216'], { var1:  _dt, var2: industryId })
+
+            let deleteLeadIndustry = await connection.query(s3)
+
+            if (deleteLeadIndustry.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Lead industry deleted successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.leadIndustryList = async (req, res) => {
+    try {
+        let userId = req.user.id
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+
+            let s3 = dbScript(db_sql['Q217'], { var1: findAdmin.rows[0].company_id  })
+            let leadIndustry = await connection.query(s3)
+
+            if (leadIndustry.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Lead industry list",
+                    data : leadIndustry.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Lead industry list",
+                    data : []
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//-----------------------------------------------------------------------------------------
+
+module.exports.addLeadSource = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { leadSource } = req.body
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+            await connection.query('BEGIN')
+
+            let id = uuid.v4()
+            let s3 = dbScript(db_sql['Q218'], { var1: id, var2: leadSource, var3: findAdmin.rows[0].company_id })
+
+            let addSource = await connection.query(s3)
+
+            if (addSource.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Lead source added successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.updateLeadSource = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { sourceId, leadSource} = req.body
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+            await connection.query('BEGIN')
+
+            let _dt = new Date().toISOString()
+            let s3 = dbScript(db_sql['Q219'], { var1: leadSource, var2: _dt, var3: sourceId })
+
+            let updateSource = await connection.query(s3)
+
+            if (updateSource.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Lead source updated successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.deleteLeadSource = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { sourceId } = req.body
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+            await connection.query('BEGIN')
+
+            let _dt = new Date().toISOString()
+            let s3 = dbScript(db_sql['Q220'], { var1:  _dt, var2: sourceId })
+
+            let deleteSource = await connection.query(s3)
+
+            if (deleteSource.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Lead source deleted successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.leadSourceList = async (req, res) => {
+    try {
+        let userId = req.user.id
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+
+            let s3 = dbScript(db_sql['Q221'], { var1: findAdmin.rows[0].company_id  })
+            let leadSource = await connection.query(s3)
+
+            if (leadSource.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Lead Source list",
+                    data : leadSource.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Lead Source list",
+                    data : []
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}

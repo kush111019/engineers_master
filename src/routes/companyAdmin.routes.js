@@ -148,7 +148,24 @@ router.post('/createLead',verifyTokenFn, controller.marketingStrategy.createLead
 router.get('/leadsList',verifyTokenFn, controller.marketingStrategy.leadsList)
 router.put('/updateLead',verifyTokenFn, controller.marketingStrategy.updateLead)
 router.put('/deleteLead',verifyTokenFn, controller.marketingStrategy.deleteLead)
-router.get('/marketingDashboard',verifyTokenFn, controller.marketingStrategy.marketingDashboard)
+router.post('/createLead',verifyTokenFn, controller.marketingStrategy.createLead)
+router.post('/convertLeadToCustomer',verifyTokenFn, controller.marketingStrategy.convertLeadToCustomer)
+
+//-----------------------------------Lead Title--------------------------------------------
+router.post('/addLeadTitle',verifyTokenFn, controller.configuration.addLeadTitle)
+router.get('/leadTitleList',verifyTokenFn, controller.configuration.leadTitleList)
+router.put('/updateLeadTitle',verifyTokenFn, controller.configuration.updateLeadTitle)
+router.put('/deleteLeadTitle',verifyTokenFn, controller.configuration.deleteLeadTitle)
+
+router.post('/addLeadIndustry',verifyTokenFn, controller.configuration.addLeadIndustry)
+router.get('/leadIndustryList',verifyTokenFn, controller.configuration.leadIndustryList)
+router.put('/updateLeadIndustry',verifyTokenFn, controller.configuration.updateLeadIndustry)
+router.put('/deleteLeadIndustry',verifyTokenFn, controller.configuration.deleteLeadIndustry)
+
+router.post('/addLeadSource',verifyTokenFn, controller.configuration.addLeadSource)
+router.get('/leadSourceList',verifyTokenFn, controller.configuration.leadSourceList)
+router.put('/updateLeadSource',verifyTokenFn, controller.configuration.updateLeadSource)
+router.put('/deleteLeadSource',verifyTokenFn, controller.configuration.deleteLeadSource)
 
 
 
