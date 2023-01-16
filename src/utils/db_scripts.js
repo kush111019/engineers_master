@@ -17,7 +17,18 @@ const db_sql = {
     "Q12"  : `SELECT * FROM roles WHERE id = '{var1}' AND deleted_at IS NULL`,
     "Q13"  : `INSERT INTO roles(id,role_name,reporter,company_id,user_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`, 
     "Q14"  : `SELECT * FROM roles WHERE company_id = '{var1}' AND deleted_at IS NULL` ,
-    "Q15"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at, is_main_admin, created_by FROM users WHERE company_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,
+    "Q15"  : `SELECT 
+                u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
+                u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at, 
+                u1.is_main_admin, u1.created_by, u2.full_name AS creator_name 
+              FROM 
+                users AS u1 
+              INNER JOIN 
+                users AS u2 ON u2.id = u1.created_by  
+              WHERE 
+                u1.company_id = '{var1}' AND u1.deleted_at IS NULL 
+              ORDER BY 
+                created_at DESC`,
     "Q16"  : `SELECT * FROM roles WHERE reporter = '{var1}' AND deleted_at IS NULL`,
     "Q17"  : `SELECT * FROM slabs WHERE company_id ='{var1}' AND deleted_at IS NULL GROUP BY slab_id, id ORDER BY slab_ctr ASC`,
     "Q18"  : `INSERT INTO slabs(id,min_amount, max_amount, percentage, is_max, company_id, currency, slab_ctr, user_id, slab_id, slab_name) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}') RETURNING * `,
@@ -76,14 +87,25 @@ const db_sql = {
               u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.company_id = '{var1}' `,
     "Q53"  : `INSERT INTO sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency, user_id, slab_id ) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var13}', '{var14}', '{var15}', '{var16}', '{var17}', '{var18}') RETURNING *`,
-    "Q54"  : `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
-              sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at, sc.slab_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id FROM sales_commission AS sc 
-              INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
-              INNER JOIN users AS u ON u.id = c.closer_id
-              INNER JOIN customers AS cus ON cus.id = sc.customer_id
-              WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL ORDER BY sc.created_at desc`,
+    "Q54"  : `SELECT 
+                sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
+                sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
+                sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,
+                c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name as creator_name 
+              FROM 
+                sales_commission AS sc 
+              INNER JOIN 
+                sales_closer AS c ON sc.id = c.sales_commission_id
+              INNER JOIN 
+                users AS u ON u.id = c.closer_id
+              INNER JOIN 
+                users AS u1 ON u1.id = sc.user_id
+              INNER JOIN 
+                customers AS cus ON cus.id = sc.customer_id
+              WHERE 
+                sc.company_id = '{var1}' AND sc.deleted_at IS NULL 
+              ORDER BY 
+                sc.created_at DESC`,
     "Q55"  : `SELECT * FROM customers WHERE id = '{var1}'`,
     "Q56"  : `SELECT id, closer_percentage, supporter_percentage FROM commission_split WHERE id ='{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
     "Q57"  : `INSERT INTO sales_supporter(id, commission_split_id ,supporter_id, supporter_percentage, sales_commission_id, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') RETURNING *`,
@@ -98,7 +120,18 @@ const db_sql = {
     "Q66"  : `UPDATE follow_up_notes SET deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL`,
     "Q67"  : `INSERT INTO revenue_forecast(id, timeline, revenue, growth_window, growth_percentage, start_date, end_date, user_id, company_id, currency)
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}', '{var10}') RETURNING * `,
-    "Q68"  : `SELECT * FROM revenue_forecast WHERE company_id = '{var1}' AND deleted_at IS NULL ORDER BY timeline asc`,  
+    "Q68"  : `SELECT 
+                f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
+                f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
+                u.full_name AS creator_name  
+              FROM 
+                revenue_forecast AS f
+              INNER JOIN 
+                users AS u ON u.id = f.user_id 
+              WHERE 
+                f.company_id = '{var1}' AND f.deleted_at IS NULL 
+              ORDER BY 
+                timeline ASC`,  
     "Q69"  : `SELECT * FROM revenue_forecast WHERE id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL  ` ,            
     "Q70"  : `INSERT INTO business_contact(id, full_name, email_address, phone_number, customer_company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
     "Q71"  : `INSERT INTO revenue_contact(id, full_name, email_address, phone_number, customer_company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
@@ -206,7 +239,17 @@ const db_sql = {
     "Q91"  : `INSERT INTO contact_us(id, full_name, email, subject, messages, address) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
     "Q92"  : `INSERT INTO products(id, product_name,product_image,description,available_quantity,price,end_of_life,company_id, currency, user_id)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}', '{var10}') RETURNING *`,
     "Q93"  : `UPDATE products SET product_name = '{var2}',product_image = '{var3}', description = '{var4}',available_quantity = '{var5}', price = '{var6}', end_of_life = '{var7}', updated_at = '{var8}', currency = '{var10}' WHERE id = '{var1}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `,
-    "Q94"  : `SELECT id, product_name, product_image, description, available_quantity, price, end_of_life, currency, company_id, created_at, updated_at FROM products WHERE company_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,
+    "Q94"  : `SELECT 
+                p.id, p.product_name, p.product_image, p.description, p.available_quantity, p.price, 
+                p.end_of_life, p.currency, p.company_id, p.created_at, p.updated_at, p.user_id, u.full_name as created_by 
+              FROM 
+                products AS p
+              INNER JOIN 
+                users AS u ON p.user_id = u.id
+              WHERE 
+                p.company_id = '{var1}' AND p.deleted_at IS NULL
+              ORDER BY 
+                created_at DESC`,
     "Q95"  : `UPDATE products SET deleted_at = '{var2}' WHERE id = '{var1}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
     "Q96"  : `SELECT id, product_name, product_image, description, available_quantity, price, end_of_life, company_id, created_at, updated_at FROM products WHERE id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
     "Q97"  : `INSERT INTO products(id, company_id,user_id, product_name, product_image, description, available_quantity, price, end_of_life, currency) 
@@ -395,7 +438,17 @@ const db_sql = {
     "Q168" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount,
               sc.closed_at,sc.slab_id FROM sales_commission AS sc WHERE sc.user_id = '{var1}' 
               AND sc.deleted_at IS NULL` ,
-    "Q169" : `SELECT id, product_name, product_image, description, available_quantity, price, end_of_life, currency, company_id, created_at, updated_at FROM products WHERE user_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,      
+    "Q169" : `SELECT 
+                p.id, p.product_name, p.product_image, p.description, p.available_quantity, p.price, 
+                p.end_of_life, p.currency, p.company_id, p.created_at, p.updated_at, p.user_id, u.full_name as created_by 
+              FROM 
+                products AS p
+              INNER JOIN 
+                users AS u ON p.user_id = u.id
+              WHERE 
+                p.user_id = '{var1}' AND p.deleted_at IS NULL
+              ORDER BY 
+                created_at DESC`,      
     "Q170" : `SELECT            
                   c.customer_name,
                   SUM(sc.target_amount::DECIMAL) AS revenue
@@ -471,7 +524,18 @@ const db_sql = {
               ORDER BY 
                 date DESC 
               LIMIT {var3} OFFSET {var4}`,
-    "Q174" : `SELECT * FROM revenue_forecast WHERE user_id = '{var1}' AND deleted_at IS NULL ORDER BY timeline asc`,  
+    "Q174" : `SELECT 
+                f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
+                f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
+                u.full_name AS creator_name  
+              FROM 
+                revenue_forecast AS f
+              INNER JOIN 
+                users AS u ON u.id = f.user_id 
+              WHERE 
+                f.user_id = '{var1}' AND f.deleted_at IS NULL 
+              ORDER BY 
+                timeline ASC`,  
     "Q175" : `SELECT * FROM roles WHERE user_id = '{var1}' AND deleted_at IS NULL`,
     "Q176" : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at, is_main_admin, created_by FROM users WHERE created_by = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,
     "Q177" : `SELECT c.id, c.customer_company_id ,c.customer_name, c.source, c.user_id, c.address, c.deleted_at,
@@ -479,42 +543,47 @@ const db_sql = {
               WHERE c.user_id = '{var1}'`,
     "Q178" : `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,sc.slab_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id FROM sales_commission AS sc 
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
+              INNER JOIN users AS u1 ON u1.id = sc.user_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
               WHERE sc.user_id = '{var1}' AND sc.deleted_at IS NULL ORDER BY sc.created_at desc`,
     "Q179"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,sc.slab_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id FROM sales_commission AS sc 
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
+              INNER JOIN users AS u1 ON u1.id = sc.user_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
               WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL and sc.closed_at IS NULL  ORDER BY sc.created_at desc`,
     "Q180"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,sc.slab_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id FROM sales_commission AS sc 
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
+              INNER JOIN users AS u1 ON u1.id = sc.user_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
               WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL and sc.closed_at IS NOT NULL  ORDER BY sc.created_at desc`,
     "Q181"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,sc.slab_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id FROM sales_commission AS sc 
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
+              INNER JOIN users AS u1 ON u1.id = sc.user_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
               WHERE sc.user_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NULL ORDER BY sc.created_at desc`,
     "Q182"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.closed_at,sc.slab_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id FROM sales_commission AS sc 
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.user_id, sc.closed_at,sc.slab_id,
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
+              INNER JOIN users AS u1 ON u1.id = sc.user_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
               WHERE sc.user_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL ORDER BY sc.created_at desc`,
     "Q183"  :`UPDATE slabs SET deleted_at = '{var1}' WHERE slab_id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL`,
@@ -543,10 +612,54 @@ const db_sql = {
     "Q191"  :`INSERT INTO actual_forecast_data(id, revenue_forecast_id, actual_revenue, forecast_revenue, forecast_date)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
     "Q192"  :`UPDATE actual_forecast_data SET deleted_at = '{var1}' WHERE revenue_forecast_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
     "Q193"  :`SELECT * FROM actual_forecast_data WHERE revenue_forecast_id = '{var1}' and deleted_at IS null AND forecast_date BETWEEN '{var4}' AND '{var5}' LIMIT '{var2}' OFFSET '{var3}'`,
-    "Q194"  :`SELECT * FROM revenue_forecast WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NULL ORDER BY timeline asc`, 
-    "Q195"  :`SELECT * FROM revenue_forecast WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NOT NULL ORDER BY timeline asc`,
-    "Q196"  :`SELECT * FROM revenue_forecast WHERE user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NULL ORDER BY timeline asc`,
-    "Q197"  :`SELECT * FROM revenue_forecast WHERE user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NOT NULL ORDER BY timeline asc`,   
+    "Q194"  :`SELECT 
+                f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
+                f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
+                u.full_name AS creator_name  
+              FROM 
+                revenue_forecast AS f
+              INNER JOIN 
+                users AS u ON u.id = f.user_id 
+              WHERE 
+                f.company_id = '{var1}' AND f.deleted_at IS NULL AND closed_date IS NULL
+              ORDER BY 
+                timeline ASC`, 
+    "Q195"  :`SELECT 
+                f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
+                f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
+                u.full_name AS creator_name  
+              FROM 
+                revenue_forecast AS f
+              INNER JOIN 
+                users AS u ON u.id = f.user_id 
+              WHERE 
+                f.company_id = '{var1}' AND f.deleted_at IS NULL AND closed_date IS NOT NULL
+              ORDER BY 
+                timeline ASC`,
+    "Q196"  :`SELECT 
+                f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
+                f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
+                u.full_name AS creator_name  
+              FROM 
+                revenue_forecast AS f
+              INNER JOIN 
+                users AS u ON u.id = f.user_id 
+              WHERE 
+                user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NULL 
+              ORDER BY 
+                timeline ASC`,
+    "Q197"  :`SELECT 
+                f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
+                f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
+                u.full_name AS creator_name  
+              FROM 
+                revenue_forecast AS f
+              INNER JOIN 
+                users AS u ON u.id = f.user_id 
+              WHERE 
+                user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NOT NULL 
+              ORDER BY 
+                timeline ASC`,   
     "Q198"  :`UPDATE revenue_forecast SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' RETURNING *`,
     "Q199"  :`UPDATE revenue_forecast SET timeline = '{var2}', revenue = '{var3}', growth_window = '{var4}', growth_percentage = '{var5}', start_date = '{var6}', end_date = '{var7}', user_id = '{var8}', company_id = '{var9}', currency = '{var10}' WHERE id = '{var1}' and deleted_at is null RETURNING *`,
     "Q200"  :`SELECT 
@@ -564,31 +677,37 @@ const db_sql = {
                 l.id, l.full_name,l.title,l.email_address,l.phone_number,l.address,l.organization_name,
                 l.source,l.linkedin_url,l.website,l.targeted_value,l.industry_type,l.lead_status,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,
-                u.full_name AS user_name,u.role_id, r.role_name 
+                u.full_name AS user_name,u.role_id, r.role_name, u1.full_name as creator_name 
               FROM 
                 marketing_leads AS l 
               INNER JOIN 
                 users AS u ON u.id = l.assigned_sales_lead_to
+              INNER JOIN 
+                users AS u1 ON u1.id = l.user_id
               INNER JOIN
                 roles AS r ON r.id = u.role_id
               WHERE 
                 l.company_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
-              ORDER BY l.created_at desc`, 
+              ORDER BY 
+                l.created_at DESC`, 
 
     "Q203"  :`SELECT 
                 l.id, l.full_name,l.title,l.email_address,l.phone_number,l.address,l.organization_name,
                 l.source,l.linkedin_url,l.website,l.targeted_value,l.industry_type,l.lead_status,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at, u.full_name
-                AS user_name, u.role_id, r.role_name 
+                AS user_name, u.role_id, r.role_name, u1.full_name as creator_name  
               FROM 
                 marketing_leads AS l 
               INNER JOIN 
                 users AS u ON u.id = l.assigned_sales_lead_to
               INNER JOIN 
+                users AS u1 ON u1.id = l.user_id
+              INNER JOIN 
                 roles AS r ON r.id = u.role_id
               WHERE 
                 l.user_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
-              ORDER BY l.created_at desc`,
+              ORDER BY 
+                l.created_at DESC`,
     
     "Q204"  :`UPDATE marketing_leads SET full_name = '{var2}', title = '{var3}',email_address = '{var4}',phone_number = '{var5}',
               address = '{var6}', organization_name = '{var7}',source = '{var8}',linkedin_url = '{var9}',website = '{var10}',targeted_value = '{var11}',

@@ -360,6 +360,7 @@ module.exports.allSalesCommissionList = async (req, res) => {
                 closer.closerPercentage = data.closer_percentage
                 closer.supporters = supporters
                 closer.createdAt = data.created_at
+                closer.createdBy = data.creator_name
                 closer.closedAt = data.closed_at
                 closer.salesType = data.sales_type
                 closer.subscriptionPlan = data.subscription_plan
@@ -509,6 +510,7 @@ module.exports.allSalesCommissionList = async (req, res) => {
                     closer.closerPercentage = data.closer_percentage
                     closer.supporters = supporters
                     closer.createdAt = data.created_at
+                    closer.createdBy = data.creator_name
                     closer.closedAt = data.closed_at
                     closer.salesType = data.sales_type
                     closer.subscriptionPlan = data.subscription_plan
@@ -635,6 +637,7 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                 closer.supporters = supporters
                 closer.createdAt = data.created_at
                 closer.closedAt = data.closed_at
+                closer.createdBy = data.creator_name
                 closer.salesType = data.sales_type
                 closer.subscriptionPlan = data.subscription_plan
                 closer.recurringDate = data.recurring_date
@@ -747,6 +750,7 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                     closer.closerPercentage = data.closer_percentage
                     closer.supporters = supporters
                     closer.createdAt = data.created_at
+                    closer.createdBy = data.creator_name
                     closer.closedAt = data.closed_at
                     closer.salesType = data.sales_type
                     closer.subscriptionPlan = data.subscription_plan
@@ -901,6 +905,7 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                 closer.closerCommissionAmount = ((Number(data.closer_percentage)/100)*commission)
                 closer.supporters = supporters
                 closer.createdAt = data.created_at
+                closer.createdBy = data.creator_name
                 closer.closedAt = data.closed_at
                 closer.salesType = data.sales_type
                 closer.subscriptionPlan = data.subscription_plan
@@ -1014,6 +1019,7 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                     closer.closerPercentage = data.closer_percentage
                     closer.supporters = supporters
                     closer.createdAt = data.created_at
+                    closer.createdBy = data.creator_name
                     closer.closedAt = data.closed_at
                     closer.salesType = data.sales_type
                     closer.subscriptionPlan = data.subscription_plan
