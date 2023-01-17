@@ -590,7 +590,7 @@ module.exports.addRevenueContact = async (req, res) => {
             let revenueIds = JSON.parse(customerData.rows[0].revenue_contact_id)
             revenueIds.push(revenueId)
 
-            let s5 = dbScript(db_sql['Q79'], { var1: customerId, var2: JSON.stringify(revenueIds) })
+            let s5 = dbScript(db_sql['Q80'], { var1: customerId, var2: JSON.stringify(revenueIds) })
             updateCustomer = await connection.query(s5)
 
             if (addRevenueContact.rowCount > 0 && updateCustomer.rowCount > 0) {
