@@ -684,10 +684,11 @@ const db_sql = {
               '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}') RETURNING *`,
 
     "Q202"  :`SELECT 
-                l.id, l.full_name,l.title,l.email_address,l.phone_number,l.address,l.organization_name,
-                l.source,l.linkedin_url,l.website,l.targeted_value,l.industry_type,l.marketing_qualified_lead,
+                l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.address,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,
-                u.full_name AS user_name,u.role_id, r.role_name, u1.full_name as creator_name 
+                u.full_name AS user_name,u.role_id, r.role_name, u1.full_name AS creator_name 
               FROM 
                 marketing_leads AS l 
               INNER JOIN 
@@ -696,24 +697,37 @@ const db_sql = {
                 users AS u1 ON u1.id = l.user_id
               INNER JOIN
                 roles AS r ON r.id = u.role_id
+              INNER JOIN
+                lead_sources AS s ON s.id = l.source
+              INNER JOIN
+                lead_titles AS t ON t.id = l.title
+              INNER JOIN
+                lead_industries AS i ON i.id = l.industry_type
               WHERE 
                 l.company_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
               ORDER BY 
                 l.created_at DESC`, 
 
     "Q203"  :`SELECT 
-                l.id, l.full_name,l.title,l.email_address,l.phone_number,l.address,l.organization_name,
-                l.source,l.linkedin_url,l.website,l.targeted_value,l.industry_type,l.marketing_qualified_lead,
-                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at, u.full_name
-                AS user_name, u.role_id, r.role_name, u1.full_name as creator_name  
+                l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.address,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,
+                u.full_name AS user_name,u.role_id, r.role_name, u1.full_name AS creator_name 
               FROM 
                 marketing_leads AS l 
               INNER JOIN 
                 users AS u ON u.id = l.assigned_sales_lead_to
               INNER JOIN 
                 users AS u1 ON u1.id = l.user_id
-              INNER JOIN 
+              INNER JOIN
                 roles AS r ON r.id = u.role_id
+              INNER JOIN
+                lead_sources AS s ON s.id = l.source
+              INNER JOIN
+                lead_titles AS t ON t.id = l.title
+              INNER JOIN
+                lead_industries AS i ON i.id = l.industry_type
               WHERE 
                 l.user_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
               ORDER BY 
