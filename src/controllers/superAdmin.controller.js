@@ -932,6 +932,7 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                             companyAddress: companyData.company_address,
                             companyLogo: companyData.company_logo,
                             isImapEnable: companyData.is_imap_enable,
+                            isMarketingEnable: companyData.is_marketing_enable,
                             planName: plan.rows[0].name,
                             planInterval: plan.rows[0].interval,
                             PlanExpiryDate: expiryDate,
@@ -948,6 +949,7 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                         companyAddress: companyData.company_address,
                         companyLogo: companyData.company_logo,
                         isImapEnable: companyData.is_imap_enable,
+                        isMarketingEnable: companyData.is_marketing_enable,
                         planName: "Trial",
                         planInterval: `${configList.rows[0].trial_days} days`,
                         PlanExpiryDate: expiryDate,
@@ -1282,9 +1284,9 @@ module.exports.enableDisableMarketingService = async (req, res) => {
 
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q230'],{var1 : isMarketingEnable, var2 : _dt, var3 : companyId})
-            let updateImapService = await connection.query(s2)
+            let updateMarketingService = await connection.query(s2)
 
-            if(updateImapService.rowCount > 0){
+            if(updateMarketingService.rowCount > 0){
                 let enableOrDisable = (isMarketingEnable == true) ? 'enabled' : 'disabled'
                 res.json({
                     status: 200,
