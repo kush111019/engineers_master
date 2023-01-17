@@ -510,6 +510,7 @@ module.exports.addBusinessContact = async (req, res) => {
         let userId = req.user.id
         let {
             companyId,
+            customerId,
             businessEmail,
             businessContactName,
             businessPhoneNumber
@@ -522,7 +523,18 @@ module.exports.addBusinessContact = async (req, res) => {
             let businessId = uuid.v4()
             let s6 = dbScript(db_sql['Q70'], { var1: businessId, var2: mysql_real_escape_string(businessContactName), var3: businessEmail, var4: businessPhoneNumber, var5: companyId })
             let addBusinessContact = await connection.query(s6)
-            if (addBusinessContact.rowCount > 0) {
+
+            let s4 = dbScript(db_sql['Q55'], { var1: customerId })
+            let customerData = await connection.query(s4)
+
+            let businessIds = JSON.parse(customerData.rows[0].business_contact_id)
+            businessIds.push(businessId)
+
+            let s5 = dbScript(db_sql['Q79'], { var1: customerId, var2: JSON.stringify(businessIds) })
+            updateCustomer = await connection.query(s5)
+            
+
+            if (addBusinessContact.rowCount > 0 && updateCustomer.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,
@@ -558,6 +570,7 @@ module.exports.addRevenueContact = async (req, res) => {
         let userId = req.user.id
         let {
             companyId,
+            customerId,
             revenueEmail,
             revenueContactName,
             revenuePhoneNumber
@@ -570,7 +583,17 @@ module.exports.addRevenueContact = async (req, res) => {
             let revenueId = uuid.v4()
             let s6 = dbScript(db_sql['Q71'], { var1: revenueId, var2: mysql_real_escape_string(revenueContactName), var3: revenueEmail, var4: revenuePhoneNumber, var5: companyId })
             let addRevenueContact = await connection.query(s6)
-            if (addRevenueContact.rowCount > 0) {
+
+            let s4 = dbScript(db_sql['Q55'], { var1: customerId })
+            let customerData = await connection.query(s4)
+            
+            let revenueIds = JSON.parse(customerData.rows[0].revenue_contact_id)
+            revenueIds.push(revenueId)
+
+            let s5 = dbScript(db_sql['Q79'], { var1: customerId, var2: JSON.stringify(revenueIds) })
+            updateCustomer = await connection.query(s5)
+
+            if (addRevenueContact.rowCount > 0 && updateCustomer.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,
