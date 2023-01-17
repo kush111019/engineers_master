@@ -17,7 +17,7 @@ module.exports.mysql_real_escape_string = (str) =>{
             case "\x1a":
                 return "\\z";
             case "\n":
-                return "\\n";
+                return " ";
             case "\r":
                 return "\\r";
             case "\"":
