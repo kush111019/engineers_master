@@ -353,9 +353,10 @@ const db_sql = {
     "Q143" : `INSERT INTO imap_credentials(id, email, app_password, user_id, imap_host, imap_port, smtp_host, smtp_port, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}') RETURNING *`,
     "Q144" : `SELECT id,full_name,avatar FROM users WHERE id IN ('{var1}','{var2}') AND deleted_at IS NULL`,
     "Q145" : `SELECT u.id, u.full_name, u.company_id, u.email_address, u.encrypted_password, u.mobile_number, u.role_id, 
-              u.avatar, u.expiry_date, u.is_verified, u.is_admin, u.is_locked, u.is_main_admin, c.company_name, c.company_address, c.company_logo, c.is_imap_enable,
+              u.avatar, u.expiry_date, u.is_verified, u.is_admin, u.is_locked, u.is_main_admin, c.company_name, c.company_address, c.company_logo, c.is_imap_enable,c.is_marketing_enable,
               r.id as role_id,r.role_name, r.reporter, r.module_ids, con.id AS config_id, con.currency, con.phone_format, con.date_format
-              FROM users AS u INNER JOIN companies AS c ON c.id = u.company_id
+              FROM users AS u 
+              INNER JOIN companies AS c ON c.id = u.company_id
               INNER JOIN roles AS r ON r.id = u.role_id 
               INNER JOIN configurations AS con ON con.company_id = u.company_id
               WHERE LOWER(email_address) = LOWER('{var1}') AND u.deleted_at IS NULL 
@@ -819,7 +820,8 @@ const db_sql = {
     "Q226" :`SELECT * FROM lead_titles WHERE LOWER(title) = LOWER('{var1}') and company_id = '{var2}' and deleted_at is null`,
     "Q227" :`SELECT * FROM lead_industries WHERE LOWER(industry) = LOWER('{var1}') and company_id = '{var2}' and deleted_at is null`,
     "Q228" :`SELECT COUNT(*) from marketing_leads WHERE user_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
-    "Q229" :`SELECT COUNT(*) from marketing_leads WHERE company_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`
+    "Q229" :`SELECT COUNT(*) from marketing_leads WHERE company_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
+    "Q230" : `UPDATE companies SET is_marketing_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
  }
 
  function dbScript(template, variables) {

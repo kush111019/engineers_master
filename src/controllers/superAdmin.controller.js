@@ -1267,6 +1267,55 @@ module.exports.enableDisableImapService = async (req, res) => {
     }
 }
 
+//--------------------------------Enable/disable Marketing----------------------------
+
+module.exports.enableDisableMarketingService = async (req, res) => {
+    try {
+        let sAEmail = req.user.email
+        let {
+            companyId,
+            isMarketingEnable
+        } = req.body
+        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
+
+            let _dt = new Date().toISOString();
+            let s2 = dbScript(db_sql['Q230'],{var1 : isMarketingEnable, var2 : _dt, var3 : companyId})
+            let updateImapService = await connection.query(s2)
+
+            if(updateImapService.rowCount > 0){
+                let enableOrDisable = (isMarketingEnable == true) ? 'enabled' : 'disabled'
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: `Marketing service ${enableOrDisable}`,
+                    data: ""
+                })
+            }else{
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "something went wrong",
+                    data: ""
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Super Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        }) 
+    }
+}
 //--------------------------------Contact us Mail List---------------------------------
 
 module.exports.contactUsQueriesList = async(req, res) => {
