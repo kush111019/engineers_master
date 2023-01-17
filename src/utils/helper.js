@@ -358,8 +358,10 @@ module.exports.getMonthDifference = async (startDate, endDate) => {
 }
 
 module.exports.getYearDifference = async (startDate, endDate) => {
-    let years = endDate.getFullYear() - startDate.getFullYear();;
-    return years;
+    let difference = endDate.getTime() - startDate.getTime();
+        let yearDifference = difference / (1000 * 60 * 60 * 24 * 365.25);
+        let roundedYearDifference = Math.round(yearDifference);
+        return Number(roundedYearDifference)
 }
 
 module.exports.removeDuplicates = async(originalArray, prop) => {
