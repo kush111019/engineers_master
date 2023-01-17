@@ -96,11 +96,11 @@ const db_sql = {
     "Q52"  : `SELECT c.id, c.customer_company_id ,c.customer_name, c.source, c.user_id,c.lead_id, c.address, c.deleted_at,
               u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.company_id = '{var1}' `,
-    "Q53"  : `INSERT INTO sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency, user_id, slab_id ) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var13}', '{var14}', '{var15}', '{var16}', '{var17}', '{var18}') RETURNING *`,
+    "Q53"  : `INSERT INTO sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency, user_id, slab_id, lead_id ) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var13}', '{var14}', '{var15}', '{var16}', '{var17}', '{var18}', '{var19}') RETURNING *`,
     "Q54"  : `SELECT 
                 sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
                 sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-                sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,
+                sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,sc.lead_id,
                 c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name as creator_name 
               FROM 
                 sales_commission AS sc 
@@ -124,7 +124,7 @@ const db_sql = {
     "Q60"  : `UPDATE sales_commission SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
     "Q61"  : `UPDATE sales_supporter SET deleted_at = '{var1}' WHERE sales_commission_id = '{var2}' AND company_id = '{var3}' RETURNING * `,
     "Q62"  : `UPDATE sales_closer SET deleted_at = '{var1}' WHERE sales_commission_id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
-    "Q63"  : `UPDATE sales_commission SET customer_id = '{var1}', customer_commission_split_id = '{var2}', is_overwrite = '{var3}', updated_at = '{var4}',business_contact_id = '{var7}', revenue_contact_id = '{var8}', qualification = '{var9}', is_qualified = '{var10}', target_amount = '{var11}', target_closing_date = '{var12}', sales_type = '{var14}', subscription_plan = '{var15}', recurring_date = '{var16}', currency = '{var17}', slab_id = '{var18}'  WHERE id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
+    "Q63"  : `UPDATE sales_commission SET customer_id = '{var1}', customer_commission_split_id = '{var2}', is_overwrite = '{var3}', updated_at = '{var4}',business_contact_id = '{var7}', revenue_contact_id = '{var8}', qualification = '{var9}', is_qualified = '{var10}', target_amount = '{var11}', target_closing_date = '{var12}', sales_type = '{var14}', subscription_plan = '{var15}', recurring_date = '{var16}', currency = '{var17}', slab_id = '{var18}', lead_id = '{var19}'  WHERE id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
     "Q64"  : `UPDATE sales_closer SET closer_id = '{var1}', closer_percentage = '{var2}', commission_split_id = '{var3}', updated_at = '{var4}' WHERE sales_commission_id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
     "Q65"  : `UPDATE sales_supporter SET deleted_at = '{var3}' WHERE sales_commission_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
     "Q66"  : `UPDATE follow_up_notes SET deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL`,
@@ -553,7 +553,7 @@ const db_sql = {
               WHERE c.user_id = '{var1}'`,
     "Q178" : `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
@@ -562,7 +562,7 @@ const db_sql = {
               WHERE sc.user_id = '{var1}' AND sc.deleted_at IS NULL ORDER BY sc.created_at desc`,
     "Q179"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
@@ -571,7 +571,7 @@ const db_sql = {
               WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL and sc.closed_at IS NULL  ORDER BY sc.created_at desc`,
     "Q180"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
@@ -580,7 +580,7 @@ const db_sql = {
               WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL and sc.closed_at IS NOT NULL  ORDER BY sc.created_at desc`,
     "Q181"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
@@ -589,7 +589,7 @@ const db_sql = {
               WHERE sc.user_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NULL ORDER BY sc.created_at desc`,
     "Q182"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.user_id, sc.closed_at,sc.slab_id,
+              sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at, sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
@@ -687,7 +687,7 @@ const db_sql = {
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
-                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,
                 u.full_name AS user_name,u.role_id, r.role_name, u1.full_name AS creator_name 
               FROM 
                 marketing_leads AS l 
@@ -712,7 +712,7 @@ const db_sql = {
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
-                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,
                 u.full_name AS user_name,u.role_id, r.role_name, u1.full_name AS creator_name 
               FROM 
                 marketing_leads AS l 
@@ -786,6 +786,38 @@ const db_sql = {
     "Q219"  :`UPDATE lead_sources set source = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q220"  :`UPDATE lead_sources set deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
     "Q221"  :`SELECT * FROM lead_sources WHERE company_id = '{var1}' and deleted_at is null`,
+    "Q222"  :`UPDATE marketing_leads SET is_converted = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
+    "Q223"  :`SELECT 
+                COUNT(*),
+                u.full_name AS created_by
+              FROM 
+                marketing_leads AS l 
+              INNER JOIN 
+                users AS u ON u.id = l.user_id
+              WHERE 
+                l.company_id = '{var1}' AND l.is_converted = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+              GROUP BY 
+                u.full_name
+              ORDER BY 
+                count {var4}
+              LIMIT {var2} OFFSET {var3}`,
+    "Q224"  :`SELECT 
+                COUNT(*),
+                u.full_name AS created_by
+              FROM 
+                marketing_leads AS l 
+              INNER JOIN 
+                users AS u ON u.id = l.user_id
+              WHERE 
+                l.user_id = '{var1}' AND l.is_converted = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+              GROUP BY 
+                u.full_name
+              ORDER BY 
+                count {var4}
+              LIMIT {var2} OFFSET {var3}`,
+    "Q225" :`SELECT * FROM lead_sources WHERE LOWER(source) = LOWER('{var1}') and company_id = '{var2}' and deleted_at is null`,
+    "Q226" :`SELECT * FROM lead_titles WHERE LOWER(title) = LOWER('{var1}') and company_id = '{var2}' and deleted_at is null`,
+    "Q227" :`SELECT * FROM lead_industries WHERE LOWER(industry) = LOWER('{var1}') and company_id = '{var2}' and deleted_at is null`,
  }
 
  function dbScript(template, variables) {

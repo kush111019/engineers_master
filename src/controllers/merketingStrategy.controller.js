@@ -283,6 +283,9 @@ module.exports.marketingDashboard = async (req, res) => {
             let s3 = dbScript(db_sql['Q207'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let leadData = await connection.query(s3)
 
+            let s4 = dbScript(db_sql['Q223'], {var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase()})
+            let mqlLeads = await connection.query(s4)
+
             if (leadCount.rowCount > 0 && leadData.rowCount > 0) {
                 res.json({
                     status: 200,
@@ -290,7 +293,8 @@ module.exports.marketingDashboard = async (req, res) => {
                     message: 'Lead counts',
                     data: {
                         totalCount: leadCount.rows[0].count,
-                        leadData: leadData.rows
+                        leadData: leadData.rows,
+                        MQLData : mqlLeads.rows
                     }
                 })
             } else {
@@ -300,12 +304,14 @@ module.exports.marketingDashboard = async (req, res) => {
                     message: 'Empty Lead counts',
                     data: {
                         totalCount: leadCount.rows[0].count,
-                        leadData: leadData.rows
+                        leadData: leadData.rows,
+                        MQLData : mqlLeads.rows
                     }
                 })
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let leadList = []
+            let MQLleadList = []
             let count = 0;
             let roleUsers = []
             let roleIds = []
@@ -345,6 +351,14 @@ module.exports.marketingDashboard = async (req, res) => {
                         leadList.push(lead)
                     }
                 }
+                let s6 = dbScript(db_sql['Q224'], { var1: id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
+                console.log(s6,"s6");
+                let findMQLLeadList = await connection.query(s6)
+                if (findMQLLeadList.rowCount > 0) {
+                    for (let MQLlead of findMQLLeadList.rows) {
+                        MQLleadList.push(MQLlead)
+                    }
+                }
             }
             if (count && leadList.length > 0) {
                 res.json({
@@ -353,7 +367,8 @@ module.exports.marketingDashboard = async (req, res) => {
                     message: 'Lead counts',
                     data: {
                         totalCount: count,
-                        leadData: leadList
+                        leadData: leadList,
+                        MQLData : MQLleadList
                     }
                 })
             } else {
@@ -363,7 +378,8 @@ module.exports.marketingDashboard = async (req, res) => {
                     message: 'Empty Lead counts',
                     data: {
                         totalCount: count,
-                        leadData: leadList
+                        leadData: leadList,
+                        MQLData : MQLleadList
                     }
                 })
             }
@@ -412,7 +428,11 @@ module.exports.convertLeadToCustomer = async (req, res) => {
                 let id = uuid.v4()
                 let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: compId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : leadId })
                 let createCustomer = await connection.query(s3)
-                if (createCustomer.rowCount > 0) {
+
+                let _dt = new Date().toISOString()
+                let s4 = dbScript(db_sql['Q222'],{var1 : true, var2 : _dt, var3 : leadId})
+                let updateLead = await connection.query(s4)
+                if (createCustomer.rowCount > 0 && updateLead.rowCount > 0) {
                     await connection.query('COMMIT')
                     res.json({
                         status: 201,

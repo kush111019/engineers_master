@@ -22,7 +22,7 @@ module.exports.addConfigs = async (req, res) => {
             let config = await connection.query(s2)
 
             let id = uuid.v4()
-            let s3 = dbScript(db_sql['Q83'], { var1: id, var2: currency, var3: phoneFormat, var4: dateFormat, var5: findAdmin.rows[0].id, var6 :findAdmin.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q83'], { var1: id, var2: currency, var3: phoneFormat, var4: dateFormat, var5: findAdmin.rows[0].id, var6: findAdmin.rows[0].company_id })
 
             let addConfig = await connection.query(s3)
 
@@ -71,12 +71,12 @@ module.exports.configList = async (req, res) => {
 
             let configuration = {}
 
-            if (configList.rowCount > 0 ) {
+            if (configList.rowCount > 0) {
 
                 configuration.id = configList.rows[0].id
                 configuration.currency = configList.rows[0].currency,
-                configuration.phoneFormat = configList.rows[0].phone_format,
-                configuration.dateFormat = configList.rows[0].date_format
+                    configuration.phoneFormat = configList.rows[0].phone_format,
+                    configuration.dateFormat = configList.rows[0].date_format
                 res.json({
                     status: 200,
                     success: true,
@@ -85,9 +85,9 @@ module.exports.configList = async (req, res) => {
                 })
             } else {
                 configuration.id = "",
-                configuration.currency = "",
-                configuration.phoneFormat = "",
-                configuration.dateFormat = ""
+                    configuration.currency = "",
+                    configuration.phoneFormat = "",
+                    configuration.dateFormat = ""
                 res.json({
                     status: 200,
                     success: false,
@@ -180,14 +180,14 @@ module.exports.addImapCredentials = async (req, res) => {
                                 reject("error")
                             }
                         })
-                        promise.then(async(data) => {
+                        promise.then(async (data) => {
                             await connection.query('BEGIN')
                             let _dt = new Date().toISOString();
-                            let s2 = dbScript(db_sql['Q142'], { var1: _dt, var2: findAdmin.rows[0].id, var3 : findAdmin.rows[0].company_id })
+                            let s2 = dbScript(db_sql['Q142'], { var1: _dt, var2: findAdmin.rows[0].id, var3: findAdmin.rows[0].company_id })
                             let updateCredential = await connection.query(s2)
                             let encryptedAppPassword = JSON.stringify(encrypt(appPassword))
                             let id = uuid.v4()
-                            let s3 = dbScript(db_sql['Q143'], { var1: id, var2: email, var3: encryptedAppPassword, var4: findAdmin.rows[0].id, var5: imapHost, var6: imapPort, var7: smtpHost, var8: smtpPort, var9 : findAdmin.rows[0].company_id })
+                            let s3 = dbScript(db_sql['Q143'], { var1: id, var2: email, var3: encryptedAppPassword, var4: findAdmin.rows[0].id, var5: imapHost, var6: imapPort, var7: smtpHost, var8: smtpPort, var9: findAdmin.rows[0].company_id })
                             let addCredentails = await connection.query(s3)
 
                             if (addCredentails.rowCount > 0) {
@@ -205,15 +205,15 @@ module.exports.addImapCredentials = async (req, res) => {
                                     message: "Something went wrong"
                                 })
                             }
-                        
+
                         })
-                        .catch((err) => 
-                            res.json({
-                                status: 400,
-                                success: false,
-                                message: `SMTP Error : ${err.message}`
-                            })
-                        )
+                            .catch((err) =>
+                                res.json({
+                                    status: 400,
+                                    success: false,
+                                    message: `SMTP Error : ${err.message}`
+                                })
+                            )
                     }
                 })
             })
@@ -247,8 +247,8 @@ module.exports.imapCredentials = async (req, res) => {
 
             let credentialObj = {}
 
-            if (credentials.rowCount > 0 ) {
-                let dpass = decrypt(JSON.parse(credentials.rows[0].app_password)) 
+            if (credentials.rowCount > 0) {
+                let dpass = decrypt(JSON.parse(credentials.rows[0].app_password))
                 credentialObj.id = credentials.rows[0].id
                 credentialObj.email = credentials.rows[0].email
                 credentialObj.appPassword = dpass
@@ -265,9 +265,9 @@ module.exports.imapCredentials = async (req, res) => {
                 })
             } else {
                 credentialObj.id = "",
-                credentialObj.email = "",
-                credentialObj.appPassword = "",
-                credentialObj.imapHost = ""
+                    credentialObj.email = "",
+                    credentialObj.appPassword = "",
+                    credentialObj.imapHost = ""
                 credentialObj.imapPort = ""
                 credentialObj.smtpHost = ""
                 credentialObj.smtpPort = ""
@@ -308,26 +308,37 @@ module.exports.addLeadTitle = async (req, res) => {
         if (findAdmin.rows.length > 0) {
             await connection.query('BEGIN')
 
-            let id = uuid.v4()
-            let s3 = dbScript(db_sql['Q210'], { var1: id, var2: leadTitle, var3: findAdmin.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q226'], { var1: leadTitle, var2: findAdmin.rows[0].company_id })
+            let findTitle = await connection.query(s2)
+            if (findTitle.rowCount == 0) {
 
-            let addTitle = await connection.query(s3)
+                let id = uuid.v4()
+                let s3 = dbScript(db_sql['Q210'], { var1: id, var2: leadTitle, var3: findAdmin.rows[0].company_id })
+                let addTitle = await connection.query(s3)
 
-            if (addTitle.rowCount > 0) {
-                await connection.query('COMMIT')
-                res.json({
-                    status: 201,
-                    success: true,
-                    message: "Lead title added successfully"
-                })
+                if (addTitle.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Lead title added successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
             } else {
-                await connection.query('ROLLBACK')
                 res.json({
-                    status: 400,
-                    success: false,
-                    message: "Something went wrong"
+                    status: 200,
+                    success: true,
+                    message: "Lead title already exist"
                 })
             }
+
         } else {
             res.json({
                 status: 400,
@@ -348,7 +359,7 @@ module.exports.addLeadTitle = async (req, res) => {
 module.exports.updateLeadTitle = async (req, res) => {
     try {
         let userId = req.user.id
-        let { titleId, leadTitle} = req.body
+        let { titleId, leadTitle } = req.body
 
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
@@ -405,7 +416,7 @@ module.exports.deleteLeadTitle = async (req, res) => {
             await connection.query('BEGIN')
 
             let _dt = new Date().toISOString()
-            let s3 = dbScript(db_sql['Q212'], { var1:  _dt, var2: titleId })
+            let s3 = dbScript(db_sql['Q212'], { var1: _dt, var2: titleId })
 
             let deleteTitle = await connection.query(s3)
 
@@ -450,7 +461,7 @@ module.exports.leadTitleList = async (req, res) => {
 
         if (findAdmin.rows.length > 0) {
 
-            let s3 = dbScript(db_sql['Q213'], { var1: findAdmin.rows[0].company_id  })
+            let s3 = dbScript(db_sql['Q213'], { var1: findAdmin.rows[0].company_id })
             let leadTitles = await connection.query(s3)
 
             if (leadTitles.rowCount > 0) {
@@ -458,14 +469,14 @@ module.exports.leadTitleList = async (req, res) => {
                     status: 200,
                     success: true,
                     message: "Lead title list",
-                    data : leadTitles.rows
+                    data: leadTitles.rows
                 })
             } else {
                 res.json({
                     status: 200,
                     success: false,
                     message: "Empty Lead title list",
-                    data : []
+                    data: []
                 })
             }
         } else {
@@ -497,25 +508,32 @@ module.exports.addLeadIndustry = async (req, res) => {
 
         if (findAdmin.rows.length > 0) {
             await connection.query('BEGIN')
-
-            let id = uuid.v4()
-            let s3 = dbScript(db_sql['Q214'], { var1: id, var2: leadIndustry, var3: findAdmin.rows[0].company_id })
-
-            let addIndustry = await connection.query(s3)
-
-            if (addIndustry.rowCount > 0) {
-                await connection.query('COMMIT')
-                res.json({
-                    status: 201,
-                    success: true,
-                    message: "Lead industry added successfully"
-                })
+            let s2 = dbScript(db_sql['Q227'], { var1: leadIndustry, var2: findAdmin.rows[0].company_id })
+            let findIndustry = await connection.query(s2)
+            if (findIndustry.rowCount == 0) {
+                let id = uuid.v4()
+                let s3 = dbScript(db_sql['Q214'], { var1: id, var2: leadIndustry, var3: findAdmin.rows[0].company_id })
+                let addIndustry = await connection.query(s3)
+                if (addIndustry.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Lead industry added successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
             } else {
-                await connection.query('ROLLBACK')
                 res.json({
-                    status: 400,
-                    success: false,
-                    message: "Something went wrong"
+                    status: 200,
+                    success: true,
+                    message: "Lead industry already exists"
                 })
             }
         } else {
@@ -538,7 +556,7 @@ module.exports.addLeadIndustry = async (req, res) => {
 module.exports.updateLeadIndustry = async (req, res) => {
     try {
         let userId = req.user.id
-        let { industryId, leadIndustry} = req.body
+        let { industryId, leadIndustry } = req.body
 
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
@@ -595,7 +613,7 @@ module.exports.deleteLeadIndustry = async (req, res) => {
             await connection.query('BEGIN')
 
             let _dt = new Date().toISOString()
-            let s3 = dbScript(db_sql['Q216'], { var1:  _dt, var2: industryId })
+            let s3 = dbScript(db_sql['Q216'], { var1: _dt, var2: industryId })
 
             let deleteLeadIndustry = await connection.query(s3)
 
@@ -640,7 +658,7 @@ module.exports.leadIndustryList = async (req, res) => {
 
         if (findAdmin.rows.length > 0) {
 
-            let s3 = dbScript(db_sql['Q217'], { var1: findAdmin.rows[0].company_id  })
+            let s3 = dbScript(db_sql['Q217'], { var1: findAdmin.rows[0].company_id })
             let leadIndustry = await connection.query(s3)
 
             if (leadIndustry.rowCount > 0) {
@@ -648,14 +666,14 @@ module.exports.leadIndustryList = async (req, res) => {
                     status: 200,
                     success: true,
                     message: "Lead industry list",
-                    data : leadIndustry.rows
+                    data: leadIndustry.rows
                 })
             } else {
                 res.json({
                     status: 200,
                     success: false,
                     message: "Empty Lead industry list",
-                    data : []
+                    data: []
                 })
             }
         } else {
@@ -687,25 +705,32 @@ module.exports.addLeadSource = async (req, res) => {
 
         if (findAdmin.rows.length > 0) {
             await connection.query('BEGIN')
-
-            let id = uuid.v4()
-            let s3 = dbScript(db_sql['Q218'], { var1: id, var2: leadSource, var3: findAdmin.rows[0].company_id })
-
-            let addSource = await connection.query(s3)
-
-            if (addSource.rowCount > 0) {
-                await connection.query('COMMIT')
-                res.json({
-                    status: 201,
-                    success: true,
-                    message: "Lead source added successfully"
-                })
+            let s2 = dbScript(db_sql['Q225'], { var1: leadSource, var2: findAdmin.rows[0].company_id })
+            let findTitle = await connection.query(s2)
+            if (findTitle.rowCount == 0) {
+                let id = uuid.v4()
+                let s3 = dbScript(db_sql['Q218'], { var1: id, var2: leadSource, var3: findAdmin.rows[0].company_id })
+                let addSource = await connection.query(s3)
+                if (addSource.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Lead source added successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
             } else {
-                await connection.query('ROLLBACK')
                 res.json({
-                    status: 400,
-                    success: false,
-                    message: "Something went wrong"
+                    status: 200,
+                    success: true,
+                    message: "Lead source already exists"
                 })
             }
         } else {
@@ -728,7 +753,7 @@ module.exports.addLeadSource = async (req, res) => {
 module.exports.updateLeadSource = async (req, res) => {
     try {
         let userId = req.user.id
-        let { sourceId, leadSource} = req.body
+        let { sourceId, leadSource } = req.body
 
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
@@ -785,7 +810,7 @@ module.exports.deleteLeadSource = async (req, res) => {
             await connection.query('BEGIN')
 
             let _dt = new Date().toISOString()
-            let s3 = dbScript(db_sql['Q220'], { var1:  _dt, var2: sourceId })
+            let s3 = dbScript(db_sql['Q220'], { var1: _dt, var2: sourceId })
 
             let deleteSource = await connection.query(s3)
 
@@ -830,7 +855,7 @@ module.exports.leadSourceList = async (req, res) => {
 
         if (findAdmin.rows.length > 0) {
 
-            let s3 = dbScript(db_sql['Q221'], { var1: findAdmin.rows[0].company_id  })
+            let s3 = dbScript(db_sql['Q221'], { var1: findAdmin.rows[0].company_id })
             let leadSource = await connection.query(s3)
 
             if (leadSource.rowCount > 0) {
@@ -838,14 +863,14 @@ module.exports.leadSourceList = async (req, res) => {
                     status: 200,
                     success: true,
                     message: "Lead Source list",
-                    data : leadSource.rows
+                    data: leadSource.rows
                 })
             } else {
                 res.json({
                     status: 200,
                     success: false,
                     message: "Empty Lead Source list",
-                    data : []
+                    data: []
                 })
             }
         } else {

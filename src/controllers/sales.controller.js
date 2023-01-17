@@ -157,6 +157,7 @@ module.exports.createSalesCommission = async (req, res) => {
             targetClosingDate,
             businessId,
             revenueId,
+            leadId,
             salesType,
             subscriptionPlan,
             recurringDate,
@@ -173,7 +174,7 @@ module.exports.createSalesCommission = async (req, res) => {
             targetAmount = (targetAmount == '') ? '0' : targetAmount
 
             let id = uuid.v4()
-            let s5 = dbScript(db_sql['Q53'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: checkPermission.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16: currency, var17 : userId, var18 : slabId })
+            let s5 = dbScript(db_sql['Q53'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: checkPermission.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16: currency, var17 : userId, var18 : slabId, var19 : leadId })
             let createSalesConversion = await connection.query(s5)
 
             let s6 = dbScript(db_sql['Q56'], { var1: customerCommissionSplitId, var2: checkPermission.rows[0].company_id })
@@ -368,6 +369,7 @@ module.exports.allSalesCommissionList = async (req, res) => {
                 closer.products = (productData.rowCount > 0) ? productData.rows : []
                 closer.slabId = (data.slab_id) ? data.slab_id : ''
                 closer.slabName = slabName
+                closer.leadId = data.lead_id
 
                 commissionList.push(closer)
             }
@@ -518,6 +520,7 @@ module.exports.allSalesCommissionList = async (req, res) => {
                     closer.products = (productData.rowCount > 0) ? productData.rows : []
                     closer.slabId = (data.slab_id) ? data.slab_id : ''
                     closer.slabName = slabName
+                    closer.leadId = data.lead_id
 
                     salesListArr.push(closer)
                 }
@@ -644,6 +647,7 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                 closer.products = (productData.rowCount > 0) ? productData.rows : []
                 closer.slabId = (data.slab_id) ? data.slab_id : ''
                 closer.slabName = slabName
+                closer.leadId = data.lead_id
 
                 commissionList.push(closer)
             }
@@ -758,6 +762,7 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                     closer.products = (productData.rowCount > 0) ? productData.rows : []
                     closer.slabId = (data.slab_id) ? data.slab_id : ''
                     closer.slabName = slabName
+                    closer.leadId = data.lead_id
 
                     salesListArr.push(closer)
                 }
@@ -913,6 +918,7 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                 closer.products = (productData.rowCount > 0) ? productData.rows : []
                 closer.slabId = (data.slab_id) ? data.slab_id : ''
                 closer.slabName = slabName
+                closer.leadId = data.lead_id
 
                 commissionList.push(closer)
             }
@@ -1027,6 +1033,7 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                     closer.products = (productData.rowCount > 0) ? productData.rows : []
                     closer.slabId = (data.slab_id) ? data.slab_id : ''
                     closer.slabName = slabName
+                    closer.leadId = data.lead_id
 
                     salesListArr.push(closer)
                 }
@@ -1081,6 +1088,7 @@ module.exports.updateSalesCommission = async (req, res) => {
             closerPercentage,
             businessId,
             revenueId,
+            leadId,
             salesType,
             subscriptionPlan,
             recurringDate,
@@ -1094,7 +1102,7 @@ module.exports.updateSalesCommission = async (req, res) => {
 
                 let _dt = new Date().toISOString();
 
-                let s5 = dbScript(db_sql['Q63'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17 : currency, var18 : slabId })
+                let s5 = dbScript(db_sql['Q63'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17 : currency, var18 : slabId, var19 : leadId })
                 let updateSalesCommission = await connection.query(s5)
 
                 let s6 = dbScript(db_sql['Q56'], { var1: customerCommissionSplitId, var2: checkPermission.rows[0].company_id })

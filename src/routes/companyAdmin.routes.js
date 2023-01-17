@@ -150,6 +150,7 @@ router.put('/updateLead',verifyTokenFn, controller.marketingStrategy.updateLead)
 router.put('/deleteLead',verifyTokenFn, controller.marketingStrategy.deleteLead)
 router.post('/createLead',verifyTokenFn, controller.marketingStrategy.createLead)
 router.post('/convertLeadToCustomer',verifyTokenFn, controller.marketingStrategy.convertLeadToCustomer)
+router.get('/marketingDashboard',verifyTokenFn, controller.marketingStrategy.marketingDashboard)
 
 //-----------------------------------Lead Title--------------------------------------------
 router.post('/addLeadTitle',verifyTokenFn, controller.configuration.addLeadTitle)
