@@ -417,7 +417,7 @@ module.exports.convertLeadToCustomer = async (req, res) => {
                     res.json({
                         status: 201,
                         success: true,
-                        message: "Customer created successfully"
+                        message: "Lead converted to customer successfully"
                     })
                 } else {
                     await connection.query('ROLLBACK')
