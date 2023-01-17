@@ -332,12 +332,28 @@ module.exports.paginatedResults = (model, page) => {
 }
 
 module.exports.getMonthDifference = async (startDate, endDate) => {
-    var months = endDate.getMonth() - startDate.getMonth()
-        + (12 * (endDate.getFullYear() - startDate.getFullYear()));
+    // var months = endDate.getMonth() - startDate.getMonth()
+    //     + (12 * (endDate.getFullYear() - startDate.getFullYear()));
 
-    if (endDate.getDate() < startDate.getDate()) {
-        months--;
+    // if (endDate.getDate() < startDate.getDate()) {
+    //     months--;
+    // }
+    // return months;
+    let endD = new Date(endDate);
+    let startD = new Date(startDate);
+    endD.setDate(endD.getDate() + 1);
+    let d1 = startD, d2 = new Date(endD);
+    if( d2 < d1 ) { 
+        let dTmp = d2;
+        d2 = d1;
+        d1 = dTmp;
     }
+
+    let months = (d2.getFullYear() - d1.getFullYear()) * 12;
+    months -= d1.getMonth() + 1;
+    months += d2.getMonth();
+
+    if( d1.getDate() <= d2.getDate() ) months += 1;
     return months;
 }
 
