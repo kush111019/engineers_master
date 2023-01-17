@@ -524,23 +524,32 @@ module.exports.addBusinessContact = async (req, res) => {
             let s6 = dbScript(db_sql['Q70'], { var1: businessId, var2: mysql_real_escape_string(businessContactName), var3: businessEmail, var4: businessPhoneNumber, var5: companyId })
             let addBusinessContact = await connection.query(s6)
 
-            let s4 = dbScript(db_sql['Q55'], { var1: customerId })
-            let customerData = await connection.query(s4)
+            if (addBusinessContact.rowCount > 0) {
 
-            let businessIds = JSON.parse(customerData.rows[0].business_contact_id)
-            businessIds.push(businessId)
+                let s4 = dbScript(db_sql['Q55'], { var1: customerId })
+                let customerData = await connection.query(s4)
+    
+                let businessIds = JSON.parse(customerData.rows[0].business_contact_id)
+                businessIds.push(addBusinessContact.rows[0].id)
+    
+                let s5 = dbScript(db_sql['Q79'], { var1: customerId, var2: JSON.stringify(businessIds) })
+                let updateCustomer = await connection.query(s5)
 
-            let s5 = dbScript(db_sql['Q79'], { var1: customerId, var2: JSON.stringify(businessIds) })
-            updateCustomer = await connection.query(s5)
-            
-
-            if (addBusinessContact.rowCount > 0 && updateCustomer.rowCount > 0) {
-                await connection.query('COMMIT')
-                res.json({
-                    status: 201,
-                    success: true,
-                    message: "Business contact added successfully"
-                })
+                if(updateCustomer.rowCount > 0){
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Business contact added successfully"
+                    })
+                }else{
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
             } else {
                 await connection.query('ROLLBACK')
                 res.json({
@@ -584,22 +593,30 @@ module.exports.addRevenueContact = async (req, res) => {
             let s6 = dbScript(db_sql['Q71'], { var1: revenueId, var2: mysql_real_escape_string(revenueContactName), var3: revenueEmail, var4: revenuePhoneNumber, var5: companyId })
             let addRevenueContact = await connection.query(s6)
 
-            let s4 = dbScript(db_sql['Q55'], { var1: customerId })
-            let customerData = await connection.query(s4)
-            
-            let revenueIds = JSON.parse(customerData.rows[0].revenue_contact_id)
-            revenueIds.push(revenueId)
+            if (addRevenueContact.rowCount > 0 ) {
 
-            let s5 = dbScript(db_sql['Q80'], { var1: customerId, var2: JSON.stringify(revenueIds) })
-            updateCustomer = await connection.query(s5)
-
-            if (addRevenueContact.rowCount > 0 && updateCustomer.rowCount > 0) {
-                await connection.query('COMMIT')
-                res.json({
-                    status: 201,
-                    success: true,
-                    message: "Revenue contact added successfully"
-                })
+                let s4 = dbScript(db_sql['Q55'], { var1: customerId })
+                let customerData = await connection.query(s4)
+                
+                let revenueIds = JSON.parse(customerData.rows[0].revenue_contact_id)
+                revenueIds.push(addRevenueContact.rows[0].id)
+    
+                let s5 = dbScript(db_sql['Q80'], { var1: customerId, var2: JSON.stringify(revenueIds) })
+                let updateCustomer = await connection.query(s5)
+                if(updateCustomer.rowCount > 0){
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Revenue contact added successfully"
+                    })
+                }else{
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    }) 
+                }
             } else {
                 res.json({
                     status: 400,

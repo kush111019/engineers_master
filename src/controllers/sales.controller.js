@@ -98,6 +98,8 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
                         }
                         customerContactDetails.businessDetails = (businessContact.length > 0) ? businessContact : []
                        
+                    }else{
+                        customerContactDetails.businessDetails = [] 
                     }
                     let revenueContactIds = JSON.parse(contactDetails.rows[0].revenue_contact_id)
                     if(revenueContactIds.length > 0){
@@ -108,6 +110,8 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
                             revenuContact.push(revenueDetails.rows[0])  
                         }
                         customerContactDetails.revenueDetails = (revenuContact.length > 0) ? revenuContact : []
+                    }else{
+                        customerContactDetails.revenueDetails = [] 
                     }
                     res.json({
                         status: 200,
