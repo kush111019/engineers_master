@@ -818,6 +818,8 @@ const db_sql = {
     "Q225" :`SELECT * FROM lead_sources WHERE LOWER(source) = LOWER('{var1}') and company_id = '{var2}' and deleted_at is null`,
     "Q226" :`SELECT * FROM lead_titles WHERE LOWER(title) = LOWER('{var1}') and company_id = '{var2}' and deleted_at is null`,
     "Q227" :`SELECT * FROM lead_industries WHERE LOWER(industry) = LOWER('{var1}') and company_id = '{var2}' and deleted_at is null`,
+    "Q228" :`SELECT COUNT(*) from marketing_leads WHERE user_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
+    "Q229" :`SELECT COUNT(*) from marketing_leads WHERE company_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`
  }
 
  function dbScript(template, variables) {

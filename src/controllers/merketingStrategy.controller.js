@@ -283,18 +283,29 @@ module.exports.marketingDashboard = async (req, res) => {
             let s3 = dbScript(db_sql['Q207'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let leadData = await connection.query(s3)
 
-            let s4 = dbScript(db_sql['Q223'], {var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase()})
-            let mqlLeads = await connection.query(s4)
-
             if (leadCount.rowCount > 0 && leadData.rowCount > 0) {
+                let s4 = dbScript(db_sql['Q229'], { var1: checkPermission.rows[0].company_id })
+                let MCount = await connection.query(s4)
+
+                let s5 = dbScript(db_sql['Q223'], {var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase()})
+                let mqlLeads = await connection.query(s5)
+                for(let data of leadData.rows){
+                    mqlLeads.rows.filter((value) => {
+                        if(value.created_by == data.created_by){
+                            data.mqlCount = value.count
+                        }else{
+                            data.mqlCount = '0'
+                        }
+                    })
+                }
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Lead counts',
                     data: {
                         totalCount: leadCount.rows[0].count,
-                        leadData: leadData.rows,
-                        MQLData : mqlLeads.rows
+                        totalMQLCount : MCount.rows[0].count,
+                        leadData: leadData.rows
                     }
                 })
             } else {
@@ -304,8 +315,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     message: 'Empty Lead counts',
                     data: {
                         totalCount: leadCount.rows[0].count,
-                        leadData: leadData.rows,
-                        MQLData : mqlLeads.rows
+                        leadData: leadData.rows
                     }
                 })
             }
@@ -313,6 +323,7 @@ module.exports.marketingDashboard = async (req, res) => {
             let leadList = []
             let MQLleadList = []
             let count = 0;
+            let mCount = 0;
             let roleUsers = []
             let roleIds = []
             roleIds.push(checkPermission.rows[0].role_id)
@@ -352,13 +363,27 @@ module.exports.marketingDashboard = async (req, res) => {
                     }
                 }
                 let s6 = dbScript(db_sql['Q224'], { var1: id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
-                console.log(s6,"s6");
                 let findMQLLeadList = await connection.query(s6)
                 if (findMQLLeadList.rowCount > 0) {
                     for (let MQLlead of findMQLLeadList.rows) {
                         MQLleadList.push(MQLlead)
                     }
                 }
+                let s7 = dbScript(db_sql['Q228'], { var1: id })
+                let mqlCount = await connection.query(s7)
+                if (leadCount.rowCount > 0) {
+                    mCount += Number(mqlCount.rows[0].count)
+                }
+
+            }
+            for(let data of leadList){
+                MQLleadList.filter((value) => {
+                    if(value.created_by == data.created_by){
+                        data.mqlCount = value.count
+                    }else{
+                        data.mqlCount = '0'
+                    }
+                })
             }
             if (count && leadList.length > 0) {
                 res.json({
@@ -367,8 +392,8 @@ module.exports.marketingDashboard = async (req, res) => {
                     message: 'Lead counts',
                     data: {
                         totalCount: count,
-                        leadData: leadList,
-                        MQLData : MQLleadList
+                        totalMQLCount : mCount,
+                        leadData: leadList
                     }
                 })
             } else {
@@ -378,8 +403,8 @@ module.exports.marketingDashboard = async (req, res) => {
                     message: 'Empty Lead counts',
                     data: {
                         totalCount: count,
-                        leadData: leadList,
-                        MQLData : MQLleadList
+                        totalMQLCount : mCount,
+                        leadData: leadList
                     }
                 })
             }
