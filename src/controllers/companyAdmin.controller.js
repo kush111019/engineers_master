@@ -169,18 +169,37 @@ module.exports.signUp = async (req, res) => {
         let s2 = dbScript(db_sql['Q1'], { var1: companyName })
         let checkCompany = await connection.query(s2);
         if (checkCompany.rows.length == 0) {
-            let cId = uuid.v4()
-            await connection.query('BEGIN')
-            let s3 = dbScript(db_sql['Q2'], { var1: cId, var2: mysql_real_escape_string(companyName), var3: companyLogo, var4: mysql_real_escape_string(companyAddress) })
-            let saveCompanyDetails = await connection.query(s3)
-            if (saveCompanyDetails.rowCount > 0) {
-                await createAdmin(req.body, saveCompanyDetails.rows[0].id, res)
+
+            let s9 = dbScript(db_sql['Q112'], {})
+            let trialDays = await connection.query(s9)
+            let expiryDate = '';
+            if (trialDays.rowCount > 0) {
+                let currentDate = new Date()
+                expiryDate = new Date(currentDate.setDate(currentDate.getDate() + Number(trialDays.rows[0].trial_days))).toISOString()
+                
+                await connection.query('BEGIN')
+                let cId = uuid.v4()
+
+                let s3 = dbScript(db_sql['Q2'], { var1: cId, var2: mysql_real_escape_string(companyName), var3: companyLogo, var4: mysql_real_escape_string(companyAddress), var5 : expiryDate, var6 : trialDays.rows[0].trial_days })
+                let saveCompanyDetails = await connection.query(s3)
+
+                if (saveCompanyDetails.rowCount > 0) {
+                    await createAdmin(req.body, saveCompanyDetails.rows[0].id, res)
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something Went Wrong",
+                        data: ""
+                    })
+                }
             } else {
                 await connection.query('ROLLBACK')
-                res.json({
+                return res.json({
                     status: 400,
                     success: false,
-                    message: "Something Went Wrong",
+                    message: "Trial days are not added by Super admin",
                     data: ""
                 })
             }

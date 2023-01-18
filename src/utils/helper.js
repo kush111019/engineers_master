@@ -187,7 +187,10 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
             let s5 = dbScript(db_sql['Q113'], { var1: expiryDate, var2: user.rows[0].id, var3: _dt })
             let updateUserExpiryDate = await connection.query(s5)
 
-            if (updateTransaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0) {
+            let s6 = dbScript(db_sql['Q232'], { var1: expiryDate, var2: userCount, var3: _dt, var4: user.rows[0].company_id })
+            let updateCompanyExpiryDate = await connection.query(s6)
+
+            if (updateTransaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && updateCompanyExpiryDate > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,

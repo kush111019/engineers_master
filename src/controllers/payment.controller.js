@@ -120,10 +120,13 @@ module.exports.createPayment = async (req, res) => {
                         let s5 = dbScript(db_sql['Q113'], { var1: expiryDate, var2: checkuser.rows[0].id, var3: _dt })
                         let updateUserExpiryDate = await connection.query(s5)
 
+                        let s7 = dbScript(db_sql['Q232'], { var1: expiryDate, var2: userCount, var3: _dt, var4: checkuser.rows[0].company_id })
+                        let updateCompanyExpiryDate = await connection.query(s7)
+
                         let s6 = dbScript(db_sql['Q30'], { var1: false, var2: checkuser.rows[0].company_id, var3: _dt })
                         let unlockUsers = await connection.query(s6)
 
-                        if (saveTrasaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && unlockUsers.rowCount > 0) {
+                        if (saveTrasaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && unlockUsers.rowCount > 0 && updateCompanyExpiryDate.rowCount > 0) {
                             await connection.query('COMMIT')
                             res.json({
                                 status: 201,
@@ -257,6 +260,15 @@ module.exports.subscriptionDetails = async (req, res) => {
                     })
                 }
             } else {
+                let s4 = dbScript(db_sql['Q9'], {var1 : user.rows[0].company_id})
+                let companyDetails = await connection.query(s4)
+
+                let endDate = new Date(companyDetails.rows[0].expiry_date)
+                let timeDifference = endDate.getTime() - new Date().getTime();
+                //calculate days difference by dividing total milliseconds in a day  
+                let daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+                let days = daysDifference.toString().split('.')
+
                 let details = {
                     planName: "",
                     planInterval: "",
@@ -264,8 +276,8 @@ module.exports.subscriptionDetails = async (req, res) => {
                     description: "",
                     adminPrice: "",
                     userPrice: "",
-                    userCount: "",
-                    endsIn: "",
+                    userCount: Number(companyDetails.rows[0].user_count),
+                    endsIn: Number(days[0]),
                     planType: "",
                     isCanceled : "",
                     paymentReceipt : ""

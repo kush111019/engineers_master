@@ -801,7 +801,7 @@ module.exports.activateOrDeactivatePlan = async (req, res) => {
 module.exports.addConfig = async (req, res) => {
     try {
 
-        let { trialDays } = req.body
+        let { trialDays, trialUsers } = req.body
         let sAEmail = req.user.email
         let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
@@ -810,7 +810,7 @@ module.exports.addConfig = async (req, res) => {
             let id = uuid.v4()
 
             await connection.query('BEGIN')
-            let s2 = dbScript(db_sql['Q111'], { var1: id, var2: trialDays })
+            let s2 = dbScript(db_sql['Q111'], { var1: id, var2: trialDays , var3 : trialUsers})
             let addConfig = await connection.query(s2)
 
             if (addConfig.rowCount > 0) {

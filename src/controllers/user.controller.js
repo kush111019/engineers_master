@@ -24,6 +24,9 @@ module.exports.userCount = async (req, res) => {
             let s3 = dbScript(db_sql['Q108'], { var1: findAdmin.rows[0].company_id })
             let count = await connection.query(s3)
 
+            let s4 = dbScript(db_sql['Q9'],{var1 : findAdmin.rows[0].company_id})
+            let userCount = await connection.query(s4)
+
             if (count.rows.length > 0) {
                 if (users.rowCount - 1 < count.rows[0].user_count) {
                     res.json({
@@ -38,7 +41,21 @@ module.exports.userCount = async (req, res) => {
                         message: 'Plan limit exists! Can not add more users'
                     })
                 }
-            } else {
+            }else if(userCount.rowCount > 0){
+                if (users.rowCount < userCount.rows[0].user_count) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: 'Can add users'
+                    })
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: 'Users limit exists! Can not add more users'
+                    })
+                }
+            }else {
                 res.json({
                     status: 200,
                     success: true,

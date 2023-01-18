@@ -2,8 +2,8 @@
 const db_sql = {
 
     "Q1"   : `SELECT * FROM companies WHERE company_name = '{var1}'`,
-    "Q2"   : `INSERT INTO companies(id,company_name,company_logo,company_address) 
-              VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
+    "Q2"   : `INSERT INTO companies(id,company_name,company_logo,company_address,expiry_date, user_count) 
+              VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') RETURNING *`,
     "Q3"   : `INSERT INTO users(id,full_name,company_id,avatar,email_address,mobile_number,phone_number,encrypted_password,role_id,address,expiry_date,created_by,is_verified,is_admin,is_main_admin) 
               VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}',false,true,true) RETURNING *`,          
     "Q4"   : `SELECT * FROM users WHERE email_address = '{var1}' AND deleted_at IS NULL` ,
@@ -288,9 +288,9 @@ const db_sql = {
               '{var6}', '{var7}','{var8}', '{var9}', '{var10}','{var11}','{var12}','{var13}','{var14}') RETURNING *` ,
     "Q108" : `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade, is_canceled, payment_receipt  FROM transactions WHERE company_id = '{var1}' AND deleted_at IS NULL`,
     "Q109" : `SELECT id, name, description, active_status, interval, admin_amount,user_amount, currency FROM payment_plans WHERE deleted_at IS NULL`,
-    "Q110" : `SELECT id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified, is_admin, expiry_date FROM users WHERE deleted_at IS NULL`,
-    "Q111" : `INSERT INTO superadmin_config(id, trial_days) VALUES('{var1}', '{var2}') RETURNING *`,
-    "Q112" : `SELECT id, trial_days, created_at FROM superadmin_config WHERE deleted_at IS NULL ORDER BY created_at desc ` ,
+    "Q110" : `SELECT id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified, is_main_admin, expiry_date FROM users WHERE deleted_at IS NULL`,
+    "Q111" : `INSERT INTO superadmin_config(id, trial_days, trial_users) VALUES('{var1}', '{var2}', '{var3}') RETURNING *`,
+    "Q112" : `SELECT id, trial_days,trial_users, created_at FROM superadmin_config WHERE deleted_at IS NULL ORDER BY created_at desc ` ,
     "Q113" : `UPDATE users SET expiry_date = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
     "Q114" : `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id,total_amount, immediate_upgrade, upgraded_transaction_id FROM transactions WHERE deleted_at IS NULL AND upgraded_transaction_id is not null`,
     "Q115" : `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade  FROM transactions WHERE plan_id = '{var1}' AND deleted_at IS NULL`,  
@@ -822,6 +822,8 @@ const db_sql = {
     "Q228" :`SELECT COUNT(*) from marketing_leads WHERE user_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
     "Q229" :`SELECT COUNT(*) from marketing_leads WHERE company_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
     "Q230" : `UPDATE companies SET is_marketing_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
+    "Q231" :`UPDATE companies SET expiry_date = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
+    "Q232" :`UPDATE companies SET expiry_date = '{var1}', user_count = '{var2}', updated_at = '{var3}' WHERE id = '{var4}' AND deleted_at IS NULL RETURNING *`,
  }
 
  function dbScript(template, variables) {
