@@ -493,3 +493,200 @@ module.exports.convertLeadToCustomer = async (req, res) => {
         })
     }
 }
+
+module.exports.addBudget = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let {
+            year, 
+            q1Amount,
+            q2Amount,
+            q3Amount,
+            q4Amount,
+            description
+        } = req.body
+
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_create) {
+
+            await connection.query('BEGIN')
+            let id = uuid.v4()
+            let s2 = dbScript(db_sql['Q233'], { var1 : id, var2 : year, var3: q1Amount, var4 : q2Amount, var5 : q3Amount, var6 : q4Amount, var7 : checkPermission.rows[0].id, var8 : checkPermission.rows[0].company_id })
+            let createBudget = await connection.query(s2)
+
+            if(createBudget.rowCount > 0){
+                for(let descData of description){
+                    let desId = uuid.v4() 
+                    let s3 = dbScript(db_sql['Q234'],{var1 : desId, var2 : createBudget.rows[0].id, var3 : descData.title, var4 : descData.amount, var5 : checkPermission.rows[0].id, var6 : checkPermission.rows[0].company_id})
+                    let addDescription = await connection.query(s3)
+
+                    let logDesId = uuid.v4()
+                    let s4 = dbScript(db_sql['Q235'],{var1 : logDesId,var2 : addDescription.rows[0].id, var3 : createBudget.rows[0].id, var4 : descData.title, var5 : descData.amount, var6 : checkPermission.rows[0].id, var7 : checkPermission.rows[0].company_id})
+                    let addDescLog = await connection.query(s4)
+                }
+
+                let logBudgetId = uuid.v4()
+                let s5 = dbScript(db_sql['Q236'],{var1 : logBudgetId, var2 :createBudget.rows[0].id ,var3 : year, var4: q1Amount, var5 : q2Amount, var6 : q3Amount, var7 : q4Amount, var8 : checkPermission.rows[0].id, var9 : checkPermission.rows[0].company_id})
+                let addBudgetLog = await connection.query(s5)
+
+                if(addBudgetLog.rowCount > 0){
+                    await connection.query('COMMIT')
+                    res.json({
+                        status : 201,
+                        success : true,
+                        message : 'Budget added successfully'
+                    })
+                }else{
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    }) 
+                }
+            }else{
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                }) 
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        }) 
+    }
+}
+
+module.exports.budgetList = async(req, res) => {
+    try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
+            let s2 = dbScript(db_sql['Q237'], {var1 : checkPermission.rows[0].company_id})
+            let budgetList = await connection.query(s2)
+            if(budgetList.rowCount > 0){
+                const transformedArray = budgetList.rows.reduce((acc, curr) => {
+                    const existingDesc = acc.find(s => s.id === curr.id);
+                    if (existingDesc) {
+                        existingDesc.description.push({
+                            id: curr.description_id,
+                            title: curr.title,
+                            amount: curr.amount
+                        });
+                    } else {
+                        acc.push({
+                            id: curr.id,
+                            budgetYear: curr.budget_year,
+                            quarterOne: curr.quarter_one,
+                            quarterTwo: curr.quarter_two,
+                            quarterThree: curr.quarter_three,
+                            quarterFour: curr.quarter_four,
+                            isFinalize : curr.is_finalize,
+                            description: [
+                                {
+                                    id: curr.description_id,
+                                    title: curr.title,
+                                    amount: curr.amount
+                                },
+                            ],
+                        });
+                    }
+                    return acc;
+                }, []);
+                if (transformedArray.length > 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "budget list",
+                        data: transformedArray
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty budget list",
+                        data: []
+                    })
+                }
+            }else{
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty budget list',
+                    data: budgetList.rows
+                })
+            }
+            
+
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        }) 
+    }
+}
+
+module.exports.deleteBudget = async(req, res) => {
+    try {
+        let userId = req.user.id
+        let {budgetId} = req.query
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_delete) {
+            await connection.query('BEGIN')
+            let _dt = new Date().toISOString()
+
+            let s2 = dbScript(db_sql['Q238'],{var1 : budgetId, var2 : _dt})
+            let deleteBudget = await connection.query(s2)
+
+            let s3 = dbScript(db_sql['Q239'],{var1 : budgetId, var2 : _dt})
+            let deleteDescription = await connection.query(s3)
+
+            if(deleteBudget.rowCount > 0 && deleteDescription.rowCount > 0){
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Budget deleted successfully"
+                })
+            }else{
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        }) 
+    }
+}

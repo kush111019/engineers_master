@@ -824,6 +824,28 @@ const db_sql = {
     "Q230" : `UPDATE companies SET is_marketing_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q231" :`UPDATE companies SET expiry_date = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
     "Q232" :`UPDATE companies SET expiry_date = '{var1}', user_count = '{var2}', updated_at = '{var3}' WHERE id = '{var4}' AND deleted_at IS NULL RETURNING *`,
+
+    "Q233" :`INSERT INTO marketing_budget(id, budget_year, quarter_one, quarter_two, quarter_three, quarter_four,user_id, company_id)
+             VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}') RETURNING *`,
+
+    "Q234" :`INSERT INTO marketing_budget_description(id, budget_id,title, amount,user_id, company_id)
+             VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') RETURNING *`,
+
+    "Q235" :`INSERT INTO marketing_budget_description_logs(id,budget_description_id,budget_id,title, amount,user_id, company_id)
+             VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}') RETURNING *`,
+
+    "Q236" :`INSERT INTO marketing_budget_logs(id,budget_id,budget_year, quarter_one, quarter_two, quarter_three, quarter_four,user_id, company_id)
+             VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}') RETURNING *`,
+    "Q237" :`SELECT
+              b.id, b.budget_year, b.quarter_one, b.quarter_two, b.quarter_three, 
+              b.quarter_four, b.is_finalize, d.id as description_id, d.title, d.amount 
+             FROM 
+              marketing_budget AS b
+             INNER JOIN 
+              marketing_budget_description AS d ON d.budget_id = b.id
+             WHERE b.company_id = '{var1}' AND b.deleted_at IS NULL AND d.deleted_at IS NULL`,
+    "Q238" :`UPDATE marketing_budget SET deleted_at = '{var2}' where id = '{var1}' AND deleted_at IS NULL RETURNING *`,
+    "Q239" :`UPDATE marketing_budget_description SET deleted_at = '{var2}' where budget_id = '{var1}' AND deleted_at IS NULL RETURNING *`
  }
 
  function dbScript(template, variables) {
