@@ -776,17 +776,17 @@ const db_sql = {
     "Q210"  :`INSERT INTO lead_titles(id, title, company_id ) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
     "Q211"  :`UPDATE lead_titles set title = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q212"  :`UPDATE lead_titles set deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
-    "Q213"  :`SELECT * FROM lead_titles WHERE company_id = '{var1}' and deleted_at is null`,
+    "Q213"  :`SELECT * FROM lead_titles WHERE company_id = '{var1}'`,
 
     "Q214"  :`INSERT INTO lead_industries(id, industry, company_id ) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
     "Q215"  :`UPDATE lead_industries set industry = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q216"  :`UPDATE lead_industries set deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
-    "Q217"  :`SELECT * FROM lead_industries WHERE company_id = '{var1}' and deleted_at is null`,
+    "Q217"  :`SELECT * FROM lead_industries WHERE company_id = '{var1}'`,
 
     "Q218"  :`INSERT INTO lead_sources(id, source, company_id ) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
     "Q219"  :`UPDATE lead_sources set source = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q220"  :`UPDATE lead_sources set deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
-    "Q221"  :`SELECT * FROM lead_sources WHERE company_id = '{var1}' and deleted_at is null`,
+    "Q221"  :`SELECT * FROM lead_sources WHERE company_id = '{var1}'`,
     "Q222"  :`UPDATE marketing_leads SET is_converted = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q223"  :`SELECT 
                 COUNT(*),
@@ -816,9 +816,9 @@ const db_sql = {
               ORDER BY 
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
-    "Q225" :`SELECT * FROM lead_sources WHERE LOWER(source) = LOWER('{var1}') and company_id = '{var2}' and deleted_at is null`,
-    "Q226" :`SELECT * FROM lead_titles WHERE LOWER(title) = LOWER('{var1}') and company_id = '{var2}' and deleted_at is null`,
-    "Q227" :`SELECT * FROM lead_industries WHERE LOWER(industry) = LOWER('{var1}') and company_id = '{var2}' and deleted_at is null`,
+    "Q225" :`SELECT * FROM lead_sources WHERE LOWER(source) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
+    "Q226" :`SELECT * FROM lead_titles WHERE LOWER(title) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
+    "Q227" :`SELECT * FROM lead_industries WHERE LOWER(industry) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
     "Q228" :`SELECT COUNT(*) from marketing_leads WHERE user_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
     "Q229" :`SELECT COUNT(*) from marketing_leads WHERE company_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
     "Q230" : `UPDATE companies SET is_marketing_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
