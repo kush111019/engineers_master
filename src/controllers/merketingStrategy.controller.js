@@ -1012,7 +1012,7 @@ module.exports.deleteDescription = async(req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_delete) {
-            
+
             await connection.query('BEGIN')
             let _dt = new Date().toISOString()
             let s2 = dbScript(db_sql['Q245'], {var1 : _dt, var2 : descriptionId})
@@ -1038,6 +1038,48 @@ module.exports.deleteDescription = async(req, res) => {
                 success: false,
                 message: "Unathorised"
             })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        }) 
+    }
+}
+
+module.exports.finalizeBudget = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let {budgetId} = req.query
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_update) {
+            await connection.query('BEGIN')
+            let _dt = new Date().toISOString()
+            let s2 = dbScript(db_sql['Q246'],{var1 : budgetId, var2 : _dt})
+            let finalize = await connection.query(s2)
+            if(finalize.rowCount > 0){
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Budget finalized successfully"
+                })
+            }else{
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        }else{
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            }) 
         }
     } catch (error) {
         await connection.query('ROLLBACK')
