@@ -838,14 +838,53 @@ const db_sql = {
              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}') RETURNING *`,
     "Q237" :`SELECT
               b.id, b.budget_year, b.quarter_one, b.quarter_two, b.quarter_three, 
-              b.quarter_four, b.is_finalize, d.id as description_id, d.title, d.amount 
+              b.quarter_four, b.is_finalize,b.created_at, b.user_id, d.id as description_id, d.title, d.amount,
+              u.full_name AS creator_name 
              FROM 
               marketing_budget AS b
              INNER JOIN 
               marketing_budget_description AS d ON d.budget_id = b.id
+             INNER JOIN 
+              users AS u ON u.id = b.user_id 
              WHERE b.company_id = '{var1}' AND b.deleted_at IS NULL AND d.deleted_at IS NULL`,
     "Q238" :`UPDATE marketing_budget SET deleted_at = '{var2}' where id = '{var1}' AND deleted_at IS NULL RETURNING *`,
-    "Q239" :`UPDATE marketing_budget_description SET deleted_at = '{var2}' where budget_id = '{var1}' AND deleted_at IS NULL RETURNING *`
+    "Q239" :`UPDATE marketing_budget_description SET deleted_at = '{var2}' where budget_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
+    "Q240" :`SELECT
+              b.id, b.budget_year, b.quarter_one, b.quarter_two, b.quarter_three, 
+              b.quarter_four, b.is_finalize,b.created_at, b.user_id, d.id as description_id, d.title, d.amount,
+              u.full_name AS creator_name  
+             FROM 
+              marketing_budget AS b
+             INNER JOIN 
+              marketing_budget_description AS d ON d.budget_id = b.id
+             INNER JOIN 
+              users AS u ON u.id = b.user_id 
+             WHERE b.user_id = '{var1}' AND b.deleted_at IS NULL AND d.deleted_at IS NULL`,
+    "Q241" :`UPDATE marketing_budget SET budget_year = '{var1}', quarter_one = '{var2}', quarter_two = '{var3}', quarter_three = '{var4}', 
+             quarter_four = '{var5}' WHERE id = '{var6}' AND deleted_at IS NULL RETURNING *`,
+    "Q242" :`UPDATE marketing_budget_description SET title = '{var1}', amount = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
+    "Q243" :`SELECT
+               b.id, b.budget_year, b.quarter_one, b.quarter_two, b.quarter_three, 
+               b.quarter_four, b.is_finalize,b.created_at, b.user_id, d.id as description_id, d.title, d.amount,
+               u.full_name AS creator_name 
+             FROM 
+               marketing_budget_logs AS b
+             INNER JOIN 
+               marketing_budget_description_logs AS d ON d.budget_id = b.budget_id
+             INNER JOIN 
+               users AS u ON u.id = b.user_id 
+             WHERE b.budget_id = '{var1}' AND b.deleted_at IS NULL AND d.deleted_at IS NULL`,
+    "Q244" :`SELECT
+              b.id, b.budget_year, b.quarter_one, b.quarter_two, b.quarter_three, 
+              b.quarter_four, b.is_finalize,b.created_at, b.user_id, d.id as description_id, d.title, d.amount,
+              u.full_name AS creator_name  
+            FROM 
+              marketing_budget_logs AS b
+            INNER JOIN 
+              marketing_budget_description_logs AS d ON d.budget_id = b.budget_id
+            INNER JOIN 
+              users AS u ON u.id = b.user_id 
+            WHERE b.user_id = '{var1}' AND b.budget_id = '{var2}' AND b.deleted_at IS NULL AND d.deleted_at IS NULL`
  }
 
  function dbScript(template, variables) {

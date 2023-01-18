@@ -573,7 +573,7 @@ module.exports.budgetList = async(req, res) => {
         let userId = req.user.id
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
-        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
+        if (checkPermission.rows[0].permission_to_view_global) {
             let s2 = dbScript(db_sql['Q237'], {var1 : checkPermission.rows[0].company_id})
             let budgetList = await connection.query(s2)
             if(budgetList.rowCount > 0){
@@ -594,6 +594,8 @@ module.exports.budgetList = async(req, res) => {
                             quarterThree: curr.quarter_three,
                             quarterFour: curr.quarter_four,
                             isFinalize : curr.is_finalize,
+                            createdAt : curr.created_at,
+                            creatorName : curr.creator_name,
                             description: [
                                 {
                                     id: curr.description_id,
@@ -628,8 +630,87 @@ module.exports.budgetList = async(req, res) => {
                     data: budgetList.rows
                 })
             }
-            
-
+        }else if(checkPermission.rows[0].permission_to_view_own){
+            let roleUsers = []
+            let roleIds = []
+            let budgetDataArr = []
+            roleIds.push(checkPermission.rows[0].role_id)
+            let getRoles = async (id) => {
+                let s3 = dbScript(db_sql['Q16'], { var1: id })
+                let getChild = await connection.query(s3);
+                if (getChild.rowCount > 0) {
+                    for (let item of getChild.rows) {
+                        if (roleIds.includes(item.id) == false) {
+                            roleIds.push(item.id)
+                            await getRoles(item.id)
+                        }
+                    }
+                }
+            }
+            await getRoles(checkPermission.rows[0].role_id)
+            for (let roleId of roleIds) {
+                let s4 = dbScript(db_sql['Q185'], { var1: roleId })
+                let findUsers = await connection.query(s4)
+                if (findUsers.rowCount > 0) {
+                    for (let user of findUsers.rows) {
+                        roleUsers.push(user.id)
+                    }
+                }
+            }
+            for (id of roleUsers) {
+                let s5 = dbScript(db_sql['Q240'],{var1 : id})
+                let budgetList = await connection.query(s5)
+                if(budgetList.rowCount > 0){
+                    for(let budgetData of budgetList.rows){
+                        budgetDataArr.push(budgetData)
+                    }
+                }
+            }
+            const transformedArray = budgetDataArr.reduce((acc, curr) => {
+                const existingDesc = acc.find(s => s.id === curr.id);
+                if (existingDesc) {
+                    existingDesc.description.push({
+                        id: curr.description_id,
+                        title: curr.title,
+                        amount: curr.amount
+                    });
+                } else {
+                    acc.push({
+                        id: curr.id,
+                        budgetYear: curr.budget_year,
+                        quarterOne: curr.quarter_one,
+                        quarterTwo: curr.quarter_two,
+                        quarterThree: curr.quarter_three,
+                        quarterFour: curr.quarter_four,
+                        isFinalize : curr.is_finalize,
+                        createdAt : curr.created_at,
+                        creatorName : curr.creator_name,
+                        description: [
+                            {
+                                id: curr.description_id,
+                                title: curr.title,
+                                amount: curr.amount
+                            },
+                        ],
+                    });
+                }
+                return acc;
+            }, []);
+            if (transformedArray.length > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "budget list",
+                    data: transformedArray
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty budget list",
+                    data: []
+                })
+            }
         } else {
             res.status(403).json({
                 success: false,
@@ -690,3 +771,237 @@ module.exports.deleteBudget = async(req, res) => {
         }) 
     }
 }
+
+module.exports.updateBudget = async(req, res) => {
+    try {
+        let userId = req.user.id
+        let {
+            budgetId,
+            year, 
+            q1Amount,
+            q2Amount,
+            q3Amount,
+            q4Amount,
+            description
+        } = req.body
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_update) {
+
+            let s2 = dbScript(db_sql['Q241'],{var1 : year, var2 :q1Amount, var3 : q2Amount, var4: q3Amount, var5 : q4Amount, var6 : budgetId})
+            let updateBudget = await connection.query(s2)
+
+            let logBudgetId = uuid.v4()
+            let s5 = dbScript(db_sql['Q236'],{var1 : logBudgetId, var2 :budgetId, var3 : year, var4: q1Amount, var5 : q2Amount, var6 : q3Amount, var7 : q4Amount, var8 : checkPermission.rows[0].id, var9 : checkPermission.rows[0].company_id})
+            let addBudgetLog = await connection.query(s5)
+
+            for(let desc of description ){
+                if(desc.id != ''){
+                    let s3 = dbScript(db_sql['Q242'],{var1 : desc.title, var2 : desc.amount, var3 : desc.id})
+                    let updateDescription = await connection.query(s3)
+
+                    let logDesId = uuid.v4()
+                    let s4 = dbScript(db_sql['Q235'],{var1 : logDesId,var2 : updateDescription.rows[0].id, var3 : budgetId, var4 : desc.title, var5 : desc.amount, var6 : checkPermission.rows[0].id, var7 : checkPermission.rows[0].company_id})
+                    let addDescLog = await connection.query(s4)
+
+                }else{
+                    let desId = uuid.v4() 
+                    let s5 = dbScript(db_sql['Q234'],{var1 : desId, var2 : budgetId, var3 : desc.title, var4 : desc.amount, var5 : checkPermission.rows[0].id, var6 : checkPermission.rows[0].company_id})
+                    let addDescription = await connection.query(s5)
+
+                    let logDesId = uuid.v4()
+                    let s6 = dbScript(db_sql['Q235'],{var1 : logDesId,var2 : addDescription.rows[0].id, var3 : budgetId, var4 : desc.title, var5 : desc.amount, var6 : checkPermission.rows[0].id, var7 : checkPermission.rows[0].company_id})
+                    let addDescLog = await connection.query(s6)
+                }
+            }
+            if(updateBudget.rowCount > 0 && addBudgetLog.rowCount > 0){
+                await connection.query('COMMIT')
+                res.json({
+                    status : 200,
+                    success : true,
+                    message : 'Budget updated successfully'
+                })
+            }else{
+                await connection.query('ROLLBACK')
+                res.json({
+                    status : 400,
+                    success : false,
+                    message : 'Something went wrong'
+                })
+            }
+        }else{
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        }) 
+    }
+}
+
+module.exports.budgetLogList = async(req, res) => {
+    try {
+        let userId = req.user.id
+        let {budgetId} = req.query
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global) {
+            let s2 = dbScript(db_sql['Q243'], {var1 : budgetId})
+            let budgetLogList = await connection.query(s2)
+            if(budgetLogList.rowCount > 0){
+                const transformedArray = budgetLogList.rows.reduce((acc, curr) => {
+                    const existingDesc = acc.find(s => s.id === curr.id);
+                    if (existingDesc) {
+                        existingDesc.description.push({
+                            id: curr.description_id,
+                            title: curr.title,
+                            amount: curr.amount
+                        });
+                    } else {
+                        acc.push({
+                            id: curr.id,
+                            budgetYear: curr.budget_year,
+                            quarterOne: curr.quarter_one,
+                            quarterTwo: curr.quarter_two,
+                            quarterThree: curr.quarter_three,
+                            quarterFour: curr.quarter_four,
+                            isFinalize : curr.is_finalize,
+                            createdAt : curr.created_at,
+                            creatorName : curr.creator_name,
+                            description: [
+                                {
+                                    id: curr.description_id,
+                                    title: curr.title,
+                                    amount: curr.amount
+                                },
+                            ],
+                        });
+                    }
+                    return acc;
+                }, []);
+                if (transformedArray.length > 0) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "budget logs list",
+                        data: transformedArray
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty budget logs list",
+                        data: []
+                    })
+                }
+            }else{
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty budget logs list',
+                    data: budgetLogList.rows
+                })
+            }
+        }else if(checkPermission.rows[0].permission_to_view_own){
+            let roleUsers = []
+            let roleIds = []
+            let budgetLogDataArr = []
+            roleIds.push(checkPermission.rows[0].role_id)
+            let getRoles = async (id) => {
+                let s3 = dbScript(db_sql['Q16'], { var1: id })
+                let getChild = await connection.query(s3);
+                if (getChild.rowCount > 0) {
+                    for (let item of getChild.rows) {
+                        if (roleIds.includes(item.id) == false) {
+                            roleIds.push(item.id)
+                            await getRoles(item.id)
+                        }
+                    }
+                }
+            }
+            await getRoles(checkPermission.rows[0].role_id)
+            for (let roleId of roleIds) {
+                let s4 = dbScript(db_sql['Q185'], { var1: roleId })
+                let findUsers = await connection.query(s4)
+                if (findUsers.rowCount > 0) {
+                    for (let user of findUsers.rows) {
+                        roleUsers.push(user.id)
+                    }
+                }
+            }
+            for (id of roleUsers) {
+                let s5 = dbScript(db_sql['Q244'],{var1 : id, var2 : budgetId})
+                let budgetLogList = await connection.query(s5)
+                if(budgetLogList.rowCount > 0){
+                    for(let budgetData of budgetLogList.rows){
+                        budgetLogDataArr.push(budgetData)
+                    }
+                }
+            }
+            const transformedArray = budgetLogDataArr.reduce((acc, curr) => {
+                const existingDesc = acc.find(s => s.id === curr.id);
+                if (existingDesc) {
+                    existingDesc.description.push({
+                        id: curr.description_id,
+                        title: curr.title,
+                        amount: curr.amount
+                    });
+                } else {
+                    acc.push({
+                        id: curr.id,
+                        budgetYear: curr.budget_year,
+                        quarterOne: curr.quarter_one,
+                        quarterTwo: curr.quarter_two,
+                        quarterThree: curr.quarter_three,
+                        quarterFour: curr.quarter_four,
+                        isFinalize : curr.is_finalize,
+                        createdAt : curr.created_at,
+                        creatorName : curr.creator_name,
+                        description: [
+                            {
+                                id: curr.description_id,
+                                title: curr.title,
+                                amount: curr.amount
+                            },
+                        ],
+                    });
+                }
+                return acc;
+            }, []);
+            if (transformedArray.length > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "budget logs list",
+                    data: transformedArray
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty budget logs list",
+                    data: []
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        }) 
+    }
+}
+

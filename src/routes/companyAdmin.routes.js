@@ -151,9 +151,12 @@ router.put('/deleteLead',verifyTokenFn, controller.marketingStrategy.deleteLead)
 router.post('/createLead',verifyTokenFn, controller.marketingStrategy.createLead)
 router.post('/convertLeadToCustomer',verifyTokenFn, controller.marketingStrategy.convertLeadToCustomer)
 router.get('/marketingDashboard',verifyTokenFn, controller.marketingStrategy.marketingDashboard)
+
 router.post('/addBudget', verifyTokenFn, controller.marketingStrategy.addBudget)
 router.get('/budgetList', verifyTokenFn, controller.marketingStrategy.budgetList)
 router.put('/deleteBudget', verifyTokenFn, controller.marketingStrategy.deleteBudget)
+router.put('/updateBudget', verifyTokenFn, controller.marketingStrategy.updateBudget)
+router.get('/budgetLogList', verifyTokenFn, controller.marketingStrategy.budgetLogList)
 
 
 //-----------------------------------Lead Title--------------------------------------------
