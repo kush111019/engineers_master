@@ -157,6 +157,7 @@ router.get('/budgetList', verifyTokenFn, controller.marketingStrategy.budgetList
 router.put('/deleteBudget', verifyTokenFn, controller.marketingStrategy.deleteBudget)
 router.put('/updateBudget', verifyTokenFn, controller.marketingStrategy.updateBudget)
 router.get('/budgetLogList', verifyTokenFn, controller.marketingStrategy.budgetLogList)
+router.put('/deleteDescription', verifyTokenFn, controller.marketingStrategy.deleteDescription)
 
 
 //-----------------------------------Lead Title--------------------------------------------

@@ -884,7 +884,8 @@ const db_sql = {
               marketing_budget_description_logs AS d ON d.budget_id = b.budget_id
             INNER JOIN 
               users AS u ON u.id = b.user_id 
-            WHERE b.user_id = '{var1}' AND b.budget_id = '{var2}' AND b.deleted_at IS NULL AND d.deleted_at IS NULL`
+            WHERE b.user_id = '{var1}' AND b.budget_id = '{var2}' AND b.deleted_at IS NULL AND d.deleted_at IS NULL`,
+    "Q245" : `UPDATE marketing_budget_description SET deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
  }
 
  function dbScript(template, variables) {
