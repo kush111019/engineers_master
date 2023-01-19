@@ -180,7 +180,7 @@ module.exports.signUp = async (req, res) => {
                 await connection.query('BEGIN')
                 let cId = uuid.v4()
 
-                let s3 = dbScript(db_sql['Q2'], { var1: cId, var2: mysql_real_escape_string(companyName), var3: companyLogo, var4: mysql_real_escape_string(companyAddress), var5 : expiryDate, var6 : trialDays.rows[0].trial_days })
+                let s3 = dbScript(db_sql['Q2'], { var1: cId, var2: mysql_real_escape_string(companyName), var3: companyLogo, var4: mysql_real_escape_string(companyAddress), var5 : expiryDate, var6 : trialDays.rows[0].trial_users })
                 let saveCompanyDetails = await connection.query(s3)
 
                 if (saveCompanyDetails.rowCount > 0) {
