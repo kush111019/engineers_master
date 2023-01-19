@@ -385,7 +385,9 @@ module.exports.login = async (req, res) => {
                                 isImapEnable : admin.rows[0].is_imap_enable,
                                 isMarketingEnable : admin.rows[0].is_marketing_enable,
                                 expiryDate: (admin.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : '',
-                                isMainAdmin : admin.rows[0].is_main_admin
+                                isMainAdmin : admin.rows[0].is_main_admin,
+                                companyName : admin.rows[0].company_name,
+                                companyLogo : admin.rows[0].company_logo
                             }
                         });
                     } else {
