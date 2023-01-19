@@ -1018,21 +1018,24 @@ module.exports.trialCompaniesList = async(req, res) => {
                 // let diffInMilliseconds = expiryDate.getTime() - currentDate.getTime();
                 // let diffInDays = diffInMilliseconds / (1000 * 3600 * 24);
                 // console.log(diffInDays);
-
-                trialCompanies.push({
-                    companyId: companyData.id,
-                    companyName: companyData.company_name,
-                    companyAddress: companyData.company_address,
-                    companyLogo: companyData.company_logo,
-                    isImapEnable: companyData.is_imap_enable,
-                    isMarketingEnable: companyData.is_marketing_enable,
-                    planName: "Trial",
-                    planInterval: `${configList.rows[0].trial_days} days`,
-                    PlanExpiryDate: new Date(companyData.expiry_date),
-                    maxUserCount: companyData.user_count,
-                    actualUserCount : actualUserCount.rows[0].actual_count,
-                    totalAmount : 0
-                })
+                let s4 = dbScript(db_sql['Q108'], { var1: companyData.id })
+                let transactions = await connection.query(s4)
+                if(transactions.rowCount == 0){
+                    trialCompanies.push({
+                        companyId: companyData.id,
+                        companyName: companyData.company_name,
+                        companyAddress: companyData.company_address,
+                        companyLogo: companyData.company_logo,
+                        isImapEnable: companyData.is_imap_enable,
+                        isMarketingEnable: companyData.is_marketing_enable,
+                        planName: "Trial",
+                        planInterval: `${configList.rows[0].trial_days} days`,
+                        PlanExpiryDate: new Date(companyData.expiry_date),
+                        maxUserCount: companyData.user_count,
+                        actualUserCount : actualUserCount.rows[0].actual_count,
+                        totalAmount : 0
+                    })
+                }
             }
             if(trialCompanies.length > 0){
                 res.json({
