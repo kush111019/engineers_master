@@ -731,7 +731,7 @@ module.exports.budgetList = async(req, res) => {
 module.exports.deleteBudget = async(req, res) => {
     try {
         let userId = req.user.id
-        let {budgetId} = req.query
+        let {budgetId} = req.body
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_delete) {
