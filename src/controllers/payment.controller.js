@@ -120,7 +120,7 @@ module.exports.createPayment = async (req, res) => {
                         let s5 = dbScript(db_sql['Q113'], { var1: expiryDate, var2: checkuser.rows[0].id, var3: _dt })
                         let updateUserExpiryDate = await connection.query(s5)
 
-                        let s7 = dbScript(db_sql['Q232'], { var1: expiryDate, var2: userCount, var3: _dt, var4: checkuser.rows[0].company_id })
+                        let s7 = dbScript(db_sql['Q232'], { var1: expiryDate, var2: (Number(userCount) + 1), var3: _dt, var4: checkuser.rows[0].company_id })
                         let updateCompanyExpiryDate = await connection.query(s7)
 
                         let s6 = dbScript(db_sql['Q30'], { var1: false, var2: checkuser.rows[0].company_id, var3: _dt })
