@@ -265,7 +265,7 @@ const db_sql = {
     "Q97"  : `INSERT INTO products(id, company_id,user_id, product_name, product_image, description, available_quantity, price, end_of_life, currency) 
               VALUES ('{var1}','{var2}','{var3}',$1,$2,$3,$4,$5,$6,$7)`,
     "Q98"  : `SELECT id, name, email, encrypted_password FROM super_admin WHERE email = '{var1}'`,
-    "Q99"  : `SELECT id, company_name, company_logo, company_address, is_imap_enable, is_marketing_enable, created_at FROM companies WHERE deleted_at IS NULL`,
+    "Q99"  : `SELECT id, company_name, company_logo, company_address, is_imap_enable, is_marketing_enable, created_at, expiry_date, user_count FROM companies WHERE deleted_at IS NULL`,
     "Q100" : `UPDATE super_admin SET encrypted_password = '{var2}' WHERE email = '{var1}'`,
     "Q101" : `SELECT  sc.target_amount,  sc.closed_at ,com.id AS company_id, com.company_name FROM sales_commission AS sc 
               INNER JOIN customers AS c ON sc.customer_id = c.id 
