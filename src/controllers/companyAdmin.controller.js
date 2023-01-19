@@ -128,7 +128,7 @@ let createAdmin = async (bodyData, cId, res) => {
         return res.json({
             status: 200,
             success: false,
-            message: "User already exists",
+            message: "Email already exists",
             data: ""
         })
     }

@@ -168,7 +168,7 @@ module.exports.addUser = async (req, res) => {
             res.json({
                 status: 400,
                 success: false,
-                message: "User already exists"
+                message: "Email already exists"
             })
         }
     } catch (error) {
