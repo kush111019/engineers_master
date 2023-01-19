@@ -19,7 +19,7 @@ const db_sql = {
     "Q14"  : `SELECT * FROM roles WHERE company_id = '{var1}' AND deleted_at IS NULL` ,
     "Q15"  : `SELECT 
                 u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
-                u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at, 
+                u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
                 u1.is_main_admin, u1.created_by, u2.full_name AS creator_name 
               FROM 
                 users AS u1 
@@ -69,7 +69,7 @@ const db_sql = {
               u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.company_id = '{var1}' AND c.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`,
     "Q40"  : `UPDATE sales_commission SET closed_at = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
-    "Q41"  : `SELECT u.id, u.company_id, u.role_id, u.avatar, u.full_name,u.email_address,u.mobile_number,u.phone_number,u.address,u.created_by,
+    "Q41"  : `SELECT u.id, u.company_id, u.role_id, u.avatar, u.full_name,u.email_address,u.mobile_number,u.phone_number,u.address,u.is_verified,u.created_by,
               m.id AS module_id, m.module_name, m.module_type, p.id AS permission_id, p.permission_to_view_global, p.permission_to_view_own,
               p.permission_to_create, p.permission_to_update, p.permission_to_delete
               FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id

@@ -181,6 +181,58 @@ module.exports.addUser = async (req, res) => {
     }
 }
 
+module.exports.resendVerificationLink = async(req, res) => {
+    try {
+        let {userId} = req.query
+
+        let s1 = dbScript(db_sql['Q8'],{var1 : userId})
+        let findUser = await connection.query(s1)
+        if(findUser.rowCount > 0){
+            const payload = {
+                id: findUser.rows[0].id,
+                email: findUser.rows[0].email_address
+            }
+            let token = await issueJWT(payload)
+            link = `${process.env.AUTH_LINK}/reset-password/${token}`
+            if (process.env.isLocalEmail == 'true') {
+                await setPasswordMail2(findUser.rows[0].email_address, link, findUser.rows[0].full_name);
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: `Verification link send for set password on ${findUser.rows[0].email_address.toLowerCase()} `
+                })
+            } else {
+                let emailSent = await setPasswordMail(findUser.rows[0].email_address, link, findUser.rows[0].full_name);
+                if (emailSent.status == 400) {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: `Verification link send for set password on ${emailAddress.toLowerCase()}  `
+                    })
+                }
+            }
+        }else{
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 module.exports.showUserById = async (req, res) => {
     try {
         let id = req.user.id

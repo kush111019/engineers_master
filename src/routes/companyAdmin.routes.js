@@ -16,6 +16,7 @@ router.get('/showUserById' , verifyTokenFn, controller.users.showUserById)
 router.put('/updateUser' , verifyTokenFn, controller.users.updateUser)
 router.put('/deleteUser' , verifyTokenFn, controller.users.deleteUser)
 router.put('/lockUserAccount' , verifyTokenFn, controller.users.lockUserAccount)
+router.put('/resendVerificationLink', verifyTokenFn, controller.users.resendVerificationLink)
 
 //---------------------------------------modules------------------------------------------
 

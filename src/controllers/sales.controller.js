@@ -312,7 +312,8 @@ module.exports.allSalesCommissionList = async (req, res) => {
                                         id: supporterName.rows[0].supporter_id,
                                         name: supporterName.rows[0].full_name,
                                         email: supporterName.rows[0].email_address,
-                                        percentage: supporterName.rows[0].supporter_percentage
+                                        percentage: supporterName.rows[0].supporter_percentage,
+                                        supporterCommissionAmount : ((Number(supporterName.rows[0].supporter_percentage)/100)*commission)
                                     })
                                 }
                                 
@@ -330,14 +331,14 @@ module.exports.allSalesCommissionList = async (req, res) => {
                     let businessData = await connection.query(s7);
 
                     closer.businessContactId = businessData.rows[0].id,
-                        closer.businessContactName = businessData.rows[0].business_contact_name
+                    closer.businessContactName = businessData.rows[0].business_contact_name
                     closer.businessContactEmail = businessData.rows[0].business_email
 
                     let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_contact_id })
                     let revenueData = await connection.query(s8);
 
                     closer.revenueContactId = revenueData.rows[0].id,
-                        closer.revenueContactName = revenueData.rows[0].revenue_contact_name
+                    closer.revenueContactName = revenueData.rows[0].revenue_contact_name
                     closer.revenueContactEmail = revenueData.rows[0].revenue_email
                 } else {
                     closer.businessContactId = ""
@@ -363,6 +364,7 @@ module.exports.allSalesCommissionList = async (req, res) => {
                 closer.closerName = data.full_name
                 closer.closerEmail = data.email_address
                 closer.closerPercentage = data.closer_percentage
+                closer.closerCommissionAmount = ((Number(data.closer_percentage)/100)*commission)
                 closer.supporters = supporters
                 closer.createdAt = data.created_at
                 closer.createdBy = data.creator_name
@@ -464,7 +466,8 @@ module.exports.allSalesCommissionList = async (req, res) => {
                                             id: supporterName.rows[0].supporter_id,
                                             name: supporterName.rows[0].full_name,
                                             email: supporterName.rows[0].email_address,
-                                            percentage: supporterName.rows[0].supporter_percentage
+                                            percentage: supporterName.rows[0].supporter_percentage,
+                                            supporterCommissionAmount : ((Number(supporterName.rows[0].supporter_percentage)/100)*commission)
                                         })
                                     }
                                 }
@@ -514,6 +517,7 @@ module.exports.allSalesCommissionList = async (req, res) => {
                     closer.closerName = data.full_name
                     closer.closerEmail = data.email_address
                     closer.closerPercentage = data.closer_percentage
+                    closer.closerCommissionAmount = ((Number(data.closer_percentage)/100)*commission)
                     closer.supporters = supporters
                     closer.createdAt = data.created_at
                     closer.createdBy = data.creator_name
@@ -878,7 +882,7 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                     let businessData = await connection.query(s7);
 
                     closer.businessContactId = businessData.rows[0].id,
-                        closer.businessContactName = businessData.rows[0].business_contact_name
+                    closer.businessContactName = businessData.rows[0].business_contact_name
                     closer.businessContactEmail = businessData.rows[0].business_email
 
                     let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_contact_id })
@@ -971,7 +975,8 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                                         id: supporterName.rows[0].supporter_id,
                                         name: supporterName.rows[0].full_name,
                                         email: supporterName.rows[0].email_address,
-                                        percentage: supporterName.rows[0].supporter_percentage
+                                        percentage: supporterName.rows[0].supporter_percentage,
+                                        supporterCommissionAmount : ((Number(supporterName.rows[0].supporter_percentage)/100)*commission)
                                     })
                                 }
                             }
@@ -1027,6 +1032,7 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                     closer.closerName = data.full_name
                     closer.closerEmail = data.email_address
                     closer.closerPercentage = data.closer_percentage
+                    closer.closerCommissionAmount = ((Number(data.closer_percentage)/100)*commission)
                     closer.supporters = supporters
                     closer.createdAt = data.created_at
                     closer.createdBy = data.creator_name
