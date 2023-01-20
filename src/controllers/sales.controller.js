@@ -183,7 +183,7 @@ module.exports.createSalesCommission = async (req, res) => {
 
             let s6 = dbScript(db_sql['Q56'], { var1: customerCommissionSplitId, var2: checkPermission.rows[0].company_id })
             let findSalescommission = await connection.query(s6)
-            let closer_percentage = is_overwrite ? closerPercentage : findSalescommission.rows[0].closer_percentage
+            let closer_percentage = closerPercentage
 
             let closerId = uuid.v4()
             let s7 = dbScript(db_sql['Q58'], { var1: closerId, var2: customerCloserId, var3: closer_percentage, var4: customerCommissionSplitId, var5: createSalesConversion.rows[0].id, var6: checkPermission.rows[0].company_id })
@@ -1118,7 +1118,7 @@ module.exports.updateSalesCommission = async (req, res) => {
                 let s6 = dbScript(db_sql['Q56'], { var1: customerCommissionSplitId, var2: checkPermission.rows[0].company_id })
                 let findSalesCommission = await connection.query(s6)
 
-                let closer_percentage = is_overwrite ? closerPercentage : findSalesCommission.rows[0].closer_percentage
+                let closer_percentage = closerPercentage
 
                 let s7 = dbScript(db_sql['Q64'], { var1: customerCloserId, var2: closer_percentage, var3: customerCommissionSplitId, var4: _dt, var5: salesCommissionId, var6: checkPermission.rows[0].company_id })
                 let updateSalesCloser = await connection.query(s7)
