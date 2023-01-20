@@ -402,6 +402,7 @@ module.exports.actualVsForecast = async (req, res) => {
                 let endDate = forecastRevenue.rows[0].end_date
                 let toDate = new Date(startDate)
                 toDate.setDate(toDate.getDate() + 1);
+                let newToDate = new Date(toDate)
                 let fromDate = new Date(endDate)
                 fromDate.setDate(fromDate.getDate() + 1);
                 let difference = await getMonthDifference(toDate, fromDate)
@@ -464,13 +465,12 @@ module.exports.actualVsForecast = async (req, res) => {
                         }
                         break;
                     case 'Quarterly':
-                        let month1 = (toDate.getMonth() + 1);
                         for (let i = 1; i <= difference / 3; i++) {
                             let sum = 0
                             if (i == 1) {
                                 for (let i = 1; i <= 3; i++) {
-                                    let firstDay1 = new Date(toDate.getFullYear(), month1, 1).toISOString()
-                                    let lastDay1 = new Date(toDate.getFullYear(), month1 + 1, 0).toISOString()
+                                    let firstDay1 = moment(newToDate).startOf('month').format("MM-DD-YYYY")
+                                    let lastDay1 = moment(newToDate).endOf('month').format("MM-DD-YYYY")
                                     let s5 = dbScript(db_sql['Q78'], { var1: checkPermission.rows[0].company_id, var2: firstDay1, var3: lastDay1, var4: limit, var5: offset })
                                     let actualRevenue = await connection.query(s5)
                                     if (actualRevenue.rowCount > 0) {
@@ -478,7 +478,7 @@ module.exports.actualVsForecast = async (req, res) => {
                                             sum = sum + Number(index.target_amount);
                                         })
                                     }
-                                    month1++;
+                                    newToDate = moment(newToDate).add(1,'M').format("MM-DD-YYYY")
                                 }
                                 dateArr.push(new Date(toDate))
                                 revenueData.push(Number(revenue))
@@ -486,10 +486,11 @@ module.exports.actualVsForecast = async (req, res) => {
 
                             } else {
                                 if (growthWindow != count + 1) {
-                                    date = new Date(toDate.setMonth(toDate.getMonth() + 3));
+                                    let date = new Date(toDate.setMonth(toDate.getMonth() + 3));
+                                    let newDate = new Date(date)
                                     for (let i = 1; i <= 3; i++) {
-                                        let firstDay1 = new Date(toDate.getFullYear(), month1, 1).toISOString()
-                                        let lastDay1 = new Date(toDate.getFullYear(), month1 + 1, 0).toISOString()
+                                        let firstDay1 = moment(newDate).startOf('month').format("MM-DD-YYYY")
+                                        let lastDay1 = moment(newDate).endOf('month').format("MM-DD-YYYY")
                                         let s5 = dbScript(db_sql['Q78'], { var1: checkPermission.rows[0].company_id, var2: firstDay1, var3: lastDay1, var4: limit, var5: offset })
                                         let actualRevenue = await connection.query(s5)
                                         if (actualRevenue.rowCount > 0) {
@@ -497,7 +498,7 @@ module.exports.actualVsForecast = async (req, res) => {
                                                 sum = sum + Number(index.target_amount);
                                             })
                                         }
-                                        month1++;
+                                        newDate = moment(newDate).add(1,'M').format("MM-DD-YYYY")
                                     }
                                     dateArr.push(new Date(date))
                                     revenueData.push(Number(revenue))
@@ -506,11 +507,11 @@ module.exports.actualVsForecast = async (req, res) => {
 
                                 } else {
                                     count = 0;
-                                    date = new Date(toDate.setMonth(toDate.getMonth() + 3));
-
+                                    let date = new Date(toDate.setMonth(toDate.getMonth() + 3));
+                                    let newDate = new Date(date)
                                     for (let i = 1; i <= 3; i++) {
-                                        let firstDay1 = new Date(toDate.getFullYear(), month1, 1).toISOString()
-                                        let lastDay1 = new Date(toDate.getFullYear(), month1 + 1, 0).toISOString()
+                                        let firstDay1 = moment(newDate).startOf('month').format("MM-DD-YYYY")
+                                        let lastDay1 = moment(newDate).endOf('month').format("MM-DD-YYYY")
                                         let s5 = dbScript(db_sql['Q78'], { var1: checkPermission.rows[0].company_id, var2: firstDay1, var3: lastDay1, var4: limit, var5: offset })
                                         let actualRevenue = await connection.query(s5)
                                         if (actualRevenue.rowCount > 0) {
@@ -518,7 +519,7 @@ module.exports.actualVsForecast = async (req, res) => {
                                                 sum = sum + Number(index.target_amount);
                                             })
                                         }
-                                        month1++;
+                                        newDate = moment(newDate).add(1,'M').format("MM-DD-YYYY")
                                     }
                                     dateArr.push(new Date(date))
                                     revenue = (Number(revenue) + Number(revenue) * (Number(growthPercentage) / 100))
@@ -529,13 +530,12 @@ module.exports.actualVsForecast = async (req, res) => {
                         }
                         break;
                     case "Annual":
-                        let month2 = (toDate.getMonth() + 1);
                         for (let i = 1; i <= yearDifference; i++) {
                             let sum = 0
                             if (i == 1) {
                                 for (let i = 1; i <= 12; i++) {
-                                    let firstDay1 = new Date(toDate.getFullYear(), month2, 1).toISOString()
-                                    let lastDay1 = new Date(toDate.getFullYear(), month2 + 1, 0).toISOString()
+                                    let firstDay1 = moment(newToDate).startOf('month').format("MM-DD-YYYY")
+                                    let lastDay1 = moment(newToDate).endOf('month').format("MM-DD-YYYY")
                                     let s5 = dbScript(db_sql['Q78'], { var1: checkPermission.rows[0].company_id, var2: firstDay1, var3: lastDay1, var4: limit, var5: offset })
                                     let actualRevenue = await connection.query(s5)
                                     if (actualRevenue.rowCount > 0) {
@@ -543,17 +543,18 @@ module.exports.actualVsForecast = async (req, res) => {
                                             sum = sum + Number(index.target_amount);
                                         })
                                     }
-                                    month2++;
+                                    newToDate = moment(newToDate).add(1,'M').format("MM-DD-YYYY")
                                 }
                                 dateArr.push(new Date(toDate))
                                 revenueData.push(Number(revenue))
                                 actualData.push(sum)
                             } else {
                                 if (growthWindow != count + 1) {
-                                    date = new Date(toDate.setFullYear(toDate.getFullYear() + 1))
+                                    let date = new Date(toDate.setMonth(toDate.getMonth() + 12));
+                                    let newDate = new Date(date)
                                     for (let i = 1; i <= 12; i++) {
-                                        let firstDay1 = new Date(toDate.getFullYear(), month2, 1).toISOString()
-                                        let lastDay1 = new Date(toDate.getFullYear(), month2 + 1, 0).toISOString()
+                                        let firstDay1 = moment(newDate).startOf('month').format("MM-DD-YYYY")
+                                        let lastDay1 = moment(newDate).endOf('month').format("MM-DD-YYYY")
                                         let s5 = dbScript(db_sql['Q78'], { var1: checkPermission.rows[0].company_id, var2: firstDay1, var3: lastDay1, var4: limit, var5: offset })
                                         let actualRevenue = await connection.query(s5)
                                         if (actualRevenue.rowCount > 0) {
@@ -561,7 +562,7 @@ module.exports.actualVsForecast = async (req, res) => {
                                                 sum = sum + Number(index.target_amount);
                                             })
                                         }
-                                        month2++;
+                                        newDate = moment(newDate).add(1,'M').format("MM-DD-YYYY")
                                     }
                                     dateArr.push(new Date(date))
                                     revenueData.push(Number(revenue))
@@ -570,10 +571,11 @@ module.exports.actualVsForecast = async (req, res) => {
 
                                 } else {
                                     count = 0;
-                                    date = new Date(toDate.setFullYear(toDate.getFullYear() + 1))
+                                    let date = new Date(toDate.setMonth(toDate.getMonth() + 12));
+                                    let newDate = new Date(date)
                                     for (let i = 1; i <= 12; i++) {
-                                        let firstDay1 = new Date(toDate.getFullYear(), month2, 1).toISOString()
-                                        let lastDay1 = new Date(toDate.getFullYear(), month2 + 1, 0).toISOString()
+                                        let firstDay1 = moment(newDate).startOf('month').format("MM-DD-YYYY")
+                                        let lastDay1 = moment(newDate).endOf('month').format("MM-DD-YYYY")
                                         let s5 = dbScript(db_sql['Q78'], { var1: checkPermission.rows[0].company_id, var2: firstDay1, var3: lastDay1, var4: limit, var5: offset })
                                         let actualRevenue = await connection.query(s5)
                                         if (actualRevenue.rowCount > 0) {
@@ -581,7 +583,7 @@ module.exports.actualVsForecast = async (req, res) => {
                                                 sum = sum + Number(index.target_amount);
                                             })
                                         }
-                                        month2++;
+                                        newDate = moment(newDate).add(1,'M').format("MM-DD-YYYY")
                                     }
                                     dateArr.push(new Date(date))
                                     revenue = (Number(revenue) + Number(revenue) * (Number(growthPercentage) / 100))
