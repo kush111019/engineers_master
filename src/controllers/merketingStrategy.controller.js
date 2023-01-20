@@ -289,14 +289,14 @@ module.exports.marketingDashboard = async (req, res) => {
 
                 let s5 = dbScript(db_sql['Q223'], {var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase()})
                 let mqlLeads = await connection.query(s5)
+                let mqlCount = 0
                 for(let data of leadData.rows){
                     mqlLeads.rows.filter((value) => {
                         if(value.created_by == data.created_by){
-                            data.mqlCount = value.count
-                        }else{
-                            data.mqlCount = '0'
+                            mqlCount += Number(value.count)
                         }
                     })
+                    data.mqlCount = mqlCount
                 }
                 res.json({
                     status: 200,
