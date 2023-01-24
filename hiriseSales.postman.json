@@ -236,7 +236,7 @@
             "name": "Plan details",
             "item": [
               {
-                "name": "subcribed Comapnies List",
+                "name": "All subcribed and trial Comapnies List",
                 "id": "eeb72739-4054-4b2c-a911-f4dd31a39974",
                 "protocolProfileBehavior": {
                   "disableBodyPruning": true
@@ -355,6 +355,64 @@
                     "path": [
                       "extendExpiryByCompanyId",
                       "558fa965-b996-4c79-9b0f-6ea2dd77e47b"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "trial companies list",
+                "id": "04e5e3ad-1266-4479-a757-648527fa5201",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{SAtoken}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{superAdmin}}/trialCompaniesList",
+                    "host": [
+                      "{{superAdmin}}"
+                    ],
+                    "path": [
+                      "trialCompaniesList"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "Subscribed companies list",
+                "id": "d870ee22-102e-49fe-b6fb-1e4b875d1881",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{SAtoken}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{superAdmin}}/subcribedCompaniesList",
+                    "host": [
+                      "{{superAdmin}}"
+                    ],
+                    "path": [
+                      "subcribedCompaniesList"
                     ]
                   }
                 },
@@ -756,6 +814,35 @@
                 ],
                 "path": [
                   "totalExpectedRevenueCounts"
+                ]
+              }
+            },
+            "response": [
+              
+            ]
+          },
+          {
+            "name": "Contact us Queries List",
+            "id": "fcb9d065-d770-4434-98d1-f09f9861a3dc",
+            "protocolProfileBehavior": {
+              "disableBodyPruning": true
+            },
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Authorization",
+                  "value": "{{SAtoken}}",
+                  "type": "text"
+                }
+              ],
+              "url": {
+                "raw": "{{superAdmin}}/contactUsQueriesList",
+                "host": [
+                  "{{superAdmin}}"
+                ],
+                "path": [
+                  "contactUsQueriesList"
                 ]
               }
             },
@@ -1196,6 +1283,453 @@
             "name": "Configurations",
             "item": [
               {
+                "name": "lead titles",
+                "item": [
+                  {
+                    "name": "lead title list",
+                    "id": "1ae3508d-6ec3-4024-95b1-9c7003734889",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "GET",
+                      "header": [
+                        {
+                          "key": "Authorization",
+                          "value": "{{token}}",
+                          "type": "text"
+                        }
+                      ],
+                      "url": {
+                        "raw": "{{companyAdmin}}/leadTitleList",
+                        "host": [
+                          "{{companyAdmin}}"
+                        ],
+                        "path": [
+                          "leadTitleList"
+                        ]
+                      }
+                    },
+                    "response": [
+                      
+                    ]
+                  },
+                  {
+                    "name": "add lead title",
+                    "id": "65e77c01-6334-4678-8ce3-13f2137d62ce",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [
+                        {
+                          "key": "Authorization",
+                          "value": "{{token}}",
+                          "type": "text"
+                        }
+                      ],
+                      "body": {
+                        "mode": "raw",
+                        "raw": "{\r\n    \"leadTitle\" : \"hello\"\r\n}",
+                        "options": {
+                          "raw": {
+                            "language": "json"
+                          }
+                        }
+                      },
+                      "url": {
+                        "raw": "{{companyAdmin}}/addLeadTitle",
+                        "host": [
+                          "{{companyAdmin}}"
+                        ],
+                        "path": [
+                          "addLeadTitle"
+                        ]
+                      }
+                    },
+                    "response": [
+                      
+                    ]
+                  },
+                  {
+                    "name": "update lead title",
+                    "id": "1dbfb28c-5589-4351-bc41-051dfe5f244a",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "PUT",
+                      "header": [
+                        {
+                          "key": "Authorization",
+                          "value": "{{token}}",
+                          "type": "text"
+                        }
+                      ],
+                      "body": {
+                        "mode": "raw",
+                        "raw": "{\r\n    \"titleId\" : \"9f282bad-6341-4f2e-8a92-623d52e2174c\",\r\n    \"leadTitle\" : \"hii\"\r\n}",
+                        "options": {
+                          "raw": {
+                            "language": "json"
+                          }
+                        }
+                      },
+                      "url": {
+                        "raw": "{{companyAdmin}}/updateLeadTitle",
+                        "host": [
+                          "{{companyAdmin}}"
+                        ],
+                        "path": [
+                          "updateLeadTitle"
+                        ]
+                      }
+                    },
+                    "response": [
+                      
+                    ]
+                  },
+                  {
+                    "name": "delete lead title",
+                    "id": "665b0404-d670-423e-809a-dee3db7730db",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "PUT",
+                      "header": [
+                        {
+                          "key": "Authorization",
+                          "value": "{{token}}",
+                          "type": "text"
+                        }
+                      ],
+                      "body": {
+                        "mode": "raw",
+                        "raw": "{\r\n    \"titleId\" : \"9f282bad-6341-4f2e-8a92-623d52e2174c\"\r\n}",
+                        "options": {
+                          "raw": {
+                            "language": "json"
+                          }
+                        }
+                      },
+                      "url": {
+                        "raw": "{{companyAdmin}}/deleteLeadTitle",
+                        "host": [
+                          "{{companyAdmin}}"
+                        ],
+                        "path": [
+                          "deleteLeadTitle"
+                        ]
+                      }
+                    },
+                    "response": [
+                      
+                    ]
+                  }
+                ],
+                "id": "3900b4c2-812f-4430-b1d6-46c93cfbaac6"
+              },
+              {
+                "name": "lead industries",
+                "item": [
+                  {
+                    "name": "lead industry list",
+                    "id": "ff9e64b4-3cd9-45fb-bce6-5a846457f019",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "GET",
+                      "header": [
+                        {
+                          "key": "Authorization",
+                          "value": "{{token}}",
+                          "type": "text"
+                        }
+                      ],
+                      "url": {
+                        "raw": "{{companyAdmin}}/leadIndustryList",
+                        "host": [
+                          "{{companyAdmin}}"
+                        ],
+                        "path": [
+                          "leadIndustryList"
+                        ]
+                      }
+                    },
+                    "response": [
+                      
+                    ]
+                  },
+                  {
+                    "name": "add lead industry",
+                    "id": "b9129853-2f64-4c61-a16a-8a97079d24ca",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [
+                        {
+                          "key": "Authorization",
+                          "value": "{{token}}",
+                          "type": "text"
+                        }
+                      ],
+                      "body": {
+                        "mode": "raw",
+                        "raw": "{\r\n    \"leadIndustry\" : \"hello\"\r\n}",
+                        "options": {
+                          "raw": {
+                            "language": "json"
+                          }
+                        }
+                      },
+                      "url": {
+                        "raw": "{{companyAdmin}}/addLeadIndustry",
+                        "host": [
+                          "{{companyAdmin}}"
+                        ],
+                        "path": [
+                          "addLeadIndustry"
+                        ]
+                      }
+                    },
+                    "response": [
+                      
+                    ]
+                  },
+                  {
+                    "name": "update lead industry",
+                    "id": "81001b5a-0fdc-41a5-bef2-1273e7fd2163",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "PUT",
+                      "header": [
+                        {
+                          "key": "Authorization",
+                          "value": "{{token}}",
+                          "type": "text"
+                        }
+                      ],
+                      "body": {
+                        "mode": "raw",
+                        "raw": "{\r\n    \"industryId\" : \"aba0e21d-47b8-4018-8783-0c3f9c2c4ea7\",\r\n    \"leadIndustry\" : \"hii\"\r\n}",
+                        "options": {
+                          "raw": {
+                            "language": "json"
+                          }
+                        }
+                      },
+                      "url": {
+                        "raw": "{{companyAdmin}}/updateLeadIndustry",
+                        "host": [
+                          "{{companyAdmin}}"
+                        ],
+                        "path": [
+                          "updateLeadIndustry"
+                        ]
+                      }
+                    },
+                    "response": [
+                      
+                    ]
+                  },
+                  {
+                    "name": "delete lead industry",
+                    "id": "239d4d72-615e-43fc-bd97-ed37a06400bb",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "PUT",
+                      "header": [
+                        {
+                          "key": "Authorization",
+                          "value": "{{token}}",
+                          "type": "text"
+                        }
+                      ],
+                      "body": {
+                        "mode": "raw",
+                        "raw": "{\r\n    \"industryId\" : \"aba0e21d-47b8-4018-8783-0c3f9c2c4ea7\"\r\n}",
+                        "options": {
+                          "raw": {
+                            "language": "json"
+                          }
+                        }
+                      },
+                      "url": {
+                        "raw": "{{companyAdmin}}/deleteLeadIndustry",
+                        "host": [
+                          "{{companyAdmin}}"
+                        ],
+                        "path": [
+                          "deleteLeadIndustry"
+                        ]
+                      }
+                    },
+                    "response": [
+                      
+                    ]
+                  }
+                ],
+                "id": "98ef5036-61ee-42e3-a8ff-ff067b408015"
+              },
+              {
+                "name": "lead sources",
+                "item": [
+                  {
+                    "name": "lead sourcelist",
+                    "id": "d5a446da-3d39-4ea3-93ca-16320d2d4ea3",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "GET",
+                      "header": [
+                        {
+                          "key": "Authorization",
+                          "value": "{{token}}",
+                          "type": "text"
+                        }
+                      ],
+                      "url": {
+                        "raw": "{{companyAdmin}}/leadSourceList",
+                        "host": [
+                          "{{companyAdmin}}"
+                        ],
+                        "path": [
+                          "leadSourceList"
+                        ]
+                      }
+                    },
+                    "response": [
+                      
+                    ]
+                  },
+                  {
+                    "name": "add lead source",
+                    "id": "e65c1141-5f88-4248-991e-903fbfc20400",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "POST",
+                      "header": [
+                        {
+                          "key": "Authorization",
+                          "value": "{{token}}",
+                          "type": "text"
+                        }
+                      ],
+                      "body": {
+                        "mode": "raw",
+                        "raw": "{\r\n    \"leadSource\" : \"hello\"\r\n}",
+                        "options": {
+                          "raw": {
+                            "language": "json"
+                          }
+                        }
+                      },
+                      "url": {
+                        "raw": "{{companyAdmin}}/addLeadSource",
+                        "host": [
+                          "{{companyAdmin}}"
+                        ],
+                        "path": [
+                          "addLeadSource"
+                        ]
+                      }
+                    },
+                    "response": [
+                      
+                    ]
+                  },
+                  {
+                    "name": "update lead industry",
+                    "id": "ac8c7a58-2bfd-4aa6-988d-21c5a673dd9b",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "PUT",
+                      "header": [
+                        {
+                          "key": "Authorization",
+                          "value": "{{token}}",
+                          "type": "text"
+                        }
+                      ],
+                      "body": {
+                        "mode": "raw",
+                        "raw": "{\r\n    \"sourceId\" : \"e06e22db-a378-44ed-b007-8704a2b02974\",\r\n    \"leadSource\" : \"hii\"\r\n}",
+                        "options": {
+                          "raw": {
+                            "language": "json"
+                          }
+                        }
+                      },
+                      "url": {
+                        "raw": "{{companyAdmin}}/updateLeadSource",
+                        "host": [
+                          "{{companyAdmin}}"
+                        ],
+                        "path": [
+                          "updateLeadSource"
+                        ]
+                      }
+                    },
+                    "response": [
+                      
+                    ]
+                  },
+                  {
+                    "name": "delete lead industry",
+                    "id": "6e5643ac-7f3b-42cd-807b-94871e226e33",
+                    "protocolProfileBehavior": {
+                      "disableBodyPruning": true
+                    },
+                    "request": {
+                      "method": "PUT",
+                      "header": [
+                        {
+                          "key": "Authorization",
+                          "value": "{{token}}",
+                          "type": "text"
+                        }
+                      ],
+                      "body": {
+                        "mode": "raw",
+                        "raw": "{\r\n    \"sourceId\" : \"e06e22db-a378-44ed-b007-8704a2b02974\"\r\n}",
+                        "options": {
+                          "raw": {
+                            "language": "json"
+                          }
+                        }
+                      },
+                      "url": {
+                        "raw": "{{companyAdmin}}/deleteLeadSource",
+                        "host": [
+                          "{{companyAdmin}}"
+                        ],
+                        "path": [
+                          "deleteLeadSource"
+                        ]
+                      }
+                    },
+                    "response": [
+                      
+                    ]
+                  }
+                ],
+                "id": "a7639ba5-237f-4304-8ef7-3f47cd673643"
+              },
+              {
                 "name": "add configurations",
                 "id": "eeacfcf7-adba-440c-a94f-025a0895603a",
                 "protocolProfileBehavior": {
@@ -1410,7 +1944,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "\r\n        {\r\n            \"roleName\" : \"Employee 1\",\r\n            \"reporter\" : \"524232ac-b486-40ad-828c-ca4ec00cdab8\",\r\n            \"modulePermissions\" : [\r\n                {\r\n                    \"moduleId\" : \"85d5a1aa-8eed-439e-be9c-17f7bf4c3f43\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"f40d0d01-d77a-4eca-9d0f-0a1e22606a62\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"f674eb9a-975a-47c6-aa2b-20a86ecf896b\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"2ec14d7f-daa4-4908-83b6-fe1023b17ca8\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"a8252ca9-e471-4a1d-848d-aef386a4d71c\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"86407ba7-a064-4f7b-ab0c-fcb75807c3a3\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"d3009aa6-05c8-46dc-8dc2-b4af0688a352\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"42489bd9-1474-4a5d-a832-49ef5dd8ced9\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"17ac6db2-17a1-4010-8598-2364db8e9634\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"7d06a08e-3c12-45a8-af98-7b30fe03ee4e\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                }\r\n            ]\r\n     \r\n        }",
+                    "raw": "{\r\n    \"roleName\": \"President\",\r\n    \"reporter\": \"e95030cb-a93a-49de-bb36-914d915b8981\",\r\n    \"modulePermissions\": [\r\n        {\r\n            \"moduleId\": \"85d5a1aa-8eed-439e-be9c-17f7bf4c3f43\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": true,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"f40d0d01-d77a-4eca-9d0f-0a1e22606a62\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": true,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"f674eb9a-975a-47c6-aa2b-20a86ecf896b\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": true,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"2ec14d7f-daa4-4908-83b6-fe1023b17ca8\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": true,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"a8252ca9-e471-4a1d-848d-aef386a4d71c\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": true,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"86407ba7-a064-4f7b-ab0c-fcb75807c3a3\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": true,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"d3009aa6-05c8-46dc-8dc2-b4af0688a352\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": true,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"42489bd9-1474-4a5d-a832-49ef5dd8ced9\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": true,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"17ac6db2-17a1-4010-8598-2364db8e9634\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": true,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"7d06a08e-3c12-45a8-af98-7b30fe03ee4e\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": true,\r\n            \"permissionToDelete\": true\r\n        }\r\n    ]\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -1453,7 +1987,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "\r\n        {   \r\n            \"roleId\" : \"e8167603-2f79-43c0-a510-6cdf814767c1\",\r\n            \"roleName\" : \"Manager 1\",\r\n            \"reporter\" : \"802e2c69-fae8-4c5a-bf1e-67034c38f8df\",\r\n            \"modulePermissions\": [\r\n                {\r\n                    \"moduleId\" : \"85d5a1aa-8eed-439e-be9c-17f7bf4c3f43\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"f40d0d01-d77a-4eca-9d0f-0a1e22606a62\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"7d06a08e-3c12-45a8-af98-7b30fe03ee4e\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"17ac6db2-17a1-4010-8598-2364db8e9634\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"42489bd9-1474-4a5d-a832-49ef5dd8ced9\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"d3009aa6-05c8-46dc-8dc2-b4af0688a352\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"86407ba7-a064-4f7b-ab0c-fcb75807c3a3\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"a8252ca9-e471-4a1d-848d-aef386a4d71c\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"2ec14d7f-daa4-4908-83b6-fe1023b17ca8\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                },\r\n                 {\r\n                    \"moduleId\" : \"f674eb9a-975a-47c6-aa2b-20a86ecf896b\",\r\n                    \"permissionToCreate\" : true,\r\n                    \"permissionToUpdate\": true,\r\n                    \"permissionToView\" : true,\r\n                    \"permissionToDelete\" : true\r\n                }\r\n            ]\r\n            \r\n            \r\n        }",
+                    "raw": "{\r\n    \"roleId\": \"e95030cb-a93a-49de-bb36-914d915b8981\",\r\n    \"roleName\": \"Admin\",\r\n    \"reporter\": \"\",\r\n    \"modulePermissions\": [\r\n        {\r\n            \"moduleId\": \"85d5a1aa-8eed-439e-be9c-17f7bf4c3f43\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": false,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"f40d0d01-d77a-4eca-9d0f-0a1e22606a62\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": false,\r\n            \"permissionToViewOwn\": true,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"7d06a08e-3c12-45a8-af98-7b30fe03ee4e\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": false,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"17ac6db2-17a1-4010-8598-2364db8e9634\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": false,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"42489bd9-1474-4a5d-a832-49ef5dd8ced9\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": false,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"d3009aa6-05c8-46dc-8dc2-b4af0688a352\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": false,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"86407ba7-a064-4f7b-ab0c-fcb75807c3a3\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": false,\r\n            \"permissionToViewOwn\": true,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"a8252ca9-e471-4a1d-848d-aef386a4d71c\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": false,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"2ec14d7f-daa4-4908-83b6-fe1023b17ca8\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": false,\r\n            \"permissionToViewOwn\": true,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"f674eb9a-975a-47c6-aa2b-20a86ecf896b\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": true,\r\n            \"permissionToViewOwn\": false,\r\n            \"permissionToDelete\": true\r\n        },\r\n        {\r\n            \"moduleId\": \"792e3fbd-9eed-4f25-97ba-7f6a6ead51d0\",\r\n            \"permissionToCreate\": true,\r\n            \"permissionToUpdate\": true,\r\n            \"permissionToViewGlobal\": false,\r\n            \"permissionToViewOwn\": true,\r\n            \"permissionToDelete\": true\r\n        }\r\n        \r\n    ]\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -2059,7 +2593,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"slabs\": [\r\n        {\r\n            \"minAmount\": \"0\",\r\n            \"maxAmount\" : \"1000\",\r\n            \"percentage\": 10,\r\n            \"isMax\" : false,\r\n            \"currency\" : \"us\",\r\n            \"counter\" : 1\r\n        },\r\n        {\r\n            \"minAmount\": \"10001\",\r\n            \"maxAmount\" : \"50000\",\r\n            \"percentage\": 5,\r\n            \"isMax\" : false,\r\n            \"currency\" : \"us\",\r\n            \"counter\" : 2\r\n        },\r\n        {\r\n            \"minAmount\": \"50001\",\r\n            \"maxAmount\" : \"\",\r\n            \"percentage\": 3,\r\n            \"isMax\" : true,\r\n            \"currency\" : \"us\",\r\n            \"counter\" : 3\r\n        }\r\n    ]\r\n}",
+                    "raw": "{\r\n    \"slabsData\": {\r\n        \"slabName\": \"SECOND slab\",\r\n        \"commissionSplitId\" : \"\",\r\n        \"slabs\": [\r\n            {\r\n                \"minAmount\": \"0\",\r\n                \"maxAmount\": \"100000\",\r\n                \"percentage\": 10,\r\n                \"isMax\": false,\r\n                \"currency\": \"us\",\r\n                \"slab_ctr\": 1\r\n            },\r\n            {\r\n                \"minAmount\": \"0\",\r\n                \"maxAmount\": \"100000\",\r\n                \"percentage\": 10,\r\n                \"isMax\": false,\r\n                \"currency\": \"us\",\r\n                \"slab_ctr\": 2\r\n            },\r\n            {\r\n                \"minAmount\": \"0\",\r\n                \"maxAmount\": \"100000\",\r\n                \"percentage\": 10,\r\n                \"isMax\": false,\r\n                \"currency\": \"us\",\r\n                \"slab_ctr\": 3\r\n            }\r\n        ]\r\n    }\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -2097,7 +2631,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n\r\n    \"slabId\" : \"45464820-1ce6-4569-8829-d6748d755cb9\"\r\n              \r\n}",
+                    "raw": "{\r\n\r\n    \"slabId\" : \"caccbbc7-91b0-4f37-8377-876e61bd4693\"\r\n              \r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -2111,6 +2645,82 @@
                     ],
                     "path": [
                       "deleteSlab"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "Delete Slab Layer",
+                "id": "a097ca1a-53c2-463a-b743-15b8c995122f",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\r\n\r\n    \"slabLayerId\" : \"6b524554-6779-4d14-a4c5-4224476beee1\"\r\n              \r\n}",
+                    "options": {
+                      "raw": {
+                        "language": "json"
+                      }
+                    }
+                  },
+                  "url": {
+                    "raw": "{{companyAdmin}}/deleteSlabLayer",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "deleteSlabLayer"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "update slab",
+                "id": "a832078b-6be2-42c2-829b-e53aef408341",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\r\n    \"slabsData\": {\r\n        \"slabId\": \"fc1d081d-ba3d-4164-bbc7-f999820fa1b8\",\r\n        \"slabName\": \"first slab\",\r\n        \"commissionSplitId\" : \"\",\r\n        \"slabs\": [\r\n            {\r\n                \"id\": \"8da8be86-463d-450d-af11-eabcd53a9b28\",\r\n                \"minAmount\": \"0\",\r\n                \"maxAmount\": \"1000\",\r\n                \"percentage\": \"10\",\r\n                \"isMax\": false,\r\n                \"currency\": \"$\",\r\n                \"slab_ctr\": \"1\"\r\n            },\r\n            {\r\n                \"id\": \"9c865ab2-d83f-442a-b281-73318f42a968\",\r\n                \"minAmount\": \"10001\",\r\n                \"maxAmount\": \"50000\",\r\n                \"percentage\": \"5\",\r\n                \"isMax\": false,\r\n                \"currency\": \"$\",\r\n                \"slab_ctr\": \"2\"\r\n            },\r\n            {\r\n                \"id\": \"\",\r\n                \"minAmount\": \"500001\",\r\n                \"maxAmount\": \"\",\r\n                \"percentage\": \"3\",\r\n                \"isMax\": true,\r\n                \"currency\": \"$\",\r\n                \"slab_ctr\": \"3\"\r\n            }\r\n        ]\r\n    }\r\n}",
+                    "options": {
+                      "raw": {
+                        "language": "json"
+                      }
+                    }
+                  },
+                  "url": {
+                    "raw": "{{companyAdmin}}/updateSlab",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "updateSlab"
                     ]
                   }
                 },
@@ -2170,7 +2780,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"productName\" : \"test product\",\r\n    \"productImage\" : \"\",\r\n    \"description\" : \"this is a test product\",\r\n    \"availableQuantity\" : \"10\",\r\n    \"price\" : \"1000\",\r\n    \"tax\" : \"10\",\r\n    \"currency\" : \"$\"\r\n}",
+                    "raw": "{\r\n    \"productName\" : \"test product\",\r\n    \"productImage\" : \"\",\r\n    \"description\" : \"this is a test product\",\r\n    \"availableQuantity\" : \"10\",\r\n    \"price\" : \"1000\",\r\n    \"currency\" : \"$\",\r\n    \"endOfLife\" : \"31/12/2023\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -2208,7 +2818,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"productId\" : \"72e0030f-cfec-4ae4-b41f-a063d8469d14\",\r\n    \"productName\" : \"test product1\",\r\n    \"productImage\" : \"\",\r\n    \"description\" : \"this is a test product1\",\r\n    \"availableQuantity\" : \"11\",\r\n    \"price\" : \"1001\",\r\n    \"tax\" : \"10\"\r\n}",
+                    "raw": "{\r\n    \"productId\" : \"72e0030f-cfec-4ae4-b41f-a063d8469d14\",\r\n    \"productName\" : \"test product1\",\r\n    \"productImage\" : \"\",\r\n    \"description\" : \"this is a test product1\",\r\n    \"availableQuantity\" : \"11\",\r\n    \"price\" : \"1001\",\r\n    \"currency\" : \"$\",\r\n    \"endOfLife\" : \"31/12/2023\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -2511,44 +3121,6 @@
                 ]
               },
               {
-                "name": "close customer",
-                "id": "2a61054a-78ca-4657-9631-28f4cfd42084",
-                "protocolProfileBehavior": {
-                  "disableBodyPruning": true
-                },
-                "request": {
-                  "method": "POST",
-                  "header": [
-                    {
-                      "key": "Authorization",
-                      "value": "{{token}}",
-                      "type": "text"
-                    }
-                  ],
-                  "body": {
-                    "mode": "raw",
-                    "raw": "{\r\n    \"customerId\" : \"b0d87571-3d7c-4af1-b38b-48a2018c1538\"\r\n}",
-                    "options": {
-                      "raw": {
-                        "language": "json"
-                      }
-                    }
-                  },
-                  "url": {
-                    "raw": "{{companyAdmin}}/closeCustomer",
-                    "host": [
-                      "{{companyAdmin}}"
-                    ],
-                    "path": [
-                      "closeCustomer"
-                    ]
-                  }
-                },
-                "response": [
-                  
-                ]
-              },
-              {
                 "name": "Customer List",
                 "id": "fedae41d-a7cf-4eb2-be95-9c08c90c0f25",
                 "protocolProfileBehavior": {
@@ -2819,7 +3391,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"customerId\" : \"b0d87571-3d7c-4af1-b38b-48a2018c1538\",\r\n    \"customerCommissionSplitId\" : \"3bb97e14-4aa0-4e3c-9a5e-7f0188fb2e3a\",\r\n    \"customerCloserId\" : \"978072d4-d1f6-49a4-b5e7-d33f3f2a1017\",\r\n    \"supporters\" : [\r\n        {\r\n            \"id\" : \"d9c2b293-be2f-4a49-aa2b-17371d974f38\",\r\n            \"percentage\" : 40\r\n        }\r\n    ],\r\n    \"qualification\" : \"qualifications \",\r\n    \"is_qualified\" : false ,\r\n    \"targetAmount\" : \"\",\r\n    \"products\" : [],\r\n    \"targetClosingDate\" : \"\",\r\n    \"is_overwrite\" : false,\r\n    \"closerPercentage\" : 60,\r\n    \"businessId\" : \"\",\r\n    \"revenueId\" : \"\",\r\n    \"subscriptionPlan\" : \"\",\r\n    \"recurringDate\" : \"\",\r\n    \"salesType\" : \"Perpectual\"\r\n}",
+                    "raw": "{\r\n    \"customerId\" : \"b0d87571-3d7c-4af1-b38b-48a2018c1538\",\r\n    \"customerCommissionSplitId\" : \"3bb97e14-4aa0-4e3c-9a5e-7f0188fb2e3a\",\r\n    \"customerCloserId\" : \"978072d4-d1f6-49a4-b5e7-d33f3f2a1017\",\r\n    \"supporters\" : [\r\n        {\r\n            \"id\" : \"d9c2b293-be2f-4a49-aa2b-17371d974f38\",\r\n            \"percentage\" : 40\r\n        }\r\n    ],\r\n    \"qualification\" : \"qualifications \",\r\n    \"is_qualified\" : false ,\r\n    \"targetAmount\" : \"\",\r\n    \"products\" : [],\r\n    \"targetClosingDate\" : \"\",\r\n    \"is_overwrite\" : false,\r\n    \"closerPercentage\" : 60,\r\n    \"businessId\" : \"\",\r\n    \"revenueId\" : \"\",\r\n    \"subscriptionPlan\" : \"\",\r\n    \"recurringDate\" : \"\",\r\n    \"salesType\" : \"Perpectual\",\r\n    \"leadId\" : \"\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -2841,7 +3413,7 @@
                 ]
               },
               {
-                "name": "sales commission list",
+                "name": "All sales commission list",
                 "id": "3d5054d7-8ce4-495c-a2d4-8cfb34ae2f5d",
                 "protocolProfileBehavior": {
                   "disableBodyPruning": true
@@ -2856,12 +3428,70 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/salesCommissionList",
+                    "raw": "{{companyAdmin}}/allSalesCommissionList",
                     "host": [
                       "{{companyAdmin}}"
                     ],
                     "path": [
-                      "salesCommissionList"
+                      "allSalesCommissionList"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "Active sales commission list Copy",
+                "id": "b30f7c1b-026f-4836-96e0-d5405bee58e3",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/activeSalesCommissionList",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "activeSalesCommissionList"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "closed sales commission list Copy 2",
+                "id": "9d08b952-34a1-4ba6-a5b5-d0c4b7a17b71",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/closedSalesCommissionList",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "closedSalesCommissionList"
                     ]
                   }
                 },
@@ -2908,6 +3538,44 @@
                 ]
               },
               {
+                "name": "close customer",
+                "id": "2a61054a-78ca-4657-9631-28f4cfd42084",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\r\n    \"salesCommissionId\" : \"b0d87571-3d7c-4af1-b38b-48a2018c1538\"\r\n}",
+                    "options": {
+                      "raw": {
+                        "language": "json"
+                      }
+                    }
+                  },
+                  "url": {
+                    "raw": "{{companyAdmin}}/closeSales",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "closeSales"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
                 "name": "Notes List",
                 "id": "df31831e-4c63-4b56-ac2f-ddedd866c940",
                 "protocolProfileBehavior": {
@@ -2932,7 +3600,7 @@
                     }
                   },
                   "url": {
-                    "raw": "{{companyAdmin}}/notesList?salesCommissionId=2eadb892-ce40-4d5d-ae66-6ddebbfce64d",
+                    "raw": "{{companyAdmin}}/notesList?salesCommissionId=d08f5c27-5d8a-430b-ba73-69a47424a402",
                     "host": [
                       "{{companyAdmin}}"
                     ],
@@ -2942,7 +3610,7 @@
                     "query": [
                       {
                         "key": "salesCommissionId",
-                        "value": "2eadb892-ce40-4d5d-ae66-6ddebbfce64d"
+                        "value": "d08f5c27-5d8a-430b-ba73-69a47424a402"
                       }
                     ]
                   }
@@ -3052,7 +3720,7 @@
                     }
                   },
                   "url": {
-                    "raw": "http://localhost:3003/api/v1/companyAdmin/salesCommissionLogsList?salesCommissionId=ad3a8e4c-67a9-47b6-8ac2-0536c8faa69",
+                    "raw": "http://localhost:3003/api/v1/companyAdmin/salesCommissionLogsList?salesCommissionId=d08f5c27-5d8a-430b-ba73-69a47424a402",
                     "protocol": "http",
                     "host": [
                       "localhost"
@@ -3067,7 +3735,7 @@
                     "query": [
                       {
                         "key": "salesCommissionId",
-                        "value": "ad3a8e4c-67a9-47b6-8ac2-0536c8faa69"
+                        "value": "d08f5c27-5d8a-430b-ba73-69a47424a402"
                       }
                     ]
                   }
@@ -3194,7 +3862,7 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/revenuePerCustomer?page=1&orderBy=asc&startDate=&endDate=",
+                    "raw": "{{companyAdmin}}/revenuePerCustomer?page=1&orderBy=asc&startDate=10/01/2021&endDate=10/01/2023",
                     "host": [
                       "{{companyAdmin}}"
                     ],
@@ -3212,11 +3880,11 @@
                       },
                       {
                         "key": "startDate",
-                        "value": ""
+                        "value": "10/01/2021"
                       },
                       {
                         "key": "endDate",
-                        "value": ""
+                        "value": "10/01/2023"
                       }
                     ]
                   }
@@ -3241,7 +3909,7 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/totalRevenue?status=Monthly&page=1",
+                    "raw": "{{companyAdmin}}/totalRevenue?status=Quarterly&page=1",
                     "host": [
                       "{{companyAdmin}}"
                     ],
@@ -3251,7 +3919,7 @@
                     "query": [
                       {
                         "key": "status",
-                        "value": "Monthly",
+                        "value": "Quarterly",
                         "description": "Monthly/Quarterly/Yearly"
                       },
                       {
@@ -3281,7 +3949,7 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/revenuePerProduct?page=1&orderBy=asc&startDate&endDate",
+                    "raw": "{{companyAdmin}}/revenuePerProduct?page=1&orderBy=asc&startDate=10/01/2021&endDate=10/01/2023",
                     "host": [
                       "{{companyAdmin}}"
                     ],
@@ -3299,13 +3967,11 @@
                       },
                       {
                         "key": "startDate",
-                        "value": null,
-                        "type": "text"
+                        "value": "10/01/2021"
                       },
                       {
                         "key": "endDate",
-                        "value": null,
-                        "type": "text"
+                        "value": "10/01/2023"
                       }
                     ]
                   }
@@ -3355,6 +4021,53 @@
                         "key": "endDate",
                         "value": "10-12-2023",
                         "type": "text"
+                      }
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "roleWiseRevenue",
+                "id": "a9958427-17a6-42bd-b070-054cb5e9a559",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/roleWiseRevenue?page=1&orderBy=asc&startDate=10-10-2022&endDate=10-12-2023",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "roleWiseRevenue"
+                    ],
+                    "query": [
+                      {
+                        "key": "page",
+                        "value": "1"
+                      },
+                      {
+                        "key": "orderBy",
+                        "value": "asc"
+                      },
+                      {
+                        "key": "startDate",
+                        "value": "10-10-2022"
+                      },
+                      {
+                        "key": "endDate",
+                        "value": "10-12-2023"
                       }
                     ]
                   }
@@ -3452,7 +4165,7 @@
             "name": "revenue forecast",
             "item": [
               {
-                "name": "Revenue forecast List",
+                "name": "All Revenue forecast List",
                 "id": "843eaa99-57ed-4448-88fe-cfdc924ff4ae",
                 "protocolProfileBehavior": {
                   "disableBodyPruning": true
@@ -3481,6 +4194,64 @@
                 ]
               },
               {
+                "name": "activeForecastList",
+                "id": "a7556829-fdbb-4667-bb2a-39b7c0b1275a",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/activeForecastList",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "activeForecastList"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "closedForecastList",
+                "id": "f043f3d8-f51b-44e1-ad49-27d403b068c5",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/closedForecastList",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "closedForecastList"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
                 "name": "Create Revenue Forecast",
                 "id": "373b8460-c1e2-4a46-92de-3d9fbcb4896a",
                 "protocolProfileBehavior": {
@@ -3497,7 +4268,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"timeline\" : \"Monthly\",\r\n    \"revenue\" : 10000,\r\n    \"growthWindow\" : 2,\r\n    \"growthPercentage\" : 5,\r\n    \"startDate\" : \"01-01-2020\",\r\n    \"endDate\" : \"12-31-2023\",\r\n    \"currency\" : \"$\"\r\n}",
+                    "raw": "{\r\n    \"timeline\" : \"Quarterly\",\r\n    \"revenue\" : 10000,\r\n    \"growthWindow\" : 1,\r\n    \"growthPercentage\" : 5,\r\n    \"startDate\" : \"01-01-2023\",\r\n    \"endDate\" : \"12-31-2023\",\r\n    \"currency\" : \"$\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -3534,7 +4305,7 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/actualVsForecast?id=c862c0f8-3b79-4d6d-bc97-b58492e9c93d&page=2",
+                    "raw": "{{companyAdmin}}/actualVsForecast?id=cd42c758-a5f7-4824-a48c-40661e4e7adf&page=1",
                     "host": [
                       "{{companyAdmin}}"
                     ],
@@ -3544,12 +4315,11 @@
                     "query": [
                       {
                         "key": "id",
-                        "value": "c862c0f8-3b79-4d6d-bc97-b58492e9c93d"
+                        "value": "cd42c758-a5f7-4824-a48c-40661e4e7adf"
                       },
                       {
                         "key": "page",
-                        "value": "2",
-                        "type": "text"
+                        "value": "1"
                       }
                     ]
                   }
@@ -3559,7 +4329,7 @@
                 ]
               },
               {
-                "name": "delete Revenue Forecast",
+                "name": "close Revenue Forecast",
                 "id": "93ff2473-e001-45ce-9241-f47bf5f5a51e",
                 "protocolProfileBehavior": {
                   "disableBodyPruning": true
@@ -3574,7 +4344,42 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/deleteRevenueForecast?revenueId=f63eac27-9933-492a-82d8-4ba715731bdb",
+                    "raw": "{{companyAdmin}}/closeRevenueForecast?fId=f63eac27-9933-492a-82d8-4ba715731bdb",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "closeRevenueForecast"
+                    ],
+                    "query": [
+                      {
+                        "key": "fId",
+                        "value": "f63eac27-9933-492a-82d8-4ba715731bdb"
+                      }
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "deleteRevenueForecast",
+                "id": "1bc099c6-21db-4dfd-909f-ef2069b9c81d",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/deleteRevenueForecast?revenueId",
                     "host": [
                       "{{companyAdmin}}"
                     ],
@@ -3584,8 +4389,46 @@
                     "query": [
                       {
                         "key": "revenueId",
-                        "value": "f63eac27-9933-492a-82d8-4ba715731bdb"
+                        "value": null
                       }
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "editRevenueForecast",
+                "id": "42470886-f2c3-49a9-aa15-b5e98a0313ba",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\r\n    \"forecastId\" : \"0327c7b2-3bda-4ea8-976d-de02a9d6979d\",\r\n    \"timeline\" : \"Annual\",\r\n    \"revenue\" : 100000,\r\n    \"growthWindow\" : 1,\r\n    \"growthPercentage\" : 5,\r\n    \"startDate\" : \"01-01-2020\",\r\n    \"endDate\" : \"12-31-2025\",\r\n    \"currency\" : \"$\"\r\n}",
+                    "options": {
+                      "raw": {
+                        "language": "json"
+                      }
+                    }
+                  },
+                  "url": {
+                    "raw": "{{companyAdmin}}/editRevenueForecast",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "editRevenueForecast"
                     ]
                   }
                 },
@@ -4219,6 +5062,515 @@
               }
             ],
             "id": "931e7b19-5aab-4f66-9a45-bfe814d02eb0"
+          },
+          {
+            "name": "Marketing Strategy",
+            "item": [
+              {
+                "name": "Create Lead",
+                "id": "b1e91c7f-7e86-4b6b-90dd-343713a75934",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\r\n    \"fullName\": \"Test Lead\",\r\n    \"title\": \"b26e9685-afac-475e-8c52-9a8de4ba0f06\",\r\n    \"emailAddress\": \"test@yopmail.com\",\r\n    \"phoneNumber\": \"78954454651\",\r\n    \"address\": \"indore mp\",\r\n    \"organizationName\": \"EMS tech\",\r\n    \"source\": \"f1418857-a238-403e-9a0e-d46498d81393\",\r\n    \"linkedinUrl\": \"www.linkedIn.com\",\r\n    \"website\": \"www.ems.in\",\r\n    \"targetedValue\": \"10000\",\r\n    \"industryType\": \"aa699dd0-3ae2-4dae-a5a5-d91433727dca\",\r\n    \"marketingQualifiedLead\": true,\r\n    \"assignedSalesLeadTo\": \"4fc42d69-a3b3-4b26-8c79-9ca5852fd06a\",\r\n    \"additionalMarketingNotes\": \"not needed\"\r\n}",
+                    "options": {
+                      "raw": {
+                        "language": "json"
+                      }
+                    }
+                  },
+                  "url": {
+                    "raw": "{{companyAdmin}}/createLead",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "createLead"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "Leads List",
+                "id": "6e92bd76-e92b-43b0-bb60-88ed54191b30",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/leadsList",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "leadsList"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "Update lead",
+                "id": "c743c186-f80f-42d1-8267-1d0fa2bf177d",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\r\n    \"leadId\" : \"9676300d-a089-48c3-aec7-eb4935b53264\",\r\n    \"fullName\": \"Test Lead1\",\r\n    \"title\": \"SR. Manager\",\r\n    \"emailAddress\": \"test@yopmail.com\",\r\n    \"phoneNumber\": \"78954454651\",\r\n    \"address\": \"indore, mp\",\r\n    \"organizationName\": \"EMS tech Pvt. Ltd.\",\r\n    \"source\": \"twitter\",\r\n    \"linkedin_url\": \"www.linkedIn.com\",\r\n    \"website\": \"www.ems.in\",\r\n    \"targetedValue\": \"10000\",\r\n    \"industryType\": \"software development\",\r\n    \"leadStatus\": \"not qaulified\",\r\n    \"assignedSalesLeadTo\": \"4fc42d69-a3b3-4b26-8c79-9ca5852fd06a\",\r\n    \"additionalMarketingNotes\": \"not needed\"\r\n}",
+                    "options": {
+                      "raw": {
+                        "language": "json"
+                      }
+                    }
+                  },
+                  "url": {
+                    "raw": "{{companyAdmin}}/updateLead",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "updateLead"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "Delete lead",
+                "id": "78a88c7b-59b0-4ec3-9df1-8163aa78ccc1",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/deleteLead?leadId=9676300d-a089-48c3-aec7-eb4935b53264",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "deleteLead"
+                    ],
+                    "query": [
+                      {
+                        "key": "leadId",
+                        "value": "9676300d-a089-48c3-aec7-eb4935b53264"
+                      }
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "marketing Dashboard",
+                "id": "1531ee18-b763-40d4-b983-0ce8aead5b9a",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/marketingDashboard?page=1&orderBy=asc",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "marketingDashboard"
+                    ],
+                    "query": [
+                      {
+                        "key": "page",
+                        "value": "1"
+                      },
+                      {
+                        "key": "orderBy",
+                        "value": "asc"
+                      }
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "convert Lead to Customer",
+                "id": "d52dcdfd-9960-4c9c-9b14-8db82bcdce64",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\r\n    \"leadId\" : \"8d799d80-9d79-45a0-bafa-f1849ddd760a\",\r\n    \"address\": \"indore mp\",\r\n    \"organizationName\": \"EMS tech\",\r\n    \"source\": \"twitter\",\r\n    \"marketingQualifiedLead\": true,\r\n    \"currency\": \"United States Dollar (USD)\"\r\n}",
+                    "options": {
+                      "raw": {
+                        "language": "json"
+                      }
+                    }
+                  },
+                  "url": {
+                    "raw": "{{companyAdmin}}/convertLeadToCustomer",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "convertLeadToCustomer"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "add budget",
+                "id": "9653bdc4-1941-49e1-93c7-f74d6e14f85a",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\r\n    \"year\" : \"2023\",\r\n    \"q1Amount\" : 10000,\r\n    \"q2Amount\" : 10000,\r\n    \"q3Amount\" : 10000,\r\n    \"q4Amount\" : 10000,\r\n    \"description\" : [\r\n        {\r\n            \"title\" : \"one\",\r\n            \"amount\" : 1000\r\n        },\r\n        {\r\n            \"title\" : \"two\",\r\n            \"amount\" : 9000\r\n        }\r\n    ]\r\n}",
+                    "options": {
+                      "raw": {
+                        "language": "json"
+                      }
+                    }
+                  },
+                  "url": {
+                    "raw": "{{companyAdmin}}/addBudget",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "addBudget"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "budgetList",
+                "id": "e9543dd9-03bb-43ed-ba9c-1c8bb8bbd917",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/budgetList",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "budgetList"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "delete budget",
+                "id": "37feaa3c-30bb-4c66-b8be-d6fb973a084b",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\r\n    \"budgetId\" : \"\"\r\n}",
+                    "options": {
+                      "raw": {
+                        "language": "json"
+                      }
+                    }
+                  },
+                  "url": {
+                    "raw": "{{companyAdmin}}/deleteBudget",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "deleteBudget"
+                    ],
+                    "query": [
+                      {
+                        "key": "budgetId",
+                        "value": "4c9b7917-00e6-4a89-b1bf-bba4e5e18dfb",
+                        "disabled": true
+                      }
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "update budget",
+                "id": "ef88b3d5-1908-4490-b4f8-8eb45b6e2331",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "body": {
+                    "mode": "raw",
+                    "raw": "{\r\n    \"budgetId\": \"4c9b7917-00e6-4a89-b1bf-bba4e5e18dfb\",\r\n    \"year\": \"2024\",\r\n    \"q1Amount\": \"100000\",\r\n    \"q2Amount\": \"100000\",\r\n    \"q3Amount\": \"100000\",\r\n    \"q4Amount\": \"100000\",\r\n    \"description\": [\r\n        {\r\n            \"id\": \"01db1cd2-cff2-40fa-bd9f-9ec36b01ad32\",\r\n            \"title\": \"one\",\r\n            \"amount\": \"1000\"\r\n        },\r\n        {\r\n            \"id\": \"438a98e0-89e2-4b1b-b749-219dd23c718b\",\r\n            \"title\": \"two\",\r\n            \"amount\": \"9000\"\r\n        },\r\n        {\r\n            \"id\": \"\",\r\n            \"title\": \"three\",\r\n            \"amount\": \"10000\"\r\n        }\r\n    ]\r\n}",
+                    "options": {
+                      "raw": {
+                        "language": "json"
+                      }
+                    }
+                  },
+                  "url": {
+                    "raw": "{{companyAdmin}}/updateBudget",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "updateBudget"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "deleteDescription",
+                "id": "991607ed-8953-4c1e-a27e-c173012ad7f9",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "?descriptionId",
+                    "query": [
+                      {
+                        "key": "descriptionId",
+                        "value": null,
+                        "type": "text"
+                      }
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "budget log list",
+                "id": "6fba5243-4faf-4b53-ac86-061617433ff7",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/budgetLogList?budgetId=4c9b7917-00e6-4a89-b1bf-bba4e5e18dfb",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "budgetLogList"
+                    ],
+                    "query": [
+                      {
+                        "key": "budgetId",
+                        "value": "4c9b7917-00e6-4a89-b1bf-bba4e5e18dfb",
+                        "type": "text"
+                      }
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "delete description",
+                "id": "e5096a6e-8540-441e-9411-1ed6106f4616",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/deleteDescription?descriptionId=01db1cd2-cff2-40fa-bd9f-9ec36b01ad32",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "deleteDescription"
+                    ],
+                    "query": [
+                      {
+                        "key": "descriptionId",
+                        "value": "01db1cd2-cff2-40fa-bd9f-9ec36b01ad32"
+                      }
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "finalize budget",
+                "id": "bf6f7f8b-69b4-44c2-9699-9959dc3cba59",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "PUT",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/finalizeBudget?budgetId=4c9b7917-00e6-4a89-b1bf-bba4e5e18dfb",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "finalizeBudget"
+                    ],
+                    "query": [
+                      {
+                        "key": "budgetId",
+                        "value": "4c9b7917-00e6-4a89-b1bf-bba4e5e18dfb"
+                      }
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              }
+            ],
+            "id": "4dc20df6-786a-4027-85c7-c4f4ab59e825"
           }
         ],
         "id": "099c859e-d51e-4d9a-bec9-429528871e05"
