@@ -205,7 +205,7 @@ const db_sql = {
               GROUP BY 
                 DATE_TRUNC('{var2}',sc.closed_at) 
               ORDER BY 
-                date DESC 
+                date ASC 
               LIMIT {var3} OFFSET {var4}`,
 
     "Q89"  : `SELECT            
@@ -533,7 +533,7 @@ const db_sql = {
               GROUP BY 
                 DATE_TRUNC('{var2}',sc.closed_at) 
               ORDER BY 
-                date DESC 
+                date ASC 
               LIMIT {var3} OFFSET {var4}`,
     "Q174" : `SELECT 
                 f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
