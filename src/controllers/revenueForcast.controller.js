@@ -382,8 +382,6 @@ module.exports.actualVsForecast = async (req, res) => {
     try {
         let { id, page } = req.query
         let userId = req.user.id
-        let limit = 10;
-        let offset = (page - 1) * limit;
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
@@ -409,6 +407,8 @@ module.exports.actualVsForecast = async (req, res) => {
                 let difference = await getMonthDifference(toDate, fromDate)
                 let yearDifference = await getYearDifference(toDate, fromDate)
                 let count = 0;
+                let limit = (timeline == 'Monthly') ? 12 : (timeline == 'Quarterly') ? 4 : 10;
+                let offset = (page - 1) * limit
                 switch (timeline) {
                     case 'Monthly':
                         let month = toDate.getMonth();
