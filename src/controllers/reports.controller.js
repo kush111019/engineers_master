@@ -332,7 +332,7 @@ module.exports.totalRevenue = async (req, res) => {
     try {
         let userId = req.user.id
         let { status, page } = req.query
-        let limit = 10;
+        let limit = (status == 'Monthly') ? 12 : (status == 'Quarterly') ? 4 : 10;
         let offset = (page - 1) * limit
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
