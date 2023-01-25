@@ -334,10 +334,10 @@ module.exports.totalRevenue = async (req, res) => {
         let { status, page } = req.query
         let limit = (status == 'Monthly') ? 12 : (status == 'Quarterly') ? 4 : 10;
         let offset = (page - 1) * limit
+        let format = (status == 'Monthly') ? 'month' : (status == 'Quarterly') ? 'quarter' : 'year'
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
-            let format = (status == 'Monthly') ? 'month' : (status == 'Quarterly') ? 'quarter' : 'year'
             let s4 = dbScript(db_sql['Q88'], { var1: checkPermission.rows[0].company_id, var2: format, var3: limit, var4: offset })
             let targetData = await connection.query(s4)
             if (targetData.rowCount > 0) {
@@ -383,7 +383,6 @@ module.exports.totalRevenue = async (req, res) => {
                 }
             }
             for (let id of roleUsers) {
-                let format = (status == 'Monthly') ? 'month' : (status == 'Quarterly') ? 'quarter' : 'year'
                 let s4 = dbScript(db_sql['Q173'], { var1: id, var2: format, var3: limit, var4: offset })
                 let targetData = await connection.query(s4)
                 if (targetData.rowCount > 0) {
