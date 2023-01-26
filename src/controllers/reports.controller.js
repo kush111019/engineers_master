@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const {reduceArray} = require('../utils/helper')
+const {reduceArray, reduceArrayWithName} = require('../utils/helper')
 const moduleName = process.env.REPORTS_MODULE
 
 module.exports.revenuePerCustomer = async (req, res) => {
@@ -292,11 +292,12 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                     }
                 }
                 if (revenuePerSalesRepArr.length > 0) {
+                    let finalArray = await reduceArrayWithName(revenuePerSalesRepArr)
                     res.json({
                         status: 200,
                         success: true,
                         message: "Revenue per sales representative",
-                        data: revenuePerSalesRepArr
+                        data: finalArray
                     })
                 } else {
                     res.json({

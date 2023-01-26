@@ -506,13 +506,12 @@ const db_sql = {
                   sales_commission AS sc 
                   INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
                   INNER JOIN users AS u ON u.id = cr.closer_id
-                  INNER JOIN customers AS c ON c.id = sc.customer_id
               WHERE 
                   sc.closed_at is not null 
                   AND sc.user_id = '{var1}' 
                   AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
-                  AND sc.deleted_at IS NULL AND c.deleted_at IS NULL
-                  AND cr.deleted_at IS NULL AND u.deleted_at IS NULL
+                  AND sc.deleted_at IS NULL AND cr.deleted_at IS NULL 
+                  AND u.deleted_at IS NULL
               GROUP BY 
                   u.full_name 
               ORDER BY 

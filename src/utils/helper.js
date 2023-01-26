@@ -428,3 +428,24 @@ module.exports.reduceArrayWithCommission = async (data) => {
     }
     return returnData
 }
+
+module.exports.reduceArrayWithName = async (data) => {
+
+    let returnData = [];
+    for (let i = 0; i < data.length; i++) {
+        let found = 0;
+        for (let j = 0; j < returnData.length; j++) {
+            let salesRep1 = data[i].sales_rep
+            let salesRep2 = returnData[j].sales_rep
+            if (salesRep1 === salesRep2) {
+                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
+                returnData[j].revenue = revenueOfJ;
+                found = 1;
+            }
+        }
+        if (found === 0) {
+            returnData.push(data[i]);
+        }
+    }
+    return returnData
+}
