@@ -420,31 +420,31 @@ module.exports.marketingDashboard = async (req, res) => {
                     }
                 })
             }
-            if (count && leadList.length > 0) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: 'Lead counts',
-                    data: {
-                        totalCount: count,
-                        totalMQLCount : mCount,
-                        totalAssignedLeads : aCount,
-                        leadData: leadList
-                    }
-                })
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: 'Empty Lead counts',
-                    data: {
-                        totalCount: count,
-                        totalMQLCount : mCount,
-                        totalAssignedLeads : aCount,
-                        leadData: leadList
-                    }
-                })
-            }
+            // if (count && leadList.length > 0) {
+            res.json({
+                status: 200,
+                success: true,
+                message: 'Lead counts',
+                data: {
+                    totalCount: count,
+                    totalMQLCount : mCount,
+                    totalAssignedLeads : aCount,
+                    leadData: leadList
+                }
+            })
+            // } else {
+            //     res.json({
+            //         status: 200,
+            //         success: false,
+            //         message: 'Empty Lead counts',
+            //         data: {
+            //             totalCount: count,
+            //             totalMQLCount : mCount,
+            //             totalAssignedLeads : aCount,
+            //             leadData: leadList
+            //         }
+            //     })
+            // }
         }
         else {
             res.status(403).json({

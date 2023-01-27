@@ -894,13 +894,13 @@ const db_sql = {
               INNER JOIN 
                 users AS u ON u.id = l.assigned_sales_lead_to
               WHERE 
-                l.assigned_sales_lead_to = '{var1}' AND l.is_converted = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+                l.assigned_sales_lead_to = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
               GROUP BY 
                 u.full_name
               ORDER BY 
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
-    "Q248" :`SELECT COUNT(*) from marketing_leads WHERE assigned_sales_lead_to = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
+    "Q248" :`SELECT COUNT(*) from marketing_leads WHERE assigned_sales_lead_to = '{var1}'  AND deleted_at IS NULL`,
  
  }
 
