@@ -497,6 +497,10 @@ module.exports.marketingDashboard = async (req, res) => {
 
             }
 
+            console.log(leadList,"leadList");
+            console.log(MQLleadList,"MQLleadList");
+            console.log(assignedleadList,"assignedleadList");
+            console.log(rejectedleadList,"rejectedleadList");
             const lists = [leadList, MQLleadList, assignedleadList, rejectedleadList];
 
             const counts = {};
