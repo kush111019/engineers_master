@@ -461,7 +461,8 @@ const db_sql = {
                 sc.id,
                 sc.slab_id 
               ORDER BY 
-              sc.closed_at {var2}`   ,
+              sc.closed_at {var2}`,
+
     "Q168" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount,
               sc.closed_at,sc.slab_id FROM sales_commission AS sc WHERE sc.user_id = '{var1}' 
               AND sc.deleted_at IS NULL` ,
@@ -949,7 +950,53 @@ const db_sql = {
                 u.full_name
               ORDER BY 
                 count {var4}
-              LIMIT {var2} OFFSET {var3}`
+              LIMIT {var2} OFFSET {var3}`,
+
+    "Q257" : `SELECT 
+                u.full_name AS sales_rep, 
+                SUM(sc.target_amount::DECIMAL) as amount,
+                sc.closed_at, sc.slab_id
+              FROM
+                sales_commission AS sc 
+              INNER JOIN 
+                sales_closer AS cr ON cr.sales_commission_id = sc.id
+              INNER JOIN 
+                users AS u ON u.id = cr.closer_id
+              INNER JOIN 
+                customers AS c ON c.id = sc.customer_id
+              WHERE 
+                sc.closed_at is not null 
+                AND sc.company_id = '{var1}'
+                AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
+                AND sc.deleted_at IS NULL AND c.deleted_at IS NULL
+                AND cr.deleted_at IS NULL AND u.deleted_at IS NULL
+              GROUP BY 
+                sc.closed_at,
+                u.full_name,
+                sc.slab_id 
+              ORDER BY 
+              sc.closed_at {var2}`,
+     "Q258" : `SELECT 
+                  u.full_name AS sales_rep,
+                  SUM(sc.target_amount::DECIMAL) as amount,
+                    sc.closed_at,sc.slab_id
+              FROM  
+                  sales_commission AS sc 
+              INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
+              INNER JOIN users AS u ON u.id = cr.closer_id
+              WHERE 
+                  sc.closed_at is not null 
+                  AND sc.user_id = '{var1}' 
+                  AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
+                  AND sc.deleted_at IS NULL AND cr.deleted_at IS NULL 
+                  AND u.deleted_at IS NULL
+              GROUP BY 
+                  u.full_name,
+                  sc.closed_at, 
+                  sc.slab_id 
+              ORDER BY 
+                  amount {var2}
+              LIMIT {var3} OFFSET {var4}`,
  }
 
  function dbScript(template, variables) {

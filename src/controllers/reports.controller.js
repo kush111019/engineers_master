@@ -1,7 +1,8 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const {reduceArray, reduceArrayWithName} = require('../utils/helper')
+const {reduceArray, paginatedResults,reduceArrayWithName, reduceArrayWithCommission} = require('../utils/helper')
 const moduleName = process.env.REPORTS_MODULE
+const moment = require('moment')
 
 module.exports.revenuePerCustomer = async (req, res) => {
     try {
@@ -229,21 +230,74 @@ module.exports.revenuePerSalesRep = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
             if ((startDate != undefined && startDate != '') && (endDate != undefined && endDate != '')) {
-                let s4 = dbScript(db_sql['Q90'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
+                let revenueCommissionBydate = []
+                let s4 = dbScript(db_sql['Q257'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Revenue per sales representative",
-                        data: salesData.rows
-                    })
+                    for (let data of salesData.rows) {
+    
+                        let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
+                        let slab = await connection.query(s5)
+    
+                        let revenueCommissionByDateObj = {}
+                        revenueCommissionByDateObj.revenue = Number(data.amount)
+                        revenueCommissionByDateObj.sales_rep = data.sales_rep
+    
+                        let remainingAmount = Number(data.amount);
+                        let commission = 0
+                        //if remainning amount is 0 then no reason to check 
+                        for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
+                            let slab_percentage = Number(slab.rows[i].percentage)
+                            let slab_maxAmount = Number(slab.rows[i].max_amount)
+                            let slab_minAmount = Number(slab.rows[i].min_amount)
+                            if (slab.rows[i].is_max) {
+                                // Reached the last slab
+                                commission += ((slab_percentage / 100) * remainingAmount)
+                                break;
+                            }
+                            else {
+                                // This is not the last slab
+                                let diff = slab_minAmount == 0 ? 0 : 1
+                                let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                                slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+                                commission += ((slab_percentage / 100) * slab_diff)
+                                remainingAmount -= slab_diff
+                                if (remainingAmount <= 0) {
+                                    break;
+                                }
+                            }
+                        }
+                        revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
+                        revenueCommissionBydate.push(revenueCommissionByDateObj)
+                    }
+                }
+    
+                if (revenueCommissionBydate.length > 0) {
+                    let returnData = await reduceArrayWithName(revenueCommissionBydate)
+                    if (returnData.length > 0) {
+                        let paginatedArr = await paginatedResults(returnData, page)
+                        if (orderBy.toLowerCase() == 'asc') {
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return a.revenue - b.revenue
+                            })
+                        } else {
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return b.revenue - a.revenue
+                            })
+                        }
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Revenues and Commissions",
+                            data: paginatedArr
+                        })
+                    }
                 } else {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "Empty revenue per sales representative",
-                        data: salesData.rows
+                        message: "Revenues and Commissions",
+                        data: []
                     })
                 }
             } else {
@@ -254,7 +308,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                 })
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            let revenuePerSalesRepArr = []
+            let revenueCommissionBydate = []
             let roleUsers = []
             let roleIds = []
             roleIds.push(checkPermission.rows[0].role_id)
@@ -283,28 +337,73 @@ module.exports.revenuePerSalesRep = async (req, res) => {
             
             if ((startDate != undefined && startDate != '') && (endDate != undefined && endDate != '')) {
                 for (let id of roleUsers) {
-                    let s4 = dbScript(db_sql['Q172'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
+                    let s4 = dbScript(db_sql['Q258'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
                     let salesData = await connection.query(s4)
                     if (salesData.rowCount > 0) {
-                        for (let sales of salesData.rows) {
-                            revenuePerSalesRepArr.push(sales)
+                        for (let data of salesData.rows) {
+    
+                            let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
+                            let slab = await connection.query(s5)
+    
+                            let revenueCommissionByDateObj = {}
+                            revenueCommissionByDateObj.revenue = Number(data.amount)
+                            revenueCommissionByDateObj.sales_rep = data.sales_rep
+    
+                            let remainingAmount = Number(data.amount);
+                            let commission = 0
+                            //if remainning amount is 0 then no reason to check 
+                            for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
+                                let slab_percentage = Number(slab.rows[i].percentage)
+                                let slab_maxAmount = Number(slab.rows[i].max_amount)
+                                let slab_minAmount = Number(slab.rows[i].min_amount)
+                                if (slab.rows[i].is_max) {
+                                    // Reached the last slab
+                                    commission += ((slab_percentage / 100) * remainingAmount)
+                                    break;
+                                }
+                                else {
+                                    // This is not the last slab
+                                    let diff = slab_minAmount == 0 ? 0 : 1
+                                    let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                                    slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+                                    commission += ((slab_percentage / 100) * slab_diff)
+                                    remainingAmount -= slab_diff
+                                    if (remainingAmount <= 0) {
+                                        break;
+                                    }
+                                }
+                            }
+                            revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
+                            revenueCommissionBydate.push(revenueCommissionByDateObj)
                         }
                     }
                 }
-                if (revenuePerSalesRepArr.length > 0) {
-                    let finalArray = await reduceArrayWithName(revenuePerSalesRepArr)
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Revenue per sales representative",
-                        data: finalArray
-                    })
+                if (revenueCommissionBydate.length > 0) {
+                    let returnData = await reduceArrayWithName(revenueCommissionBydate)
+                    if (returnData.length > 0) {
+                        let paginatedArr = await paginatedResults(returnData, page)
+                        if (orderBy.toLowerCase() == 'asc') {
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return a.revenue - b.revenue
+                            })
+                        } else {
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return b.revenue - a.revenue
+                            })
+                        }
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Revenues and Commissions",
+                            data: paginatedArr
+                        })
+                    }
                 } else {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "Empty revenue per sales representative",
-                        data: revenuePerSalesRepArr
+                        message: "Revenues and Commissions",
+                        data: []
                     })
                 }
             } else {
