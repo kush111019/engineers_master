@@ -505,34 +505,37 @@ module.exports.marketingDashboard = async (req, res) => {
                 }
 
             }
-            const lists = [leadList, MQLleadList, assignedleadList, rejectedleadList];
-
-            const counts = {};
-
-            lists.forEach(list => {
-                list.forEach(item => {
-                    if (!counts[item.created_by]) {
-                        counts[item.created_by] = {
-                            created_by: item.created_by,
-                            count: 0,
-                            mqlCount: 0,
-                            assignedCount: 0,
-                            rejectedCount: 0
-                        };
+            // const lists = [leadList, MQLleadList, assignedleadList, rejectedleadList];
+            let leadCount = []
+            leadList.forEach(function(item) {
+                let obj = {
+                    created_by : item.created_by,
+                    leadCount : item.count,
+                    mqlCount : 0,
+                    assignedCount : 0,
+                    rejectedCount : 0
+                }
+                MQLleadList.forEach(function(mql) {
+                    if(mql.created_by === item.created_by){
+                        obj.mqlCount = mql.count;
                     }
                 });
-            });
-
-            lists.forEach(list => {
-                list.forEach(item => {
-                    if (list === leadList) counts[item.created_by].count = item.count;
-                    if (list === MQLleadList) counts[item.created_by].mqlCount = item.count;
-                    if (list === assignedleadList) counts[item.created_by].assignedCount = item.count;
-                    if (list === rejectedleadList) counts[item.created_by].rejectedCount = item.count;
+                assignedleadList.forEach(function(assigned) {
+                    if(assigned.created_by === item.created_by){
+                        obj.assignedCount = assigned.count;
+                    }
                 });
+                rejectedleadList.forEach(function(rejected) {
+                    if(rejected.created_by === item.created_by){
+                        obj.rejectedCount = rejected.count;
+                    }
+                });
+                leadCount.push(obj);
             });
+            console.log(leadCount);
+            
 
-            const LeadCount = Object.values(counts);
+            // const LeadCount = Object.values(counts);
             res.json({
                 status: 200,
                 success: true,
