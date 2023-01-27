@@ -919,9 +919,37 @@ const db_sql = {
     "Q249" :`UPDATE companies SET company_logo = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q250" :`UPDATE marketing_leads SET is_rejected = '{var2}', reason = '{var3}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`, 
     "Q251" :`UPDATE customers SET is_rejected = '{var2}' WHERE lead_id = '{var1}' AND deleted_at is null RETURNING *`, 
-    "Q252" :`SELECT * from sales_commission WHERE lead_id = '{var1}' AND deleted_at IS Null`,
-    "Q253" :`SELECT COUNT(*) from marketing_leads WHERE company_id = '{var1}' AND is_rejected = '{var2}' AND deleted_at IS NULL`,
-    "Q254" :`SELECT COUNT(*) from marketing_leads WHERE user_id = '{var1}' AND is_rejected = '{var2}' AND deleted_at IS NULL`
+    "Q252" :`SELECT * from sales_commission WHERE lead_id = '{var1}' AND deleted_at IS NULL`,
+    "Q253" :`SELECT COUNT(*) from marketing_leads WHERE company_id = '{var1}' AND is_rejected = true AND deleted_at IS NULL`,
+    "Q254" :`SELECT COUNT(*) from marketing_leads WHERE user_id = '{var1}' AND is_rejected = true AND deleted_at IS NULL`,
+    "Q255" :`SELECT 
+                COUNT(*),
+                u.full_name AS created_by
+              FROM 
+                marketing_leads AS l 
+              INNER JOIN 
+                users AS u ON u.id = l.user_id
+              WHERE 
+                l.company_id = '{var1}' AND l.is_rejected = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+              GROUP BY 
+                u.full_name
+              ORDER BY 
+                count {var4}
+              LIMIT {var2} OFFSET {var3}`,
+    "Q256" : `SELECT 
+                COUNT(*),
+                u.full_name AS created_by
+              FROM 
+                marketing_leads AS l 
+              INNER JOIN 
+                users AS u ON u.id = l.user_id
+              WHERE 
+                l.user_id = '{var1}' AND l.is_rejected = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+              GROUP BY 
+                u.full_name
+              ORDER BY 
+                count {var4}
+              LIMIT {var2} OFFSET {var3}`
  }
 
  function dbScript(template, variables) {
