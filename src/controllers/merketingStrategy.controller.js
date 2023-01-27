@@ -347,28 +347,29 @@ module.exports.marketingDashboard = async (req, res) => {
 
             let s2 = dbScript(db_sql['Q206'], { var1: checkPermission.rows[0].company_id })
             let leadCount = await connection.query(s2)
-
+            console.log(leadCount.rows,"leadCount");
             let s3 = dbScript(db_sql['Q207'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let leadData = await connection.query(s3)
-
+            console.log(leadData.rows,"lead data");
             let s4 = dbScript(db_sql['Q229'], { var1: checkPermission.rows[0].company_id })
             let MCount = await connection.query(s4)
-
+            console.log(MCount.rows,"MCount");
             let s5 = dbScript(db_sql['Q223'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let mqlLeads = await connection.query(s5)
-
+            console.log(mqlLeads.rows,"mqlLeads");
             let s6 = dbScript(db_sql['Q248'], { var1: checkPermission.rows[0].id })
             let ACount = await connection.query(s6)
-
+            console.log(ACount.rows,"ACount");
             let s7 = dbScript(db_sql['Q247'], { var1: checkPermission.rows[0].id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let assignedLeads = await connection.query(s7)
-
+            console.log(assignedLeads.rows,"assignedLeads");
             let s8 = dbScript(db_sql['Q253'], { var1: checkPermission.rows[0].id, var2: true })
             let RCount = await connection.query(s8)
-
-            let s9 = dbScript(db_sql['Q255'], { var1: checkPermission.rows[0].id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
+            console.log(RCount.rows,"RCount");
+            let s9 = dbScript(db_sql['Q255'], { var1: checkPermission.rows[0].id, var2: limit, var3: offset, var4: orderBy.toLowerCase(), var5 : true })
             let rejectedLeads = await connection.query(s9)
-
+            console.log(rejectedLeads.rows,"rejectedLeads");
+            
             const lists = [leadData.rows, mqlLeads.rows, assignedLeads.rows, rejectedLeads.rows];
 
             const counts = {};

@@ -931,7 +931,7 @@ const db_sql = {
               INNER JOIN 
                 users AS u ON u.id = l.user_id
               WHERE 
-                l.company_id = '{var1}' AND l.is_rejected = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+                l.company_id = '{var1}' AND l.is_rejected = '{var5}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
               GROUP BY 
                 u.full_name
               ORDER BY 
