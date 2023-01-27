@@ -65,9 +65,20 @@ const db_sql = {
     "Q36"  : `INSERT INTO customers(id, user_id,customer_company_id,customer_name, source, company_id, business_contact_id, revenue_contact_id, address, currency, lead_id) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}', '{var10}', '{var11}') RETURNING *`,
     "Q37"  : `INSERT INTO customer_companies(id, customer_company_name, company_id) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
     "Q38"  : `SELECT id, customer_company_name FROM customer_companies WHERE id = '{var1}' AND deleted_at IS NULL`,
-    "Q39"  : `SELECT c.id, c.customer_company_id , c.customer_name, c.source, c.user_id,c.lead_id, c.business_contact_id, c.revenue_contact_id, c.created_at, c.address, c.currency,
-              u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
-              WHERE c.company_id = '{var1}' AND c.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`,
+    "Q39"  : `SELECT 
+                c.id, c.customer_company_id, c.customer_name, c.source, 
+                c.user_id,c.lead_id, c.business_contact_id, c.revenue_contact_id, 
+                c.created_at, c.address, c.currency,c.is_rejected,
+                u.full_name AS created_by 
+              FROM 
+                customers AS c 
+              INNER JOIN 
+                users AS u ON u.id = c.user_id
+              WHERE 
+                c.company_id = '{var1}' AND c.deleted_at IS NULL AND 
+                u.deleted_at IS NULL AND c.is_rejected = '{var2}' 
+              ORDER BY 
+                created_at desc`,
     "Q40"  : `UPDATE sales_commission SET closed_at = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q41"  : `SELECT u.id, u.company_id, u.role_id, u.avatar, u.full_name,u.email_address,u.mobile_number,u.phone_number,u.address,u.is_verified,u.created_by,
               m.id AS module_id, m.module_name, m.module_type, p.id AS permission_id, p.permission_to_view_global, p.permission_to_view_own,
@@ -93,9 +104,14 @@ const db_sql = {
     "Q49"  : `UPDATE commission_split SET closer_percentage = '{var1}', supporter_percentage = '{var2}' , updated_at = '{var4}'  WHERE  id = '{var3}' AND company_id = '{var5}' AND deleted_at IS NULL RETURNING *`,
     "Q50"  : `SELECT id, closer_percentage, supporter_percentage FROM commission_split WHERE company_id ='{var1}' AND deleted_at IS NULL`,
     "Q51"  : `UPDATE commission_split SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}'  AND deleted_at IS NULL RETURNING *`,
-    "Q52"  : `SELECT c.id, c.customer_company_id ,c.customer_name, c.source, c.user_id,c.lead_id, c.address, c.deleted_at,
-              u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
-              WHERE c.company_id = '{var1}' `,
+    "Q52"  : `SELECT 
+                c.id, c.customer_company_id ,c.customer_name, c.source, 
+                c.user_id,c.lead_id, c.address, c.deleted_at, c.is_rejected,
+                u.full_name AS created_by 
+              FROM 
+                customers AS c 
+              INNER JOIN users AS u ON u.id = c.user_id
+              WHERE c.company_id = '{var1}' AND is_rejected = '{var2}'`,
     "Q53"  : `INSERT INTO sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency, user_id, slab_id, lead_id ) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var13}', '{var14}', '{var15}', '{var16}', '{var17}', '{var18}', '{var19}') RETURNING *`,
     "Q54"  : `SELECT 
                 sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
@@ -687,7 +703,7 @@ const db_sql = {
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
-                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
                 u.full_name AS user_name,u.role_id, r.role_name, u1.full_name AS creator_name 
               FROM 
                 marketing_leads AS l 
@@ -712,7 +728,7 @@ const db_sql = {
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
-                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected
                 u.full_name AS user_name,u.role_id, r.role_name, u1.full_name AS creator_name 
               FROM 
                 marketing_leads AS l 
@@ -901,7 +917,11 @@ const db_sql = {
               LIMIT {var2} OFFSET {var3}`,
     "Q248" :`SELECT COUNT(*) from marketing_leads WHERE assigned_sales_lead_to = '{var1}'  AND deleted_at IS NULL`,
     "Q249" :`UPDATE companies SET company_logo = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
- 
+    "Q250" :`UPDATE marketing_leads SET is_rejected = '{var2}', reason = '{var3}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`, 
+    "Q251" :`UPDATE customers SET is_rejected = '{var2}' WHERE lead_id = '{var1}' AND deleted_at is null RETURNING *`, 
+    "Q252" :`SELECT * from sales_commission WHERE lead_id = '{var1}' AND deleted_at IS Null`,
+    "Q253" :`SELECT COUNT(*) from marketing_leads WHERE company_id = '{var1}' AND is_rejected = '{var2}' AND deleted_at IS NULL`,
+    "Q254" :`SELECT COUNT(*) from marketing_leads WHERE user_id = '{var1}' AND is_rejected = '{var2}' AND deleted_at IS NULL`
  }
 
  function dbScript(template, variables) {

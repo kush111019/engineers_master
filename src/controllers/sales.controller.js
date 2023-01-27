@@ -11,7 +11,7 @@ module.exports.customerListforSales = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
-            let s4 = dbScript(db_sql['Q52'], { var1: checkPermission.rows[0].company_id })
+            let s4 = dbScript(db_sql['Q52'], { var1: checkPermission.rows[0].company_id,  var2 : false })
             let customerList = await connection.query(s4)
             if (customerList.rowCount > 0) {
                 res.json({
