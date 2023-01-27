@@ -365,7 +365,7 @@ module.exports.login = async (req, res) => {
                             email: admin.rows[0].email_address,
                         }
                         let jwtToken = await issueJWT(payload);
-                        let profileImage = (admin.rows[0].role_name == "Admin") ? admin.rows[0].company_logo : admin.rows[0].avatar
+                        let profileImage = admin.rows[0].avatar
 
                         res.send({
                             status: 200,
