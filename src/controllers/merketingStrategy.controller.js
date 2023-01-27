@@ -377,6 +377,11 @@ module.exports.marketingDashboard = async (req, res) => {
                     for (let lead of findLeadList.rows) {
                         leadList.push(lead)
                     }
+                }else{
+                    leadList.push({
+                        count : 0,
+                        created_by : ""
+                    })
                 }
                 let s6 = dbScript(db_sql['Q224'], { var1: id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
                 let findMQLLeadList = await connection.query(s6)
@@ -413,7 +418,10 @@ module.exports.marketingDashboard = async (req, res) => {
                 })
                 assingedleadList.filter((value) => {
                     data.assignedCount = '0'
-                    if(value.created_by == data.assigned_to){
+                    if(value.created_by == ''){
+                        data.assignedCount = value.count
+                    }
+                    else if(value.created_by == data.assigned_to){
                         data.assignedCount = value.count
                     }
                 })
