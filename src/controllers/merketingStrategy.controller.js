@@ -452,6 +452,7 @@ module.exports.marketingDashboard = async (req, res) => {
                 
                 let s5 = dbScript(db_sql['Q208'], { var1: id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
                 let findLeadList = await connection.query(s5)
+                console.log(findLeadList.rows,"findLeadList");
                 if (findLeadList.rowCount > 0) {
                     for (let lead of findLeadList.rows) {
                         leadList.push(lead)
@@ -460,6 +461,7 @@ module.exports.marketingDashboard = async (req, res) => {
 
                 let s6 = dbScript(db_sql['Q224'], { var1: id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
                 let findMQLLeadList = await connection.query(s6)
+                console.log(findMQLLeadList.rows,"findMQLLeadList");
                 if (findMQLLeadList.rowCount > 0) {
                     for (let MQLlead of findMQLLeadList.rows) {
                         MQLleadList.push(MQLlead)
@@ -474,6 +476,7 @@ module.exports.marketingDashboard = async (req, res) => {
 
                 let s8 = dbScript(db_sql['Q247'], { var1: id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
                 let findAssignedLeadList = await connection.query(s8)
+                console.log(findAssignedLeadList.rows,"findAssignedLeadList");
                 if (findMQLLeadList.rowCount > 0) {
                     for (let Assignedlead of findAssignedLeadList.rows) {
                         assignedleadList.push(Assignedlead)
@@ -488,12 +491,13 @@ module.exports.marketingDashboard = async (req, res) => {
 
                 let s10 = dbScript(db_sql['Q256'], { var1: id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
                 let findRejectedLeadList = await connection.query(s10)
+                console.log(findRejectedLeadList.rows,"findRejectedLeadList");
                 if (findMQLLeadList.rowCount > 0) {
                     for (let rejectedlead of findRejectedLeadList.rows) {
                         rejectedleadList.push(rejectedlead)
                     }
                 }
-
+                
                 let s11 = dbScript(db_sql['Q254'], { var1: id })
                 let rejectedCount = await connection.query(s11)
                 if (rejectedCount.rowCount > 0) {
