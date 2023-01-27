@@ -770,7 +770,6 @@ const db_sql = {
               ORDER BY 
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
-
     "Q209"  :`SELECT COUNT(*) from marketing_leads WHERE user_id = '{var1}' AND deleted_at IS NULL`,
     "Q210"  :`INSERT INTO lead_titles(id, title, company_id ) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
     "Q211"  :`UPDATE lead_titles set title = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,

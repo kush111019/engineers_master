@@ -405,18 +405,16 @@ module.exports.marketingDashboard = async (req, res) => {
 
             }
             for(let data of leadList){
+                data.mqlCount = '0'
                 MQLleadList.filter((value) => {
                     if(value.created_by == data.created_by){
                         data.mqlCount = value.count
-                    }else{
-                        data.mqlCount = '0'
                     }
                 })
                 assingedleadList.filter((value) => {
+                    data.assignedCount = '0'
                     if(value.created_by == data.assigned_to){
                         data.assignedCount = value.count
-                    }else{
-                        data.assignedCount = '0'
                     }
                 })
             }
