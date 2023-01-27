@@ -545,7 +545,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     totalMQLCount: mCount,
                     totalAssignedCount : aCount,
                     totalRejectedCount : rCount,
-                    leadData: LeadCount
+                    leadData: leadCount
                 }
             })
            
