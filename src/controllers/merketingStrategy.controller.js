@@ -261,7 +261,7 @@ module.exports.rejectLead = async (req, res) => {
                 res.json({
                     status: 200,
                     success: false,
-                    message: "Can not reject lead, because lead is already in sales"
+                    message: "This record has been used by Sales"
                 })
             }
         } else {
@@ -287,27 +287,35 @@ module.exports.deleteLead = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
+            let s2 = dbScript(db_sql['Q252'], { var1: leadId })
+            let checkCustomerInSales = await connection.query(s2)
+            if (checkCustomerInSales.rowCount == 0) {
+                await connection.query('BEGIN')
+                let _dt = new Date().toISOString();
+                let s5 = dbScript(db_sql['Q205'], { var1: leadId, var2: _dt })
+                let deleteLead = await connection.query(s5)
 
-            await connection.query('BEGIN')
+                if (deleteLead.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Lead deleted successfully"
+                    })
 
-            let _dt = new Date().toISOString();
-            let s5 = dbScript(db_sql['Q205'], { var1: leadId, var2: _dt })
-            let deleteLead = await connection.query(s5)
-
-            if (deleteLead.rowCount > 0) {
-                await connection.query('COMMIT')
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            } else {
                 res.json({
                     status: 200,
-                    success: true,
-                    message: "Lead deleted successfully"
-                })
-
-            } else {
-                await connection.query('ROLLBACK')
-                res.json({
-                    status: 400,
                     success: false,
-                    message: "Something went wrong"
+                    message: "This record has been used by Sales"
                 })
             }
 

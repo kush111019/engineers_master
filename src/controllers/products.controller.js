@@ -203,6 +203,9 @@ module.exports.deleteProduct = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
+            let s2 = dbScript(db_sql['Q260'],{var1 : productId })
+            let checkProductInSales = await connection.query(s2)
+            if(checkProductInSales.rowCount == 0){
             await connection.query('BEGIN')
             let _dt = new Date().toISOString();
             let s4 = dbScript(db_sql['Q95'], { var1: productId, var2: _dt, var3: checkPermission.rows[0].company_id })
@@ -222,6 +225,13 @@ module.exports.deleteProduct = async (req, res) => {
                     message: "Something went wrong"
                 })
             }
+        }else{
+            res.json({
+                status: 200,
+                success: false,
+                message: "This record has been used by Sales"
+            })
+        }
         } else {
             res.status(403).json({
                 success: false,

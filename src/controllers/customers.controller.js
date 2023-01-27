@@ -469,26 +469,35 @@ module.exports.deleteCustomer = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
-            await connection.query('BEGIN')
-            let _dt = new Date().toISOString();
-            let s4 = dbScript(db_sql['Q47'], { var1: _dt, var2: customerId, var3: checkPermission.rows[0].company_id })
-            let deleteCustomer = await connection.query(s4)
-            if (deleteCustomer.rowCount > 0) {
-                await connection.query('COMMIT')
+            let s2 = dbScript(db_sql['Q259'],{var1 : customerId })
+            let checkCustomerInSales = await connection.query(s2)
+            if(checkCustomerInSales.rowCount == 0){
+                await connection.query('BEGIN')
+                let _dt = new Date().toISOString();
+                let s4 = dbScript(db_sql['Q47'], { var1: _dt, var2: customerId, var3: checkPermission.rows[0].company_id })
+                let deleteCustomer = await connection.query(s4)
+                if (deleteCustomer.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Customer deleted successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "something went wrong"
+                    })
+                }
+            }else{
                 res.json({
                     status: 200,
-                    success: true,
-                    message: "Customer deleted successfully"
-                })
-            } else {
-                await connection.query('ROLLBACK')
-                res.json({
-                    status: 400,
                     success: false,
-                    message: "something went wrong"
+                    message: "This record has been used by Sales"
                 })
             }
-
         } else {
             res.status(403).json({
                 success: false,

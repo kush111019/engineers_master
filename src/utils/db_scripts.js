@@ -997,6 +997,8 @@ const db_sql = {
               ORDER BY 
                   amount {var2}
               LIMIT {var3} OFFSET {var4}`,
+    "Q259" : `SELECT * from sales_commission WHERE customer_id = '{var1}' AND deleted_at IS NULL`,
+    "Q260" : `SELECT * from product_in_sales WHERE product_id = '{var1}' AND deleted_at IS NULL`                    
  }
 
  function dbScript(template, variables) {

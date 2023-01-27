@@ -2,7 +2,6 @@ const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const {reduceArray, paginatedResults,reduceArrayWithName, reduceArrayWithCommission} = require('../utils/helper')
 const moduleName = process.env.REPORTS_MODULE
-const moment = require('moment')
 
 module.exports.revenuePerCustomer = async (req, res) => {
     try {
