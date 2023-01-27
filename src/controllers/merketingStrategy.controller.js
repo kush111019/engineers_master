@@ -414,7 +414,7 @@ module.exports.marketingDashboard = async (req, res) => {
             let MQLleadList = []
             let assignedleadList = []
             let rejectedleadList = []
-            let count = 0;
+            let lcount = 0;
             let mCount = 0;
             let aCount = 0;
             let rCount = 0;
@@ -447,8 +447,9 @@ module.exports.marketingDashboard = async (req, res) => {
                 let s4 = dbScript(db_sql['Q209'], { var1: id })
                 let leadCount = await connection.query(s4)
                 if (leadCount.rowCount > 0) {
-                    count += Number(leadCount.rows[0].count)
+                    lcount += Number(leadCount.rows[0].count)
                 }
+                
                 let s5 = dbScript(db_sql['Q208'], { var1: id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
                 let findLeadList = await connection.query(s5)
                 if (findLeadList.rowCount > 0) {
@@ -456,6 +457,7 @@ module.exports.marketingDashboard = async (req, res) => {
                         leadList.push(lead)
                     }
                 }
+
                 let s6 = dbScript(db_sql['Q224'], { var1: id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
                 let findMQLLeadList = await connection.query(s6)
                 if (findMQLLeadList.rowCount > 0) {
@@ -463,6 +465,7 @@ module.exports.marketingDashboard = async (req, res) => {
                         MQLleadList.push(MQLlead)
                     }
                 }
+
                 let s7 = dbScript(db_sql['Q228'], { var1: id })
                 let mqlCount = await connection.query(s7)
                 if (mqlCount.rowCount > 0) {
@@ -476,6 +479,7 @@ module.exports.marketingDashboard = async (req, res) => {
                         assignedleadList.push(Assignedlead)
                     }
                 }
+
                 let s9 = dbScript(db_sql['Q248'], { var1: id })
                 let assignedCount = await connection.query(s9)
                 if (assignedCount.rowCount > 0) {
@@ -489,6 +493,7 @@ module.exports.marketingDashboard = async (req, res) => {
                         rejectedleadList.push(rejectedlead)
                     }
                 }
+
                 let s11 = dbScript(db_sql['Q254'], { var1: id })
                 let rejectedCount = await connection.query(s11)
                 if (rejectedCount.rowCount > 0) {
@@ -496,11 +501,6 @@ module.exports.marketingDashboard = async (req, res) => {
                 }
 
             }
-
-            console.log(leadList,"leadList");
-            console.log(MQLleadList,"MQLleadList");
-            console.log(assignedleadList,"assignedleadList");
-            console.log(rejectedleadList,"rejectedleadList");
             const lists = [leadList, MQLleadList, assignedleadList, rejectedleadList];
 
             const counts = {};
@@ -529,30 +529,19 @@ module.exports.marketingDashboard = async (req, res) => {
             });
 
             const LeadCount = Object.values(counts);
-
-            if (LeadCount) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: 'Lead counts',
-                    data: {
-                        totalCount: count,
-                        totalMQLCount: mCount,
-                        leadData: LeadCount
-                    }
-                })
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: 'Empty Lead counts',
-                    data: {
-                        totalCount: count,
-                        totalMQLCount: mCount,
-                        leadData: LeadCount
-                    }
-                })
-            }
+            res.json({
+                status: 200,
+                success: true,
+                message: 'Lead counts',
+                data: {
+                    totalCount: lcount,
+                    totalMQLCount: mCount,
+                    totalAssignedCount : aCount,
+                    totalRejectedCount : rCount,
+                    leadData: LeadCount
+                }
+            })
+           
         }
         else {
             res.status(403).json({
