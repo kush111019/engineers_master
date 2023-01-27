@@ -900,6 +900,7 @@ const db_sql = {
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
     "Q248" :`SELECT COUNT(*) from marketing_leads WHERE assigned_sales_lead_to = '{var1}'  AND deleted_at IS NULL`,
+    "Q249" :`UPDATE companies SET company_logo = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
  
  }
 

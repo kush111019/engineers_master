@@ -2,12 +2,13 @@ const express = require('express')
 var router = express.Router()
 var controller = require('../controllers/index')
 const { verifyTokenFn } = require('../utils/jwt')
-const {uploadAvatar , uploadProductImage, uploadProductFile, uploadMailAttechments } = require('../utils/uploadfiles')
+const {uploadAvatar , uploadProductImage, uploadProductFile, uploadMailAttechments, uploadLogo } = require('../utils/uploadfiles')
 
 router.post('/upload',verifyTokenFn, uploadAvatar.single('image'),controller.companyAdmin.upload);
 router.get('/showProfile',verifyTokenFn, controller.companyAdmin.showProfile)
 router.put('/updateProfile',verifyTokenFn, controller.companyAdmin.updateUserProfile)
 router.put('/changePassword',verifyTokenFn, controller.companyAdmin.changePassword)
+router.put('/updateCompanyLogo', verifyTokenFn,uploadLogo.single('file'), controller.companyAdmin.updateCompanyLogo)
 
 //-------------------------------------Users-------------------------------------------------
 router.post('/addUser' , verifyTokenFn, controller.users.addUser)

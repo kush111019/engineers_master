@@ -780,6 +780,55 @@ module.exports.countryDetails = async (req, res) => {
     }
 }
 
+module.exports.updateCompanyLogo = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let file = req.file
+        let path = `${process.env.COMPANY_LOGO_LINK}/${file.originalname}`;
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findUser = await connection.query(s1)
+
+        if (findUser.rows.length > 0) {
+            await connection.query('BEGIN')
+            let _dt = new Date().toISOString();
+            let s2 = dbScript(db_sql['Q249'], { var1: path, var2: _dt, var3: findUser.rows[0].company_id })
+            let updateLogo = await connection.query(s2)
+            await connection.query('COMMIT')
+            if (updateLogo.rowCount > 0) {
+                res.json({
+                    success: true,
+                    status: 200,
+                    message: 'CompanyLogo updated successfully',
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    success: false,
+                    status: 400,
+                    message: "Something Went Wrong",
+                    data: ""
+                })
+            }
+
+        } else {
+            res.json({
+                success: false,
+                status: 200,
+                message: "Admin not found",
+                data: ""
+            })
+        }
+
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            success: false,
+            status: 400,
+            message: error.message,
+        })
+    }
+}
 
 
 
