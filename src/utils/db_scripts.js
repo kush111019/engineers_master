@@ -729,7 +729,7 @@ const db_sql = {
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
-                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
                 u.full_name AS user_name,u.role_id, r.role_name, u1.full_name AS creator_name 
               FROM 
                 marketing_leads AS l 
@@ -921,7 +921,7 @@ const db_sql = {
     "Q250" :`UPDATE marketing_leads SET is_rejected = '{var2}', reason = '{var3}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`, 
     "Q251" :`UPDATE customers SET is_rejected = '{var2}' WHERE lead_id = '{var1}' AND deleted_at is null RETURNING *`, 
     "Q252" :`SELECT * from sales_commission WHERE lead_id = '{var1}' AND deleted_at IS NULL`,
-    "Q253" :`SELECT COUNT(*) from marketing_leads WHERE company_id = '{var1}' AND is_rejected = true AND deleted_at IS NULL`,
+    "Q253" :`SELECT COUNT(*) from marketing_leads WHERE company_id = '{var1}' AND is_rejected = '{var2}' AND deleted_at IS NULL`,
     "Q254" :`SELECT COUNT(*) from marketing_leads WHERE user_id = '{var1}' AND is_rejected = true AND deleted_at IS NULL`,
     "Q255" :`SELECT 
                 COUNT(*),

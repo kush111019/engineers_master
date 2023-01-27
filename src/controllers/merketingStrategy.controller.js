@@ -351,76 +351,64 @@ module.exports.marketingDashboard = async (req, res) => {
             let s3 = dbScript(db_sql['Q207'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let leadData = await connection.query(s3)
 
-            if (leadCount.rowCount > 0 && leadData.rowCount > 0) {
-                let s4 = dbScript(db_sql['Q229'], { var1: checkPermission.rows[0].company_id })
-                let MCount = await connection.query(s4)
+            let s4 = dbScript(db_sql['Q229'], { var1: checkPermission.rows[0].company_id })
+            let MCount = await connection.query(s4)
 
-                let s5 = dbScript(db_sql['Q223'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
-                let mqlLeads = await connection.query(s5)
+            let s5 = dbScript(db_sql['Q223'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
+            let mqlLeads = await connection.query(s5)
 
-                let s6 = dbScript(db_sql['Q248'], { var1: checkPermission.rows[0].id })
-                let ACount = await connection.query(s6)
+            let s6 = dbScript(db_sql['Q248'], { var1: checkPermission.rows[0].id })
+            let ACount = await connection.query(s6)
 
-                let s7 = dbScript(db_sql['Q247'], { var1: checkPermission.rows[0].id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
-                let assignedLeads = await connection.query(s7)
+            let s7 = dbScript(db_sql['Q247'], { var1: checkPermission.rows[0].id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
+            let assignedLeads = await connection.query(s7)
 
-                let s8 = dbScript(db_sql['Q253'], { var1: checkPermission.rows[0].id })
-                let RCount = await connection.query(s8)
+            let s8 = dbScript(db_sql['Q253'], { var1: checkPermission.rows[0].id, var2: true })
+            let RCount = await connection.query(s8)
 
-                let s9 = dbScript(db_sql['Q255'], { var1: checkPermission.rows[0].id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
-                let rejectedLeads = await connection.query(s9)
+            let s9 = dbScript(db_sql['Q255'], { var1: checkPermission.rows[0].id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
+            let rejectedLeads = await connection.query(s9)
 
-                for (let data of leadData.rows) {
-                    let mqlCount = 0
-                    mqlLeads.rows.map((value) => {
-                        if (value.created_by == data.created_by) {
-                            mqlCount += Number(value.count)
-                        }
-                    })
-                    data.mqlCount = mqlCount
+            const lists = [leadData.rows, mqlLeads.rows, assignedLeads.rows, rejectedLeads.rows];
 
-                    let assignedCount = 0
-                    assignedLeads.rows.map((value) => {
-                        if (value.assigned_to == data.created_by) {
-                            assignedCount += Number(value.count)
-                        }
-                    })
-                    data.assignedCount = assignedCount
+            const counts = {};
 
-                    let rejectedCount = 0
-                    rejectedLeads.rows.map((value) => {
-                        if (value.created_by == data.created_by) {
-                            rejectedCount += Number(value.count)
-                        }
-                    })
-                    data.rejectedCount = rejectedCount
+            lists.forEach(list => {
+                list.forEach(item => {
+                    if (!counts[item.created_by]) {
+                        counts[item.created_by] = {
+                            created_by: item.created_by,
+                            count: 0,
+                            mqlCount: 0,
+                            assignedCount: 0,
+                            rejectedCount: 0
+                        };
+                    }
+                });
+            });
+
+            lists.forEach(list => {
+                list.forEach(item => {
+                    if (list === leadData.rows) counts[item.created_by].count = item.count;
+                    if (list === mqlLeads.rows) counts[item.created_by].mqlCount = item.count;
+                    if (list === assignedLeads.rows) counts[item.created_by].assignedCount = item.count;
+                    if (list === rejectedLeads.rows) counts[item.created_by].rejectedCount = item.count;
+                });
+            });
+
+            const LeadCount = Object.values(counts);
+            res.json({
+                status: 200,
+                success: true,
+                message: 'Lead counts',
+                data: {
+                    totalCount: leadCount.rows[0].count,
+                    totalMQLCount: MCount.rows[0].count,
+                    totalAssignedCount: ACount.rows[0].count,
+                    totalRejectedCount: RCount.rows[0].count,
+                    leadData: LeadCount
                 }
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: 'Lead counts',
-                    data: {
-                        totalCount: leadCount.rows[0].count,
-                        totalMQLCount: MCount.rows[0].count,
-                        totalAssignedCount: ACount.rows[0].count,
-                        totalRejectedCount: RCount.rows[0].count,
-                        leadData: leadData.rows
-                    }
-                })
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: 'Empty Lead counts',
-                    data: {
-                        totalCount: 0,
-                        totalMQLCount: 0,
-                        totalAssignedCount: 0,
-                        totalRejectedCount: 0,
-                        leadData: leadData.rows
-                    }
-                })
-            }
+            })
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let leadList = []
             let MQLleadList = []
