@@ -289,15 +289,25 @@ module.exports.marketingDashboard = async (req, res) => {
 
                 let s5 = dbScript(db_sql['Q223'], {var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase()})
                 let mqlLeads = await connection.query(s5)
+
+                let s6 = dbScript(db_sql['Q247'],{var1: checkPermission.rows[0].id, var2: limit, var3: offset, var4: orderBy.toLowerCase()})
+                let assignedLeads = await connection.query(s6)
                 
                 for(let data of leadData.rows){
                     let mqlCount = 0
+                    let assignedCount = 0
                     mqlLeads.rows.map((value) => {
                         if(value.created_by == data.created_by){
                             mqlCount += Number(value.count)
                         }
                     })
                     data.mqlCount = mqlCount
+                    assignedLeads.rows.map((value) => {
+                        if(value.created_by == data.assigned_to){
+                            assignedCount += Number(value.count)
+                        }
+                    })
+                    data.assignedCount = assignedCount
                 }
                 res.json({
                     status: 200,
@@ -306,6 +316,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     data: {
                         totalCount: leadCount.rows[0].count,
                         totalMQLCount : MCount.rows[0].count,
+                        totalAssignedLeads : assignedLeads.row[0].count,
                         leadData: leadData.rows
                     }
                 })
@@ -316,6 +327,8 @@ module.exports.marketingDashboard = async (req, res) => {
                     message: 'Empty Lead counts',
                     data: {
                         totalCount: leadCount.rows[0].count,
+                        totalMQLCount : 0,
+                        totalAssignedLeads : 0,
                         leadData: leadData.rows
                     }
                 })
@@ -323,8 +336,10 @@ module.exports.marketingDashboard = async (req, res) => {
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let leadList = []
             let MQLleadList = []
+            let assingedleadList = []
             let count = 0;
             let mCount = 0;
+            let aCount = 0;
             let roleUsers = []
             let roleIds = []
             roleIds.push(checkPermission.rows[0].role_id)
@@ -375,6 +390,18 @@ module.exports.marketingDashboard = async (req, res) => {
                 if (leadCount.rowCount > 0) {
                     mCount += Number(mqlCount.rows[0].count)
                 }
+                let s8 = dbScript(db_sql['Q248'], { var1: id })
+                let assignedCount = await connection.query(s8)
+                if (leadCount.rowCount > 0) {
+                    aCount += Number(assignedCount.rows[0].count)
+                }
+                let s9 = dbScript(db_sql['Q247'], { var1: id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
+                let findAssignedLeadList = await connection.query(s9)
+                if (findAssignedLeadList.rowCount > 0) {
+                    for (let assignedlead of findAssignedLeadList.rows) {
+                        assingedleadList.push(assignedlead)
+                    }
+                }
 
             }
             for(let data of leadList){
@@ -383,6 +410,13 @@ module.exports.marketingDashboard = async (req, res) => {
                         data.mqlCount = value.count
                     }else{
                         data.mqlCount = '0'
+                    }
+                })
+                assingedleadList.filter((value) => {
+                    if(value.created_by == data.assigned_to){
+                        data.assignedCount = value.count
+                    }else{
+                        data.assignedCount = '0'
                     }
                 })
             }
@@ -394,6 +428,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     data: {
                         totalCount: count,
                         totalMQLCount : mCount,
+                        totalAssignedLeads : aCount,
                         leadData: leadList
                     }
                 })
@@ -405,6 +440,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     data: {
                         totalCount: count,
                         totalMQLCount : mCount,
+                        totalAssignedLeads : aCount,
                         leadData: leadList
                     }
                 })
