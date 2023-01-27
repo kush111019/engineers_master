@@ -800,6 +800,7 @@ module.exports.updateCompanyLogo = async (req, res) => {
                     success: true,
                     status: 200,
                     message: 'CompanyLogo updated successfully',
+                    data : path
                 })
             } else {
                 await connection.query('ROLLBACK')
