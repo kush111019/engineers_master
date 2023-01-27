@@ -367,9 +367,10 @@ module.exports.marketingDashboard = async (req, res) => {
             let RCount = await connection.query(s8)
             console.log(RCount.rows,"RCount");
             let s9 = dbScript(db_sql['Q255'], { var1: checkPermission.rows[0].id, var2: limit, var3: offset, var4: orderBy.toLowerCase(), var5 : true })
+            console.log(s9,"s9");
             let rejectedLeads = await connection.query(s9)
             console.log(rejectedLeads.rows,"rejectedLeads");
-            
+
             const lists = [leadData.rows, mqlLeads.rows, assignedLeads.rows, rejectedLeads.rows];
 
             const counts = {};
