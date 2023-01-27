@@ -764,7 +764,7 @@ const db_sql = {
               INNER JOIN 
                 users AS u ON u.id = l.user_id
               WHERE 
-                (l.user_id = '{var1}' OR l.assigned_sales_lead_to = '{var1}') AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+                l.user_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
               GROUP BY 
                 u.full_name
               ORDER BY 
