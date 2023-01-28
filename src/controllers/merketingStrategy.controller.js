@@ -479,7 +479,7 @@ module.exports.marketingDashboard = async (req, res) => {
                 }
             }
 
-            let combinedData = data.reduce((acc, curr) => {
+            let combinedData = leadData.reduce((acc, curr) => {
                 let existing = acc.find(item => item.created_by === curr.created_by);
                 if (existing) {
                   existing.count += curr.count;
