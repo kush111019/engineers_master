@@ -456,9 +456,6 @@ module.exports.marketingDashboard = async (req, res) => {
                 let leadCount = await connection.query(s4)
                 if(leadCount.rowCount > 0){
                     totalCounts += leadCount.rowCount
-                    let mqlCount = 0
-                    let assignedCount = 0
-                    let rejectedCount = 0
                     for(leads of leadCount.rows){
                         let obj = {}
                         let lCount = 0
@@ -467,15 +464,17 @@ module.exports.marketingDashboard = async (req, res) => {
                         let rCount = 0 
                         obj.created_by = leads.created_by
                         obj.count = (id == leads.user_id) ? lCount + 1 : lCount;
-                        assignedCount = obj.assignedCount = (leads.user_id != leads.assigned_sales_lead_to) ? aCount + 1 : aCount;
-                        mqlCount = obj.mqlCount = (leads.is_converted) ? mCount + 1 : mCount;
-                        rejectedCount = obj.rejectedCount = (leads.is_rejected) ? rCount + 1 : rCount
+                        obj.assignedCount = (leads.user_id != leads.assigned_sales_lead_to) ? aCount + 1 : aCount;
+                        obj.mqlCount = (leads.is_converted) ? mCount + 1 : mCount;
+                        obj.rejectedCount = (leads.is_rejected) ? rCount + 1 : rCount
 
                         leadData.push(obj)
+                        
+                        totalMQLCount += mCount;
+                        totalAssignedCount += aCount;
+                        totalRejectedCount += rCount;
                     }
-                    totalMQLCount += mqlCount;
-                    totalAssignedCount += assignedCount;
-                    totalRejectedCount += rejectedCount;
+                    
                 }
             }
             let combinedData = leadData.reduce((acc, curr) => {
