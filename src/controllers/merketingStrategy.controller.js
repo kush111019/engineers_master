@@ -464,7 +464,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     for(leads of leadCount.rows){
                         obj.created_by = leads.created_by
                         obj.count = (id == leads.user_id) ? count + 1 : count;
-                        obj.assignedCount = (leads.user_id != assigned_sales_lead_to) ? assignedCount + 1 : assignedCount;
+                        obj.assignedCount = (leads.user_id != leads.assigned_sales_lead_to) ? assignedCount + 1 : assignedCount;
                         obj.mqlCount = (leads.is_converted) ? mqlCount + 1 : mqlCount;
                         obj.rejectedCount = (leads.is_rejected) ? rejectedCount + 1 : rejectedCount
 
