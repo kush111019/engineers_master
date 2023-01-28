@@ -344,27 +344,37 @@ module.exports.marketingDashboard = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global) {
-
+            //Total Lead count
             let s2 = dbScript(db_sql['Q206'], { var1: checkPermission.rows[0].company_id })
             let leadCount = await connection.query(s2)
+            
+            //Total MQL Lead count
+            let s4 = dbScript(db_sql['Q229'], { var1: checkPermission.rows[0].company_id })
+            let MCount = await connection.query(s4)
+
+            //Total Assigned Lead count
+            let s6 = dbScript(db_sql['Q248'], { var1: checkPermission.rows[0].id })
+            let ACount = await connection.query(s6)
+
+            //Total Rejected Lead count
+            let s8 = dbScript(db_sql['Q253'], { var1: checkPermission.rows[0].company_id, var2: true })
+            let RCount = await connection.query(s8)
+
 
             let s3 = dbScript(db_sql['Q207'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let leadData = await connection.query(s3)
 
-            let s4 = dbScript(db_sql['Q229'], { var1: checkPermission.rows[0].company_id })
-            let MCount = await connection.query(s4)
+
             
             let s5 = dbScript(db_sql['Q223'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let mqlLeads = await connection.query(s5)
 
-            let s6 = dbScript(db_sql['Q248'], { var1: checkPermission.rows[0].id })
-            let ACount = await connection.query(s6)
+
 
             let s7 = dbScript(db_sql['Q247'], { var1: checkPermission.rows[0].id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let assignedLeads = await connection.query(s7)
 
-            let s8 = dbScript(db_sql['Q253'], { var1: checkPermission.rows[0].company_id, var2: true })
-            let RCount = await connection.query(s8)
+
 
             let s9 = dbScript(db_sql['Q255'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase(), var5 : true })
             let rejectedLeads = await connection.query(s9)
@@ -410,14 +420,11 @@ module.exports.marketingDashboard = async (req, res) => {
                 }
             })
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            let leadList = []
-            let MQLleadList = []
-            let assignedleadList = []
-            let rejectedleadList = []
-            let lcount = 0;
-            let mCount = 0;
-            let aCount = 0;
-            let rCount = 0;
+            let totalCounts = 0
+            let totalMQLCount = 0
+            let totalAssignedCount = 0
+            let totalRejectedCount = 0
+            let leadData = []
             let roleUsers = []
             let roleIds = []
             roleIds.push(checkPermission.rows[0].role_id)
@@ -444,108 +451,40 @@ module.exports.marketingDashboard = async (req, res) => {
                 }
             }
             for (id of roleUsers) {
+                //Total Lead count
                 let s4 = dbScript(db_sql['Q209'], { var1: id })
                 let leadCount = await connection.query(s4)
-                if (leadCount.rowCount > 0) {
-                    lcount += Number(leadCount.rows[0].count)
-                }
-                
-                let s5 = dbScript(db_sql['Q208'], { var1: id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
-                let findLeadList = await connection.query(s5)
-                console.log(findLeadList.rows,"findLeadList");
-                if (findLeadList.rowCount > 0) {
-                    for (let lead of findLeadList.rows) {
-                        leadList.push(lead)
+                if(leadCount.rowCount > 0){
+                    totalCounts += leadCount.rowCount
+                    let obj = {}
+                    let count = 0
+                    let mqlCount = 0
+                    let assignedCount = 0
+                    let rejectedCount = 0
+                    for(leads of leadCount.rows){
+                        obj.created_by = leads.created_by
+                        obj.count = (id == leads.user_id) ? count + 1 : count;
+                        obj.assignedCount = (leads.user_id != assigned_sales_lead_to) ? assignedCount + 1 : assignedCount;
+                        obj.mqlCount = (leads.is_converted) ? mqlCount + 1 : mqlCount;
+                        obj.rejectedCount = (leads.is_rejected) ? rejectedCount + 1 : rejectedCount
+
+                        leadData.push(obj)
                     }
+                    totalMQLCount += mqlCount;
+                    totalAssignedCount += assignedCount;
+                    totalRejectedCount += rejectedCount;
                 }
-
-                let s6 = dbScript(db_sql['Q224'], { var1: id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
-                let findMQLLeadList = await connection.query(s6)
-                console.log(findMQLLeadList.rows,"findMQLLeadList");
-                if (findMQLLeadList.rowCount > 0) {
-                    for (let MQLlead of findMQLLeadList.rows) {
-                        MQLleadList.push(MQLlead)
-                    }
-                }
-
-                let s7 = dbScript(db_sql['Q228'], { var1: id })
-                let mqlCount = await connection.query(s7)
-                if (mqlCount.rowCount > 0) {
-                    mCount += Number(mqlCount.rows[0].count)
-                }
-
-                let s8 = dbScript(db_sql['Q247'], { var1: id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
-                let findAssignedLeadList = await connection.query(s8)
-                console.log(findAssignedLeadList.rows,"findAssignedLeadList");
-                if (findMQLLeadList.rowCount > 0) {
-                    for (let Assignedlead of findAssignedLeadList.rows) {
-                        assignedleadList.push(Assignedlead)
-                    }
-                }
-
-                let s9 = dbScript(db_sql['Q248'], { var1: id })
-                let assignedCount = await connection.query(s9)
-                if (assignedCount.rowCount > 0) {
-                    aCount += Number(assignedCount.rows[0].count)
-                }
-
-                let s10 = dbScript(db_sql['Q256'], { var1: id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
-                let findRejectedLeadList = await connection.query(s10)
-                console.log(findRejectedLeadList.rows,"findRejectedLeadList");
-                if (findMQLLeadList.rowCount > 0) {
-                    for (let rejectedlead of findRejectedLeadList.rows) {
-                        rejectedleadList.push(rejectedlead)
-                    }
-                }
-                
-                let s11 = dbScript(db_sql['Q254'], { var1: id })
-                let rejectedCount = await connection.query(s11)
-                if (rejectedCount.rowCount > 0) {
-                    rCount += Number(rejectedCount.rows[0].count)
-                }
-
             }
-            // const lists = [leadList, MQLleadList, assignedleadList, rejectedleadList];
-            let leadCount = []
-            leadList.forEach(function(item) {
-                let obj = {
-                    created_by : item.created_by,
-                    leadCount : item.count,
-                    mqlCount : 0,
-                    assignedCount : 0,
-                    rejectedCount : 0
-                }
-                MQLleadList.forEach(function(mql) {
-                    if(mql.created_by === item.created_by){
-                        obj.mqlCount = mql.count;
-                    }
-                });
-                assignedleadList.forEach(function(assigned) {
-                    if(assigned.created_by === item.created_by){
-                        obj.assignedCount = assigned.count;
-                    }
-                });
-                rejectedleadList.forEach(function(rejected) {
-                    if(rejected.created_by === item.created_by){
-                        obj.rejectedCount = rejected.count;
-                    }
-                });
-                leadCount.push(obj);
-            });
-            console.log(leadCount);
-            
-
-            // const LeadCount = Object.values(counts);
             res.json({
                 status: 200,
                 success: true,
                 message: 'Lead counts',
                 data: {
-                    totalCount: lcount,
-                    totalMQLCount: mCount,
-                    totalAssignedCount : aCount,
-                    totalRejectedCount : rCount,
-                    leadData: leadCount
+                    totalCount: totalCounts,
+                    totalMQLCount: totalMQLCount,
+                    totalAssignedCount : totalAssignedCount,
+                    totalRejectedCount : totalRejectedCount,
+                    leadData: leadData
                 }
             })
            

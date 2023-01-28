@@ -787,7 +787,14 @@ const db_sql = {
               ORDER BY 
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
-    "Q209"  :`SELECT COUNT(*) from marketing_leads WHERE user_id = '{var1}' AND deleted_at IS NULL`,
+    "Q209"  :`select distinct(l.id),l.user_id,l.assigned_sales_lead_to, u.full_name as created_by, l.is_rejected, l.is_converted
+              FROM 
+                marketing_leads AS l 
+              left join 
+                users u on u.id = l.user_id
+              where 
+                l.user_id = '{var1}' or l.assigned_sales_lead_to= '{var1}' AND 
+                l.deleted_at IS NULL AND u.deleted_at IS NULL`,
     "Q210"  :`INSERT INTO lead_titles(id, title, company_id ) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
     "Q211"  :`UPDATE lead_titles set title = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q212"  :`UPDATE lead_titles set deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
