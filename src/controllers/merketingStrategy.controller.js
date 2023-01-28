@@ -479,17 +479,18 @@ module.exports.marketingDashboard = async (req, res) => {
                 }
             }
 
-            let combinedData = leadData.reduce((acc, curr) => {
-                if (acc[curr.created_by]) {
-                  acc[curr.created_by].count += curr.count;
-                  acc[curr.created_by].assignedCount += curr.assignedCount;
-                  acc[curr.created_by].mqlCount += curr.mqlCount;
-                  acc[curr.created_by].rejectedCount += curr.rejectedCount;
+            let combinedData = data.reduce((acc, curr) => {
+                let existing = acc.find(item => item.created_by === curr.created_by);
+                if (existing) {
+                  existing.count += curr.count;
+                  existing.assignedCount += curr.assignedCount;
+                  existing.mqlCount += curr.mqlCount;
+                  existing.rejectedCount += curr.rejectedCount;
                 } else {
-                  acc[curr.created_by] = curr;
+                  acc.push(curr);
                 }
                 return acc;
-              }, {});
+              }, []);
 
             res.json({
                 status: 200,
