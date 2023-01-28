@@ -450,9 +450,9 @@ module.exports.marketingDashboard = async (req, res) => {
                     }
                 }
             }
-            for (id of roleUsers) {
+            // for (id of roleUsers) {
                 //Total Lead count
-                let s4 = dbScript(db_sql['Q209'], { var1: id })
+                let s4 = dbScript(db_sql['Q209'], { var1: checkPermission.rows[0].id })
                 let leadCount = await connection.query(s4)
                 console.log(leadCount.rows, "lead data");
                 if(leadCount.rowCount > 0){
@@ -475,7 +475,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     totalAssignedCount += assignedCount;
                     totalRejectedCount += rejectedCount;
                 }
-            }
+            // }
             res.json({
                 status: 200,
                 success: true,
