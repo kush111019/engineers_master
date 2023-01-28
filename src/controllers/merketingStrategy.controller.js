@@ -457,12 +457,12 @@ module.exports.marketingDashboard = async (req, res) => {
                 console.log(leadCount.rows, "lead data");
                 if(leadCount.rowCount > 0){
                     totalCounts += leadCount.rowCount
-                    let obj = {}
                     let count = 0
                     let mqlCount = 0
                     let assignedCount = 0
                     let rejectedCount = 0
                     for(leads of leadCount.rows){
+                        let obj = {}
                         obj.created_by = leads.created_by
                         obj.count = (id == leads.user_id) ? count + 1 : count;
                         obj.assignedCount = (leads.user_id != leads.assigned_sales_lead_to) ? assignedCount + 1 : assignedCount;
