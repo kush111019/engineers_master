@@ -478,7 +478,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     totalRejectedCount += rejectedCount;
                 }
             }
-
+            console.log(leadData)
             let combinedData = leadData.reduce((acc, curr) => {
                 let existing = acc.find(item => item.created_by === curr.created_by);
                 if (existing) {
