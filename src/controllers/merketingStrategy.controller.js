@@ -450,7 +450,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     }
                 }
             }
-            // for (id of roleUsers) {
+            for (id of roleUsers) {
                 //Total Lead count
                 let s4 = dbScript(db_sql['Q209'], { var1: checkPermission.rows[0].id })
                 let leadCount = await connection.query(s4)
@@ -478,7 +478,20 @@ module.exports.marketingDashboard = async (req, res) => {
                     totalAssignedCount += assignedCount;
                     totalRejectedCount += rejectedCount;
                 }
-            // }
+            }
+
+            let combinedData = leadData.reduce((acc, curr) => {
+                if (acc[curr.created_by]) {
+                  acc[curr.created_by].count += curr.count;
+                  acc[curr.created_by].assignedCount += curr.assignedCount;
+                  acc[curr.created_by].mqlCount += curr.mqlCount;
+                  acc[curr.created_by].rejectedCount += curr.rejectedCount;
+                } else {
+                  acc[curr.created_by] = curr;
+                }
+                return acc;
+              }, {});
+
             res.json({
                 status: 200,
                 success: true,
@@ -488,7 +501,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     totalMQLCount: totalMQLCount,
                     totalAssignedCount : totalAssignedCount,
                     totalRejectedCount : totalRejectedCount,
-                    leadData: leadData
+                    leadData: combinedData
                 }
             })
            
