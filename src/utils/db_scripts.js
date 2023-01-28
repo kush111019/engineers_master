@@ -794,7 +794,11 @@ const db_sql = {
                 users u on u.id = l.user_id
               where 
                 l.user_id = '{var1}' or l.assigned_sales_lead_to= '{var1}' AND 
-                l.deleted_at IS NULL AND u.deleted_at IS NULL`,
+                l.deleted_at IS NULL AND u.deleted_at IS NULL
+              ORDER BY 
+                u.full_name {var4}
+              LIMIT {var2} OFFSET {var3}`,
+              
     "Q210"  :`INSERT INTO lead_titles(id, title, company_id ) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
     "Q211"  :`UPDATE lead_titles set title = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q212"  :`UPDATE lead_titles set deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
