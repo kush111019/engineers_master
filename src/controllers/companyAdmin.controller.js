@@ -394,7 +394,7 @@ module.exports.login = async (req, res) => {
                         res.json({
                             status: 400,
                             success: false,
-                            message: "Not subscribed for any plan"
+                            message: "Locked by super Admin/Plan Expired"
                         })
                     }
                 } else {

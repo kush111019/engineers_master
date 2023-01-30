@@ -47,7 +47,7 @@ const db_sql = {
     "Q21"  : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id FROM users WHERE role_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL `,
     "Q22"  : `UPDATE users SET email_address = '{var1}', full_name ='{var2}', mobile_number = '{var3}', address = '{var4}', role_id = '{var5}' , updated_at = '{var7}',avatar = '{var8}', is_admin = '{var10}' WHERE id = '{var6}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `,
     "Q23"  : `UPDATE users SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
-    "Q24"  :  `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at, deleted_at FROM users WHERE company_id = '{var1}' ORDER BY created_at desc`,
+    "Q24"  :  `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at, deleted_at,is_locked FROM users WHERE company_id = '{var1}' ORDER BY created_at desc`,
     "Q25"  : `UPDATE roles SET role_name = '{var1}', reporter = '{var2}',updated_at = '{var4}' WHERE id = '{var3}' AND company_id = '{var5}' AND deleted_at IS NULL RETURNING *`,
     "Q26"  : `update permissions SET permission_to_create= '{var1}', permission_to_view_global = '{var2}', permission_to_update = '{var3}', permission_to_delete = '{var4}',updated_at = '{var6}', permission_to_view_own = '{var8}' WHERE role_id = '{var5}' AND module_id = '{var7}' AND deleted_at IS NULL `,
     "Q27"  : `UPDATE roles SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at IS NULL RETURNING *`,
@@ -281,7 +281,7 @@ const db_sql = {
     "Q97"  : `INSERT INTO products(id, company_id,user_id, product_name, product_image, description, available_quantity, price, end_of_life, currency) 
               VALUES ('{var1}','{var2}','{var3}',$1,$2,$3,$4,$5,$6,$7)`,
     "Q98"  : `SELECT id, name, email, encrypted_password FROM super_admin WHERE email = '{var1}'`,
-    "Q99"  : `SELECT id, company_name, company_logo, company_address, is_imap_enable, is_marketing_enable, created_at, expiry_date, user_count FROM companies WHERE deleted_at IS NULL`,
+    "Q99"  : `SELECT id, company_name, company_logo, company_address, is_imap_enable,is_locked, is_marketing_enable, created_at, expiry_date, user_count FROM companies WHERE deleted_at IS NULL`,
     "Q100" : `UPDATE super_admin SET encrypted_password = '{var2}' WHERE email = '{var1}'`,
     "Q101" : `SELECT  sc.target_amount,  sc.closed_at ,com.id AS company_id, com.company_name FROM sales_commission AS sc 
               INNER JOIN customers AS c ON sc.customer_id = c.id 
@@ -422,9 +422,9 @@ const db_sql = {
               sc.closed_at, sc.slab_id FROM sales_commission AS sc WHERE sc.company_id = '{var1}' 
               AND sc.deleted_at IS NULL`,
     "Q160" : `SELECT 
-                id, company_name, company_logo, company_address, is_imap_enable, created_at 
+                id, company_name, company_logo, company_address, is_imap_enable, created_at, is_locked 
               FROM companies 
-              WHERE deleted_at IS NULL AND created_at BETWEEN '{var1}' AND '{var2}'`,
+              WHERE deleted_at IS NULL AND created_at BETWEEN '{var1}' AND '{var2}' AND is_locked = false`,
     "Q161"  : `SELECT 
                   sc.id AS sales_commission_id, 
                   SUM(sc.target_amount::DECIMAL) as amount,
@@ -1014,7 +1014,9 @@ const db_sql = {
     "Q262" : `SELECT * FROM lead_organizations WHERE company_id = '{var1}' AND deleted_at IS NULL`,
     "Q263" : `INSERT INTO lead_organizations(id, organization_name, user_id, company_id) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
     "Q264" : `SELECT * FROM lead_organizations WHERE id = '{var1}' AND deleted_at IS NULL`,
-    "Q265" : `UPDATE lead_organizations SET organization_name = '{var2}' WHERE id = '{var1}' RETURNING *`
+    "Q265" : `UPDATE lead_organizations SET organization_name = '{var2}' WHERE id = '{var1}' RETURNING *`,
+    "Q266" : `UPDATE companies SET is_locked = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
+    "Q267"  : `UPDATE users SET is_locked = '{var1}', updated_at = '{var3}' WHERE company_id = '{var2}' AND deleted_at IS NULL RETURNING * `,
 
  }
 

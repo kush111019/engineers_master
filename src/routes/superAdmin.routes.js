@@ -14,7 +14,7 @@ router.get('/showUsersByCompanyId',verifyTokenFn,controller.superAdmin.showUsers
 router.get('/userWiseCompanyRevenue', verifyTokenFn, controller.superAdmin.userWiseCompanyRevenue)
 router.get('/dashboard', verifyTokenFn, controller.superAdmin.dashboard)
 router.get('/totalExpectedRevenueCounts', verifyTokenFn, controller.superAdmin.totalExpectedRevenueCounts)
-
+router.put('/lockOrUnlockCompany', verifyTokenFn, controller.superAdmin.lockOrUnlockCompany)
 //------------------------------------------plans----------------------------------------
 
 router.post('/addPlan', verifyTokenFn, controller.superAdmin.addPlan)

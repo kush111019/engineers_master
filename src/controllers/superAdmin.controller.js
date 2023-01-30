@@ -304,6 +304,45 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
     }
 }
 
+module.exports.lockOrUnlockCompany = async(req, res) => {
+    try {
+        let { companyId, isLocked } = req.query
+
+        await connection.query('BEGIN')
+
+        let _dt = new Date().toISOString()
+
+        let s1 = dbScript(db_sql['Q266'],{var1 : isLocked, var2 : _dt, var3 : companyId})
+        let lockUnlockCompany = await connection.query(s1)
+
+        let s2 = dbScript(db_sql['Q267'],{var1 : isLocked ,var2 : companyId, var3 : _dt})
+        let lockUnlockUsers = await connection.query(s2)
+
+        if(lockUnlockCompany.rowCount > 0 && lockUnlockUsers.rowCount > 0){
+            let lock = (isLocked == 'true') ? "Locked" : "Unlocked"
+            await connection.query('COMMIT')
+            res.json({
+                status : 200,
+                success : true,
+                message : `Company ${lock} successfully`
+            })
+        }else{
+            await connection.query('ROLLBACK')
+            res.json({
+                status : 400,
+                success : false,
+                message : "Something went wrong"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status : 400,
+            success : false,
+            message : error.message
+        })
+    }
+}
+
 module.exports.dashboard = async (req, res) => {
     try {
         let { page, startDate, endDate, orderBy } = req.query
