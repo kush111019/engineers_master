@@ -7,7 +7,6 @@ const moduleName = process.env.SALES_MODULE
 module.exports.customerListforSales = async (req, res) => {
     try {
         let userId = req.user.id
-        let userIds = []
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
@@ -29,16 +28,33 @@ module.exports.customerListforSales = async (req, res) => {
                 })
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            userIds.push(userId)
             let customerListForSalesArr = []
-            let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
-            let findUsers = await connection.query(s3)
-            if (findUsers.rowCount > 0) {
-                for (user of findUsers.rows) {
-                    userIds.push(user.id)
+            let roleUsers = []
+            let roleIds = []
+            roleIds.push(checkPermission.rows[0].role_id)
+            let getRoles = async (id) => {
+                let s7 = dbScript(db_sql['Q16'], { var1: id })
+                let getChild = await connection.query(s7);
+                if (getChild.rowCount > 0) {
+                    for (let item of getChild.rows) {
+                        if (roleIds.includes(item.id) == false) {
+                            roleIds.push(item.id)
+                            await getRoles(item.id)
+                        }
+                    }
                 }
             }
-            for(let id of userIds){
+            await getRoles(checkPermission.rows[0].role_id)
+            for (let roleId of roleIds) {
+                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
+                let findUsers = await connection.query(s3)
+                if (findUsers.rowCount > 0) {
+                    for (let user of findUsers.rows) {
+                        roleUsers.push(user.id)
+                    }
+                }
+            }
+            for (id of roleUsers) {
                 let s4 = dbScript(db_sql['Q177'], { var1: id, var2 : false })
                 let customerList = await connection.query(s4)
                 if(customerList.rowCount > 0){
