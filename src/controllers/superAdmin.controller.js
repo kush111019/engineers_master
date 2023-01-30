@@ -977,7 +977,8 @@ module.exports.allTrialAndSubcribedCompaniesList = async (req, res) => {
                             PlanExpiryDate: expiryDate,
                             maxUserCount: (Number(transactions.rows[0].user_count) + 1),
                             actualUserCount : actualUserCount.rows[0].actual_count,
-                            totalAmount : Number(transactions.rows[0].total_amount)/100
+                            totalAmount : Number(transactions.rows[0].total_amount)/100,
+                            isLocked : companyData.is_locked
                         })
                     }
                 } else {
@@ -995,7 +996,8 @@ module.exports.allTrialAndSubcribedCompaniesList = async (req, res) => {
                         PlanExpiryDate: expiryDate,
                         maxUserCount: companyData.user_count,
                         actualUserCount : actualUserCount.rows[0].actual_count,
-                        totalAmount : 0
+                        totalAmount : 0,
+                        isLocked : companyData.is_locked
                     })
                 }
             }
@@ -1072,7 +1074,8 @@ module.exports.trialCompaniesList = async(req, res) => {
                         PlanExpiryDate: new Date(companyData.expiry_date),
                         maxUserCount: companyData.user_count,
                         actualUserCount : actualUserCount.rows[0].actual_count,
-                        totalAmount : 0
+                        totalAmount : 0,
+                        isLocked : companyData.is_locked
                     })
                 }
             }
@@ -1136,7 +1139,8 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                             PlanExpiryDate: expiryDate,
                             maxUserCount: (Number(transactions.rows[0].user_count) + 1),
                             actualUserCount : actualUserCount.rows[0].actual_count,
-                            totalAmount : Number(transactions.rows[0].total_amount)/100
+                            totalAmount : Number(transactions.rows[0].total_amount)/100,
+                            isLocked : companyData.is_locked
                         })
                     }
                 }
@@ -1201,7 +1205,8 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                                 companyAddress: companyData.company_address,
                                 companyLogo: companyData.company_logo,
                                 status: subscription.status,
-                                createdAt: companyData.created_at
+                                createdAt: companyData.created_at,
+                                isLocked : companyData.is_locked
                             })
                         } else if (subscription.status == 'canceled') {
                             canceledCompanies.push({
@@ -1210,7 +1215,8 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                                 companyAddress: companyData.company_address,
                                 companyLogo: companyData.company_logo,
                                 status: subscription.status,
-                                createdAt: companyData.created_at
+                                createdAt: companyData.created_at,
+                                isLocked : companyData.is_locked
                             })
                         }
                     }
