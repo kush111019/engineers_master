@@ -915,7 +915,7 @@ const db_sql = {
     "Q246" : `UPDATE marketing_budget SET is_finalize = true, updated_at = '{var2}' WHERE id = '{var1}' AND deleted_at IS NULL RETURNING *`,
     "Q247" : `SELECT 
                 COUNT(*),
-                u.full_name AS assigned_to
+                u.full_name AS created_by
               FROM 
                 leads AS l 
               INNER JOIN 
