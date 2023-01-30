@@ -280,6 +280,14 @@ module.exports.updateLead = async (req, res) => {
 
             await connection.query('BEGIN')
 
+            let s4 = dbScript(db_sql['Q264'],{var1 : organizationId})
+            let findOrganization = await connection.query(s4)
+            if(findOrganization.rowCount > 0){
+                if(findOrganization.rows[0].organization_name != organizationName){
+                    let s6 = dbScript(db_sql['Q265'],{var1 : organizationId, var2 : organizationName})
+                    let updateOrganizationName = await connection.query(s6)
+                }
+            }
             let _dt = new Date().toISOString();
             let s5 = dbScript(db_sql['Q204'], { var1: leadId, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: mysql_real_escape_string(organizationName), var8: source, var9: linkedinUrl, var10: website, var11: targetedValue, var12: industryType, var13: marketingQualifiedLead, var14: assignedSalesLeadTo, var15: mysql_real_escape_string(additionalMarketingNotes), var16: _dt, var17 : organizationId })
             let updateLead = await connection.query(s5)
@@ -715,7 +723,7 @@ module.exports.convertLeadToCustomer = async (req, res) => {
         } = req.body
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
-        if (checkPermission.rows[0].permission_to_create) {
+        if (checkPermission.rows[0].permission_to_update) {
             if (marketingQualifiedLead) {
                 
                 await connection.query('BEGIN')

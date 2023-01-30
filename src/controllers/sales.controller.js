@@ -375,7 +375,8 @@ module.exports.allSalesCommissionList = async (req, res) => {
                 closer.products = (productData.rowCount > 0) ? productData.rows : []
                 closer.slabId = (data.slab_id) ? data.slab_id : ''
                 closer.slabName = slabName
-                closer.leadId = data.lead_id
+                closer.leadId = data.lead_id,
+                closer.contract = data.contract
 
                 commissionList.push(closer)
             }
@@ -529,6 +530,7 @@ module.exports.allSalesCommissionList = async (req, res) => {
                     closer.slabId = (data.slab_id) ? data.slab_id : ''
                     closer.slabName = slabName
                     closer.leadId = data.lead_id
+                    closer.contract = data.contract
 
                     salesListArr.push(closer)
                 }
@@ -656,6 +658,7 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                 closer.slabId = (data.slab_id) ? data.slab_id : ''
                 closer.slabName = slabName
                 closer.leadId = data.lead_id
+                closer.contract = data.contract
 
                 commissionList.push(closer)
             }
@@ -771,6 +774,7 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                     closer.slabId = (data.slab_id) ? data.slab_id : ''
                     closer.slabName = slabName
                     closer.leadId = data.lead_id
+                    closer.contract = data.contract
 
                     salesListArr.push(closer)
                 }
@@ -927,6 +931,7 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                 closer.slabId = (data.slab_id) ? data.slab_id : ''
                 closer.slabName = slabName
                 closer.leadId = data.lead_id
+                closer.contract = data.contract
 
                 commissionList.push(closer)
             }
@@ -1044,6 +1049,7 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                     closer.slabId = (data.slab_id) ? data.slab_id : ''
                     closer.slabName = slabName
                     closer.leadId = data.lead_id
+                    closer.contract = data.contract
 
                     salesListArr.push(closer)
                 }
@@ -1480,18 +1486,38 @@ module.exports.deleteNote = async (req, res) => {
     }
 }
 
+module.exports.uploadSalesContract = async(req, res) => {
+    try {
+        let file = req.file
+        let path = `${process.env.SALES_CONTRACT_LINK}/${file.originalname}`;
+        res.json({
+            success: true,
+            status: 200,
+            message: "Sales Contract uploaded successfully!",
+            data: path
+        })
+    } catch (error) {
+        res.json({
+            success: false,
+            status: 400,
+            message: error.message
+        })
+    }
+}
+
 module.exports.closeSales = async (req, res) => {
     try {
         let userId = req.user.id
         let {
-            salesCommissionId
+            salesCommissionId,
+            contract
         } = req.body
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
             await connection.query('BEGIN')
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q40'], { var1: _dt, var2: _dt, var3: salesCommissionId })
+            let s2 = dbScript(db_sql['Q40'], { var1: _dt, var2: _dt, var3: salesCommissionId, var4 : contract })
             let closeSales = await connection.query(s2)
 
             let s3 = dbScript(db_sql['Q158'], { var1: _dt, var2: _dt, var3: salesCommissionId })

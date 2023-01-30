@@ -2,7 +2,7 @@ const express = require('express')
 var router = express.Router()
 var controller = require('../controllers/index')
 const { verifyTokenFn } = require('../utils/jwt')
-const {uploadAvatar , uploadProductImage, uploadProductFile, uploadMailAttechments, uploadLogo } = require('../utils/uploadfiles')
+const {uploadAvatar , uploadProductImage, uploadProductFile, uploadMailAttechments, uploadLogo, uploadSalesContract } = require('../utils/uploadfiles')
 
 router.post('/upload',verifyTokenFn, uploadAvatar.single('image'),controller.companyAdmin.upload);
 router.get('/showProfile',verifyTokenFn, controller.companyAdmin.showProfile)
@@ -83,7 +83,7 @@ router.get('/closedSalesCommissionList',verifyTokenFn, controller.sales.closedSa
 router.put('/updateSalesCommission',verifyTokenFn, controller.sales.updateSalesCommission)
 router.put('/deleteSalesCommission',verifyTokenFn, controller.sales.deleteSalesCommission)
 router.get('/salesCommissionLogsList',verifyTokenFn, controller.sales.salesCommissionLogsList)
-
+router.post('/uploadSalesContract', verifyTokenFn,uploadSalesContract.single('file'), controller.sales.uploadSalesContract )
 router.post('/closeSales',verifyTokenFn, controller.sales.closeSales)
 router.get('/usersListForSales', verifyTokenFn, controller.sales.usersListForSales)
 router.get('/commissionSplitListForSales', verifyTokenFn, controller.sales.commissionSplitListForSales)
