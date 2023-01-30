@@ -146,13 +146,13 @@ router.post('/readEmail', verifyTokenFn, controller.email.readEmail)
 router.get('/SentEmailList/:salesId', verifyTokenFn, controller.email.SentEmailList)
 
 //-------------------------------Marketing strategy-----------------------------------------
+router.get('/organizationList',verifyTokenFn, controller.marketingStrategy.organizationList)
 router.post('/createLead',verifyTokenFn, controller.marketingStrategy.createLead)
 router.get('/leadsList',verifyTokenFn, controller.marketingStrategy.leadsList)
 router.put('/updateLead',verifyTokenFn, controller.marketingStrategy.updateLead)
 router.put('/deleteLead',verifyTokenFn, controller.marketingStrategy.deleteLead)
 router.put('/rejectLead',verifyTokenFn, controller.marketingStrategy.rejectLead)
 router.get('/totalVsRejectedLeads', verifyTokenFn, controller.marketingStrategy.rejectedLeads )
-router.post('/createLead',verifyTokenFn, controller.marketingStrategy.createLead)
 router.post('/convertLeadToCustomer',verifyTokenFn, controller.marketingStrategy.convertLeadToCustomer)
 router.get('/marketingDashboard',verifyTokenFn, controller.marketingStrategy.marketingDashboard)
 

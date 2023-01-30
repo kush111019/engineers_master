@@ -418,7 +418,7 @@ const db_sql = {
               INNER JOIN products as p ON p.id = ps.product_id
               WHERE ps.sales_commission_id = '{var1}' AND ps.deleted_at IS NULL and p.deleted_at IS NULL` ,
     "Q158" : `UPDATE sales_commission_logs SET closed_at = '{var1}', updated_at = '{var2}' WHERE sales_commission_id = '{var3}' RETURNING *`,
-    "Q159" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount,
+    "Q159" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount, sc.target_closing_date,
               sc.closed_at, sc.slab_id FROM sales_commission AS sc WHERE sc.company_id = '{var1}' 
               AND sc.deleted_at IS NULL`,
     "Q160" : `SELECT 
@@ -696,13 +696,13 @@ const db_sql = {
 
     "Q201"  :`INSERT INTO leads(id,full_name,title,email_address,phone_number,
               address,organization_name,source,linkedin_url,website,targeted_value,industry_type,marketing_qualified_lead,
-              assigned_sales_lead_to,additional_marketing_notes,user_id,company_id)
+              assigned_sales_lead_to,additional_marketing_notes,user_id,company_id, organization_id)
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
-              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}') RETURNING *`,
+              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}','{var18}') RETURNING *`,
 
     "Q202"  :`SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
-                l.address,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
                 u.full_name AS user_name,u.role_id, r.role_name, u1.full_name AS creator_name 
@@ -727,7 +727,7 @@ const db_sql = {
 
     "Q203"  :`SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
-                l.address,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
                 u.full_name AS user_name,u.role_id, r.role_name, u1.full_name AS creator_name 
@@ -753,7 +753,7 @@ const db_sql = {
     "Q204"  :`UPDATE leads SET full_name = '{var2}', title = '{var3}',email_address = '{var4}',phone_number = '{var5}',
               address = '{var6}', organization_name = '{var7}',source = '{var8}',linkedin_url = '{var9}',website = '{var10}',targeted_value = '{var11}',
               industry_type = '{var12}',marketing_qualified_lead = '{var13}',assigned_sales_lead_to = '{var14}',additional_marketing_notes = '{var15}',
-              updated_at = '{var16}' WHERE id = '{var1}' AND deleted_at is null`,
+              updated_at = '{var16}', organization_id = '{var17}' WHERE id = '{var1}' AND deleted_at is null`,
               
     "Q205"  :`UPDATE leads SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at is null`,
     
@@ -1008,8 +1008,11 @@ const db_sql = {
               ORDER BY 
                   amount {var2}
               LIMIT {var3} OFFSET {var4}`,
-    "Q259" : `SELECT * from sales_commission WHERE customer_id = '{var1}' AND deleted_at IS NULL`,
-    "Q260" : `SELECT * from product_in_sales WHERE product_id = '{var1}' AND deleted_at IS NULL`                    
+    "Q259" : `SELECT * FROM sales_commission WHERE customer_id = '{var1}' AND deleted_at IS NULL`,
+    "Q260" : `SELECT * FROM product_in_sales WHERE product_id = '{var1}' AND deleted_at IS NULL`,
+    "Q261" : `SELECT * FROM lead_organizations WHERE user_id = '{var1}' AND deleted_at IS NULL`,
+    "Q262" : `SELECT * FROM lead_organizations WHERE company_id = '{var1}' AND deleted_at IS NULL`,
+    "Q263" : `INSERT INTO lead_organizations(id, organization_name, user_id, company_id) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`
  }
 
  function dbScript(template, variables) {

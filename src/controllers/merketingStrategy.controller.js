@@ -4,6 +4,95 @@ const uuid = require("node-uuid");
 const { mysql_real_escape_string } = require('../utils/helper')
 const moduleName = process.env.MARKETING_MODULE
 
+module.exports.organizationList = async(req, res) => {
+    try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global) {
+            let s2 = dbScript(db_sql['Q262'], { var1: checkPermission.rows[0].company_id })
+            let organizationList = await connection.query(s2)
+            if (organizationList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Organization list',
+                    data: organizationList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty organization list',
+                    data: organizationList.rows
+                })
+            }
+        }else if (checkPermission.rows[0].permission_to_view_own) {
+            let organizationList = []
+            let roleUsers = []
+            let roleIds = []
+            roleIds.push(checkPermission.rows[0].role_id)
+            let getRoles = async (id) => {
+                let s7 = dbScript(db_sql['Q16'], { var1: id })
+                let getChild = await connection.query(s7);
+                if (getChild.rowCount > 0) {
+                    for (let item of getChild.rows) {
+                        if (roleIds.includes(item.id) == false) {
+                            roleIds.push(item.id)
+                            await getRoles(item.id)
+                        }
+                    }
+                }
+            }
+            await getRoles(checkPermission.rows[0].role_id)
+            for (let roleId of roleIds) {
+                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
+                let findUsers = await connection.query(s3)
+                if (findUsers.rowCount > 0) {
+                    for (let user of findUsers.rows) {
+                        roleUsers.push(user.id)
+                    }
+                }
+            }
+            for (id of roleUsers) {
+                let s4 = dbScript(db_sql['Q261'], { var1: id })
+                let findLeadList = await connection.query(s4)
+                if (findLeadList.rowCount > 0) {
+                    for (let lead of findLeadList.rows) {
+                        organizationList.push(lead)
+                    }
+                }
+            }
+            if (organizationList.length > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Organization list',
+                    data: organizationList
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty Organization list',
+                    data: organizationList
+                })
+            }
+        }else{
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 module.exports.createLead = async (req, res) => {
     try {
         let userId = req.user.id
@@ -13,6 +102,7 @@ module.exports.createLead = async (req, res) => {
             emailAddress,
             phoneNumber,
             address,
+            organizationId,
             organizationName,
             source,
             linkedinUrl,
@@ -27,11 +117,17 @@ module.exports.createLead = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_create) {
-
             await connection.query('BEGIN')
+            if(organizationId == ''){
+                let orgId = uuid.v4()
+                let s3 = dbScript(db_sql['Q263'],{var1 : orgId, var2 : mysql_real_escape_string(organizationName), var3 : checkPermission.rows[0].id, var4 : checkPermission.rows[0].company_id})
+                let createOrganization = await connection.query(s3)
+                organizationId = createOrganization.rows[0].id;
+                organizationName = createOrganization.rows[0].organization_name
+            }
             let id = uuid.v4()
 
-            let s2 = dbScript(db_sql['Q201'], { var1: id, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: mysql_real_escape_string(organizationName), var8: source, var9: linkedinUrl, var10: website, var11: targetedValue, var12: industryType, var13: marketingQualifiedLead, var14: assignedSalesLeadTo, var15: mysql_real_escape_string(additionalMarketingNotes), var16: userId, var17: checkPermission.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q201'], { var1: id, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: mysql_real_escape_string(organizationName), var8: source, var9: linkedinUrl, var10: website, var11: targetedValue, var12: industryType, var13: marketingQualifiedLead, var14: assignedSalesLeadTo, var15: mysql_real_escape_string(additionalMarketingNotes), var16: userId, var17: checkPermission.rows[0].company_id, var18 : organizationId })
             let createLead = await connection.query(s2)
 
             if (createLead.rowCount > 0) {
@@ -167,6 +263,7 @@ module.exports.updateLead = async (req, res) => {
             emailAddress,
             phoneNumber,
             address,
+            organizationId,
             organizationName,
             source,
             linkedinUrl,
@@ -184,7 +281,7 @@ module.exports.updateLead = async (req, res) => {
             await connection.query('BEGIN')
 
             let _dt = new Date().toISOString();
-            let s5 = dbScript(db_sql['Q204'], { var1: leadId, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: mysql_real_escape_string(organizationName), var8: source, var9: linkedinUrl, var10: website, var11: targetedValue, var12: industryType, var13: marketingQualifiedLead, var14: assignedSalesLeadTo, var15: mysql_real_escape_string(additionalMarketingNotes), var16: _dt })
+            let s5 = dbScript(db_sql['Q204'], { var1: leadId, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: mysql_real_escape_string(organizationName), var8: source, var9: linkedinUrl, var10: website, var11: targetedValue, var12: industryType, var13: marketingQualifiedLead, var14: assignedSalesLeadTo, var15: mysql_real_escape_string(additionalMarketingNotes), var16: _dt, var17 : organizationId })
             let updateLead = await connection.query(s5)
 
             if (updateLead.rowCount > 0) {

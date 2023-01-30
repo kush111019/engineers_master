@@ -8,6 +8,7 @@ const cron = require('node-cron');
 require('dotenv').config()
 const logger = require('./middleware/logger');
 const { paymentReminder, upgradeSubscriptionCronFn } = require('./src/utils/paymentReminder')
+const { targetDateReminder } = require('./src/utils/salesTargetDateReminder')
 require('./src/database/connection')
 const Router = require('./src/routes/index');
 const http = require('http').createServer(app)
@@ -29,6 +30,7 @@ let cronJob = cron.schedule('59 59 23 * * *', async () => {
   if (cluster.isMaster) {
     await paymentReminder();
     await upgradeSubscriptionCronFn()
+    await targetDateReminder()
   }
 });
 cronJob.start();
