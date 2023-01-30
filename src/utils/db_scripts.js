@@ -694,7 +694,7 @@ const db_sql = {
               FROM sales_commission 
               WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_at BETWEEN '{var2}' AND '{var3}' `,
 
-    "Q201"  :`INSERT INTO marketing_leads(id,full_name,title,email_address,phone_number,
+    "Q201"  :`INSERT INTO leads(id,full_name,title,email_address,phone_number,
               address,organization_name,source,linkedin_url,website,targeted_value,industry_type,marketing_qualified_lead,
               assigned_sales_lead_to,additional_marketing_notes,user_id,company_id)
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
@@ -707,7 +707,7 @@ const db_sql = {
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
                 u.full_name AS user_name,u.role_id, r.role_name, u1.full_name AS creator_name 
               FROM 
-                marketing_leads AS l 
+                leads AS l 
               INNER JOIN 
                 users AS u ON u.id = l.assigned_sales_lead_to
               INNER JOIN 
@@ -732,7 +732,7 @@ const db_sql = {
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
                 u.full_name AS user_name,u.role_id, r.role_name, u1.full_name AS creator_name 
               FROM 
-                marketing_leads AS l 
+                leads AS l 
               INNER JOIN 
                 users AS u ON u.id = l.assigned_sales_lead_to
               INNER JOIN 
@@ -750,20 +750,20 @@ const db_sql = {
               ORDER BY 
                 l.created_at DESC`,
     
-    "Q204"  :`UPDATE marketing_leads SET full_name = '{var2}', title = '{var3}',email_address = '{var4}',phone_number = '{var5}',
+    "Q204"  :`UPDATE leads SET full_name = '{var2}', title = '{var3}',email_address = '{var4}',phone_number = '{var5}',
               address = '{var6}', organization_name = '{var7}',source = '{var8}',linkedin_url = '{var9}',website = '{var10}',targeted_value = '{var11}',
               industry_type = '{var12}',marketing_qualified_lead = '{var13}',assigned_sales_lead_to = '{var14}',additional_marketing_notes = '{var15}',
               updated_at = '{var16}' WHERE id = '{var1}' AND deleted_at is null`,
               
-    "Q205"  :`UPDATE marketing_leads SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at is null`,
+    "Q205"  :`UPDATE leads SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at is null`,
     
-    "Q206"  :`SELECT COUNT(*) from marketing_leads WHERE company_id = '{var1}' AND deleted_at IS NULL`,
+    "Q206"  :`SELECT COUNT(*) from leads WHERE company_id = '{var1}' AND deleted_at IS NULL`,
 
     "Q207"  :`SELECT 
                 COUNT(*),
                 u.full_name AS created_by
               FROM 
-                marketing_leads AS l 
+                leads AS l 
               INNER JOIN 
                 users AS u ON u.id = l.user_id
               WHERE 
@@ -777,7 +777,7 @@ const db_sql = {
                 COUNT(*),
                 u.full_name AS created_by
               FROM 
-                marketing_leads AS l 
+                leads AS l 
               INNER JOIN 
                 users AS u ON u.id = l.user_id
               WHERE 
@@ -789,7 +789,7 @@ const db_sql = {
               LIMIT {var2} OFFSET {var3}`,
     "Q209"  :`select distinct(l.id),l.user_id,l.assigned_sales_lead_to, u.full_name as created_by, l.is_rejected, l.is_converted
               FROM 
-                marketing_leads AS l 
+                leads AS l 
               left join 
                 users u on u.id = l.user_id
               where 
@@ -813,12 +813,12 @@ const db_sql = {
     "Q219"  :`UPDATE lead_sources set source = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q220"  :`UPDATE lead_sources set deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
     "Q221"  :`SELECT * FROM lead_sources WHERE company_id = '{var1}'`,
-    "Q222"  :`UPDATE marketing_leads SET is_converted = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
+    "Q222"  :`UPDATE leads SET is_converted = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q223"  :`SELECT 
                 COUNT(*),
                 u.full_name AS created_by
               FROM 
-                marketing_leads AS l 
+                leads AS l 
               INNER JOIN 
                 users AS u ON u.id = l.user_id
               WHERE 
@@ -832,7 +832,7 @@ const db_sql = {
                 COUNT(*),
                 u.full_name AS created_by
               FROM 
-                marketing_leads AS l 
+                leads AS l 
               INNER JOIN 
                 users AS u ON u.id = l.user_id
               WHERE 
@@ -845,8 +845,8 @@ const db_sql = {
     "Q225" :`SELECT * FROM lead_sources WHERE LOWER(source) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
     "Q226" :`SELECT * FROM lead_titles WHERE LOWER(title) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
     "Q227" :`SELECT * FROM lead_industries WHERE LOWER(industry) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
-    "Q228" :`SELECT COUNT(*) from marketing_leads WHERE user_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
-    "Q229" :`SELECT COUNT(*) from marketing_leads WHERE company_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
+    "Q228" :`SELECT COUNT(*) from leads WHERE user_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
+    "Q229" :`SELECT COUNT(*) from leads WHERE company_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
     "Q230" : `UPDATE companies SET is_marketing_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q231" :`UPDATE companies SET expiry_date = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
     "Q232" :`UPDATE companies SET expiry_date = '{var1}', user_count = '{var2}', updated_at = '{var3}' WHERE id = '{var4}' AND deleted_at IS NULL RETURNING *`,
@@ -917,7 +917,7 @@ const db_sql = {
                 COUNT(*),
                 u.full_name AS assigned_to
               FROM 
-                marketing_leads AS l 
+                leads AS l 
               INNER JOIN 
                 users AS u ON u.id = l.assigned_sales_lead_to
               WHERE 
@@ -927,18 +927,18 @@ const db_sql = {
               ORDER BY 
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
-    "Q248" :`SELECT COUNT(*) from marketing_leads WHERE assigned_sales_lead_to = '{var1}'  AND deleted_at IS NULL`,
+    "Q248" :`SELECT COUNT(*) from leads WHERE assigned_sales_lead_to = '{var1}'  AND deleted_at IS NULL`,
     "Q249" :`UPDATE companies SET company_logo = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
-    "Q250" :`UPDATE marketing_leads SET is_rejected = '{var2}', reason = '{var3}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`, 
+    "Q250" :`UPDATE leads SET is_rejected = '{var2}', reason = '{var3}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`, 
     "Q251" :`UPDATE customers SET is_rejected = '{var2}' WHERE lead_id = '{var1}' AND deleted_at is null RETURNING *`, 
     "Q252" :`SELECT * from sales_commission WHERE lead_id = '{var1}' AND deleted_at IS NULL`,
-    "Q253" :`SELECT COUNT(*) from marketing_leads WHERE company_id = '{var1}' AND is_rejected = '{var2}' AND deleted_at IS NULL`,
-    "Q254" :`SELECT COUNT(*) from marketing_leads WHERE user_id = '{var1}' AND is_rejected = true AND deleted_at IS NULL`,
+    "Q253" :`SELECT COUNT(*) from leads WHERE company_id = '{var1}' AND is_rejected = '{var2}' AND deleted_at IS NULL`,
+    "Q254" :`SELECT COUNT(*) from leads WHERE user_id = '{var1}' AND is_rejected = true AND deleted_at IS NULL`,
     "Q255" :`SELECT 
                 COUNT(*),
                 u.full_name AS created_by
               FROM 
-                marketing_leads AS l 
+                leads AS l 
               INNER JOIN 
                 users AS u ON u.id = l.user_id
               WHERE 
@@ -952,7 +952,7 @@ const db_sql = {
                 COUNT(*),
                 u.full_name AS created_by
               FROM 
-                marketing_leads AS l 
+                leads AS l 
               INNER JOIN 
                 users AS u ON u.id = l.user_id
               WHERE 
