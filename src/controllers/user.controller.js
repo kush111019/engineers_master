@@ -275,7 +275,6 @@ module.exports.showUserById = async (req, res) => {
 module.exports.usersList = async (req, res) => {
     try {
         let userId = req.user.id
-        let userIds = []
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
@@ -306,36 +305,42 @@ module.exports.usersList = async (req, res) => {
                 })
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            userIds.push(userId)
             let userListArr = []
-            let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
-            let findUsers = await connection.query(s3)
-            if (findUsers.rowCount > 0) {
-                for (user of findUsers.rows) {
-                    userIds.push(user.id)
-                }
-            }
-            let s4 = dbScript(db_sql['Q8'], { var1: userId })
-            let self = await connection.query(s4);
-            if (self.rowCount > 0) {
-                for (let user of self.rows) {
-                    let s5 = dbScript(db_sql['Q12'], { var1: user.role_id })
-                    let findRole = await connection.query(s5);
-                    if (findRole.rowCount > 0) {
-                        user.roleName = findRole.rows[0].role_name
-                    } else {
-                        user.roleName = null
+            let roleUsers = []
+            let roleIds = []
+            roleIds.push(checkPermission.rows[0].role_id)
+            console.log(roleIds, "role id1");
+            let getRoles = async (id) => {
+                let s7 = dbScript(db_sql['Q16'], { var1: id })
+                let getChild = await connection.query(s7);
+                if (getChild.rowCount > 0) {
+                    for (let item of getChild.rows) {
+                        if (roleIds.includes(item.id) == false) {
+                            roleIds.push(item.id)
+                            await getRoles(item.id)
+                        }
                     }
-                    userListArr.push(user)
                 }
             }
-            for (let id of userIds) {
+            await getRoles(checkPermission.rows[0].role_id)
+            for (let roleId of roleIds) {
+                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
+                let findUsers = await connection.query(s3)
+                if (findUsers.rowCount > 0) {
+                    for (let user of findUsers.rows) {
+                        roleUsers.push(user.id)
+                    }
+                }
+            }
+            for (id of roleUsers) {
                 let s5 = dbScript(db_sql['Q176'], { var1: id })
                 let findUsers = await connection.query(s5);
+                console.log(findUsers.rows,"findUsers");
                 if (findUsers.rowCount > 0) {
                     for (let user of findUsers.rows) {
                         let s5 = dbScript(db_sql['Q12'], { var1: user.role_id })
                         let findRole = await connection.query(s5);
+                        console.log(findRole.rows,"findRole");
                         if (findRole.rowCount > 0) {
                             user.roleName = findRole.rows[0].role_name
                         } else {
@@ -345,6 +350,7 @@ module.exports.usersList = async (req, res) => {
                     }
                 }
             }
+            
             if (userListArr.length > 0) {
                 res.json({
                     status: 200,

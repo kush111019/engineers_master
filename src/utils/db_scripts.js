@@ -111,7 +111,7 @@ const db_sql = {
               FROM 
                 customers AS c 
               INNER JOIN users AS u ON u.id = c.user_id
-              WHERE c.company_id = '{var1}' AND is_rejected = '{var2}'`,
+              WHERE c.company_id = '{var1}' AND c.is_rejected = '{var2}'`,
     "Q53"  : `INSERT INTO sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency, user_id, slab_id, lead_id ) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var13}', '{var14}', '{var15}', '{var16}', '{var17}', '{var18}', '{var19}') RETURNING *`,
     "Q54"  : `SELECT 
                 sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
@@ -567,7 +567,7 @@ const db_sql = {
     "Q176" : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at, is_main_admin, created_by FROM users WHERE created_by = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,
     "Q177" : `SELECT c.id, c.customer_company_id ,c.customer_name, c.source, c.user_id, c.address, c.deleted_at,
               u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
-              WHERE c.user_id = '{var1}'`,
+              WHERE c.user_id = '{var1}' AND c.is_rejected = '{var2}'`,
     "Q178" : `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,

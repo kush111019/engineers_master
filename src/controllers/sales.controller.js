@@ -39,7 +39,7 @@ module.exports.customerListforSales = async (req, res) => {
                 }
             }
             for(let id of userIds){
-                let s4 = dbScript(db_sql['Q177'], { var1: id })
+                let s4 = dbScript(db_sql['Q177'], { var1: id, var2 : false })
                 let customerList = await connection.query(s4)
                 if(customerList.rowCount > 0){
                     for(let customer of customerList.rows){
@@ -1534,7 +1534,7 @@ module.exports.usersListForSales = async (req, res) => {
         let userId = req.user.id
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
+        if (checkPermission.rows[0].permission_to_view_global) {
             let s4 = dbScript(db_sql['Q24'], { var1: checkPermission.rows[0].company_id })
             let findUsers = await connection.query(s4);
             if (findUsers.rows.length > 0) {
@@ -1559,6 +1559,64 @@ module.exports.usersListForSales = async (req, res) => {
                     success: false,
                     message: "Empty users list",
                     data: []
+                })
+            }
+        }else if(checkPermission.rows[0].permission_to_view_own){
+            let userListArr = []
+            let roleUsers = []
+            let roleIds = []
+            roleIds.push(checkPermission.rows[0].role_id)
+            let getRoles = async (id) => {
+                let s7 = dbScript(db_sql['Q16'], { var1: id })
+                let getChild = await connection.query(s7);
+                if (getChild.rowCount > 0) {
+                    for (let item of getChild.rows) {
+                        if (roleIds.includes(item.id) == false) {
+                            roleIds.push(item.id)
+                            await getRoles(item.id)
+                        }
+                    }
+                }
+            }
+            await getRoles(checkPermission.rows[0].role_id)
+            for (let roleId of roleIds) {
+                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
+                let findUsers = await connection.query(s3)
+                if (findUsers.rowCount > 0) {
+                    for (let user of findUsers.rows) {
+                        roleUsers.push(user.id)
+                    }
+                }
+            }
+            for (id of roleUsers) {
+                let s5 = dbScript(db_sql['Q176'], { var1: id })
+                let findUsers = await connection.query(s5);
+                if (findUsers.rowCount > 0) {
+                    for (let user of findUsers.rows) {
+                        let s5 = dbScript(db_sql['Q12'], { var1: user.role_id })
+                        let findRole = await connection.query(s5);
+                        if (findRole.rowCount > 0) {
+                            user.roleName = findRole.rows[0].role_name
+                        } else {
+                            user.roleName = null
+                        }
+                        userListArr.push(user)
+                    }
+                }
+            }
+            if (userListArr.length > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Users list',
+                    data: userListArr
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty Users list',
+                    data: userListArr
                 })
             }
         } else {
