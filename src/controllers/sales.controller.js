@@ -3,11 +3,12 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
 const { mysql_real_escape_string } = require('../utils/helper')
 const moduleName = process.env.SALES_MODULE
+const customerModule = process.env.CUSTOMERS_MODULE
 
 module.exports.customerListforSales = async (req, res) => {
     try {
         let userId = req.user.id
-        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let s3 = dbScript(db_sql['Q41'], { var1: customerModule, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
             let s4 = dbScript(db_sql['Q52'], { var1: checkPermission.rows[0].company_id,  var2 : false })
@@ -97,7 +98,7 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
     try {
         let { customerId } = req.query
         let userId = req.user.id
-            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
+            let s3 = dbScript(db_sql['Q41'], { var1: customerModule , var2: userId })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
                 let s4 = dbScript(db_sql['Q55'], { var1: customerId })
