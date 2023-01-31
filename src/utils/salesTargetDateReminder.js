@@ -1,6 +1,7 @@
 const connection = require("../database/connection");
 const { dbScript, db_sql } = require("./db_scripts");
-const { tagetClosingDateReminderMail2, tagetClosingDateReminderMail} = require("../utils/sendMail")
+const { tagetClosingDateReminderMail2, tagetClosingDateReminderMail,
+    recurringSalesReminderMail, recurringSalesReminderMail2} = require("../utils/sendMail")
 const moment = require('moment')
 
 module.exports.targetDateReminder = async () => {
@@ -27,7 +28,6 @@ module.exports.targetDateReminder = async () => {
                     }
                 }
                 let currentDate = new Date()
-                
                 currentDate = moment(currentDate).format('MM/DD/YYYY')
                 if(s.sales_type == "Perpectual"){
                     let targetDate = new Date(sData.target_closing_date);
@@ -49,6 +49,29 @@ module.exports.targetDateReminder = async () => {
                             await tagetClosingDateReminderMail2(emailsArr, sData.customer_name, sData.target_closing_date)
                         }else{
                             await tagetClosingDateReminderMail(emailsArr, sData.customer_name, sData.target_closing_date)
+                        }
+                    }
+                }else{
+                    let recurringDate = new Date(sData.recurring_date)
+
+                    let fifteenDaysBefore = new Date(recurringDate.getTime() - 15 * 24 * 60 * 60 * 1000);
+                    let sevenDaysBefore = new Date(recurringDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+                    let forFifteenDaysBefore = moment(fifteenDaysBefore).format('MM/DD/YYYY')
+                    let forSevenDaysBefore = moment(sevenDaysBefore).format('MM/DD/YYYY')
+
+                    if(currentDate == forFifteenDaysBefore){
+                        if(process.env.isLocalEmail == 'true'){
+                            await recurringSalesReminderMail2(emailsArr, sData.customer_name, sData.recurring_date)
+                        }else{
+                            await recurringSalesReminderMail(emailsArr, sData.customer_name, sData.recurring_date)
+                        }
+
+                    }else if(currentDate == forSevenDaysBefore){
+                        if(process.env.isLocalEmail == 'true'){
+                            await recurringSalesReminderMail2(emailsArr, sData.customer_name, sData.recurring_date)
+                        }else{
+                            await recurringSalesReminderMail(emailsArr, sData.customer_name, sData.recurring_date)
                         }
                     }
                 }
