@@ -7,13 +7,12 @@ const moment = require('moment')
 module.exports.targetDateReminder = async () => {
     let s1 = dbScript(db_sql['Q99'], {})
     let companies = await connection.query(s1)
-    let emailsArr = []
     for (let data of companies.rows) {
         let s2 = dbScript(db_sql['Q54'], { var1: data.id })
         let salesData = await connection.query(s2)
         if (salesData.rowCount > 0) {
             for (let sData of salesData.rows) {
-                // console.log(sData, "sales data");
+                let emailsArr = []
                 emailsArr.push(sData.email_address)
                 let s4 = dbScript(db_sql['Q59'], { var1: sData.id })
                 let supporter = await connection.query(s4)
@@ -23,6 +22,7 @@ module.exports.targetDateReminder = async () => {
                             let s5 = dbScript(db_sql['Q81'], { var1: supporterData.id })
                             let supporterName = await connection.query(s5)
                             if (supporterName.rowCount > 0) {
+                                if(emailsArr.includes(supporterName.rows[0].email_address) == false)
                                 emailsArr.push(supporterName.rows[0].email_address)
                             }
                         }
@@ -37,7 +37,6 @@ module.exports.targetDateReminder = async () => {
 
                     let forFifteenDaysBefore = moment(fifteenDaysBefore).format('MM/DD/YYYY')
                     let forSevenDaysBefore = moment(sevenDaysBefore).format('MM/DD/YYYY')
-
                     if(currentDate == forFifteenDaysBefore){
                         if(process.env.isLocalEmail == 'true'){
                             await tagetClosingDateReminderMail2(emailsArr, sData.customer_name, sData.target_closing_date)

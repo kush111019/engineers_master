@@ -37,9 +37,9 @@ module.exports.recurringSalesReminder = function (customerName,recurringDate) {
 
                                             <br style="color:#455056; font-size:15px;line-height:24px; margin:0;">
 
-                                            This Email is to inform you that for sales ${customerName} the recurring payment date is ${recurringDate}.  <br>
+                                            This Email is to inform you that for sales <b>${customerName}</b>, The recurring payment date is <b>${recurringDate}<b>.  <br>
                                             <br/>
-                                            Please contact to business contact for recurring payment.<br>
+                                            Please contact to Business contact for recurring payment.<br>
                                             <br/>
                                             
                                             If you have any questions. Please email us at <a href=""

@@ -37,7 +37,7 @@ module.exports.tagetClosingDateReminder = function (customerName,endDate) {
 
                                             <br style="color:#455056; font-size:15px;line-height:24px; margin:0;">
 
-                                            This Email is to inform you that for sales ${customerName} the target closing date is ${endDate}.  <br>
+                                            This Email is to inform you that for sales <b>${customerName}</b>, The target closing date is <b>${endDate}</b>.  <br>
                                             <br/>
                                             Please close the sales before or on target closing date <br>
                                             <br/>
