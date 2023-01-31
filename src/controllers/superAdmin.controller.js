@@ -346,7 +346,13 @@ module.exports.lockOrUnlockCompany = async(req, res) => {
 module.exports.dashboard = async (req, res) => {
     try {
         let { page, startDate, endDate, orderBy } = req.query
-        let s1 = dbScript(db_sql['Q160'], {var1: startDate, var2: endDate})
+        startDate = new Date(startDate)
+        startDate.setHours(0, 0, 0, 0)
+        let sDate = new Date(startDate).toISOString()
+        endDate = new Date(endDate)
+        endDate.setHours(23, 59, 59, 999)
+        let eDate = new Date(endDate).toISOString()
+        let s1 = dbScript(db_sql['Q160'], {var1: sDate, var2: eDate})
         let companyData = await connection.query(s1)
         if (companyData.rowCount > 0) {
             let revenueCommission = []
