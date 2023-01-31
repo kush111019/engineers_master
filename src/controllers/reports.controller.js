@@ -7,13 +7,19 @@ module.exports.revenuePerCustomer = async (req, res) => {
     try {
         let userId = req.user.id
         let { page, orderBy, startDate, endDate } = req.query
+        startDate = new Date(startDate)
+        startDate.setHours(0, 0, 0, 0)
+        let sDate = new Date(startDate).toISOString()
+        endDate = new Date(endDate)
+        endDate.setHours(23, 59, 59, 999)
+        let eDate = new Date(endDate).toISOString()
         let limit = 10;
         let offset = (page - 1) * limit
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global) {
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
-                let s2 = dbScript(db_sql['Q89'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
+                let s2 = dbScript(db_sql['Q89'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: limit, var4: offset, var5: sDate, var6: eDate })
                 let customerCompanies = await connection.query(s2)
                 if (customerCompanies.rowCount > 0) {
                     res.json({
@@ -66,7 +72,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
             }
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
                 for (id of roleUsers) {
-                    let s2 = dbScript(db_sql['Q170'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
+                    let s2 = dbScript(db_sql['Q170'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: sDate, var6: eDate })
                     let customerCompanies = await connection.query(s2)
                     if(customerCompanies.rowCount > 0){
                         for(let customer of customerCompanies.rows){
@@ -115,13 +121,19 @@ module.exports.revenuePerProduct = async (req, res) => {
     try {
         let userId = req.user.id
         let { page, orderBy, startDate, endDate} = req.query
+        startDate = new Date(startDate)
+        startDate.setHours(0, 0, 0, 0)
+        let sDate = new Date(startDate).toISOString()
+        endDate = new Date(endDate)
+        endDate.setHours(23, 59, 59, 999)
+        let eDate = new Date(endDate).toISOString()
         let limit = 10;
         let offset = (page - 1) * limit
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
             if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
-                let s4 = dbScript(db_sql['Q153'], { var1: checkPermission.rows[0].company_id, var2 : orderBy, var3 : limit, var4 : offset, var5: startDate, var6: endDate })
+                let s4 = dbScript(db_sql['Q153'], { var1: checkPermission.rows[0].company_id, var2 : orderBy, var3 : limit, var4 : offset, var5: sDate, var6: eDate })
                 let revenuePerProduct = await connection.query(s4)
                 if (revenuePerProduct.length > 0) {
                     res.json({
@@ -174,7 +186,7 @@ module.exports.revenuePerProduct = async (req, res) => {
             }
             if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
                 for(let id of roleUsers){
-                    let s4 = dbScript(db_sql['Q171'], { var1: id, var2 : orderBy, var3 : limit, var4 : offset, var5: startDate, var6: endDate })
+                    let s4 = dbScript(db_sql['Q171'], { var1: id, var2 : orderBy, var3 : limit, var4 : offset, var5: sDate, var6: eDate })
                     let revenuePerProduct = await connection.query(s4)
                     if(revenuePerProduct.rowCount > 0){
                         for(let product of revenuePerProduct.rows){
@@ -223,6 +235,12 @@ module.exports.revenuePerSalesRep = async (req, res) => {
     try {
         let userId = req.user.id
         let { page, orderBy, startDate, endDate, role_id, isAll } = req.query
+        startDate = new Date(startDate)
+        startDate.setHours(0, 0, 0, 0)
+        let sDate = new Date(startDate).toISOString()
+        endDate = new Date(endDate)
+        endDate.setHours(23, 59, 59, 999)
+        let eDate = new Date(endDate).toISOString()
         let limit = 10;
         let offset = (page - 1) * limit
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
@@ -258,7 +276,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                     }
                 }
                 for(let id of roleUsers){
-                    let s4 = dbScript(db_sql['Q258'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
+                    let s4 = dbScript(db_sql['Q258'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: sDate, var6: eDate })
                     let salesData = await connection.query(s4)
                     if (salesData.rowCount > 0) {
                         for (let data of salesData.rows) {
@@ -448,6 +466,12 @@ module.exports.roleWiseRevenue = async (req, res) => {
     try {
         let userId = req.user.id
         let { page, orderBy, startDate, endDate, role_id, isAll } = req.query
+        startDate = new Date(startDate)
+        startDate.setHours(0, 0, 0, 0)
+        let sDate = new Date(startDate).toISOString()
+        endDate = new Date(endDate)
+        endDate.setHours(23, 59, 59, 999)
+        let eDate = new Date(endDate).toISOString()
         let limit = 10;
         let offset = (page - 1) * limit
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
@@ -483,7 +507,7 @@ module.exports.roleWiseRevenue = async (req, res) => {
                     }
                 }
                 for(let id of roleUsers){
-                    let s4 = dbScript(db_sql['Q186'], { var1: id, var2: limit, var3: offset, var4: startDate, var5: endDate })
+                    let s4 = dbScript(db_sql['Q186'], { var1: id, var2: limit, var3: offset, var4: sDate, var5: eDate })
                     let salesData = await connection.query(s4)
                     if(salesData.rowCount > 0){
                         revenueList.push(salesData.rows[0])
