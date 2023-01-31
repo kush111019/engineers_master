@@ -705,15 +705,11 @@ const db_sql = {
                 l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u.full_name AS user_name,u.role_id, r.role_name, u1.full_name AS creator_name 
+                u1.full_name AS creator_name 
               FROM 
-                leads AS l 
-              INNER JOIN 
-                users AS u ON u.id = l.assigned_sales_lead_to
+                leads AS l
               INNER JOIN 
                 users AS u1 ON u1.id = l.user_id
-              INNER JOIN
-                roles AS r ON r.id = u.role_id
               INNER JOIN
                 lead_sources AS s ON s.id = l.source
               INNER JOIN
@@ -730,15 +726,11 @@ const db_sql = {
                 l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u.full_name AS user_name,u.role_id, r.role_name, u1.full_name AS creator_name 
+                u1.full_name AS creator_name 
               FROM 
                 leads AS l 
               INNER JOIN 
-                users AS u ON u.id = l.assigned_sales_lead_to
-              INNER JOIN 
                 users AS u1 ON u1.id = l.user_id
-              INNER JOIN
-                roles AS r ON r.id = u.role_id
               INNER JOIN
                 lead_sources AS s ON s.id = l.source
               INNER JOIN
