@@ -629,7 +629,7 @@ const db_sql = {
                   sc.closed_at is not null 
                   AND sc.user_id = '{var1}' 
                   AND sc.closed_at BETWEEN '{var4}' AND '{var5}'
-                  AND sc.deleted_at IS NULL AND u.deleted_at IS NULL
+                  AND sc.deleted_at IS NULL
               GROUP BY 
                   u.full_name 
               LIMIT {var2} OFFSET {var3}`,
@@ -983,7 +983,7 @@ const db_sql = {
      "Q258" : `SELECT 
                   u.full_name AS sales_rep,
                   SUM(sc.target_amount::DECIMAL) as amount,
-                    sc.closed_at,sc.slab_id
+                  sc.closed_at,sc.slab_id
               FROM  
                   sales_commission AS sc 
               INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
@@ -992,8 +992,7 @@ const db_sql = {
                   sc.closed_at is not null 
                   AND sc.user_id = '{var1}' 
                   AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
-                  AND sc.deleted_at IS NULL AND cr.deleted_at IS NULL 
-                  AND u.deleted_at IS NULL
+                  AND sc.deleted_at IS NULL
               GROUP BY 
                   u.full_name,
                   sc.closed_at, 
