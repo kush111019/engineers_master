@@ -522,49 +522,6 @@ module.exports.roleWiseRevenue = async (req, res) => {
                 })
             }
         } 
-        // else if (checkPermission.rows[0].permission_to_view_own) {
-        //     userIds.push(userId)
-        //     let revenuePerSalesRepArr = []
-        //     let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
-        //     let findUsers = await connection.query(s3)
-        //     if (findUsers.rowCount > 0) {
-        //         for (user of findUsers.rows) {
-        //             userIds.push(user.id)
-        //         }
-        //     }
-        //     if ((startDate != undefined && startDate != '') && (endDate != undefined && endDate != '')) {
-        //         for (let id of userIds) {
-        //             let s4 = dbScript(db_sql['Q172'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: startDate, var6: endDate })
-        //             let salesData = await connection.query(s4)
-        //             if (salesData.rowCount > 0) {
-        //                 for (let sales of salesData.rows) {
-        //                     revenuePerSalesRepArr.push(sales)
-        //                 }
-        //             }
-        //         }
-        //         if (revenuePerSalesRepArr.length > 0) {
-        //             res.json({
-        //                 status: 200,
-        //                 success: true,
-        //                 message: "Revenue per sales representative",
-        //                 data: revenuePerSalesRepArr
-        //             })
-        //         } else {
-        //             res.json({
-        //                 status: 200,
-        //                 success: true,
-        //                 message: "Empty revenue per sales representative",
-        //                 data: revenuePerSalesRepArr
-        //             })
-        //         }
-        //     } else {
-        //         res.json({
-        //             status: 400,
-        //             success: false,
-        //             message: "Start date and End date is required",
-        //         })
-        //     }
-        // } 
         else {
             res.status(403).json({
                 success: false,

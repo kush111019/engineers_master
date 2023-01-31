@@ -623,8 +623,7 @@ const db_sql = {
                   SUM(sc.target_amount::DECIMAL) AS revenue
               FROM  
                   sales_commission AS sc 
-                  INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
-                  INNER JOIN users AS u ON u.id = cr.closer_id
+                  INNER JOIN users AS u ON u.id = sc.user_id
               WHERE 
                   sc.closed_at is not null 
                   AND sc.user_id = '{var1}' 
