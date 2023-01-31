@@ -116,7 +116,7 @@ module.exports.revenues = async (req, res) => {
                 }
             }
             for (let id of roleUsers) {
-                let s4 = dbScript(db_sql['Q167'], { var1: id, var2: orderBy, var3: startDate, var4: endDate })
+                let s4 = dbScript(db_sql['Q167'], { var1: id, var2: orderBy, var3: sDate, var4:eDate })
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0) {
                     for (let data of salesData.rows) {
