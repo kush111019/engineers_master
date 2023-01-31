@@ -8,11 +8,12 @@ module.exports.targetDateReminder = async () => {
     let s1 = dbScript(db_sql['Q99'], {})
     let companies = await connection.query(s1)
     let emailsArr = []
-    for (let data of companies) {
+    for (let data of companies.rows) {
         let s2 = dbScript(db_sql['Q54'], { var1: data.id })
         let salesData = await connection.query(s2)
         if (salesData.rowCount > 0) {
             for (let sData of salesData.rows) {
+                // console.log(sData, "sales data");
                 emailsArr.push(sData.email_address)
                 let s4 = dbScript(db_sql['Q59'], { var1: sData.id })
                 let supporter = await connection.query(s4)
@@ -29,7 +30,7 @@ module.exports.targetDateReminder = async () => {
                 }
                 let currentDate = new Date()
                 currentDate = moment(currentDate).format('MM/DD/YYYY')
-                if(s.sales_type == "Perpectual"){
+                if(sData.sales_type == "Perpectual"){
                     let targetDate = new Date(sData.target_closing_date);
                     let fifteenDaysBefore = new Date(targetDate.getTime() - 15 * 24 * 60 * 60 * 1000);
                     let sevenDaysBefore = new Date(targetDate.getTime() - 7 * 24 * 60 * 60 * 1000);

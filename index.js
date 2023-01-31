@@ -35,6 +35,12 @@ let cronJob = cron.schedule('59 59 23 * * *', async () => {
 });
 cronJob.start();
 
+// (async()=> {
+//   if (cluster.isMaster) {
+//     targetDateReminder()
+//   }
+// })();
+
 let options = {
     proxy: false,
     num: os.cpus().length
