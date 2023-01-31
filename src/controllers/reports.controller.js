@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const {reduceArray, paginatedResults,reduceArrayWithName, reduceArrayWithCommission} = require('../utils/helper')
+const {reduceArray, paginatedResults,reduceArrayWithName,reduceArrayWithName1, reduceArrayWithCommission} = require('../utils/helper')
 const moduleName = process.env.REPORTS_MODULE
 
 module.exports.revenuePerCustomer = async (req, res) => {
@@ -490,12 +490,13 @@ module.exports.roleWiseRevenue = async (req, res) => {
                     }
                 }
                 if (revenueList.length > 0) {
+                    let returnData = await reduceArrayWithName1(revenueList)
                     if(orderBy.toLowerCase() == 'asc'){
-                        revenueList = revenueList.sort((a,b) => {
+                        returnData = returnData.sort((a,b) => {
                             return a.revenue - b.revenue
                         })
                     }else{
-                        revenueList = revenueList.sort((a,b) => {
+                        returnData = returnData.sort((a,b) => {
                             return b.revenue - a.revenue
                         })
                     }
@@ -503,7 +504,7 @@ module.exports.roleWiseRevenue = async (req, res) => {
                         status: 200,
                         success: true,
                         message: "Revenue per role wise user",
-                        data: revenueList
+                        data: returnData
                     })
                 } else {
                     res.json({

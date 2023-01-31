@@ -449,3 +449,24 @@ module.exports.reduceArrayWithName = async (data) => {
     }
     return returnData
 }
+
+module.exports.reduceArrayWithName1 = async (data) => {
+
+    let returnData = [];
+    for (let i = 0; i < data.length; i++) {
+        let found = 0;
+        for (let j = 0; j < returnData.length; j++) {
+            let user1 = data[i].user
+            let user2 = returnData[j].user
+            if (user1 === user2) {
+                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
+                returnData[j].revenue = revenueOfJ;
+                found = 1;
+            }
+        }
+        if (found === 0) {
+            returnData.push(data[i]);
+        }
+    }
+    return returnData
+}
