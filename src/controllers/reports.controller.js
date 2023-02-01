@@ -301,6 +301,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         }
                     }
                 }
+                console.log(roleUsers,"roleUsers");
                 for(let id of roleUsers){
                     let s4 = dbScript(db_sql['Q258'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: sDate, var6: eDate })
                     let salesData = await connection.query(s4)
