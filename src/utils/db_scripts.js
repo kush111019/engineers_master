@@ -487,7 +487,7 @@ const db_sql = {
                 created_at DESC`,      
     "Q170" : `SELECT            
                   c.customer_name,
-                  SUM(sc.target_amount::DECIMAL) AS revenue
+                  sc.target_amount::DECIMAL AS revenue
               FROM 
                   sales_commission sc
               INNER JOIN customers c ON c.id = sc.customer_id
@@ -502,12 +502,13 @@ const db_sql = {
                   c.deleted_at IS NULL AND
                   sc.deleted_at IS NULL 
               GROUP BY 
-                  c.customer_name 
+                  c.customer_name,
+                  sc.target_amount 
               ORDER BY 
                   revenue {var2}
               LIMIT {var3} OFFSET {var4}`,
     "Q171" : `SELECT 
-                  SUM(sc.target_amount::DECIMAL) as revenue, 
+                  sc.target_amount::DECIMAL as revenue, 
                   p.product_name
               FROM 
                   sales_commission AS sc 
@@ -528,7 +529,8 @@ const db_sql = {
                   AND c.deleted_at IS NULL
                   AND sc.closed_at IS NOT NULL
               GROUP BY 
-                  p.product_name
+                  p.product_name,
+                  sc.target_amount
               ORDER BY 
                   revenue {var2}
               LIMIT {var3} OFFSET {var4}`, 
@@ -663,7 +665,7 @@ const db_sql = {
               WHERE r.id = '{var1}'  AND r.deleted_at IS NULL`,
     "Q186"  : `SELECT 
                   u.full_name AS user,
-                  SUM(sc.target_amount::DECIMAL) AS revenue
+                  sc.target_amount::DECIMAL AS revenue
               FROM  
                   sales_commission AS sc 
               INNER JOIN users AS u ON u.id = sc.user_id
@@ -677,7 +679,8 @@ const db_sql = {
                   AND sc.closed_at BETWEEN '{var4}' AND '{var5}'
                   AND sc.deleted_at IS NULL
               GROUP BY 
-                  u.full_name 
+                  u.full_name,
+                  sc.target_amount 
               LIMIT {var2} OFFSET {var3}`,
     "Q187"  :`SELECT * FROM contact_us WHERE deleted_at IS NULL`,
     "Q188"  :`SELECT * from chat where is_group_chat = 'true' AND company_id = '{var1}' AND deleted_at IS NULL`,
