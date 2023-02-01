@@ -298,6 +298,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                     }
                 }
                 let s4 = dbScript(db_sql['Q258'], { var1: "'"+roleUsers.join("','")+"'", var2: orderBy, var3: limit, var4: offset, var5: sDate, var6: eDate })
+                console.log(s4, "s4");
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0) {
                     for (let data of salesData.rows) {
