@@ -1028,7 +1028,7 @@ const db_sql = {
               sc.closed_at {var2}`,
      "Q258" : `SELECT 
                   u.full_name AS sales_rep,
-                  SUM(sc.target_amount::DECIMAL) as amount,
+                  sc.target_amount::DECIMAL as amount,
                   sc.closed_at,sc.slab_id
               FROM  
                   sales_commission AS sc 
@@ -1043,6 +1043,7 @@ const db_sql = {
               GROUP BY 
                   u.full_name,
                   sc.closed_at, 
+                  sc.target_amount,
                   sc.slab_id
               ORDER BY 
                   amount {var2}
