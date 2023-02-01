@@ -528,13 +528,9 @@ module.exports.roleWiseRevenue = async (req, res) => {
                     }
                 }
                 let s4 = dbScript(db_sql['Q186'], {  var1: "'"+roleUsers.join("','")+"'", var2: limit, var3: offset, var4: sDate, var5: eDate })
-                console.log(s4,"s4");
                 let salesData = await connection.query(s4)
-                if(salesData.rowCount > 0){
-                    revenueList.push(salesData.rows[0])
-                }
-                if (revenueList.length > 0) {
-                    let returnData = await reduceArrayWithName1(revenueList)
+                if (salesData.rowCount > 0) {
+                    let returnData = await reduceArrayWithName1(salesData.rows)
                     if(orderBy.toLowerCase() == 'asc'){
                         returnData = returnData.sort((a,b) => {
                             return a.revenue - b.revenue
