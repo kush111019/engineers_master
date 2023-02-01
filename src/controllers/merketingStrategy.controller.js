@@ -226,13 +226,11 @@ module.exports.leadsList = async (req, res) => {
                     }
                 }
             }
-            for (id of roleUsers) {
-                let s4 = dbScript(db_sql['Q203'], { var1: id })
-                let findLeadList = await connection.query(s4)
-                if (findLeadList.rowCount > 0) {
-                    for (let lead of findLeadList.rows) {
-                        leadList.push(lead)
-                    }
+            let s4 = dbScript(db_sql['Q203'], { var1: "'"+roleUsers.join("','")+"'" })
+            let findLeadList = await connection.query(s4)
+            if (findLeadList.rowCount > 0) {
+                for (let lead of findLeadList.rows) {
+                    leadList.push(lead)
                 }
             }
             if (leadList.length > 0) {
