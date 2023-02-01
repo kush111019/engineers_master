@@ -1025,7 +1025,7 @@ const db_sql = {
      "Q258" : `SELECT 
                   u.full_name AS sales_rep,
                   SUM(sc.target_amount::DECIMAL) as amount,
-                  sc.closed_at,sc.slab_id
+                  sc.closed_at,sc.slab_id,cr.closer_id,s.supporter_id
               FROM  
                   sales_commission AS sc 
               INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
@@ -1039,7 +1039,9 @@ const db_sql = {
               GROUP BY 
                   u.full_name,
                   sc.closed_at, 
-                  sc.slab_id 
+                  sc.slab_id,
+                  cr.closer_id,
+                  s.supporter_id 
               ORDER BY 
                   amount {var2}
               LIMIT {var3} OFFSET {var4}`,
