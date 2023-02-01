@@ -1816,7 +1816,7 @@ module.exports.commissionSplitListForSales = async (req, res) => {
 module.exports.transferBackSales = async(req, res) => {
     try {
         let userId = req.user.id
-        let { salesId, creatorId, transferReason} = req.body
+        let { salesId, creatorId, transferReason, leadId} = req.body
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
@@ -1825,7 +1825,7 @@ module.exports.transferBackSales = async(req, res) => {
             let s2 = dbScript(db_sql['Q269'],{var1 : creatorId, var2 : _dt, var3 : salesId})
             let transferSales = await connection.query(s2)
 
-            let s3 = dbScript(db_sql['Q270'],{var1 : mysql_real_escape_string(transferReason), var2 : _dt, var3 : salesId})
+            let s3 = dbScript(db_sql['Q270'],{var1 : mysql_real_escape_string(transferReason), var2 : _dt, var3 : salesId, var4 : leadId})
             let updateReason = await connection.query(s3)
             if(transferSales.rowCount > 0 && updateReason.rowCount > 0){
                 await connection.query('COMMIT')

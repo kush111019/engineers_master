@@ -527,6 +527,7 @@ module.exports.roleWiseRevenue = async (req, res) => {
                         }
                     }
                 }
+                console.log(roleUsers,"roleUsers");
                 let s4 = dbScript(db_sql['Q186'], {  var1: "'"+roleUsers.join("','")+"'", var2: limit, var3: offset, var4: sDate, var5: eDate })
                 let salesData = await connection.query(s4)
                 if(salesData.rowCount > 0){
