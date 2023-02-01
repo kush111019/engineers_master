@@ -366,6 +366,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             let totalClosedRevenue = 0;
             let totalClosedCommission = 0;
             let s4 = dbScript(db_sql['Q168'], { var1: "'"+roleUsers.join("','")+"'" })
+            console.log(s4,"s4");
             let salesData = await connection.query(s4)
             console.log(salesData.rows,"sales data");
             if (salesData.rowCount > 0 ) {
