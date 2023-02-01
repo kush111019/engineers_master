@@ -232,7 +232,7 @@ module.exports.leadsList = async (req, res) => {
                 }
             }
             if (leadList.length > 0) {
-                for(let lead of leadList.rows){
+                for(let lead of leadList){
                     if(lead.assigned_sales_lead_to){
                         let s3 = dbScript(db_sql['Q8'],{var1 : lead.assigned_sales_lead_to})
                         assignedSalesLead = await connection.query(s3)
