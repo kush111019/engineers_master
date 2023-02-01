@@ -478,7 +478,12 @@ const db_sql = {
                 sales_supporter AS s ON sc.id = s.sales_commission_id
               WHERE 
                 sc.user_id IN ({var1}) OR c.closer_id IN ({var1}) OR s.supporter_id IN ({var1})
-              AND sc.deleted_at IS NULL` ,
+              AND sc.deleted_at IS NULL
+              GROUP BY
+                sc.id ,
+                sc.target_amount,
+                sc.closed_at,sc.slab_id`,
+                
     "Q169" : `SELECT 
                 p.id, p.product_name, p.product_image, p.description, p.available_quantity, p.price, 
                 p.end_of_life, p.currency, p.company_id, p.created_at, p.updated_at, p.user_id, u.full_name as created_by 
