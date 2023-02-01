@@ -475,7 +475,7 @@ const db_sql = {
               INNER JOIN 
                 sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN 
-                sales_supporter AS s ON sc.id = c.sales_commission_id
+                sales_supporter AS s ON sc.id = s.sales_commission_id
               WHERE 
                 sc.user_id IN ({var1}) OR c.closer_id IN ({var1}) OR s.supporter_id IN ({var1})
               AND sc.deleted_at IS NULL` ,
