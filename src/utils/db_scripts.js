@@ -765,7 +765,7 @@ const db_sql = {
                 l.created_at DESC`, 
 
     "Q203"  :`SELECT 
-                DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
