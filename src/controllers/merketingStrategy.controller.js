@@ -587,6 +587,7 @@ module.exports.marketingDashboard = async (req, res) => {
                 let s4 = dbScript(db_sql['Q209'], { var1: id , var2: limit, var3: offset, var4: orderBy.toLowerCase()})
                 let leadCount = await connection.query(s4)
                 if(leadCount.rowCount > 0){
+                    console.log(leadCount.rows,"leads");
                     totalCounts += leadCount.rowCount
                     for(leads of leadCount.rows){
                         let obj = {}
