@@ -81,9 +81,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                     }
                 }
                 if (revenuePerCustomerArr.length > 0) {
-                    console.log(revenuePerCustomerArr,"revenuePerCustomerArr");
-                    let returnData = reduceArrayWithCustomer(revenuePerCustomerArr)
-                    console.log(returnData,"return DAta");
+                    let returnData = await reduceArrayWithCustomer(revenuePerCustomerArr)
                     if (returnData.length > 0) {
                         let paginatedArr = await paginatedResults(returnData, page)
                         if (orderBy.toLowerCase() == 'asc') {
@@ -210,7 +208,7 @@ module.exports.revenuePerProduct = async (req, res) => {
                     }
                 }
                 if (revenuePerProductArr.length > 0) {
-                    let returnData = reduceArrayWithProduct(revenuePerProductArr)
+                    let returnData = await reduceArrayWithProduct(revenuePerProductArr)
                     if (returnData.length > 0) {
                         let paginatedArr = await paginatedResults(returnData, page)
                         if (orderBy.toLowerCase() == 'asc') {
