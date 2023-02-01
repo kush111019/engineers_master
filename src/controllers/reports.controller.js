@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const {reduceArray, paginatedResults,reduceArrayWithName,reduceArrayWithName1, reduceArrayWithCommission} = require('../utils/helper')
+const {reduceArray, paginatedResults,reduceArrayWithName,reduceArrayWithName1, reduceArrayWithCustomer, reduceArrayWithProduct} = require('../utils/helper')
 const moduleName = process.env.REPORTS_MODULE
 
 module.exports.revenuePerCustomer = async (req, res) => {
@@ -81,12 +81,25 @@ module.exports.revenuePerCustomer = async (req, res) => {
                     }
                 }
                 if (revenuePerCustomerArr.length > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Revenue per customer",
-                        data: revenuePerCustomerArr
-                    })
+                    let returnData = reduceArrayWithCustomer(revenuePerCustomerArr)
+                    if (returnData.length > 0) {
+                        let paginatedArr = await paginatedResults(returnData, page)
+                        if (orderBy.toLowerCase() == 'asc') {
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return a.revenue - b.revenue
+                            })
+                        } else {
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return b.revenue - a.revenue
+                            })
+                        }
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Revenue per customer",
+                            data: paginatedArr
+                        })
+                    }
                 } else {
                     res.json({
                         status: 200,
@@ -195,12 +208,25 @@ module.exports.revenuePerProduct = async (req, res) => {
                     }
                 }
                 if (revenuePerProductArr.length > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Revenue per product",
-                        data: revenuePerProductArr
-                    })
+                    let returnData = reduceArrayWithProduct(revenuePerProductArr)
+                    if (returnData.length > 0) {
+                        let paginatedArr = await paginatedResults(returnData, page)
+                        if (orderBy.toLowerCase() == 'asc') {
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return a.revenue - b.revenue
+                            })
+                        } else {
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return b.revenue - a.revenue
+                            })
+                        }
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Revenue per product",
+                            data: paginatedArr
+                        })
+                    }
                 } else {
                     res.json({
                         status: 200,

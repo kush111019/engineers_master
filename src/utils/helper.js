@@ -470,3 +470,45 @@ module.exports.reduceArrayWithName1 = async (data) => {
     }
     return returnData
 }
+
+module.exports.reduceArrayWithCustomer = async (data) => {
+
+    let returnData = [];
+    for (let i = 0; i < data.length; i++) {
+        let found = 0;
+        for (let j = 0; j < returnData.length; j++) {
+            let customer1 = data[i].customer_name
+            let customer2 = returnData[j].customer_name
+            if (customer1 === customer2) {
+                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
+                returnData[j].revenue = revenueOfJ;
+                found = 1;
+            }
+        }
+        if (found === 0) {
+            returnData.push(data[i]);
+        }
+    }
+    return returnData
+}
+
+module.exports.reduceArrayWithProduct = async (data) => {
+
+    let returnData = [];
+    for (let i = 0; i < data.length; i++) {
+        let found = 0;
+        for (let j = 0; j < returnData.length; j++) {
+            let product1 = data[i].product_name
+            let product2 = returnData[j].product_name
+            if (product1 === product2) {
+                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
+                returnData[j].revenue = revenueOfJ;
+                found = 1;
+            }
+        }
+        if (found === 0) {
+            returnData.push(data[i]);
+        }
+    }
+    return returnData
+}
