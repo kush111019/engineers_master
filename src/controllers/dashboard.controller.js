@@ -61,7 +61,7 @@ module.exports.revenues = async (req, res) => {
                         let s6 = dbScript(db_sql['Q86'], { var1: data.sales_commission_id })
                         let leadPercentage = await connection.query(s6)
                         if (leadPercentage.rowCount > 0) {
-                            revenueCommissionByDateObj.commission = ((Number(supporterName.rows[0].supporter_percentage) / 100) * Number(commission.toFixed(2)))
+                            revenueCommissionByDateObj.commission = ((Number(leadPercentage.rows[0].closer_percentage) / 100) * Number(commission.toFixed(2)))
                             revenueCommissionBydate.push(revenueCommissionByDateObj)
                         }
                     } else {
@@ -180,7 +180,7 @@ module.exports.revenues = async (req, res) => {
                             let s6 = dbScript(db_sql['Q86'], { var1: data.sales_commission_id })
                             let leadPercentage = await connection.query(s6)
                             if (leadPercentage.rowCount > 0) {
-                                revenueCommissionByDateObj.commission = ((Number(supporterName.rows[0].supporter_percentage) / 100) * Number(commission.toFixed(2)))
+                                revenueCommissionByDateObj.commission = ((Number(leadPercentage.rows[0].closer_percentage) / 100) * Number(commission.toFixed(2)))
                                 revenueCommissionBydate.push(revenueCommissionByDateObj)
                             }
                         } else {
