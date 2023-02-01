@@ -71,13 +71,11 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 }
             }
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
-                for (id of roleUsers) {
-                    let s2 = dbScript(db_sql['Q170'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: sDate, var6: eDate })
-                    let customerCompanies = await connection.query(s2)
-                    if(customerCompanies.rowCount > 0){
-                        for(let customer of customerCompanies.rows){
-                            revenuePerCustomerArr.push(customer)
-                        }
+                let s2 = dbScript(db_sql['Q170'], {  var1: "'"+roleUsers.join("','")+"'", var2: orderBy, var3: limit, var4: offset, var5: sDate, var6: eDate })
+                let customerCompanies = await connection.query(s2)
+                if(customerCompanies.rowCount > 0){
+                    for(let customer of customerCompanies.rows){
+                        revenuePerCustomerArr.push(customer)
                     }
                 }
                 if (revenuePerCustomerArr.length > 0) {
@@ -198,13 +196,11 @@ module.exports.revenuePerProduct = async (req, res) => {
                 }
             }
             if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
-                for(let id of roleUsers){
-                    let s4 = dbScript(db_sql['Q171'], { var1: id, var2 : orderBy, var3 : limit, var4 : offset, var5: sDate, var6: eDate })
-                    let revenuePerProduct = await connection.query(s4)
-                    if(revenuePerProduct.rowCount > 0){
-                        for(let product of revenuePerProduct.rows){
-                            revenuePerProductArr.push(product)
-                        }
+                let s4 = dbScript(db_sql['Q171'], {  var1: "'"+roleUsers.join("','")+"'", var2 : orderBy, var3 : limit, var4 : offset, var5: sDate, var6: eDate })
+                let revenuePerProduct = await connection.query(s4)
+                if(revenuePerProduct.rowCount > 0){
+                    for(let product of revenuePerProduct.rows){
+                        revenuePerProductArr.push(product)
                     }
                 }
                 if (revenuePerProductArr.length > 0) {
@@ -301,47 +297,44 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         }
                     }
                 }
-                console.log(roleUsers,"roleUsers");
-                for(let id of roleUsers){
-                    let s4 = dbScript(db_sql['Q258'], { var1: id, var2: orderBy, var3: limit, var4: offset, var5: sDate, var6: eDate })
-                    let salesData = await connection.query(s4)
-                    if (salesData.rowCount > 0) {
-                        for (let data of salesData.rows) {
-    
-                            let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
-                            let slab = await connection.query(s5)
-    
-                            let revenueCommissionByDateObj = {}
-                            revenueCommissionByDateObj.revenue = Number(data.amount)
-                            revenueCommissionByDateObj.sales_rep = data.sales_rep
-    
-                            let remainingAmount = Number(data.amount);
-                            let commission = 0
-                            //if remainning amount is 0 then no reason to check 
-                            for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
-                                let slab_percentage = Number(slab.rows[i].percentage)
-                                let slab_maxAmount = Number(slab.rows[i].max_amount)
-                                let slab_minAmount = Number(slab.rows[i].min_amount)
-                                if (slab.rows[i].is_max) {
-                                    // Reached the last slab
-                                    commission += ((slab_percentage / 100) * remainingAmount)
+                let s4 = dbScript(db_sql['Q258'], { var1: "'"+roleUsers.join("','")+"'", var2: orderBy, var3: limit, var4: offset, var5: sDate, var6: eDate })
+                let salesData = await connection.query(s4)
+                if (salesData.rowCount > 0) {
+                    for (let data of salesData.rows) {
+
+                        let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
+                        let slab = await connection.query(s5)
+
+                        let revenueCommissionByDateObj = {}
+                        revenueCommissionByDateObj.revenue = Number(data.amount)
+                        revenueCommissionByDateObj.sales_rep = data.sales_rep
+
+                        let remainingAmount = Number(data.amount);
+                        let commission = 0
+                        //if remainning amount is 0 then no reason to check 
+                        for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
+                            let slab_percentage = Number(slab.rows[i].percentage)
+                            let slab_maxAmount = Number(slab.rows[i].max_amount)
+                            let slab_minAmount = Number(slab.rows[i].min_amount)
+                            if (slab.rows[i].is_max) {
+                                // Reached the last slab
+                                commission += ((slab_percentage / 100) * remainingAmount)
+                                break;
+                            }
+                            else {
+                                // This is not the last slab
+                                let diff = slab_minAmount == 0 ? 0 : 1
+                                let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                                slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+                                commission += ((slab_percentage / 100) * slab_diff)
+                                remainingAmount -= slab_diff
+                                if (remainingAmount <= 0) {
                                     break;
                                 }
-                                else {
-                                    // This is not the last slab
-                                    let diff = slab_minAmount == 0 ? 0 : 1
-                                    let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-                                    slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-                                    commission += ((slab_percentage / 100) * slab_diff)
-                                    remainingAmount -= slab_diff
-                                    if (remainingAmount <= 0) {
-                                        break;
-                                    }
-                                }
                             }
-                            revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
-                            revenueCommissionBydate.push(revenueCommissionByDateObj)
                         }
+                        revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
+                        revenueCommissionBydate.push(revenueCommissionByDateObj)
                     }
                 }
                 if (revenueCommissionBydate.length > 0) {
@@ -533,12 +526,10 @@ module.exports.roleWiseRevenue = async (req, res) => {
                         }
                     }
                 }
-                for(let id of roleUsers){
-                    let s4 = dbScript(db_sql['Q186'], { var1: id, var2: limit, var3: offset, var4: sDate, var5: eDate })
-                    let salesData = await connection.query(s4)
-                    if(salesData.rowCount > 0){
-                        revenueList.push(salesData.rows[0])
-                    }
+                let s4 = dbScript(db_sql['Q186'], {  var1: "'"+roleUsers.join("','")+"'", var2: limit, var3: offset, var4: sDate, var5: eDate })
+                let salesData = await connection.query(s4)
+                if(salesData.rowCount > 0){
+                    revenueList.push(salesData.rows[0])
                 }
                 if (revenueList.length > 0) {
                     let returnData = await reduceArrayWithName1(revenueList)

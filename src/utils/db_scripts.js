@@ -472,7 +472,7 @@ const db_sql = {
               FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN sales_supporter AS s ON sc.id = c.sales_commission_id
-              WHERE sc.user_id = '{var1}' OR c.closer_id = '{var1}' OR s.supporter_id = '{var1}'
+              WHERE sc.user_id IN ({var1}) OR c.closer_id IN ({var1}) OR s.supporter_id IN ({var1})
               AND sc.deleted_at IS NULL` ,
     "Q169" : `SELECT 
                 p.id, p.product_name, p.product_image, p.description, p.available_quantity, p.price, 
@@ -497,7 +497,7 @@ const db_sql = {
                 sales_supporter AS s ON sc.id = s.sales_commission_id 
               WHERE 
                   sc.closed_at is not null AND 
-                  (sc.user_id = '{var1}' OR cl.closer_id = '{var1}' OR s.supporter_id = '{var1}')
+                  (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
                   AND sc.closed_at BETWEEN '{var5}' AND '{var6}' AND
                   c.deleted_at IS NULL AND
                   sc.deleted_at IS NULL 
@@ -522,7 +522,7 @@ const db_sql = {
               INNER JOIN 
                 sales_supporter AS s ON sc.id = s.sales_commission_id 
               WHERE 
-                  (sc.user_id = '{var1}' OR cl.closer_id = '{var1}' OR s.supporter_id = '{var1}')
+                  (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
                   AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
                   AND sc.deleted_at IS NULL 
                   AND c.deleted_at IS NULL
@@ -673,7 +673,7 @@ const db_sql = {
                 sales_supporter AS s ON sc.id = s.sales_commission_id 
               WHERE 
                   sc.closed_at is not null 
-                  AND (sc.user_id = '{var1}' OR cl.closer_id = '{var1}' OR s.supporter_id = '{var1}')
+                  AND (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
                   AND sc.closed_at BETWEEN '{var4}' AND '{var5}'
                   AND sc.deleted_at IS NULL
               GROUP BY 
@@ -1037,7 +1037,7 @@ const db_sql = {
               INNER JOIN users AS u ON u.id = cr.closer_id
               WHERE 
                   sc.closed_at is not null 
-                  AND (sc.user_id = '{var1}' OR cr.closer_id = '{var1}' OR s.supporter_id = '{var1}')
+                  AND (sc.user_id IN ({var1}) OR cr.closer_id IN ({var1}) OR s.supporter_idIN ({var1}))
                   AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
                   AND sc.deleted_at IS NULL
               GROUP BY 

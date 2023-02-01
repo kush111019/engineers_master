@@ -367,75 +367,73 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             let totalExpectedCommission = 0;
             let totalClosedRevenue = 0;
             let totalClosedCommission = 0;
-            for (let id of roleUsers) {
-                let s4 = dbScript(db_sql['Q168'], { var1: id })
-                let salesData = await connection.query(s4)
-                if (salesData.rowCount > 0 ) {
-                    for (let data of salesData.rows) {
-                        let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
-                        let slab = await connection.query(s5)
-                        if (data.closed_at == null) {
-                            totalExpectedRevenue = Number(totalExpectedRevenue) + Number(data.amount);
-                            let expectedRemainingAmount = Number(data.amount);
-                            let expectedCommission = 0
-                            //if remainning amount is 0 then no reason to check 
-                            for (let i = 0; i < slab.rows.length && expectedRemainingAmount > 0; i++) {
-                                let slab_percentage = Number(slab.rows[i].percentage)
-                                let slab_maxAmount = Number(slab.rows[i].max_amount)
-                                let slab_minAmount = Number(slab.rows[i].min_amount)
-                                if (slab.rows[i].is_max) {
-                                    // Reached the last slab
-                                    expectedCommission += ((slab_percentage / 100) * expectedRemainingAmount)
+            let s4 = dbScript(db_sql['Q168'], { var1: "'"+roleUsers.join("','")+"'" })
+            let salesData = await connection.query(s4)
+            if (salesData.rowCount > 0 ) {
+                for (let data of salesData.rows) {
+                    let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
+                    let slab = await connection.query(s5)
+                    if (data.closed_at == null) {
+                        totalExpectedRevenue = Number(totalExpectedRevenue) + Number(data.amount);
+                        let expectedRemainingAmount = Number(data.amount);
+                        let expectedCommission = 0
+                        //if remainning amount is 0 then no reason to check 
+                        for (let i = 0; i < slab.rows.length && expectedRemainingAmount > 0; i++) {
+                            let slab_percentage = Number(slab.rows[i].percentage)
+                            let slab_maxAmount = Number(slab.rows[i].max_amount)
+                            let slab_minAmount = Number(slab.rows[i].min_amount)
+                            if (slab.rows[i].is_max) {
+                                // Reached the last slab
+                                expectedCommission += ((slab_percentage / 100) * expectedRemainingAmount)
+                                break;
+                            }
+                            else {
+                                // This is not the last slab
+                                let diff = slab_minAmount == 0 ? 0 : 1
+                                let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                                slab_diff = (slab_diff > expectedRemainingAmount) ? expectedRemainingAmount : slab_diff
+                                expectedCommission += ((slab_percentage / 100) * slab_diff)
+                                expectedRemainingAmount -= slab_diff
+                                if (expectedRemainingAmount <= 0) {
                                     break;
                                 }
-                                else {
-                                    // This is not the last slab
-                                    let diff = slab_minAmount == 0 ? 0 : 1
-                                    let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-                                    slab_diff = (slab_diff > expectedRemainingAmount) ? expectedRemainingAmount : slab_diff
-                                    expectedCommission += ((slab_percentage / 100) * slab_diff)
-                                    expectedRemainingAmount -= slab_diff
-                                    if (expectedRemainingAmount <= 0) {
-                                        break;
-                                    }
-                                }
                             }
-                            totalExpectedCommission = totalExpectedCommission + expectedCommission
-                        } else {
-                            totalClosedRevenue = Number(totalClosedRevenue.toFixed(2)) + Number(data.amount);
-
-                            let remainingAmount = Number(data.amount);
-                            let commission = 0
-                            //if remainning amount is 0 then no reason to check 
-                            for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
-                                let slab_percentage = Number(slab.rows[i].percentage)
-                                let slab_maxAmount = Number(slab.rows[i].max_amount)
-                                let slab_minAmount = Number(slab.rows[i].min_amount)
-                                if (slab.rows[i].is_max) {
-                                    // Reached the last slab
-                                    commission += ((slab_percentage / 100) * remainingAmount)
-                                    break;
-                                }
-                                else {
-                                    // This is not the last slab
-                                    let diff = slab_minAmount == 0 ? 0 : 1
-                                    let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-                                    slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-                                    commission += ((slab_percentage / 100) * slab_diff)
-                                    remainingAmount -= slab_diff
-                                    if (remainingAmount <= 0) {
-                                        break;
-                                    }
-                                }
-                            }
-                            totalClosedCommission = totalClosedCommission + commission
                         }
+                        totalExpectedCommission = totalExpectedCommission + expectedCommission
+                    } else {
+                        totalClosedRevenue = Number(totalClosedRevenue.toFixed(2)) + Number(data.amount);
+
+                        let remainingAmount = Number(data.amount);
+                        let commission = 0
+                        //if remainning amount is 0 then no reason to check 
+                        for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
+                            let slab_percentage = Number(slab.rows[i].percentage)
+                            let slab_maxAmount = Number(slab.rows[i].max_amount)
+                            let slab_minAmount = Number(slab.rows[i].min_amount)
+                            if (slab.rows[i].is_max) {
+                                // Reached the last slab
+                                commission += ((slab_percentage / 100) * remainingAmount)
+                                break;
+                            }
+                            else {
+                                // This is not the last slab
+                                let diff = slab_minAmount == 0 ? 0 : 1
+                                let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                                slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+                                commission += ((slab_percentage / 100) * slab_diff)
+                                remainingAmount -= slab_diff
+                                if (remainingAmount <= 0) {
+                                    break;
+                                }
+                            }
+                        }
+                        totalClosedCommission = totalClosedCommission + commission
                     }
-                    counts.totalExpectedRevenue = totalExpectedRevenue + totalClosedRevenue
-                    counts.totalExpectedCommission = totalExpectedCommission + totalClosedCommission
-                    counts.totalClosedRevenue = Number(totalClosedRevenue.toFixed(2))
-                    counts.totalClosedCommission = Number(totalClosedCommission.toFixed(2))
                 }
+                counts.totalExpectedRevenue = totalExpectedRevenue + totalClosedRevenue
+                counts.totalExpectedCommission = totalExpectedCommission + totalClosedCommission
+                counts.totalClosedRevenue = Number(totalClosedRevenue.toFixed(2))
+                counts.totalClosedCommission = Number(totalClosedCommission.toFixed(2))
             }
             if (counts) {
                 res.json({
