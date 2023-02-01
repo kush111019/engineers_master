@@ -116,7 +116,7 @@ const db_sql = {
     "Q54"  : `SELECT 
                 sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
                 sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-                sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,sc.lead_id,
+                sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,sc.lead_id,
                 c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name as creator_name 
               FROM 
                 sales_commission AS sc 
@@ -597,7 +597,7 @@ const db_sql = {
               WHERE c.user_id = '{var1}' AND c.is_rejected = '{var2}'`,
     "Q178" : `SELECT distinct(sc.id), sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
+              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name,
               sup.supporter_id, sup.supporter_percentage,u2.email_address as supporter_email 
               FROM sales_commission AS sc 
@@ -610,7 +610,7 @@ const db_sql = {
               WHERE (sc.user_id = '{var1}' OR c.closer_id = '{var1}' OR sup.supporter_id = '{var1}') AND sc.deleted_at IS NULL ORDER BY sc.created_at desc`,
     "Q179"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
+              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
@@ -619,7 +619,7 @@ const db_sql = {
               WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL and sc.closed_at IS NULL  ORDER BY sc.created_at desc`,
     "Q180"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
+              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
@@ -628,7 +628,7 @@ const db_sql = {
               WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL and sc.closed_at IS NOT NULL  ORDER BY sc.created_at desc`,
     "Q181"  :`SELECT distinct(sc.id), sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
+              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name,
               sup.supporter_id, sup.supporter_percentage,u2.email_address as supporter_email 
               FROM sales_commission AS sc 
@@ -641,7 +641,7 @@ const db_sql = {
               WHERE (sc.user_id = '{var1}' OR c.closer_id = '{var1}' OR sup.supporter_id = '{var1}') AND sc.deleted_at IS NULL AND sc.closed_at IS NULL ORDER BY sc.created_at desc`,
     "Q182"  :`SELECT distinct(sc.id), sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
+              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name,
               sup.supporter_id, sup.supporter_percentage,u2.email_address as supporter_email 
               FROM sales_commission AS sc 
@@ -1063,7 +1063,9 @@ const db_sql = {
             WHERE 
               u1.id = '{var1}' AND u1.deleted_at IS NULL 
             ORDER BY 
-              created_at DESC`
+              created_at DESC`,
+    "Q269" : `UPDATE sales_closer SET closer_id = '{var1}', updated_at = '{var2}' WHERE sales_commission_id = '{var3}' RETURNING * `,
+    "Q270" : `UPDATE sales_commission SET transfer_reason = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING * `
 
  }
 

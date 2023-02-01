@@ -394,6 +394,8 @@ module.exports.allSalesCommissionList = async (req, res) => {
                 closer.slabName = slabName
                 closer.leadId = data.lead_id,
                 closer.contract = data.contract
+                closer.creatorId = data.user_id
+                closer.transferReason = data.transfer_reason
 
                 commissionList.push(closer)
             }
@@ -565,6 +567,8 @@ module.exports.allSalesCommissionList = async (req, res) => {
                     closer.slabName = slabName
                     closer.leadId = data.lead_id
                     closer.contract = data.contract
+                    closer.creatorId = data.user_id
+                    closer.transferReason = data.transfer_reason
 
                     salesListArr.push(closer)
                 }
@@ -693,6 +697,8 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                 closer.slabName = slabName
                 closer.leadId = data.lead_id
                 closer.contract = data.contract
+                closer.creatorId = data.user_id
+                closer.transferReason = data.transfer_reason
 
                 commissionList.push(closer)
             }
@@ -826,6 +832,8 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                     closer.slabName = slabName
                     closer.leadId = data.lead_id
                     closer.contract = data.contract
+                    closer.creatorId = data.user_id
+                    closer.transferReason = data.transfer_reason
 
                     salesListArr.push(closer)
                 }
@@ -983,6 +991,8 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                 closer.slabName = slabName
                 closer.leadId = data.lead_id
                 closer.contract = data.contract
+                closer.creatorId = data.user_id
+                closer.transferReason = data.transfer_reason
 
                 commissionList.push(closer)
             }
@@ -1118,6 +1128,8 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                     closer.slabName = slabName
                     closer.leadId = data.lead_id
                     closer.contract = data.contract
+                    closer.creatorId = data.user_id
+                    closer.transferReason = data.transfer_reason
 
                     salesListArr.push(closer)
                 }
@@ -1781,13 +1793,32 @@ module.exports.commissionSplitListForSales = async (req, res) => {
 module.exports.transferBackSales = async(req, res) => {
     try {
         let userId = req.user.id
-        let { salesId } = req.query
+        let { salesId, creatorId, transferReason} = req.body
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
+            await connection.query('BEGIN')
+            let _dt = new Date().toISOString()
+            let s2 = dbScript(db_sql['Q269'],{var1 : creatorId, var2 : _dt, var3 : salesId})
+            let transferSales = await connection.query(s2)
 
-            let s2 = dbScript(db_sql[''],{var1 : salesId})
-
+            let s3 = dbScript(db_sql['Q270'],{var1 : mysql_real_escape_string(transferReason), var2 : _dt, var3 : salesId})
+            let updateReason = await connection.query(s3)
+            if(transferSales.rowCount > 0 && updateReason.rowCount > 0){
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Sales Transfered back successfully',
+                })
+            }else{
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: 'Something went wrong',
+                })
+            }
         }else{
             res.status(403).json({
                 success: false,

@@ -87,6 +87,7 @@ router.post('/uploadSalesContract', verifyTokenFn,uploadSalesContract.single('fi
 router.post('/closeSales',verifyTokenFn, controller.sales.closeSales)
 router.get('/usersListForSales', verifyTokenFn, controller.sales.usersListForSales)
 router.get('/commissionSplitListForSales', verifyTokenFn, controller.sales.commissionSplitListForSales)
+router.put('/transferBackSales', verifyTokenFn, controller.sales.transferBackSales)
 //----------------------------------------Reports------------------------------------------
 router.get('/revenuePerCustomer',verifyTokenFn, controller.reports.revenuePerCustomer)
 router.get('/revenuePerProduct',verifyTokenFn, controller.reports.revenuePerProduct)
