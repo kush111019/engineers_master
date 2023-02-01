@@ -554,7 +554,7 @@ module.exports.allSalesCommissionList = async (req, res) => {
                 }
             }
             if (salesListArr.length > 0) {
-                const array = [...new Set(salesListArr)];
+                const array = [...new Map(salesListArr.map(item => [item.id, item])).values()];
                 res.json({
                     status: 200,
                     success: true,
