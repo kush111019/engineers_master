@@ -1777,3 +1777,28 @@ module.exports.commissionSplitListForSales = async (req, res) => {
         })
     }
 }
+
+module.exports.transferBackSales = async(req, res) => {
+    try {
+        let userId = req.user.id
+        let { salesId } = req.query
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_update) {
+
+            let s2 = dbScript(db_sql[''],{var1 : salesId})
+
+        }else{
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            }) 
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}

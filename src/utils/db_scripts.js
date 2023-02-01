@@ -580,7 +580,18 @@ const db_sql = {
               ORDER BY 
                 timeline ASC`,  
     "Q175" : `SELECT * FROM roles WHERE user_id = '{var1}' AND deleted_at IS NULL`,
-    "Q176" : `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at,deleted_at, is_main_admin, created_by FROM users WHERE created_by = '{var1}' AND deleted_at IS NULL ORDER BY created_at desc`,
+    "Q176" : `SELECT 
+                u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
+                u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
+                u1.is_main_admin, u1.created_by, u2.full_name AS creator_name 
+              FROM 
+                users AS u1 
+              INNER JOIN 
+                users AS u2 ON u2.id = u1.created_by  
+              WHERE 
+                u1.created_by = '{var1}' AND u1.deleted_at IS NULL 
+              ORDER BY 
+                created_at DESC`,
     "Q177" : `SELECT c.id, c.customer_company_id ,c.customer_name, c.source, c.user_id, c.address, c.deleted_at,
               u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.user_id = '{var1}' AND c.is_rejected = '{var2}'`,
