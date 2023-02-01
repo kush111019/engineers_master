@@ -233,13 +233,15 @@ module.exports.leadsList = async (req, res) => {
             }
             if (leadList.length > 0) {
                 for(let lead of leadList){
-                    console.log(lead,"lead");
-                    if(lead.assigned_sales_lead_to != "" || lead.assigned_sales_lead_to != null || lead.assigned_sales_lead_to != undefined){
+                    if(lead.assigned_sales_lead_to !== ''){
                         let s3 = dbScript(db_sql['Q8'],{var1 : lead.assigned_sales_lead_to})
-                        console.log(s3,"s3");
                         assignedSalesLead = await connection.query(s3)
-                        console.log(assignedSalesLead.rows, "assignedSalesLead");
-                        lead.assignedSalesLeadName = assignedSalesLead.rows[0].full_name
+                        if(assignedSalesLead.rowCount > 0){
+                            lead.assignedSalesLeadName = assignedSalesLead.rows[0].full_name
+                        }else{
+                            lead.assignedSalesLeadName = ''
+                        }
+                        
                     }else{
                         lead.assignedSalesLeadName = ''
                     }
