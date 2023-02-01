@@ -171,7 +171,7 @@ module.exports.leadsList = async (req, res) => {
             let s2 = dbScript(db_sql['Q202'], { var1: checkPermission.rows[0].company_id })
             let leadList = await connection.query(s2)
             if (leadList.rowCount > 0) {
-                for(let lead of array){
+                for(let lead of leadList.rows){
                     if(lead.assigned_sales_lead_to !== "" ){
                         let s3 = dbScript(db_sql['Q8'],{var1 : lead.assigned_sales_lead_to})
                         assignedSalesLead = await connection.query(s3)
@@ -236,7 +236,7 @@ module.exports.leadsList = async (req, res) => {
                 }
             }
             if (leadList.length > 0) {
-                for(let lead of array){
+                for(let lead of leadList){
                     if(lead.assigned_sales_lead_to !== ''){
                         let s3 = dbScript(db_sql['Q8'],{var1 : lead.assigned_sales_lead_to})
                         assignedSalesLead = await connection.query(s3)
