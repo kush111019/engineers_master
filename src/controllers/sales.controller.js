@@ -554,11 +554,12 @@ module.exports.allSalesCommissionList = async (req, res) => {
                 }
             }
             if (salesListArr.length > 0) {
+                const array = [...new Set(salesListArr)];
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Sales commission list',
-                    data: salesListArr
+                    data: array
                 })
             } else {
                 res.json({
