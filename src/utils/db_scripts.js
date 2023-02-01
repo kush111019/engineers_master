@@ -1037,7 +1037,7 @@ const db_sql = {
               INNER JOIN users AS u ON u.id = cr.closer_id
               WHERE 
                   sc.closed_at is not null 
-                  AND (sc.user_id IN ({var1}) OR cr.closer_id IN ({var1}) OR s.supporter_idIN ({var1}))
+                  AND (sc.user_id IN ({var1}) OR cr.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
                   AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
                   AND sc.deleted_at IS NULL
               GROUP BY 
