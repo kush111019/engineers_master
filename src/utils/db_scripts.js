@@ -801,7 +801,7 @@ const db_sql = {
               left join 
                 users u on u.id = l.user_id
               where 
-                l.user_id = '{var1}' or l.assigned_sales_lead_to= '{var1}' AND 
+                (l.user_id = '{var1}' or l.assigned_sales_lead_to= '{var1}') AND 
                 l.deleted_at IS NULL AND u.deleted_at IS NULL
               ORDER BY 
                 u.full_name {var4}
