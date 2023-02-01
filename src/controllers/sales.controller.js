@@ -1683,7 +1683,7 @@ module.exports.usersListForSales = async (req, res) => {
                     }
                 }
             }
-            let s4 = dbScript(db_sql['Q8'], {var1 : checkPermission.rows[0].id })
+            let s4 = dbScript(db_sql['Q268'], {var1 : checkPermission.rows[0].id })
             let addUser = await connection.query(s4)
             let s5 = dbScript(db_sql['Q12'], { var1: addUser.rows[0].role_id })
             let findRole = await connection.query(s5);

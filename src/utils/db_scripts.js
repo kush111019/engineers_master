@@ -1052,6 +1052,18 @@ const db_sql = {
     "Q265" : `UPDATE lead_organizations SET organization_name = '{var2}' WHERE id = '{var1}' RETURNING *`,
     "Q266" : `UPDATE companies SET is_locked = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q267"  : `UPDATE users SET is_locked = '{var1}', updated_at = '{var3}' WHERE company_id = '{var2}' AND deleted_at IS NULL RETURNING * `,
+    "Q268" : `SELECT 
+              u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
+              u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
+              u1.is_main_admin, u1.created_by, u2.full_name AS creator_name 
+            FROM 
+              users AS u1 
+            INNER JOIN 
+              users AS u2 ON u2.id = u1.created_by  
+            WHERE 
+              u1.id = '{var1}' AND u1.deleted_at IS NULL 
+            ORDER BY 
+              created_at DESC`
 
  }
 
