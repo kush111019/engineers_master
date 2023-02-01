@@ -1046,6 +1046,7 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                     let closer = {}
                     let supporters = []
                     let commission = 0
+                    let slabName = ''
                     if(data.slab_id){
                         let s6 = dbScript(db_sql['Q184'],{var1 : data.slab_id})
                         let slabData = await connection.query(s6)
@@ -1092,13 +1093,6 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                                 }
                             }
                         }
-                    }
-
-                    let slabName = ''
-                    if(data.slab_id){
-                        let s6 = dbScript(db_sql['Q184'],{var1 : data.slab_id})
-                        let slabData = await connection.query(s6)
-                        slabName = slabData.rows[0].slab_name;
                     }
 
                     let s9 = dbScript(db_sql['Q157'], { var1: data.id })
