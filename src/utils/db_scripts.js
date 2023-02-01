@@ -568,15 +568,19 @@ const db_sql = {
     "Q177" : `SELECT c.id, c.customer_company_id ,c.customer_name, c.source, c.user_id, c.address, c.deleted_at,
               u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.user_id = '{var1}' AND c.is_rejected = '{var2}'`,
-    "Q178" : `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
+    "Q178" : `SELECT distinct(sc.id), sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name,
+              sup.supporter_id, sup.supporter_percentage,u2.email_address as supporter_email 
+              FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
+              INNER JOIN sales_supporter AS sup ON sc.id = sup.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN users AS u1 ON u1.id = sc.user_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
-              WHERE (sc.user_id = '{var1}' OR c.closer_id = '{var1}') AND sc.deleted_at IS NULL ORDER BY sc.created_at desc`,
+              INNER JOIN users AS u2 ON u2.id = sup.supporter_id
+              WHERE (sc.user_id = '{var1}' OR c.closer_id = '{var1}' OR sup.supporter_id = '{var1}') AND sc.deleted_at IS NULL ORDER BY sc.created_at desc`,
     "Q179"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
@@ -595,24 +599,32 @@ const db_sql = {
               INNER JOIN users AS u1 ON u1.id = sc.user_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
               WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL and sc.closed_at IS NOT NULL  ORDER BY sc.created_at desc`,
-    "Q181"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
+    "Q181"  :`SELECT distinct(sc.id), sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name,
+              sup.supporter_id, sup.supporter_percentage,u2.email_address as supporter_email 
+              FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
+              INNER JOIN sales_supporter AS sup ON sc.id = sup.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN users AS u1 ON u1.id = sc.user_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
-              WHERE (sc.user_id = '{var1}' OR c.closer_id = '{var1}') AND sc.deleted_at IS NULL AND sc.closed_at IS NULL ORDER BY sc.created_at desc`,
-    "Q182"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
+              INNER JOIN users AS u2 ON u2.id = sup.supporter_id
+              WHERE (sc.user_id = '{var1}' OR c.closer_id = '{var1}' OR sup.supporter_id = '{var1}') AND sc.deleted_at IS NULL AND sc.closed_at IS NULL ORDER BY sc.created_at desc`,
+    "Q182"  :`SELECT distinct(sc.id), sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract, sc.created_at, sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
+              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name,
+              sup.supporter_id, sup.supporter_percentage,u2.email_address as supporter_email 
+              FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
+              INNER JOIN sales_supporter AS sup ON sc.id = sup.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN users AS u1 ON u1.id = sc.user_id
               INNER JOIN customers AS cus ON cus.id = sc.customer_id
-              WHERE (sc.user_id = '{var1}' OR c.closer_id = '{var1}') AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL ORDER BY sc.created_at desc`,
+              INNER JOIN users AS u2 ON u2.id = sup.supporter_id
+              WHERE (sc.user_id = '{var1}' OR c.closer_id = '{var1}' OR sup.supporter_id = '{var1}') AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL ORDER BY sc.created_at desc`,
     "Q183"  :`UPDATE slabs SET deleted_at = '{var1}' WHERE slab_id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL`,
     "Q184"  :`SELECT * FROM slabs WHERE slab_id ='{var1}' AND deleted_at IS NULL ORDER BY slab_ctr ASC`,
     "Q185"  :`SELECT u.id, u.full_name, r.id as role_id,r.role_name, r.module_ids, r.reporter  FROM roles AS r 
