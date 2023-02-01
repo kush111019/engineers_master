@@ -1045,6 +1045,7 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                 for (data of salesCommissionList.rows) {
                     let closer = {}
                     let supporters = []
+                    let remainingAmount = Number(data.target_amount);
                     let commission = 0
                     let slabName = ''
                     if(data.slab_id){
