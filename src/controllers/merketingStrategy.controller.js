@@ -171,16 +171,16 @@ module.exports.leadsList = async (req, res) => {
             let s2 = dbScript(db_sql['Q202'], { var1: checkPermission.rows[0].company_id })
             let leadList = await connection.query(s2)
             if (leadList.rowCount > 0) {
-                for(let lead of leadList.rows){
-                    if(lead.assigned_sales_lead_to !== "" ){
-                        let s3 = dbScript(db_sql['Q8'],{var1 : lead.assigned_sales_lead_to})
+                for (let lead of leadList.rows) {
+                    if (lead.assigned_sales_lead_to !== "") {
+                        let s3 = dbScript(db_sql['Q8'], { var1: lead.assigned_sales_lead_to })
                         assignedSalesLead = await connection.query(s3)
-                        if(assignedSalesLead.rowCount > 0){
+                        if (assignedSalesLead.rowCount > 0) {
                             lead.assignedSalesLeadName = assignedSalesLead.rows[0].full_name
-                        }else{
+                        } else {
                             lead.assignedSalesLeadName = ''
                         }
-                    }else{
+                    } else {
                         lead.assignedSalesLeadName = ''
                     }
                 }
@@ -226,27 +226,27 @@ module.exports.leadsList = async (req, res) => {
                     }
                 }
             }
-            for(id of roleUsers){
+            for (id of roleUsers) {
                 let s4 = dbScript(db_sql['Q203'], { var1: id })
                 let findLeadList = await connection.query(s4)
                 if (findLeadList.rowCount > 0) {
                     for (let lead of findLeadList.rows) {
                         leadList.push(lead)
                     }
-            }
+                }
             }
             if (leadList.length > 0) {
-                for(let lead of leadList){
-                    if(lead.assigned_sales_lead_to !== ''){
-                        let s3 = dbScript(db_sql['Q8'],{var1 : lead.assigned_sales_lead_to})
+                for (let lead of leadList) {
+                    if (lead.assigned_sales_lead_to !== '') {
+                        let s3 = dbScript(db_sql['Q8'], { var1: lead.assigned_sales_lead_to })
                         assignedSalesLead = await connection.query(s3)
-                        if(assignedSalesLead.rowCount > 0){
+                        if (assignedSalesLead.rowCount > 0) {
                             lead.assignedSalesLeadName = assignedSalesLead.rows[0].full_name
-                        }else{
+                        } else {
                             lead.assignedSalesLeadName = ''
                         }
-                        
-                    }else{
+
+                    } else {
                         lead.assignedSalesLeadName = ''
                     }
                 }

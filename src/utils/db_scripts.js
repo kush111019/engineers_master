@@ -468,7 +468,11 @@ const db_sql = {
               sc.closed_at {var2}`,
 
     "Q168" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount,
-              sc.closed_at,sc.slab_id FROM sales_commission AS sc WHERE sc.user_id = '{var1}' 
+              sc.closed_at,sc.slab_id 
+              FROM sales_commission AS sc 
+              INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
+              INNER JOIN sales_supporter AS s ON sc.id = c.sales_commission_id
+              WHERE sc.user_id = '{var1}' OR c.closer_id = '{var1}' OR s.supporter_id = '{var1}'
               AND sc.deleted_at IS NULL` ,
     "Q169" : `SELECT 
                 p.id, p.product_name, p.product_image, p.description, p.available_quantity, p.price, 
@@ -781,7 +785,7 @@ const db_sql = {
               INNER JOIN
                 lead_industries AS i ON i.id = l.industry_type
               WHERE 
-                (l.user_id  = '{var1}' OR l.assigned_sales_lead_to = '{var1}') AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+                (l.user_id = '{var1}' OR l.assigned_sales_lead_to = '{var1}') AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               ORDER BY 
                 l.created_at DESC`,
     
