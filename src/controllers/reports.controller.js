@@ -81,7 +81,9 @@ module.exports.revenuePerCustomer = async (req, res) => {
                     }
                 }
                 if (revenuePerCustomerArr.length > 0) {
+                    console.log(revenuePerCustomerArr,"revenuePerCustomerArr");
                     let returnData = reduceArrayWithCustomer(revenuePerCustomerArr)
+                    console.log(returnData,"return DAta");
                     if (returnData.length > 0) {
                         let paginatedArr = await paginatedResults(returnData, page)
                         if (orderBy.toLowerCase() == 'asc') {
@@ -93,13 +95,13 @@ module.exports.revenuePerCustomer = async (req, res) => {
                                 return b.revenue - a.revenue
                             })
                         }
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Revenue per customer",
+                            data: paginatedArr
+                        })
                     }
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Revenue per customer",
-                        data: paginatedArr
-                    })
                 } else {
                     res.json({
                         status: 200,
@@ -220,13 +222,13 @@ module.exports.revenuePerProduct = async (req, res) => {
                                 return b.revenue - a.revenue
                             })
                         }
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Revenue per product",
+                            data: paginatedArr
+                        })
                     }
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Revenue per product",
-                        data: paginatedArr
-                    })
                 } else {
                     res.json({
                         status: 200,
