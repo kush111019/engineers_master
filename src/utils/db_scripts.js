@@ -448,7 +448,7 @@ const db_sql = {
               WHERE c.user_id = '{var1}' AND c.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`,
     "Q167" : `SELECT 
                 sc.id AS sales_commission_id, 
-                SUM(sc.target_amount::DECIMAL) as amount,
+                sc.target_amount::DECIMAL as amount,
                 sc.closed_at,sc.slab_id
               FROM
                 sales_commission AS sc 
@@ -457,22 +457,27 @@ const db_sql = {
               INNER JOIN 
                 sales_supporter AS s ON sc.id = s.sales_commission_id  
               WHERE 
-                (sc.user_id = '{var1}' OR c.closer_id = '{var1}' OR s.supporter_id = '{var1}') 
+                (sc.user_id IN ({var1}) OR c.closer_id IN ({var1}) OR s.supporter_id IN ({var1})) 
                 AND sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
                 sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
               GROUP BY 
                 sc.closed_at,
                 sc.id,
-                sc.slab_id 
+                sc.slab_id,
+                sc.target_amount 
               ORDER BY 
               sc.closed_at {var2}`,
 
-    "Q168" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount,
-              sc.closed_at,sc.slab_id 
-              FROM sales_commission AS sc 
-              INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
-              INNER JOIN sales_supporter AS s ON sc.id = c.sales_commission_id
-              WHERE sc.user_id IN ({var1}) OR c.closer_id IN ({var1}) OR s.supporter_id IN ({var1})
+    "Q168" : `SELECT 
+              sc.id AS sales_commission_id, sc.target_amount as amount, sc.closed_at,sc.slab_id 
+              FROM 
+                sales_commission AS sc 
+              INNER JOIN 
+                sales_closer AS c ON sc.id = c.sales_commission_id
+              INNER JOIN 
+                sales_supporter AS s ON sc.id = c.sales_commission_id
+              WHERE 
+                sc.user_id IN ({var1}) OR c.closer_id IN ({var1}) OR s.supporter_id IN ({var1})
               AND sc.deleted_at IS NULL` ,
     "Q169" : `SELECT 
                 p.id, p.product_name, p.product_image, p.description, p.available_quantity, p.price, 
