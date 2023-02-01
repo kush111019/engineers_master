@@ -236,7 +236,8 @@ module.exports.leadsList = async (req, res) => {
                 }
             }
             if (leadList.length > 0) {
-                for(let lead of leadList){
+                const array = [...new Map(leadList.map(item => [item.id, item])).values()];
+                for(let lead of array){
                     if(lead.assigned_sales_lead_to !== ''){
                         let s3 = dbScript(db_sql['Q8'],{var1 : lead.assigned_sales_lead_to})
                         assignedSalesLead = await connection.query(s3)
