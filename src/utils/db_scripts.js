@@ -452,9 +452,13 @@ const db_sql = {
                 sc.closed_at,sc.slab_id
               FROM
                 sales_commission AS sc 
+              INNER JOIN 
+                sales_closer AS c ON sc.id = c.sales_commission_id  
+              INNER JOIN 
+                sales_supporter AS s ON sc.id = s.sales_commission_id  
               WHERE 
-                sc.user_id = '{var1}' AND 
-                sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
+                (sc.user_id = '{var1}' OR c.closer_id = '{var1}' OR s.supporter_id = '{var1}') 
+                AND sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
                 sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
               GROUP BY 
                 sc.closed_at,
@@ -750,7 +754,7 @@ const db_sql = {
               INNER JOIN
                 lead_industries AS i ON i.id = l.industry_type
               WHERE 
-                (l.user_id = '{var1}' OR l.assigned_sales_lead_to = '{var1}') AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+                l.user_id = '{var1}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               ORDER BY 
                 l.created_at DESC`,
     
@@ -935,7 +939,7 @@ const db_sql = {
     "Q249" :`UPDATE companies SET company_logo = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q250" :`UPDATE leads SET is_rejected = '{var2}', reason = '{var3}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`, 
     "Q251" :`UPDATE customers SET is_rejected = '{var2}' WHERE lead_id = '{var1}' AND deleted_at is null RETURNING *`, 
-    "Q252" :`SELECT * from sales_commission WHERE lead_id = '{var1}' AND deleted_at IS NULL`,
+    "Q252" :`SELECT * FROM sales_commission WHERE lead_id = '{var1}' AND deleted_at IS NULL`,
     "Q253" :`SELECT COUNT(*) from leads WHERE company_id = '{var1}' AND is_rejected = '{var2}' AND deleted_at IS NULL`,
     "Q254" :`SELECT COUNT(*) from leads WHERE user_id = '{var1}' AND is_rejected = true AND deleted_at IS NULL`,
     "Q255" :`SELECT 
