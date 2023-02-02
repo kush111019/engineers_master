@@ -229,7 +229,7 @@ const db_sql = {
     "Q89"  : `SELECT            
                   c.customer_name,
                   sc.id AS sales_commission_id,
-                  sc.type
+                  sc.sales_type
               FROM 
                   sales_commission sc
                   INNER JOIN customers c ON c.id = sc.customer_id
@@ -501,7 +501,7 @@ const db_sql = {
     "Q170" : `SELECT            
                   c.customer_name,
                   sc.id AS sales_commission_id,
-                  sc.type
+                  sc.sales_type
               FROM 
                   sales_commission sc
               INNER JOIN customers c ON c.id = sc.customer_id
