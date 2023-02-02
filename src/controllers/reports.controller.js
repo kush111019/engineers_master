@@ -202,7 +202,7 @@ module.exports.revenuePerProduct = async (req, res) => {
             if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
                 let s4 = dbScript(db_sql['Q153'], { var1: checkPermission.rows[0].company_id, var2 : orderBy, var3 : sDate, var4: eDate })
                 let revenuePerProduct = await connection.query(s4)
-                if (revenuePerProduct.length > 0) {
+                if (revenuePerProduct.rowCount > 0) {
                     let revenuePerProductArr = []
                     for(data of revenuePerProduct.rows ){
                         if(data.sales_type == 'Perpectual'){
@@ -251,7 +251,7 @@ module.exports.revenuePerProduct = async (req, res) => {
                         status: 200,
                         success: true,
                         message: "Empty revenue per product",
-                        data: revenuePerProduct.rows
+                        data: []
                     })
                 }
             }else{
