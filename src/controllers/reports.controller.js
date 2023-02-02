@@ -19,9 +19,28 @@ module.exports.revenuePerCustomer = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global) {
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
-                let s2 = dbScript(db_sql['Q89'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: limit, var4: offset, var5: sDate, var6: eDate })
+                let s2 = dbScript(db_sql['Q89'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate })
                 let customerCompanies = await connection.query(s2)
                 if (customerCompanies.rowCount > 0) {
+                    let returnData = reduceArrayWithCustomer(customerCompanies.rows)
+                    if (returnData.length > 0) {
+                        let paginatedArr = await paginatedResults(returnData, page)
+                        if (orderBy.toLowerCase() == 'asc') {
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return a.revenue - b.revenue
+                            })
+                        } else {
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return b.revenue - a.revenue
+                            })
+                        }
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Revenue per customer",
+                            data: paginatedArr
+                        })
+                    }
                     res.json({
                         status: 200,
                         success: true,
@@ -71,7 +90,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 }
             }
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
-                let s2 = dbScript(db_sql['Q170'], {  var1: "'"+roleUsers.join("','")+"'", var2: orderBy, var3: limit, var4: offset, var5: sDate, var6: eDate })
+                let s2 = dbScript(db_sql['Q170'], {  var1: "'"+roleUsers.join("','")+"'", var2: orderBy, var3: sDate, var4: eDate })
                 let customerCompanies = await connection.query(s2)
                 if(customerCompanies.rowCount > 0){
                     for(let customer of customerCompanies.rows){
