@@ -388,7 +388,7 @@ const db_sql = {
     "Q151" : `UPDATE upgraded_transactions SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
     "Q152" : `SELECT id,country_name,country_value,currency_name,currency_symbol,date_format,created_at FROM country_details WHERE deleted_at IS NULL`,
     "Q153" : `SELECT 
-                  sc.id AS sales_commission_id,
+                  DISTINCT(sc.id) AS sales_commission_id,
                   sc.sales_type, 
                   p.product_name
               FROM 
