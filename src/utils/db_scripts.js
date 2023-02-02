@@ -228,21 +228,23 @@ const db_sql = {
 
     "Q89"  : `SELECT            
                   c.customer_name,
-                  SUM(sc.target_amount::DECIMAL) AS revenue
+                  SUM(r.recognized_amount::DECIMAL) AS revenue,
+                  sc.id AS sales_commission_id
               FROM 
                   sales_commission sc
-                  LEFT JOIN customers c ON c.id = sc.customer_id
+                  INNER JOIN customers c ON c.id = sc.customer_id
+                  INNER JOIN recognized_revenue r ON r.sales_id = sc.id
               WHERE 
                   sc.closed_at is not null AND 
                   sc.company_id = '{var1}' AND 
-                  sc.closed_at BETWEEN '{var5}' AND '{var6}' AND
+                  sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
                   c.deleted_at IS NULL AND
                   sc.deleted_at IS NULL 
               GROUP BY 
-                  c.customer_name 
+                  c.customer_name,
+                  sc.id 
               ORDER BY 
-                  revenue {var2}
-              LIMIT {var3} OFFSET {var4}`,
+                  revenue {var2}`,
 
     "Q90"  : `SELECT 
                   u.full_name AS sales_rep,
@@ -514,15 +516,14 @@ const db_sql = {
               WHERE 
                   sc.closed_at is not null AND 
                   (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
-                  AND sc.closed_at BETWEEN '{var5}' AND '{var6}' AND
+                  AND sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
                   c.deleted_at IS NULL AND
                   sc.deleted_at IS NULL 
               GROUP BY 
                   c.customer_name,
                   sc.target_amount 
               ORDER BY 
-                  revenue {var2}
-              LIMIT {var3} OFFSET {var4}`,
+                  revenue {var2}`,
     "Q171" : `SELECT 
                   sc.target_amount::DECIMAL as revenue, 
                   p.product_name
@@ -634,8 +635,9 @@ const db_sql = {
     "Q179"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name ,
               sc.transfered_back_by
+              FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN users AS u1 ON u1.id = sc.user_id
@@ -644,8 +646,9 @@ const db_sql = {
     "Q180"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name FROM sales_commission AS sc 
-              sc.transfered_back_by
+              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name,
+              sc.transfered_back_by 
+              FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN users AS u1 ON u1.id = sc.user_id
