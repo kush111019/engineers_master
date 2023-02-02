@@ -499,8 +499,8 @@ const db_sql = {
                 created_at DESC`, 
 
     "Q170" : `SELECT            
+                  DISTINCT(sc.id) AS sales_commission_id,
                   c.customer_name,
-                  sc.id AS sales_commission_id,
                   sc.sales_type
               FROM 
                   sales_commission sc
