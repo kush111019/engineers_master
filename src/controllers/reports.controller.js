@@ -43,7 +43,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                         }
                         
                     }
-                    let returnData = reduceArrayWithCustomer(revenuePerCustomerArr)
+                    let returnData = await reduceArrayWithCustomer(revenuePerCustomerArr)
                     if (returnData.length > 0) {
                         let paginatedArr = await paginatedResults(returnData, page)
                         if (orderBy.toLowerCase() == 'asc') {
