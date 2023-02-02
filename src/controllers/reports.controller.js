@@ -22,7 +22,28 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 let s2 = dbScript(db_sql['Q89'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate })
                 let customerCompanies = await connection.query(s2)
                 if (customerCompanies.rowCount > 0) {
-                    let returnData = reduceArrayWithCustomer(customerCompanies.rows)
+                    let revenuePerCustomerArr = []
+                    for(data of customerCompanies.rows ){
+                        let recognizedRevenue
+                        if(data.sales_type == 'Perpectual'){
+                            let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                            recognizedRevenue = await connection.query(s3)
+                            
+                        }else{
+                            let s3 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                            recognizedRevenue = await connection.query(s3)
+                        }
+                        if(recognizedRevenue.rowCount > 0){
+                            let obj = {
+                                customer_name : data.customer_name,
+                                revenue : recognizedRevenue.rows[0].recognized_amount
+
+                            }
+                            revenuePerCustomerArr.push(obj)
+                        }
+                        
+                    }
+                    let returnData = reduceArrayWithCustomer(revenuePerCustomerArr)
                     if (returnData.length > 0) {
                         let paginatedArr = await paginatedResults(returnData, page)
                         if (orderBy.toLowerCase() == 'asc') {
@@ -41,12 +62,6 @@ module.exports.revenuePerCustomer = async (req, res) => {
                             data: paginatedArr
                         })
                     }
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Revenue per customer",
-                        data: customerCompanies.rows
-                    })
                 } else {
                     res.json({
                         status: 200,
@@ -93,8 +108,25 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 let s2 = dbScript(db_sql['Q170'], {  var1: "'"+roleUsers.join("','")+"'", var2: orderBy, var3: sDate, var4: eDate })
                 let customerCompanies = await connection.query(s2)
                 if(customerCompanies.rowCount > 0){
-                    for(let customer of customerCompanies.rows){
-                        revenuePerCustomerArr.push(customer)
+                    for(data of customerCompanies.rows ){
+                        let recognizedRevenue
+                        if(data.sales_type == 'Perpectual'){
+                            let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                            recognizedRevenue = await connection.query(s3)
+                            
+                        }else{
+                            let s3 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                            recognizedRevenue = await connection.query(s3)
+                        }
+                        if(recognizedRevenue.rowCount > 0){
+                            let obj = {
+                                customer_name : data.customer_name,
+                                revenue : recognizedRevenue.rows[0].recognized_amount
+
+                            }
+                            revenuePerCustomerArr.push(obj)
+                        }
+                        
                     }
                 }
                 if (revenuePerCustomerArr.length > 0) {

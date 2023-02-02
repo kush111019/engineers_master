@@ -228,23 +228,17 @@ const db_sql = {
 
     "Q89"  : `SELECT            
                   c.customer_name,
-                  SUM(r.recognized_amount::DECIMAL) AS revenue,
-                  sc.id AS sales_commission_id
+                  sc.id AS sales_commission_id,
+                  sc.type
               FROM 
                   sales_commission sc
                   INNER JOIN customers c ON c.id = sc.customer_id
-                  INNER JOIN recognized_revenue r ON r.sales_id = sc.id
               WHERE 
                   sc.closed_at is not null AND 
                   sc.company_id = '{var1}' AND 
                   sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
                   c.deleted_at IS NULL AND
-                  sc.deleted_at IS NULL 
-              GROUP BY 
-                  c.customer_name,
-                  sc.id 
-              ORDER BY 
-                  revenue {var2}`,
+                  sc.deleted_at IS NULL`,
 
     "Q90"  : `SELECT 
                   u.full_name AS sales_rep,
@@ -502,10 +496,12 @@ const db_sql = {
               WHERE 
                 p.user_id = '{var1}' AND p.deleted_at IS NULL
               ORDER BY 
-                created_at DESC`,      
+                created_at DESC`, 
+
     "Q170" : `SELECT            
                   c.customer_name,
-                  sc.target_amount::DECIMAL AS revenue
+                  sc.id AS sales_commission_id,
+                  sc.type
               FROM 
                   sales_commission sc
               INNER JOIN customers c ON c.id = sc.customer_id
@@ -518,12 +514,7 @@ const db_sql = {
                   (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
                   AND sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
                   c.deleted_at IS NULL AND
-                  sc.deleted_at IS NULL 
-              GROUP BY 
-                  c.customer_name,
-                  sc.target_amount 
-              ORDER BY 
-                  revenue {var2}`,
+                  sc.deleted_at IS NULL `,
     "Q171" : `SELECT 
                   sc.target_amount::DECIMAL as revenue, 
                   p.product_name
