@@ -396,6 +396,8 @@ module.exports.allSalesCommissionList = async (req, res) => {
                 closer.contract = data.contract
                 closer.creatorId = data.user_id
                 closer.transferReason = data.transfer_reason
+                closer.transferedBackById = data.transfered_back_by
+                closer.transferedBackByName = data.transfered_back_by_name
 
                 commissionList.push(closer)
             }
@@ -569,6 +571,8 @@ module.exports.allSalesCommissionList = async (req, res) => {
                     closer.contract = data.contract
                     closer.creatorId = data.user_id
                     closer.transferReason = data.transfer_reason
+                    closer.transferedBackById = data.transfered_back_by
+                    closer.transferedBackByName = data.transfered_back_by_name
 
                     salesListArr.push(closer)
                 }
@@ -834,6 +838,8 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                     closer.contract = data.contract
                     closer.creatorId = data.user_id
                     closer.transferReason = data.transfer_reason
+                    closer.transferedBackById = data.transfered_back_by
+                    closer.transferedBackByName = data.transfered_back_by_name
 
                     salesListArr.push(closer)
                 }
@@ -993,6 +999,8 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                 closer.contract = data.contract
                 closer.creatorId = data.user_id
                 closer.transferReason = data.transfer_reason
+                closer.transferedBackById = data.transfered_back_by
+                closer.transferedBackByName = data.transfered_back_by_name
 
                 commissionList.push(closer)
             }
@@ -1153,6 +1161,8 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                     closer.contract = data.contract
                     closer.creatorId = data.user_id
                     closer.transferReason = data.transfer_reason
+                    closer.transferedBackById = data.transfered_back_by
+                    closer.transferedBackByName = data.transfered_back_by_name
 
                     salesListArr.push(closer)
                 }
