@@ -256,7 +256,7 @@ module.exports.revenuePerProduct = async (req, res) => {
 module.exports.revenuePerSalesRep = async (req, res) => {
     try {
         let userId = req.user.id
-        let { page, orderBy, startDate, endDate, role_id, isAll } = req.query
+        let { page, orderBy, startDate, endDate, role_id, isAll, filterBy } = req.query
         startDate = new Date(startDate)
         startDate.setHours(0, 0, 0, 0)
         let sDate = new Date(startDate).toISOString()
@@ -334,8 +334,28 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                                 }
                             }
                         }
-                        revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
-                        revenueCommissionBydate.push(revenueCommissionByDateObj)
+                        if (filterBy.toLowerCase() == 'all') {
+                            revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
+                            revenueCommissionBydate.push(revenueCommissionByDateObj)
+                        } else if (filterBy.toLowerCase() == 'lead') {
+                            let s6 = dbScript(db_sql['Q86'], { var1: data.sales_commission_id })
+                            let leadPercentage = await connection.query(s6)
+                            if (leadPercentage.rowCount > 0) {
+                                revenueCommissionByDateObj.commission = ((Number(leadPercentage.rows[0].closer_percentage) / 100) * Number(commission.toFixed(2)))
+                                revenueCommissionBydate.push(revenueCommissionByDateObj)
+                            }
+                        } else {
+                            let s6 = dbScript(db_sql['Q59'], { var1: data.sales_commission_id })
+                            let supporterPercentage = await connection.query(s6)
+                            if (supporterPercentage.rowCount > 0) {
+                                let sCommission = 0
+                                for (supporter of supporterPercentage.rows) {
+                                    sCommission += ((Number(supporter.supporter_percentage)/100) * Number(commission.toFixed(2)))
+                                }
+                                revenueCommissionByDateObj.commission = sCommission
+                                revenueCommissionBydate.push(revenueCommissionByDateObj)
+                            }
+                        }
                     }
                 }
                 if (revenueCommissionBydate.length > 0) {
@@ -483,96 +503,96 @@ module.exports.totalRevenue = async (req, res) => {
     }
 }
 
-module.exports.roleWiseRevenue = async (req, res) => {
-    try {
-        let userId = req.user.id
-        let { page, orderBy, startDate, endDate, role_id, isAll } = req.query
-        startDate = new Date(startDate)
-        startDate.setHours(0, 0, 0, 0)
-        let sDate = new Date(startDate).toISOString()
-        endDate = new Date(endDate)
-        endDate.setHours(23, 59, 59, 999)
-        let eDate = new Date(endDate).toISOString()
-        let limit = 10;
-        let offset = (page - 1) * limit
-        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-            if ((startDate != undefined && startDate != '') && (endDate != undefined && endDate != '')) {
-                let roleIds = []
-                let roleUsers = []
-                let revenueList = []
-                roleIds.push(role_id)
-                if(isAll == 'true'){
-                    let getRoles = async (id) => {
-                        let s7 = dbScript(db_sql['Q16'], { var1: id })
-                        let getChild = await connection.query(s7);
-                        if (getChild.rowCount > 0) {
-                            for (let item of getChild.rows) {
-                                if (roleIds.includes(item.id) == false) {
-                                    roleIds.push(item.id)
-                                    await getRoles(item.id)
-                                }
-                            }
-                        }
-                    }
-                    await getRoles(role_id)
-                }
-                for(let roleId of roleIds){
-                    let s3 = dbScript(db_sql['Q185'], { var1: roleId })
-                    let findUsers = await connection.query(s3)
-                    if (findUsers.rowCount > 0) {
-                        for (let user of findUsers.rows) {
-                            roleUsers.push(user.id)
-                        }
-                    }
-                }
-                let s4 = dbScript(db_sql['Q186'], {  var1: "'"+roleUsers.join("','")+"'", var2: limit, var3: offset, var4: sDate, var5: eDate })
-                let salesData = await connection.query(s4)
-                if (salesData.rowCount > 0) {
-                    let returnData = await reduceArrayWithName1(salesData.rows)
-                    if(orderBy.toLowerCase() == 'asc'){
-                        returnData = returnData.sort((a,b) => {
-                            return a.revenue - b.revenue
-                        })
-                    }else{
-                        returnData = returnData.sort((a,b) => {
-                            return b.revenue - a.revenue
-                        })
-                    }
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Revenue per role wise user",
-                        data: returnData
-                    })
-                } else {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Empty revenue per role wise user",
-                        data: revenueList
-                    })
-                }
-            } else {
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Start date and End date is required",
-                })
-            }
-        } 
-        else {
-            res.status(403).json({
-                success: false,
-                message: "Unauthorised"
-            })
-        }
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
+// module.exports.roleWiseRevenue = async (req, res) => {
+//     try {
+//         let userId = req.user.id
+//         let { page, orderBy, startDate, endDate, role_id, isAll } = req.query
+//         startDate = new Date(startDate)
+//         startDate.setHours(0, 0, 0, 0)
+//         let sDate = new Date(startDate).toISOString()
+//         endDate = new Date(endDate)
+//         endDate.setHours(23, 59, 59, 999)
+//         let eDate = new Date(endDate).toISOString()
+//         let limit = 10;
+//         let offset = (page - 1) * limit
+//         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+//         let checkPermission = await connection.query(s3)
+//         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
+//             if ((startDate != undefined && startDate != '') && (endDate != undefined && endDate != '')) {
+//                 let roleIds = []
+//                 let roleUsers = []
+//                 let revenueList = []
+//                 roleIds.push(role_id)
+//                 if(isAll == 'true'){
+//                     let getRoles = async (id) => {
+//                         let s7 = dbScript(db_sql['Q16'], { var1: id })
+//                         let getChild = await connection.query(s7);
+//                         if (getChild.rowCount > 0) {
+//                             for (let item of getChild.rows) {
+//                                 if (roleIds.includes(item.id) == false) {
+//                                     roleIds.push(item.id)
+//                                     await getRoles(item.id)
+//                                 }
+//                             }
+//                         }
+//                     }
+//                     await getRoles(role_id)
+//                 }
+//                 for(let roleId of roleIds){
+//                     let s3 = dbScript(db_sql['Q185'], { var1: roleId })
+//                     let findUsers = await connection.query(s3)
+//                     if (findUsers.rowCount > 0) {
+//                         for (let user of findUsers.rows) {
+//                             roleUsers.push(user.id)
+//                         }
+//                     }
+//                 }
+//                 let s4 = dbScript(db_sql['Q186'], {  var1: "'"+roleUsers.join("','")+"'", var2: limit, var3: offset, var4: sDate, var5: eDate })
+//                 let salesData = await connection.query(s4)
+//                 if (salesData.rowCount > 0) {
+//                     let returnData = await reduceArrayWithName1(salesData.rows)
+//                     if(orderBy.toLowerCase() == 'asc'){
+//                         returnData = returnData.sort((a,b) => {
+//                             return a.revenue - b.revenue
+//                         })
+//                     }else{
+//                         returnData = returnData.sort((a,b) => {
+//                             return b.revenue - a.revenue
+//                         })
+//                     }
+//                     res.json({
+//                         status: 200,
+//                         success: true,
+//                         message: "Revenue per role wise user",
+//                         data: returnData
+//                     })
+//                 } else {
+//                     res.json({
+//                         status: 200,
+//                         success: true,
+//                         message: "Empty revenue per role wise user",
+//                         data: revenueList
+//                     })
+//                 }
+//             } else {
+//                 res.json({
+//                     status: 400,
+//                     success: false,
+//                     message: "Start date and End date is required",
+//                 })
+//             }
+//         } 
+//         else {
+//             res.status(403).json({
+//                 success: false,
+//                 message: "Unauthorised"
+//             })
+//         }
+//     } catch (error) {
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }

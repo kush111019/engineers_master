@@ -104,7 +104,7 @@ router.get('/recognizedRevenueList', verifyTokenFn, controller.sales.recognizedR
 router.get('/revenuePerCustomer',verifyTokenFn, controller.reports.revenuePerCustomer)
 router.get('/revenuePerProduct',verifyTokenFn, controller.reports.revenuePerProduct)
 router.get('/revenuePerSalesRep',verifyTokenFn, controller.reports.revenuePerSalesRep)
-router.get('/roleWiseRevenue',verifyTokenFn, controller.reports.roleWiseRevenue)
+// router.get('/roleWiseRevenue',verifyTokenFn, controller.reports.roleWiseRevenue)
 router.get('/totalRevenue',verifyTokenFn, controller.reports.totalRevenue)
 //---------------------------------------DashBoard counts -------------------------------
 
