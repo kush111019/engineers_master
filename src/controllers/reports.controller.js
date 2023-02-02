@@ -109,10 +109,9 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 let customerCompanies = await connection.query(s2)
                 if(customerCompanies.rowCount > 0){
                     for(data of customerCompanies.rows ){
-                        let recognizedRevenue
                         if(data.sales_type == 'Perpectual'){
                             let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
-                            recognizedRevenue = await connection.query(s3)
+                            let recognizedRevenue = await connection.query(s3)
                             if(recognizedRevenue.rowCount > 0){
                                 let obj = {
                                     customer_name : data.customer_name,
@@ -123,7 +122,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                             }
                         }else{
                             let s4 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
-                            recognizedRevenue = await connection.query(s4)
+                            let recognizedRevenue = await connection.query(s4)
                             if(recognizedRevenue.rowCount > 0){
                                 let obj = {
                                     customer_name : data.customer_name,
@@ -201,15 +200,49 @@ module.exports.revenuePerProduct = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
             if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
-                let s4 = dbScript(db_sql['Q153'], { var1: checkPermission.rows[0].company_id, var2 : orderBy, var3 : limit, var4 : offset, var5: sDate, var6: eDate })
+                let s4 = dbScript(db_sql['Q153'], { var1: checkPermission.rows[0].company_id, var2 : orderBy, var3 : sDate, var4: eDate })
                 let revenuePerProduct = await connection.query(s4)
                 if (revenuePerProduct.length > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Revenue per product",
-                        data: revenuePerProduct.rows
-                    })
+                    let revenuePerProductArr = []
+                    for(data of customerCompanies.rows ){
+                        let recognizedRevenue
+                        if(data.sales_type == 'Perpectual'){
+                            let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                            recognizedRevenue = await connection.query(s3)
+                            
+                        }else{
+                            let s3 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                            recognizedRevenue = await connection.query(s3)
+                        }
+                        if(recognizedRevenue.rowCount > 0){
+                            let obj = {
+                                product_name : data.product_name,
+                                revenue : recognizedRevenue.rows[0].recognized_amount
+
+                            }
+                            revenuePerProductArr.push(obj)
+                        }
+                        
+                    }
+                    let returnData = await reduceArrayWithProduct(revenuePerProductArr)
+                    if (returnData.length > 0) {
+                        let paginatedArr = await paginatedResults(returnData, page)
+                        if (orderBy.toLowerCase() == 'asc') {
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return a.revenue - b.revenue
+                            })
+                        } else {
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return b.revenue - a.revenue
+                            })
+                        }
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Revenue per product",
+                            data: paginatedArr
+                        })
+                    }
                 } else {
                     res.json({
                         status: 200,
@@ -253,11 +286,31 @@ module.exports.revenuePerProduct = async (req, res) => {
                 }
             }
             if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
-                let s4 = dbScript(db_sql['Q171'], {  var1: "'"+roleUsers.join("','")+"'", var2 : orderBy, var3 : limit, var4 : offset, var5: sDate, var6: eDate })
+                let s4 = dbScript(db_sql['Q171'], {  var1: "'"+roleUsers.join("','")+"'", var2 : orderBy, var3 : sDate, var4: eDate })
                 let revenuePerProduct = await connection.query(s4)
                 if(revenuePerProduct.rowCount > 0){
                     for(let product of revenuePerProduct.rows){
-                        revenuePerProductArr.push(product)
+                        if(data.sales_type == 'Perpectual'){
+                            let s3 = dbScript(db_sql['Q273'],{var1 : product.sales_commission_id})
+                            let recognizedRevenue = await connection.query(s3)
+                            if(recognizedRevenue.rowCount > 0){
+                                let obj = {
+                                    product_name : product.product_name,
+                                    revenue : recognizedRevenue.rows[0].recognized_amount
+                                }
+                                revenuePerCustomerArr.push(obj)
+                            }
+                        }else{
+                            let s4 = dbScript(db_sql['Q274'],{var1 : product.sales_commission_id})
+                            let recognizedRevenue = await connection.query(s4)
+                            if(recognizedRevenue.rowCount > 0){
+                                let obj = {
+                                    product_name : product.product_name,
+                                    revenue : recognizedRevenue.rows[0].recognized_amount
+                                }
+                                revenuePerProductArr.push(obj)
+                            }
+                        } 
                     }
                 }
                 if (revenuePerProductArr.length > 0) {

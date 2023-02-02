@@ -388,7 +388,8 @@ const db_sql = {
     "Q151" : `UPDATE upgraded_transactions SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
     "Q152" : `SELECT id,country_name,country_value,currency_name,currency_symbol,date_format,created_at FROM country_details WHERE deleted_at IS NULL`,
     "Q153" : `SELECT 
-                  SUM(sc.target_amount::DECIMAL) as revenue, 
+                  sc.id AS sales_commission_id,
+                  sc.sales_type, 
                   p.product_name
               FROM 
                   sales_commission AS sc 
@@ -400,15 +401,11 @@ const db_sql = {
                   products AS p ON p.id = ps.product_id
               WHERE 
                   sc.company_id = '{var1}'
-                  AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
+                  AND sc.closed_at BETWEEN '{var3}' AND '{var4}'
                   AND sc.deleted_at IS NULL 
                   AND c.deleted_at IS NULL
-                  AND sc.closed_at IS NOT NULL
-              GROUP BY 
-                  p.product_name
-              ORDER BY 
-                  revenue {var2}
-              LIMIT {var3} OFFSET {var4}`,    
+                  AND sc.closed_at IS NOT NULL`,  
+
     "Q154" : `SELECT COUNT(*) AS actual_count FROM users WHERE company_id = '{var1}' AND deleted_at IS NULL`,
     "Q155" : `INSERT INTO product_in_sales(id,product_id,sales_commission_id, company_id) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`,  
     "Q156" : `UPDATE product_in_sales SET deleted_at = '{var1}' WHERE sales_commission_id = '{var2}' AND company_id = '{var3}' RETURNING *`,  
@@ -516,12 +513,11 @@ const db_sql = {
                   c.deleted_at IS NULL AND
                   sc.deleted_at IS NULL `,
     "Q171" : `SELECT 
-                  sc.target_amount::DECIMAL as revenue, 
-                  p.product_name
+                  DISTINCT(sc.id) AS sales_commission_id, 
+                  p.product_name,
+                  sc.sales_type
               FROM 
                   sales_commission AS sc 
-              INNER JOIN 
-                  customers AS c ON sc.customer_id = c.id 
               INNER JOIN 
                   product_in_sales AS ps ON sc.id = ps.sales_commission_id
               INNER JOIN 
@@ -534,14 +530,7 @@ const db_sql = {
                   (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
                   AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
                   AND sc.deleted_at IS NULL 
-                  AND c.deleted_at IS NULL
-                  AND sc.closed_at IS NOT NULL
-              GROUP BY 
-                  p.product_name,
-                  sc.target_amount
-              ORDER BY 
-                  revenue {var2}
-              LIMIT {var3} OFFSET {var4}`, 
+                  AND sc.closed_at IS NOT NULL`, 
     "Q172" : `SELECT 
                   u.full_name AS sales_rep,
                   SUM(sc.target_amount::DECIMAL) AS revenue
