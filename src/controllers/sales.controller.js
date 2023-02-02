@@ -365,6 +365,17 @@ module.exports.allSalesCommissionList = async (req, res) => {
                     closer.revenueContactName = ""
                     closer.revenueContactEmail = ""
                 }
+
+                let transfered_back_by_name = ''
+                if(data.transfered_back_by){
+                    let s10 = dbScript(db_sql['Q8'],{var1 : data.transfered_back_by})
+                    let transferedBackBy = await connection.query(s10)
+                    if(transferedBackBy.rowCount > 0){
+                        transfered_back_by_name = transferedBackBy.rows[0].full_name
+                    }
+                }
+                
+
                 closer.id = data.id
                 closer.customerId = data.customer_id
                 closer.customerName = data.customer_name
@@ -397,7 +408,7 @@ module.exports.allSalesCommissionList = async (req, res) => {
                 closer.creatorId = data.user_id
                 closer.transferReason = data.transfer_reason
                 closer.transferedBackById = data.transfered_back_by
-                closer.transferedBackByName = data.transfered_back_by_name
+                closer.transferedBackByName = transfered_back_by_name
 
                 commissionList.push(closer)
             }
@@ -540,6 +551,16 @@ module.exports.allSalesCommissionList = async (req, res) => {
                         closer.revenueContactName = ""
                         closer.revenueContactEmail = ""
                     }
+
+                    let transfered_back_by_name = ''
+                    if(data.transfered_back_by){
+                        let s10 = dbScript(db_sql['Q8'],{var1 : data.transfered_back_by})
+                        let transferedBackBy = await connection.query(s10)
+                        if(transferedBackBy.rowCount > 0){
+                            transfered_back_by_name = transferedBackBy.rows[0].full_name
+                        }
+                    }
+
                     closer.id = data.id
                     closer.customerId = data.customer_id
                     closer.customerName = data.customer_name
@@ -572,7 +593,7 @@ module.exports.allSalesCommissionList = async (req, res) => {
                     closer.creatorId = data.user_id
                     closer.transferReason = data.transfer_reason
                     closer.transferedBackById = data.transfered_back_by
-                    closer.transferedBackByName = data.transfered_back_by_name
+                    closer.transferedBackByName = transfered_back_by_name
 
                     salesListArr.push(closer)
                 }
@@ -673,6 +694,16 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                     closer.revenueContactName = ""
                     closer.revenueContactEmail = ""
                 }
+
+                let transfered_back_by_name = ''
+                if(data.transfered_back_by){
+                    let s10 = dbScript(db_sql['Q8'],{var1 : data.transfered_back_by})
+                    let transferedBackBy = await connection.query(s10)
+                    if(transferedBackBy.rowCount > 0){
+                        transfered_back_by_name = transferedBackBy.rows[0].full_name
+                    }
+                }
+
                 closer.id = data.id
                 closer.customerId = data.customer_id
                 closer.customerName = data.customer_name
@@ -703,6 +734,8 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                 closer.contract = data.contract
                 closer.creatorId = data.user_id
                 closer.transferReason = data.transfer_reason
+                closer.transferedBackById = data.transfered_back_by
+                closer.transferedBackByName = transfered_back_by_name
 
                 commissionList.push(closer)
             }
@@ -808,6 +841,16 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                         closer.revenueContactName = ""
                         closer.revenueContactEmail = ""
                     }
+
+                    let transfered_back_by_name = ''
+                    if(data.transfered_back_by){
+                        let s10 = dbScript(db_sql['Q8'],{var1 : data.transfered_back_by})
+                        let transferedBackBy = await connection.query(s10)
+                        if(transferedBackBy.rowCount > 0){
+                            transfered_back_by_name = transferedBackBy.rows[0].full_name
+                        }
+                    }
+
                     closer.id = data.id
                     closer.customerId = data.customer_id
                     closer.customerName = data.customer_name
@@ -839,7 +882,7 @@ module.exports.activeSalesCommissionList = async (req, res) => {
                     closer.creatorId = data.user_id
                     closer.transferReason = data.transfer_reason
                     closer.transferedBackById = data.transfered_back_by
-                    closer.transferedBackByName = data.transfered_back_by_name
+                    closer.transferedBackByName = transfered_back_by_name
 
                     salesListArr.push(closer)
                 }
@@ -968,6 +1011,16 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                     closer.revenueContactName = ""
                     closer.revenueContactEmail = ""
                 }
+
+                let transfered_back_by_name = ''
+                if(data.transfered_back_by){
+                    let s10 = dbScript(db_sql['Q8'],{var1 : data.transfered_back_by})
+                    let transferedBackBy = await connection.query(s10)
+                    if(transferedBackBy.rowCount > 0){
+                        transfered_back_by_name = transferedBackBy.rows[0].full_name
+                    }
+                }
+
                 closer.id = data.id
                 closer.customerId = data.customer_id
                 closer.customerName = data.customer_name
@@ -1000,7 +1053,7 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                 closer.creatorId = data.user_id
                 closer.transferReason = data.transfer_reason
                 closer.transferedBackById = data.transfered_back_by
-                closer.transferedBackByName = data.transfered_back_by_name
+                closer.transferedBackByName = transfered_back_by_name
 
                 commissionList.push(closer)
             }
@@ -1130,6 +1183,16 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                         closer.revenueContactName = ""
                         closer.revenueContactEmail = ""
                     }
+
+                    let transfered_back_by_name = ''
+                    if(data.transfered_back_by){
+                        let s10 = dbScript(db_sql['Q8'],{var1 : data.transfered_back_by})
+                        let transferedBackBy = await connection.query(s10)
+                        if(transferedBackBy.rowCount > 0){
+                            transfered_back_by_name = transferedBackBy.rows[0].full_name
+                        }
+                    }
+
                     closer.id = data.id
                     closer.customerId = data.customer_id
                     closer.customerName = data.customer_name
@@ -1162,7 +1225,7 @@ module.exports.closedSalesCommissionList = async (req, res) => {
                     closer.creatorId = data.user_id
                     closer.transferReason = data.transfer_reason
                     closer.transferedBackById = data.transfered_back_by
-                    closer.transferedBackByName = data.transfered_back_by_name
+                    closer.transferedBackByName = transfered_back_by_name
 
                     salesListArr.push(closer)
                 }
