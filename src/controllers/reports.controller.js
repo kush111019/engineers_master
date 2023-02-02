@@ -293,7 +293,7 @@ module.exports.revenuePerProduct = async (req, res) => {
                 let revenuePerProduct = await connection.query(s4)
                 if(revenuePerProduct.rowCount > 0){
                     for(let product of revenuePerProduct.rows){
-                        if(data.sales_type == 'Perpectual'){
+                        if(product.sales_type == 'Perpectual'){
                             let s3 = dbScript(db_sql['Q273'],{var1 : product.sales_commission_id})
                             let recognizedRevenue = await connection.query(s3)
                             if(recognizedRevenue.rowCount > 0){
