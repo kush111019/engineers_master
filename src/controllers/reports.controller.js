@@ -205,24 +205,27 @@ module.exports.revenuePerProduct = async (req, res) => {
                 if (revenuePerProduct.length > 0) {
                     let revenuePerProductArr = []
                     for(data of customerCompanies.rows ){
-                        let recognizedRevenue
                         if(data.sales_type == 'Perpectual'){
                             let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
-                            recognizedRevenue = await connection.query(s3)
-                            
+                            let recognizedRevenue = await connection.query(s3)
+                            if(recognizedRevenue.rowCount > 0){
+                                let obj = {
+                                    product_name : data.product_name,
+                                    revenue : recognizedRevenue.rows[0].recognized_amount
+                                }
+                                revenuePerProductArr.push(obj)
+                            }
                         }else{
                             let s3 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
-                            recognizedRevenue = await connection.query(s3)
-                        }
-                        if(recognizedRevenue.rowCount > 0){
-                            let obj = {
-                                product_name : data.product_name,
-                                revenue : recognizedRevenue.rows[0].recognized_amount
-
+                            let recognizedRevenue = await connection.query(s3)
+                            if(recognizedRevenue.rowCount > 0){
+                                let obj = {
+                                    product_name : data.product_name,
+                                    revenue : recognizedRevenue.rows[0].recognized_amount
+                                }
+                                revenuePerProductArr.push(obj)
                             }
-                            revenuePerProductArr.push(obj)
-                        }
-                        
+                        } 
                     }
                     let returnData = await reduceArrayWithProduct(revenuePerProductArr)
                     if (returnData.length > 0) {

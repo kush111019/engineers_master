@@ -493,7 +493,6 @@ module.exports.reduceArrayWithCustomer = async (data) => {
 }
 
 module.exports.reduceArrayWithProduct = async (data) => {
-
     let returnData = [];
     for (let i = 0; i < data.length; i++) {
         let found = 0;
