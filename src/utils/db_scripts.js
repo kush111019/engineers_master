@@ -118,7 +118,7 @@ const db_sql = {
                 sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
                 sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,sc.lead_id,
                 c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name as creator_name,
-                sc.transfered_back_by 
+                sc.transfered_back_by
               FROM 
                 sales_commission AS sc 
               INNER JOIN 
@@ -1089,7 +1089,18 @@ const db_sql = {
             ORDER BY 
               created_at DESC`,
     "Q269" : `UPDATE sales_closer SET closer_id = '{var1}', updated_at = '{var2}' WHERE sales_commission_id = '{var3}' RETURNING * `,
-    "Q270" : `UPDATE sales_commission SET transfer_reason = '{var1}',transfered_back_by = '{var4}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING * `
+    "Q270" : `UPDATE sales_commission SET transfer_reason = '{var1}',transfered_back_by = '{var4}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING * `,
+    "Q271" : `SELECT * FROM sales_commission WHERE id = '{var1}' AND deleted_at is null`,
+    "Q272" : `INSERT INTO recognized_revenue(id, recognized_date, recognized_amount, booking_amount, notes, invoice, sales_id, user_id, company_id)
+              VALUES('{var0}','{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}')RETURNING *`,
+    "Q273" : `SELECT * FROM recognized_revenue WHERE sales_id = '{var1}' AND deleted_at IS NULL`,
+    "Q274" : `SELECT 
+                SUM(recognized_amount :: DECIMAL) AS recognized_amount
+              FROM 
+                recognized_revenue 
+              WHERE sales_id = '{var1}' AND deleted_at IS NULL
+              GROUP BY
+                sales_id`,
 
  }
 

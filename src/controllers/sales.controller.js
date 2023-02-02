@@ -1929,3 +1929,70 @@ module.exports.transferBackSales = async(req, res) => {
         })
     }
 }
+
+module.exports.uploadSalesInvoice = async(req, res)=> {
+    try {
+        let file = req.file
+        let path = `${process.env.SALES_INVOICE_LINK}/${file.originalname}`;
+        res.json({
+            success: true,
+            status: 200,
+            message: "Sales invoice uploaded successfully!",
+            data: path
+        })
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.addRecognizedRevenue = async(req, res) => {
+    try {
+        let userId = req.user.id
+        let { salesId, date, amount,notes, invoice} = req.body
+
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+
+        let s2 = dbScript(db_sql['Q271'],{var1 : salesId})
+        let findSales = await connection.query(s2)
+        
+        if(findSales.rowCount > 0){
+            let targetAmount = Number(findSales.rows[0].target_amount)
+            await connection.query('BEGIN')
+            let id = uuid.v4()
+            let s3 = dbScript(db_sql['Q272'], {var0 : id, var1 : date, var2 : amount, var3 : targetAmount, var4 : mysql_real_escape_string(notes), var5 : invoice, var6 : salesId, var7 : checkPermission.rows[0].id, var8 : checkPermission.rows[0].company_id  })
+            let addRecognizeRevenue = await connection.query(s3)
+            if(addRecognizeRevenue.rowCount > 0){
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Recognize revenue added successfully",
+                })
+            }else{
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong",
+                })
+            }
+        }else{
+            res.json({
+                status: 400,
+                success: false,
+                message: "Sales not found",
+            }) 
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}

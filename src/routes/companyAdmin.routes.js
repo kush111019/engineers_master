@@ -2,7 +2,15 @@ const express = require('express')
 var router = express.Router()
 var controller = require('../controllers/index')
 const { verifyTokenFn } = require('../utils/jwt')
-const {uploadAvatar , uploadProductImage, uploadProductFile, uploadMailAttechments, uploadLogo, uploadSalesContract } = require('../utils/uploadfiles')
+const {
+    uploadAvatar , 
+    uploadProductImage, 
+    uploadProductFile, 
+    uploadMailAttechments, 
+    uploadLogo, 
+    uploadSalesContract,
+    uploadSalesInvoice
+ } = require('../utils/uploadfiles')
 
 router.post('/upload',verifyTokenFn, uploadAvatar.single('image'),controller.companyAdmin.upload);
 router.get('/showProfile',verifyTokenFn, controller.companyAdmin.showProfile)
@@ -88,6 +96,8 @@ router.post('/closeSales',verifyTokenFn, controller.sales.closeSales)
 router.get('/usersListForSales', verifyTokenFn, controller.sales.usersListForSales)
 router.get('/commissionSplitListForSales', verifyTokenFn, controller.sales.commissionSplitListForSales)
 router.put('/transferBackSales', verifyTokenFn, controller.sales.transferBackSales)
+router.post('/uploadSalesInvoice', verifyTokenFn,uploadSalesInvoice.single('file'), controller.sales.uploadSalesInvoice)
+router.post('/addRecognizedRevenue', verifyTokenFn, controller.sales.addRecognizedRevenue)
 //----------------------------------------Reports------------------------------------------
 router.get('/revenuePerCustomer',verifyTokenFn, controller.reports.revenuePerCustomer)
 router.get('/revenuePerProduct',verifyTokenFn, controller.reports.revenuePerProduct)
