@@ -301,7 +301,7 @@ module.exports.revenuePerProduct = async (req, res) => {
                                     product_name : product.product_name,
                                     revenue : recognizedRevenue.rows[0].recognized_amount
                                 }
-                                revenuePerCustomerArr.push(obj)
+                                revenuePerProductArr.push(obj)
                             }
                         }else{
                             let s4 = dbScript(db_sql['Q274'],{var1 : product.sales_commission_id})
