@@ -193,7 +193,7 @@ const db_sql = {
     "Q87"  : `SELECT 
                 sc.id AS sales_commission_id, 
                 SUM(sc.target_amount::DECIMAL) as amount,
-                sc.closed_at, sc.slab_id
+                sc.closed_at, sc.slab_id, sc.sales_type
               FROM
                 sales_commission AS sc 
               WHERE 
@@ -203,7 +203,8 @@ const db_sql = {
               GROUP BY 
                 sc.closed_at,
                 sc.id,
-                sc.slab_id 
+                sc.slab_id,
+                sc.sales_type 
               ORDER BY 
               sc.closed_at {var2}`,
 
@@ -420,7 +421,7 @@ const db_sql = {
               WHERE ps.sales_commission_id = '{var1}' AND ps.deleted_at IS NULL and p.deleted_at IS NULL` ,
     "Q158" : `UPDATE sales_commission_logs SET closed_at = '{var1}', updated_at = '{var2}' WHERE sales_commission_id = '{var3}' RETURNING *`,
     "Q159" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount, sc.target_closing_date,
-              sc.closed_at, sc.slab_id FROM sales_commission AS sc WHERE sc.company_id = '{var1}' 
+              sc.closed_at, sc.slab_id,sc.sales_type FROM sales_commission AS sc WHERE sc.company_id = '{var1}' 
               AND sc.deleted_at IS NULL`,
     "Q160" : `SELECT 
                 id, company_name, company_logo, company_address, is_imap_enable, created_at, is_locked 
@@ -450,7 +451,7 @@ const db_sql = {
     "Q167" : `SELECT 
                 sc.id AS sales_commission_id, 
                 sc.target_amount::DECIMAL as amount,
-                sc.closed_at,sc.slab_id
+                sc.closed_at,sc.slab_id, sc.sales_type
               FROM
                 sales_commission AS sc 
               INNER JOIN 
@@ -465,12 +466,14 @@ const db_sql = {
                 sc.closed_at,
                 sc.id,
                 sc.slab_id,
-                sc.target_amount 
+                sc.target_amount,
+                sc.sales_type 
               ORDER BY 
               sc.closed_at {var2}`,
 
     "Q168" : `SELECT 
-              sc.id AS sales_commission_id, sc.target_amount as amount, sc.closed_at,sc.slab_id 
+              sc.id AS sales_commission_id, sc.target_amount as amount, 
+              sc.closed_at,sc.slab_id,sc.sales_type 
               FROM 
                 sales_commission AS sc 
               INNER JOIN 
@@ -483,7 +486,9 @@ const db_sql = {
               GROUP BY
                 sc.id ,
                 sc.target_amount,
-                sc.closed_at,sc.slab_id`,
+                sc.closed_at,
+                sc.slab_id,
+                sc.sales_type `,
                 
     "Q169" : `SELECT 
                 p.id, p.product_name, p.product_image, p.description, p.available_quantity, p.price, 

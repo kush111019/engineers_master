@@ -1,4 +1,5 @@
 const express = require('express')
+const { sales } = require('../controllers/index')
 var router = express.Router()
 var controller = require('../controllers/index')
 const { verifyTokenFn } = require('../utils/jwt')
@@ -98,6 +99,7 @@ router.get('/commissionSplitListForSales', verifyTokenFn, controller.sales.commi
 router.put('/transferBackSales', verifyTokenFn, controller.sales.transferBackSales)
 router.post('/uploadSalesInvoice', verifyTokenFn,uploadSalesInvoice.single('file'), controller.sales.uploadSalesInvoice)
 router.post('/addRecognizedRevenue', verifyTokenFn, controller.sales.addRecognizedRevenue)
+router.get('/recognizedRevenueList', verifyTokenFn, controller.sales.recognizedRevenueList)
 //----------------------------------------Reports------------------------------------------
 router.get('/revenuePerCustomer',verifyTokenFn, controller.reports.revenuePerCustomer)
 router.get('/revenuePerProduct',verifyTokenFn, controller.reports.revenuePerProduct)

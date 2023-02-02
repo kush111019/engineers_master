@@ -1959,7 +1959,7 @@ module.exports.addRecognizedRevenue = async(req, res) => {
 
         let s2 = dbScript(db_sql['Q271'],{var1 : salesId})
         let findSales = await connection.query(s2)
-        
+
         if(findSales.rowCount > 0){
             let targetAmount = Number(findSales.rows[0].target_amount)
             await connection.query('BEGIN')
@@ -1971,7 +1971,7 @@ module.exports.addRecognizedRevenue = async(req, res) => {
                 res.json({
                     status: 200,
                     success: true,
-                    message: "Recognize revenue added successfully",
+                    message: "Recognized revenue added successfully",
                 })
             }else{
                 await connection.query('ROLLBACK')
@@ -1986,6 +1986,45 @@ module.exports.addRecognizedRevenue = async(req, res) => {
                 status: 400,
                 success: false,
                 message: "Sales not found",
+            }) 
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.recognizedRevenueList = async(req, res) => {
+    try {
+        let userId = req.user.id
+        let {salesId} = req.query
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
+            let s2 = dbScript(db_sql['Q273'],{var1 : salesId})
+            let recognizedList = await connection.query(s2)
+            if(recognizedList.rowCount > 0){
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Recognized revenue list",
+                    data : recognizedList.rows
+                })
+            }else{
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Empty recognized revenue list",
+                    data : recognizedList.rows
+                })
+            }
+        }else{
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
             }) 
         }
     } catch (error) {
