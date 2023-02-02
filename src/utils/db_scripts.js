@@ -528,7 +528,7 @@ const db_sql = {
                 sales_supporter AS s ON sc.id = s.sales_commission_id 
               WHERE 
                   (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
-                  AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
+                  AND sc.closed_at BETWEEN '{var3}' AND '{var4}'
                   AND sc.deleted_at IS NULL 
                   AND sc.closed_at IS NOT NULL`, 
     "Q172" : `SELECT 
