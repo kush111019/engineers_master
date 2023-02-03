@@ -417,8 +417,11 @@ module.exports.reduceArray = async (data) => {
     for (let i = 0; i < data.length; i++) {
         let found = 0;
         for (let j = 0; j < returnData.length; j++) {
+            console.log(data[i].date,"date[i]");
+            console.log(returnData[j].date,"returnData[j].date");
             let date1 = new Date(data[i].date).toISOString();
             let date2 = new Date(returnData[j].date).toISOString();
+            console.log(date1, date2, "date 1, date2");
             if (date1.slice(0, 10) === date2.slice(0, 10)) {
                 let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
                 returnData[j].revenue = revenueOfJ;
