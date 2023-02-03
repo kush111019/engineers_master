@@ -616,15 +616,6 @@ module.exports.totalRevenue = async (req, res) => {
                     let returnData = await reduceArray(totalRevenueArr)
                     if (returnData.length > 0) {
                         let paginatedArr = await paginatedResults1(returnData, page, limit)
-                        if (orderBy.toLowerCase() == 'asc') {
-                            paginatedArr = paginatedArr.sort((a, b) => {
-                                return a.revenue - b.revenue
-                            })
-                        } else {
-                            paginatedArr = paginatedArr.sort((a, b) => {
-                                return b.revenue - a.revenue
-                            })
-                        }
                         res.json({
                             status: 200,
                             success: true,
@@ -708,15 +699,6 @@ module.exports.totalRevenue = async (req, res) => {
                 let finalArray = await reduceArray(totalRevenue)
                 if (finalArray.length > 0) {
                     let paginatedArr = await paginatedResults1(finalArray, page, limit)
-                    if (orderBy.toLowerCase() == 'asc') {
-                        paginatedArr = paginatedArr.sort((a, b) => {
-                            return a.revenue - b.revenue
-                        })
-                    } else {
-                        paginatedArr = paginatedArr.sort((a, b) => {
-                            return b.revenue - a.revenue
-                        })
-                    }
                     res.json({
                         status: 200,
                         success: true,
