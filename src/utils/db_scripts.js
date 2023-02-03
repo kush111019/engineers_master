@@ -549,7 +549,7 @@ const db_sql = {
                   revenue {var2}
               LIMIT {var3} OFFSET {var4}`,
     "Q173"  : `SELECT 
-                sc.id AS sales_commission_id,
+                DISTINCT(sc.id) AS sales_commission_id,
                 DATE_TRUNC('{var2}',sc.closed_at) AS  date,
                 sc.sales_type
               FROM 

@@ -594,22 +594,28 @@ module.exports.totalRevenue = async (req, res) => {
             if (targetData.rowCount > 0) {
                 let totalRevenueArr = []
                 for(data of targetData.rows ){
-                    let recognizedRevenue
                     if(data.sales_type == 'Perpectual'){
-                        let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
-                        recognizedRevenue = await connection.query(s3)
-                        
-                    }else{
-                        let s3 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
-                        recognizedRevenue = await connection.query(s3)
-                    }
-                    if(recognizedRevenue.rowCount > 0){
-                        let obj = {
-                            date : data.date,
-                            revenue : recognizedRevenue.rows[0].recognized_amount
-
+                        let s5 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                        let recognizedRevenue = await connection.query(s5)
+                        if(recognizedRevenue.rowCount > 0){
+                            let obj = {
+                                date : data.date,
+                                revenue : recognizedRevenue.rows[0].recognized_amount
+    
+                            }
+                            totalRevenueArr.push(obj)
                         }
-                        totalRevenueArr.push(obj)
+                    }else{
+                        let s6 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                        let recognizedRevenue = await connection.query(s6)
+                        if(recognizedRevenue.rowCount > 0){
+                            let obj = {
+                                date : data.date,
+                                revenue : recognizedRevenue.rows[0].recognized_amount
+    
+                            }
+                            totalRevenueArr.push(obj)
+                        }
                     }
                 }
                 if(totalRevenueArr.length > 0){
@@ -671,8 +677,8 @@ module.exports.totalRevenue = async (req, res) => {
             if (targetData.rowCount > 0) {
                 for(let data of targetData.rows ){
                     if(data.sales_type == 'Perpectual'){
-                        let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
-                        let recognizedRevenue = await connection.query(s3)
+                        let s5 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                        let recognizedRevenue = await connection.query(s5)
                         if(recognizedRevenue.rowCount > 0){
                             let obj = {
                                 date : data.date,
@@ -682,8 +688,8 @@ module.exports.totalRevenue = async (req, res) => {
                             totalRevenue.push(obj)
                         }
                     }else{
-                        let s4 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
-                        let recognizedRevenue = await connection.query(s4)
+                        let s6 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                        let recognizedRevenue = await connection.query(s6)
                         if(recognizedRevenue.rowCount > 0){
                             let obj = {
                                 date : data.date,
