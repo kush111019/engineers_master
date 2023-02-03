@@ -1076,7 +1076,181 @@ const db_sql = {
               GROUP BY
                 sales_id`,
 
- }
+    "Q275"  :`SELECT 
+                l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
+                u1.full_name AS creator_name 
+              FROM 
+                leads AS l
+              INNER JOIN 
+                users AS u1 ON u1.id = l.user_id
+              INNER JOIN
+                lead_sources AS s ON s.id = l.source
+              INNER JOIN
+                lead_titles AS t ON t.id = l.title
+              INNER JOIN
+                lead_industries AS i ON i.id = l.industry_type
+              WHERE 
+                l.company_id = '{var1}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+                AND l.is_rejected = TRUE
+              ORDER BY 
+                l.created_at DESC`,
+                
+    "Q276"  :`SELECT 
+                l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
+                u1.full_name AS creator_name 
+              FROM 
+                leads AS l
+              INNER JOIN 
+                users AS u1 ON u1.id = l.user_id
+              INNER JOIN
+                lead_sources AS s ON s.id = l.source
+              INNER JOIN
+                lead_titles AS t ON t.id = l.title
+              INNER JOIN
+                lead_industries AS i ON i.id = l.industry_type
+              WHERE 
+                l.company_id = '{var1}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+                AND l.marketing_qualified_lead = TRUE
+              ORDER BY 
+                l.created_at DESC`, 
+
+    "Q277"  :`SELECT 
+                l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
+                u1.full_name AS creator_name 
+              FROM 
+                leads AS l
+              INNER JOIN 
+                users AS u1 ON u1.id = l.user_id
+              INNER JOIN
+                lead_sources AS s ON s.id = l.source
+              INNER JOIN
+                lead_titles AS t ON t.id = l.title
+              INNER JOIN
+                lead_industries AS i ON i.id = l.industry_type
+              WHERE 
+                l.company_id = '{var1}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+                AND l.is_converted = TRUE
+              ORDER BY 
+                l.created_at DESC`, 
+    "Q278"  :`SELECT 
+                DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
+                u1.full_name AS creator_name 
+              FROM 
+                leads AS l 
+              INNER JOIN 
+                users AS u1 ON u1.id = l.user_id
+              INNER JOIN
+                lead_sources AS s ON s.id = l.source
+              INNER JOIN
+                lead_titles AS t ON t.id = l.title
+              INNER JOIN
+                lead_industries AS i ON i.id = l.industry_type
+              WHERE 
+                (l.user_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1}))
+                 AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+                 AND l.is_rejected = TRUE
+              ORDER BY 
+                l.created_at DESC`,
+
+    "Q279"  :`SELECT 
+                DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
+                u1.full_name AS creator_name 
+              FROM 
+                leads AS l 
+              INNER JOIN 
+                users AS u1 ON u1.id = l.user_id
+              INNER JOIN
+                lead_sources AS s ON s.id = l.source
+              INNER JOIN
+                lead_titles AS t ON t.id = l.title
+              INNER JOIN
+                lead_industries AS i ON i.id = l.industry_type
+              WHERE 
+                (l.user_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1}))
+                  AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+                  AND l.marketing_qualified_lead = TRUE
+              ORDER BY 
+                l.created_at DESC`,
+    "Q280"  :`SELECT 
+                DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
+                u1.full_name AS creator_name 
+              FROM 
+                leads AS l 
+              INNER JOIN 
+                users AS u1 ON u1.id = l.user_id
+              INNER JOIN
+                lead_sources AS s ON s.id = l.source
+              INNER JOIN
+                lead_titles AS t ON t.id = l.title
+              INNER JOIN
+                lead_industries AS i ON i.id = l.industry_type
+              WHERE 
+                (l.user_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1}))
+                  AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+                  AND l.is_converted = TRUE
+              ORDER BY 
+                l.created_at DESC`,
+    "Q281"  :`SELECT 
+                l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
+                u1.full_name AS creator_name 
+              FROM 
+                leads AS l
+              INNER JOIN 
+                users AS u1 ON u1.id = l.user_id
+              INNER JOIN
+                lead_sources AS s ON s.id = l.source
+              INNER JOIN
+                lead_titles AS t ON t.id = l.title
+              INNER JOIN
+                lead_industries AS i ON i.id = l.industry_type
+              WHERE 
+                l.assigned_sales_lead_to = '{var1}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+                AND l.is_converted = TRUE
+              ORDER BY 
+                l.created_at DESC`,
+    "Q282"  :`SELECT 
+                DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
+                u1.full_name AS creator_name 
+              FROM 
+                leads AS l 
+              INNER JOIN 
+                users AS u1 ON u1.id = l.user_id
+              INNER JOIN
+                lead_sources AS s ON s.id = l.source
+              INNER JOIN
+                lead_titles AS t ON t.id = l.title
+              INNER JOIN
+                lead_industries AS i ON i.id = l.industry_type
+              WHERE 
+                (l.assigned_sales_lead_to IN ({var1}))
+                  AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+              ORDER BY 
+                l.created_at DESC`,
+}
 
  function dbScript(template, variables) {
   if (variables != null && Object.keys(variables).length > 0) {

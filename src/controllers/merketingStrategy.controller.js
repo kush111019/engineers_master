@@ -164,12 +164,31 @@ module.exports.createLead = async (req, res) => {
 module.exports.leadsList = async (req, res) => {
     try {
         let userId = req.user.id
+        let {status} = req.query
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global) {
-
-            let s2 = dbScript(db_sql['Q202'], { var1: checkPermission.rows[0].company_id })
-            let leadList = await connection.query(s2)
+            let leadList
+            if(status.toLowerCase() == 'all'){
+                let s2 = dbScript(db_sql['Q202'], { var1: checkPermission.rows[0].company_id })
+                leadList = await connection.query(s2)
+            }
+            else if(status.toLowerCase() == 'rejected'){
+                let s3 = dbScript(db_sql['Q275'], { var1: checkPermission.rows[0].company_id })
+                leadList = await connection.query(s3)
+            }
+            else if(status.toLowerCase() == 'qualified'){
+                let s4 = dbScript(db_sql['Q276'], { var1: checkPermission.rows[0].company_id })
+                leadList = await connection.query(s4)
+            }
+            else if(status.toLowerCase() == 'converted'){
+                let s5 = dbScript(db_sql['Q277'], { var1: checkPermission.rows[0].company_id })
+                leadList = await connection.query(s5)
+            }
+            else if(status.toLowerCase() == 'assigned'){
+                let s6 = dbScript(db_sql['Q282'], { var1: checkPermission.rows[0].id })
+                leadList = await connection.query(s6)
+            }
             if (leadList.rowCount > 0) {
                 for (let lead of leadList.rows) {
                     if (lead.assigned_sales_lead_to !== "") {
@@ -226,8 +245,28 @@ module.exports.leadsList = async (req, res) => {
                     }
                 }
             }
-            let s4 = dbScript(db_sql['Q203'], { var1: "'"+roleUsers.join("','")+"'" })
-            let findLeadList = await connection.query(s4)
+            let findLeadList
+            if(status.toLowerCase() == 'all'){
+                let s4 = dbScript(db_sql['Q203'], { var1: "'"+roleUsers.join("','")+"'" })
+                findLeadList = await connection.query(s4)
+            }
+            else if(status.toLowerCase() == 'rejected'){
+                let s5 = dbScript(db_sql['Q278'], { var1: "'"+roleUsers.join("','")+"'" })
+                findLeadList = await connection.query(s5)
+            }
+            else if(status.toLowerCase() == 'qualified'){
+                let s5 = dbScript(db_sql['Q279'], { var1: "'"+roleUsers.join("','")+"'" })
+                findLeadList = await connection.query(s5)
+            }
+            else if(status.toLowerCase() == 'converted'){
+                let s5 = dbScript(db_sql['Q280'], { var1: "'"+roleUsers.join("','")+"'" })
+                findLeadList = await connection.query(s5)
+            }
+            else if(status.toLowerCase() == 'assigned'){
+                let s6 = dbScript(db_sql['Q282'], { var1: "'"+roleUsers.join("','")+"'" })
+                findLeadList = await connection.query(s6)
+            }
+
             if (findLeadList.rowCount > 0) {
                 for (let lead of findLeadList.rows) {
                     leadList.push(lead)
