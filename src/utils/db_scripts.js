@@ -222,8 +222,7 @@ const db_sql = {
                 sc.deleted_at IS NULL AND 
                 sc.closed_at IS NOT NULL 
               ORDER BY 
-                date ASC 
-              LIMIT {var3} OFFSET {var4}`,
+                date ASC `,
 
     "Q89"  : `SELECT            
                   c.customer_name,

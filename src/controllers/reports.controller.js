@@ -589,7 +589,7 @@ module.exports.totalRevenue = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
-            let s4 = dbScript(db_sql['Q88'], { var1: checkPermission.rows[0].company_id, var2: format, var3: limit, var4: offset })
+            let s4 = dbScript(db_sql['Q88'], { var1: checkPermission.rows[0].company_id, var2: format })
             let targetData = await connection.query(s4)
             if (targetData.rowCount > 0) {
                 let totalRevenueArr = []
@@ -601,7 +601,6 @@ module.exports.totalRevenue = async (req, res) => {
                             let obj = {
                                 date : data.date,
                                 revenue : recognizedRevenue.rows[0].recognized_amount
-    
                             }
                             totalRevenueArr.push(obj)
                         }
@@ -612,7 +611,6 @@ module.exports.totalRevenue = async (req, res) => {
                             let obj = {
                                 date : data.date,
                                 revenue : recognizedRevenue.rows[0].recognized_amount
-    
                             }
                             totalRevenueArr.push(obj)
                         }
