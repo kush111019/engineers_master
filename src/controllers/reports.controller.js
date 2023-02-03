@@ -29,7 +29,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                             let recognizedRevenue = await connection.query(s3)
                             if(recognizedRevenue.rowCount > 0){
                                 let obj = {
-                                    customer_name : data.customer_name,
+                                    customer_name : data.customer_name || "",
                                     revenue : recognizedRevenue.rows[0].recognized_amount
     
                                 }
@@ -40,7 +40,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                             let recognizedRevenue = await connection.query(s3)
                             if(recognizedRevenue.rowCount > 0){
                                 let obj = {
-                                    customer_name : data.customer_name,
+                                    customer_name : data.customer_name || "",
                                     revenue : recognizedRevenue.rows[0].recognized_amount
     
                                 }
@@ -119,7 +119,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                             let recognizedRevenue = await connection.query(s3)
                             if(recognizedRevenue.rowCount > 0){
                                 let obj = {
-                                    customer_name : data.customer_name,
+                                    customer_name : data.customer_name || "",
                                     revenue : recognizedRevenue.rows[0].recognized_amount
     
                                 }
@@ -130,7 +130,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                             let recognizedRevenue = await connection.query(s4)
                             if(recognizedRevenue.rowCount > 0){
                                 let obj = {
-                                    customer_name : data.customer_name,
+                                    customer_name : data.customer_name || "",
                                     revenue : recognizedRevenue.rows[0].recognized_amount
     
                                 }
@@ -604,7 +604,7 @@ module.exports.totalRevenue = async (req, res) => {
                         let recognizedRevenue = await connection.query(s5)
                         if(recognizedRevenue.rowCount > 0){
                             let obj = {
-                                date : data.date,
+                                date : data.date || new Date(),
                                 revenue : recognizedRevenue.rows[0].recognized_amount
                             }
                             totalRevenueArr.push(obj)
@@ -614,7 +614,7 @@ module.exports.totalRevenue = async (req, res) => {
                         let recognizedRevenue = await connection.query(s6)
                         if(recognizedRevenue.rowCount > 0){
                             let obj = {
-                                date : data.date,
+                                date : data.date || new Date(),
                                 revenue : recognizedRevenue.rows[0].recognized_amount
                             }
                             totalRevenueArr.push(obj)
@@ -684,7 +684,7 @@ module.exports.totalRevenue = async (req, res) => {
                         let recognizedRevenue = await connection.query(s5)
                         if(recognizedRevenue.rowCount > 0){
                             let obj = {
-                                date : data.date,
+                                date : data.date || new Date(),
                                 revenue : recognizedRevenue.rows[0].recognized_amount
 
                             }
@@ -695,7 +695,7 @@ module.exports.totalRevenue = async (req, res) => {
                         let recognizedRevenue = await connection.query(s6)
                         if(recognizedRevenue.rowCount > 0){
                             let obj = {
-                                date : data.date,
+                                date : data.date || new Date(),
                                 revenue : recognizedRevenue.rows[0].recognized_amount
 
                             }
