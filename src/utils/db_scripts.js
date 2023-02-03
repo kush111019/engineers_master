@@ -213,7 +213,8 @@ const db_sql = {
 
     "Q88"  : `SELECT 
                 sc.id AS sales_commission_id,
-                DATE_TRUNC('{var2}',sc.closed_at) AS  date
+                DATE_TRUNC('{var2}',sc.closed_at) AS  date,
+                sc.sales_type
               FROM 
                 sales_commission AS sc 
               WHERE 
@@ -549,7 +550,8 @@ const db_sql = {
               LIMIT {var3} OFFSET {var4}`,
     "Q173"  : `SELECT 
                 sc.id AS sales_commission_id,
-                DATE_TRUNC('{var2}',sc.closed_at) AS  date
+                DATE_TRUNC('{var2}',sc.closed_at) AS  date,
+                sc.sales_type
               FROM 
                 sales_commission AS sc 
               INNER JOIN 
