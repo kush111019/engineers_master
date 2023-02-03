@@ -27,7 +27,7 @@ module.exports.revenues = async (req, res) => {
                     let slab = await connection.query(s5)
 
                     let revenueCommissionByDateObj = {}
-                    if(data.sales_type == 'Perpectual'){
+                    if(data.sales_type == 'Perpetual'){
                         let s6 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                         let recognizedRevenue = await connection.query(s6)
                         if(recognizedRevenue.rowCount > 0){
@@ -203,7 +203,7 @@ module.exports.revenues = async (req, res) => {
                     let slab = await connection.query(s5)
 
                     let revenueCommissionByDateObj = {}
-                    if(data.sales_type == 'Perpectual'){
+                    if(data.sales_type == 'Perpetual'){
                         let s6 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                         let recognizedRevenue = await connection.query(s6)
                         if(recognizedRevenue.rowCount > 0){
@@ -432,7 +432,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                         totalExpectedCommission = totalExpectedCommission + commission
                         
                         let recognizedRevenue
-                        if(data.sales_type == 'Perpectual'){
+                        if(data.sales_type == 'Perpetual'){
                             let s6 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                             recognizedRevenue = await connection.query(s6)
                         }else{
@@ -552,7 +552,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                         }
                         totalExpectedCommission = totalExpectedCommission + expectedCommission
                     } else {
-                        if(data.sales_type == 'Perpectual'){
+                        if(data.sales_type == 'Perpetual'){
                             let s6 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                             let recognizedRevenue = await connection.query(s6)
                             if(recognizedRevenue.rowCount > 0){

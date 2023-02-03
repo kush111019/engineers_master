@@ -25,7 +25,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                     let revenuePerCustomerArr = []
                     for(data of customerCompanies.rows ){
                         let recognizedRevenue
-                        if(data.sales_type == 'Perpectual'){
+                        if(data.sales_type == 'Perpetual'){
                             let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                             recognizedRevenue = await connection.query(s3)
                             
@@ -109,7 +109,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 let customerCompanies = await connection.query(s2)
                 if(customerCompanies.rowCount > 0){
                     for(data of customerCompanies.rows ){
-                        if(data.sales_type == 'Perpectual'){
+                        if(data.sales_type == 'Perpetual'){
                             let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                             let recognizedRevenue = await connection.query(s3)
                             if(recognizedRevenue.rowCount > 0){
@@ -205,7 +205,7 @@ module.exports.revenuePerProduct = async (req, res) => {
                 if (revenuePerProduct.rowCount > 0) {
                     let revenuePerProductArr = []
                     for(data of revenuePerProduct.rows ){
-                        if(data.sales_type == 'Perpectual'){
+                        if(data.sales_type == 'Perpetual'){
                             let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                             let recognizedRevenue = await connection.query(s3)
                             if(recognizedRevenue.rowCount > 0){
@@ -294,7 +294,7 @@ module.exports.revenuePerProduct = async (req, res) => {
                 let revenuePerProduct = await connection.query(s4)
                 if(revenuePerProduct.rowCount > 0){
                     for(let product of revenuePerProduct.rows){
-                        if(product.sales_type == 'Perpectual'){
+                        if(product.sales_type == 'Perpetual'){
                             let s3 = dbScript(db_sql['Q273'],{var1 : product.sales_commission_id})
                             let recognizedRevenue = await connection.query(s3)
                             if(recognizedRevenue.rowCount > 0){
@@ -418,7 +418,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
                         let slab = await connection.query(s5)
                         let revenueCommissionByDateObj = {}
-                        if (data.sales_type == 'Perpectual') {
+                        if (data.sales_type == 'Perpetual') {
                             let s6 = dbScript(db_sql['Q273'], { var1: data.sales_commission_id })
                             let recognizedRevenue = await connection.query(s6)
                             if (recognizedRevenue.rowCount > 0) {
@@ -594,7 +594,7 @@ module.exports.totalRevenue = async (req, res) => {
             if (targetData.rowCount > 0) {
                 let totalRevenueArr = []
                 for(data of targetData.rows ){
-                    if(data.sales_type == 'Perpectual'){
+                    if(data.sales_type == 'Perpetual'){
                         let s5 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                         let recognizedRevenue = await connection.query(s5)
                         if(recognizedRevenue.rowCount > 0){
@@ -676,7 +676,7 @@ module.exports.totalRevenue = async (req, res) => {
             let targetData = await connection.query(s4)
             if (targetData.rowCount > 0) {
                 for(let data of targetData.rows ){
-                    if(data.sales_type == 'Perpectual'){
+                    if(data.sales_type == 'Perpetual'){
                         let s5 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                         let recognizedRevenue = await connection.query(s5)
                         if(recognizedRevenue.rowCount > 0){
