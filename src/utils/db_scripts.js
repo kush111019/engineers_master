@@ -176,7 +176,7 @@ const db_sql = {
     "Q77"  : `SELECT id, full_name AS revenue_contact_name, email_address AS revenue_email, phone_number AS revenue_phone_number
               FROM revenue_contact WHERE id = '{var1}' AND deleted_at is NULL`,
     "Q78"  : `SELECT 
-                target_amount
+                id as sales_commission_id, sales_type
               FROM sales_commission 
               WHERE user_id = '{var1}' AND deleted_at IS NULL AND closed_at BETWEEN '{var2}' AND '{var3}' 
               LIMIT {var4} OFFSET {var5}`,

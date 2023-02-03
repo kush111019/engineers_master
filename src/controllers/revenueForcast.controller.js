@@ -470,9 +470,21 @@ module.exports.actualVsForecast = async (req, res) => {
                                 let s5 = dbScript(db_sql['Q78'], { var1: user_id, var2: firstDay, var3: lastDay, var4: limit, var5: offset })
                                 let actualRevenue = await connection.query(s5)
                                 if (actualRevenue.rowCount > 0) {
-                                    actualRevenue.rows.map(index => {
-                                        sum = sum + Number(index.target_amount);
-                                    })
+                                    for(let data of actualRevenue.rows){
+                                        if(data.sales_type == 'Perpetual'){
+                                            let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                                            let recognizedRevenue = await connection.query(s3)
+                                            if(recognizedRevenue.rowCount > 0){
+                                               sum += recognizedRevenue.rows[0].recognized_amount
+                                            }
+                                        }else{
+                                            let s4 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                                            let recognizedRevenue = await connection.query(s4)
+                                            if(recognizedRevenue.rowCount > 0){
+                                                sum += recognizedRevenue.rows[0].recognized_amount
+                                            }
+                                        } 
+                                    }
                                 }
                                 actualData.push(sum)
                             } else {
@@ -486,9 +498,21 @@ module.exports.actualVsForecast = async (req, res) => {
                                     let s5 = dbScript(db_sql['Q78'], { var1: user_id, var2: firstDay, var3: lastDay, var4: limit, var5: offset })
                                     let actualRevenue = await connection.query(s5)
                                     if (actualRevenue.rowCount > 0) {
-                                        actualRevenue.rows.map(index => {
-                                            sum = sum + Number(index.target_amount);
-                                        })
+                                        for(let data of actualRevenue.rows){
+                                            if(data.sales_type == 'Perpetual'){
+                                                let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                                                let recognizedRevenue = await connection.query(s3)
+                                                if(recognizedRevenue.rowCount > 0){
+                                                   sum += recognizedRevenue.rows[0].recognized_amount
+                                                }
+                                            }else{
+                                                let s4 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                                                let recognizedRevenue = await connection.query(s4)
+                                                if(recognizedRevenue.rowCount > 0){
+                                                    sum += recognizedRevenue.rows[0].recognized_amount
+                                                }
+                                            } 
+                                        }
                                     }
                                     actualData.push(sum)
                                     count++;
@@ -504,9 +528,21 @@ module.exports.actualVsForecast = async (req, res) => {
                                     let s5 = dbScript(db_sql['Q78'], { var1: user_id, var2: firstDay, var3: lastDay, var4: limit, var5: offset })
                                     let actualRevenue = await connection.query(s5)
                                     if (actualRevenue.rowCount > 0) {
-                                        actualRevenue.rows.map(index => {
-                                            sum = sum + Number(index.target_amount);
-                                        })
+                                        for(let data of actualRevenue.rows){
+                                            if(data.sales_type == 'Perpetual'){
+                                                let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                                                let recognizedRevenue = await connection.query(s3)
+                                                if(recognizedRevenue.rowCount > 0){
+                                                   sum += recognizedRevenue.rows[0].recognized_amount
+                                                }
+                                            }else{
+                                                let s4 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                                                let recognizedRevenue = await connection.query(s4)
+                                                if(recognizedRevenue.rowCount > 0){
+                                                    sum += recognizedRevenue.rows[0].recognized_amount
+                                                }
+                                            } 
+                                        }
                                     }
                                     actualData.push(sum)
                                 }
@@ -523,9 +559,21 @@ module.exports.actualVsForecast = async (req, res) => {
                                     let s5 = dbScript(db_sql['Q78'], { var1: user_id, var2: firstDay1, var3: lastDay1, var4: limit, var5: offset })
                                     let actualRevenue = await connection.query(s5)
                                     if (actualRevenue.rowCount > 0) {
-                                        actualRevenue.rows.map(index => {
-                                            sum = sum + Number(index.target_amount);
-                                        })
+                                        for(let data of actualRevenue.rows){
+                                            if(data.sales_type == 'Perpetual'){
+                                                let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                                                let recognizedRevenue = await connection.query(s3)
+                                                if(recognizedRevenue.rowCount > 0){
+                                                   sum += recognizedRevenue.rows[0].recognized_amount
+                                                }
+                                            }else{
+                                                let s4 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                                                let recognizedRevenue = await connection.query(s4)
+                                                if(recognizedRevenue.rowCount > 0){
+                                                    sum += recognizedRevenue.rows[0].recognized_amount
+                                                }
+                                            } 
+                                        }
                                     }
                                     newToDate = moment(newToDate).add(1, 'M').format("MM-DD-YYYY")
                                 }
@@ -543,9 +591,21 @@ module.exports.actualVsForecast = async (req, res) => {
                                         let s5 = dbScript(db_sql['Q78'], { var1: user_id, var2: firstDay1, var3: lastDay1, var4: limit, var5: offset })
                                         let actualRevenue = await connection.query(s5)
                                         if (actualRevenue.rowCount > 0) {
-                                            actualRevenue.rows.map(index => {
-                                                sum = sum + Number(index.target_amount);
-                                            })
+                                            for(let data of actualRevenue.rows){
+                                                if(data.sales_type == 'Perpetual'){
+                                                    let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                                                    let recognizedRevenue = await connection.query(s3)
+                                                    if(recognizedRevenue.rowCount > 0){
+                                                       sum += recognizedRevenue.rows[0].recognized_amount
+                                                    }
+                                                }else{
+                                                    let s4 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                                                    let recognizedRevenue = await connection.query(s4)
+                                                    if(recognizedRevenue.rowCount > 0){
+                                                        sum += recognizedRevenue.rows[0].recognized_amount
+                                                    }
+                                                } 
+                                            }
                                         }
                                         newDate = moment(newDate).add(1, 'M').format("MM-DD-YYYY")
                                     }
@@ -565,9 +625,21 @@ module.exports.actualVsForecast = async (req, res) => {
                                         let s5 = dbScript(db_sql['Q78'], { var1: user_id, var2: firstDay1, var3: lastDay1, var4: limit, var5: offset })
                                         let actualRevenue = await connection.query(s5)
                                         if (actualRevenue.rowCount > 0) {
-                                            actualRevenue.rows.map(index => {
-                                                sum = sum + Number(index.target_amount);
-                                            })
+                                            for(let data of actualRevenue.rows){
+                                                if(data.sales_type == 'Perpetual'){
+                                                    let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                                                    let recognizedRevenue = await connection.query(s3)
+                                                    if(recognizedRevenue.rowCount > 0){
+                                                       sum += recognizedRevenue.rows[0].recognized_amount
+                                                    }
+                                                }else{
+                                                    let s4 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                                                    let recognizedRevenue = await connection.query(s4)
+                                                    if(recognizedRevenue.rowCount > 0){
+                                                        sum += recognizedRevenue.rows[0].recognized_amount
+                                                    }
+                                                } 
+                                            }
                                         }
                                         newDate = moment(newDate).add(1, 'M').format("MM-DD-YYYY")
                                     }
@@ -590,9 +662,21 @@ module.exports.actualVsForecast = async (req, res) => {
                                     let s5 = dbScript(db_sql['Q78'], { var1: user_id, var2: firstDay1, var3: lastDay1, var4: limit, var5: offset })
                                     let actualRevenue = await connection.query(s5)
                                     if (actualRevenue.rowCount > 0) {
-                                        actualRevenue.rows.map(index => {
-                                            sum = sum + Number(index.target_amount);
-                                        })
+                                        for(let data of actualRevenue.rows){
+                                            if(data.sales_type == 'Perpetual'){
+                                                let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                                                let recognizedRevenue = await connection.query(s3)
+                                                if(recognizedRevenue.rowCount > 0){
+                                                   sum += recognizedRevenue.rows[0].recognized_amount
+                                                }
+                                            }else{
+                                                let s4 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                                                let recognizedRevenue = await connection.query(s4)
+                                                if(recognizedRevenue.rowCount > 0){
+                                                    sum += recognizedRevenue.rows[0].recognized_amount
+                                                }
+                                            } 
+                                        }
                                     }
                                     newToDate = moment(newToDate).add(1, 'M').format("MM-DD-YYYY")
                                 }
@@ -610,9 +694,21 @@ module.exports.actualVsForecast = async (req, res) => {
                                         let s5 = dbScript(db_sql['Q78'], { var1: user_id, var2: firstDay1, var3: lastDay1, var4: limit, var5: offset })
                                         let actualRevenue = await connection.query(s5)
                                         if (actualRevenue.rowCount > 0) {
-                                            actualRevenue.rows.map(index => {
-                                                sum = sum + Number(index.target_amount);
-                                            })
+                                            for(let data of actualRevenue.rows){
+                                                if(data.sales_type == 'Perpetual'){
+                                                    let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                                                    let recognizedRevenue = await connection.query(s3)
+                                                    if(recognizedRevenue.rowCount > 0){
+                                                       sum += recognizedRevenue.rows[0].recognized_amount
+                                                    }
+                                                }else{
+                                                    let s4 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                                                    let recognizedRevenue = await connection.query(s4)
+                                                    if(recognizedRevenue.rowCount > 0){
+                                                        sum += recognizedRevenue.rows[0].recognized_amount
+                                                    }
+                                                } 
+                                            }
                                         }
                                         newDate = moment(newDate).add(1, 'M').format("MM-DD-YYYY")
                                     }
@@ -632,9 +728,21 @@ module.exports.actualVsForecast = async (req, res) => {
                                         let s5 = dbScript(db_sql['Q78'], { var1: user_id, var2: firstDay1, var3: lastDay1, var4: limit, var5: offset })
                                         let actualRevenue = await connection.query(s5)
                                         if (actualRevenue.rowCount > 0) {
-                                            actualRevenue.rows.map(index => {
-                                                sum = sum + Number(index.target_amount);
-                                            })
+                                            for(let data of actualRevenue.rows){
+                                                if(data.sales_type == 'Perpetual'){
+                                                    let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                                                    let recognizedRevenue = await connection.query(s3)
+                                                    if(recognizedRevenue.rowCount > 0){
+                                                       sum += recognizedRevenue.rows[0].recognized_amount
+                                                    }
+                                                }else{
+                                                    let s4 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                                                    let recognizedRevenue = await connection.query(s4)
+                                                    if(recognizedRevenue.rowCount > 0){
+                                                        sum += recognizedRevenue.rows[0].recognized_amount
+                                                    }
+                                                } 
+                                            }
                                         }
                                     }
                                     newDate = moment(newDate).add(1, 'M').format("MM-DD-YYYY")
