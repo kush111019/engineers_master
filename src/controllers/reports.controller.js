@@ -592,12 +592,54 @@ module.exports.totalRevenue = async (req, res) => {
             let s4 = dbScript(db_sql['Q88'], { var1: checkPermission.rows[0].company_id, var2: format, var3: limit, var4: offset })
             let targetData = await connection.query(s4)
             if (targetData.rowCount > 0) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "Total revenue",
-                    data: targetData.rows
-                })
+                let totalRevenueArr = []
+                for(data of targetData.rows ){
+                    let recognizedRevenue
+                    if(data.sales_type == 'Perpectual'){
+                        let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                        recognizedRevenue = await connection.query(s3)
+                        
+                    }else{
+                        let s3 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                        recognizedRevenue = await connection.query(s3)
+                    }
+                    if(recognizedRevenue.rowCount > 0){
+                        let obj = {
+                            date : data.date,
+                            revenue : recognizedRevenue.rows[0].recognized_amount
+
+                        }
+                        totalRevenueArr.push(obj)
+                    }
+                }
+                if(totalRevenueArr.length > 0){
+                    let returnData = await reduceArray(totalRevenueArr)
+                    if (returnData.length > 0) {
+                        let paginatedArr = await paginatedResults(returnData, page)
+                        if (orderBy.toLowerCase() == 'asc') {
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return a.revenue - b.revenue
+                            })
+                        } else {
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return b.revenue - a.revenue
+                            })
+                        }
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Total revenue",
+                            data: paginatedArr
+                        })
+                    }
+                }else{
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Empty Total revenue",
+                        data: totalRevenueArr
+                    })
+                }
             } else {
                 res.json({
                     status: 200,
@@ -633,23 +675,55 @@ module.exports.totalRevenue = async (req, res) => {
                     }
                 }
             }
-            for (let id of roleUsers) {
-                let s4 = dbScript(db_sql['Q173'], { var1: id, var2: format, var3: limit, var4: offset })
-                let targetData = await connection.query(s4)
-                if (targetData.rowCount > 0) {
-                    for (let total of targetData.rows) {
-                        totalRevenue.push(total)
-                    }
+            let s4 = dbScript(db_sql['Q173'], { var1: "'"+roleUsers.join("','")+"'", var2: format })
+            let targetData = await connection.query(s4)
+            if (targetData.rowCount > 0) {
+                for(let data of targetData.rows ){
+                    if(data.sales_type == 'Perpectual'){
+                        let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
+                        let recognizedRevenue = await connection.query(s3)
+                        if(recognizedRevenue.rowCount > 0){
+                            let obj = {
+                                date : data.date,
+                                revenue : recognizedRevenue.rows[0].recognized_amount
+
+                            }
+                            totalRevenue.push(obj)
+                        }
+                    }else{
+                        let s4 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
+                        let recognizedRevenue = await connection.query(s4)
+                        if(recognizedRevenue.rowCount > 0){
+                            let obj = {
+                                date : data.date,
+                                revenue : recognizedRevenue.rows[0].recognized_amount
+
+                            }
+                            totalRevenue.push(obj)
+                        }
+                    } 
                 }
             }
             if (totalRevenue.length > 0) {
                 let finalArray = await reduceArray(totalRevenue)
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "Total revenue",
-                    data: finalArray
-                })
+                if (finalArray.length > 0) {
+                    let paginatedArr = await paginatedResults(finalArray, page)
+                    if (orderBy.toLowerCase() == 'asc') {
+                        paginatedArr = paginatedArr.sort((a, b) => {
+                            return a.revenue - b.revenue
+                        })
+                    } else {
+                        paginatedArr = paginatedArr.sort((a, b) => {
+                            return b.revenue - a.revenue
+                        })
+                    }
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Total revenue",
+                        data: paginatedArr
+                    })
+                }
             } else {
                 res.json({
                     status: 200,

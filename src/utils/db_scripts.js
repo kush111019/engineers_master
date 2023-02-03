@@ -212,19 +212,14 @@ const db_sql = {
               sc.closed_at {var2}`,
 
     "Q88"  : `SELECT 
-                DATE_TRUNC('{var2}',sc.closed_at) AS  date, 
-                sum(sc.target_amount::decimal) AS revenue
+                sc.id AS sales_commission_id,
+                DATE_TRUNC('{var2}',sc.closed_at) AS  date,
               FROM 
                 sales_commission AS sc 
-              INNER JOIN 
-                customers AS c ON sc.customer_id = c.id
               WHERE 
                 sc.company_id = '{var1}' AND 
-                c.deleted_at IS NULL AND 
                 sc.deleted_at IS NULL AND 
                 sc.closed_at IS NOT NULL 
-              GROUP BY 
-                DATE_TRUNC('{var2}',sc.closed_at) 
               ORDER BY 
                 date ASC 
               LIMIT {var3} OFFSET {var4}`,
@@ -553,26 +548,20 @@ const db_sql = {
                   revenue {var2}
               LIMIT {var3} OFFSET {var4}`,
     "Q173"  : `SELECT 
+                sc.id AS sales_commission_id,
                 DATE_TRUNC('{var2}',sc.closed_at) AS  date, 
-                sum(sc.target_amount::decimal) AS revenue
               FROM 
                 sales_commission AS sc 
-              INNER JOIN 
-                customers AS c ON sc.customer_id = c.id
               INNER JOIN 
                 sales_closer AS cl ON sc.id = cl.sales_commission_id  
               INNER JOIN 
                 sales_supporter AS s ON sc.id = s.sales_commission_id 
               WHERE 
-              (sc.user_id = '{var1}' OR cl.closer_id = '{var1}' OR s.supporter_id = '{var1}') AND 
-                c.deleted_at IS NULL AND 
+              (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1})) AND
                 sc.deleted_at IS NULL AND 
                 sc.closed_at IS NOT NULL 
-              GROUP BY 
-                DATE_TRUNC('{var2}',sc.closed_at) 
               ORDER BY 
-                date ASC 
-              LIMIT {var3} OFFSET {var4}`,
+                date ASC `,
     "Q174" : `SELECT 
                 f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
                 f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
