@@ -55,7 +55,10 @@ const db_sql = {
     "Q29"  : `UPDATE slabs SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL`,
     "Q30"  : `UPDATE users SET is_locked = '{var1}', updated_at = '{var3}' WHERE company_id = '{var2}' AND is_main_admin = false AND deleted_at IS NULL RETURNING * `,
     "Q31"  : `INSERT INTO follow_up_notes (id, sales_commission_id, company_id, user_id, notes) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
-    "Q32"  : `SELECT id, notes, created_at FROM follow_up_notes WHERE sales_commission_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at DESC`,
+    "Q32"  : `SELECT f.id, f.notes, f.created_at, f.user_id, u.full_name, u.avatar 
+              FROM follow_up_notes as f
+              INNER JOIN users AS u ON u.id = f.user_id
+              WHERE sales_commission_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at DESC`,
     "Q33"  : `UPDATE permissions SET user_id = '{var2}' WHERE role_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
     "Q34"  : `UPDATE roles SET module_ids = '{var1}' , updated_at = '{var2}' WHERE id = '{var3}' RETURNING * `,
     "Q35"  : `SELECT m.module_name, p.permission_to_view_global,p.permission_to_view_own, p.permission_to_create, 
@@ -1047,7 +1050,7 @@ const db_sql = {
                   AND (sc.user_id IN ({var1}) OR cr.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
                   AND sc.closed_at BETWEEN '{var3}' AND '{var4}'
                   AND sc.deleted_at IS NULL`,
-                  
+
     "Q259" : `SELECT * FROM sales_commission WHERE customer_id = '{var1}' AND deleted_at IS NULL`,
     "Q260" : `SELECT * FROM product_in_sales WHERE product_id = '{var1}' AND deleted_at IS NULL`,
     "Q261" : `SELECT * FROM lead_organizations WHERE user_id = '{var1}' AND deleted_at IS NULL`,
