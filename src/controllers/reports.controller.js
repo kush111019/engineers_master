@@ -595,12 +595,10 @@ module.exports.totalRevenue = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
             let s4 = dbScript(db_sql['Q88'], { var1: checkPermission.rows[0].company_id, var2: format })
-            console.log(s4,"s4");
             let targetData = await connection.query(s4)
             if (targetData.rowCount > 0) {
                 let totalRevenueArr = []
                 for(data of targetData.rows ){
-                    console.log(data,"data");
                     if(data.sales_type == 'Perpetual'){
                         let s5 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                         let recognizedRevenue = await connection.query(s5)
