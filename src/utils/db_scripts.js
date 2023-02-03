@@ -58,7 +58,7 @@ const db_sql = {
     "Q32"  : `SELECT f.id, f.notes, f.created_at, f.user_id, u.full_name, u.avatar 
               FROM follow_up_notes as f
               INNER JOIN users AS u ON u.id = f.user_id
-              WHERE sales_commission_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at DESC`,
+              WHERE sales_commission_id = '{var1}' AND f.deleted_at IS NULL ORDER BY created_at DESC`,
     "Q33"  : `UPDATE permissions SET user_id = '{var2}' WHERE role_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
     "Q34"  : `UPDATE roles SET module_ids = '{var1}' , updated_at = '{var2}' WHERE id = '{var3}' RETURNING * `,
     "Q35"  : `SELECT m.module_name, p.permission_to_view_global,p.permission_to_view_own, p.permission_to_create, 
