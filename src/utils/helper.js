@@ -417,8 +417,8 @@ module.exports.reduceArray = async (data) => {
     for (let i = 0; i < data.length; i++) {
         let found = 0;
         for (let j = 0; j < returnData.length; j++) {
-            let date1 = (data[i].date).toISOString();
-            let date2 = (returnData[j].date).toISOString();
+            let date1 = new Date(data[i].date).toISOString();
+            let date2 = new Date(returnData[j].date).toISOString();
             if (date1.slice(0, 10) === date2.slice(0, 10)) {
                 let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
                 returnData[j].revenue = revenueOfJ;
@@ -437,8 +437,8 @@ module.exports.reduceArrayWithCommission = async (data) => {
     for (let i = 0; i < data.length; i++) {
         let found = 0;
         for (let j = 0; j < returnData.length; j++) {
-            let date1 = (data[i].date).toString();
-            let date2 = (returnData[j].date).toString();
+            let date1 = new Date(data[i].date).toString();
+            let date2 = new Date(returnData[j].date).toString();
             if (date1.slice(0, 10) === date2.slice(0, 10)) {
                 let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
                 returnData[j].revenue = revenueOfJ;

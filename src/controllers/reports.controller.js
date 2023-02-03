@@ -35,7 +35,6 @@ module.exports.revenuePerCustomer = async (req, res) => {
                                 }
                                 revenuePerCustomerArr.push(obj)
                             }
-                            
                         }else{
                             let s3 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
                             let recognizedRevenue = await connection.query(s3)
@@ -47,9 +46,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                                 }
                                 revenuePerCustomerArr.push(obj)
                             }
-                        }
-                        
-                        
+                        } 
                     }
                     let returnData = await reduceArrayWithCustomer(revenuePerCustomerArr)
                     if (returnData.length > 0) {
