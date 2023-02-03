@@ -263,7 +263,7 @@ module.exports.leadsList = async (req, res) => {
                 findLeadList = await connection.query(s5)
             }
             else if(status.toLowerCase() == 'assigned'){
-                let s6 = dbScript(db_sql['Q282'], { var1: "'"+roleUsers.join("','")+"'" })
+                let s6 = dbScript(db_sql['Q283'], { var1: "'"+roleUsers.join("','")+"'" })
                 findLeadList = await connection.query(s6)
             }
 
