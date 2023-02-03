@@ -10,7 +10,7 @@ const jwt = {
             email: user.email
         };
         const options = {
-            expiresIn: '1d'
+            expiresIn: process.env.EXPIRES_IN
         };
         const jwtToken = await jsonwebtoken.sign(payload, 'KEy', options)
         return jwtToken;
