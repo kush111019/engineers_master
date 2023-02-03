@@ -536,3 +536,8 @@ module.exports.reduceArrayWithProduct = async (data) => {
     }
     return returnData
 }
+
+module.exports.getMinutesBetweenDates = async(startDate, endDate) => {
+    var diff = endDate.getTime() - startDate.getTime();
+    return (diff / 60000);
+}

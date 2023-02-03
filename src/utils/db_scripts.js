@@ -10,7 +10,7 @@ const db_sql = {
     "Q5"   : `UPDATE users SET encrypted_password = '{var2}', is_verified = true, updated_at = '{var3}' WHERE id = '{var1}' AND company_id = '{var4}' RETURNING *`, 
     "Q6"   : `SELECT id, module_name,module_type FROM modules WHERE deleted_at IS NULL`,
     "Q7"   : `UPDATE users SET is_verified = true ,updated_at = '{var2}' WHERE id = '{var1}' RETURNING *`, 
-    "Q8"   : `SELECT id, full_name,company_id, email_address,mobile_number,phone_number,address,role_id, avatar,expiry_date, is_verified, is_admin, is_locked, created_by,is_main_admin, created_at, deleted_at FROM users WHERE id = '{var1}' and deleted_at IS NULL` ,
+    "Q8"   : `SELECT id, full_name,company_id, email_address,mobile_number,phone_number,address,role_id, avatar,expiry_date, is_verified, is_admin, is_locked, created_by,is_main_admin, created_at, deleted_at, session_time FROM users WHERE id = '{var1}' and deleted_at IS NULL` ,
     "Q9"   : `SELECT * FROM companies WHERE id = '{var1}' AND deleted_at IS NULL`,
     "Q10"  : `UPDATE users SET full_name='{var1}',avatar = '{var2}', email_address = '{var3}',phone_number = '{var4}',mobile_number = '{var5}',address = '{var6}' ,updated_at = '{var7}' WHERE id = '{var8}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `, 
     "Q11"  : `INSERT INTO roles(id,role_name,reporter,company_id) VALUES('{var1}','Admin','','{var2}') RETURNING *`, 
@@ -1275,7 +1275,7 @@ const db_sql = {
     "Q284": `INSERT INTO transfered_back_sales(id, transferd_back_by_id, transferd_back_to_id, transfered_back_date,
               sales_id, transfer_reason, user_id, company_id)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}',
               '{var7}','{var8}') RETURNING *`,
-              
+
     "Q285" : `SELECT 
                 t.id, t.transferd_back_by_id, t.transferd_back_to_id, t.transfer_reason,
                 t.transfered_back_date, u1.full_name AS transferd_back_by_name, 
@@ -1291,7 +1291,8 @@ const db_sql = {
               INNER JOIN 
                 customers AS c ON sc.customer_id = c.id
               WHERE 
-                sales_id = '{var1}'`
+                sales_id = '{var1}'`,
+    "Q286" : `UPDATE users SET session_time = '{var2}' WHERE id = '{var1}' RETURNING *`
 }
 
  function dbScript(template, variables) {

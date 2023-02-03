@@ -1,6 +1,7 @@
 const jsonwebtoken = require("jsonwebtoken");
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const connection = require('../database/connection')
+const {getMinutesBetweenDates} = require('../utils/helper')
 
 const jwt = {
     //create token
@@ -9,10 +10,10 @@ const jwt = {
             id: user.id,
             email: user.email
         };
-        const options = {
-            expiresIn: process.env.EXPIRES_IN
-        };
-        const jwtToken = await jsonwebtoken.sign(payload, 'KEy', options)
+        const jwtToken = await jsonwebtoken.sign(payload, 'KEy')
+        let _dt = new Date().toISOString();
+        let s1 = dbScript(db_sql['Q286'],{var1 : user.id, var2 : _dt})
+        let addSessionTime = await connection.query(s1)
         return jwtToken;
     },
     //verify Token 
@@ -29,7 +30,6 @@ const jwt = {
                     id: decoded.id,
                     email: decoded.email,
                 }
-
                 const checkLocked = async (id) => {
                     try {
                         let s1 = dbScript(db_sql['Q8'], { var1: id });
@@ -50,7 +50,30 @@ const jwt = {
                             message: "Session timed out. Please sign in again",
                         });
                     } else {
-                        return next();
+                        let s1 = dbScript(db_sql['Q8'],{var1 : req.user.id})
+                        let findSessionTime = await connection.query(s1)
+                        if(findSessionTime.rowCount > 0){
+
+                            let date1 = findSessionTime.rows[0].session_time ? new Date(findSessionTime.rows[0].session_time ) : new Date()
+                            let date2 = new Date()
+                            let difference = await getMinutesBetweenDates(date1, date2)
+                            if(Number(difference) >= process.env.EXPIRES_IN){
+                                return res.status(401).json({
+                                    success: false,
+                                    message: "Session timed out. Please sign in again",
+                                });
+                            }else{
+                                let _dt = new Date().toISOString()
+                                let s2 = dbScript(db_sql['Q286'],{var1 : req.user.id, var2 : _dt})
+                                let updateSessionTime = await connection.query(s2)
+                                return next();
+                            }
+                        }else{
+                            return res.status(401).json({
+                                success: false,
+                                message: "Session timed out. Please sign in again",
+                            });
+                        }
                     }
                 })();
             }
