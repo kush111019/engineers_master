@@ -24,23 +24,31 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 if (customerCompanies.rowCount > 0) {
                     let revenuePerCustomerArr = []
                     for(data of customerCompanies.rows ){
-                        let recognizedRevenue
                         if(data.sales_type == 'Perpetual'){
                             let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
-                            recognizedRevenue = await connection.query(s3)
+                            let recognizedRevenue = await connection.query(s3)
+                            if(recognizedRevenue.rowCount > 0){
+                                let obj = {
+                                    customer_name : data.customer_name,
+                                    revenue : recognizedRevenue.rows[0].recognized_amount
+    
+                                }
+                                revenuePerCustomerArr.push(obj)
+                            }
                             
                         }else{
                             let s3 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
-                            recognizedRevenue = await connection.query(s3)
-                        }
-                        if(recognizedRevenue.rowCount > 0){
-                            let obj = {
-                                customer_name : data.customer_name,
-                                revenue : recognizedRevenue.rows[0].recognized_amount
-
+                            let recognizedRevenue = await connection.query(s3)
+                            if(recognizedRevenue.rowCount > 0){
+                                let obj = {
+                                    customer_name : data.customer_name,
+                                    revenue : recognizedRevenue.rows[0].recognized_amount
+    
+                                }
+                                revenuePerCustomerArr.push(obj)
                             }
-                            revenuePerCustomerArr.push(obj)
                         }
+                        
                         
                     }
                     let returnData = await reduceArrayWithCustomer(revenuePerCustomerArr)
