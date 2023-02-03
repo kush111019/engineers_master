@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const {reduceArray, paginatedResults,reduceArrayWithName,reduceArrayWithName1, reduceArrayWithCustomer, reduceArrayWithProduct} = require('../utils/helper')
+const {reduceArray, paginatedResults,paginatedResults1,reduceArrayWithName,reduceArrayWithName1, reduceArrayWithCustomer, reduceArrayWithProduct} = require('../utils/helper')
 const moduleName = process.env.REPORTS_MODULE
 
 module.exports.revenuePerCustomer = async (req, res) => {
@@ -615,7 +615,7 @@ module.exports.totalRevenue = async (req, res) => {
                 if(totalRevenueArr.length > 0){
                     let returnData = await reduceArray(totalRevenueArr)
                     if (returnData.length > 0) {
-                        let paginatedArr = await paginatedResults(returnData, page)
+                        let paginatedArr = await paginatedResults1(returnData, page, limit)
                         if (orderBy.toLowerCase() == 'asc') {
                             paginatedArr = paginatedArr.sort((a, b) => {
                                 return a.revenue - b.revenue
@@ -707,7 +707,7 @@ module.exports.totalRevenue = async (req, res) => {
             if (totalRevenue.length > 0) {
                 let finalArray = await reduceArray(totalRevenue)
                 if (finalArray.length > 0) {
-                    let paginatedArr = await paginatedResults(finalArray, page)
+                    let paginatedArr = await paginatedResults1(finalArray, page, limit)
                     if (orderBy.toLowerCase() == 'asc') {
                         paginatedArr = paginatedArr.sort((a, b) => {
                             return a.revenue - b.revenue

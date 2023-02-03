@@ -334,6 +334,31 @@ module.exports.paginatedResults = (model, page) => {
     return data
 }
 
+module.exports.paginatedResults1 = (model, page,limit) => {
+
+    // calculating the starting and ending index
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const results = {};
+    if (endIndex < model.length) {
+        results.next = {
+            page: page + 1,
+            limit: limit
+        };
+    }
+
+    if (startIndex > 0) {
+        results.previous = {
+            page: page - 1,
+            limit: limit
+        };
+    }
+
+    data = model.slice(startIndex, endIndex);
+    return data
+}
+
 module.exports.getMonthDifference = async (startDate, endDate) => {
     // var months = endDate.getMonth() - startDate.getMonth()
     //     + (12 * (endDate.getFullYear() - startDate.getFullYear()));
