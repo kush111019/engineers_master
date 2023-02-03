@@ -1246,8 +1246,8 @@ const db_sql = {
               INNER JOIN
                 lead_industries AS i ON i.id = l.industry_type
               WHERE 
-                (l.assigned_sales_lead_to IN ({var1}))
-                  AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+                l.assigned_sales_lead_to = '{var1}'
+                AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               ORDER BY 
                 l.created_at DESC`,
 }
