@@ -1900,7 +1900,12 @@ module.exports.transferBackSales = async(req, res) => {
 
             let s3 = dbScript(db_sql['Q270'],{var1 : mysql_real_escape_string(transferReason), var2 : _dt, var3 : salesId, var4 : leadId})
             let updateReason = await connection.query(s3)
-            if(transferSales.rowCount > 0 && updateReason.rowCount > 0){
+
+            let id = uuid.v4()
+            let s4 = dbScript(db_sql['Q284'],{var1 : id, var2 : leadId, var3 : creatorId, var4 : _dt, var5 : salesId, var6 : transferReason , var7 : checkPermission.rows[0].id, var8 : checkPermission.rows[0].company_id})
+            let addTransferSales = await connection.query(s4)
+
+            if(transferSales.rowCount > 0 && updateReason.rowCount > 0 && addTransferSales.rowCount > 0){
                 await connection.query('COMMIT')
                 res.json({
                     status: 200,
@@ -1913,6 +1918,45 @@ module.exports.transferBackSales = async(req, res) => {
                     status: 400,
                     success: false,
                     message: 'Something went wrong',
+                })
+            }
+        }else{
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            }) 
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.transferBackList = async(req, res) => {
+    try {
+        let userId = req.user.id
+        let {salesId} = req.query
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own){
+            let s1 = dbScript(db_sql['Q285'],{var1 : salesId})
+            let transferedBackList = await connection.query(s1)
+            if(transferedBackList.rowCount > 0){
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Transfered sales list',
+                    data : transferedBackList.rows
+                })
+            }else{
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Empty Transfered sales list',
+                    data : transferedBackList.rows
                 })
             }
         }else{

@@ -1252,26 +1252,40 @@ const db_sql = {
                 l.created_at DESC`,
 
     "Q283"  :`SELECT 
-              DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
-              l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-              l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
-              l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-              u1.full_name AS creator_name 
-            FROM 
-              leads AS l 
-            INNER JOIN 
-              users AS u1 ON u1.id = l.user_id
-            INNER JOIN
-              lead_sources AS s ON s.id = l.source
-            INNER JOIN
-              lead_titles AS t ON t.id = l.title
-            INNER JOIN
-              lead_industries AS i ON i.id = l.industry_type
-            WHERE 
-              l.assigned_sales_lead_to IN ({var1})
-              AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
-            ORDER BY 
-              l.created_at DESC`
+                DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
+                u1.full_name AS creator_name 
+              FROM 
+                leads AS l 
+              INNER JOIN 
+                users AS u1 ON u1.id = l.user_id
+              INNER JOIN
+                lead_sources AS s ON s.id = l.source
+              INNER JOIN
+                lead_titles AS t ON t.id = l.title
+              INNER JOIN
+                lead_industries AS i ON i.id = l.industry_type
+              WHERE 
+                l.assigned_sales_lead_to IN ({var1})
+                AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+              ORDER BY 
+                l.created_at DESC`,
+    "Q284": `INSERT INTO transfered_back_sales(id, transferd_back_by_id, transferd_back_to_id, transfered_back_date,
+              sales_id, transfer_reason, user_id, company_id)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}',
+              '{var7}','{var8}') RETURNING *`,
+    "Q285" : `SELECT t.id, t.transferd_back_by_id, t.transferd_back_to_id, t.transfer_reason,
+                t.transfered_back_date, u1.full_name AS transferd_back_by_name, 
+                u2.full_name AS transferd_back_to_name, t.sales_id, c.customer_name 
+              FROM 
+                transfered_back_sales AS t
+              INNER JOIN users AS u1 ON u1.id = t.transferd_back_by_id
+              INNER JOIN users AS u2 ON u2.id = t.transferd_back_to_id
+              INNER JOIN sales_commission AS sc ON sc.id = t.sales_id
+              INNER JOIN customers AS c ON sc.customer_id = c.id
+              WHERE 
+                sales_id = '{var1}'`
 }
 
  function dbScript(template, variables) {
