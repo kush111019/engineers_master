@@ -1034,9 +1034,9 @@ const db_sql = {
               ORDER BY 
               sc.closed_at {var2}`,
      "Q258" : `SELECT 
+                  DISTINCT(sc.id) as sales_commission_id,
                   u.full_name AS sales_rep,
-                  sc.target_amount::DECIMAL as amount,
-                  sc.closed_at,sc.slab_id
+                  sc.closed_at,sc.slab_id,sc.sales_type
               FROM  
                   sales_commission AS sc 
               INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
@@ -1046,14 +1046,8 @@ const db_sql = {
                   sc.closed_at is not null 
                   AND (sc.user_id IN ({var1}) OR cr.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
                   AND sc.closed_at BETWEEN '{var3}' AND '{var4}'
-                  AND sc.deleted_at IS NULL
-              GROUP BY 
-                  u.full_name,
-                  sc.closed_at, 
-                  sc.target_amount,
-                  sc.slab_id
-              ORDER BY 
-                  amount {var2}`,
+                  AND sc.deleted_at IS NULL`,
+                  
     "Q259" : `SELECT * FROM sales_commission WHERE customer_id = '{var1}' AND deleted_at IS NULL`,
     "Q260" : `SELECT * FROM product_in_sales WHERE product_id = '{var1}' AND deleted_at IS NULL`,
     "Q261" : `SELECT * FROM lead_organizations WHERE user_id = '{var1}' AND deleted_at IS NULL`,

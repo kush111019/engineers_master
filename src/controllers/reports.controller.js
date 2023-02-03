@@ -387,7 +387,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                 let roleUsers = []
                 let revenueCommissionBydate = []
                 roleIds.push(role_id)
-                if(isAll == 'true'){
+                if (isAll == 'true') {
                     let getRoles = async (id) => {
                         let s7 = dbScript(db_sql['Q16'], { var1: id })
                         let getChild = await connection.query(s7);
@@ -402,7 +402,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                     }
                     await getRoles(role_id)
                 }
-                for(let roleId of roleIds){
+                for (let roleId of roleIds) {
                     let s3 = dbScript(db_sql['Q185'], { var1: roleId })
                     let findUsers = await connection.query(s3)
                     if (findUsers.rowCount > 0) {
@@ -411,62 +411,120 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         }
                     }
                 }
-                let s4 = dbScript(db_sql['Q258'], { var1: "'"+roleUsers.join("','")+"'", var2: orderBy, var3:  sDate, var4: eDate })
+                let s4 = dbScript(db_sql['Q258'], { var1: "'" + roleUsers.join("','") + "'", var2: orderBy, var3: sDate, var4: eDate })
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0) {
                     for (let data of salesData.rows) {
-
                         let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
                         let slab = await connection.query(s5)
-
                         let revenueCommissionByDateObj = {}
-                        revenueCommissionByDateObj.revenue = Number(data.amount)
-                        revenueCommissionByDateObj.sales_rep = data.sales_rep
+                        if (data.sales_type == 'Perpectual') {
+                            let s6 = dbScript(db_sql['Q273'], { var1: data.sales_commission_id })
+                            let recognizedRevenue = await connection.query(s6)
+                            if (recognizedRevenue.rowCount > 0) {
+                                revenueCommissionByDateObj.revenue = Number(recognizedRevenue.rows[0].recognized_amount)
+                                revenueCommissionByDateObj.sales_rep = data.sales_rep
 
-                        let remainingAmount = Number(data.amount);
-                        let commission = 0
-                        //if remainning amount is 0 then no reason to check 
-                        for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
-                            let slab_percentage = Number(slab.rows[i].percentage)
-                            let slab_maxAmount = Number(slab.rows[i].max_amount)
-                            let slab_minAmount = Number(slab.rows[i].min_amount)
-                            if (slab.rows[i].is_max) {
-                                // Reached the last slab
-                                commission += ((slab_percentage / 100) * remainingAmount)
-                                break;
-                            }
-                            else {
-                                // This is not the last slab
-                                let diff = slab_minAmount == 0 ? 0 : 1
-                                let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-                                slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-                                commission += ((slab_percentage / 100) * slab_diff)
-                                remainingAmount -= slab_diff
-                                if (remainingAmount <= 0) {
-                                    break;
+                                let remainingAmount = Number(recognizedRevenue.rows[0].recognized_amount);
+                                let commission = 0
+                                //if remainning amount is 0 then no reason to check 
+                                for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
+                                    let slab_percentage = Number(slab.rows[i].percentage)
+                                    let slab_maxAmount = Number(slab.rows[i].max_amount)
+                                    let slab_minAmount = Number(slab.rows[i].min_amount)
+                                    if (slab.rows[i].is_max) {
+                                        // Reached the last slab
+                                        commission += ((slab_percentage / 100) * remainingAmount)
+                                        break;
+                                    }
+                                    else {
+                                        // This is not the last slab
+                                        let diff = slab_minAmount == 0 ? 0 : 1
+                                        let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                                        slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+                                        commission += ((slab_percentage / 100) * slab_diff)
+                                        remainingAmount -= slab_diff
+                                        if (remainingAmount <= 0) {
+                                            break;
+                                        }
+                                    }
                                 }
-                            }
-                        }
-                        if (filterBy.toLowerCase() == 'all') {
-                            revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
-                            revenueCommissionBydate.push(revenueCommissionByDateObj)
-                        } else if (filterBy.toLowerCase() == 'lead') {
-                            let s6 = dbScript(db_sql['Q86'], { var1: data.sales_commission_id })
-                            let leadPercentage = await connection.query(s6)
-                            if (leadPercentage.rowCount > 0) {
-                                revenueCommissionByDateObj.commission = ((Number(leadPercentage.rows[0].closer_percentage) / 100) * Number(commission.toFixed(2)))
-                                revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                if (filterBy.toLowerCase() == 'all') {
+                                    revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
+                                    revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                } else if (filterBy.toLowerCase() == 'lead') {
+                                    let s6 = dbScript(db_sql['Q86'], { var1: data.sales_commission_id })
+                                    let leadPercentage = await connection.query(s6)
+                                    if (leadPercentage.rowCount > 0) {
+                                        revenueCommissionByDateObj.commission = ((Number(leadPercentage.rows[0].closer_percentage) / 100) * Number(commission.toFixed(2)))
+                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                    }
+                                } else {
+                                    let s6 = dbScript(db_sql['Q59'], { var1: data.sales_commission_id })
+                                    let supporterPercentage = await connection.query(s6)
+                                    if (supporterPercentage.rowCount > 0) {
+                                        let sCommission = 0
+                                        for (supporter of supporterPercentage.rows) {
+                                            sCommission += ((Number(supporter.supporter_percentage) / 100) * Number(commission.toFixed(2)))
+                                        }
+                                        revenueCommissionByDateObj.commission = sCommission
+                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                    }
+                                }
                             }
                         } else {
-                            let s6 = dbScript(db_sql['Q59'], { var1: data.sales_commission_id })
-                            let supporterPercentage = await connection.query(s6)
-                            if (supporterPercentage.rowCount > 0) {
-                                let sCommission = 0
-                                for (supporter of supporterPercentage.rows) {
-                                    sCommission += ((Number(supporter.supporter_percentage)/100) * Number(commission.toFixed(2)))
+                            let s6 = dbScript(db_sql['Q274'], { var1: data.sales_commission_id })
+                            let recognizedRevenue = await connection.query(s6)
+                            if (recognizedRevenue.rowCount > 0) {
+                                revenueCommissionByDateObj.revenue = Number(recognizedRevenue.rows[0].recognized_amount)
+                                revenueCommissionByDateObj.sales_rep = data.sales_rep
+
+                                let remainingAmount = Number(recognizedRevenue.rows[0].recognized_amount);
+                                let commission = 0
+                                //if remainning amount is 0 then no reason to check 
+                                for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
+                                    let slab_percentage = Number(slab.rows[i].percentage)
+                                    let slab_maxAmount = Number(slab.rows[i].max_amount)
+                                    let slab_minAmount = Number(slab.rows[i].min_amount)
+                                    if (slab.rows[i].is_max) {
+                                        // Reached the last slab
+                                        commission += ((slab_percentage / 100) * remainingAmount)
+                                        break;
+                                    }
+                                    else {
+                                        // This is not the last slab
+                                        let diff = slab_minAmount == 0 ? 0 : 1
+                                        let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                                        slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+                                        commission += ((slab_percentage / 100) * slab_diff)
+                                        remainingAmount -= slab_diff
+                                        if (remainingAmount <= 0) {
+                                            break;
+                                        }
+                                    }
                                 }
-                                revenueCommissionByDateObj.commission = sCommission
-                                revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                if (filterBy.toLowerCase() == 'all') {
+                                    revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
+                                    revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                } else if (filterBy.toLowerCase() == 'lead') {
+                                    let s6 = dbScript(db_sql['Q86'], { var1: data.sales_commission_id })
+                                    let leadPercentage = await connection.query(s6)
+                                    if (leadPercentage.rowCount > 0) {
+                                        revenueCommissionByDateObj.commission = ((Number(leadPercentage.rows[0].closer_percentage) / 100) * Number(commission.toFixed(2)))
+                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                    }
+                                } else {
+                                    let s6 = dbScript(db_sql['Q59'], { var1: data.sales_commission_id })
+                                    let supporterPercentage = await connection.query(s6)
+                                    if (supporterPercentage.rowCount > 0) {
+                                        let sCommission = 0
+                                        for (supporter of supporterPercentage.rows) {
+                                            sCommission += ((Number(supporter.supporter_percentage) / 100) * Number(commission.toFixed(2)))
+                                        }
+                                        revenueCommissionByDateObj.commission = sCommission
+                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                    }
+                                }
                             }
                         }
                     }
@@ -487,15 +545,15 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         res.json({
                             status: 200,
                             success: true,
-                            message: "Revenues and Commissions",
+                            message: "Revenues and Commissions per sales captain",
                             data: paginatedArr
                         })
                     }
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
-                        message: "Revenues and Commissions",
+                        success: false,
+                        message: "Empty Revenues and Commissions per sales captain",
                         data: []
                     })
                 }
