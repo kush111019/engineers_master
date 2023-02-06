@@ -15,13 +15,11 @@ module.exports.revenues = async (req, res) => {
         endDate.setHours(23, 59, 59, 999)
         let eDate = new Date(endDate).toISOString()
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s3)
+        let checkPermission = await connection.query(s3);
         if (checkPermission.rows[0].permission_to_view_global) {
             let revenueCommissionBydate = []
-            let userList =await getUserAndSubUser(checkPermission.rows[0]);       
+            let userList = await getUserAndSubUser(checkPermission.rows[0]);       
             let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate ,var5: userList.join(',')})
-
-            console.log(s4,'s4')
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
                 for (let data of salesData.rows) {
@@ -172,32 +170,9 @@ module.exports.revenues = async (req, res) => {
 
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let revenueCommissionBydate = []
-            let roleUsers = []
-            let roleIds = []
-            roleIds.push(checkPermission.rows[0].role_id)
-            let getRoles = async (id) => {
-                let s7 = dbScript(db_sql['Q16'], { var1: id })
-                let getChild = await connection.query(s7);
-                if (getChild.rowCount > 0) {
-                    for (let item of getChild.rows) {
-                        if (roleIds.includes(item.id) == false) {
-                            roleIds.push(item.id)
-                            await getRoles(item.id)
-                        }
-                    }
-                }
-            }
-            await getRoles(checkPermission.rows[0].role_id)
-            for (let roleId of roleIds) {
-                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
-                let findUsers = await connection.query(s3)
-                if (findUsers.rowCount > 0) {
-                    for (let user of findUsers.rows) {
-                        roleUsers.push(user.id)
-                    }
-                }
-            }
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s4 = dbScript(db_sql['Q167'], {  var1: "'"+roleUsers.join("','")+"'", var2: orderBy, var3: sDate, var4: eDate })
+            console.log("s4 ", s4);
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
                 for (let data of salesData.rows) {
