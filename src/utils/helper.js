@@ -553,7 +553,7 @@ module.exports.getUserAndSubUser = async (userData) => {
         let getChild = await connection.query(s1);
         if (getChild.rowCount > 0) {
             for (let item of getChild.rows) {
-                if (roleIds.includes(item.id) == false && item.id !=userData.role_id ) {
+                if (roleIds.includes(item.id) == false) {
                     roleIds.push(item.id)
                     await getRoles(item.id)
                 }
@@ -565,7 +565,7 @@ module.exports.getUserAndSubUser = async (userData) => {
     for (id of roleIds) {
         let s2 = dbScript(db_sql['Q287'], { var1: id })
         let getUserData = await connection.query(s2);
-        if (getUserData.rowCount > 0) {
+        if (getUserData.rowCount > 0 && getUserData.rows[0].role_id != userData.role_id ) {
             returnData.push("'" + getUserData.rows[0].id.toString() + "'")
         }
     }
