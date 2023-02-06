@@ -562,6 +562,7 @@ module.exports.getUserAndSubUser = async (userData) => {
     }
     await getRoles(userData.role_id)
     let returnData = [];
+    returnData.push("'" + userData.id.toString() + "'")
     for (id of roleIds) {
         let s2 = dbScript(db_sql['Q287'], { var1: id })
         let getUserData = await connection.query(s2);
