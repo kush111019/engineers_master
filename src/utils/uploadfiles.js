@@ -86,6 +86,39 @@ const uploadMailAttechments = multer({
     storage: storage5
 })
 
+const storage6 = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/salesContract')
+    },
+    filename: function (req, file, cb) {
+        //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, file.originalname)
+    }
+})
+const uploadSalesContract = multer({
+    storage: storage6
+})
+
+const storage7 = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/salesInvoice')
+    },
+    filename: function (req, file, cb) {
+        //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, file.originalname)
+    }
+})
+const uploadSalesInvoice = multer({
+    storage: storage7
+})
 
 
-module.exports = { uploadLogo, uploadAvatar, uploadProductFile, uploadProductImage, uploadMailAttechments };
+module.exports = { 
+    uploadLogo, 
+    uploadAvatar, 
+    uploadProductFile, 
+    uploadProductImage, 
+    uploadMailAttechments,
+    uploadSalesContract,
+    uploadSalesInvoice
+ };

@@ -1,5 +1,5 @@
 const connection = require('../database/connection')
-const { db_sql, dbScript } = require('../utils/db_scripts');
+const { db_sql, dbScript} = require('../utils/db_scripts');
 const uuid = require("node-uuid");
 const moduleName = process.env.COMMISSIONS_MODULE
 
@@ -16,12 +16,12 @@ module.exports.commissionSplit = async (req, res) => {
             await connection.query('BEGIN')
 
             let id = uuid.v4()
-            let s4 = dbScript(db_sql['Q48'], { var1: id, var2: closerPercentage, var3: supporterPercentage, var4: checkPermission.rows[0].company_id })
-            var createSlab = await connection.query(s4)
+            let s4 = dbScript(db_sql['Q48'], { var1: id, var2: closerPercentage, var3: supporterPercentage, var4: checkPermission.rows[0].company_id, var5 : userId })
+            var createCommission = await connection.query(s4)
 
             await connection.query('COMMIT')
 
-            if (createSlab.rowCount > 0) {
+            if (createCommission.rowCount > 0) {
                 res.json({
                     status: 201,
                     success: true,
@@ -106,36 +106,71 @@ module.exports.updatecommissionSplit = async (req, res) => {
 module.exports.commissionSplitList = async (req, res) => {
     try {
         let userId = req.user.id
-            let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
-            let checkPermission = await connection.query(s3)
-            if (checkPermission.rows[0].permission_to_view) {
+        let userIds = []
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global) {
 
-                let s4 = dbScript(db_sql['Q50'], { var1: checkPermission.rows[0].company_id })
-                let commissionList = await connection.query(s4)
+            let s2 = dbScript(db_sql['Q50'], { var1: checkPermission.rows[0].company_id })
+            let commissionList = await connection.query(s2)
 
-
-                if (commissionList.rows.length > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Commission split list",
-                        data: commissionList.rows
-                    })
-                } else {
-                    res.json({
-                        status: 200,
-                        success: false,
-                        message: "Empty commission split list",
-                        data: []
-                    })
-                }
-
+            if (commissionList.rows.length > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Commission split list",
+                    data: commissionList.rows
+                })
             } else {
-                res.status(403).json({
+                res.json({
+                    status: 200,
                     success: false,
-                    message: "UnAthorised"
+                    message: "Empty commission split list",
+                    data: []
                 })
             }
+
+        } else if (checkPermission.rows[0].permission_to_view_own) {
+            
+            userIds.push(userId);
+            let commissionList = []
+            let s3 = dbScript(db_sql['Q163'],{var1 : checkPermission.rows[0].role_id})
+            let findUsers = await connection.query(s3)
+            if(findUsers.rowCount > 0){
+                for(user of findUsers.rows){
+                    userIds.push(user.id)
+                }
+            }
+            for(id of userIds){
+                let s4 = dbScript(db_sql['Q164'],{var1 : id})
+                let findCommission = await connection.query(s4)
+                if(findCommission.rowCount > 0){
+                    findCommission.rows.map(value => {
+                        commissionList.push(value)
+                    })
+                }
+            }
+            if (commissionList.length > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Commission split list",
+                    data: commissionList
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty commission split list",
+                    data: []
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
     } catch (error) {
         res.json({
             status: 400,

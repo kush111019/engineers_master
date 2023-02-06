@@ -5,7 +5,7 @@
 -- Dumped from database version 14.2
 -- Dumped by pg_dump version 14.2
 
--- Started on 2022-12-05 16:33:46
+-- Started on 2022-12-27 11:11:46
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -21,6 +21,25 @@ SET row_security = off;
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
+
+--
+-- TOC entry 242 (class 1259 OID 483548)
+-- Name: actual_forecast_data; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.actual_forecast_data (
+    id character varying NOT NULL,
+    revenue_forecast_id character varying,
+    actual_revenue numeric,
+    forecast_revenue numeric,
+    forecast_date timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+);
+
+
+ALTER TABLE public.actual_forecast_data OWNER TO postgres;
 
 --
 -- TOC entry 224 (class 1259 OID 254192)
@@ -96,7 +115,8 @@ CREATE TABLE public.commission_split (
     company_id character varying,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    user_id character varying
 );
 
 
@@ -115,7 +135,10 @@ CREATE TABLE public.companies (
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    is_imap_enable boolean DEFAULT false
+    is_imap_enable boolean DEFAULT false,
+    is_marketing_enable boolean DEFAULT false,
+    expiry_date timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    user_count numeric
 );
 
 
@@ -216,7 +239,8 @@ CREATE TABLE public.customers (
     business_contact_id character varying,
     revenue_contact_id character varying,
     address character varying,
-    currency character varying
+    currency character varying,
+    lead_id character varying
 );
 
 
@@ -293,6 +317,177 @@ CREATE TABLE public.imap_credentials (
 ALTER TABLE public.imap_credentials OWNER TO postgres;
 
 --
+-- TOC entry 245 (class 1259 OID 491778)
+-- Name: lead_industries; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.lead_industries (
+    id character varying NOT NULL,
+    industry character varying,
+    company_id character varying,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+);
+
+
+ALTER TABLE public.lead_industries OWNER TO postgres;
+
+--
+-- TOC entry 246 (class 1259 OID 491788)
+-- Name: lead_sources; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.lead_sources (
+    id character varying NOT NULL,
+    source character varying,
+    company_id character varying,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+);
+
+
+ALTER TABLE public.lead_sources OWNER TO postgres;
+
+--
+-- TOC entry 244 (class 1259 OID 491768)
+-- Name: lead_titles; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.lead_titles (
+    id character varying NOT NULL,
+    title character varying,
+    company_id character varying,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+);
+
+
+ALTER TABLE public.lead_titles OWNER TO postgres;
+
+--
+-- TOC entry 247 (class 1259 OID 499922)
+-- Name: marketing_budget; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.marketing_budget (
+    id character varying NOT NULL,
+    budget_year character varying,
+    quarter_one numeric,
+    quarter_two numeric,
+    quarter_three numeric,
+    quarter_four numeric,
+    is_finalize boolean DEFAULT false,
+    user_id character varying,
+    company_id character varying,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+);
+
+
+ALTER TABLE public.marketing_budget OWNER TO postgres;
+
+--
+-- TOC entry 248 (class 1259 OID 499933)
+-- Name: marketing_budget_description; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.marketing_budget_description (
+    id character varying NOT NULL,
+    budget_id character varying,
+    amount numeric,
+    user_id character varying,
+    company_id character varying,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    title character varying
+);
+
+
+ALTER TABLE public.marketing_budget_description OWNER TO postgres;
+
+--
+-- TOC entry 250 (class 1259 OID 499954)
+-- Name: marketing_budget_description_logs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.marketing_budget_description_logs (
+    id character varying NOT NULL,
+    budget_id character varying,
+    budget_description_id character varying,
+    amount numeric,
+    user_id character varying,
+    company_id character varying,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    title character varying
+);
+
+
+ALTER TABLE public.marketing_budget_description_logs OWNER TO postgres;
+
+--
+-- TOC entry 249 (class 1259 OID 499943)
+-- Name: marketing_budget_logs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.marketing_budget_logs (
+    id character varying NOT NULL,
+    budget_id character varying,
+    budget_year character varying,
+    quarter_one numeric,
+    quarter_two numeric,
+    quarter_three numeric,
+    quarter_four numeric,
+    is_finalize boolean DEFAULT false,
+    user_id character varying,
+    company_id character varying,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+);
+
+
+ALTER TABLE public.marketing_budget_logs OWNER TO postgres;
+
+--
+-- TOC entry 243 (class 1259 OID 491729)
+-- Name: marketing_leads; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.marketing_leads (
+    id character varying NOT NULL,
+    full_name character varying,
+    title character varying,
+    email_address character varying,
+    phone_number character varying,
+    address character varying,
+    organization_name character varying,
+    source character varying,
+    linkedin_url character varying,
+    website character varying,
+    targeted_value character varying,
+    industry_type character varying,
+    assigned_sales_lead_to character varying,
+    additional_marketing_notes character varying,
+    user_id character varying,
+    company_id character varying,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    marketing_qualified_lead boolean DEFAULT false,
+    is_converted boolean DEFAULT false
+);
+
+
+ALTER TABLE public.marketing_leads OWNER TO postgres;
+
+--
 -- TOC entry 234 (class 1259 OID 352488)
 -- Name: message; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -362,14 +557,15 @@ CREATE TABLE public.permissions (
     id character varying NOT NULL,
     role_id character varying,
     module_id character varying,
-    permission_to_view boolean,
-    permission_to_create boolean,
-    permission_to_update boolean,
-    permission_to_delete boolean,
+    permission_to_view_global boolean DEFAULT false,
+    permission_to_create boolean DEFAULT false,
+    permission_to_update boolean DEFAULT false,
+    permission_to_delete boolean DEFAULT false,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    user_id character varying
+    user_id character varying,
+    permission_to_view_own boolean DEFAULT false
 );
 
 
@@ -405,12 +601,13 @@ CREATE TABLE public.products (
     description character varying,
     available_quantity character varying,
     price numeric,
-    tax numeric,
     company_id character varying,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    currency character varying
+    currency character varying,
+    user_id character varying,
+    end_of_life character varying
 );
 
 
@@ -455,7 +652,8 @@ CREATE TABLE public.revenue_forecast (
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    currency character varying
+    currency character varying,
+    closed_date timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
 );
 
 
@@ -474,7 +672,8 @@ CREATE TABLE public.roles (
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     company_id character varying,
-    reporter character varying
+    reporter character varying,
+    user_id character varying
 );
 
 
@@ -524,7 +723,10 @@ CREATE TABLE public.sales_commission (
     sales_type character varying,
     recurring_date character varying,
     currency character varying,
-    closed_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+    closed_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    user_id character varying,
+    slab_id character varying,
+    lead_id character varying
 );
 
 
@@ -558,7 +760,9 @@ CREATE TABLE public.sales_commission_logs (
     recurring_date character varying,
     products character varying,
     currency character varying,
-    closed_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+    closed_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    slab_id character varying,
+    closer_percentage numeric
 );
 
 
@@ -624,7 +828,11 @@ CREATE TABLE public.slabs (
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
     currency character varying,
-    slab_ctr numeric
+    slab_ctr numeric,
+    user_id character varying,
+    slab_id character varying,
+    slab_name character varying,
+    commission_split_id character varying
 );
 
 
@@ -657,7 +865,8 @@ CREATE TABLE public.superadmin_config (
     trial_days numeric,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
     updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    trial_users numeric
 );
 
 
@@ -746,14 +955,25 @@ CREATE TABLE public.users (
     is_locked boolean DEFAULT false,
     is_admin boolean DEFAULT false,
     expiry_date timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
-    country_code character varying
+    country_code character varying,
+    is_main_admin boolean DEFAULT false,
+    created_by character varying
 );
 
 
 ALTER TABLE public.users OWNER TO postgres;
 
 --
--- TOC entry 3421 (class 2606 OID 344268)
+-- TOC entry 3504 (class 2606 OID 483559)
+-- Name: actual_forecast_data actual_forecast_data_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.actual_forecast_data
+    ADD CONSTRAINT actual_forecast_data_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3498 (class 2606 OID 344268)
 -- Name: chat_room_members chat_room_members_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -762,7 +982,7 @@ ALTER TABLE ONLY public.chat_room_members
 
 
 --
--- TOC entry 3401 (class 2606 OID 123143)
+-- TOC entry 3478 (class 2606 OID 123143)
 -- Name: companies companies_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -771,7 +991,7 @@ ALTER TABLE ONLY public.companies
 
 
 --
--- TOC entry 3425 (class 2606 OID 368845)
+-- TOC entry 3502 (class 2606 OID 368845)
 -- Name: emails emails_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -780,7 +1000,7 @@ ALTER TABLE ONLY public.emails
 
 
 --
--- TOC entry 3413 (class 2606 OID 196869)
+-- TOC entry 3490 (class 2606 OID 196869)
 -- Name: follow_up_notes follow_up_notes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -789,7 +1009,70 @@ ALTER TABLE ONLY public.follow_up_notes
 
 
 --
--- TOC entry 3423 (class 2606 OID 360652)
+-- TOC entry 3508 (class 2606 OID 491787)
+-- Name: lead_industries lead_industries_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lead_industries
+    ADD CONSTRAINT lead_industries_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3510 (class 2606 OID 491797)
+-- Name: lead_sources lead_sources_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lead_sources
+    ADD CONSTRAINT lead_sources_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3506 (class 2606 OID 491777)
+-- Name: lead_titles lead_titles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.lead_titles
+    ADD CONSTRAINT lead_titles_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3518 (class 2606 OID 499963)
+-- Name: marketing_budget_description_logs marketing_budget_description_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.marketing_budget_description_logs
+    ADD CONSTRAINT marketing_budget_description_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3514 (class 2606 OID 499942)
+-- Name: marketing_budget_description marketing_budget_description_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.marketing_budget_description
+    ADD CONSTRAINT marketing_budget_description_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3516 (class 2606 OID 499953)
+-- Name: marketing_budget_logs marketing_budget_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.marketing_budget_logs
+    ADD CONSTRAINT marketing_budget_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3512 (class 2606 OID 499932)
+-- Name: marketing_budget marketing_budget_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.marketing_budget
+    ADD CONSTRAINT marketing_budget_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3500 (class 2606 OID 360652)
 -- Name: modules modules_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -798,7 +1081,7 @@ ALTER TABLE ONLY public.modules
 
 
 --
--- TOC entry 3415 (class 2606 OID 319692)
+-- TOC entry 3492 (class 2606 OID 319692)
 -- Name: payment_plans payment_plans_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -807,7 +1090,7 @@ ALTER TABLE ONLY public.payment_plans
 
 
 --
--- TOC entry 3411 (class 2606 OID 131276)
+-- TOC entry 3488 (class 2606 OID 131276)
 -- Name: permissions permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -816,7 +1099,7 @@ ALTER TABLE ONLY public.permissions
 
 
 --
--- TOC entry 3405 (class 2606 OID 123173)
+-- TOC entry 3482 (class 2606 OID 123173)
 -- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -825,7 +1108,7 @@ ALTER TABLE ONLY public.roles
 
 
 --
--- TOC entry 3407 (class 2606 OID 123193)
+-- TOC entry 3484 (class 2606 OID 123193)
 -- Name: slabs slaps_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -834,7 +1117,7 @@ ALTER TABLE ONLY public.slabs
 
 
 --
--- TOC entry 3409 (class 2606 OID 123252)
+-- TOC entry 3486 (class 2606 OID 123252)
 -- Name: super_admin super_admin_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -843,7 +1126,7 @@ ALTER TABLE ONLY public.super_admin
 
 
 --
--- TOC entry 3419 (class 2606 OID 327884)
+-- TOC entry 3496 (class 2606 OID 327884)
 -- Name: superadmin_config superadmin_config_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -852,7 +1135,7 @@ ALTER TABLE ONLY public.superadmin_config
 
 
 --
--- TOC entry 3417 (class 2606 OID 319702)
+-- TOC entry 3494 (class 2606 OID 319702)
 -- Name: transactions transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -861,7 +1144,7 @@ ALTER TABLE ONLY public.transactions
 
 
 --
--- TOC entry 3403 (class 2606 OID 123153)
+-- TOC entry 3480 (class 2606 OID 123153)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -870,7 +1153,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 3428 (class 2606 OID 196875)
+-- TOC entry 3521 (class 2606 OID 196875)
 -- Name: follow_up_notes company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -879,7 +1162,7 @@ ALTER TABLE ONLY public.follow_up_notes
 
 
 --
--- TOC entry 3427 (class 2606 OID 131277)
+-- TOC entry 3520 (class 2606 OID 131277)
 -- Name: permissions permissions_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -888,7 +1171,7 @@ ALTER TABLE ONLY public.permissions
 
 
 --
--- TOC entry 3429 (class 2606 OID 196880)
+-- TOC entry 3522 (class 2606 OID 196880)
 -- Name: follow_up_notes user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -897,7 +1180,7 @@ ALTER TABLE ONLY public.follow_up_notes
 
 
 --
--- TOC entry 3426 (class 2606 OID 123214)
+-- TOC entry 3519 (class 2606 OID 123214)
 -- Name: users users_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -905,7 +1188,7 @@ ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) NOT VALID;
 
 
--- Completed on 2022-12-05 16:33:48
+-- Completed on 2023-01-24 15:13:18
 
 --
 -- PostgreSQL database dump complete

@@ -44,9 +44,9 @@ let createAdmin = async (bodyData, cId, res) => {
             let role_id = createRole.rows[0].id
             let s5 = dbScript(db_sql['Q3'], {
                 var1: id, var2: mysql_real_escape_string(name),
-                var3: cId, var4: companyLogo, var5: emailAddress, var6: mobileNumber,
+                var3: cId, var4: companyLogo, var5: emailAddress.toLowerCase(), var6: mobileNumber,
                 var7: phoneNumber, var8: encryptedPassword, var9: role_id,
-                var10: mysql_real_escape_string(companyAddress), var11: expiryDate
+                var10: mysql_real_escape_string(companyAddress), var11: expiryDate, var12 : id
             })
             let saveuser = await connection.query(s5)
 
@@ -60,7 +60,7 @@ let createAdmin = async (bodyData, cId, res) => {
             for (data of findModules.rows) {
                 moduleArr.push(data.id)
                 let perId = uuid.v4()
-                let s7 = dbScript(db_sql['Q20'], { var1: perId, var2: createRole.rows[0].id, var3: data.id, var4: true, var5: true, var6: true, var7: true, var8: saveuser.rows[0].id })
+                let s7 = dbScript(db_sql['Q20'], { var1: perId, var2: createRole.rows[0].id, var3: data.id, var4: true, var5: true, var6: true, var7: true, var8: true, var9: saveuser.rows[0].id })
                 var addPermission = await connection.query(s7)
             }
             let _dt = new Date().toISOString();
@@ -84,7 +84,7 @@ let createAdmin = async (bodyData, cId, res) => {
                     return res.json({
                         status: 201,
                         success: true,
-                        message: ` User Created Successfully and verification link send on registered email `,
+                        message: ` User Created Successfully and verification link send on ${emailAddress.toLowerCase()} `,
                     })
                 } else {
                     let emailSent = await welcomeEmail(emailAddress, link, name);
@@ -128,7 +128,7 @@ let createAdmin = async (bodyData, cId, res) => {
         return res.json({
             status: 200,
             success: false,
-            message: "User already exists",
+            message: "Email already exists",
             data: ""
         })
     }
@@ -169,18 +169,37 @@ module.exports.signUp = async (req, res) => {
         let s2 = dbScript(db_sql['Q1'], { var1: companyName })
         let checkCompany = await connection.query(s2);
         if (checkCompany.rows.length == 0) {
-            let cId = uuid.v4()
-            await connection.query('BEGIN')
-            let s3 = dbScript(db_sql['Q2'], { var1: cId, var2: mysql_real_escape_string(companyName), var3: companyLogo, var4: mysql_real_escape_string(companyAddress) })
-            let saveCompanyDetails = await connection.query(s3)
-            if (saveCompanyDetails.rowCount > 0) {
-                await createAdmin(req.body, saveCompanyDetails.rows[0].id, res)
+
+            let s9 = dbScript(db_sql['Q112'], {})
+            let trialDays = await connection.query(s9)
+            let expiryDate = '';
+            if (trialDays.rowCount > 0) {
+                let currentDate = new Date()
+                expiryDate = new Date(currentDate.setDate(currentDate.getDate() + Number(trialDays.rows[0].trial_days))).toISOString()
+                
+                await connection.query('BEGIN')
+                let cId = uuid.v4()
+
+                let s3 = dbScript(db_sql['Q2'], { var1: cId, var2: mysql_real_escape_string(companyName), var3: companyLogo, var4: mysql_real_escape_string(companyAddress), var5 : expiryDate, var6 : trialDays.rows[0].trial_users })
+                let saveCompanyDetails = await connection.query(s3)
+
+                if (saveCompanyDetails.rowCount > 0) {
+                    await createAdmin(req.body, saveCompanyDetails.rows[0].id, res)
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something Went Wrong",
+                        data: ""
+                    })
+                }
             } else {
                 await connection.query('ROLLBACK')
-                res.json({
+                return res.json({
                     status: 400,
                     success: false,
-                    message: "Something Went Wrong",
+                    message: "Trial days are not added by Super admin",
                     data: ""
                 })
             }
@@ -346,7 +365,7 @@ module.exports.login = async (req, res) => {
                             email: admin.rows[0].email_address,
                         }
                         let jwtToken = await issueJWT(payload);
-                        let profileImage = (admin.rows[0].role_name == "Admin") ? admin.rows[0].company_logo : admin.rows[0].avatar
+                        let profileImage = admin.rows[0].avatar
 
                         res.send({
                             status: 200,
@@ -357,21 +376,25 @@ module.exports.login = async (req, res) => {
                                 id: admin.rows[0].id,
                                 name: admin.rows[0].full_name,
                                 isAdmin: admin.rows[0].is_admin,
+                                roleId : admin.rows[0].role_id,
                                 role: admin.rows[0].role_name,
                                 profileImage: profileImage,
                                 modulePermissions: modulePemissions,
                                 configuration: configuration,
                                 isImapCred : isImapCred,
                                 isImapEnable : admin.rows[0].is_imap_enable,
+                                isMarketingEnable : admin.rows[0].is_marketing_enable,
                                 expiryDate: (admin.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : '',
-                                isMainAdmin : admin.rows[0].is_main_admin
+                                isMainAdmin : admin.rows[0].is_main_admin,
+                                companyName : admin.rows[0].company_name,
+                                companyLogo : admin.rows[0].company_logo
                             }
                         });
                     } else {
                         res.json({
                             status: 400,
                             success: false,
-                            message: "not subscribed for any plan"
+                            message: "Locked by super Admin/Plan Expired"
                         })
                     }
                 } else {
@@ -392,7 +415,7 @@ module.exports.login = async (req, res) => {
             res.json({
                 status: 400,
                 success: false,
-                message: "Admin not found"
+                message: "Invalid credentials"
             })
         }
     }
@@ -757,6 +780,56 @@ module.exports.countryDetails = async (req, res) => {
     }
 }
 
+module.exports.updateCompanyLogo = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let file = req.file
+        let path = `${process.env.COMPANY_LOGO_LINK}/${file.originalname}`;
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findUser = await connection.query(s1)
+
+        if (findUser.rows.length > 0) {
+            await connection.query('BEGIN')
+            let _dt = new Date().toISOString();
+            let s2 = dbScript(db_sql['Q249'], { var1: path, var2: _dt, var3: findUser.rows[0].company_id })
+            let updateLogo = await connection.query(s2)
+            await connection.query('COMMIT')
+            if (updateLogo.rowCount > 0) {
+                res.json({
+                    success: true,
+                    status: 200,
+                    message: 'CompanyLogo updated successfully',
+                    data : path
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    success: false,
+                    status: 400,
+                    message: "Something Went Wrong",
+                    data: ""
+                })
+            }
+
+        } else {
+            res.json({
+                success: false,
+                status: 200,
+                message: "Admin not found",
+                data: ""
+            })
+        }
+
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            success: false,
+            status: 400,
+            message: error.message,
+        })
+    }
+}
 
 
 

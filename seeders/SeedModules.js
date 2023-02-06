@@ -23,7 +23,7 @@ let modules = [
         moduleType : 'Roles Module'
     },
     {
-        moduleName : 'Sales management',
+        moduleName : 'Sales',
         moduleType : 'Sales Module'
     },
     {
@@ -39,7 +39,7 @@ let modules = [
         moduleType : 'Slabs Module'
     },
     {
-        moduleName : 'Customer management',
+        moduleName : 'Customers',
         moduleType : 'Customers Module'
     },
     {
@@ -51,8 +51,16 @@ let modules = [
         moduleType : 'products'
     },
     {
-        moduleName : 'Forecast Management',
+        moduleName : 'Forecast',
         moduleType : 'Forecast' 
+    },
+    {
+        moduleName : 'Marketing Strategy',
+        moduleType : 'Marketing'
+    },
+    {
+        moduleName : 'Leads',
+        moduleType : 'Leads'
     }
 ]
 

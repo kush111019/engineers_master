@@ -15,7 +15,7 @@ module.exports.addProduct = async (req, res) => {
             description,
             availableQuantity,
             price,
-            tax,
+            endOfLife,
             currency
         } = req.body
 
@@ -29,7 +29,7 @@ module.exports.addProduct = async (req, res) => {
             if (findProduct.rowCount == 0) {
                 await connection.query('BEGIN')
                 let id = uuid.v4()
-                let s4 = dbScript(db_sql['Q92'], { var1: id, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: checkPermission.rows[0].company_id, var9: currency })
+                let s4 = dbScript(db_sql['Q92'], { var1: id, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: endOfLife, var8: checkPermission.rows[0].company_id, var9: currency, var10 : userId })
                 let addProduct = await connection.query(s4)
                 if (addProduct.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -79,7 +79,7 @@ module.exports.updateProduct = async (req, res) => {
             description,
             availableQuantity,
             price,
-            tax,
+            endOfLife,
             currency
         } = req.body
 
@@ -90,7 +90,7 @@ module.exports.updateProduct = async (req, res) => {
         if (checkPermission.rows[0].permission_to_update) {
             await connection.query('BEGIN')
             let _dt = new Date().toISOString();
-            let s4 = dbScript(db_sql['Q93'], { var1: productId, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: tax, var8: _dt, var9: checkPermission.rows[0].company_id, var10: currency })
+            let s4 = dbScript(db_sql['Q93'], { var1: productId, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: endOfLife, var8: _dt, var9: checkPermission.rows[0].company_id, var10: currency })
             let updateProduct = await connection.query(s4)
             if (updateProduct.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -126,9 +126,10 @@ module.exports.updateProduct = async (req, res) => {
 module.exports.productList = async (req, res) => {
     try {
         let userId = req.user.id
-        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2 : userId })
+        let userIds = []
+        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_view) {
+        if (checkPermission.rows[0].permission_to_view_global) {
             let s4 = dbScript(db_sql['Q94'], { var1: checkPermission.rows[0].company_id })
             let productList = await connection.query(s4)
             if (productList.rowCount > 0) {
@@ -137,6 +138,40 @@ module.exports.productList = async (req, res) => {
                     success: true,
                     message: "Product List",
                     data: productList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty product list",
+                    data: []
+                })
+            }
+        } else if (checkPermission.rows[0].permission_to_view_own) {
+            userIds.push(userId)
+            let productListArr = []
+            let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
+            let findUsers = await connection.query(s3)
+            if (findUsers.rowCount > 0) {
+                for (user of findUsers.rows) {
+                    userIds.push(user.id)
+                }
+            }
+            for (id of userIds) {
+                let s4 = dbScript(db_sql['Q169'], { var1: id })
+                let productList = await connection.query(s4)
+                if (productList.rowCount > 0) {
+                    for (product of productList.rows) {
+                        productListArr.push(product)
+                    }
+                }
+            }
+            if (productListArr.length > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Product List",
+                    data: productListArr
                 })
             } else {
                 res.json({
@@ -168,6 +203,9 @@ module.exports.deleteProduct = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
+            let s2 = dbScript(db_sql['Q260'],{var1 : productId })
+            let checkProductInSales = await connection.query(s2)
+            if(checkProductInSales.rowCount == 0){
             await connection.query('BEGIN')
             let _dt = new Date().toISOString();
             let s4 = dbScript(db_sql['Q95'], { var1: productId, var2: _dt, var3: checkPermission.rows[0].company_id })
@@ -175,7 +213,7 @@ module.exports.deleteProduct = async (req, res) => {
             if (deleteProduct.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
-                    status: 201,
+                    status: 200,
                     success: true,
                     message: "Product deleted successfully"
                 })
@@ -187,6 +225,13 @@ module.exports.deleteProduct = async (req, res) => {
                     message: "Something went wrong"
                 })
             }
+        }else{
+            res.json({
+                status: 200,
+                success: false,
+                message: "This record has been used by Sales"
+            })
+        }
         } else {
             res.status(403).json({
                 success: false,
@@ -256,7 +301,7 @@ module.exports.uploadProductFile = async (req, res) => {
                                 (row[1] == "") ? row[1] = process.env.DEFAULT_PRODUCT_IMAGE : row[1];
                                 //unique id for every row 
                                 id = uuid.v4()
-                                let s4 = dbScript(db_sql['Q97'], { var1: id, var2: checkPermission.rows[0].company_id })
+                                let s4 = dbScript(db_sql['Q97'], { var1: id, var2: checkPermission.rows[0].company_id, var3 : userId })
                                 connection.query(s4, row, (err, res) => {
                                     if (err) {
                                         throw err

@@ -8,7 +8,7 @@ module.exports.paymentReminder = async () => {
     let s1 = dbScript(db_sql['Q110'], {})
     let admindata = await connection.query(s1)
     for (let data of admindata.rows) {
-        if (data.is_admin && data.expiry_date != null) {
+        if (data.is_main_admin && data.expiry_date != null) {
             let currentDate = new Date()
             currentDate = moment(currentDate).format('MM/DD/YYYY')
             let endDate = new Date(data.expiry_date);
@@ -83,7 +83,10 @@ module.exports.upgradeSubscriptionCronFn = async () => {
                     let s5 = dbScript(db_sql['Q151'], { var1 : _dt, var2 : upgradedTransaction.rows[0].id})
                     let deleteUpgradedTransaction = await connection.query(s5)
 
-                    if (updateTransaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && deleteUpgradedTransaction.rowCount > 0) {
+                    let s6 = dbScript(db_sql['Q231'], { var1: expiryDate, var2: upgradedTransaction.rows[0].company_id, var3: _dt })
+                    let updateCompanyExpiryDate = await connection.query(s6)
+
+                    if (updateTransaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && deleteUpgradedTransaction.rowCount > 0 && updateCompanyExpiryDate.rowCount > 0) {
                         await connection.query('COMMIT')
                     } else {
                         await connection.query('ROLLBACK')

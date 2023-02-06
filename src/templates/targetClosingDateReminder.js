@@ -1,12 +1,12 @@
-module.exports.paymentReminder = function (customerName,endDate) {
-    let paymentReminderTemp = `
+module.exports.tagetClosingDateReminder = function (customerName,endDate) {
+    let targetClosingDateReminderTemp = `
     <!doctype html>
     <html lang="en-US">
     
     <head>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
-        <title>Payment reminder mail</title>
-        <meta name="description" content="Payment reminder mail.">
+        <title>Target closing date reminder mail</title>
+        <meta name="description" content="Target closing date reminder mail.">
         <style type="text/css">
             a:hover {text-decoration: underline !important;}
         </style>
@@ -36,12 +36,10 @@ module.exports.paymentReminder = function (customerName,endDate) {
                                         <td style="padding:0 35px;">
 
                                             <br style="color:#455056; font-size:15px;line-height:24px; margin:0;">
-                                            Hi ${customerName}, <br>
-                                            <br/>
 
-                                            This Email is to inform you that your subscription plan is going to expire on ${endDate}.  <br>
+                                            This Email is to inform you that for sales <b>${customerName}</b>, The target closing date is <b>${endDate}</b>.  <br>
                                             <br/>
-                                            To continue the benefits of current subscription plan please pay subscription amount. <br>
+                                            Please close the sales before or on target closing date <br>
                                             <br/>
                                             
                                             If you have any questions. Please email us at <a href=""
@@ -69,8 +67,5 @@ module.exports.paymentReminder = function (customerName,endDate) {
     
     </html>`
 
-    return paymentReminderTemp
+    return targetClosingDateReminderTemp
 }
-
-
-

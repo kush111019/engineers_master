@@ -5,7 +5,7 @@ const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid")
 
-module.exports.mysql_real_escape_string = (str) =>{
+module.exports.mysql_real_escape_string = (str) => {
     return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
         switch (char) {
             case "\0":
@@ -17,7 +17,7 @@ module.exports.mysql_real_escape_string = (str) =>{
             case "\x1a":
                 return "\\z";
             case "\n":
-                return "\\n";
+                return " ";
             case "\r":
                 return "\\r";
             case "\"":
@@ -28,7 +28,7 @@ module.exports.mysql_real_escape_string = (str) =>{
                 return "'" + char;
             case "%":
                 return "\%"; // prepends a backslash to backslash, percent,
-                                    // and double/single quotes
+            // and double/single quotes
         }
     })
 }
@@ -130,7 +130,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
         expYear,
         cvc
     } = req.body
-    
+
     let s2 = dbScript(db_sql['Q104'], { var1: planId })
     let planData = await connection.query(s2)
     if (planData.rowCount > 0) {
@@ -162,8 +162,8 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
             let totalPrice = data.price.unit_amount * data.quantity
             totalAmount = totalAmount + totalPrice;
         }
-        if(planData.rows[0].interval == 'year'){
-            totalAmount = totalAmount - ((Number(process.env.DISCOUNT_PERCENTAGE)/100) * totalAmount)   
+        if (planData.rows[0].interval == 'year') {
+            totalAmount = totalAmount - ((Number(process.env.DISCOUNT_PERCENTAGE) / 100) * totalAmount)
         }
         const charge = await stripe.charges.create({
             amount: Math.round(totalAmount),
@@ -177,8 +177,8 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
             let s3 = dbScript(db_sql['Q116'], {
                 var1: transaction.rows[0].stripe_customer_id, var2: subscription.id,
                 var3: card.id, var4: token.id, var5: charge.id, var6: subscription.current_period_end,
-                var7: _dt, var8: transaction.rows[0].id, var9:Math.round(totalAmount), var10: true,
-                var11 : charge.receipt_url, var12 : userCount, var13 : planId, var14 : ""
+                var7: _dt, var8: transaction.rows[0].id, var9: Math.round(totalAmount), var10: true,
+                var11: charge.receipt_url, var12: userCount, var13: planId, var14: ""
             })
             let updateTransaction = await connection.query(s3)
 
@@ -187,7 +187,10 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
             let s5 = dbScript(db_sql['Q113'], { var1: expiryDate, var2: user.rows[0].id, var3: _dt })
             let updateUserExpiryDate = await connection.query(s5)
 
-            if (updateTransaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0) {
+            let s6 = dbScript(db_sql['Q232'], { var1: expiryDate, var2: userCount, var3: _dt, var4: user.rows[0].company_id })
+            let updateCompanyExpiryDate = await connection.query(s6)
+
+            if (updateTransaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && updateCompanyExpiryDate > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,
@@ -203,14 +206,14 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
                     message: 'something went wrong'
                 })
             }
-        }else{
+        } else {
             res.json({
                 status: 400,
                 success: false,
                 message: 'something went wrong'
             })
         }
-    }else{
+    } else {
         res.json({
             status: 400,
             success: false,
@@ -260,27 +263,29 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
             let totalPrice = data.price.unit_amount * data.quantity
             totalAmount = totalAmount + totalPrice;
         }
-        if(planData.rows[0].interval == 'year'){
-            totalAmount = totalAmount - ((Number(process.env.DISCOUNT_PERCENTAGE)/100) * totalAmount)   
+        if (planData.rows[0].interval == 'year') {
+            totalAmount = totalAmount - ((Number(process.env.DISCOUNT_PERCENTAGE) / 100) * totalAmount)
         }
         if (token && card && subscription) {
             let _dt = new Date().toISOString();
             let upTransId = uuid.v4()
 
-            let s3 = dbScript(db_sql['Q149'], {var1 : upTransId, var2 : user.rows[0].id, var3:   transaction.rows[0].company_id, var4: planId, var5: transaction.rows[0].stripe_customer_id, var6: subscription.id, var7: card.id, var8: token.id, var9: "", var10: subscription.current_period_end, var11: userCount, var12: "",
-            var13: Math.round(totalAmount), var14: "" })
+            let s3 = dbScript(db_sql['Q149'], {
+                var1: upTransId, var2: user.rows[0].id, var3: transaction.rows[0].company_id, var4: planId, var5: transaction.rows[0].stripe_customer_id, var6: subscription.id, var7: card.id, var8: token.id, var9: "", var10: subscription.current_period_end, var11: userCount, var12: "",
+                var13: Math.round(totalAmount), var14: ""
+            })
             let createUpgradedTransaction = await connection.query(s3)
 
-            let s4 = dbScript(db_sql['Q116'], { var1: transaction.rows[0].stripe_customer_id, var2 : transaction.rows[0].stripe_subscription_id, var3 : transaction.rows[0].stripe_card_id, var4 : transaction.rows[0].stripe_token_id, var5 : transaction.rows[0].stripe_charge_id, var6 : transaction.rows[0].expiry_date, var7 : _dt, var8 : transaction.rows[0].id, var9 : transaction.rows[0].total_amount, var10 : false, var11 : transaction.rows[0].payment_receipt, var12 : transaction.rows[0].user_count, var13 : transaction.rows[0].plan_id, var14 : createUpgradedTransaction.rows[0].id})
+            let s4 = dbScript(db_sql['Q116'], { var1: transaction.rows[0].stripe_customer_id, var2: transaction.rows[0].stripe_subscription_id, var3: transaction.rows[0].stripe_card_id, var4: transaction.rows[0].stripe_token_id, var5: transaction.rows[0].stripe_charge_id, var6: transaction.rows[0].expiry_date, var7: _dt, var8: transaction.rows[0].id, var9: transaction.rows[0].total_amount, var10: false, var11: transaction.rows[0].payment_receipt, var12: transaction.rows[0].user_count, var13: transaction.rows[0].plan_id, var14: createUpgradedTransaction.rows[0].id })
             let updateTransaction = await connection.query(s4)
 
-            if(createUpgradedTransaction.rowCount > 0 && updateTransaction.rowCount > 0){
+            if (createUpgradedTransaction.rowCount > 0 && updateTransaction.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Subscription will be upgrade on end of current subscription'
                 })
-            }else{
+            } else {
                 res.json({
                     status: 400,
                     success: false,
@@ -288,7 +293,7 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
                 })
             }
 
-        }else{
+        } else {
             res.json({
                 status: 400,
                 success: false,
@@ -296,7 +301,7 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
             })
         }
 
-    }else{
+    } else {
         res.json({
             status: 400,
             success: false,
@@ -331,54 +336,239 @@ module.exports.paginatedResults = (model, page) => {
     return data
 }
 
-module.exports.getMonthDifference = async (startDate, endDate) => {
-    var months = endDate.getMonth() - startDate.getMonth()
-        + (12 * (endDate.getFullYear() - startDate.getFullYear()));
+module.exports.paginatedResults1 = (model, page, limit) => {
 
-    if (endDate.getDate() < startDate.getDate()) {
-        months--;
+    // calculating the starting and ending index
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const results = {};
+    if (endIndex < model.length) {
+        results.next = {
+            page: page + 1,
+            limit: limit
+        };
     }
+
+    if (startIndex > 0) {
+        results.previous = {
+            page: page - 1,
+            limit: limit
+        };
+    }
+
+    data = model.slice(startIndex, endIndex);
+    return data
+}
+
+module.exports.getMonthDifference = async (startDate, endDate) => {
+    // var months = endDate.getMonth() - startDate.getMonth()
+    //     + (12 * (endDate.getFullYear() - startDate.getFullYear()));
+
+    // if (endDate.getDate() < startDate.getDate()) {
+    //     months--;
+    // }
+    // return months;
+    let endD = new Date(endDate);
+    let startD = new Date(startDate);
+    endD.setDate(endD.getDate() + 1);
+    let d1 = startD, d2 = new Date(endD);
+    if (d2 < d1) {
+        let dTmp = d2;
+        d2 = d1;
+        d1 = dTmp;
+    }
+
+    let months = (d2.getFullYear() - d1.getFullYear()) * 12;
+    months -= d1.getMonth() + 1;
+    months += d2.getMonth();
+
+    if (d1.getDate() <= d2.getDate()) months += 1;
     return months;
 }
 
 module.exports.getYearDifference = async (startDate, endDate) => {
-    let years = endDate.getFullYear() - startDate.getFullYear();;
-    return years;
+    let difference = endDate.getTime() - startDate.getTime();
+    let yearDifference = difference / (1000 * 60 * 60 * 24 * 365.25);
+    let roundedYearDifference = Math.round(yearDifference);
+    return Number(roundedYearDifference)
 }
 
-module.exports.removeDuplicates = async(originalArray, prop) => {
+module.exports.removeDuplicates = async (originalArray, prop) => {
     var newArray = [];
-    var lookupObject  = {};
+    var lookupObject = {};
 
-    for(var i in originalArray) {
-       let mainValue =0;
-       if(lookupObject[originalArray[i][prop]]){
-           mainValue = lookupObject[originalArray[i][prop]].revenue + originalArray[i].revenue;
-           originalArray[i].revenue = mainValue;
-       }
-       lookupObject[originalArray[i][prop]] = originalArray[i];
+    for (var i in originalArray) {
+        let mainValue = 0;
+        if (lookupObject[originalArray[i][prop]]) {
+            mainValue = lookupObject[originalArray[i][prop]].revenue + originalArray[i].revenue;
+            originalArray[i].revenue = mainValue;
+        }
+        lookupObject[originalArray[i][prop]] = originalArray[i];
     }
 
-    for(i in lookupObject) {
+    for (i in lookupObject) {
         newArray.push(lookupObject[i]);
     }
-     return newArray;
+    return newArray;
 }
 
-module.exports.reduceArray = async(arr) =>{
-    const reducedArray = arr.reduce((acc, next) => { // acc stands for accumulator
-        const lastItemIndex = acc.length -1;
-        const accHasContent = acc.length >= 1;
-        if(accHasContent && acc[lastItemIndex].date == next.date) {
-          acc[lastItemIndex].revenue += next.revenue;
-          acc[lastItemIndex].commission += next.commission;
+module.exports.reduceArray = async (data) => {
 
-        } else {
-          // first time seeing this entry. add it!
-          acc[lastItemIndex +1] = next;
+    let returnData = [];
+    for (let i = 0; i < data.length; i++) {
+        let found = 0;
+        for (let j = 0; j < returnData.length; j++) {
+            let date1 = new Date(data[i].date).toISOString();
+            let date2 = new Date(returnData[j].date).toISOString();
+            if (date1.slice(0, 10) === date2.slice(0, 10)) {
+                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
+                returnData[j].revenue = revenueOfJ;
+                found = 1;
+            }
         }
-        return acc;
-    }, []);
-    return reducedArray
+        if (found === 0) {
+            returnData.push(data[i]);
+        }
+    }
+    return returnData
 }
 
+module.exports.reduceArrayWithCommission = async (data) => {
+    let returnData = [];
+    for (let i = 0; i < data.length; i++) {
+        let found = 0;
+        for (let j = 0; j < returnData.length; j++) {
+            let date1 = new Date(data[i].date).toString();
+            let date2 = new Date(returnData[j].date).toString();
+            if (date1.slice(0, 10) === date2.slice(0, 10)) {
+                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
+                returnData[j].revenue = revenueOfJ;
+                let commissionOfJ = Number(returnData[j].commission) + Number(data[i].commission)
+                returnData[j].commission = commissionOfJ;
+                found = 1;
+            }
+        }
+        if (found === 0) {
+            returnData.push(data[i]);
+        }
+    }
+    return returnData
+}
+
+module.exports.reduceArrayWithName = async (data) => {
+
+    let returnData = [];
+    for (let i = 0; i < data.length; i++) {
+        let found = 0;
+        for (let j = 0; j < returnData.length; j++) {
+            let salesRep1 = data[i].sales_rep
+            let salesRep2 = returnData[j].sales_rep
+            if (salesRep1 === salesRep2) {
+                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
+                returnData[j].revenue = revenueOfJ;
+                found = 1;
+            }
+        }
+        if (found === 0) {
+            returnData.push(data[i]);
+        }
+    }
+    return returnData
+}
+
+module.exports.reduceArrayWithName1 = async (data) => {
+
+    let returnData = [];
+    for (let i = 0; i < data.length; i++) {
+        let found = 0;
+        for (let j = 0; j < returnData.length; j++) {
+            let user1 = data[i].user
+            let user2 = returnData[j].user
+            if (user1 === user2) {
+                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
+                returnData[j].revenue = revenueOfJ;
+                found = 1;
+            }
+        }
+        if (found === 0) {
+            returnData.push(data[i]);
+        }
+    }
+    return returnData
+}
+
+module.exports.reduceArrayWithCustomer = async (data) => {
+
+    let returnData = [];
+    for (let i = 0; i < data.length; i++) {
+        let found = 0;
+        for (let j = 0; j < returnData.length; j++) {
+            let customer1 = data[i].customer_name
+            let customer2 = returnData[j].customer_name
+            if (customer1 === customer2) {
+                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
+                returnData[j].revenue = revenueOfJ;
+                found = 1;
+            }
+        }
+        if (found === 0) {
+            returnData.push(data[i]);
+        }
+    }
+    return returnData
+}
+
+module.exports.reduceArrayWithProduct = async (data) => {
+    let returnData = [];
+    for (let i = 0; i < data.length; i++) {
+        let found = 0;
+        for (let j = 0; j < returnData.length; j++) {
+            let product1 = data[i].product_name
+            let product2 = returnData[j].product_name
+            if (product1 === product2) {
+                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
+                returnData[j].revenue = revenueOfJ;
+                found = 1;
+            }
+        }
+        if (found === 0) {
+            returnData.push(data[i]);
+        }
+    }
+    return returnData
+}
+
+module.exports.getMinutesBetweenDates = async (startDate, endDate) => {
+    var diff = endDate.getTime() - startDate.getTime();
+    return (diff / 60000);
+}
+
+
+module.exports.getUserAndSubUser = async (userData) => {
+    let roleIds = []
+    roleIds.push(userData.role_id)
+    let getRoles = async (id) => {
+        let s1 = dbScript(db_sql['Q16'], { var1: id })
+        let getChild = await connection.query(s1);
+        if (getChild.rowCount > 0) {
+            for (let item of getChild.rows) {
+                if (roleIds.includes(item.id) == false) {
+                    roleIds.push(item.id)
+                    await getRoles(item.id)
+                }
+            }
+        }
+    }
+    await getRoles(userData.role_id)
+    let returnData = [];
+    returnData.push("'" + userData.id.toString() + "'")
+    for (id of roleIds) {
+        let s2 = dbScript(db_sql['Q287'], { var1: id })
+        let getUserData = await connection.query(s2);
+        if (getUserData.rowCount > 0 && getUserData.rows[0].role_id != userData.role_id ) {
+            returnData.push("'" + getUserData.rows[0].id.toString() + "'")
+        }
+    }
+    return returnData
+}

@@ -304,12 +304,55 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
     }
 }
 
+module.exports.lockOrUnlockCompany = async(req, res) => {
+    try {
+        let { companyId, isLocked } = req.query
+
+        await connection.query('BEGIN')
+
+        let _dt = new Date().toISOString()
+
+        let s1 = dbScript(db_sql['Q266'],{var1 : isLocked, var2 : _dt, var3 : companyId})
+        let lockUnlockCompany = await connection.query(s1)
+
+        let s2 = dbScript(db_sql['Q267'],{var1 : isLocked ,var2 : companyId, var3 : _dt})
+        let lockUnlockUsers = await connection.query(s2)
+
+        if(lockUnlockCompany.rowCount > 0 && lockUnlockUsers.rowCount > 0){
+            let lock = (isLocked == 'true') ? "Locked" : "Unlocked"
+            await connection.query('COMMIT')
+            res.json({
+                status : 200,
+                success : true,
+                message : `Company ${lock} successfully`
+            })
+        }else{
+            await connection.query('ROLLBACK')
+            res.json({
+                status : 400,
+                success : false,
+                message : "Something went wrong"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status : 400,
+            success : false,
+            message : error.message
+        })
+    }
+}
+
 module.exports.dashboard = async (req, res) => {
     try {
         let { page, startDate, endDate, orderBy } = req.query
-        let limit = 10;
-        let offset = (page - 1) * limit
-        let s1 = dbScript(db_sql['Q160'], {var1: limit, var2: offset, var3: startDate, var4: endDate})
+        startDate = new Date(startDate)
+        startDate.setHours(0, 0, 0, 0)
+        let sDate = new Date(startDate).toISOString()
+        endDate = new Date(endDate)
+        endDate.setHours(23, 59, 59, 999)
+        let eDate = new Date(endDate).toISOString()
+        let s1 = dbScript(db_sql['Q160'], {var1: sDate, var2: eDate})
         let companyData = await connection.query(s1)
         if (companyData.rowCount > 0) {
             let revenueCommission = []
@@ -318,12 +361,14 @@ module.exports.dashboard = async (req, res) => {
                 let commission = 0;
                 let revenueCommissionObj = {}
 
-                let s2 = dbScript(db_sql['Q17'], { var1: comData.id })
-                let slab = await connection.query(s2)
                 let s3 = dbScript(db_sql['Q161'], { var1: comData.id })
                 let salesData = await connection.query(s3)
                 if (salesData.rowCount > 0) {
-                    for (data of salesData.rows) {
+                    for (let data of salesData.rows) {
+
+                        let s2 = dbScript(db_sql['Q184'], { var1: data.slab_id })
+                        let slab = await connection.query(s2)
+
                         targetAmount = targetAmount + Number(data.amount)
                         if (slab.rowCount > 0) {
                             let remainingAmount = Number(data.amount);
@@ -362,12 +407,13 @@ module.exports.dashboard = async (req, res) => {
                 
             }
             if (revenueCommission.length > 0) {
+                let paginatedArr = await paginatedResults(revenueCommission, page)
                 if(orderBy.toLowerCase() == 'asc'){
-                    revenueCommission = revenueCommission.sort((a,b) => {
+                    paginatedArr = paginatedArr.sort((a,b) => {
                         return a.revenue - b.revenue
                     })
                 }else{
-                    revenueCommission = revenueCommission.sort((a,b) => {
+                    paginatedArr = paginatedArr.sort((a,b) => {
                         return b.revenue - a.revenue
                     })
                 }
@@ -375,7 +421,7 @@ module.exports.dashboard = async (req, res) => {
                     status: 200,
                     success: true,
                     message: "total revenue and total commission",
-                    data: revenueCommission
+                    data: paginatedArr
                 })
             } else {
                 res.json({
@@ -421,8 +467,6 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             let totalCommission = 0
 
             for (let comData of companyData.rows) {
-                let s2 = dbScript(db_sql['Q17'], { var1: comData.id })
-                let slab = await connection.query(s2)
 
                 let s3 = dbScript(db_sql['Q159'], { var1: comData.id })
                 let salesData = await connection.query(s3)
@@ -432,8 +476,12 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                 let totalClosedRevenue = 0;
                 let totalClosedCommission = 0;
 
-                if (salesData.rowCount > 0 && slab.rowCount > 0) {
-                    for (data of salesData.rows) {
+                if (salesData.rowCount > 0 ) {
+                    for (let data of salesData.rows) {
+
+                        let s2 = dbScript(db_sql['Q184'], { var1: data.slab_id })
+                        let slab = await connection.query(s2)
+                        
                         if (data.closed_at == null) {
                             totalExpectedRevenue = Number(totalExpectedRevenue) + Number(data.amount);
                             let expectedRemainingAmount = Number(data.amount);
@@ -798,7 +846,7 @@ module.exports.activateOrDeactivatePlan = async (req, res) => {
 module.exports.addConfig = async (req, res) => {
     try {
 
-        let { trialDays } = req.body
+        let { trialDays, trialUsers } = req.body
         let sAEmail = req.user.email
         let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
@@ -807,7 +855,7 @@ module.exports.addConfig = async (req, res) => {
             let id = uuid.v4()
 
             await connection.query('BEGIN')
-            let s2 = dbScript(db_sql['Q111'], { var1: id, var2: trialDays })
+            let s2 = dbScript(db_sql['Q111'], { var1: id, var2: trialDays , var3 : trialUsers})
             let addConfig = await connection.query(s2)
 
             if (addConfig.rowCount > 0) {
@@ -904,7 +952,7 @@ module.exports.configList = async (req, res) => {
 
 //-----------------------------------------------------------------------------------
 
-module.exports.subcribedCompaniesList = async (req, res) => {
+module.exports.allTrialAndSubcribedCompaniesList = async (req, res) => {
     try {
         let s1 = dbScript(db_sql['Q99'], {})
         let companies = await connection.query(s1)
@@ -929,27 +977,33 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                             companyAddress: companyData.company_address,
                             companyLogo: companyData.company_logo,
                             isImapEnable: companyData.is_imap_enable,
+                            isMarketingEnable: companyData.is_marketing_enable,
                             planName: plan.rows[0].name,
                             planInterval: plan.rows[0].interval,
                             PlanExpiryDate: expiryDate,
                             maxUserCount: (Number(transactions.rows[0].user_count) + 1),
-                            actualUserCount : actualUserCount.rows[0].actual_count
+                            actualUserCount : actualUserCount.rows[0].actual_count,
+                            totalAmount : Number(transactions.rows[0].total_amount)/100,
+                            isLocked : companyData.is_locked
                         })
                     }
                 } else {
-                    let expiryDate = new Date(companyData.created_at)
-                    expiryDate.setDate(expiryDate.getDate() + Number(configList.rows[0].trial_days) )
+                    let expiryDate = new Date(companyData.expiry_date)
+                    // expiryDate.setDate(expiryDate.getDate() + Number(configList.rows[0].trial_days) )
                     trialCompanies.push({
                         companyId: companyData.id,
                         companyName: companyData.company_name,
                         companyAddress: companyData.company_address,
                         companyLogo: companyData.company_logo,
                         isImapEnable: companyData.is_imap_enable,
+                        isMarketingEnable: companyData.is_marketing_enable,
                         planName: "Trial",
                         planInterval: `${configList.rows[0].trial_days} days`,
                         PlanExpiryDate: expiryDate,
-                        maxUserCount: "no limit",
-                        actualUserCount : actualUserCount.rows[0].actual_count
+                        maxUserCount: companyData.user_count,
+                        actualUserCount : actualUserCount.rows[0].actual_count,
+                        totalAmount : 0,
+                        isLocked : companyData.is_locked
                     })
                 }
             }
@@ -973,6 +1027,143 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                         subcribedCompanies: subcribedCompanies,
                         trialCompanies: trialCompanies
                     }
+                })
+            }
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: 'Empty Companies list',
+                data: []
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+
+}
+
+module.exports.trialCompaniesList = async(req, res) => {
+    try {
+        let s1 = dbScript(db_sql['Q99'], {})
+        let companies = await connection.query(s1)
+        let s2 = dbScript(db_sql['Q112'], {})
+        let configList = await connection.query(s2)
+        if (companies.rowCount > 0) {
+            let trialCompanies = []
+            for (let companyData of companies.rows) {
+
+                let s3 = dbScript(db_sql['Q154'], { var1: companyData.id })
+                let actualUserCount = await connection.query(s3)
+
+                // let currentDate = new Date();
+                // let expiryDate = new Date(companyData.expiry_date);
+                // let diffInMilliseconds = expiryDate.getTime() - currentDate.getTime();
+                // let diffInDays = diffInMilliseconds / (1000 * 3600 * 24);
+                // console.log(diffInDays);
+                let s4 = dbScript(db_sql['Q108'], { var1: companyData.id })
+                let transactions = await connection.query(s4)
+                if(transactions.rowCount == 0){
+                    trialCompanies.push({
+                        companyId: companyData.id,
+                        companyName: companyData.company_name,
+                        companyAddress: companyData.company_address,
+                        companyLogo: companyData.company_logo,
+                        isImapEnable: companyData.is_imap_enable,
+                        isMarketingEnable: companyData.is_marketing_enable,
+                        planName: "Trial",
+                        planInterval: `${configList.rows[0].trial_days} days`,
+                        PlanExpiryDate: new Date(companyData.expiry_date),
+                        maxUserCount: companyData.user_count,
+                        actualUserCount : actualUserCount.rows[0].actual_count,
+                        totalAmount : 0,
+                        isLocked : companyData.is_locked
+                    })
+                }
+            }
+            if(trialCompanies.length > 0){
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Trial companies List',
+                    data: trialCompanies
+                })
+            }else{
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty trial companies list',
+                    data: []
+                })
+            }
+        }else{
+            res.json({
+                status: 200,
+                success: false,
+                message: 'Empty Companies list',
+                data: []
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.subcribedCompaniesList = async (req, res) => {
+    try {
+        let s1 = dbScript(db_sql['Q99'], {})
+        let companies = await connection.query(s1)
+        if (companies.rowCount > 0) {
+            let subcribedCompanies = []
+            for (let companyData of companies.rows) {
+                let s3 = dbScript(db_sql['Q154'], { var1: companyData.id })
+                let actualUserCount = await connection.query(s3)
+                let s4 = dbScript(db_sql['Q108'], { var1: companyData.id })
+                let transactions = await connection.query(s4)
+                if (transactions.rows.length > 0) {
+                    let expiryDate = new Date(transactions.rows[0].expiry_date * 1000)
+                    let s4 = dbScript(db_sql['Q104'], { var1: transactions.rows[0].plan_id })
+                    let plan = await connection.query(s4)
+                    if (plan.rowCount > 0) {
+                        subcribedCompanies.push({
+                            companyId: companyData.id,
+                            companyName: companyData.company_name,
+                            companyAddress: companyData.company_address,
+                            companyLogo: companyData.company_logo,
+                            isImapEnable: companyData.is_imap_enable,
+                            isMarketingEnable: companyData.is_marketing_enable,
+                            planName: plan.rows[0].name,
+                            planInterval: plan.rows[0].interval,
+                            PlanExpiryDate: expiryDate,
+                            maxUserCount: (Number(transactions.rows[0].user_count) + 1),
+                            actualUserCount : actualUserCount.rows[0].actual_count,
+                            totalAmount : Number(transactions.rows[0].total_amount)/100,
+                            isLocked : companyData.is_locked
+                        })
+                    }
+                }
+            }
+            if (subcribedCompanies.length) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Subscribed Companies List',
+                    data: subcribedCompanies
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty Subscribed Companies List',
+                    data: subcribedCompanies
                 })
             }
         } else {
@@ -1020,7 +1211,8 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                                 companyAddress: companyData.company_address,
                                 companyLogo: companyData.company_logo,
                                 status: subscription.status,
-                                createdAt: companyData.created_at
+                                createdAt: companyData.created_at,
+                                isLocked : companyData.is_locked
                             })
                         } else if (subscription.status == 'canceled') {
                             canceledCompanies.push({
@@ -1029,7 +1221,8 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                                 companyAddress: companyData.company_address,
                                 companyLogo: companyData.company_logo,
                                 status: subscription.status,
-                                createdAt: companyData.created_at
+                                createdAt: companyData.created_at,
+                                isLocked : companyData.is_locked
                             })
                         }
                     }
@@ -1261,5 +1454,84 @@ module.exports.enableDisableImapService = async (req, res) => {
             success: false,
             message: error.message,
         }) 
+    }
+}
+
+//--------------------------------Enable/disable Marketing----------------------------
+
+module.exports.enableDisableMarketingService = async (req, res) => {
+    try {
+        let sAEmail = req.user.email
+        let {
+            companyId,
+            isMarketingEnable
+        } = req.body
+        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
+        let checkSuperAdmin = await connection.query(s1)
+        if (checkSuperAdmin.rowCount > 0) {
+
+            let _dt = new Date().toISOString();
+            let s2 = dbScript(db_sql['Q230'],{var1 : isMarketingEnable, var2 : _dt, var3 : companyId})
+            let updateMarketingService = await connection.query(s2)
+
+            if(updateMarketingService.rowCount > 0){
+                let enableOrDisable = (isMarketingEnable == true) ? 'enabled' : 'disabled'
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: `Marketing service ${enableOrDisable}`,
+                    data: ""
+                })
+            }else{
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "something went wrong",
+                    data: ""
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Super Admin not found",
+                data: ""
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        }) 
+    }
+}
+//--------------------------------Contact us Mail List---------------------------------
+
+module.exports.contactUsQueriesList = async(req, res) => {
+    try {
+        let s1 = dbScript(db_sql['Q187'], {})
+        let queries = await connection.query(s1)
+        if(queries.rowCount > 0){
+            res.json({
+                status: 200,
+                success: true,
+                message: "Queries List",
+                data : queries.rows
+            })
+        }else{
+            res.json({
+                status: 200,
+                success: false,
+                message: "Empty Queries List",
+                data : []
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
     }
 }

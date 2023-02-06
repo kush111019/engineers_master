@@ -1,7 +1,7 @@
 const crypto = require('crypto')
 
 const algorithm = process.env.CRYPTO_ALGO
-const secretKey = process.env.CRYOTO_SKEY
+const secretKey = process.env.CRYPTO_SKEY
 
 const encrypt = text => {
   const iv = crypto.randomBytes(16)
