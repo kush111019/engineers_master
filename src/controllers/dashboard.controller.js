@@ -171,7 +171,7 @@ module.exports.revenues = async (req, res) => {
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let revenueCommissionBydate = []
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            let s4 = dbScript(db_sql['Q167'], {  var1: "'"+roleUsers.join("','")+"'", var2: orderBy, var3: sDate, var4: eDate })
+            let s4 = dbScript(db_sql['Q167'], {  var1: roleUsers.join(','), var2: orderBy, var3: sDate, var4: eDate })
             console.log("s4 ", s4);
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
