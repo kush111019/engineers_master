@@ -172,7 +172,7 @@ module.exports.revenues = async (req, res) => {
             let revenueCommissionBydate = []
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s4 = dbScript(db_sql['Q167'], {  var1: roleUsers.join(','), var2: orderBy, var3: sDate, var4: eDate })
-            console.log("s4 ", s4);
+            
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
                 for (let data of salesData.rows) {
@@ -466,37 +466,39 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             })
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let counts = {}
-            let roleUsers = []
-            let roleIds = []
-            roleIds.push(checkPermission.rows[0].role_id)
-            let getRoles = async (id) => {
-                let s7 = dbScript(db_sql['Q16'], { var1: id })
-                let getChild = await connection.query(s7);
-                if (getChild.rowCount > 0) {
-                    for (let item of getChild.rows) {
-                        if (roleIds.includes(item.id) == false) {
-                            roleIds.push(item.id)
-                            await getRoles(item.id)
-                        }
-                    }
-                }
-            }
-            await getRoles(checkPermission.rows[0].role_id)
-            for (let roleId of roleIds) {
-                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
-                let findUsers = await connection.query(s3)
-                if (findUsers.rowCount > 0) {
-                    for (let user of findUsers.rows) {
-                        roleUsers.push(user.id)
-                    }
-                }
-            }
+            // let roleUsers = []
+            // let roleIds = []
+            // roleIds.push(checkPermission.rows[0].role_id)
+            // let getRoles = async (id) => {
+            //     let s7 = dbScript(db_sql['Q16'], { var1: id })
+            //     let getChild = await connection.query(s7);
+            //     if (getChild.rowCount > 0) {
+            //         for (let item of getChild.rows) {
+            //             if (roleIds.includes(item.id) == false) {
+            //                 roleIds.push(item.id)
+            //                 await getRoles(item.id)
+            //             }
+            //         }
+            //     }
+            // }
+            // await getRoles(checkPermission.rows[0].role_id)
+            // for (let roleId of roleIds) {
+            //     let s3 = dbScript(db_sql['Q185'], { var1: roleId })
+            //     let findUsers = await connection.query(s3)
+            //     if (findUsers.rowCount > 0) {
+            //         for (let user of findUsers.rows) {
+            //             roleUsers.push(user.id)
+            //         }
+            //     }
+            // }
         
             let totalExpectedRevenue = 0;
             let totalExpectedCommission = 0;
             let totalClosedRevenue = 0;
             let totalClosedCommission = 0;
-            let s4 = dbScript(db_sql['Q168'], { var1: "'"+roleUsers.join("','")+"'" })
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            let s4 = dbScript(db_sql['Q168'], { var1: roleUsers.join("','")})
+            console.log(s4,'s4 2')
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0 ) {
                 for (let data of salesData.rows) {
