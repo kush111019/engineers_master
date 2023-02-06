@@ -417,11 +417,8 @@ module.exports.reduceArray = async (data) => {
     for (let i = 0; i < data.length; i++) {
         let found = 0;
         for (let j = 0; j < returnData.length; j++) {
-            console.log(data[i].date,"date[i]");
-            console.log(returnData[j].date,"returnData[j].date");
             let date1 = new Date(data[i].date).toISOString();
             let date2 = new Date(returnData[j].date).toISOString();
-            console.log(date1, date2, "date 1, date2");
             if (date1.slice(0, 10) === date2.slice(0, 10)) {
                 let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
                 returnData[j].revenue = revenueOfJ;
@@ -543,4 +540,32 @@ module.exports.reduceArrayWithProduct = async (data) => {
 module.exports.getMinutesBetweenDates = async(startDate, endDate) => {
     var diff = endDate.getTime() - startDate.getTime();
     return (diff / 60000);
+}
+
+
+module.exports.getUserAndSubUser = async (userData) => {
+            let roleIds = []
+            roleIds.push(userData.role_id)
+            let getRoles = async (id) => {
+                let s1 = dbScript(db_sql['Q16'], { var1: id })
+                let getChild = await connection.query(s1);
+                if (getChild.rowCount > 0) {
+                    for (let item of getChild.rows) {
+                        if (roleIds.includes(item.id) == false) {
+                            roleIds.push(item.id)
+                            await getRoles(item.id)
+                        }
+                    }
+                }
+            }
+           await getRoles(userData.role_id)
+    let returnData = [];
+    for( id of roleIds){
+        let s2 = dbScript(db_sql['Q287'], { var1: id})
+        let getUserData = await connection.query(s2);
+        if(getUserData.rowCount>0){
+            returnData.push("'"+getUserData.rows[0].id.toString()+"'")
+        }
+    }
+    return returnData
 }

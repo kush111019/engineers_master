@@ -193,23 +193,29 @@ const db_sql = {
               INNER JOIN users AS u ON u.id = cr.closer_id WHERE sales_commission_id = '{var1}'
               AND cr.deleted_at IS NULL AND u.deleted_at IS NULL`,
 
-    "Q87"  : `SELECT 
-                sc.id AS sales_commission_id, 
-                SUM(sc.target_amount::DECIMAL) as amount,
-                sc.closed_at, sc.slab_id, sc.sales_type
-              FROM
-                sales_commission AS sc 
-              WHERE 
-                sc.company_id = '{var1}' AND 
-                sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
-                sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
-              GROUP BY 
-                sc.closed_at,
-                sc.id,
-                sc.slab_id,
-                sc.sales_type 
-              ORDER BY 
-              sc.closed_at {var2}`,
+    "Q87"  : `
+    SELECT sc.id AS sales_commission_id, 
+                    SUM(sc.target_amount::DECIMAL) as amount,
+                    sc.closed_at, sc.slab_id, sc.sales_type from 
+      sales_commission as sc 
+      LEFT JOIN sales_closer as scl
+        on sc.id=scl.sales_commission_id
+      LEFT JOIN sales_supporter as ss
+        on sc.id=ss.sales_commission_id
+      WHERE (
+        ss.supporter_id in ({var5}) OR 
+        scl.closer_id in ({var5})
+    
+      ) AND sc.company_id = '{var1}' AND 
+                    sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
+                    sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
+             GROUP BY 
+                    sc.closed_at,
+                    sc.id,
+                    sc.slab_id,
+                    sc.sales_type
+             ORDER BY 
+                  sc.closed_at {var2}`,
 
     "Q88"  : `SELECT 
                 sc.id AS sales_commission_id,
@@ -1292,7 +1298,8 @@ const db_sql = {
                 customers AS c ON sc.customer_id = c.id
               WHERE 
                 sales_id = '{var1}'`,
-    "Q286" : `UPDATE users SET session_time = '{var2}' WHERE id = '{var1}' RETURNING *`
+    "Q286" : `UPDATE users SET session_time = '{var2}' WHERE id = '{var1}' RETURNING *`,
+    "Q287" : `SELECT * FROM  users  WHERE role_id = '{var1}' and deleted_at IS NULL `
 }
 
  function dbScript(template, variables) {

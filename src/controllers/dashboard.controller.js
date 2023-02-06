@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const {paginatedResults,reduceArrayWithCommission} = require('../utils/helper')
+const {paginatedResults,reduceArrayWithCommission,getUserAndSubUser} = require('../utils/helper')
 const moduleName = process.env.DASHBOARD_MODULE
 const moment = require('moment')
 
@@ -18,7 +18,8 @@ module.exports.revenues = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
             let revenueCommissionBydate = []
-            let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate })
+            let userList =await getUserAndSubUser(checkPermission.rows[0]);       
+            let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate ,var5: userList.join(',')})
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
                 for (let data of salesData.rows) {
