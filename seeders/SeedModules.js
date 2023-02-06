@@ -14,49 +14,53 @@ connection.connect()
 console.log("running seed");
 
 let modules = [
+    // {
+    //     moduleName : 'users',
+    //     moduleType : 'company users'
+    // },
+    // {
+    //     moduleName : 'Role',
+    //     moduleType : 'Roles Module'
+    // },
+    // {
+    //     moduleName : 'Sales',
+    //     moduleType : 'Sales Module'
+    // },
+    // {
+    //     moduleName : 'Reports',
+    //     moduleType : 'Reports Module'
+    // },
+    // {
+    //     moduleName : 'Dashboard',
+    //     moduleType : 'Dashboard Module'
+    // },
+    // {
+    //     moduleName : 'Slab Configuration',
+    //     moduleType : 'Slabs Module'
+    // },
+    // {
+    //     moduleName : 'Customers',
+    //     moduleType : 'Customers Module'
+    // },
+    // {
+    //     moduleName : 'Commission',
+    //     moduleType : 'Commission Module'
+    // },
+    // {
+    //     moduleName : 'Products',
+    //     moduleType : 'products'
+    // },
+    // {
+    //     moduleName : 'Forecast',
+    //     moduleType : 'Forecast' 
+    // },
+    // {
+    //     moduleName : 'Marketing Strategy',
+    //     moduleType : 'Marketing'
+    // },
     {
-        moduleName : 'users',
-        moduleType : 'company users'
-    },
-    {
-        moduleName : 'Role',
-        moduleType : 'Roles Module'
-    },
-    {
-        moduleName : 'Sales management',
-        moduleType : 'Sales Module'
-    },
-    {
-        moduleName : 'Reports',
-        moduleType : 'Reports Module'
-    },
-    {
-        moduleName : 'Dashboard',
-        moduleType : 'Dashboard Module'
-    },
-    {
-        moduleName : 'Slab Configuration',
-        moduleType : 'Slabs Module'
-    },
-    {
-        moduleName : 'Customer management',
-        moduleType : 'Customers Module'
-    },
-    {
-        moduleName : 'Commission',
-        moduleType : 'Commission Module'
-    },
-    {
-        moduleName : 'Products',
-        moduleType : 'products'
-    },
-    {
-        moduleName : 'Forecast Management',
-        moduleType : 'Forecast' 
-    },
-    {
-        moduleName : 'Marketing Strategy',
-        moduleType : 'Marketing'
+        moduleName : 'Leads',
+        moduleType : 'Leads'
     }
 ]
 
