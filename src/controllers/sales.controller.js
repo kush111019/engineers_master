@@ -1,7 +1,7 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
-const { mysql_real_escape_string } = require('../utils/helper')
+const { mysql_real_escape_string , getUserAndSubUser} = require('../utils/helper')
 const moduleName = process.env.SALES_MODULE
 const customerModule = process.env.CUSTOMERS_MODULE
 const userModule = process.env.USERS_MODULE
@@ -757,34 +757,36 @@ module.exports.activeSalesCommissionList = async (req, res) => {
 
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let salesListArr = []
-            let roleUsers = []
-            let roleIds = []
-            roleIds.push(checkPermission.rows[0].role_id)
-            let getRoles = async (id) => {
-                let s7 = dbScript(db_sql['Q16'], { var1: id })
-                let getChild = await connection.query(s7);
-                if (getChild.rowCount > 0) {
-                    for (let item of getChild.rows) {
-                        if (roleIds.includes(item.id) == false) {
-                            roleIds.push(item.id)
-                            await getRoles(item.id)
-                        }
-                    }
-                }
-            }
-            await getRoles(checkPermission.rows[0].role_id)
-            for (let roleId of roleIds) {
-                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
-                let findUsers = await connection.query(s3)
-                if (findUsers.rowCount > 0) {
-                    for (let user of findUsers.rows) {
-                        roleUsers.push(user.id)
-                    }
-                }
-            }
+            // let roleUsers = []
+            // let roleIds = []
+            // roleIds.push(checkPermission.rows[0].role_id)
+            // let getRoles = async (id) => {
+            //     let s7 = dbScript(db_sql['Q16'], { var1: id })
+            //     let getChild = await connection.query(s7);
+            //     if (getChild.rowCount > 0) {
+            //         for (let item of getChild.rows) {
+            //             if (roleIds.includes(item.id) == false) {
+            //                 roleIds.push(item.id)
+            //                 await getRoles(item.id)
+            //             }
+            //         }
+            //     }
+            // }
+            // await getRoles(checkPermission.rows[0].role_id)
+            // for (let roleId of roleIds) {
+            //     let s3 = dbScript(db_sql['Q185'], { var1: roleId })
+            //     let findUsers = await connection.query(s3)
+            //     if (findUsers.rowCount > 0) {
+            //         for (let user of findUsers.rows) {
+            //             roleUsers.push(user.id)
+            //         }
+            //     }
+            // }
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);  
             for (let id of roleUsers) {
                 let s3 = dbScript(db_sql['Q181'], { var1: id })
                 let salesCommissionList = await connection.query(s3)
+                console.log(s3,'s3')
                 for (data of salesCommissionList.rows) {
                     let closer = {}
                     let supporters = []
