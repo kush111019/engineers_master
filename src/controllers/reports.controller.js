@@ -516,17 +516,13 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                 let revenueCommissionBydate = []
                 if (isAll == 'true') {
                     roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-                    console.log(roleUsers,'roleUsers   for  ALL')
                 }else{
                     let userData = [];
                     let s2 = dbScript(db_sql['Q288'], { var1: role_id,var2: userId})
-                    console.log(s2,'s2')
                     let getUserData = await connection.query(s2);
-                    console.log(getUserData.rows,'getUserData')
                     if (getUserData.rowCount > 0 ){
-                        let id = getUserData.rows[0].id.toString();
-                        userData.push("'" + id + "'");
-                        console.log(id,'====',userData)
+                        // let id = getUserData.rows[0].id.toString();
+                        userData.push("'" + getUserData.rows[0].id.toString() + "'");
                         roleUsers = userData ;
                     }
                     
