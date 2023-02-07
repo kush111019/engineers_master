@@ -512,23 +512,20 @@ module.exports.revenuePerSalesRep = async (req, res) => {
             }
         }else if( checkPermission.rows[0].permission_to_view_own){
             if ((startDate != undefined && startDate != '') && (endDate != undefined && endDate != '')) {
-                let roleIds = []
                 let roleUsers ;
                 let revenueCommissionBydate = []
-                roleIds.push(role_id)
                 if (isAll == 'true') {
                     roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-                    console.log(roleUsers,'roleUsers for all')
                 }else{
                     let s2 = dbScript(db_sql['Q288'], { var1: role_id,var2: userId})
                     console.log(s2,'s2')
                     let getUserData = await connection.query(s2);
-                    console.log(getUserData.rows,'getUserData')
+                    //console.log(getUserData.rows,'getUserData')
                     if (getUserData.rowCount > 0 && getUserData.rows[0].role_id != role_id ) {
                         roleUsers = "'" + getUserData.rows[0].id.toString() + "'" ;
                     }
                     
-                    console.log(roleUsers,'roleUsers   for  111')
+                  //  console.log(roleUsers,'roleUsers   for  111')
                 }
                 // for (let roleId of roleIds) {
                 //     let s3 = dbScript(db_sql['Q185'], { var1: roleId })

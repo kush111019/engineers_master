@@ -1296,7 +1296,8 @@ const db_sql = {
               WHERE 
                 sales_id = '{var1}'`,
     "Q286" : `UPDATE users SET session_time = '{var2}' WHERE id = '{var1}' RETURNING *`,
-    "Q287" : `SELECT * FROM  users  WHERE role_id = '{var1}' and deleted_at IS NULL `
+    "Q287" : `SELECT * FROM  users  WHERE role_id = '{var1}' and deleted_at IS NULL `,
+    "Q288" : `SELECT * FROM  users  WHERE role_id = '{var1}' and id = '{var2}' and deleted_at IS NULL `
 }
 
  function dbScript(template, variables) {
