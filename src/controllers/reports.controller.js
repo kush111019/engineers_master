@@ -523,13 +523,15 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                     console.log(s2,'s2')
                     let getUserData = await connection.query(s2);
                     console.log(getUserData.rows,'getUserData')
-                    if (getUserData.rowCount > 0 && getUserData.rows[0].role_id != role_id ) {
-                        userData.push("'" + getUserData.rows[0].id.toString() + "'");
+                    if (getUserData.rowCount > 0 && getUserData.rows[0].role_id != role_id ){
+                        let id = getUserData.rows[0].id.toString();
+                        userData.push("'" + id + "'");
+                        console.log(id,'====',userData)
                         roleUsers = userData ;
                     }
                     
-                console.log(roleUsers,'roleUsers   for  111')
                 }
+                console.log(roleUsers,'roleUsers   for  111')
                 // for (let roleId of roleIds) {
                 //     let s3 = dbScript(db_sql['Q185'], { var1: roleId })
                 //     let findUsers = await connection.query(s3)
