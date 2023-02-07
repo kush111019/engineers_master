@@ -520,7 +520,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                     roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
                     console.log(roleUsers,'roleUsers for all')
                 }else{
-                    let s2 = dbScript(db_sql['Q185'], { var1: role_id })
+                    let s2 = dbScript(db_sql['Q287'], { var1: role_id })
                     console.log(s2,'s2')
                     let getUserData = await connection.query(s2);
                     console.log(getUserData.rows,'getUserData')
@@ -538,6 +538,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                 //     }
                 // }
                 let s4 = dbScript(db_sql['Q258'], { var1:  roleUsers.join("','") , var2: orderBy, var3: sDate, var4: eDate })
+                console.log(s4,'s4')
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0) {
                     for (let data of salesData.rows) {
