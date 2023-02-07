@@ -519,8 +519,10 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                 if (isAll == 'true') {
                     roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
                 }else{
-                    let s2 = dbScript(db_sql['Q287'], { var1: role_id })
+                    let s2 = dbScript(db_sql['Q185'], { var1: role_id })
+                    console.log(s2,'s2')
                     let getUserData = await connection.query(s2);
+                    console.log(getUserData,'getUserData')
                     if (getUserData.rowCount > 0 && getUserData.rows[0].role_id != role_id ) {
                         roleUsers = "'" + getUserData.rows[0].id.toString() + "'" ;
                     }
