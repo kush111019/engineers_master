@@ -1298,8 +1298,8 @@ const db_sql = {
     "Q286" : `UPDATE users SET session_time = '{var2}' WHERE id = '{var1}' RETURNING *`,
     "Q287" : `SELECT * FROM  users  WHERE role_id = '{var1}' and deleted_at IS NULL `,
     "Q288" : `SELECT * FROM  users  WHERE role_id = '{var1}' and id = '{var2}' and deleted_at IS NULL `,
-    "Q289" : `INSERT INTO notifications1(title, sales_id,user_id) VALUES ('{var1}','{var2}','{var3}') RETURNING *`,
-    "Q290" : `SELECT * FROM  notifications1  WHERE {var1} = ANY   
+    "Q289" : `INSERT INTO notifications(title, sales_id,user_id) VALUES ('{var1}','{var2}','{var3}') RETURNING *`,
+    "Q290" : `SELECT * FROM  notifications WHERE {var1} = ANY   
                (string_to_array (user_id, ', ') ) and deleted_at IS NULL  
               ORDER BY 
                 created_at DESC
