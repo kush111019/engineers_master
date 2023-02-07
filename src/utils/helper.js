@@ -544,7 +544,7 @@ module.exports.getMinutesBetweenDates = async (startDate, endDate) => {
     return (diff / 60000);
 }
 
-
+// get child roles and their user's list from this function 
 module.exports.getUserAndSubUser = async (userData) => {
     let roleIds = []
     roleIds.push(userData.role_id)
@@ -571,4 +571,36 @@ module.exports.getUserAndSubUser = async (userData) => {
         }
     }
     return returnData
+}
+
+// add notifications in this function 
+module.exports.notificationsOperations = async (nfData) => {
+        console.log(nfData,'nfData')
+        if(nfData.check == 1 ){
+            let s1 = dbScript(db_sql['Q289'], {var1:'New sales is created', var2: nfData.notification_salesId , var3: nfData.notification_userId.join(', ')})
+            console.log(s1)
+            let notificationsData = await connection.query(s1);
+            console.log(notificationsData.rows)
+        }
+        if(nfData.check == 2 ){
+            let s1 = dbScript(db_sql['Q289'], {var1:'Sales has been updated', var2: nfData.notification_salesId , var3: nfData.notification_userId.join(', ')})
+            console.log(s1)
+            let notificationsData = await connection.query(s1);
+            console.log(notificationsData.rows)
+        }
+        if(nfData.check == 3 ){
+            let s1 = dbScript(db_sql['Q289'], {var1:'Sales is transferred to you', var2: nfData.notification_salesId , var3: nfData.notification_userId.join(', ')})
+            console.log(s1)
+            let notificationsData = await connection.query(s1);
+            console.log(notificationsData.rows)
+        }
+        // if(nfData.check == 4 ){
+        //     let s1 = dbScript(db_sql['Q289'], {var1:'Sales is closed at <Datetime>', var2: nfData.notification_salesId , var3: JSON.stringify(nfData.notification_userId )})
+        //     console.log(s1)
+        //     let notificationsData = await connection.query(s1);
+        //     console.log(notificationsData.rows)
+        // }
+        // if (notificationsData.rowCount > 0 && getUserData.rows[0].role_id != userData.role_id ) {
+        //     returnData.push("'" + getUserData.rows[0].id.toString() + "'")
+        // }
 }

@@ -1,7 +1,7 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
-const { mysql_real_escape_string , getUserAndSubUser} = require('../utils/helper')
+const { mysql_real_escape_string , getUserAndSubUser , notificationsOperations} = require('../utils/helper')
 const moduleName = process.env.SALES_MODULE
 const customerModule = process.env.CUSTOMERS_MODULE
 const userModule = process.env.USERS_MODULE
@@ -185,6 +185,16 @@ module.exports.createSalesCommission = async (req, res) => {
             recurringDate,
             slabId
         } = req.body
+        let notification_userId = [];
+        let notification_salesId ;
+        if(supporters.length > 0 ){
+            for(let sid of supporters){
+                notification_userId.push(sid.id)
+            }
+            notification_userId.push(customerCloserId)
+        }else{
+            notification_userId.push(customerCloserId)
+        }
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_create) {
@@ -198,11 +208,13 @@ module.exports.createSalesCommission = async (req, res) => {
             let id = uuid.v4()
             let s5 = dbScript(db_sql['Q53'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: checkPermission.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16: currency, var17 : userId, var18 : slabId, var19 : leadId })
             let createSalesConversion = await connection.query(s5)
-
+            // add notification in notification list
+            notification_salesId = createSalesConversion.rows[0].id;
+            await notificationsOperations({check:1,notification_salesId, notification_userId });
+                
             let s6 = dbScript(db_sql['Q56'], { var1: customerCommissionSplitId, var2: checkPermission.rows[0].company_id })
             let findSalescommission = await connection.query(s6)
             let closer_percentage = closerPercentage
-
             let closerId = uuid.v4()
             let s7 = dbScript(db_sql['Q58'], { var1: closerId, var2: customerCloserId, var3: closer_percentage, var4: customerCommissionSplitId, var5: createSalesConversion.rows[0].id, var6: checkPermission.rows[0].company_id })
             let addSalesCloser = await connection.query(s7)
@@ -1215,6 +1227,16 @@ module.exports.updateSalesCommission = async (req, res) => {
             recurringDate,
             slabId
         } = req.body
+        let notification_userId = [];
+        let notification_salesId = salesCommissionId;
+        if(supporters.length > 0 ){
+            for(let sid of supporters){
+                notification_userId.push(sid.id)
+            }
+            notification_userId.push(customerCloserId)
+        }else{
+            notification_userId.push(customerCloserId)
+        }
             let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_update) {
@@ -1225,6 +1247,9 @@ module.exports.updateSalesCommission = async (req, res) => {
 
                 let s5 = dbScript(db_sql['Q63'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17 : currency, var18 : slabId, var19 : leadId })
                 let updateSalesCommission = await connection.query(s5)
+                // update notification in notification list
+                await notificationsOperations({check:2,notification_salesId, notification_userId });
+             
 
                 let s6 = dbScript(db_sql['Q56'], { var1: customerCommissionSplitId, var2: checkPermission.rows[0].company_id })
                 let findSalesCommission = await connection.query(s6)
@@ -1818,6 +1843,10 @@ module.exports.transferBackSales = async(req, res) => {
     try {
         let userId = req.user.id
         let { salesId, creatorId, transferReason, leadId} = req.body
+        let notification_userId = [];
+        let notification_salesId = salesId;
+        notification_userId.push(creatorId)
+
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
@@ -1832,7 +1861,9 @@ module.exports.transferBackSales = async(req, res) => {
             let id = uuid.v4()
             let s4 = dbScript(db_sql['Q284'],{var1 : id, var2 : leadId, var3 : creatorId, var4 : _dt, var5 : salesId, var6 : transferReason , var7 : checkPermission.rows[0].id, var8 : checkPermission.rows[0].company_id})
             let addTransferSales = await connection.query(s4)
-
+            // add notification in notification list
+            await notificationsOperations({check:3,notification_salesId, notification_userId });
+          
             if(transferSales.rowCount > 0 && updateReason.rowCount > 0 && addTransferSales.rowCount > 0){
                 await connection.query('COMMIT')
                 res.json({

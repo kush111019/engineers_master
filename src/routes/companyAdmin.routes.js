@@ -197,6 +197,12 @@ router.put('/deleteLeadSource',verifyTokenFn, controller.configuration.deleteLea
 
 
 
+//----------------------------------------Notifications------------------------------------
+router.get('/notificationList',verifyTokenFn, controller.configuration.notificationList)
+
+
+
+
 
 
 module.exports = router;
