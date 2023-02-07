@@ -125,6 +125,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                                     revenue : recognizedRevenue.rows[0].recognized_amount
     
                                 }
+                                console.log(obj,'obj')
                                 revenuePerCustomerArr.push(obj)
                             }
                         }else{
@@ -297,7 +298,7 @@ module.exports.revenuePerProduct = async (req, res) => {
             }
             if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
                 let s4 = dbScript(db_sql['Q171'], {  var1: "'"+roleUsers.join("','")+"'", var2 : orderBy, var3 : sDate, var4: eDate })
-                console.log(s4,"s4");
+                // console.log(s4,"s4");
                 let revenuePerProduct = await connection.query(s4)
                 if(revenuePerProduct.rowCount > 0){
                     for(let product of revenuePerProduct.rows){
