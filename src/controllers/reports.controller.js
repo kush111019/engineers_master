@@ -115,7 +115,8 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 let customerCompanies = await connection.query(s2)
                 console.log(s2,'s2')
                 if(customerCompanies.rowCount > 0){
-                    for(data of customerCompanies.rows ){
+                    console.log(customerCompanies.rows,'customerCompanies.rows')
+                    for(let data of customerCompanies.rows ){
                         if(data.sales_type == 'Perpetual'){
                             let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                             let recognizedRevenue = await connection.query(s3)
