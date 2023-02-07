@@ -539,26 +539,24 @@ module.exports.totalRevenue = async (req, res) => {
             let targetData = await connection.query(s4)
             if (targetData.rowCount > 0) {
                 let totalRevenueArr = []
-                for(data of targetData.rows ){
+                for(let data of targetData.rows ){
                     if(data.sales_type == 'Perpetual'){
                         let s5 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                         let recognizedRevenue = await connection.query(s5)
                         if(recognizedRevenue.rowCount > 0){
-                            let obj = {
-                                date : data.date || new Date(),
+                            totalRevenueArr.push({
+                                date : data.date,
                                 revenue : recognizedRevenue.rows[0].recognized_amount
-                            }
-                            totalRevenueArr.push(obj)
+                            })
                         }
                     }else{
                         let s6 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
                         let recognizedRevenue = await connection.query(s6)
                         if(recognizedRevenue.rowCount > 0){
-                            let obj = {
-                                date : data.date || new Date(),
+                            totalRevenueArr.push({
+                                date : data.date,
                                 revenue : recognizedRevenue.rows[0].recognized_amount
-                            }
-                            totalRevenueArr.push(obj)
+                            })
                         }
                     }
                 }
@@ -591,32 +589,8 @@ module.exports.totalRevenue = async (req, res) => {
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let totalRevenue = [];
-            let roleUsers = []
-            let roleIds = []
-            roleIds.push(checkPermission.rows[0].role_id)
-            let getRoles = async (id) => {
-                let s7 = dbScript(db_sql['Q16'], { var1: id })
-                let getChild = await connection.query(s7);
-                if (getChild.rowCount > 0) {
-                    for (let item of getChild.rows) {
-                        if (roleIds.includes(item.id) == false) {
-                            roleIds.push(item.id)
-                            await getRoles(item.id)
-                        }
-                    }
-                }
-            }
-            await getRoles(checkPermission.rows[0].role_id)
-            for (let roleId of roleIds) {
-                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
-                let findUsers = await connection.query(s3)
-                if (findUsers.rowCount > 0) {
-                    for (let user of findUsers.rows) {
-                        roleUsers.push(user.id)
-                    }
-                }
-            }
-            let s4 = dbScript(db_sql['Q173'], { var1: "'"+roleUsers.join("','")+"'", var2: format })
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);         
+            let s4 = dbScript(db_sql['Q173'], { var1: roleUsers.join("','"), var2: format })
             let targetData = await connection.query(s4)
             if (targetData.rowCount > 0) {
                 for(let data of targetData.rows ){
@@ -624,23 +598,19 @@ module.exports.totalRevenue = async (req, res) => {
                         let s5 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                         let recognizedRevenue = await connection.query(s5)
                         if(recognizedRevenue.rowCount > 0){
-                            let obj = {
-                                date : data.date || new Date(),
+                            totalRevenue.push({
+                                date : data.date ,
                                 revenue : recognizedRevenue.rows[0].recognized_amount
-
-                            }
-                            totalRevenue.push(obj)
+                            })
                         }
                     }else{
                         let s6 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
                         let recognizedRevenue = await connection.query(s6)
                         if(recognizedRevenue.rowCount > 0){
-                            let obj = {
-                                date : data.date || new Date(),
+                            totalRevenue.push({
+                                date : data.date,
                                 revenue : recognizedRevenue.rows[0].recognized_amount
-
-                            }
-                            totalRevenue.push(obj)
+                            })
                         }
                     } 
                 }
