@@ -178,26 +178,24 @@ module.exports.revenuePerProduct = async (req, res) => {
                 let revenuePerProduct = await connection.query(s4)
                 if (revenuePerProduct.rowCount > 0) {
                     let revenuePerProductArr = []
-                    for(data of revenuePerProduct.rows ){
+                    for(let data of revenuePerProduct.rows ){
                         if(data.sales_type == 'Perpetual'){
                             let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                             let recognizedRevenue = await connection.query(s3)
                             if(recognizedRevenue.rowCount > 0){
-                                let obj = {
+                                revenuePerProductArr.push({
                                     product_name : data.product_name,
                                     revenue : recognizedRevenue.rows[0].recognized_amount
-                                }
-                                revenuePerProductArr.push(obj)
+                                })
                             }
                         }else{
                             let s3 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
                             let recognizedRevenue = await connection.query(s3)
                             if(recognizedRevenue.rowCount > 0){
-                                let obj = {
+                                revenuePerProductArr.push({
                                     product_name : data.product_name,
                                     revenue : recognizedRevenue.rows[0].recognized_amount
-                                }
-                                revenuePerProductArr.push(obj)
+                                })
                             }
                         } 
                     }
@@ -237,33 +235,9 @@ module.exports.revenuePerProduct = async (req, res) => {
             }
         }else if(checkPermission.rows[0].permission_to_view_own){
             let revenuePerProductArr = []
-            let roleUsers = []
-            let roleIds = []
-            roleIds.push(checkPermission.rows[0].role_id)
-            let getRoles = async (id) => {
-                let s7 = dbScript(db_sql['Q16'], { var1: id })
-                let getChild = await connection.query(s7);
-                if (getChild.rowCount > 0) {
-                    for (let item of getChild.rows) {
-                        if (roleIds.includes(item.id) == false) {
-                            roleIds.push(item.id)
-                            await getRoles(item.id)
-                        }
-                    }
-                }
-            }
-            await getRoles(checkPermission.rows[0].role_id)
-            for (let roleId of roleIds) {
-                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
-                let findUsers = await connection.query(s3)
-                if (findUsers.rowCount > 0) {
-                    for (let user of findUsers.rows) {
-                        roleUsers.push(user.id)
-                    }
-                }
-            }
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
-                let s4 = dbScript(db_sql['Q171'], {  var1: "'"+roleUsers.join("','")+"'", var2 : orderBy, var3 : sDate, var4: eDate })
+                let s4 = dbScript(db_sql['Q171'], {  var1: roleUsers.join("','"), var2 : orderBy, var3 : sDate, var4: eDate })
                 // console.log(s4,"s4");
                 let revenuePerProduct = await connection.query(s4)
                 if(revenuePerProduct.rowCount > 0){
@@ -271,22 +245,20 @@ module.exports.revenuePerProduct = async (req, res) => {
                         if(product.sales_type == 'Perpetual'){
                             let s3 = dbScript(db_sql['Q273'],{var1 : product.sales_commission_id})
                             let recognizedRevenue = await connection.query(s3)
-                            if(recognizedRevenue.rowCount > 0){
-                                let obj = {
+                            if(recognizedRevenue.rowCount > 0){ 
+                                revenuePerProductArr.push({
                                     product_name : product.product_name,
                                     revenue : recognizedRevenue.rows[0].recognized_amount
-                                }
-                                revenuePerProductArr.push(obj)
+                                })
                             }
                         }else{
                             let s4 = dbScript(db_sql['Q274'],{var1 : product.sales_commission_id})
                             let recognizedRevenue = await connection.query(s4)
                             if(recognizedRevenue.rowCount > 0){
-                                let obj = {
+                                revenuePerProductArr.push({
                                     product_name : product.product_name,
                                     revenue : recognizedRevenue.rows[0].recognized_amount
-                                }
-                                revenuePerProductArr.push(obj)
+                                })
                             }
                         } 
                     }
