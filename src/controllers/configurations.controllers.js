@@ -908,9 +908,10 @@ module.exports.notificationList = async (req, res) => {
     
         } else {
             res.json({
-                status: 400,
+                status: 200,
                 success: false,
-                message: "Notification not found"
+                message: "Notification not found",
+                data: []
             })
         }
     } catch (error) {
