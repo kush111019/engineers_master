@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const {reduceArray, paginatedResults,paginatedResults1,reduceArrayWithName,reduceArrayWithName1, reduceArrayWithCustomer, reduceArrayWithProduct} = require('../utils/helper')
+const {reduceArray, paginatedResults,paginatedResults1,reduceArrayWithName,reduceArrayWithName1, reduceArrayWithCustomer, reduceArrayWithProduct,getUserAndSubUser} = require('../utils/helper')
 const moduleName = process.env.REPORTS_MODULE
 
 module.exports.revenuePerCustomer = async (req, res) => {
