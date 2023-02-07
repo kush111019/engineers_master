@@ -523,7 +523,7 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                     console.log(s2,'s2')
                     let getUserData = await connection.query(s2);
                     console.log(getUserData.rows,'getUserData')
-                    if (getUserData.rowCount > 0 && getUserData.rows[0].role_id != role_id ){
+                    if (getUserData.rowCount > 0 ){
                         let id = getUserData.rows[0].id.toString();
                         userData.push("'" + id + "'");
                         console.log(id,'====',userData)
