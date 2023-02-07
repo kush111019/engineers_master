@@ -598,11 +598,10 @@ const db_sql = {
               u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.user_id = '{var1}' AND c.is_rejected = '{var2}'`,
     "Q178" : `SELECT distinct(sc.id), sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
-              sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
+              sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date,sc.transfered_back_by, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name,
-              sup.supporter_id, sup.supporter_percentage,u2.email_address as supporter_email,
-              sc.transfered_back_by
+              sup.supporter_id, sup.supporter_percentage,u2.email_address as supporter_email, 
               FROM sales_commission AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN sales_supporter AS sup ON sc.id = sup.sales_commission_id
