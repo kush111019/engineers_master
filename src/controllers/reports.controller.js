@@ -23,28 +23,24 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 let customerCompanies = await connection.query(s2)
                 if (customerCompanies.rowCount > 0) {
                     let revenuePerCustomerArr = []
-                    for(data of customerCompanies.rows ){
+                    for(let data of customerCompanies.rows ){
                         if(data.sales_type == 'Perpetual'){
                             let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                             let recognizedRevenue = await connection.query(s3)
                             if(recognizedRevenue.rowCount > 0){
-                                let obj = {
+                                revenuePerCustomerArr.push({
                                     customer_name : data.customer_name || "",
                                     revenue : recognizedRevenue.rows[0].recognized_amount
-    
-                                }
-                                revenuePerCustomerArr.push(obj)
+                                })
                             }
                         }else{
                             let s3 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
                             let recognizedRevenue = await connection.query(s3)
                             if(recognizedRevenue.rowCount > 0){
-                                let obj = {
+                                revenuePerCustomerArr.push({
                                     customer_name : data.customer_name || "",
                                     revenue : recognizedRevenue.rows[0].recognized_amount
-    
-                                }
-                                revenuePerCustomerArr.push(obj)
+                                })
                             }
                         } 
                     }
@@ -84,49 +80,20 @@ module.exports.revenuePerCustomer = async (req, res) => {
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let revenuePerCustomerArr = []
-            // let roleUsers = []
-            // let roleIds = []
-            // roleIds.push(checkPermission.rows[0].role_id)
-            // let getRoles = async (id) => {
-            //     let s7 = dbScript(db_sql['Q16'], { var1: id })
-            //     let getChild = await connection.query(s7);
-            //     if (getChild.rowCount > 0) {
-            //         for (let item of getChild.rows) {
-            //             if (roleIds.includes(item.id) == false) {
-            //                 roleIds.push(item.id)
-            //                 await getRoles(item.id)
-            //             }
-            //         }
-            //     }
-            // }
-            // await getRoles(checkPermission.rows[0].role_id)
-            // for (let roleId of roleIds) {
-            //     let s3 = dbScript(db_sql['Q185'], { var1: roleId })
-            //     let findUsers = await connection.query(s3)
-            //     if (findUsers.rowCount > 0) {
-            //         for (let user of findUsers.rows) {
-            //             roleUsers.push(user.id)
-            //         }
-            //     }
-            // }
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
                 let s2 = dbScript(db_sql['Q170'], {  var1: roleUsers.join("','"), var2: orderBy, var3: sDate, var4: eDate })
                 let customerCompanies = await connection.query(s2)
-                console.log(s2,'s2')
                 if(customerCompanies.rowCount > 0){
-                    console.log(customerCompanies.rows,'customerCompanies.rows')
                     for(let data of customerCompanies.rows ){
                         if(data.sales_type == 'Perpetual'){
                             let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
                             let recognizedRevenue = await connection.query(s3)
                             if(recognizedRevenue.rowCount > 0){
-                                console.log(data.customer_name,'data.customer_name')
                                 revenuePerCustomerArr.push({
                                     customer_name : data.customer_name || "",
                                     revenue : recognizedRevenue.rows[0].recognized_amount
                                 })
-                                console.log(revenuePerCustomerArr,'revenuePerCustomerArr')
                             }
                         }else{
                             let s4 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
