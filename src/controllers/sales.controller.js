@@ -784,10 +784,10 @@ module.exports.activeSalesCommissionList = async (req, res) => {
             // }
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);  
             for (let id of roleUsers) {
-                let s3 = dbScript(db_sql['Q181'], { var1: id })
+                let s3 = dbScript(db_sql['Q181'], { var1: id.slice(0,-1) })
                 console.log(s3,'s3')
                 let salesCommissionList = await connection.query(s3)
-                for (data of salesCommissionList.rows) {
+                for (let data of salesCommissionList.rows) {
                     let closer = {}
                     let supporters = []
 
