@@ -113,6 +113,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
                 let s2 = dbScript(db_sql['Q170'], {  var1: roleUsers.join("','"), var2: orderBy, var3: sDate, var4: eDate })
                 let customerCompanies = await connection.query(s2)
+                console.log(s2,'s2')
                 if(customerCompanies.rowCount > 0){
                     for(data of customerCompanies.rows ){
                         if(data.sales_type == 'Perpetual'){
