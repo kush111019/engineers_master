@@ -1324,7 +1324,7 @@ const db_sql = {
         "Q293"  : `SELECT 
                 id, email_address, full_name, company_id, avatar, mobile_number, 
                 phone_number, address, role_id, is_admin, expiry_date, created_at,is_verified, 
-                is_main_admin, created_by, u2.full_name AS creator_name 
+                is_main_admin, created_by
               FROM 
                 users  
               WHERE 
