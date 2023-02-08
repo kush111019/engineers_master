@@ -388,6 +388,47 @@ module.exports.usersList = async (req, res) => {
     }
 }
 
+module.exports.usersDetails = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let user_id = req.query.id;
+        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s3)
+            let s4 = dbScript(db_sql['Q293'], { var1: checkPermission.rows[0].company_id,var2: user_id })
+            let findUsers = await connection.query(s4);
+            if (findUsers.rows.length > 0) {
+                for (data of findUsers.rows) {
+                    let s5 = dbScript(db_sql['Q12'], { var1: data.role_id })
+                    let findRole = await connection.query(s5);
+                    if (findRole.rowCount > 0) {
+                        data.roleName = findRole.rows[0].role_name
+                    } else {
+                        data.roleName = null
+                    }
+                }
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Users details',
+                    data: findUsers.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty users details",
+                    data: []
+                })
+            }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 module.exports.updateUser = async (req, res) => {
     try {
         let id = req.user.id

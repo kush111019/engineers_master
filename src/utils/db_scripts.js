@@ -1321,6 +1321,16 @@ const db_sql = {
                 sc.company_id = '{var1}' AND sc.id = '{var2}' AND sc.deleted_at IS NULL 
               ORDER BY 
                 sc.created_at DESC`,
+        "Q293"  : `SELECT 
+                id, email_address, full_name, company_id, avatar, mobile_number, 
+                phone_number, address, role_id, is_admin, expiry_date, created_at,is_verified, 
+                is_main_admin, created_by, u2.full_name AS creator_name 
+              FROM 
+                users  
+              WHERE 
+                company_id = '{var1}' AND id = '{var2}' AND deleted_at IS NULL 
+              ORDER BY 
+                created_at DESC`,        
   
   
   }

@@ -1357,14 +1357,14 @@ module.exports.salesDetails = async (req, res) => {
                 res.json({
                     status: 200,
                     success: true,
-                    message: 'Sales commission list',
+                    message: 'Sales Details',
                     data: commissionList
                 })
             } else {
                 res.json({
                     status: 200,
                     success: false,
-                    message: 'Empty sales commission list',
+                    message: 'Empty sales details',
                     data: []
                 })
             }

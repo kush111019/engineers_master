@@ -22,6 +22,7 @@ router.put('/updateCompanyLogo', verifyTokenFn,uploadLogo.single('file'), contro
 //-------------------------------------Users-------------------------------------------------
 router.post('/addUser' , verifyTokenFn, controller.users.addUser)
 router.get('/usersList',verifyTokenFn, controller.users.usersList)
+router.get('/usersDetails',verifyTokenFn, controller.users.usersDetails)
 router.get('/showUserById' , verifyTokenFn, controller.users.showUserById)
 router.put('/updateUser' , verifyTokenFn, controller.users.updateUser)
 router.put('/deleteUser' , verifyTokenFn, controller.users.deleteUser)
