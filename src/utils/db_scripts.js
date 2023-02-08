@@ -603,12 +603,12 @@ const db_sql = {
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name,
               sup.supporter_id, sup.supporter_percentage,u2.email_address as supporter_email 
               FROM sales_commission AS sc 
-              INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
-              INNER JOIN sales_supporter AS sup ON sc.id = sup.sales_commission_id
-              INNER JOIN users AS u ON u.id = c.closer_id
-              INNER JOIN users AS u1 ON u1.id = sc.user_id
-              INNER JOIN customers AS cus ON cus.id = sc.customer_id
-              INNER JOIN users AS u2 ON u2.id = sup.supporter_id
+              LEFT JOIN sales_closer AS c ON sc.id = c.sales_commission_id
+              LEFT JOIN sales_supporter AS sup ON sc.id = sup.sales_commission_id
+              LEFT JOIN users AS u ON u.id = c.closer_id
+              LEFT JOIN users AS u1 ON u1.id = sc.user_id
+              LEFT JOIN customers AS cus ON cus.id = sc.customer_id
+              LEFT JOIN users AS u2 ON u2.id = sup.supporter_id
               WHERE (sc.user_id = '{var1}' OR c.closer_id = '{var1}' OR sup.supporter_id = '{var1}') AND sc.deleted_at IS NULL ORDER BY sc.created_at desc`,
     "Q179"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
