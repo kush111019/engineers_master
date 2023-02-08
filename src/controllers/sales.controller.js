@@ -186,7 +186,7 @@ module.exports.createSalesCommission = async (req, res) => {
             slabId
         } = req.body
         let notification_userId = [];
-        let notification_salesId ;
+        let notification_typeId ;
         if(supporters.length > 0 ){
             for(let sid of supporters){
                 notification_userId.push(sid.id)
@@ -209,8 +209,8 @@ module.exports.createSalesCommission = async (req, res) => {
             let s5 = dbScript(db_sql['Q53'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: checkPermission.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16: currency, var17 : userId, var18 : slabId, var19 : leadId })
             let createSalesConversion = await connection.query(s5)
             // add notification in notification list
-            notification_salesId = createSalesConversion.rows[0].id;
-            await notificationsOperations({check:1,notification_salesId, notification_userId });
+            notification_typeId = createSalesConversion.rows[0].id;
+            await notificationsOperations({type:1,msg:1.1,notification_typeId, notification_userId });
                 
             let s6 = dbScript(db_sql['Q56'], { var1: customerCommissionSplitId, var2: checkPermission.rows[0].company_id })
             let findSalescommission = await connection.query(s6)
@@ -1202,6 +1202,183 @@ module.exports.closedSalesCommissionList = async (req, res) => {
 
 }
 
+module.exports.salesDetails = async (req, res) => {
+    try {
+        let userId = req.user.id;
+        let salesId = req.query.id;
+        let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s2)
+
+            let s3 = dbScript(db_sql['Q292'], { var1: checkPermission.rows[0].company_id, var2: salesId })
+            let salesCommissionList = await connection.query(s3)
+            let commissionList = []
+            for (data of salesCommissionList.rows) {
+                let closer = {}
+                let supporters = []
+
+                let slabName = ''
+                let remainingAmount = Number(data.target_amount);
+                let commission = 0
+                if(data.slab_id){
+                    let s6 = dbScript(db_sql['Q184'],{var1 : data.slab_id})
+                    let slabData = await connection.query(s6)
+                    slabName = slabData.rows[0].slab_name;
+                    //if remainning amount is 0 then no reason to check 
+                    for (let i = 0; i < slabData.rows.length && remainingAmount > 0; i++) {
+                        let slab_percentage = Number(slabData.rows[i].percentage)
+                        let slab_maxAmount = Number(slabData.rows[i].max_amount)
+                        let slab_minAmount = Number(slabData.rows[i].min_amount)
+                        if (slabData.rows[i].is_max) {
+                            // Reached the last slab
+                            commission += ((slab_percentage / 100) * remainingAmount)
+                            break;
+                        }
+                        else {
+                            // This is not the last slab
+                            let diff = slab_minAmount == 0 ? 0 : 1
+                            let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                            slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+                            commission += ((slab_percentage / 100) * slab_diff)
+                            remainingAmount -= slab_diff
+                            if (remainingAmount <= 0) {
+                                break;
+                            }
+                        }
+                    }
+
+                }
+
+                let s4 = dbScript(db_sql['Q59'], { var1: data.id })
+                let supporter = await connection.query(s4)
+                if (supporter.rowCount > 0) {
+                    if (supporter.rows[0].supporter_id != "") {
+                        for (let supporterData of supporter.rows) {
+                            let s5 = dbScript(db_sql['Q81'], { var1: supporterData.id })
+                            let supporterName = await connection.query(s5)
+                            if (supporterName.rowCount > 0) {
+                                if(data.closed_at != null){
+                                    closer.closerCommissionAmount = ((Number(data.closer_percentage)/100)*commission)
+                                    supporters.push({
+                                        id: supporterName.rows[0].supporter_id,
+                                        name: supporterName.rows[0].full_name,
+                                        email: supporterName.rows[0].email_address,
+                                        percentage: supporterName.rows[0].supporter_percentage,
+                                        supporterCommissionAmount : ((Number(supporterName.rows[0].supporter_percentage)/100)*commission)
+                                    })
+                                }else{
+                                     supporters.push({
+                                        id: supporterName.rows[0].supporter_id,
+                                        name: supporterName.rows[0].full_name,
+                                        email: supporterName.rows[0].email_address,
+                                        percentage: supporterName.rows[0].supporter_percentage,
+                                        supporterCommissionAmount : ((Number(supporterName.rows[0].supporter_percentage)/100)*commission)
+                                    })
+                                }
+                                
+                            }
+                        }
+                    }
+                }
+                
+                let s9 = dbScript(db_sql['Q157'], { var1: data.id })
+                let productData = await connection.query(s9)
+
+                if (data.business_contact_id != '' && data.revenue_contact_id != '') {
+
+                    let s7 = dbScript(db_sql['Q76'], { var1: data.business_contact_id })
+                    let businessData = await connection.query(s7);
+
+                    closer.businessContactId = businessData.rows[0].id,
+                    closer.businessContactName = businessData.rows[0].business_contact_name
+                    closer.businessContactEmail = businessData.rows[0].business_email
+
+                    let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_contact_id })
+                    let revenueData = await connection.query(s8);
+
+                    closer.revenueContactId = revenueData.rows[0].id,
+                    closer.revenueContactName = revenueData.rows[0].revenue_contact_name
+                    closer.revenueContactEmail = revenueData.rows[0].revenue_email
+                } else {
+                    closer.businessContactId = ""
+                    closer.businessContactName = ""
+                    closer.businessContactEmail = ""
+                    closer.revenueContactId = ""
+                    closer.revenueContactName = ""
+                    closer.revenueContactEmail = ""
+                }
+
+                let transfered_back_by_name = ''
+                if(data.transfered_back_by){
+                    let s10 = dbScript(db_sql['Q8'],{var1 : data.transfered_back_by})
+                    let transferedBackBy = await connection.query(s10)
+                    if(transferedBackBy.rowCount > 0){
+                        transfered_back_by_name = transferedBackBy.rows[0].full_name
+                    }
+                }
+                
+
+                closer.id = data.id
+                closer.customerId = data.customer_id
+                closer.customerName = data.customer_name
+                closer.customerCreator = data.creater_id
+                closer.commissionSplitId = data.customer_commission_split_id
+                closer.qualification = data.qualification
+                closer.is_qualified = data.is_qualified
+                closer.targetAmount = data.target_amount
+                closer.currency = data.currency
+                closer.targetClosingDate = data.target_closing_date
+                closer.productMatch = data.product_match
+                closer.is_overwrite = data.is_overwrite
+                closer.closerId = data.closer_id
+                closer.closerName = data.full_name
+                closer.closerEmail = data.email_address
+                closer.closerPercentage = data.closer_percentage
+                closer.closerCommissionAmount = ((Number(data.closer_percentage)/100)*commission)
+                closer.supporters = supporters
+                closer.createdAt = data.created_at
+                closer.createdBy = data.creator_name
+                closer.closedAt = data.closed_at
+                closer.salesType = data.sales_type
+                closer.subscriptionPlan = data.subscription_plan
+                closer.recurringDate = data.recurring_date
+                closer.products = (productData.rowCount > 0) ? productData.rows : []
+                closer.slabId = (data.slab_id) ? data.slab_id : ''
+                closer.slabName = slabName
+                closer.leadId = data.lead_id,
+                closer.contract = data.contract
+                closer.creatorId = data.user_id
+                closer.transferReason = data.transfer_reason
+                closer.transferedBackById = data.transfered_back_by
+                closer.transferedBackByName = transfered_back_by_name
+
+                commissionList.push(closer)
+            }
+            if (commissionList.length > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Sales commission list',
+                    data: commissionList
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty sales commission list',
+                    data: []
+                })
+            }
+
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+
+}
+
 module.exports.updateSalesCommission = async (req, res) => {
     try {
         let userId = req.user.id
@@ -1228,7 +1405,7 @@ module.exports.updateSalesCommission = async (req, res) => {
             slabId
         } = req.body
         let notification_userId = [];
-        let notification_salesId = salesCommissionId;
+        let notification_typeId = salesCommissionId;
         if(supporters.length > 0 ){
             for(let sid of supporters){
                 notification_userId.push(sid.id)
@@ -1248,7 +1425,7 @@ module.exports.updateSalesCommission = async (req, res) => {
                 let s5 = dbScript(db_sql['Q63'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17 : currency, var18 : slabId, var19 : leadId })
                 let updateSalesCommission = await connection.query(s5)
                 // update notification in notification list
-                await notificationsOperations({check:2,notification_salesId, notification_userId });
+                await notificationsOperations({type:1,msg:1.2,notification_typeId, notification_userId });
              
 
                 let s6 = dbScript(db_sql['Q56'], { var1: customerCommissionSplitId, var2: checkPermission.rows[0].company_id })
@@ -1642,6 +1819,10 @@ module.exports.closeSales = async (req, res) => {
             salesCommissionId,
             contract
         } = req.body
+        let notification_userId = [];
+        let notification_typeId = salesCommissionId;
+        notification_userId.push(userId)
+
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
@@ -1652,7 +1833,9 @@ module.exports.closeSales = async (req, res) => {
 
             let s3 = dbScript(db_sql['Q158'], { var1: _dt, var2: _dt, var3: salesCommissionId })
             let updateSalesLog = await connection.query(s3)
-
+            // add notification in notification list
+            await notificationsOperations({type:1,msg:1.4,notification_typeId, notification_userId });
+            
             if (closeSales.rowCount > 0 && updateSalesLog.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
@@ -1844,9 +2027,9 @@ module.exports.transferBackSales = async(req, res) => {
         let userId = req.user.id
         let { salesId, creatorId, transferReason, leadId} = req.body
         let notification_userId = [];
-        let notification_salesId = salesId;
+        let notification_typeId = salesId;
         notification_userId.push(creatorId)
-
+            
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
@@ -1862,8 +2045,8 @@ module.exports.transferBackSales = async(req, res) => {
             let s4 = dbScript(db_sql['Q284'],{var1 : id, var2 : leadId, var3 : creatorId, var4 : _dt, var5 : salesId, var6 : transferReason , var7 : checkPermission.rows[0].id, var8 : checkPermission.rows[0].company_id})
             let addTransferSales = await connection.query(s4)
             // add notification in notification list
-            await notificationsOperations({check:3,notification_salesId, notification_userId });
-          
+            await notificationsOperations({type:1,msg:1.3,notification_typeId, notification_userId });
+ 
             if(transferSales.rowCount > 0 && updateReason.rowCount > 0 && addTransferSales.rowCount > 0){
                 await connection.query('COMMIT')
                 res.json({

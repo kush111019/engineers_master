@@ -4,6 +4,7 @@ const stripe = require('stripe')(process.env.SECRET_KEY)
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid")
+const notificationEnum = require('../utils/notificationEnum')
 
 module.exports.mysql_real_escape_string = (str) => {
     return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
@@ -576,31 +577,12 @@ module.exports.getUserAndSubUser = async (userData) => {
 // add notifications in this function 
 module.exports.notificationsOperations = async (nfData) => {
         console.log(nfData,'nfData')
-        if(nfData.check == 1 ){
-            let s1 = dbScript(db_sql['Q289'], {var1:'New sales is created', var2: nfData.notification_salesId , var3: nfData.notification_userId.join(', ')})
+        console.log(notificationEnum.notificationType[nfData.type],'type')
+        console.log(notificationEnum.notificationMsg[nfData.msg],'msg')
+        for( let id of nfData.notification_userId){
+            let s1 = dbScript(db_sql['Q289'], {var1: notificationEnum.notificationMsg[nfData.msg], var2: nfData.notification_typeId , var3: id, var4: notificationEnum.notificationType[nfData.type] })
             console.log(s1)
             let notificationsData = await connection.query(s1);
             console.log(notificationsData.rows)
         }
-        if(nfData.check == 2 ){
-            let s1 = dbScript(db_sql['Q289'], {var1:'Sales has been updated', var2: nfData.notification_salesId , var3: nfData.notification_userId.join(', ')})
-            console.log(s1)
-            let notificationsData = await connection.query(s1);
-            console.log(notificationsData.rows)
-        }
-        if(nfData.check == 3 ){
-            let s1 = dbScript(db_sql['Q289'], {var1:'Sales is transferred to you', var2: nfData.notification_salesId , var3: nfData.notification_userId.join(', ')})
-            console.log(s1)
-            let notificationsData = await connection.query(s1);
-            console.log(notificationsData.rows)
-        }
-        // if(nfData.check == 4 ){
-        //     let s1 = dbScript(db_sql['Q289'], {var1:'Sales is closed at <Datetime>', var2: nfData.notification_salesId , var3: JSON.stringify(nfData.notification_userId )})
-        //     console.log(s1)
-        //     let notificationsData = await connection.query(s1);
-        //     console.log(notificationsData.rows)
-        // }
-        // if (notificationsData.rowCount > 0 && getUserData.rows[0].role_id != userData.role_id ) {
-        //     returnData.push("'" + getUserData.rows[0].id.toString() + "'")
-        // }
 }

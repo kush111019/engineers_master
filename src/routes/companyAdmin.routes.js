@@ -88,6 +88,7 @@ router.post('/createSalesCommission',verifyTokenFn, controller.sales.createSales
 router.get('/allSalesCommissionList',verifyTokenFn, controller.sales.allSalesCommissionList)
 router.get('/activeSalesCommissionList',verifyTokenFn, controller.sales.activeSalesCommissionList)
 router.get('/closedSalesCommissionList',verifyTokenFn, controller.sales.closedSalesCommissionList)
+router.get('/salesDetails',verifyTokenFn, controller.sales.salesDetails)
 
 router.put('/updateSalesCommission',verifyTokenFn, controller.sales.updateSalesCommission)
 router.put('/deleteSalesCommission',verifyTokenFn, controller.sales.deleteSalesCommission)
@@ -198,7 +199,8 @@ router.put('/deleteLeadSource',verifyTokenFn, controller.configuration.deleteLea
 
 
 //----------------------------------------Notifications------------------------------------
-router.get('/notificationList',verifyTokenFn, controller.configuration.notificationList)
+router.get('/notificationList',verifyTokenFn, controller.notifications.notificationList)
+router.put('/notificationRead',verifyTokenFn, controller.notifications.notificationRead)
 
 
 

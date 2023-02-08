@@ -1298,12 +1298,31 @@ const db_sql = {
     "Q286" : `UPDATE users SET session_time = '{var2}' WHERE id = '{var1}' RETURNING *`,
     "Q287" : `SELECT * FROM  users  WHERE role_id = '{var1}' and deleted_at IS NULL `,
     "Q288" : `SELECT * FROM  users  WHERE role_id = '{var1}' and id = '{var2}' and deleted_at IS NULL `,
-    "Q289" : `INSERT INTO notifications(title, sales_id,user_id) VALUES ('{var1}','{var2}','{var3}') RETURNING *`,
-    "Q290" : `SELECT * FROM  notifications WHERE {var1} = ANY   
-               (string_to_array (user_id, ', ') ) and deleted_at IS NULL  
+    "Q289" : `INSERT INTO notifications(title, type_id,user_id,type) VALUES ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
+    "Q290" : `SELECT * FROM  notifications WHERE user_id= '{var1}' and is_read= false and deleted_at IS NULL`,
+    "Q291" : `UPDATE notifications SET is_read = true WHERE id = '{var1}' RETURNING *`,
+    "Q292"  : `SELECT 
+                sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
+                sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
+                sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,sc.lead_id,
+                c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name as creator_name,
+                sc.transfered_back_by
+              FROM 
+                sales_commission AS sc 
+              INNER JOIN 
+                sales_closer AS c ON sc.id = c.sales_commission_id
+              INNER JOIN 
+                users AS u ON u.id = c.closer_id
+              INNER JOIN 
+                users AS u1 ON u1.id = sc.user_id
+              INNER JOIN 
+                customers AS cus ON cus.id = sc.customer_id
+              WHERE 
+                sc.company_id = '{var1}' AND sc.id = '{var2}' AND sc.deleted_at IS NULL 
               ORDER BY 
-                created_at DESC
-              LIMIT 20`
+                sc.created_at DESC`,
+  
+  
   }
 
  function dbScript(template, variables) {
