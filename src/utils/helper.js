@@ -576,13 +576,8 @@ module.exports.getUserAndSubUser = async (userData) => {
 
 // add notifications in this function 
 module.exports.notificationsOperations = async (nfData) => {
-        console.log(nfData,'nfData')
-        console.log(notificationEnum.notificationType[nfData.type],'type')
-        console.log(notificationEnum.notificationMsg[nfData.msg],'msg')
         for( let id of nfData.notification_userId){
             let s1 = dbScript(db_sql['Q289'], {var1: notificationEnum.notificationMsg[nfData.msg], var2: nfData.notification_typeId , var3: id, var4: notificationEnum.notificationType[nfData.type] })
-            console.log(s1)
             let notificationsData = await connection.query(s1);
-            console.log(notificationsData.rows)
         }
 }
