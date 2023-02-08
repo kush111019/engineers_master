@@ -395,7 +395,6 @@ module.exports.usersDetails = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
             let s4 = dbScript(db_sql['Q293'], { var1: checkPermission.rows[0].company_id,var2: user_id })
-            console.log(s4,'s4')
             let findUsers = await connection.query(s4);
             if (findUsers.rows.length > 0) {
                 for (data of findUsers.rows) {
