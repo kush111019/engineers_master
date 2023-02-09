@@ -241,7 +241,7 @@ module.exports.createSalesCommission = async (req, res) => {
             let createSalesConversion = await connection.query(s5)
             // add notification in notification list
             notification_typeId = createSalesConversion.rows[0].id;
-            await notificationsOperations({ type: 1, msg: 1.1, notification_typeId, notification_userId });
+            await notificationsOperations({ type: 1, msg: 1.1, notification_typeId, notification_userId }, userId);
 
             let s6 = dbScript(db_sql['Q56'], { var1: customerCommissionSplitId, var2: checkPermission.rows[0].company_id })
             let findSalescommission = await connection.query(s6)
@@ -1488,7 +1488,7 @@ module.exports.updateSalesCommission = async (req, res) => {
             let s5 = dbScript(db_sql['Q63'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17: currency, var18: slabId, var19: leadId, var20: totalCommission})
             let updateSalesCommission = await connection.query(s5)
             // update notification in notification list
-            await notificationsOperations({ type: 1, msg: 1.2, notification_typeId, notification_userId });
+            await notificationsOperations({ type: 1, msg: 1.2, notification_typeId, notification_userId },userId);
 
 
             let s6 = dbScript(db_sql['Q56'], { var1: customerCommissionSplitId, var2: checkPermission.rows[0].company_id })
@@ -1897,7 +1897,7 @@ module.exports.closeSales = async (req, res) => {
             let s3 = dbScript(db_sql['Q158'], { var1: _dt, var2: _dt, var3: salesCommissionId })
             let updateSalesLog = await connection.query(s3)
             // add notification in notification list
-            await notificationsOperations({ type: 1, msg: 1.4, notification_typeId, notification_userId });
+            await notificationsOperations({ type: 1, msg: 1.4, notification_typeId, notification_userId }, userId);
 
             if (closeSales.rowCount > 0 && updateSalesLog.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -2108,7 +2108,7 @@ module.exports.transferBackSales = async (req, res) => {
             let s4 = dbScript(db_sql['Q284'], { var1: id, var2: leadId, var3: creatorId, var4: _dt, var5: salesId, var6: transferReason, var7: checkPermission.rows[0].id, var8: checkPermission.rows[0].company_id })
             let addTransferSales = await connection.query(s4)
             // add notification in notification list
-            await notificationsOperations({ type: 1, msg: 1.3, notification_typeId, notification_userId });
+            await notificationsOperations({ type: 1, msg: 1.3, notification_typeId, notification_userId }, userId);
 
             if (transferSales.rowCount > 0 && updateReason.rowCount > 0 && addTransferSales.rowCount > 0) {
                 await connection.query('COMMIT')
