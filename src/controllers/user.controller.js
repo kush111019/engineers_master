@@ -9,10 +9,11 @@ const uuid = require("node-uuid");
 const { mysql_real_escape_string } = require('../utils/helper')
 const moduleName = process.env.USERS_MODULE
 
+//this fuction give us a user count
 module.exports.userCount = async (req, res) => {
     try {
         let userId = req.user.id
-
+        // here we are getting user deatils 
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
@@ -21,9 +22,11 @@ module.exports.userCount = async (req, res) => {
             let s2 = dbScript(db_sql['Q15'], { var1: findAdmin.rows[0].company_id })
             let users = await connection.query(s2)
 
+            //here we are getting a transection details and its limit 
             let s3 = dbScript(db_sql['Q108'], { var1: findAdmin.rows[0].company_id })
             let count = await connection.query(s3)
 
+            //here we are getting a company details 
             let s4 = dbScript(db_sql['Q9'],{var1 : findAdmin.rows[0].company_id})
             let userCount = await connection.query(s4)
 
@@ -78,6 +81,7 @@ module.exports.userCount = async (req, res) => {
     }
 }
 
+//this function is use for add new user in company 
 module.exports.addUser = async (req, res) => {
     try {
         let userId = req.user.id
@@ -94,16 +98,20 @@ module.exports.addUser = async (req, res) => {
         avatar = (avatar == "") ? process.env.DEFAULT_LOGO : avatar;
 
         let id = uuid.v4()
+        // first check user email is exits in our data base or not
         let s2 = dbScript(db_sql['Q4'], { var1: emailAddress })
         let findUser = await connection.query(s2)
         if (findUser.rowCount == 0) {
+            // here we are checking user permission 
             let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_create) {
+                //here we are checking roles
                 let s4 = dbScript(db_sql['Q12'],{var1 : roleId})
                 let findRole = await connection.query(s4)
                 let isAdmin = findRole.rows[0].role_name == 'Admin' ? true : false;
 
+                // and user added in db and update there permission in db
                 await connection.query('BEGIN')
                 let s5 = dbScript(db_sql['Q45'], { var1: id, var2: mysql_real_escape_string(name), var3: checkPermission.rows[0].company_id, var4: avatar, var5: emailAddress.toLowerCase(), var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address), var10 : isAdmin, var11 : userId })
                 let addUser = await connection.query(s5)
@@ -119,6 +127,7 @@ module.exports.addUser = async (req, res) => {
                         id: addUser.rows[0].id,
                         email: addUser.rows[0].email_address
                     }
+                    //here we are generate a token and send mail to user.
                     let token = await issueJWT(payload)
                     link = `${process.env.AUTH_LINK}/reset-password/${token}`
                     if (process.env.isLocalEmail == 'true') {
@@ -181,10 +190,11 @@ module.exports.addUser = async (req, res) => {
     }
 }
 
+// with the help of this function we can resend verification link on email address
 module.exports.resendVerificationLink = async(req, res) => {
     try {
         let {userId} = req.query
-
+        //here we are fetching user details
         let s1 = dbScript(db_sql['Q8'],{var1 : userId})
         let findUser = await connection.query(s1)
         if(findUser.rowCount > 0){
@@ -192,6 +202,7 @@ module.exports.resendVerificationLink = async(req, res) => {
                 id: findUser.rows[0].id,
                 email: findUser.rows[0].email_address
             }
+            // generate token and resend mail on user email address
             let token = await issueJWT(payload)
             link = `${process.env.AUTH_LINK}/reset-password/${token}`
             if (process.env.isLocalEmail == 'true') {
@@ -272,15 +283,19 @@ module.exports.showUserById = async (req, res) => {
     }
 }
 
+//get all user list of any company in that function 
 module.exports.usersList = async (req, res) => {
     try {
         let userId = req.user.id
+        // here we are getting user permission's
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
+            //check user's on the basis of company id
             let s4 = dbScript(db_sql['Q15'], { var1: checkPermission.rows[0].company_id })
             let findUsers = await connection.query(s4);
             if (findUsers.rows.length > 0) {
+                //check user's roles 
                 for (data of findUsers.rows) {
                     let s5 = dbScript(db_sql['Q12'], { var1: data.role_id })
                     let findRole = await connection.query(s5);
@@ -306,6 +321,7 @@ module.exports.usersList = async (req, res) => {
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let userListArr = []
+            //geting roles and subroles under user
             let roleUsers = []
             let roleIds = []
             roleIds.push(checkPermission.rows[0].role_id)
@@ -331,6 +347,8 @@ module.exports.usersList = async (req, res) => {
                     }
                 }
             }
+
+            //here getting user list on behalf of user role id
             let s4 = dbScript(db_sql['Q268'], {var1 : checkPermission.rows[0].id })
             let addUser = await connection.query(s4)
             let s5 = dbScript(db_sql['Q12'], { var1: addUser.rows[0].role_id })
@@ -388,12 +406,15 @@ module.exports.usersList = async (req, res) => {
     }
 }
 
+//get perticuler user all details by user id 
 module.exports.usersDetails = async (req, res) => {
     try {
         let userId = req.user.id
         let user_id = req.query.id;
+        //check user permission's
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
+        //get user details on behalf of user and company id 
             let s4 = dbScript(db_sql['Q293'], { var1: checkPermission.rows[0].company_id,var2: user_id })
             let findUsers = await connection.query(s4);
             if (findUsers.rows.length > 0) {
@@ -429,6 +450,7 @@ module.exports.usersDetails = async (req, res) => {
     }
 }
 
+//user can update user details on behalf of user id 
 module.exports.updateUser = async (req, res) => {
     try {
         let id = req.user.id
@@ -441,6 +463,7 @@ module.exports.updateUser = async (req, res) => {
             roleId,
             avatar
         } = req.body
+        //get user all permission's 
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_update) {
@@ -451,6 +474,8 @@ module.exports.updateUser = async (req, res) => {
 
             let _dt = new Date().toISOString();
             await connection.query('BEGIN')
+
+            //update user details
             let s4 = dbScript(db_sql['Q22'], { var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: checkPermission.rows[0].company_id, var10 : isAdmin })
             let updateUser = await connection.query(s4)
             await connection.query('COMMIT')
@@ -484,6 +509,7 @@ module.exports.updateUser = async (req, res) => {
     }
 }
 
+//with the help of user id we can lock user and block its permissions 
 module.exports.lockUserAccount = async (req, res) => {
     try {
         let id = req.user.id
@@ -491,11 +517,13 @@ module.exports.lockUserAccount = async (req, res) => {
             userId,
             isLocked
         } = req.body
+        //get user all permission's
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_update) {
             let _dt = new Date().toISOString();
             await connection.query('BEGIN')
+            //update user status is locked here
             let s4 = dbScript(db_sql['Q30'], { var1: isLocked, var2: userId, var3: _dt })
             let updateUser = await connection.query(s4)
             await connection.query('COMMIT')
@@ -529,17 +557,20 @@ module.exports.lockUserAccount = async (req, res) => {
     }
 }
 
+// with this function we can delete a user 
 module.exports.deleteUser = async (req, res) => {
     try {
         let id = req.user.id
         let {
             userId
         } = req.body
+        //check user all permission's
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
             let _dt = new Date().toISOString();
             await connection.query('BEGIN')
+            //update user status to deleted
             let s4 = dbScript(db_sql['Q23'], { var1: _dt, var2: userId, var3: checkPermission.rows[0].company_id })
             let updateUser = await connection.query(s4)
             await connection.query('COMMIT')

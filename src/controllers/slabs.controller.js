@@ -9,11 +9,13 @@ module.exports.createSlab = async (req, res) => {
         let {
             slabsData
         } = req.body
+        //here check user all permission's
             let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_create) {
                 await connection.query('BEGIN')
                 let slabId = uuid.v4()
+                //insert slab entries into db here
                 for (let data of slabsData.slabs) {
                     id = uuid.v4()
                     let s5 = dbScript(db_sql['Q18'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: Number(data.slab_ctr), var9 : userId, var10 : slabId, var11 : slabsData.slabName, var12 : slabsData.commissionSplitId })
@@ -57,10 +59,12 @@ module.exports.updateSlab = async (req, res) => {
             slabsData
         } = req.body
         console.log(slabsData,"slabsData");
+         //here check user all permission's
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
             await connection.query('BEGIN')
+            //here we update slab deatails 
             for (let data of slabsData.slabs) {
                 let _dt = new Date().toISOString()
                 if (data.id != '') {
@@ -107,14 +111,17 @@ module.exports.slabList = async (req, res) => {
     try {
         let userId = req.user.id
         let userIds = []
+         //here check user all permission's
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
+            //get slab list here 
             let s4 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
             let slabList = await connection.query(s4)
             if (slabList.rowCount > 0) {
                 for (let item of slabList.rows) {
                     if (item.commission_split_id) {
+                        //get comission's details on behalf of slab's
                         let s5 = dbScript(db_sql['Q56'],{var1 : item.commission_split_id, var2 : item.company_id})
                         let commissionSplit = await connection.query(s5);
                         if (commissionSplit.rows.length > 0) {
@@ -131,6 +138,7 @@ module.exports.slabList = async (req, res) => {
                     }
                     
                 }
+                // this logic for is remove duplicates data 
                 const transformedArray = slabList.rows.reduce((acc, curr) => {
                     const existingSlab = acc.find(s => s.slab_id === curr.slab_id);
                     if (existingSlab) {
@@ -315,12 +323,14 @@ module.exports.deleteSlab = async (req, res) => {
     try {
         let userId = req.user.id
         let { slabId } = req.body
+         //here check user all permission's
             let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_delete) {
                 await connection.query('BEGIN')
 
                 let _dt = new Date().toISOString();
+                //update slab status to deleted
                 let s4 = dbScript(db_sql['Q183'], { var1: _dt, var2: slabId, var3: checkPermission.rows[0].company_id })
                 var deleteSlab = await connection.query(s4)
 
@@ -362,12 +372,14 @@ module.exports.deleteSlabLayer = async (req, res) => {
     try {
         let userId = req.user.id
         let { slabLayerId } = req.body
+         //here check user all permission's
             let s3 = dbScript(db_sql['Q41'], { var1: moduleName , var2: userId })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_delete) {
                 await connection.query('BEGIN')
 
                 let _dt = new Date().toISOString();
+                // here update slab layer to deleted
                 let s4 = dbScript(db_sql['Q29'], { var1: _dt, var2: slabLayerId, var3: checkPermission.rows[0].company_id })
                 let deleteSlab = await connection.query(s4)
 
