@@ -1,5 +1,4 @@
 const express = require('express')
-const { sales } = require('../controllers/index')
 var router = express.Router()
 var controller = require('../controllers/index')
 const { verifyTokenFn } = require('../utils/jwt')
