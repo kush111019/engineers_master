@@ -835,7 +835,7 @@ const db_sql = {
               left join 
                 users u on u.id = l.user_id
               where 
-                (l.user_id = '{var1}' or l.assigned_sales_lead_to= '{var1}') AND 
+                (l.user_id IN ({var1}) OR l.assigned_sales_lead_toIN ({var1})) AND 
                 l.deleted_at IS NULL AND u.deleted_at IS NULL
               ORDER BY 
                 u.full_name {var4}
@@ -1046,7 +1046,7 @@ const db_sql = {
 
     "Q259" : `SELECT * FROM sales_commission WHERE customer_id = '{var1}' AND deleted_at IS NULL`,
     "Q260" : `SELECT * FROM product_in_sales WHERE product_id = '{var1}' AND deleted_at IS NULL`,
-    "Q261" : `SELECT * FROM lead_organizations WHERE user_id = '{var1}' AND deleted_at IS NULL`,
+    "Q261" : `SELECT * FROM lead_organizations WHERE user_id IN ({var1}) AND deleted_at IS NULL`,
     "Q262" : `SELECT * FROM lead_organizations WHERE company_id = '{var1}' AND deleted_at IS NULL`,
     "Q263" : `INSERT INTO lead_organizations(id, organization_name, user_id, company_id) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
     "Q264" : `SELECT * FROM lead_organizations WHERE id = '{var1}' AND deleted_at IS NULL`,
