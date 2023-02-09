@@ -829,13 +829,15 @@ const db_sql = {
               ORDER BY 
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
-    "Q209"  :`select distinct(l.id),l.user_id,l.assigned_sales_lead_to, u.full_name as created_by, l.is_rejected, l.is_converted
+    "Q209"  :`select 
+                distinct(l.id),l.user_id,l.assigned_sales_lead_to, u.full_name as created_by, 
+                l.is_rejected, l.is_converted
               FROM 
                 leads AS l 
               left join 
-                users u on u.id = l.user_id
+                users u ON u.id = l.user_id
               where 
-                (l.user_id IN ({var1}) OR l.assigned_sales_lead_toIN ({var1})) AND 
+                (l.user_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1})) AND 
                 l.deleted_at IS NULL AND u.deleted_at IS NULL
               ORDER BY 
                 u.full_name {var4}
