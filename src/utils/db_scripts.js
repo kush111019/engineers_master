@@ -148,18 +148,18 @@ const db_sql = {
     "Q64"  : `UPDATE sales_closer SET closer_id = '{var1}', closer_percentage = '{var2}', commission_split_id = '{var3}', updated_at = '{var4}' WHERE sales_commission_id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
     "Q65"  : `UPDATE sales_supporter SET deleted_at = '{var3}' WHERE sales_commission_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
     "Q66"  : `UPDATE follow_up_notes SET deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL`,
-    "Q67"  : `INSERT INTO revenue_forecast(id, timeline, revenue, growth_window, growth_percentage, start_date, end_date, user_id, company_id, currency)
-              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}', '{var10}') RETURNING * `,
+    "Q67"  : `INSERT INTO forecast(timeline, amount, start_date,end_date,pid, assigned_to, created_by)
+              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}') RETURNING * `,
     "Q68"  : `SELECT 
-                f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
-                f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
-                u.full_name AS creator_name  
+                f.id, f.timeline, f.amount, f.start_date, 
+                f.end_date, f.created_by,f.created_at, f.assigned_to,
+                u1.full_name as creator_name, u2.full_name as assigned_name
               FROM 
-                revenue_forecast AS f
-              INNER JOIN 
-                users AS u ON u.id = f.user_id 
+                forecast AS f
+              LEFT JOIN users as u1 on u1.id::uuid	 = f.created_by::uuid	
+              LEFT JOIN users as u2 on u2.id::uuid	 = f.assigned_to::uuid
               WHERE 
-                f.company_id = '{var1}' AND f.deleted_at IS NULL 
+                f.created_by = '{var1}' OR f.assigned_to = '{var1}' AND f.deleted_at IS NULL 
               ORDER BY 
                 timeline ASC`,  
     "Q69"  : `SELECT * FROM revenue_forecast WHERE id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL  ` ,            
@@ -570,15 +570,15 @@ const db_sql = {
               ORDER BY 
                 date ASC `,
     "Q174" : `SELECT 
-                f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
-                f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
-                u.full_name AS creator_name  
+                f.id, f.timeline, f.amount, f.start_date, 
+                f.end_date, f.created_by,f.created_at, f.assigned_to,
+                u1.full_name as creator_name, u2.full_name as assigned_name
               FROM 
-                revenue_forecast AS f
-              INNER JOIN 
-                users AS u ON u.id = f.user_id 
+                forecast AS f
+              LEFT JOIN users as u1 on u1.id::uuid	 = f.created_by::uuid	
+              LEFT JOIN users as u2 on u2.id::uuid	 = f.assigned_to::uuid
               WHERE 
-                f.user_id = '{var1}' AND f.deleted_at IS NULL 
+                f.created_by IN ({var1}) OR f.assigned_to IN ({var1}) AND f.deleted_at IS NULL 
               ORDER BY 
                 timeline ASC`,  
     "Q175" : `SELECT * FROM roles WHERE user_id = '{var1}' AND deleted_at IS NULL`,
@@ -1332,7 +1332,11 @@ const db_sql = {
               WHERE 
                 company_id = '{var1}' AND id = '{var2}' AND deleted_at IS NULL 
               ORDER BY 
-                created_at DESC`,        
+                created_at DESC`, 
+
+        "Q294" : `INSERT INTO forecast_data(forecast_id, amount, start_date, end_date, type, created_by)
+                  VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+        "Q295" : `SELECT * FROM forecast_data WHERE forecast_id = '{var1}'`,       
   
   
   }
