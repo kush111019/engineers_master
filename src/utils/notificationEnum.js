@@ -6,8 +6,8 @@ module.exports.notificationType = {
 }
 
 module.exports.notificationMsg = {
-    1.1: 'New sales is created',
-    1.2: 'Sales has been updated',
-    1.3: 'Sales is transferred to you',
-    1.4: 'Sales is closed',
+    1.1: 'is created a Sales',
+    1.2: 'has updated Sales',
+    1.3: 'has transferred Sales to you',
+    1.4: 'has closed Sales',
 }

@@ -17,7 +17,6 @@ module.exports.createRevenueForecast = async (req, res) => {
             type,
             forecastData
         } = req.body
-        console.log(req.body,"req.body");
         await connection.query('BEGIN')
         //checking permission to create for user
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
@@ -27,17 +26,13 @@ module.exports.createRevenueForecast = async (req, res) => {
             //Inserting forecast into forecast table
             let s2 = dbScript(db_sql['Q67'], { var1: timeline, var2: amount,var3: startDate, var4: endDate, var5: pId, var6: userId, var7: userId })
             let createForecast = await connection.query(s2)
-            console.log(createForecast.rows,"createForecast");
             //if forecast inserted into forecast table then
             if (createForecast.rowCount > 0) {
                 //inserting the forecast data into forecast_data table
                 for(let data of forecastData){
-                    console.log(data,"forecastData");
                     let s3 = dbScript(db_sql['Q294'],{var1 : createForecast.rows[0].id, var2 : data.amount, var3 : data.startDate, var4 : data.endDate, var5 : type, var6 : userId })
                     let addForecastData = await connection.query(s3)
-                    console.log(addForecastData.rows,"addForecastData");
                 }
-                console.log(assignedTo,"assignedTo");
                 // Checking if assigned users length > 0 then
                 if(assignedTo.length > 0){
                     // adding assigned users forecast
