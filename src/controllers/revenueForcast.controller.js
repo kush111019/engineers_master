@@ -144,23 +144,32 @@ module.exports.revenueForecastList = async (req, res) => {
 module.exports.forecastDetails = async (req, res) => {
     try {
         let { forecastId } = req.query
-        // Getting forecast list by user Id
-        let s3 = dbScript(db_sql['Q306'], { var1: forecastId });
-        let revenueForecastList = await connection.query(s3);
-        if (revenueForecastList.rowCount > 0) {
-            res.json({
-                status: 200,
-                success: true,
-                message: 'Forecast list',
-                data: revenueForecastList.rows
-            });
+        // Getting forecast list by user Id.
+        let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s2)
+        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
+            let s3 = dbScript(db_sql['Q306'], { var1: forecastId });
+            let revenueForecastList = await connection.query(s3);
+            if (revenueForecastList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Forecast list',
+                    data: revenueForecastList.rows
+                });
+            } else {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Empty forecast list',
+                    data: []
+                });
+            }
         } else {
-            res.json({
-                status: 200,
-                success: true,
-                message: 'Empty forecast list',
-                data: []
-            });
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
         }
     } catch (error) {
         res.json({
