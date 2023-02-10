@@ -110,7 +110,11 @@ module.exports.revenueForecastList = async (req, res) => {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0])
             // Getting forecast list for all child and parents.
             let s3 = dbScript(db_sql['Q174'], { var1: roleUsers.join("','") })
+            console.log("-----------------------------------------------")
+            console.log(s3,"s3")
             let revenueForecastList = await connection.query(s3)
+            console.log(revenueForecastList.rows,"revenueForecastList.rows")
+            console.log("-----------------------------------------------")
             if (revenueForecastList.rowCount > 0) {
                 res.json({
                     status: 200,
