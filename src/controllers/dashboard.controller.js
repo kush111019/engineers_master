@@ -21,7 +21,7 @@ module.exports.revenues = async (req, res) => {
             let userList = await getUserAndSubUser(checkPermission.rows[0]);
             let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate, var5: userList.join(',') })
             let salesData = await connection.query(s4)
-     
+
             for (let saleData of salesData.rows) {
                 let revenueCommissionByDateObj = {}
                 let s5 = dbScript(db_sql['Q300'], { var1: saleData.sales_commission_id })
@@ -89,20 +89,18 @@ module.exports.revenues = async (req, res) => {
             let revenueCommissionBydate = []
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s4 = dbScript(db_sql['Q167'], { var1: roleUsers.join(','), var2: orderBy, var3: sDate, var4: eDate })
-            console.log(s4,'s44')
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
                 for (let saleData of salesData.rows) {
                     let revenueCommissionByDateObj = {}
                     let s5 = dbScript(db_sql['Q300'], { var1: saleData.sales_commission_id })
-                    console.log(s5,'s5')
                     let recognizedRevenueData = await connection.query(s5)
-    
+
                     if (recognizedRevenueData.rows[0].amount) {
                         revenueCommissionByDateObj.revenue = Number(recognizedRevenueData.rows[0].amount)
                         revenueCommissionByDateObj.date = moment(saleData.closed_at).format('MM/DD/YYYY')
                         let commission = saleData.revenue_commission ? Number(saleData.revenue_commission) : 0;
-    
+
                         if (filterBy.toLowerCase() == 'all') {
                             revenueCommissionByDateObj.commission = Number(commission);
                             revenueCommissionBydate.push(revenueCommissionByDateObj)
@@ -128,7 +126,6 @@ module.exports.revenues = async (req, res) => {
                     }
                 }
             }
-            console.log(revenueCommissionBydate,'revenueCommissionBydate')
             if (revenueCommissionBydate.length > 0) {
                 let returnData = await reduceArrayWithCommission(revenueCommissionBydate)
                 if (returnData.length > 0) {
@@ -224,48 +221,52 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             for (let saleId of salesIdData.rows) {
                 salesId.push("'" + saleId.id.toString() + "'")
             }
-            if(salesIdData.length > 0){
-            //get sum of all totalBooking , bookingCommission, revenueBooking , revenueBooking 
-            let s4 = dbScript(db_sql['Q302'], { var1: salesId.join(",") })
-            let salesData = await connection.query(s4)
-            let s5 = dbScript(db_sql['Q303'], { var1: roleUsers.join(",") })
-            let recognizedRevenueData = await connection.query(s5)
-            if (salesData.rowCount > 0) {
-                let totalBooking = salesData.rows[0].amount ? salesData.rows[0].amount : 0;
-                let bookingCommission = salesData.rows[0].booking_commission ? salesData.rows[0].booking_commission : 0;
+            if (salesId.length > 0) {
+                //get sum of all totalBooking , bookingCommission, revenueBooking , revenueBooking 
+                let s4 = dbScript(db_sql['Q302'], { var1: salesId.join(",") })
+                let salesData = await connection.query(s4)
+                let s5 = dbScript(db_sql['Q303'], { var1: roleUsers.join(",") })
+                let recognizedRevenueData = await connection.query(s5)
+                if (salesData.rowCount > 0) {
+                    let totalBooking = salesData.rows[0].amount ? salesData.rows[0].amount : 0;
+                    let bookingCommission = salesData.rows[0].booking_commission ? salesData.rows[0].booking_commission : 0;
 
-                let revenueBooking = recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0;
-                let revenueCommission = salesData.rows[0].revenue_commission ? salesData.rows[0].revenue_commission : 0;
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "Revenues and commissions details",
-                    data: {
-                        totalBooking,
-                        bookingCommission,
-                        revenueBooking,
-                        revenueCommission
-                    }
-                })
+                    let revenueBooking = recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0;
+                    let revenueCommission = salesData.rows[0].revenue_commission ? salesData.rows[0].revenue_commission : 0;
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Revenues and commissions details",
+                        data: {
+                            totalBooking,
+                            bookingCommission,
+                            revenueBooking,
+                            revenueCommission
+                        }
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Revenues and commissions are empty",
+                        data: {
+                            totalBooking: 0,
+                            bookingCommission: 0,
+                            revenueBooking: 0,
+                            revenueCommission: 0
+                        }
+                    })
+                }
+
             } else {
                 res.json({
                     status: 200,
                     success: false,
-                    message: "Revenues and commissions are empty",
-                    data: {
-                        totalBooking: 0,
-                        bookingCommission: 0,
-                        revenueBooking: 0,
-                        revenueCommission: 0
-                    }
+                    message: "Empty sales list",
+                    data: []
                 })
-            }res.json({
-                status: 200,
-                success: false,
-                message: "Empty sales list",
-                data: []
-            })
-        }
+
+            }
         } else {
             res.status(403).json({
                 success: false,
