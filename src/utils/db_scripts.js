@@ -151,15 +151,25 @@ const db_sql = {
     "Q67"  : `INSERT INTO forecast(timeline, amount, start_date,end_date,pid, assigned_to, created_by)
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}') RETURNING * `,
     "Q68"  : `SELECT 
-                f.id, f.timeline, f.amount, f.start_date, 
+                f.id, f.timeline, f.amount, f.start_date, f.pid,
                 f.end_date, f.created_by,f.created_at, f.assigned_to,
-                u1.full_name as creator_name, u2.full_name as assigned_name
+                u1.full_name as creator_name, u2.full_name as assigned_name, 
+                (
+                  SELECT json_agg(forecast_data.*)
+                    from forecast_data
+                    where forecast_data.forecast_id::uuid = f.id
+                ) as forecast_data,
+				        (
+                  SELECT json_agg(forecast) 
+                    from forecast
+                    where forecast.pid::varchar = f.id::varchar
+                ) as assigned_forecast
               FROM 
                 forecast AS f
               LEFT JOIN users as u1 on u1.id::uuid	 = f.created_by::uuid	
               LEFT JOIN users as u2 on u2.id::uuid	 = f.assigned_to::uuid
               WHERE 
-                f.created_by = '{var1}' OR f.assigned_to = '{var1}' AND f.deleted_at IS NULL 
+                (f.assigned_to = '{var1}') AND f.deleted_at IS NULL 
               ORDER BY 
                 timeline ASC`,  
     "Q69"  : `SELECT * FROM revenue_forecast WHERE id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL  ` ,            
@@ -570,15 +580,25 @@ const db_sql = {
               ORDER BY 
                 date ASC `,
     "Q174" : `SELECT 
-                f.id, f.timeline, f.amount, f.start_date, 
+                f.id, f.timeline, f.amount, f.start_date, f.pid,
                 f.end_date, f.created_by,f.created_at, f.assigned_to,
-                u1.full_name as creator_name, u2.full_name as assigned_name
+                u1.full_name as creator_name, u2.full_name as assigned_name, 
+                (
+                  SELECT json_agg(forecast_data.*)
+                    from forecast_data
+                    where forecast_data.forecast_id::uuid = f.id
+                ) as forecast_data,
+                (
+                  SELECT json_agg(forecast) 
+                    from forecast
+                    where forecast.pid::varchar = f.id::varchar
+                ) as assigned_forecast
               FROM 
                 forecast AS f
               LEFT JOIN users as u1 on u1.id::uuid	 = f.created_by::uuid	
               LEFT JOIN users as u2 on u2.id::uuid	 = f.assigned_to::uuid
               WHERE 
-                f.created_by IN ({var1}) OR f.assigned_to IN ({var1}) AND f.deleted_at IS NULL 
+                f.assigned_to IN ({var1}) AND f.deleted_at IS NULL 
               ORDER BY 
                 timeline ASC`,  
     "Q175" : `SELECT * FROM roles WHERE user_id = '{var1}' AND deleted_at IS NULL`,
@@ -738,7 +758,13 @@ const db_sql = {
               ORDER BY 
                 timeline ASC`,   
     "Q198"  :`UPDATE revenue_forecast SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' RETURNING *`,
-    "Q199"  :`UPDATE revenue_forecast SET timeline = '{var2}', revenue = '{var3}', growth_window = '{var4}', growth_percentage = '{var5}', start_date = '{var6}', end_date = '{var7}', user_id = '{var8}', company_id = '{var9}', currency = '{var10}' WHERE id = '{var1}' and deleted_at is null RETURNING *`,
+    "Q199"  :`UPDATE 
+                forecast 
+              SET 
+                timeline = '{var2}', amount = '{var3}', start_date = '{var4}', 
+                end_date = '{var5}', updated_at = '{var6}' 
+              WHERE 
+                id = '{var1}' AND deleted_at IS NULL RETURNING *`,
     "Q200"  :`SELECT 
                 target_amount
               FROM sales_commission 
@@ -1378,7 +1404,51 @@ const db_sql = {
                     recognized_revenue 
                   WHERE 
                     user_id IN ({var1}) 
-                  AND deleted_at IS NULL`     
+                  AND deleted_at IS NULL` , 
+        "Q297" : `UPDATE 
+                    forecast 
+                  SET 
+                    timeline = '{var2}', amount = '{var3}', start_date = '{var4}', 
+                    end_date = '{var5}', assigned_to = '{var6}', updated_at = '{var7}' 
+                  WHERE 
+                    pid = '{var1}' AND deleted_at IS NULL RETURNING *`,
+        "Q305" : `UPDATE 
+                    forecast_data
+                  SET 
+                    type = '{var2}', start_date = '{var3}', end_date = '{var4}', amount = '{var5}' 
+                  WHERE 
+                    id = '{var1}' AND deleted_at IS NULL RETURNING *`,
+        "Q306" : `SELECT 
+                    f.id, f.timeline, f.amount, f.start_date, f.pid,
+                    f.end_date, f.created_by,f.created_at, f.assigned_to,
+                    u1.full_name as creator_name, u2.full_name as assigned_name, 
+                    (
+                      SELECT json_agg(forecast_data.*)
+                        from forecast_data
+                        where forecast_data.forecast_id::uuid = f.id
+                    ) as forecast_data,
+                    (
+                      SELECT json_agg(forecast) 
+                        from forecast
+                        where forecast.pid::varchar = f.id::varchar
+                    ) as assigned_forecast
+                  FROM 
+                    forecast AS f
+                  LEFT JOIN users as u1 on u1.id::uuid	 = f.created_by::uuid	
+                  LEFT JOIN users as u2 on u2.id::uuid	 = f.assigned_to::uuid
+                  WHERE 
+                    f.id = '{var1}' AND f.deleted_at IS NULL 
+                  ORDER BY 
+                    timeline ASC`,
+
+      "Q307"  : `UPDATE 
+                  forecast
+                SET 
+                   amount = '{var2}', assigned_to = '{var3}'
+                WHERE 
+                  id = '{var1}' AND deleted_at IS NULL RETURNING *`
+  
+  
   }
 
  function dbScript(template, variables) {
