@@ -598,7 +598,7 @@ const db_sql = {
               LEFT JOIN users as u1 on u1.id::uuid	 = f.created_by::uuid	
               LEFT JOIN users as u2 on u2.id::uuid	 = f.assigned_to::uuid
               WHERE 
-                f.assigned_to IN ({var1}) AND f.deleted_at IS NULL 
+                f.assigned_to::varchar IN ({var1}) AND f.deleted_at IS NULL 
               ORDER BY 
                 timeline ASC`,  
     "Q175" : `SELECT * FROM roles WHERE user_id = '{var1}' AND deleted_at IS NULL`,
