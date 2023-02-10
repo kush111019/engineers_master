@@ -89,11 +89,13 @@ module.exports.revenues = async (req, res) => {
             let revenueCommissionBydate = []
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s4 = dbScript(db_sql['Q167'], { var1: roleUsers.join(','), var2: orderBy, var3: sDate, var4: eDate })
+            console.log(s4,'s44')
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
                 for (let saleData of salesData.rows) {
                     let revenueCommissionByDateObj = {}
                     let s5 = dbScript(db_sql['Q300'], { var1: saleData.sales_commission_id })
+                    console.log(s5,'s5')
                     let recognizedRevenueData = await connection.query(s5)
     
                     if (recognizedRevenueData.rows[0].amount) {
@@ -126,6 +128,7 @@ module.exports.revenues = async (req, res) => {
                     }
                 }
             }
+            console.log(revenueCommissionBydate,'revenueCommissionBydate')
             if (revenueCommissionBydate.length > 0) {
                 let returnData = await reduceArrayWithCommission(revenueCommissionBydate)
                 if (returnData.length > 0) {
