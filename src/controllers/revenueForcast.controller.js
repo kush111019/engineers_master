@@ -201,7 +201,6 @@ module.exports.editRevenueForecast = async (req, res) => {
             let _dt = new Date().toISOString()
             // Updating forecast with forecast id.
             let s2 = dbScript(db_sql['Q199'], { var1: forecastId, var2: timeline, var3: amount,var4: startDate, var5: endDate, var6: _dt })
-            console.log(s2,"s2")
             let updateForecast = await connection.query(s2)
             if (updateForecast.rowCount > 0) {
                 if(forecastData.length > 0){
@@ -211,7 +210,7 @@ module.exports.editRevenueForecast = async (req, res) => {
                             let updateForecastData = await connection.query(s3)
                         }else{
                             let s4 = dbScript(db_sql['Q294'],{var1 : forecastId, var2 : data.amount, var3 : data.startDate, var4 : data.endDate, var5 : data.type, var6 : userId })
-                            let addForecastData = await connection.query(s3)
+                            let addForecastData = await connection.query(s4)
                         }  
                     }
                 }
@@ -222,7 +221,7 @@ module.exports.editRevenueForecast = async (req, res) => {
                             let updateAssignedForecast = await connection.query(s3)
                         }else{
                             let s4 = dbScript(db_sql['Q67'],{var1 : timeline, var2 : af.amount, var3 : startDate, var4 : endDate, var5 : forecastId ,var6 : af.userId ,var7 : userId })
-                            let addAssignedForecast = await connection.query(s3)
+                            let addAssignedForecast = await connection.query(s4)
                         }
                     }
                 }
