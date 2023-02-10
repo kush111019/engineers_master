@@ -2208,20 +2208,26 @@ module.exports.addRecognizedRevenue = async (req, res) => {
 
         let s2 = dbScript(db_sql['Q271'], { var1: salesId })
         let findSales = await connection.query(s2)
-        console.log(findSales.rows,'findSales')
 
         if (findSales.rowCount > 0) {
             let targetAmount = Number(findSales.rows[0].target_amount)
             await connection.query('BEGIN')
             let id = uuid.v4()
+            //add RecognizeRevenue in db
             let s3 = dbScript(db_sql['Q272'], { var0: id, var1: date, var2: amount, var3: targetAmount, var4: mysql_real_escape_string(notes), var5: invoice, var6: salesId, var7: checkPermission.rows[0].id, var8: checkPermission.rows[0].company_id })
             let addRecognizeRevenue = await connection.query(s3)
+            await connection.query('COMMIT')
+            
+             //get Recognized Revenue total that submitted
+            let s5 = dbScript(db_sql['Q300'], { var1: salesId })
+            let recognizeRevenue = await connection.query(s5)
 
-
+            //get slab's list here
             let totalCommission = 0;
             let s4 = dbScript(db_sql['Q184'], { var1: findSales.rows[0].slab_id })
             let slab = await connection.query(s4)
-            let remainingAmount = Number(amount);
+
+            let remainingAmount = Number(recognizeRevenue.rows[0].amount);
             let commission = 0
             //if remainning amount is 0 then no reason to check 
             for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
@@ -2246,9 +2252,9 @@ module.exports.addRecognizedRevenue = async (req, res) => {
                 }
             }
             totalCommission = totalCommission + commission ;
-            console.log(totalCommission,'11111111')
-            let s5 = dbScript(db_sql['Q296'], { var1: totalCommission,var2: salesId })
-            let salesData = await connection.query(s5)
+            let s6 = dbScript(db_sql['Q296'], { var1: totalCommission ,var2: salesId })
+            let updateSalesData = await connection.query(s6)
+           
 
             if (addRecognizeRevenue.rowCount > 0) {
                 await connection.query('COMMIT')
