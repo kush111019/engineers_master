@@ -1389,7 +1389,7 @@ const db_sql = {
                   INNER JOIN 
                     sales_supporter AS s ON sc.id = s.sales_commission_id
                   WHERE 
-                    sc.user_id IN ({var1}) OR c.closer_id IN ({var1}) OR s.supporter_id IN ({var1})
+                    ( sc.user_id IN ({var1}) OR c.closer_id IN ({var1}) OR s.supporter_id IN ({var1}) )
                   AND sc.deleted_at IS NULL`,
 
         "Q302" : `SELECT SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
