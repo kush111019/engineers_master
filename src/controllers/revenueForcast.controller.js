@@ -143,6 +143,7 @@ module.exports.revenueForecastList = async (req, res) => {
 
 module.exports.forecastDetails = async (req, res) => {
     try {
+        let userId = req.user.id
         let { forecastId } = req.query
         // Getting forecast list by user Id.
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
