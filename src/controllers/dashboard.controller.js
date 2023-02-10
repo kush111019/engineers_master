@@ -222,7 +222,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             for (let saleId of salesIdData.rows) {
                 salesId.push("'" + saleId.id.toString() + "'")
             }
-
+            if(salesIdData.length > 0){
             //get sum of all totalBooking , bookingCommission, revenueBooking , revenueBooking 
             let s4 = dbScript(db_sql['Q302'], { var1: salesId.join(",") })
             console.log(s4,'s4')
@@ -259,8 +259,13 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                         revenueCommission: 0
                     }
                 })
-            }
-
+            }res.json({
+                status: 200,
+                success: false,
+                message: "Empty sales list",
+                data: []
+            })
+        }
         } else {
             res.status(403).json({
                 success: false,
