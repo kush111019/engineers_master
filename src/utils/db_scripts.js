@@ -1403,7 +1403,7 @@ const db_sql = {
                   FROM 
                     recognized_revenue 
                   WHERE 
-                    user_id IN ({var1}) 
+                  sales_id IN ({var1}) 
                   AND deleted_at IS NULL` , 
         "Q297" : `UPDATE 
                     forecast 
