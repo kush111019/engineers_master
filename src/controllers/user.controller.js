@@ -41,7 +41,7 @@ module.exports.userCount = async (req, res) => {
                     res.json({
                         status: 400,
                         success: false,
-                        message: 'Plan limit exists! Can not add more users'
+                        message: 'Users limit reached, cannot add new users. Please contact your admin to increase the user license count'
                     })
                 }
             }else if(userCount.rowCount > 0){
@@ -55,7 +55,7 @@ module.exports.userCount = async (req, res) => {
                     res.json({
                         status: 400,
                         success: false,
-                        message: 'Users limit exists! Can not add more users'
+                        message: 'Users limit reached, cannot add new users. Please contact your admin to increase the user license count'
                     })
                 }
             }else {
