@@ -146,9 +146,7 @@ module.exports.forecastDetails = async (req, res) => {
         let { forecastId } = req.query
         // Getting forecast list by user Id
         let s3 = dbScript(db_sql['Q306'], { var1: forecastId });
-        console.log(s3)
         let revenueForecastList = await connection.query(s3);
-        console.log(revenueForecastList.rows)
         if (revenueForecastList.rowCount > 0) {
             res.json({
                 status: 200,
