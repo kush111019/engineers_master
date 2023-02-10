@@ -217,6 +217,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             //get sales id on behalf of user list
             let s1 = dbScript(db_sql['Q301'], { var1: roleUsers.join(",") })
             let salesIdData = await connection.query(s1)
+            console.log(s1,'s1')
             let salesId = [];
             for (let saleId of salesIdData.rows) {
                 salesId.push("'" + saleId.id.toString() + "'")
@@ -224,8 +225,10 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
 
             //get sum of all totalBooking , bookingCommission, revenueBooking , revenueBooking 
             let s4 = dbScript(db_sql['Q302'], { var1: salesId.join(",") })
+            console.log(s4,'s4')
             let salesData = await connection.query(s4)
             let s5 = dbScript(db_sql['Q303'], { var1: roleUsers.join(",") })
+            console.log(s5,'s5')
             let recognizedRevenueData = await connection.query(s5)
             if (salesData.rowCount > 0) {
                 let totalBooking = salesData.rows[0].amount ? salesData.rows[0].amount : 0;
