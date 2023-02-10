@@ -1428,10 +1428,15 @@ const db_sql = {
                         where forecast_data.forecast_id::uuid = f.id
                     ) as forecast_data,
                     (
-                      SELECT json_agg(forecast) 
+                      SELECT json_agg(forecast)
                         from forecast
                         where forecast.pid::varchar = f.id::varchar
-                    ) as assigned_forecast
+                    ) as assigned_forecast,
+                    (
+                      SELECT json_agg(fa.*)
+                        from forecast_audit fa
+                      WHERE fa.forecast_id::uuid = f.id
+                    ) as audit_forecast
                   FROM 
                     forecast AS f
                   LEFT JOIN users as u1 on u1.id::uuid	 = f.created_by::uuid	
@@ -1446,7 +1451,9 @@ const db_sql = {
                 SET 
                    amount = '{var2}', assigned_to = '{var3}'
                 WHERE 
-                  id = '{var1}' AND deleted_at IS NULL RETURNING *`
+                  id = '{var1}' AND deleted_at IS NULL RETURNING *`,
+      "Q308" : `INSERT INTO forecast_audit(forecast_id,amount,reason,created_by)
+                VALUES('{var1}', '{var2}', '{var3}', '{var4}') RETURNING *`
   
   
   }

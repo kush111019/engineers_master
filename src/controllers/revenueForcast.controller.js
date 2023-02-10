@@ -193,7 +193,6 @@ module.exports.editRevenueForecast = async (req, res) => {
             let s2 = dbScript(db_sql['Q199'], { var1: forecastId, var2: timeline, var3: amount,var4: startDate, var5: endDate, var6: _dt })
             console.log(s2,"s2")
             let updateForecast = await connection.query(s2)
-            console.log(updateForecast.rows,"updateForecast")
             if (updateForecast.rowCount > 0) {
                 if(forecastData.length > 0){
                     for(let data of forecastData){
@@ -217,12 +216,11 @@ module.exports.editRevenueForecast = async (req, res) => {
                         }
                     }
                 }
-                
                 await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
-                    message: 'Revenue forecast updated successfully'
+                    message: 'Forecast updated successfully'
                 })
             } else {
                 await connection.query('ROLLBACK')
@@ -249,27 +247,42 @@ module.exports.editRevenueForecast = async (req, res) => {
 
 }
 
-// module.exports.auditForecast = async(req, res) => {
-//     try {
-//         let userId = req.user.id
-//         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-//         let checkPermission = await connection.query(s1)
-//         if (checkPermission.rows[0].permission_to_update) {
-
-//         }else{
-//             res.status(403).json({
-//                 success: false,
-//                 message: "Unathorised"
-//             })
-//         }
-//     } catch (error) {
-//         res.json({
-//             status: 400,
-//             success: false,
-//             message: error.message,
-//         })
-//     }
-// }
+module.exports.auditForecast = async(req, res) => {
+    try {
+        let userId = req.user.id
+        let {forecastId , reason, amount} = req.body
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_update) {
+            let s2 = dbScript(db_sql['Q308'],{var1 : forecastId, var2: amount, var3 : reason, var4 : userId})
+            let createAudit = await connection.query(s2)
+            if(createAudit.rowCount > 0){
+                res.json({
+                    status : 200,
+                    success : true,
+                    message : "Forecast audited successfully"
+                })
+            }else{
+                res.json({
+                    status : 400,
+                    success : false,
+                    message : "Something went wrong"
+                })
+            }
+        }else{
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
 
 module.exports.deleteRevenueForecast = async (req, res) => {
     try {
