@@ -1384,9 +1384,9 @@ const db_sql = {
         "Q301" : `SELECT DISTINCT(sc.id)
                   FROM 
                     sales_commission AS sc 
-                  INNER JOIN 
+                  LEFT JOIN 
                     sales_closer AS c ON sc.id = c.sales_commission_id
-                  INNER JOIN 
+                  LEFT JOIN 
                     sales_supporter AS s ON sc.id = s.sales_commission_id
                   WHERE 
                     ( sc.user_id IN ({var1}) OR c.closer_id IN ({var1}) OR s.supporter_id IN ({var1}) )
