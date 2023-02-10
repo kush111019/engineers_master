@@ -226,7 +226,9 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                 let s4 = dbScript(db_sql['Q302'], { var1: salesId.join(",") })
                 let salesData = await connection.query(s4)
                 let s5 = dbScript(db_sql['Q303'], { var1: roleUsers.join(",") })
+                console.log(s5,'s5')
                 let recognizedRevenueData = await connection.query(s5)
+                console.log(recognizedRevenueData.rows,'recognizedRevenueData')
                 if (salesData.rowCount > 0) {
                     let totalBooking = salesData.rows[0].amount ? salesData.rows[0].amount : 0;
                     let bookingCommission = salesData.rows[0].booking_commission ? salesData.rows[0].booking_commission : 0;
