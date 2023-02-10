@@ -764,7 +764,7 @@ const db_sql = {
                 timeline = '{var2}', amount = '{var3}', start_date = '{var4}', 
                 end_date = '{var5}', updated_at = '{var6}' 
               WHERE 
-                id::uuid = '{var1}'::uuid AND (pid = '0' OR pid::uuid = created_by::uuid) AND deleted_at IS NULL RETURNING *`,
+                id = '{var1}' AND deleted_at IS NULL RETURNING *`,
     "Q200"  :`SELECT 
                 target_amount
               FROM sales_commission 
@@ -1397,7 +1397,14 @@ const db_sql = {
                   WHERE 
                     f.id = '{var1}' AND f.deleted_at IS NULL 
                   ORDER BY 
-                    timeline ASC`
+                    timeline ASC`,
+
+      "Q307"  : `UPDATE 
+                  forecast
+                SET 
+                   amount = '{var2}', assigned_to = '{var3}'
+                WHERE 
+                  id = '{var1}' AND deleted_at IS NULL RETURNING *`
   
   
   }

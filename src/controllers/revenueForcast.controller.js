@@ -180,7 +180,8 @@ module.exports.editRevenueForecast = async (req, res) => {
             amount,
             startDate,
             endDate,
-            forecastData
+            forecastData,
+            assignedForecast
         } = req.body
         await connection.query('BEGIN')
         // Checking permission for role user with module name and user id.
@@ -190,17 +191,33 @@ module.exports.editRevenueForecast = async (req, res) => {
             let _dt = new Date().toISOString()
             // Updating forecast with forecast id.
             let s2 = dbScript(db_sql['Q199'], { var1: forecastId, var2: timeline, var3: amount,var4: startDate, var5: endDate, var6: _dt })
+            console.log(s2,"s2")
             let updateForecast = await connection.query(s2)
+            console.log(updateForecast.rows,"updateForecast")
             if (updateForecast.rowCount > 0) {
-                for(let data of forecastData){
-                    if(data.id){
-                        let s3 = dbScript(db_sql['Q305'],{var1 : data.id, var2 : data.type, var3 : data.startDate, var4 : data.endDate, var5 : data.amount})
-                        let updateForecastData = await connection.query(s3)
-                    }else{
-                        let s4 = dbScript(db_sql['Q294'],{var1 : forecastId, var2 : data.amount, var3 : data.startDate, var4 : data.endDate, var5 : data.type, var6 : userId })
-                        let addForecastData = await connection.query(s3)
-                    }  
+                if(forecastData.length > 0){
+                    for(let data of forecastData){
+                        if(data.id){
+                            let s3 = dbScript(db_sql['Q305'],{var1 : data.id, var2 : data.type, var3 : data.startDate, var4 : data.endDate, var5 : data.amount})
+                            let updateForecastData = await connection.query(s3)
+                        }else{
+                            let s4 = dbScript(db_sql['Q294'],{var1 : forecastId, var2 : data.amount, var3 : data.startDate, var4 : data.endDate, var5 : data.type, var6 : userId })
+                            let addForecastData = await connection.query(s3)
+                        }  
+                    }
                 }
+                if(assignedForecast.length > 0){
+                    for(let af of assignedForecast){
+                        if(af.id){
+                            let s3 = dbScript(db_sql['Q307'],{var1 : af.id, var2 : af.amount, var3 : af.userId})
+                            let updateAssignedForecast = await connection.query(s3)
+                        }else{
+                            let s4 = dbScript(db_sql['Q67'],{var1 : timeline, var2 : af.amount, var3 : startDate, var4 : endDate, var5 : forecastId ,var6 : af.userId ,var7 : userId })
+                            let addAssignedForecast = await connection.query(s3)
+                        }
+                    }
+                }
+                
                 await connection.query('COMMIT')
                 res.json({
                     status: 200,
