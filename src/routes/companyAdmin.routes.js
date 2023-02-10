@@ -119,6 +119,7 @@ router.get('/totalExpectedRevenueCounts', verifyTokenFn, controller.dashboard.to
 router.post('/createRevenueForecast',verifyTokenFn, controller.revenueForecast.createRevenueForecast)
 router.get('/revenueForecastList',verifyTokenFn, controller.revenueForecast.revenueForecastList)
 router.get('/forecastDetails',verifyTokenFn, controller.revenueForecast.forecastDetails)
+router.put('/auditForecast', verifyTokenFn, controller.revenueForecast.auditForecast)
 // router.get('/activeForecastList',verifyTokenFn, controller.revenueForecast.activeForecastList)
 // router.get('/closedForecastList',verifyTokenFn, controller.revenueForecast.closedForecastList)
 router.get('/actualVsForecast',verifyTokenFn, controller.revenueForecast.actualVsForecast)
