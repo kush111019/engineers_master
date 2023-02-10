@@ -3,7 +3,7 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
 const {getMonthDifference, getYearDifference, getUserAndSubUser} = require('../utils/helper')
 const moduleName = process.env.FORECAST_MODULE
-const moment = require('moment')
+const moment = require('moment');
 
 module.exports.createRevenueForecast = async (req, res) => {
     try {
@@ -83,74 +83,42 @@ module.exports.createRevenueForecast = async (req, res) => {
 module.exports.revenueForecastList = async (req, res) => {
     try {
         let userId = req.user.id
+        // Checking permission for role user with module name and user id.
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global) {
-            let forecastData = []
-            let s3 = dbScript(db_sql['Q68'], { var1: userId })
-            let revenueForecastList = await connection.query(s3)
-            if (revenueForecastList.rowCount > 0) { 
-                for(let forecast of revenueForecastList.rows){
-                        let s4 = dbScript(db_sql['Q295'],{var1 : forecast.id})
-                        let fdata = await connection.query(s4)
-                        for(let data of fdata.rows){
-                            forecastData.push({
-                                start_date : data.start_date,
-                                end_date : data.end_date,
-                                amount : data.amount,
-                                type : data.type
-                            })
-                        }
-                        forecast.forecastData = forecastData
-                }
+            // Getting forecast list by user Id
+            let s3 = dbScript(db_sql['Q68'], { var1: userId });
+            let revenueForecastList = await connection.query(s3);
+            if (revenueForecastList.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Forecast list',
                     data: revenueForecastList.rows
-                })
+                });
             } else {
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Empty forecast list',
                     data: []
-                })
+                });
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            let forecastData = []
+            //Getting all the child and parent of Role
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0])
+            // Getting forecast list for all child and parents.
             let s3 = dbScript(db_sql['Q174'], { var1: roleUsers.join("','") })
             let revenueForecastList = await connection.query(s3)
             if (revenueForecastList.rowCount > 0) {
-                for (let forecast of revenueForecastList.rows) {
-                    let s4 = dbScript(db_sql['Q295'], { var1: forecast.id })
-                    let fdata = await connection.query(s4)
-                    for (let data of fdata.rows) {
-                        forecastData.push({
-                            start_date: data.start_date,
-                            end_date: data.end_date,
-                            amount: data.amount,
-                            type: data.type
-                        })
-                    }
-                    forecast.forecastData = forecastData
-                }
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Forecast list',
                     data: revenueForecastList.rows
                 })
-            }
-            if (revenueForecastList.rowCount > 0) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: 'Revenue forecast list',
-                    data: revenueForecastList.rows
-                })
-            } else {
+            }else {
                 res.json({
                     status: 200,
                     success: true,
@@ -173,27 +141,66 @@ module.exports.revenueForecastList = async (req, res) => {
     }
 }
 
+module.exports.forecastDetails = async (req, res) => {
+    try {
+        let { forecastId } = req.query
+        // Getting forecast list by user Id
+        let s3 = dbScript(db_sql['Q306'], { var1: forecastId });
+        let revenueForecastList = await connection.query(s3);
+        if (revenueForecastList.rowCount > 0) {
+            res.json({
+                status: 200,
+                success: true,
+                message: 'Forecast list',
+                data: revenueForecastList.rows
+            });
+        } else {
+            res.json({
+                status: 200,
+                success: true,
+                message: 'Empty forecast list',
+                data: []
+            });
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 module.exports.editRevenueForecast = async (req, res) => {
     try {
         let userId = req.user.id
         let {
             forecastId,
             timeline,
-            revenue,
-            currency,
-            growthWindow,
-            growthPercentage,
+            amount,
             startDate,
-            endDate
+            endDate,
+            forecastData
         } = req.body
-
+        await connection.query('BEGIN')
+        // Checking permission for role user with module name and user id.
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
-            await connection.query('BEGIN')
-            let s2 = dbScript(db_sql['Q199'], { var1: forecastId, var2: timeline, var3: revenue, var4: growthWindow, var5: growthPercentage, var6: startDate, var7: endDate, var8: checkPermission.rows[0].id, var9: checkPermission.rows[0].company_id, var10: currency })
+            let _dt = new Date().toISOString()
+            // Updating forecast with forecast id.
+            let s2 = dbScript(db_sql['Q199'], { var1: forecastId, var2: timeline, var3: amount,var4: startDate, var5: endDate, var6: _dt })
             let updateForecast = await connection.query(s2)
             if (updateForecast.rowCount > 0) {
+                for(let data of forecastData){
+                    if(data.id){
+                        let s3 = dbScript(db_sql['Q305'],{var1 : data.id, var2 : data.type, var3 : data.startDate, var4 : data.endDate, var5 : data.amount})
+                        let updateForecastData = await connection.query(s3)
+                    }else{
+                        let s4 = dbScript(db_sql['Q294'],{var1 : forecastId, var2 : data.amount, var3 : data.startDate, var4 : data.endDate, var5 : data.type, var6 : userId })
+                        let addForecastData = await connection.query(s3)
+                    }  
+                }
                 await connection.query('COMMIT')
                 res.json({
                     status: 200,
@@ -215,6 +222,7 @@ module.exports.editRevenueForecast = async (req, res) => {
             })
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,
@@ -223,6 +231,28 @@ module.exports.editRevenueForecast = async (req, res) => {
     }
 
 }
+
+// module.exports.auditForecast = async(req, res) => {
+//     try {
+//         let userId = req.user.id
+//         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+//         let checkPermission = await connection.query(s1)
+//         if (checkPermission.rows[0].permission_to_update) {
+
+//         }else{
+//             res.status(403).json({
+//                 success: false,
+//                 message: "Unathorised"
+//             })
+//         }
+//     } catch (error) {
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }
 
 module.exports.deleteRevenueForecast = async (req, res) => {
     try {
