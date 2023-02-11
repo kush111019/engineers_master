@@ -237,7 +237,7 @@ module.exports.createSalesCommission = async (req, res) => {
             totalCommission = totalCommission + commission
 
             let id = uuid.v4()
-            let s5 = dbScript(db_sql['Q53'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: checkPermission.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16: currency, var17: userId, var18: slabId, var19: leadId ,var20: totalCommission})
+            let s5 = dbScript(db_sql['Q53'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: checkPermission.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16: currency, var17: userId, var18: slabId, var19: leadId, var20: totalCommission })
             let createSalesConversion = await connection.query(s5)
             // add notification in notification list
             notification_typeId = createSalesConversion.rows[0].id;
@@ -1403,11 +1403,11 @@ module.exports.salesDetails = async (req, res) => {
                     data: []
                 })
             }
-        }else{
+        } else {
             res.status(403).json({
                 success: false,
                 message: "UnAthorised"
-            }) 
+            })
         }
     } catch (error) {
         res.json({
@@ -1490,10 +1490,10 @@ module.exports.updateSalesCommission = async (req, res) => {
                 }
             }
             totalCommission = totalCommission + commission
-            let s5 = dbScript(db_sql['Q63'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17: currency, var18: slabId, var19: leadId, var20: totalCommission})
+            let s5 = dbScript(db_sql['Q63'], { var1: customerId, var2: customerCommissionSplitId, var3: is_overwrite, var4: _dt, var5: salesCommissionId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17: currency, var18: slabId, var19: leadId, var20: totalCommission })
             let updateSalesCommission = await connection.query(s5)
             // update notification in notification list
-            await notificationsOperations({ type: 1, msg: 1.2, notification_typeId, notification_userId },userId);
+            await notificationsOperations({ type: 1, msg: 1.2, notification_typeId, notification_userId }, userId);
 
 
             let s6 = dbScript(db_sql['Q56'], { var1: customerCommissionSplitId, var2: checkPermission.rows[0].company_id })
@@ -2222,8 +2222,8 @@ module.exports.addRecognizedRevenue = async (req, res) => {
             let s3 = dbScript(db_sql['Q272'], { var0: id, var1: date, var2: amount, var3: targetAmount, var4: mysql_real_escape_string(notes), var5: invoice, var6: salesId, var7: checkPermission.rows[0].id, var8: checkPermission.rows[0].company_id })
             let addRecognizeRevenue = await connection.query(s3)
             await connection.query('COMMIT')
-            
-             //get Recognized Revenue total that submitted
+
+            //get Recognized Revenue total that submitted
             let s5 = dbScript(db_sql['Q300'], { var1: salesId })
             let recognizeRevenue = await connection.query(s5)
 
@@ -2256,10 +2256,10 @@ module.exports.addRecognizedRevenue = async (req, res) => {
                     }
                 }
             }
-            totalCommission = totalCommission + commission ;
-            let s6 = dbScript(db_sql['Q296'], { var1: totalCommission ,var2: salesId })
+            totalCommission = totalCommission + commission;
+            let s6 = dbScript(db_sql['Q296'], { var1: totalCommission, var2: salesId })
             let updateSalesData = await connection.query(s6)
-           
+
 
             if (addRecognizeRevenue.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -2320,6 +2320,38 @@ module.exports.recognizedRevenueList = async (req, res) => {
             res.status(403).json({
                 success: false,
                 message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.getRemainingTargetAmount = async (req, res) => {
+    try {
+        let salesId = req.query.id;
+        let s1 = dbScript(db_sql['Q271'], { var1: salesId })
+        let getSalesData = await connection.query(s1)
+
+        let s2 = dbScript(db_sql['Q300'], { var1: salesId })
+        let recognizedRevenueData = await connection.query(s2)
+        let remainingAmount = Number(getSalesData.rows[0].target_amount) - Number(recognizedRevenueData.rows[0].amount);
+        if (getSalesData.rowCount > 0) {
+            res.json({
+                status: 200,
+                success: true,
+                message: "Remaining amount showed successfully",
+                data: remainingAmount
+            })
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Something went wrong",
             })
         }
     } catch (error) {

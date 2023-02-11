@@ -102,6 +102,8 @@ router.get('/transferBackList', verifyTokenFn, controller.sales.transferBackList
 router.post('/uploadSalesInvoice', verifyTokenFn,uploadSalesInvoice.single('file'), controller.sales.uploadSalesInvoice)
 router.post('/addRecognizedRevenue', verifyTokenFn, controller.sales.addRecognizedRevenue)
 router.get('/recognizedRevenueList', verifyTokenFn, controller.sales.recognizedRevenueList)
+router.get('/getRemainingTargetAmount', verifyTokenFn, controller.sales.getRemainingTargetAmount)
+
 //----------------------------------------Reports------------------------------------------
 router.get('/revenuePerCustomer',verifyTokenFn, controller.reports.revenuePerCustomer)
 router.get('/revenuePerProduct',verifyTokenFn, controller.reports.revenuePerProduct)
