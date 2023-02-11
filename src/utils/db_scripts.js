@@ -921,8 +921,8 @@ const db_sql = {
     "Q231" :`UPDATE companies SET expiry_date = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
     "Q232" :`UPDATE companies SET expiry_date = '{var1}', user_count = '{var2}', updated_at = '{var3}' WHERE id = '{var4}' AND deleted_at IS NULL RETURNING *`,
 
-    "Q233" :`INSERT INTO marketing_budget(id, budget_year, quarter_one, quarter_two, quarter_three, quarter_four,user_id, company_id)
-             VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}') RETURNING *`,
+    "Q233" :`INSERT INTO marketing_budget(timeline,amount,start_date,end_date,created_by)
+             VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}') RETURNING *`,
 
     "Q234" :`INSERT INTO marketing_budget_description(id, budget_id,title, amount,user_id, company_id)
              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') RETURNING *`,
@@ -930,34 +930,58 @@ const db_sql = {
     "Q235" :`INSERT INTO marketing_budget_description_logs(id,budget_description_id,budget_id,title, amount,user_id, company_id)
              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}') RETURNING *`,
 
-    "Q236" :`INSERT INTO marketing_budget_logs(id,budget_id,budget_year, quarter_one, quarter_two, quarter_three, quarter_four,user_id, company_id)
-             VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}') RETURNING *`,
-    "Q237" :`SELECT
-              b.id, b.budget_year, b.quarter_one, b.quarter_two, b.quarter_three, 
-              b.quarter_four, b.is_finalize,b.created_at, b.user_id, d.id as description_id, d.title, d.amount,
-              u.full_name AS creator_name 
-             FROM 
-              marketing_budget AS b
-             INNER JOIN 
-              marketing_budget_description AS d ON d.budget_id = b.id
-             INNER JOIN 
-              users AS u ON u.id = b.user_id 
-             WHERE b.company_id = '{var1}' AND b.deleted_at IS NULL AND d.deleted_at IS NULL`,
+    "Q236" :`INSERT INTO marketing_budget_logs(budget_id,timeline,amount,start_date,end_date,created_by)
+             VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') RETURNING *`,
+    "Q237" :`SELECT 
+                b.id, b.timeline, b.amount, b.start_date,
+                b.end_date, b.created_by,b.created_at,
+                u1.full_name as creator_name,
+                (
+                  SELECT json_agg(marketing_budget_data.*)
+                    FROM marketing_budget_data
+                    WHERE marketing_budget_data.budget_id::uuid = b.id::uuid 
+                    AND marketing_budget_data.deleted_at IS NULL
+                ) as budget_data,
+                (
+                  SELECt json_agg(marketing_budget_description.*)
+                  FROM marketing_budget_description
+                  WHERE marketing_budget_description.budget_id::uuid = b.id::uuid
+                  AND marketing_budget_description.deleted_at IS NULL
+                )as budget_description
+              FROM 
+                marketing_budget AS b
+              LEFT JOIN users as u1 on u1.id::uuid = b.created_by::uuid	
+              WHERE 
+                (b.created_by = '{var1}') AND b.deleted_at IS NULL 
+              ORDER BY 
+                timeline ASC`,
     "Q238" :`UPDATE marketing_budget SET deleted_at = '{var2}' where id = '{var1}' AND deleted_at IS NULL RETURNING *`,
     "Q239" :`UPDATE marketing_budget_description SET deleted_at = '{var2}' where budget_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
-    "Q240" :`SELECT
-              b.id, b.budget_year, b.quarter_one, b.quarter_two, b.quarter_three, 
-              b.quarter_four, b.is_finalize,b.created_at, b.user_id, d.id as description_id, d.title, d.amount,
-              u.full_name AS creator_name  
-             FROM 
-              marketing_budget AS b
-             INNER JOIN 
-              marketing_budget_description AS d ON d.budget_id = b.id
-             INNER JOIN 
-              users AS u ON u.id = b.user_id 
-             WHERE b.user_id = '{var1}' AND b.deleted_at IS NULL AND d.deleted_at IS NULL`,
-    "Q241" :`UPDATE marketing_budget SET budget_year = '{var1}', quarter_one = '{var2}', quarter_two = '{var3}', quarter_three = '{var4}', 
-             quarter_four = '{var5}' WHERE id = '{var6}' AND deleted_at IS NULL RETURNING *`,
+    "Q240" :`SELECT 
+                b.id, b.timeline, b.amount, b.start_date,
+                b.end_date, b.created_by,b.created_at,
+                u1.full_name as creator_name,
+                (
+                  SELECT json_agg(marketing_budget_data.*)
+                    FROM marketing_budget_data
+                    WHERE marketing_budget_data.budget_id::uuid = b.id::uuid 
+                    AND marketing_budget_data.deleted_at IS NULL
+                ) as budget_data,
+                (
+                  SELECt json_agg(marketing_budget_description.*)
+                  FROM marketing_budget_description
+                  WHERE marketing_budget_description.budget_id::uuid = b.id::uuid
+                  AND marketing_budget_description.deleted_at IS NULL
+                )as budget_description
+              FROM 
+                marketing_budget AS b
+              LEFT JOIN users as u1 on u1.id::uuid = b.created_by::uuid	
+              WHERE 
+                (b.created_by IN ({var1})) AND b.deleted_at IS NULL 
+              ORDER BY 
+                timeline ASC`,
+    "Q241" :`UPDATE marketing_budget SET timeline = '{var1}', amount = '{var2}', start_date = '{var3}', end_date = '{var4}'
+              WHERE id = '{var6}' AND deleted_at IS NULL RETURNING *`,
     "Q242" :`UPDATE marketing_budget_description SET title = '{var1}', amount = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
     "Q243" :`SELECT
                b.id, b.budget_year, b.quarter_one, b.quarter_two, b.quarter_three, 
@@ -1456,7 +1480,7 @@ const db_sql = {
                 VALUES('{var1}', '{var2}', '{var3}', '{var4}') RETURNING *`,
       "Q309" : `UPDATE forecast SET deleted_at = '{var1}' WHERE assigned_to = '{var2}' AND id = '{var3}' RETURNING *`,
       "Q310" : `UPDATE forecast_data SET deleted_at = '{var1}' WHERE forecast_id = '{var2}' RETURNING *`,
-      "Q311" : `SELECT start_date, end_date, created_by,amount as forecast_amount,
+      "Q311" : `SELECT start_date, end_date,type, created_by,amount as forecast_amount,
                   (
                     SELECT json_agg(sc.id)
                     FROM sales_commission as sc
@@ -1469,7 +1493,12 @@ const db_sql = {
                         AND sc.closed_at BETWEEN fd.start_date::date AND fd.end_date::date 
                         AND sc.deleted_at is null
                   ) AS sales_data
-                FROM forecast_data AS fd WHERE fd.forecast_id = '{var1}' AND fd.deleted_at IS NULL`
+                FROM forecast_data AS fd WHERE fd.forecast_id = '{var1}' AND fd.deleted_at IS NULL`,
+      "Q312" : `INSERT INTO marketing_budget_data(budget_id, amount, start_date, end_date, type, created_by)
+                VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}' ) RETURNING *`,
+      "Q313" : `UPDATE marketing_budget_data SET deleted_at = '{var2}' where budget_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
+      "Q314" : `UPDATE marketing_budget_data SET amount = '{var1}', start_date = '{var2}', end_date = '{var3}', type = '{var4}'
+                WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *`
   
   
   }
