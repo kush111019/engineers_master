@@ -809,12 +809,14 @@ module.exports.actualVsForecast = async(req, res) => {
     try {
         let userId = req.user.id
         let { forecastId } = req.query
+        console.log(forecastId,"forecast id");
         await connection.query('BEGIN')
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-            
-
+            let s3 = dbScript(db_sql['Q295'],{var1 : forecastId})
+            let forecastData = await connection.query(s3)
+            console.log(forecastData.rows,"forecast data")
         }else{
             res.status(403).json({
                 success: false,
