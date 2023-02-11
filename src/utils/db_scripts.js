@@ -1463,12 +1463,13 @@ const db_sql = {
                     LEFT JOIN sales_closer AS c ON c.sales_commission_id = sc.id
                     LEFT JOIN sales_supporter AS s ON s.sales_commission_id = sc.id
                     WHERE 
-                      ( sc.user_id = fd.created_by OR c.closer_id::uuid = fd.created_by 
-                        OR s.supporter_id::uuid = fd.created_by) 
+                      ( sc.user_id = fd.created_by 
+                        OR c.closer_id::uuid = fd.created_by::uuid 
+                        OR s.supporter_id::uuid = fd.created_by::uuid ) 
                         AND sc.closed_at BETWEEN fd.start_date::date AND fd.end_date::date 
                         AND sc.deleted_at is null
                   ) AS sales_data
-                FROM forecast_data AS fd WHERE fd.forecast_id = '{var1}'`
+                FROM forecast_data AS fd WHERE fd.forecast_id = '{var1}'::uuid AND fd.deleted_at IS NULL`
   
   
   }
