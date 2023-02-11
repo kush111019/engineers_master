@@ -815,9 +815,36 @@ module.exports.actualVsForecast = async(req, res) => {
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-            let s3 = dbScript(db_sql['Q295'],{var1 : forecastId})
+            let s3 = dbScript(db_sql['Q311'],{var1 : forecastId})
             let forecastData = await connection.query(s3)
-            console.log(forecastData.rows,"forecast data")
+            if(forecastData.rowCount > 0){
+                for(let data of forecastData.rows){
+                    let amount = 0
+                    if(data.sales_data){
+                        for(let id of data.sales_data){
+                            let s2 = dbScript(db_sql['Q300'], { var1: id })
+                            let recognizedRevenueData = await connection.query(s2)
+                            amount = (recognizedRevenueData.rowCount > 0) ? amount + recognizedRevenueData.rows[0].amount : amount
+                        }
+                        data.recognized_amount = amount
+                    }else{
+                        data.recognized_amount = 0
+                    }
+                }
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty forecast Data",
+                    data : forecastData.rows
+                })
+            }else{
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty forecast Data",
+                    data : []
+                })
+            }
         }else{
             res.status(403).json({
                 success: false,

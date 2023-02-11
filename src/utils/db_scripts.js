@@ -1456,7 +1456,19 @@ const db_sql = {
                 VALUES('{var1}', '{var2}', '{var3}', '{var4}') RETURNING *`,
       "Q309" : `UPDATE forecast SET deleted_at = '{var1}' WHERE assigned_to = '{var2}' AND id = '{var3}' RETURNING *`,
       "Q310" : `UPDATE forecast_data SET deleted_at = '{var1}' WHERE forecast_id = '{var2}' RETURNING *`,
-      "Q311" : ``
+      "Q311" : `SELECT start_date, end_date, created_by,amount as forecast_amount,
+                  (
+                    SELECT json_agg(sc.id)
+                    FROM sales_commission as sc
+                    LEFT JOIN sales_closer AS c ON c.sales_commission_id = sc.id
+                    LEFT JOIN sales_supporter AS s ON s.sales_commission_id = sc.id
+                    WHERE 
+                      ( sc.user_id = fd.created_by OR c.closer_id = fd.created_by 
+                        OR s.supporter_id = fd.created_by) 
+                        AND sc.closed_at BETWEEN fd.start_date::date AND fd.end_date::date 
+                        AND sc.deleted_at is null
+                  ) AS sales_data
+                FROM forecast_data AS fd WHERE fd.forecast_id = '{var1}'`
   
   
   }
