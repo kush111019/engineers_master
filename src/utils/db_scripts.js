@@ -937,7 +937,7 @@ const db_sql = {
              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') RETURNING *`,
     "Q237" :`SELECT 
                 b.id, b.timeline, b.amount, b.start_date,
-                b.end_date, b.created_by,b.created_at,
+                b.end_date, b.created_by,b.created_at,b.is_finalize,
                 u1.full_name as creator_name,
                 (
                   SELECT json_agg(marketing_budget_data.*)
