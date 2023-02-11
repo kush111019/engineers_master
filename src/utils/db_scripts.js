@@ -157,12 +157,12 @@ const db_sql = {
                 (
                   SELECT json_agg(forecast_data.*)
                     from forecast_data
-                    where forecast_data.forecast_id::uuid = f.id
+                    where forecast_data.forecast_id::uuid = f.id AND forecast_data.deleted_at IS NULL
                 ) as forecast_data,
 				        (
                   SELECT json_agg(forecast) 
                     from forecast
-                    where forecast.pid::varchar = f.id::varchar
+                    where forecast.pid::varchar = f.id::varchar AND forecast.deleted_at IS NULL
                 ) as assigned_forecast
               FROM 
                 forecast AS f
@@ -757,7 +757,7 @@ const db_sql = {
                 user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NOT NULL 
               ORDER BY 
                 timeline ASC`,   
-    "Q198"  :`UPDATE revenue_forecast SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' RETURNING *`,
+    "Q198"  :`UPDATE forecast SET deleted_at = '{var1}' WHERE id = '{var2}' OR pid = '{var2}' RETURNING *`,
     "Q199"  :`UPDATE 
                 forecast 
               SET 
@@ -1425,12 +1425,12 @@ const db_sql = {
                     (
                       SELECT json_agg(forecast_data.*)
                         from forecast_data
-                        where forecast_data.forecast_id::uuid = f.id
+                        where forecast_data.forecast_id::uuid = f.id AND forecast_data.deleted_at IS NULL
                     ) as forecast_data,
                     (
                       SELECT json_agg(forecast)
                         from forecast
-                        where forecast.pid::varchar = f.id::varchar
+                        where forecast.pid::varchar = f.id::varchar AND forecast.deleted_at IS NULL
                     ) as assigned_forecast,
                     (
                       SELECT json_agg(fa.*)
@@ -1453,7 +1453,8 @@ const db_sql = {
                 WHERE 
                   id = '{var1}' AND deleted_at IS NULL RETURNING *`,
       "Q308" : `INSERT INTO forecast_audit(forecast_id,amount,reason,created_by)
-                VALUES('{var1}', '{var2}', '{var3}', '{var4}') RETURNING *`
+                VALUES('{var1}', '{var2}', '{var3}', '{var4}') RETURNING *`,
+      "Q309" : `UPDATE forecast SET deleted_at = '{var1}' WHERE assigned_to = '{var2}' RETURNING *`,
   
   
   }
