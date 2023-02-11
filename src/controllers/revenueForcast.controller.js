@@ -824,7 +824,7 @@ module.exports.actualVsForecast = async(req, res) => {
                         for(let id of data.sales_data){
                             let s2 = dbScript(db_sql['Q300'], { var1: id })
                             let recognizedRevenueData = await connection.query(s2)
-                            amount = (recognizedRevenueData.rowCount > 0) ? amount + recognizedRevenueData.rows[0].amount : amount
+                            amount = (recognizedRevenueData.rowCount > 0) ? amount + Number(recognizedRevenueData.rows[0].amount) : amount
                         }
                         data.recognized_amount = amount
                     }else{
