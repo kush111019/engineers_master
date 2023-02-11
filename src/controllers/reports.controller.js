@@ -24,49 +24,47 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 if (customerCompanies.rowCount > 0) {
                     let revenuePerCustomerArr = []
                     for (let data of customerCompanies.rows) {
-                        if (data.sales_type == 'Perpetual') {
-                            let s3 = dbScript(db_sql['Q273'], { var1: data.sales_commission_id })
-                            let recognizedRevenue = await connection.query(s3)
-                            if (recognizedRevenue.rowCount > 0) {
-                                revenuePerCustomerArr.push({
-                                    customer_name: data.customer_name || "",
-                                    revenue: recognizedRevenue.rows[0].recognized_amount
-                                })
-                            }
-                        } else {
-                            let s3 = dbScript(db_sql['Q274'], { var1: data.sales_commission_id })
-                            let recognizedRevenue = await connection.query(s3)
-                            if (recognizedRevenue.rowCount > 0) {
-                                revenuePerCustomerArr.push({
-                                    customer_name: data.customer_name || "",
-                                    revenue: recognizedRevenue.rows[0].recognized_amount
-                                })
-                            }
+                        let s5 = dbScript(db_sql['Q300'], { var1: data.sales_commission_id })
+                        let recognizedRevenueData = await connection.query(s5)
+                        if (recognizedRevenueData.rowCount > 0) {
+                            revenuePerCustomerArr.push({
+                                customer_name: data.customer_name,
+                                revenue: recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0
+                            })
                         }
                     }
-                    let returnData = await reduceArrayWithCustomer(revenuePerCustomerArr)
-                    if (returnData.length > 0) {
-                        let paginatedArr = await paginatedResults(returnData, page)
-                        if (orderBy.toLowerCase() == 'asc') {
-                            paginatedArr = paginatedArr.sort((a, b) => {
-                                return a.revenue - b.revenue
-                            })
-                        } else {
-                            paginatedArr = paginatedArr.sort((a, b) => {
-                                return b.revenue - a.revenue
+                    if (revenuePerCustomerArr.length > 0) {
+                        let returnData = await reduceArrayWithCustomer(revenuePerCustomerArr)
+                        if (returnData.length > 0) {
+                            let paginatedArr = await paginatedResults(returnData, page)
+                            if (orderBy.toLowerCase() == 'asc') {
+                                paginatedArr = paginatedArr.sort((a, b) => {
+                                    return a.revenue - b.revenue
+                                })
+                            } else {
+                                paginatedArr = paginatedArr.sort((a, b) => {
+                                    return b.revenue - a.revenue
+                                })
+                            }
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "Revenue per customer",
+                                data: paginatedArr
                             })
                         }
+                    } else {
                         res.json({
                             status: 200,
-                            success: true,
-                            message: "Revenue per customer",
-                            data: paginatedArr
+                            success: false,
+                            message: "Empty revenue per customer",
+                            data: []
                         })
                     }
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: "Empty revenue per customer",
                         data: []
                     })
@@ -82,32 +80,19 @@ module.exports.revenuePerCustomer = async (req, res) => {
             let revenuePerCustomerArr = []
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
-                let s2 = dbScript(db_sql['Q170'], { var1: roleUsers.join("','"), var2: orderBy, var3: sDate, var4: eDate })
+                let s2 = dbScript(db_sql['Q170'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
                 let customerCompanies = await connection.query(s2)
                 if (customerCompanies.rowCount > 0) {
                     for (let data of customerCompanies.rows) {
-                        if (data.sales_type == 'Perpetual') {
-                            let s3 = dbScript(db_sql['Q273'], { var1: data.sales_commission_id })
-                            let recognizedRevenue = await connection.query(s3)
-                            if (recognizedRevenue.rowCount > 0) {
-                                revenuePerCustomerArr.push({
-                                    customer_name: data.customer_name || "",
-                                    revenue: recognizedRevenue.rows[0].recognized_amount
-                                })
-                            }
-                        } else {
-                            let s4 = dbScript(db_sql['Q274'], { var1: data.sales_commission_id })
-                            let recognizedRevenue = await connection.query(s4)
-                            if (recognizedRevenue.rowCount > 0) {
-                                revenuePerCustomerArr.push({
-                                    customer_name: data.customer_name || "",
-                                    revenue: recognizedRevenue.rows[0].recognized_amount
-
-                                })
-                            }
+                        let s5 = dbScript(db_sql['Q300'], { var1: data.sales_commission_id })
+                        let recognizedRevenueData = await connection.query(s5)
+                        if (recognizedRevenueData.rowCount > 0) {
+                            revenuePerCustomerArr.push({
+                                customer_name: data.customer_name,
+                                revenue: recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0
+                            })
                         }
                     }
-                }
                 if (revenuePerCustomerArr.length > 0) {
                     let returnData = await reduceArrayWithCustomer(revenuePerCustomerArr)
                     if (returnData.length > 0) {
@@ -131,7 +116,15 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
+                        message: "Empty revenue per customer",
+                        data: []
+                    })
+                }
+             } else {
+                    res.json({
+                        status: 200,
+                        success: false,
                         message: "Empty revenue per customer",
                         data: []
                     })
@@ -179,24 +172,13 @@ module.exports.revenuePerProduct = async (req, res) => {
                 if (revenuePerProduct.rowCount > 0) {
                     let revenuePerProductArr = []
                     for (let data of revenuePerProduct.rows) {
-                        if (data.sales_type == 'Perpetual') {
-                            let s3 = dbScript(db_sql['Q273'], { var1: data.sales_commission_id })
-                            let recognizedRevenue = await connection.query(s3)
-                            if (recognizedRevenue.rowCount > 0) {
-                                revenuePerProductArr.push({
-                                    product_name: data.product_name,
-                                    revenue: recognizedRevenue.rows[0].recognized_amount
-                                })
-                            }
-                        } else {
-                            let s3 = dbScript(db_sql['Q274'], { var1: data.sales_commission_id })
-                            let recognizedRevenue = await connection.query(s3)
-                            if (recognizedRevenue.rowCount > 0) {
-                                revenuePerProductArr.push({
-                                    product_name: data.product_name,
-                                    revenue: recognizedRevenue.rows[0].recognized_amount
-                                })
-                            }
+                        let s5 = dbScript(db_sql['Q300'], { var1: data.sales_commission_id })
+                        let recognizedRevenueData = await connection.query(s5)
+                        if (recognizedRevenueData.rowCount > 0) {
+                            revenuePerProductArr.push({
+                                product_name: data.product_name,
+                                revenue: recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0
+                            })
                         }
                     }
                     let returnData = await reduceArrayWithProduct(revenuePerProductArr)
@@ -218,10 +200,18 @@ module.exports.revenuePerProduct = async (req, res) => {
                             data: paginatedArr
                         })
                     }
+                    else {
+                        res.json({
+                            status: 200,
+                            success: false,
+                            message: "Empty revenue per product",
+                            data: []
+                        })
+                    }
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: "Empty revenue per product",
                         data: []
                     })
@@ -237,56 +227,51 @@ module.exports.revenuePerProduct = async (req, res) => {
             let revenuePerProductArr = []
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
-                let s4 = dbScript(db_sql['Q171'], { var1: roleUsers.join("','"), var2: orderBy, var3: sDate, var4: eDate })
-                // console.log(s4,"s4");
+                let s4 = dbScript(db_sql['Q171'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
                 let revenuePerProduct = await connection.query(s4)
                 if (revenuePerProduct.rowCount > 0) {
                     for (let product of revenuePerProduct.rows) {
-                        if (product.sales_type == 'Perpetual') {
-                            let s3 = dbScript(db_sql['Q273'], { var1: product.sales_commission_id })
-                            let recognizedRevenue = await connection.query(s3)
-                            if (recognizedRevenue.rowCount > 0) {
-                                revenuePerProductArr.push({
-                                    product_name: product.product_name,
-                                    revenue: recognizedRevenue.rows[0].recognized_amount
-                                })
-                            }
-                        } else {
-                            let s4 = dbScript(db_sql['Q274'], { var1: product.sales_commission_id })
-                            let recognizedRevenue = await connection.query(s4)
-                            if (recognizedRevenue.rowCount > 0) {
-                                revenuePerProductArr.push({
-                                    product_name: product.product_name,
-                                    revenue: recognizedRevenue.rows[0].recognized_amount
-                                })
-                            }
+                        let s5 = dbScript(db_sql['Q300'], { var1: product.sales_commission_id })
+                        let recognizedRevenueData = await connection.query(s5)
+                        if (recognizedRevenueData.rowCount > 0) {
+                            revenuePerProductArr.push({
+                                product_name: product.product_name,
+                                revenue: recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0
+                            })
                         }
                     }
-                }
-                if (revenuePerProductArr.length > 0) {
-                    let returnData = await reduceArrayWithProduct(revenuePerProductArr)
-                    if (returnData.length > 0) {
-                        let paginatedArr = await paginatedResults(returnData, page)
-                        if (orderBy.toLowerCase() == 'asc') {
-                            paginatedArr = paginatedArr.sort((a, b) => {
-                                return a.revenue - b.revenue
-                            })
-                        } else {
-                            paginatedArr = paginatedArr.sort((a, b) => {
-                                return b.revenue - a.revenue
+                    if (revenuePerProductArr.length > 0) {
+                        let returnData = await reduceArrayWithProduct(revenuePerProductArr)
+                        if (returnData.length > 0) {
+                            let paginatedArr = await paginatedResults(returnData, page)
+                            if (orderBy.toLowerCase() == 'asc') {
+                                paginatedArr = paginatedArr.sort((a, b) => {
+                                    return a.revenue - b.revenue
+                                })
+                            } else {
+                                paginatedArr = paginatedArr.sort((a, b) => {
+                                    return b.revenue - a.revenue
+                                })
+                            }
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "Revenue per product",
+                                data: paginatedArr
                             })
                         }
+                    } else {
                         res.json({
                             status: 200,
                             success: true,
-                            message: "Revenue per product",
-                            data: paginatedArr
+                            message: "Empty revenue per product",
+                            data: revenuePerProductArr
                         })
                     }
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: "Empty revenue per product",
                         data: revenuePerProductArr
                     })
@@ -538,7 +523,7 @@ module.exports.totalRevenue = async (req, res) => {
                     if (recognizedRevenueData.rowCount > 0) {
                         totalRevenueArr.push({
                             date: data.date,
-                            revenue: recognizedRevenueData.rows[0].amount
+                            revenue: recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0
                         })
                     }
                 }
@@ -581,7 +566,7 @@ module.exports.totalRevenue = async (req, res) => {
                     if (recognizedRevenueData.rowCount > 0) {
                         totalRevenueArr.push({
                             date: data.date,
-                            revenue: recognizedRevenueData.rows[0].amount
+                            revenue: recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0
                         })
                     }
                 }
