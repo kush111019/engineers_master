@@ -833,8 +833,8 @@ module.exports.actualVsForecast = async(req, res) => {
                 }
                 res.json({
                     status: 200,
-                    success: false,
-                    message: "Empty forecast Data",
+                    success: true,
+                    message: "Forecast Data",
                     data : forecastData.rows
                 })
             }else{
