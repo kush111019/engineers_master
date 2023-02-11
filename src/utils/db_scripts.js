@@ -569,9 +569,9 @@ const db_sql = {
                 sc.sales_type
               FROM 
                 sales_commission AS sc 
-              INNER JOIN 
+              LEFT JOIN 
                 sales_closer AS cl ON sc.id = cl.sales_commission_id  
-              INNER JOIN 
+              LEFT JOIN 
                 sales_supporter AS s ON sc.id = s.sales_commission_id 
               WHERE 
               (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1})) AND
@@ -1060,12 +1060,12 @@ const db_sql = {
      "Q258" : `SELECT 
                   DISTINCT(sc.id) as sales_commission_id,
                   u.full_name AS sales_rep,
-                  sc.closed_at,sc.slab_id,sc.sales_type
+                  sc.closed_at,sc.booking_commission,sc.revenue_commission
               FROM  
                   sales_commission AS sc 
-              INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
-              INNER JOIN sales_supporter AS s ON s.sales_commission_id = sc.id
-              INNER JOIN users AS u ON u.id = cr.closer_id
+              LEFT JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
+              LEFT JOIN sales_supporter AS s ON s.sales_commission_id = sc.id
+              LEFT JOIN users AS u ON u.id = cr.closer_id
               WHERE 
                   sc.closed_at is not null 
                   AND (sc.user_id IN ({var1}) OR cr.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
