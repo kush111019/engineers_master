@@ -529,28 +529,17 @@ module.exports.totalRevenue = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
             let s4 = dbScript(db_sql['Q88'], { var1: checkPermission.rows[0].company_id, var2: format })
-            let targetData = await connection.query(s4)
-            if (targetData.rowCount > 0) {
+            let salesData = await connection.query(s4)
+            if (salesData.rowCount > 0) {
                 let totalRevenueArr = []
-                for (let data of targetData.rows) {
-                    if (data.sales_type == 'Perpetual') {
-                        let s5 = dbScript(db_sql['Q273'], { var1: data.sales_commission_id })
-                        let recognizedRevenue = await connection.query(s5)
-                        if (recognizedRevenue.rowCount > 0) {
-                            totalRevenueArr.push({
-                                date: data.date,
-                                revenue: recognizedRevenue.rows[0].recognized_amount
-                            })
-                        }
-                    } else {
-                        let s6 = dbScript(db_sql['Q274'], { var1: data.sales_commission_id })
-                        let recognizedRevenue = await connection.query(s6)
-                        if (recognizedRevenue.rowCount > 0) {
-                            totalRevenueArr.push({
-                                date: data.date,
-                                revenue: recognizedRevenue.rows[0].recognized_amount
-                            })
-                        }
+                for (let data of salesData.rows) {
+                    let s5 = dbScript(db_sql['Q300'], { var1: data.sales_commission_id })
+                    let recognizedRevenueData = await connection.query(s5)
+                    if (recognizedRevenueData.rowCount > 0) {
+                        totalRevenueArr.push({
+                            date: data.date,
+                            revenue: recognizedRevenueData.rows[0].amount
+                        })
                     }
                 }
                 if (totalRevenueArr.length > 0) {
@@ -577,46 +566,42 @@ module.exports.totalRevenue = async (req, res) => {
                     status: 200,
                     success: true,
                     message: "Empty Total revenue",
-                    data: targetData.rows
+                    data: salesData.rows
                 })
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            let totalRevenue = [];
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            let s4 = dbScript(db_sql['Q173'], { var1: roleUsers.join("','"), var2: format })
-            let targetData = await connection.query(s4)
-            if (targetData.rowCount > 0) {
-                for (let data of targetData.rows) {
-                    if (data.sales_type == 'Perpetual') {
-                        let s5 = dbScript(db_sql['Q273'], { var1: data.sales_commission_id })
-                        let recognizedRevenue = await connection.query(s5)
-                        if (recognizedRevenue.rowCount > 0) {
-                            totalRevenue.push({
-                                date: data.date,
-                                revenue: recognizedRevenue.rows[0].recognized_amount
-                            })
-                        }
-                    } else {
-                        let s6 = dbScript(db_sql['Q274'], { var1: data.sales_commission_id })
-                        let recognizedRevenue = await connection.query(s6)
-                        if (recognizedRevenue.rowCount > 0) {
-                            totalRevenue.push({
-                                date: data.date,
-                                revenue: recognizedRevenue.rows[0].recognized_amount
-                            })
-                        }
+            let s4 = dbScript(db_sql['Q173'], { var1: roleUsers.join(","), var2: format })
+            let salesData = await connection.query(s4)
+            if (salesData.rowCount > 0) {
+                let totalRevenueArr = []
+                for (let data of salesData.rows) {
+                    let s5 = dbScript(db_sql['Q300'], { var1: data.sales_commission_id })
+                    let recognizedRevenueData = await connection.query(s5)
+                    if (recognizedRevenueData.rowCount > 0) {
+                        totalRevenueArr.push({
+                            date: data.date,
+                            revenue: recognizedRevenueData.rows[0].amount
+                        })
                     }
                 }
-            }
-            if (totalRevenue.length > 0) {
-                let finalArray = await reduceArray(totalRevenue)
-                if (finalArray.length > 0) {
-                    let paginatedArr = await paginatedResults1(finalArray, page, limit)
+                if (totalRevenueArr.length > 0) {
+                    let finalArray = await reduceArray(totalRevenueArr)
+                    if (finalArray.length > 0) {
+                        let paginatedArr = await paginatedResults1(finalArray, page, limit)
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Total revenue",
+                            data: paginatedArr
+                        })
+                    }
+                } else {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "Total revenue",
-                        data: paginatedArr
+                        message: "Empty Total revenue",
+                        data: totalRevenueArr
                     })
                 }
             } else {
@@ -624,7 +609,7 @@ module.exports.totalRevenue = async (req, res) => {
                     status: 200,
                     success: true,
                     message: "Empty Total revenue",
-                    data: totalRevenue
+                    data: salesData.rows
                 })
             }
         } else {

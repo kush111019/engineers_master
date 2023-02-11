@@ -569,9 +569,9 @@ const db_sql = {
                 sc.sales_type
               FROM 
                 sales_commission AS sc 
-              INNER JOIN 
+              LEFT JOIN 
                 sales_closer AS cl ON sc.id = cl.sales_commission_id  
-              INNER JOIN 
+              LEFT JOIN 
                 sales_supporter AS s ON sc.id = s.sales_commission_id 
               WHERE 
               (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1})) AND
