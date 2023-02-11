@@ -103,6 +103,7 @@ router.post('/uploadSalesInvoice', verifyTokenFn,uploadSalesInvoice.single('file
 router.post('/addRecognizedRevenue', verifyTokenFn, controller.sales.addRecognizedRevenue)
 router.get('/recognizedRevenueList', verifyTokenFn, controller.sales.recognizedRevenueList)
 router.get('/getRemainingTargetAmount', verifyTokenFn, controller.sales.getRemainingTargetAmount)
+router.get('/getAllApiDeatilsRelatedSales', verifyTokenFn, controller.sales.getAllApiDeatilsRelatedSales)
 
 //----------------------------------------Reports------------------------------------------
 router.get('/revenuePerCustomer',verifyTokenFn, controller.reports.revenuePerCustomer)

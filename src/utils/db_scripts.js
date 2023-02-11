@@ -20,11 +20,12 @@ const db_sql = {
     "Q15"  : `SELECT 
                 u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
                 u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
-                u1.is_main_admin, u1.created_by, u2.full_name AS creator_name 
+                u1.is_main_admin, u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName
               FROM 
                 users AS u1 
               INNER JOIN 
                 users AS u2 ON u2.id = u1.created_by  
+              INNER JOIN roles as r on r.id = u1.role_id
               WHERE 
                 u1.company_id = '{var1}' AND u1.deleted_at IS NULL 
               ORDER BY 
@@ -110,6 +111,7 @@ const db_sql = {
     "Q52"  : `SELECT 
                 c.id, c.customer_company_id ,c.customer_name, c.source, 
                 c.user_id,c.lead_id, c.address, c.deleted_at, c.is_rejected,
+                c.business_contact_id, c.revenue_contact_id ,
                 u.full_name AS created_by 
               FROM 
                 customers AS c 
@@ -1456,7 +1458,45 @@ const db_sql = {
                 VALUES('{var1}', '{var2}', '{var3}', '{var4}') RETURNING *`,
       "Q309" : `UPDATE forecast SET deleted_at = '{var1}' WHERE assigned_to = '{var2}' AND id = '{var3}' RETURNING *`,
       "Q310" : `UPDATE forecast_data SET deleted_at = '{var1}' WHERE forecast_id = '{var2}' RETURNING *`,
-      "Q311" : ``
+      "Q311" : ``,
+      "Q315" : `SELECT 
+                  p.id, p.product_name, p.product_image, p.description, p.available_quantity, p.price, 
+                  p.end_of_life, p.currency, p.company_id, p.created_at, p.updated_at, p.user_id, u.full_name as created_by 
+                FROM 
+                  products AS p
+                INNER JOIN 
+                  users AS u ON p.user_id = u.id
+                WHERE 
+                  p.user_id IN ({var1}) AND p.deleted_at IS NULL
+                ORDER BY 
+                  created_at DESC`, 
+      "Q316" : `SELECT c.id, c.customer_company_id ,c.customer_name, c.source, c.user_id, c.address, c.deleted_at, c.business_contact_id, c.revenue_contact_id ,
+                  u.full_name AS created_by 
+                FROM 
+                  customers AS c 
+                INNER JOIN 
+                  users AS u ON u.id = c.user_id
+                WHERE 
+                  c.user_id IN ({var1}) 
+                AND 
+                  c.is_rejected = '{var2}'`,
+      "Q317" : `SELECT 
+                  u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
+                  u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
+                  u1.is_main_admin, u1.created_by, u2.full_name AS creator_name 
+                FROM 
+                  users AS u1 
+                INNER JOIN 
+                  users AS u2 ON u2.id = u1.created_by  
+                WHERE 
+                  u1.id IN ({var1}) AND u1.deleted_at IS NULL 
+                ORDER BY 
+                  created_at DESC`,
+      "Q318" : `SELECT * 
+                FROM 
+                  commission_split
+                WHERE 
+                  user_id IN ({var1}) AND deleted_at IS NULL`,
   
   
   }
