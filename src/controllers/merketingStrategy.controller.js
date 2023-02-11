@@ -180,29 +180,29 @@ module.exports.addBudget = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_create) {
 
-
             let s2 = dbScript(db_sql['Q233'], { var1: timeline, var2: amount, var3: startDate, var4: endDate, var5: userId })
             let createBudget = await connection.query(s2)
 
             if (createBudget.rowCount > 0) {
-                for (let descData of description) {
-                    let desId = uuid.v4()
-                    let s3 = dbScript(db_sql['Q234'], { var1: desId, var2: createBudget.rows[0].id, var3: descData.title, var4: descData.amount, var5: checkPermission.rows[0].id, var6: checkPermission.rows[0].company_id })
-                    let addDescription = await connection.query(s3)
+                if (description.length > 0) {
+                    for (let descData of description) {
+                        let desId = uuid.v4()
+                        let s3 = dbScript(db_sql['Q234'], { var1: desId, var2: createBudget.rows[0].id, var3: descData.title, var4: descData.amount, var5: checkPermission.rows[0].id, var6: checkPermission.rows[0].company_id })
+                        let addDescription = await connection.query(s3)
 
-                    let logDesId = uuid.v4()
-                    let s4 = dbScript(db_sql['Q235'], { var1: logDesId, var2: addDescription.rows[0].id, var3: createBudget.rows[0].id, var4: descData.title, var5: descData.amount, var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
-                    let addDescLog = await connection.query(s4)
+                        let logDesId = uuid.v4()
+                        let s4 = dbScript(db_sql['Q235'], { var1: logDesId, var2: addDescription.rows[0].id, var3: createBudget.rows[0].id, var4: descData.title, var5: descData.amount, var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
+                        let addDescLog = await connection.query(s4)
+                    }
                 }
-
                 let s5 = dbScript(db_sql['Q236'], { var1: createBudget.rows[0].id, var2: timeline, var3: amount, var4: startDate, var5: endDate, var6: userId })
                 let addBudgetLog = await connection.query(s5)
-
-                for (let data of budgetData) {
-                    let s6 = dbScript(db_sql['Q312'], { var1: createBudget.rows[0].id, var2: data.amount, var3: data.startDate, var4: data.endDate, var5: type, var6: userId })
-                    let addBudgetData = await connection.query(s6)
+                if (budgetData.length > 0) {
+                    for (let data of budgetData) {
+                        let s6 = dbScript(db_sql['Q312'], { var1: createBudget.rows[0].id, var2: data.amount, var3: data.startDate, var4: data.endDate, var5: type, var6: userId })
+                        let addBudgetData = await connection.query(s6)
+                    }
                 }
-
                 if (addBudgetLog.rowCount > 0) {
                     await connection.query('COMMIT')
                     res.json({
@@ -369,28 +369,31 @@ module.exports.updateBudget = async (req, res) => {
             let updateBudget = await connection.query(s2)
             let s5 = dbScript(db_sql['Q236'], { var1: budgetId, var2: timeline, var3: amount, var4: startDate, var5: endDate, var6: userId })
             let addBudgetLog = await connection.query(s5)
-
-            for (let data of budgetData) {
-                let s6 = dbScript(db_sql['Q314'], { var1: data.amount, var2: data.start_date, var3: data.end_date, var4: type, var5: data.id })
-                let updateBudgetData = await connection.query(s6)
+            if (budgetData.length > 0) {
+                for (let data of budgetData) {
+                    let s6 = dbScript(db_sql['Q314'], { var1: data.amount, var2: data.start_date, var3: data.end_date, var4: type, var5: data.id })
+                    let updateBudgetData = await connection.query(s6)
+                }
             }
-            for (let desc of description) {
-                if (desc.id != '') {
-                    let s3 = dbScript(db_sql['Q242'], { var1: desc.title, var2: desc.amount, var3: desc.id })
-                    let updateDescription = await connection.query(s3)
+            if (description.length > 0) {
+                for (let desc of description) {
+                    if (desc.id != '') {
+                        let s3 = dbScript(db_sql['Q242'], { var1: desc.title, var2: desc.amount, var3: desc.id })
+                        let updateDescription = await connection.query(s3)
 
-                    let logDesId = uuid.v4()
-                    let s4 = dbScript(db_sql['Q235'], { var1: logDesId, var2: updateDescription.rows[0].id, var3: budgetId, var4: desc.title, var5: desc.amount, var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
-                    let addDescLog = await connection.query(s4)
+                        let logDesId = uuid.v4()
+                        let s4 = dbScript(db_sql['Q235'], { var1: logDesId, var2: updateDescription.rows[0].id, var3: budgetId, var4: desc.title, var5: desc.amount, var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
+                        let addDescLog = await connection.query(s4)
 
-                } else {
-                    let desId = uuid.v4()
-                    let s5 = dbScript(db_sql['Q234'], { var1: desId, var2: budgetId, var3: desc.title, var4: desc.amount, var5: checkPermission.rows[0].id, var6: checkPermission.rows[0].company_id })
-                    let addDescription = await connection.query(s5)
+                    } else {
+                        let desId = uuid.v4()
+                        let s5 = dbScript(db_sql['Q234'], { var1: desId, var2: budgetId, var3: desc.title, var4: desc.amount, var5: checkPermission.rows[0].id, var6: checkPermission.rows[0].company_id })
+                        let addDescription = await connection.query(s5)
 
-                    let logDesId = uuid.v4()
-                    let s6 = dbScript(db_sql['Q235'], { var1: logDesId, var2: addDescription.rows[0].id, var3: budgetId, var4: desc.title, var5: desc.amount, var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
-                    let addDescLog = await connection.query(s6)
+                        let logDesId = uuid.v4()
+                        let s6 = dbScript(db_sql['Q235'], { var1: logDesId, var2: addDescription.rows[0].id, var3: budgetId, var4: desc.title, var5: desc.amount, var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
+                        let addDescLog = await connection.query(s6)
+                    }
                 }
             }
             if (updateBudget.rowCount > 0 && addBudgetLog.rowCount > 0) {
