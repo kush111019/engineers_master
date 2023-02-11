@@ -1468,7 +1468,7 @@ const db_sql = {
                         AND sc.closed_at BETWEEN fd.start_date::date AND fd.end_date::date 
                         AND sc.deleted_at is null
                   ) AS sales_data
-                FROM forecast_data AS fd WHERE fd.forecast_id = '{var1}'`
+                FROM forecast_data AS fd WHERE fd.forecast_id::varchar = '{var1}'`
   
   
   }
