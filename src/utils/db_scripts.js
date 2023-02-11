@@ -246,7 +246,7 @@ const db_sql = {
                   sc.sales_type
               FROM 
                   sales_commission sc
-                  INNER JOIN customers c ON c.id = sc.customer_id
+                  LEFT JOIN customers c ON c.id = sc.customer_id
               WHERE 
                   sc.closed_at is not null AND 
                   sc.company_id = '{var1}' AND 
@@ -407,11 +407,11 @@ const db_sql = {
                   p.product_name
               FROM 
                   sales_commission AS sc 
-              INNER JOIN 
+              LEFT JOIN 
                   customers AS c ON sc.customer_id = c.id 
-              INNER JOIN 
+              LEFT JOIN 
                   product_in_sales AS ps ON sc.id = ps.sales_commission_id
-              INNER JOIN 
+              LEFT JOIN 
                   products AS p ON p.id = ps.product_id
               WHERE 
                   sc.company_id = '{var1}'
@@ -515,10 +515,10 @@ const db_sql = {
                   sc.sales_type
               FROM 
                   sales_commission sc
-              INNER JOIN customers c ON c.id = sc.customer_id
-              INNER JOIN 
+              LEFT JOIN customers c ON c.id = sc.customer_id
+              LEFT JOIN 
                 sales_closer AS cl ON sc.id = cl.sales_commission_id  
-              INNER JOIN 
+              LEFT JOIN 
                 sales_supporter AS s ON sc.id = s.sales_commission_id 
               WHERE 
                   sc.closed_at is not null AND 
@@ -532,13 +532,13 @@ const db_sql = {
                   sc.sales_type
               FROM 
                   sales_commission AS sc 
-              INNER JOIN 
+              LEFT JOIN 
                   product_in_sales AS ps ON sc.id = ps.sales_commission_id
-              INNER JOIN 
+              LEFT JOIN 
                   products AS p ON p.id = ps.product_id
-              INNER JOIN 
+              LEFT JOIN 
                 sales_closer AS cl ON sc.id = cl.sales_commission_id  
-              INNER JOIN 
+              LEFT JOIN 
                 sales_supporter AS s ON sc.id = s.sales_commission_id 
               WHERE 
                   (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
