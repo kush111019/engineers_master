@@ -143,6 +143,7 @@ module.exports.revenueForecastList = async (req, res) => {
 
 module.exports.forecastDetails = async (req, res) => {
     try {
+        let userId = req.user.id
         let { forecastId } = req.query
         // Getting forecast list by user Id.
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
@@ -200,7 +201,6 @@ module.exports.editRevenueForecast = async (req, res) => {
             let _dt = new Date().toISOString()
             // Updating forecast with forecast id.
             let s2 = dbScript(db_sql['Q199'], { var1: forecastId, var2: timeline, var3: amount,var4: startDate, var5: endDate, var6: _dt })
-            console.log(s2,"s2")
             let updateForecast = await connection.query(s2)
             if (updateForecast.rowCount > 0) {
                 if(forecastData.length > 0){
@@ -210,7 +210,7 @@ module.exports.editRevenueForecast = async (req, res) => {
                             let updateForecastData = await connection.query(s3)
                         }else{
                             let s4 = dbScript(db_sql['Q294'],{var1 : forecastId, var2 : data.amount, var3 : data.startDate, var4 : data.endDate, var5 : data.type, var6 : userId })
-                            let addForecastData = await connection.query(s3)
+                            let addForecastData = await connection.query(s4)
                         }  
                     }
                 }
@@ -221,7 +221,7 @@ module.exports.editRevenueForecast = async (req, res) => {
                             let updateAssignedForecast = await connection.query(s3)
                         }else{
                             let s4 = dbScript(db_sql['Q67'],{var1 : timeline, var2 : af.amount, var3 : startDate, var4 : endDate, var5 : forecastId ,var6 : af.userId ,var7 : userId })
-                            let addAssignedForecast = await connection.query(s3)
+                            let addAssignedForecast = await connection.query(s4)
                         }
                     }
                 }
@@ -296,16 +296,17 @@ module.exports.auditForecast = async(req, res) => {
 module.exports.deleteRevenueForecast = async (req, res) => {
     try {
         let userId = req.user.id
-        let { revenueId } = req.query
+        let { forecastId } = req.query
+        console.log(forecastId,"forecastId")
+        await connection.query('BEGIN')
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_delete) {
-            await connection.query('BEGIN')
-
             let _dt = new Date().toISOString();
-            let s3 = dbScript(db_sql['Q198'], { var1: _dt, var2: revenueId, var3: checkPermission.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q198'], { var1: _dt, var2: forecastId })
+            console.log(s3,"s3")
             let deleteRevenue = await connection.query(s3)
-
+            console.log(deleteRevenue.rows,"deleteRevenue")
             if (deleteRevenue.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
@@ -314,6 +315,51 @@ module.exports.deleteRevenueForecast = async (req, res) => {
                     message: "Forecast deleted successfully"
                 })
             } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong!"
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.deleteAssignedUserForecast = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { assignedUserId } = req.query
+        console.log(assignedUserId,"assignedUserId");
+        await connection.query('BEGIN')
+        let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s2)
+        if (checkPermission.rows[0].permission_to_delete) {
+            let _dt = new Date().toISOString();
+            let s3 = dbScript(db_sql['Q309'], { var1: _dt, var2: assignedUserId })
+            console.log(s3);
+            let deleteAssignedUser = await connection.query(s3)
+            console.log(deleteAssignedUser,"deleteAssignedUser");
+            if (deleteAssignedUser.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Assigned user deleted successfully"
+                })
+            }else {
                 await connection.query('ROLLBACK')
                 res.json({
                     status: 400,

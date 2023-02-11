@@ -126,6 +126,8 @@ router.get('/actualVsForecast',verifyTokenFn, controller.revenueForecast.actualV
 // router.put('/closeRevenueForecast', verifyTokenFn, controller.revenueForecast.closeRevenueForecast)
 router.put('/editRevenueForecast', verifyTokenFn, controller.revenueForecast.editRevenueForecast)
 router.put('/deleteRevenueForecast', verifyTokenFn, controller.revenueForecast.deleteRevenueForecast)
+router.put('/deleteAssignedUserForecast', verifyTokenFn, controller.revenueForecast.deleteAssignedUserForecast)
+
 
 //---------------------------------------Business and Revenue Contact-------------------------
 
