@@ -294,17 +294,8 @@ module.exports.usersList = async (req, res) => {
             //check user's on the basis of company id
             let s4 = dbScript(db_sql['Q15'], { var1: checkPermission.rows[0].company_id })
             let findUsers = await connection.query(s4);
+            console.log(findUsers.rows,'findUsers.rows')
             if (findUsers.rows.length > 0) {
-                //check user's roles 
-                for (data of findUsers.rows) {
-                    let s5 = dbScript(db_sql['Q12'], { var1: data.role_id })
-                    let findRole = await connection.query(s5);
-                    if (findRole.rowCount > 0) {
-                        data.roleName = findRole.rows[0].role_name
-                    } else {
-                        data.roleName = null
-                    }
-                }
                 res.json({
                     status: 200,
                     success: true,
