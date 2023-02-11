@@ -347,6 +347,7 @@ module.exports.deleteAssignedUserForecast = async (req, res) => {
         if (checkPermission.rows[0].permission_to_delete) {
             let _dt = new Date().toISOString();
             let s3 = dbScript(db_sql['Q309'], { var1: _dt, var2: assignedUserId, var3 : forecastId })
+            console.log(s3,"s3");
             let deleteAssignedUser = await connection.query(s3)
             let s4 = dbScript(db_sql['Q310'],{ var1: _dt, var2: forecastId })
             let deleteForecastData = await connection.query(s4)
