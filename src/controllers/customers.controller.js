@@ -64,7 +64,7 @@ module.exports.createCustomer = async (req, res) => {
             }
             let leadId = ''
             let id = uuid.v4()
-            let s10 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: compId, var4: mysql_real_escape_string(customerName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11: leadId })
+            let s10 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: compId, var4: mysql_real_escape_string(customerName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11: leadId, var12 : true })
             let createCustomer = await connection.query(s10)
             if (createCustomer.rowCount > 0) {
                 await connection.query('COMMIT')

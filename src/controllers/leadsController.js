@@ -106,7 +106,7 @@ module.exports.createLead = async (req, res) => {
                 organizationName = `${organizationName} - (Qualified)`
                 let id = uuid.v4()
                 let currency = '$'
-                let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: organizationId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : createLead.rows[0].id })
+                let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: organizationId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : createLead.rows[0].id, var12 : false })
                 let createCustomer = await connection.query(s3)
             }
 
@@ -310,7 +310,7 @@ module.exports.updateLead = async (req, res) => {
                 organizationName = `${organizationName} - (Qualified)`
                 let id = uuid.v4()
                 let currency = '$'
-                let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: organizationId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : leadId })
+                let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: organizationId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : leadId, var12 : false })
                 let createCustomer = await connection.query(s3)
             }
             if (updateLead.rowCount > 0) {
