@@ -1568,7 +1568,7 @@ const db_sql = {
                 ORDER BY 
                   timeline ASC`,
       "Q320" : `SELECT 
-                  o.id as organization_id, o.organization_name,
+                  o.id as organization_id, o.organization_name, u.full_name as created_by
                   (
                   select json_agg(leads.*)
                   from leads 
@@ -1587,7 +1587,8 @@ const db_sql = {
                   ) as lead_data
                 FROM 
                   lead_organizations AS o
-                  WHERE o.company_id = '{var1}' AND o.deleted_at IS NULL 
+                LEFT JOIN users AS u ON u.id = o.user_id
+                WHERE o.company_id = '{var1}' AND o.deleted_at IS NULL AND u.deleted_at IS NULL 
                 ORDER BY 
                   o.created_at DESC`,
       "Q321" : `SELECT 
