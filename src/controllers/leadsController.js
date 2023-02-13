@@ -381,7 +381,7 @@ module.exports.rejectLead = async (req, res) => {
                 let s6 = dbScript(db_sql['Q251'], { var1: leadId, var2: true })
                 let rejectFromCustomer = await connection.query(s6)
                 // add notification in notification list
-                let notification_userId = [rejectLead.rows[0].user_id];
+                let notification_userId = [rejectLead.rows[0].assigned_sales_lead_to ];
                 await notificationsOperations({ type: 4, msg: 4.3, notification_typeId, notification_userId }, userId);
 
                 if (rejectLead.rowCount > 0) {
