@@ -1569,7 +1569,7 @@ const db_sql = {
                   timeline ASC`,
       "Q320" : `SELECT 
                   o.id as organization_id, o.organization_name, u.full_name as created_by,
-                  o.company_id ,
+                  o.company_id , c.id as customer_id,
                   (
                   select json_agg(leads.*)
                   from leads 
@@ -1589,6 +1589,7 @@ const db_sql = {
                 FROM 
                   lead_organizations AS o
                 LEFT JOIN users AS u ON u.id = o.user_id
+                LEFT JOIN customers as c ON c.id = o.id
                 WHERE o.company_id = '{var1}' AND o.deleted_at IS NULL AND u.deleted_at IS NULL 
                 ORDER BY 
                   o.created_at DESC`,

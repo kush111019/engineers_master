@@ -196,9 +196,9 @@ module.exports.customerContactDetailsForSales = async (req, res) => {
                 })
             } else {
                 res.json({
-                    status: 400,
+                    status: 200,
                     success: false,
-                    message: "Something went wrong"
+                    message: "Empty customer contact details"
                 })
             }
         } else {
