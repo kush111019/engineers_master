@@ -1569,47 +1569,65 @@ const db_sql = {
                   timeline ASC`,
       "Q320" : `SELECT 
                   o.id as organization_id, o.organization_name, u.full_name as created_by,
-                  o.company_id , c.id as customer_id,
+                  o.company_id , 
                   (
-                  select json_agg(leads.*)
-                  from leads 
-                  LEFT JOIN 
-                    users AS u1 ON u1.id = leads.user_id
-                  LEFT JOIN
-                    lead_sources AS s ON s.id = leads.source
-                  LEFT JOIN
-                    lead_titles AS t ON t.id = leads.title
-                  LEFT JOIN
-                    lead_industries AS i ON i.id = leads.industry_type
-                  WHERE o.id = leads.organization_id 
-                  AND leads.marketing_qualified_lead= true 
-                  AND leads.is_rejected = false AND u1.deleted_at IS NULL  
-                  AND leads.deleted_at IS NULL 
+                    SELECT json_agg(leads.*)
+                    FROM (
+                      SELECT 
+                        leads.id,leads.full_name, leads.title as title_id, leads.email_address,
+                        leads.phone_number,leads.address,leads.organization_name, leads.source as source_id,
+                        leads.linkedin_url,leads.website, leads.targeted_value,leads.industry_type as industry_id,
+                        leads.assigned_sales_lead_to,leads.additional_marketing_notes,leads.user_id as creator_id,
+                        leads.reason, leads.created_at, leads.updated_at, 
+                        leads.marketing_qualified_lead, leads.is_rejected, leads.organization_id,
+                        u1.full_name as created_by,
+                        s.source,
+                        t.title,
+                        i.industry,
+                        c.id as customer_id
+                      FROM leads 
+                      LEFT JOIN users AS u1 ON u1.id = leads.user_id
+                      LEFT JOIN lead_sources AS s ON s.id = leads.source
+                      LEFT JOIN lead_titles AS t ON t.id = leads.title
+                      LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
+                      LEFT JOIN customers as c ON c.lead_id = leads.id
+                      WHERE o.id = leads.organization_id 
+                        AND leads.marketing_qualified_lead= true 
+                        AND leads.is_rejected = false AND u1.deleted_at IS NULL  
+                        AND leads.deleted_at IS NULL
+                    ) leads
                   ) as lead_data
-                FROM 
-                  lead_organizations AS o
+                FROM lead_organizations AS o
                 LEFT JOIN users AS u ON u.id = o.user_id
-                LEFT JOIN customers as c ON c.organization_id  = o.id
                 WHERE o.company_id = '{var1}' AND o.deleted_at IS NULL AND u.deleted_at IS NULL 
-                ORDER BY 
-                  o.created_at DESC`,
+                ORDER BY o.created_at DESC`,
       "Q321" : `SELECT 
                   o.id as organization_id, o.organization_name,
-                  (
-                  select json_agg(leads.*)
-                  from leads 
-                  LEFT JOIN 
-                    users AS u1 ON u1.id = leads.user_id
-                  LEFT JOIN
-                    lead_sources AS s ON s.id = leads.source
-                  LEFT JOIN
-                    lead_titles AS t ON t.id = leads.title
-                  LEFT JOIN
-                    lead_industries AS i ON i.id = leads.industry_type
-                  WHERE o.id = leads.organization_id 
-                  AND leads.marketing_qualified_lead= true 
-                  AND leads.is_rejected = false AND u1.deleted_at IS NULL  
-                  AND leads.deleted_at IS NULL 
+                  SELECT json_agg(leads.*)
+                    FROM (
+                      SELECT 
+                        leads.id,leads.full_name, leads.title as title_id, leads.email_address,
+                        leads.phone_number,leads.address,leads.organization_name, leads.source as source_id,
+                        leads.linkedin_url,leads.website, leads.targeted_value,leads.industry_type as industry_id,
+                        leads.assigned_sales_lead_to,leads.additional_marketing_notes,leads.user_id as creator_id,
+                        leads.reason, leads.created_at, leads.updated_at, 
+                        leads.marketing_qualified_lead, leads.is_rejected, leads.organization_id,
+                        u1.full_name as created_by,
+                        s.source,
+                        t.title,
+                        i.industry,
+                        c.id as customer_id
+                      FROM leads 
+                      LEFT JOIN users AS u1 ON u1.id = leads.user_id
+                      LEFT JOIN lead_sources AS s ON s.id = leads.source
+                      LEFT JOIN lead_titles AS t ON t.id = leads.title
+                      LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
+                      LEFT JOIN customers as c ON c.lead_id = leads.id
+                      WHERE o.id = leads.organization_id 
+                        AND leads.marketing_qualified_lead= true 
+                        AND leads.is_rejected = false AND u1.deleted_at IS NULL  
+                        AND leads.deleted_at IS NULL
+                    ) leads
                   ) as lead_data
                 FROM 
                   lead_organizations AS o
