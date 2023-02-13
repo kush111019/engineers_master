@@ -6,7 +6,7 @@ const {
 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
-const { mysql_real_escape_string } = require('../utils/helper')
+const { mysql_real_escape_string, getUserAndSubUser } = require('../utils/helper')
 const moduleName = process.env.USERS_MODULE
 
 //this fuction give us a user count
@@ -27,7 +27,7 @@ module.exports.userCount = async (req, res) => {
             let count = await connection.query(s3)
 
             //here we are getting a company details 
-            let s4 = dbScript(db_sql['Q9'],{var1 : findAdmin.rows[0].company_id})
+            let s4 = dbScript(db_sql['Q9'], { var1: findAdmin.rows[0].company_id })
             let userCount = await connection.query(s4)
 
             if (count.rows.length > 0) {
@@ -44,7 +44,7 @@ module.exports.userCount = async (req, res) => {
                         message: 'Users limit reached, cannot add new users. Please contact your admin to increase the user license count'
                     })
                 }
-            }else if(userCount.rowCount > 0){
+            } else if (userCount.rowCount > 0) {
                 if (users.rowCount < userCount.rows[0].user_count) {
                     res.json({
                         status: 200,
@@ -58,7 +58,7 @@ module.exports.userCount = async (req, res) => {
                         message: 'Users limit reached, cannot add new users. Please contact your admin to increase the user license count'
                     })
                 }
-            }else {
+            } else {
                 res.json({
                     status: 200,
                     success: true,
@@ -107,20 +107,20 @@ module.exports.addUser = async (req, res) => {
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_create) {
                 //here we are checking roles
-                let s4 = dbScript(db_sql['Q12'],{var1 : roleId})
+                let s4 = dbScript(db_sql['Q12'], { var1: roleId })
                 let findRole = await connection.query(s4)
                 let isAdmin = findRole.rows[0].role_name == 'Admin' ? true : false;
 
                 // and user added in db and update there permission in db
                 await connection.query('BEGIN')
-                let s5 = dbScript(db_sql['Q45'], { var1: id, var2: mysql_real_escape_string(name), var3: checkPermission.rows[0].company_id, var4: avatar, var5: emailAddress.toLowerCase(), var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address), var10 : isAdmin, var11 : userId })
+                let s5 = dbScript(db_sql['Q45'], { var1: id, var2: mysql_real_escape_string(name), var3: checkPermission.rows[0].company_id, var4: avatar, var5: emailAddress.toLowerCase(), var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address), var10: isAdmin, var11: userId })
                 let addUser = await connection.query(s5)
 
                 let _dt = new Date().toISOString();
                 let s6 = dbScript(db_sql['Q33'], { var1: roleId, var2: addUser.rows[0].id, var3: _dt })
                 let addPermission = await connection.query(s6)
 
-                
+
                 if (addUser.rowCount > 0 && addPermission.rowCount > 0) {
                     await connection.query('COMMIT')
                     const payload = {
@@ -191,13 +191,13 @@ module.exports.addUser = async (req, res) => {
 }
 
 // with the help of this function we can resend verification link on email address
-module.exports.resendVerificationLink = async(req, res) => {
+module.exports.resendVerificationLink = async (req, res) => {
     try {
-        let {userId} = req.query
+        let { userId } = req.query
         //here we are fetching user details
-        let s1 = dbScript(db_sql['Q8'],{var1 : userId})
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if(findUser.rowCount > 0){
+        if (findUser.rowCount > 0) {
             const payload = {
                 id: findUser.rows[0].id,
                 email: findUser.rows[0].email_address
@@ -228,7 +228,7 @@ module.exports.resendVerificationLink = async(req, res) => {
                     })
                 }
             }
-        }else{
+        } else {
             res.json({
                 status: 400,
                 success: false,
@@ -294,7 +294,6 @@ module.exports.usersList = async (req, res) => {
             //check user's on the basis of company id
             let s4 = dbScript(db_sql['Q15'], { var1: checkPermission.rows[0].company_id })
             let findUsers = await connection.query(s4);
-            console.log(findUsers.rows,'findUsers.rows')
             if (findUsers.rows.length > 0) {
                 res.json({
                     status: 200,
@@ -311,75 +310,22 @@ module.exports.usersList = async (req, res) => {
                 })
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            let userListArr = []
-            //geting roles and subroles under user
-            let roleUsers = []
-            let roleIds = []
-            roleIds.push(checkPermission.rows[0].role_id)
-            let getRoles = async (id) => {
-                let s7 = dbScript(db_sql['Q16'], { var1: id })
-                let getChild = await connection.query(s7);
-                if (getChild.rowCount > 0) {
-                    for (let item of getChild.rows) {
-                        if (roleIds.includes(item.id) == false) {
-                            roleIds.push(item.id)
-                            await getRoles(item.id)
-                        }
-                    }
-                }
-            }
-            await getRoles(checkPermission.rows[0].role_id)
-            for (let roleId of roleIds) {
-                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
-                let findUsers = await connection.query(s3)
-                if (findUsers.rowCount > 0) {
-                    for (let user of findUsers.rows) {
-                        roleUsers.push(user.id)
-                    }
-                }
-            }
-
-            //here getting user list on behalf of user role id
-            let s4 = dbScript(db_sql['Q268'], {var1 : checkPermission.rows[0].id })
-            let addUser = await connection.query(s4)
-            let s5 = dbScript(db_sql['Q12'], { var1: addUser.rows[0].role_id })
-            let findRole = await connection.query(s5);
-            if (findRole.rowCount > 0) {
-                addUser.rows[0].roleName = findRole.rows[0].role_name
-            } else {
-                addUser.rows[0].roleName = null
-            }
-            userListArr.push(addUser.rows[0])
-            for (id of roleUsers) {
-                let s6 = dbScript(db_sql['Q176'], { var1: id })
-                let findUsers = await connection.query(s6);
-                if (findUsers.rowCount > 0) {
-                    for (let user of findUsers.rows) {
-                        let s7 = dbScript(db_sql['Q12'], { var1: user.role_id })
-                        let findRole = await connection.query(s7);
-                        if (findRole.rowCount > 0) {
-                            user.roleName = findRole.rows[0].role_name
-                        } else {
-                            user.roleName = null
-                        }
-                        userListArr.push(user)
-                    }
-                }
-            }
-            
-            if (userListArr.length > 0) {
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            let s3 = dbScript(db_sql['Q317'], { var1: roleUsers.join(",") })
+            let userList = await connection.query(s3);
+            if (userList.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Users list',
-                    data: userListArr
+                    data: userList.rows
                 })
             } else {
                 res.json({
                     status: 200,
                     success: false,
                     message: 'Empty Users list',
-                    data: userListArr
+                    data: []
                 })
             }
         } else {
@@ -406,32 +352,32 @@ module.exports.usersDetails = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         //get user details on behalf of user and company id 
-            let s4 = dbScript(db_sql['Q293'], { var1: checkPermission.rows[0].company_id,var2: user_id })
-            let findUsers = await connection.query(s4);
-            if (findUsers.rows.length > 0) {
-                for (data of findUsers.rows) {
-                    let s5 = dbScript(db_sql['Q12'], { var1: data.role_id })
-                    let findRole = await connection.query(s5);
-                    if (findRole.rowCount > 0) {
-                        data.roleName = findRole.rows[0].role_name
-                    } else {
-                        data.roleName = null
-                    }
+        let s4 = dbScript(db_sql['Q293'], { var1: checkPermission.rows[0].company_id, var2: user_id })
+        let findUsers = await connection.query(s4);
+        if (findUsers.rows.length > 0) {
+            for (data of findUsers.rows) {
+                let s5 = dbScript(db_sql['Q12'], { var1: data.role_id })
+                let findRole = await connection.query(s5);
+                if (findRole.rowCount > 0) {
+                    data.roleName = findRole.rows[0].role_name
+                } else {
+                    data.roleName = null
                 }
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: 'Users details',
-                    data: findUsers.rows
-                })
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: "Empty users details",
-                    data: []
-                })
             }
+            res.json({
+                status: 200,
+                success: true,
+                message: 'Users details',
+                data: findUsers.rows
+            })
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: "Empty users details",
+                data: []
+            })
+        }
     } catch (error) {
         res.json({
             status: 400,
@@ -459,7 +405,7 @@ module.exports.updateUser = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_update) {
 
-            let s5 = dbScript(db_sql['Q12'],{var1 : roleId})
+            let s5 = dbScript(db_sql['Q12'], { var1: roleId })
             let findRole = await connection.query(s5)
             let isAdmin = findRole.rows[0].role_name == 'Admin' ? true : false;
 
@@ -467,7 +413,7 @@ module.exports.updateUser = async (req, res) => {
             await connection.query('BEGIN')
 
             //update user details
-            let s4 = dbScript(db_sql['Q22'], { var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: checkPermission.rows[0].company_id, var10 : isAdmin })
+            let s4 = dbScript(db_sql['Q22'], { var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: checkPermission.rows[0].company_id, var10: isAdmin })
             let updateUser = await connection.query(s4)
             await connection.query('COMMIT')
             if (updateUser.rowCount > 0) {

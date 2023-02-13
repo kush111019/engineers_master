@@ -1,7 +1,7 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
-const { mysql_real_escape_string } = require('../utils/helper')
+const { mysql_real_escape_string, getUserAndSubUser } = require('../utils/helper')
 const moduleName = process.env.CUSTOMERS_MODULE
 
 module.exports.createCustomer = async (req, res) => {
@@ -64,7 +64,7 @@ module.exports.createCustomer = async (req, res) => {
             }
             let leadId = ''
             let id = uuid.v4()
-            let s10 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: compId, var4: mysql_real_escape_string(customerName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : leadId })
+            let s10 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: compId, var4: mysql_real_escape_string(customerName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11: leadId })
             let createCustomer = await connection.query(s10)
             if (createCustomer.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -102,12 +102,11 @@ module.exports.createCustomer = async (req, res) => {
 module.exports.customerList = async (req, res) => {
     try {
         let userId = req.user.id
-        let userIds = []
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
             let customerArr = []
-            let s4 = dbScript(db_sql['Q39'], { var1: checkPermission.rows[0].company_id, var2 : false})
+            let s4 = dbScript(db_sql['Q39'], { var1: checkPermission.rows[0].company_id, var2: false })
             let customerList = await connection.query(s4)
             if (customerList.rowCount > 0) {
                 for (let data of customerList.rows) {
@@ -153,52 +152,39 @@ module.exports.customerList = async (req, res) => {
             }
         }
         else if (checkPermission.rows[0].permission_to_view_own) {
-            userIds.push(userId)
-            let customerList = []
-            let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
-            let findUsers = await connection.query(s3)
-            if (findUsers.rowCount > 0) {
-                for (user of findUsers.rows) {
-                    userIds.push(user.id)
-                }
-            }
-            for (id of userIds) {
-                let s4 = dbScript(db_sql['Q166'], { var1: id })
-                let findCustomerList = await connection.query(s4)
-                if (findCustomerList.rowCount > 0) {
-                    for (let data of findCustomerList.rows) {
-                        if (data.business_contact_id != null && data.revenue_contact_id != null) {
-                            let businessIds = JSON.parse(data.business_contact_id)
-                            let revenueIds = JSON.parse(data.revenue_contact_id)
-                            let businessContact = [];
-                            let revenueContact = [];
-                            for (let id of businessIds) {
-                                let s5 = dbScript(db_sql['Q76'], { var1: id })
-                                let businessData = await connection.query(s5)
-                                businessContact.push(businessData.rows[0])
-                            }
-                            for (let id of revenueIds) {
-                                let s5 = dbScript(db_sql['Q77'], { var1: id })
-                                let revenueData = await connection.query(s5)
-                                revenueContact.push(revenueData.rows[0])
-                            }
-                            data.businessContact = businessContact
-                            data.revenueContact = revenueContact
-
-                        } else {
-                            data.businessContact = [];
-                            data.revenueContact = [];
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            let s2 = dbScript(db_sql['Q316'], { var1: roleUsers.join(","), var2: false })
+            let customerList = await connection.query(s2)
+            if (customerList.rowCount > 0) {
+                for (let customerData of customerList.rows) {
+                    let businessContactIds = JSON.parse(customerData.business_contact_id)
+                    if (customerData.business_contact_id.length > 0) {
+                        let businessContact = []
+                        for (let id of businessContactIds) {
+                            let s4 = dbScript(db_sql['Q76'], { var1: id })
+                            let businessDetails = await connection.query(s4)
+                            businessContact.push(businessDetails.rows[0])
                         }
-                        customerList.push(data);
+                        customerData.businessContact = (businessContact.length > 0) ? businessContact : [];
+                    }
+                    let revenueContactIds = JSON.parse(customerData.revenue_contact_id)
+                    if (customerData.revenue_contact_id.length > 0) {
+                        let revenuContact = []
+                        for (let id of revenueContactIds) {
+                            let s4 = dbScript(db_sql['Q77'], { var1: id })
+                            let revenueDetails = await connection.query(s4)
+                            revenuContact.push(revenueDetails.rows[0])
+                        }
+                        customerData.revenuContact = (revenuContact.length > 0) ? revenuContact : []
                     }
                 }
             }
-            if (customerList.length > 0) {
+            if (customerList.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Customers list',
-                    data: customerList
+                    data: customerList.rows
                 })
             } else {
                 res.json({
@@ -469,9 +455,9 @@ module.exports.deleteCustomer = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
-            let s2 = dbScript(db_sql['Q259'],{var1 : customerId })
+            let s2 = dbScript(db_sql['Q259'], { var1: customerId })
             let checkCustomerInSales = await connection.query(s2)
-            if(checkCustomerInSales.rowCount == 0){
+            if (checkCustomerInSales.rowCount == 0) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
                 let s4 = dbScript(db_sql['Q47'], { var1: _dt, var2: customerId, var3: checkPermission.rows[0].company_id })
@@ -491,7 +477,7 @@ module.exports.deleteCustomer = async (req, res) => {
                         message: "something went wrong"
                     })
                 }
-            }else{
+            } else {
                 res.json({
                     status: 200,
                     success: false,
@@ -537,21 +523,21 @@ module.exports.addBusinessContact = async (req, res) => {
 
                 let s4 = dbScript(db_sql['Q55'], { var1: customerId })
                 let customerData = await connection.query(s4)
-    
+
                 let businessIds = JSON.parse(customerData.rows[0].business_contact_id)
                 businessIds.push(addBusinessContact.rows[0].id)
-    
+
                 let s5 = dbScript(db_sql['Q79'], { var1: customerId, var2: JSON.stringify(businessIds) })
                 let updateCustomer = await connection.query(s5)
 
-                if(updateCustomer.rowCount > 0){
+                if (updateCustomer.rowCount > 0) {
                     await connection.query('COMMIT')
                     res.json({
                         status: 201,
                         success: true,
                         message: "Business contact added successfully"
                     })
-                }else{
+                } else {
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
@@ -602,29 +588,29 @@ module.exports.addRevenueContact = async (req, res) => {
             let s6 = dbScript(db_sql['Q71'], { var1: revenueId, var2: mysql_real_escape_string(revenueContactName), var3: revenueEmail, var4: revenuePhoneNumber, var5: companyId })
             let addRevenueContact = await connection.query(s6)
 
-            if (addRevenueContact.rowCount > 0 ) {
+            if (addRevenueContact.rowCount > 0) {
 
                 let s4 = dbScript(db_sql['Q55'], { var1: customerId })
                 let customerData = await connection.query(s4)
-                
+
                 let revenueIds = JSON.parse(customerData.rows[0].revenue_contact_id)
                 revenueIds.push(addRevenueContact.rows[0].id)
-    
+
                 let s5 = dbScript(db_sql['Q80'], { var1: customerId, var2: JSON.stringify(revenueIds) })
                 let updateCustomer = await connection.query(s5)
-                if(updateCustomer.rowCount > 0){
+                if (updateCustomer.rowCount > 0) {
                     await connection.query('COMMIT')
                     res.json({
                         status: 201,
                         success: true,
                         message: "Revenue contact added successfully"
                     })
-                }else{
+                } else {
                     res.json({
                         status: 400,
                         success: false,
                         message: "Something went wrong"
-                    }) 
+                    })
                 }
             } else {
                 res.json({
