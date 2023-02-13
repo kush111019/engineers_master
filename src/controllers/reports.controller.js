@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const {reduceArray, paginatedResults,paginatedResults1,reduceArrayWithName,reduceArrayWithName1, reduceArrayWithCustomer, reduceArrayWithProduct} = require('../utils/helper')
+const { reduceArray, paginatedResults, paginatedResults1, reduceArrayWithName, reduceArrayWithName1, reduceArrayWithCustomer, reduceArrayWithProduct, getUserAndSubUser } = require('../utils/helper')
 const moduleName = process.env.REPORTS_MODULE
 
 module.exports.revenuePerCustomer = async (req, res) => {
@@ -23,54 +23,48 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 let customerCompanies = await connection.query(s2)
                 if (customerCompanies.rowCount > 0) {
                     let revenuePerCustomerArr = []
-                    for(data of customerCompanies.rows ){
-                        if(data.sales_type == 'Perpetual'){
-                            let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
-                            let recognizedRevenue = await connection.query(s3)
-                            if(recognizedRevenue.rowCount > 0){
-                                let obj = {
-                                    customer_name : data.customer_name || "",
-                                    revenue : recognizedRevenue.rows[0].recognized_amount
-    
-                                }
-                                revenuePerCustomerArr.push(obj)
-                            }
-                        }else{
-                            let s3 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
-                            let recognizedRevenue = await connection.query(s3)
-                            if(recognizedRevenue.rowCount > 0){
-                                let obj = {
-                                    customer_name : data.customer_name || "",
-                                    revenue : recognizedRevenue.rows[0].recognized_amount
-    
-                                }
-                                revenuePerCustomerArr.push(obj)
-                            }
-                        } 
-                    }
-                    let returnData = await reduceArrayWithCustomer(revenuePerCustomerArr)
-                    if (returnData.length > 0) {
-                        let paginatedArr = await paginatedResults(returnData, page)
-                        if (orderBy.toLowerCase() == 'asc') {
-                            paginatedArr = paginatedArr.sort((a, b) => {
-                                return a.revenue - b.revenue
-                            })
-                        } else {
-                            paginatedArr = paginatedArr.sort((a, b) => {
-                                return b.revenue - a.revenue
+                    for (let data of customerCompanies.rows) {
+                        let s5 = dbScript(db_sql['Q300'], { var1: data.sales_commission_id })
+                        let recognizedRevenueData = await connection.query(s5)
+                        if (recognizedRevenueData.rowCount > 0) {
+                            revenuePerCustomerArr.push({
+                                customer_name: data.customer_name,
+                                revenue: recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0
                             })
                         }
+                    }
+                    if (revenuePerCustomerArr.length > 0) {
+                        let returnData = await reduceArrayWithCustomer(revenuePerCustomerArr)
+                        if (returnData.length > 0) {
+                            let paginatedArr = await paginatedResults(returnData, page)
+                            if (orderBy.toLowerCase() == 'asc') {
+                                paginatedArr = paginatedArr.sort((a, b) => {
+                                    return a.revenue - b.revenue
+                                })
+                            } else {
+                                paginatedArr = paginatedArr.sort((a, b) => {
+                                    return b.revenue - a.revenue
+                                })
+                            }
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "Revenue per customer",
+                                data: paginatedArr
+                            })
+                        }
+                    } else {
                         res.json({
                             status: 200,
-                            success: true,
-                            message: "Revenue per customer",
-                            data: paginatedArr
+                            success: false,
+                            message: "Empty revenue per customer",
+                            data: []
                         })
                     }
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: "Empty revenue per customer",
                         data: []
                     })
@@ -84,61 +78,21 @@ module.exports.revenuePerCustomer = async (req, res) => {
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let revenuePerCustomerArr = []
-            let roleUsers = []
-            let roleIds = []
-            roleIds.push(checkPermission.rows[0].role_id)
-            let getRoles = async (id) => {
-                let s7 = dbScript(db_sql['Q16'], { var1: id })
-                let getChild = await connection.query(s7);
-                if (getChild.rowCount > 0) {
-                    for (let item of getChild.rows) {
-                        if (roleIds.includes(item.id) == false) {
-                            roleIds.push(item.id)
-                            await getRoles(item.id)
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
+                let s2 = dbScript(db_sql['Q170'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
+                let customerCompanies = await connection.query(s2)
+                if (customerCompanies.rowCount > 0) {
+                    for (let data of customerCompanies.rows) {
+                        let s5 = dbScript(db_sql['Q300'], { var1: data.sales_commission_id })
+                        let recognizedRevenueData = await connection.query(s5)
+                        if (recognizedRevenueData.rowCount > 0) {
+                            revenuePerCustomerArr.push({
+                                customer_name: data.customer_name,
+                                revenue: recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0
+                            })
                         }
                     }
-                }
-            }
-            await getRoles(checkPermission.rows[0].role_id)
-            for (let roleId of roleIds) {
-                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
-                let findUsers = await connection.query(s3)
-                if (findUsers.rowCount > 0) {
-                    for (let user of findUsers.rows) {
-                        roleUsers.push(user.id)
-                    }
-                }
-            }
-            if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
-                let s2 = dbScript(db_sql['Q170'], {  var1: "'"+roleUsers.join("','")+"'", var2: orderBy, var3: sDate, var4: eDate })
-                let customerCompanies = await connection.query(s2)
-                if(customerCompanies.rowCount > 0){
-                    for(data of customerCompanies.rows ){
-                        if(data.sales_type == 'Perpetual'){
-                            let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
-                            let recognizedRevenue = await connection.query(s3)
-                            if(recognizedRevenue.rowCount > 0){
-                                let obj = {
-                                    customer_name : data.customer_name || "",
-                                    revenue : recognizedRevenue.rows[0].recognized_amount
-    
-                                }
-                                revenuePerCustomerArr.push(obj)
-                            }
-                        }else{
-                            let s4 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
-                            let recognizedRevenue = await connection.query(s4)
-                            if(recognizedRevenue.rowCount > 0){
-                                let obj = {
-                                    customer_name : data.customer_name || "",
-                                    revenue : recognizedRevenue.rows[0].recognized_amount
-    
-                                }
-                                revenuePerCustomerArr.push(obj)
-                            }
-                        } 
-                    }
-                }
                 if (revenuePerCustomerArr.length > 0) {
                     let returnData = await reduceArrayWithCustomer(revenuePerCustomerArr)
                     if (returnData.length > 0) {
@@ -162,7 +116,15 @@ module.exports.revenuePerCustomer = async (req, res) => {
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
+                        message: "Empty revenue per customer",
+                        data: []
+                    })
+                }
+             } else {
+                    res.json({
+                        status: 200,
+                        success: false,
                         message: "Empty revenue per customer",
                         data: []
                     })
@@ -192,7 +154,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
 module.exports.revenuePerProduct = async (req, res) => {
     try {
         let userId = req.user.id
-        let { page, orderBy, startDate, endDate} = req.query
+        let { page, orderBy, startDate, endDate } = req.query
         startDate = new Date(startDate)
         startDate.setHours(0, 0, 0, 0)
         let sDate = new Date(startDate).toISOString()
@@ -204,33 +166,20 @@ module.exports.revenuePerProduct = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
-            if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
-                let s4 = dbScript(db_sql['Q153'], { var1: checkPermission.rows[0].company_id, var2 : orderBy, var3 : sDate, var4: eDate })
+            if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
+                let s4 = dbScript(db_sql['Q153'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate })
                 let revenuePerProduct = await connection.query(s4)
                 if (revenuePerProduct.rowCount > 0) {
                     let revenuePerProductArr = []
-                    for(data of revenuePerProduct.rows ){
-                        if(data.sales_type == 'Perpetual'){
-                            let s3 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
-                            let recognizedRevenue = await connection.query(s3)
-                            if(recognizedRevenue.rowCount > 0){
-                                let obj = {
-                                    product_name : data.product_name,
-                                    revenue : recognizedRevenue.rows[0].recognized_amount
-                                }
-                                revenuePerProductArr.push(obj)
-                            }
-                        }else{
-                            let s3 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
-                            let recognizedRevenue = await connection.query(s3)
-                            if(recognizedRevenue.rowCount > 0){
-                                let obj = {
-                                    product_name : data.product_name,
-                                    revenue : recognizedRevenue.rows[0].recognized_amount
-                                }
-                                revenuePerProductArr.push(obj)
-                            }
-                        } 
+                    for (let data of revenuePerProduct.rows) {
+                        let s5 = dbScript(db_sql['Q300'], { var1: data.sales_commission_id })
+                        let recognizedRevenueData = await connection.query(s5)
+                        if (recognizedRevenueData.rowCount > 0) {
+                            revenuePerProductArr.push({
+                                product_name: data.product_name,
+                                revenue: recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0
+                            })
+                        }
                     }
                     let returnData = await reduceArrayWithProduct(revenuePerProductArr)
                     if (returnData.length > 0) {
@@ -251,106 +200,83 @@ module.exports.revenuePerProduct = async (req, res) => {
                             data: paginatedArr
                         })
                     }
+                    else {
+                        res.json({
+                            status: 200,
+                            success: false,
+                            message: "Empty revenue per product",
+                            data: []
+                        })
+                    }
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: "Empty revenue per product",
                         data: []
                     })
                 }
-            }else{
+            } else {
                 res.json({
                     status: 400,
                     success: false,
                     message: "Start date and End date required",
                 })
             }
-        }else if(checkPermission.rows[0].permission_to_view_own){
+        } else if (checkPermission.rows[0].permission_to_view_own) {
             let revenuePerProductArr = []
-            let roleUsers = []
-            let roleIds = []
-            roleIds.push(checkPermission.rows[0].role_id)
-            let getRoles = async (id) => {
-                let s7 = dbScript(db_sql['Q16'], { var1: id })
-                let getChild = await connection.query(s7);
-                if (getChild.rowCount > 0) {
-                    for (let item of getChild.rows) {
-                        if (roleIds.includes(item.id) == false) {
-                            roleIds.push(item.id)
-                            await getRoles(item.id)
-                        }
-                    }
-                }
-            }
-            await getRoles(checkPermission.rows[0].role_id)
-            for (let roleId of roleIds) {
-                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
-                let findUsers = await connection.query(s3)
-                if (findUsers.rowCount > 0) {
-                    for (let user of findUsers.rows) {
-                        roleUsers.push(user.id)
-                    }
-                }
-            }
-            if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
-                let s4 = dbScript(db_sql['Q171'], {  var1: "'"+roleUsers.join("','")+"'", var2 : orderBy, var3 : sDate, var4: eDate })
-                console.log(s4,"s4");
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
+                let s4 = dbScript(db_sql['Q171'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
                 let revenuePerProduct = await connection.query(s4)
-                if(revenuePerProduct.rowCount > 0){
-                    for(let product of revenuePerProduct.rows){
-                        if(product.sales_type == 'Perpetual'){
-                            let s3 = dbScript(db_sql['Q273'],{var1 : product.sales_commission_id})
-                            let recognizedRevenue = await connection.query(s3)
-                            if(recognizedRevenue.rowCount > 0){
-                                let obj = {
-                                    product_name : product.product_name,
-                                    revenue : recognizedRevenue.rows[0].recognized_amount
-                                }
-                                revenuePerProductArr.push(obj)
-                            }
-                        }else{
-                            let s4 = dbScript(db_sql['Q274'],{var1 : product.sales_commission_id})
-                            let recognizedRevenue = await connection.query(s4)
-                            if(recognizedRevenue.rowCount > 0){
-                                let obj = {
-                                    product_name : product.product_name,
-                                    revenue : recognizedRevenue.rows[0].recognized_amount
-                                }
-                                revenuePerProductArr.push(obj)
-                            }
-                        } 
-                    }
-                }
-                if (revenuePerProductArr.length > 0) {
-                    let returnData = await reduceArrayWithProduct(revenuePerProductArr)
-                    if (returnData.length > 0) {
-                        let paginatedArr = await paginatedResults(returnData, page)
-                        if (orderBy.toLowerCase() == 'asc') {
-                            paginatedArr = paginatedArr.sort((a, b) => {
-                                return a.revenue - b.revenue
-                            })
-                        } else {
-                            paginatedArr = paginatedArr.sort((a, b) => {
-                                return b.revenue - a.revenue
+                if (revenuePerProduct.rowCount > 0) {
+                    for (let product of revenuePerProduct.rows) {
+                        let s5 = dbScript(db_sql['Q300'], { var1: product.sales_commission_id })
+                        let recognizedRevenueData = await connection.query(s5)
+                        if (recognizedRevenueData.rowCount > 0) {
+                            revenuePerProductArr.push({
+                                product_name: product.product_name,
+                                revenue: recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0
                             })
                         }
+                    }
+                    if (revenuePerProductArr.length > 0) {
+                        let returnData = await reduceArrayWithProduct(revenuePerProductArr)
+                        if (returnData.length > 0) {
+                            let paginatedArr = await paginatedResults(returnData, page)
+                            if (orderBy.toLowerCase() == 'asc') {
+                                paginatedArr = paginatedArr.sort((a, b) => {
+                                    return a.revenue - b.revenue
+                                })
+                            } else {
+                                paginatedArr = paginatedArr.sort((a, b) => {
+                                    return b.revenue - a.revenue
+                                })
+                            }
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "Revenue per product",
+                                data: paginatedArr
+                            })
+                        }
+                    } else {
                         res.json({
                             status: 200,
                             success: true,
-                            message: "Revenue per product",
-                            data: paginatedArr
+                            message: "Empty revenue per product",
+                            data: revenuePerProductArr
                         })
                     }
                 } else {
                     res.json({
                         status: 200,
-                        success: true,
+                        success: false,
                         message: "Empty revenue per product",
                         data: revenuePerProductArr
                     })
                 }
-            }else{
+            } else {
                 res.json({
                     status: 400,
                     success: false,
@@ -386,149 +312,142 @@ module.exports.revenuePerSalesRep = async (req, res) => {
         let offset = (page - 1) * limit
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
+        if (checkPermission.rows[0].permission_to_view_global) {
             if ((startDate != undefined && startDate != '') && (endDate != undefined && endDate != '')) {
-                let roleIds = []
-                let roleUsers = []
+                let roleUsers;
                 let revenueCommissionBydate = []
-                roleIds.push(role_id)
                 if (isAll == 'true') {
-                    let getRoles = async (id) => {
-                        let s7 = dbScript(db_sql['Q16'], { var1: id })
-                        let getChild = await connection.query(s7);
-                        if (getChild.rowCount > 0) {
-                            for (let item of getChild.rows) {
-                                if (roleIds.includes(item.id) == false) {
-                                    roleIds.push(item.id)
-                                    await getRoles(item.id)
-                                }
-                            }
-                        }
-                    }
-                    await getRoles(role_id)
-                }
-                for (let roleId of roleIds) {
-                    let s3 = dbScript(db_sql['Q185'], { var1: roleId })
-                    let findUsers = await connection.query(s3)
-                    if (findUsers.rowCount > 0) {
-                        for (let user of findUsers.rows) {
-                            roleUsers.push(user.id)
-                        }
+                    roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+                } else {
+                    let userData = [];
+                    let s2 = dbScript(db_sql['Q288'], { var1: role_id, var2: userId })
+                    let getUserData = await connection.query(s2);
+                    if (getUserData.rowCount > 0) {
+                        userData.push("'" + getUserData.rows[0].id.toString() + "'");
+                        roleUsers = userData;
                     }
                 }
-                let s4 = dbScript(db_sql['Q258'], { var1: "'" + roleUsers.join("','") + "'", var2: orderBy, var3: sDate, var4: eDate })
+                let s4 = dbScript(db_sql['Q258'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0) {
-                    for (let data of salesData.rows) {
-                        let s5 = dbScript(db_sql['Q184'], { var1: data.slab_id })
-                        let slab = await connection.query(s5)
+                    for (let saleData of salesData.rows) {
                         let revenueCommissionByDateObj = {}
-                        if (data.sales_type == 'Perpetual') {
-                            let s6 = dbScript(db_sql['Q273'], { var1: data.sales_commission_id })
-                            let recognizedRevenue = await connection.query(s6)
-                            if (recognizedRevenue.rowCount > 0) {
-                                revenueCommissionByDateObj.revenue = Number(recognizedRevenue.rows[0].recognized_amount)
-                                revenueCommissionByDateObj.sales_rep = data.sales_rep
+                        let s5 = dbScript(db_sql['Q300'], { var1: saleData.sales_commission_id })
+                        let recognizedRevenueData = await connection.query(s5)
 
-                                let remainingAmount = Number(recognizedRevenue.rows[0].recognized_amount);
-                                let commission = 0
-                                //if remainning amount is 0 then no reason to check 
-                                for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
-                                    let slab_percentage = Number(slab.rows[i].percentage)
-                                    let slab_maxAmount = Number(slab.rows[i].max_amount)
-                                    let slab_minAmount = Number(slab.rows[i].min_amount)
-                                    if (slab.rows[i].is_max) {
-                                        // Reached the last slab
-                                        commission += ((slab_percentage / 100) * remainingAmount)
-                                        break;
-                                    }
-                                    else {
-                                        // This is not the last slab
-                                        let diff = slab_minAmount == 0 ? 0 : 1
-                                        let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-                                        slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-                                        commission += ((slab_percentage / 100) * slab_diff)
-                                        remainingAmount -= slab_diff
-                                        if (remainingAmount <= 0) {
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (filterBy.toLowerCase() == 'all') {
-                                    revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
+                        if (recognizedRevenueData.rows[0].amount) {
+                            revenueCommissionByDateObj.revenue = Number(recognizedRevenueData.rows[0].amount)
+                            revenueCommissionByDateObj.sales_rep = saleData.sales_rep;
+                            let commission = saleData.revenue_commission ? Number(saleData.revenue_commission) : 0;
+
+                            if (filterBy.toLowerCase() == 'all') {
+                                revenueCommissionByDateObj.commission = Number(commission);
+                                revenueCommissionBydate.push(revenueCommissionByDateObj)
+                            } else if (filterBy.toLowerCase() == 'lead') {
+                                let s6 = dbScript(db_sql['Q86'], { var1: saleData.sales_commission_id })
+                                let leadPercentage = await connection.query(s6)
+                                if (leadPercentage.rowCount > 0) {
+                                    revenueCommissionByDateObj.commission = ((Number(leadPercentage.rows[0].closer_percentage) / 100) * Number(commission))
                                     revenueCommissionBydate.push(revenueCommissionByDateObj)
-                                } else if (filterBy.toLowerCase() == 'lead') {
-                                    let s6 = dbScript(db_sql['Q86'], { var1: data.sales_commission_id })
-                                    let leadPercentage = await connection.query(s6)
-                                    if (leadPercentage.rowCount > 0) {
-                                        revenueCommissionByDateObj.commission = ((Number(leadPercentage.rows[0].closer_percentage) / 100) * Number(commission.toFixed(2)))
-                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                }
+                            } else {
+                                let s6 = dbScript(db_sql['Q59'], { var1: saleData.sales_commission_id })
+                                let supporterPercentage = await connection.query(s6)
+                                if (supporterPercentage.rowCount > 0) {
+                                    let sCommission = 0
+                                    for (supporter of supporterPercentage.rows) {
+                                        sCommission += ((Number(supporter.supporter_percentage) / 100) * Number(commission))
                                     }
-                                } else {
-                                    let s6 = dbScript(db_sql['Q59'], { var1: data.sales_commission_id })
-                                    let supporterPercentage = await connection.query(s6)
-                                    if (supporterPercentage.rowCount > 0) {
-                                        let sCommission = 0
-                                        for (supporter of supporterPercentage.rows) {
-                                            sCommission += ((Number(supporter.supporter_percentage) / 100) * Number(commission.toFixed(2)))
-                                        }
-                                        revenueCommissionByDateObj.commission = sCommission
-                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
-                                    }
+                                    revenueCommissionByDateObj.commission = sCommission
+                                    revenueCommissionBydate.push(revenueCommissionByDateObj)
                                 }
                             }
+                        }
+                    }
+                }
+                if (revenueCommissionBydate.length > 0) {
+                    let returnData = await reduceArrayWithName(revenueCommissionBydate)
+                    if (returnData.length > 0) {
+                        let paginatedArr = await paginatedResults(returnData, page)
+                        if (orderBy.toLowerCase() == 'asc') {
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return a.revenue - b.revenue
+                            })
                         } else {
-                            let s6 = dbScript(db_sql['Q274'], { var1: data.sales_commission_id })
-                            let recognizedRevenue = await connection.query(s6)
-                            if (recognizedRevenue.rowCount > 0) {
-                                revenueCommissionByDateObj.revenue = Number(recognizedRevenue.rows[0].recognized_amount)
-                                revenueCommissionByDateObj.sales_rep = data.sales_rep
+                            paginatedArr = paginatedArr.sort((a, b) => {
+                                return b.revenue - a.revenue
+                            })
+                        }
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Revenues and Commissions per sales captain",
+                            data: paginatedArr
+                        })
+                    }
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty Revenues and Commissions per sales captain",
+                        data: []
+                    })
+                }
+            } else {
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Start date and End date is required",
+                })
+            }
+        } else if (checkPermission.rows[0].permission_to_view_own) {
+            if ((startDate != undefined && startDate != '') && (endDate != undefined && endDate != '')) {
+                let roleUsers;
+                let revenueCommissionBydate = []
+                if (isAll == 'true') {
+                    roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+                } else {
+                    let userData = [];
+                    let s2 = dbScript(db_sql['Q288'], { var1: role_id, var2: userId })
+                    let getUserData = await connection.query(s2);
+                    if (getUserData.rowCount > 0) {
+                        userData.push("'" + getUserData.rows[0].id.toString() + "'");
+                        roleUsers = userData;
+                    }
+                }
+                let s4 = dbScript(db_sql['Q258'], { var1: roleUsers.join("','"), var2: orderBy, var3: sDate, var4: eDate })
+                let salesData = await connection.query(s4)
+                if (salesData.rowCount > 0) {
+                    for (let saleData of salesData.rows) {
+                        let revenueCommissionByDateObj = {}
+                        let s5 = dbScript(db_sql['Q300'], { var1: saleData.sales_commission_id })
+                        let recognizedRevenueData = await connection.query(s5)
 
-                                let remainingAmount = Number(recognizedRevenue.rows[0].recognized_amount);
-                                let commission = 0
-                                //if remainning amount is 0 then no reason to check 
-                                for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
-                                    let slab_percentage = Number(slab.rows[i].percentage)
-                                    let slab_maxAmount = Number(slab.rows[i].max_amount)
-                                    let slab_minAmount = Number(slab.rows[i].min_amount)
-                                    if (slab.rows[i].is_max) {
-                                        // Reached the last slab
-                                        commission += ((slab_percentage / 100) * remainingAmount)
-                                        break;
-                                    }
-                                    else {
-                                        // This is not the last slab
-                                        let diff = slab_minAmount == 0 ? 0 : 1
-                                        let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-                                        slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-                                        commission += ((slab_percentage / 100) * slab_diff)
-                                        remainingAmount -= slab_diff
-                                        if (remainingAmount <= 0) {
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (filterBy.toLowerCase() == 'all') {
-                                    revenueCommissionByDateObj.commission = Number(commission.toFixed(2))
+                        if (recognizedRevenueData.rows[0].amount) {
+                            revenueCommissionByDateObj.revenue = Number(recognizedRevenueData.rows[0].amount)
+                            revenueCommissionByDateObj.sales_rep = saleData.sales_rep;
+                            let commission = saleData.revenue_commission ? Number(saleData.revenue_commission) : 0;
+
+                            if (filterBy.toLowerCase() == 'all') {
+                                revenueCommissionByDateObj.commission = Number(commission);
+                                revenueCommissionBydate.push(revenueCommissionByDateObj)
+                            } else if (filterBy.toLowerCase() == 'lead') {
+                                let s6 = dbScript(db_sql['Q86'], { var1: saleData.sales_commission_id })
+                                let leadPercentage = await connection.query(s6)
+                                if (leadPercentage.rowCount > 0) {
+                                    revenueCommissionByDateObj.commission = ((Number(leadPercentage.rows[0].closer_percentage) / 100) * Number(commission))
                                     revenueCommissionBydate.push(revenueCommissionByDateObj)
-                                } else if (filterBy.toLowerCase() == 'lead') {
-                                    let s6 = dbScript(db_sql['Q86'], { var1: data.sales_commission_id })
-                                    let leadPercentage = await connection.query(s6)
-                                    if (leadPercentage.rowCount > 0) {
-                                        revenueCommissionByDateObj.commission = ((Number(leadPercentage.rows[0].closer_percentage) / 100) * Number(commission.toFixed(2)))
-                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                }
+                            } else {
+                                let s6 = dbScript(db_sql['Q59'], { var1: saleData.sales_commission_id })
+                                let supporterPercentage = await connection.query(s6)
+                                if (supporterPercentage.rowCount > 0) {
+                                    let sCommission = 0
+                                    for (supporter of supporterPercentage.rows) {
+                                        sCommission += ((Number(supporter.supporter_percentage) / 100) * Number(commission))
                                     }
-                                } else {
-                                    let s6 = dbScript(db_sql['Q59'], { var1: data.sales_commission_id })
-                                    let supporterPercentage = await connection.query(s6)
-                                    if (supporterPercentage.rowCount > 0) {
-                                        let sCommission = 0
-                                        for (supporter of supporterPercentage.rows) {
-                                            sCommission += ((Number(supporter.supporter_percentage) / 100) * Number(commission.toFixed(2)))
-                                        }
-                                        revenueCommissionByDateObj.commission = sCommission
-                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
-                                    }
+                                    revenueCommissionByDateObj.commission = sCommission
+                                    revenueCommissionBydate.push(revenueCommissionByDateObj)
                                 }
                             }
                         }
@@ -595,33 +514,20 @@ module.exports.totalRevenue = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
             let s4 = dbScript(db_sql['Q88'], { var1: checkPermission.rows[0].company_id, var2: format })
-            let targetData = await connection.query(s4)
-            if (targetData.rowCount > 0) {
+            let salesData = await connection.query(s4)
+            if (salesData.rowCount > 0) {
                 let totalRevenueArr = []
-                for(data of targetData.rows ){
-                    if(data.sales_type == 'Perpetual'){
-                        let s5 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
-                        let recognizedRevenue = await connection.query(s5)
-                        if(recognizedRevenue.rowCount > 0){
-                            let obj = {
-                                date : data.date || new Date(),
-                                revenue : recognizedRevenue.rows[0].recognized_amount
-                            }
-                            totalRevenueArr.push(obj)
-                        }
-                    }else{
-                        let s6 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
-                        let recognizedRevenue = await connection.query(s6)
-                        if(recognizedRevenue.rowCount > 0){
-                            let obj = {
-                                date : data.date || new Date(),
-                                revenue : recognizedRevenue.rows[0].recognized_amount
-                            }
-                            totalRevenueArr.push(obj)
-                        }
+                for (let data of salesData.rows) {
+                    let s5 = dbScript(db_sql['Q300'], { var1: data.sales_commission_id })
+                    let recognizedRevenueData = await connection.query(s5)
+                    if (recognizedRevenueData.rowCount > 0) {
+                        totalRevenueArr.push({
+                            date: data.date,
+                            revenue: recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0
+                        })
                     }
                 }
-                if(totalRevenueArr.length > 0){
+                if (totalRevenueArr.length > 0) {
                     let returnData = await reduceArray(totalRevenueArr)
                     if (returnData.length > 0) {
                         let paginatedArr = await paginatedResults1(returnData, page, limit)
@@ -632,7 +538,7 @@ module.exports.totalRevenue = async (req, res) => {
                             data: paginatedArr
                         })
                     }
-                }else{
+                } else {
                     res.json({
                         status: 200,
                         success: true,
@@ -645,74 +551,42 @@ module.exports.totalRevenue = async (req, res) => {
                     status: 200,
                     success: true,
                     message: "Empty Total revenue",
-                    data: targetData.rows
+                    data: salesData.rows
                 })
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            let totalRevenue = [];
-            let roleUsers = []
-            let roleIds = []
-            roleIds.push(checkPermission.rows[0].role_id)
-            let getRoles = async (id) => {
-                let s7 = dbScript(db_sql['Q16'], { var1: id })
-                let getChild = await connection.query(s7);
-                if (getChild.rowCount > 0) {
-                    for (let item of getChild.rows) {
-                        if (roleIds.includes(item.id) == false) {
-                            roleIds.push(item.id)
-                            await getRoles(item.id)
-                        }
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            let s4 = dbScript(db_sql['Q173'], { var1: roleUsers.join(","), var2: format })
+            let salesData = await connection.query(s4)
+            if (salesData.rowCount > 0) {
+                let totalRevenueArr = []
+                for (let data of salesData.rows) {
+                    let s5 = dbScript(db_sql['Q300'], { var1: data.sales_commission_id })
+                    let recognizedRevenueData = await connection.query(s5)
+                    if (recognizedRevenueData.rowCount > 0) {
+                        totalRevenueArr.push({
+                            date: data.date,
+                            revenue: recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0
+                        })
                     }
                 }
-            }
-            await getRoles(checkPermission.rows[0].role_id)
-            for (let roleId of roleIds) {
-                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
-                let findUsers = await connection.query(s3)
-                if (findUsers.rowCount > 0) {
-                    for (let user of findUsers.rows) {
-                        roleUsers.push(user.id)
+                if (totalRevenueArr.length > 0) {
+                    let finalArray = await reduceArray(totalRevenueArr)
+                    if (finalArray.length > 0) {
+                        let paginatedArr = await paginatedResults1(finalArray, page, limit)
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Total revenue",
+                            data: paginatedArr
+                        })
                     }
-                }
-            }
-            let s4 = dbScript(db_sql['Q173'], { var1: "'"+roleUsers.join("','")+"'", var2: format })
-            let targetData = await connection.query(s4)
-            if (targetData.rowCount > 0) {
-                for(let data of targetData.rows ){
-                    if(data.sales_type == 'Perpetual'){
-                        let s5 = dbScript(db_sql['Q273'],{var1 : data.sales_commission_id})
-                        let recognizedRevenue = await connection.query(s5)
-                        if(recognizedRevenue.rowCount > 0){
-                            let obj = {
-                                date : data.date || new Date(),
-                                revenue : recognizedRevenue.rows[0].recognized_amount
-
-                            }
-                            totalRevenue.push(obj)
-                        }
-                    }else{
-                        let s6 = dbScript(db_sql['Q274'],{var1 : data.sales_commission_id})
-                        let recognizedRevenue = await connection.query(s6)
-                        if(recognizedRevenue.rowCount > 0){
-                            let obj = {
-                                date : data.date || new Date(),
-                                revenue : recognizedRevenue.rows[0].recognized_amount
-
-                            }
-                            totalRevenue.push(obj)
-                        }
-                    } 
-                }
-            }
-            if (totalRevenue.length > 0) {
-                let finalArray = await reduceArray(totalRevenue)
-                if (finalArray.length > 0) {
-                    let paginatedArr = await paginatedResults1(finalArray, page, limit)
+                } else {
                     res.json({
                         status: 200,
                         success: true,
-                        message: "Total revenue",
-                        data: paginatedArr
+                        message: "Empty Total revenue",
+                        data: totalRevenueArr
                     })
                 }
             } else {
@@ -720,7 +594,7 @@ module.exports.totalRevenue = async (req, res) => {
                     status: 200,
                     success: true,
                     message: "Empty Total revenue",
-                    data: totalRevenue
+                    data: salesData.rows
                 })
             }
         } else {
@@ -817,7 +691,7 @@ module.exports.totalRevenue = async (req, res) => {
 //                     message: "Start date and End date is required",
 //                 })
 //             }
-//         } 
+//         }
 //         else {
 //             res.status(403).json({
 //                 success: false,

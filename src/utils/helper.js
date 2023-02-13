@@ -4,6 +4,7 @@ const stripe = require('stripe')(process.env.SECRET_KEY)
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid")
+const notificationEnum = require('../utils/notificationEnum')
 
 module.exports.mysql_real_escape_string = (str) => {
     return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
@@ -544,7 +545,7 @@ module.exports.getMinutesBetweenDates = async (startDate, endDate) => {
     return (diff / 60000);
 }
 
-
+// get child roles and their user's list from this function 
 module.exports.getUserAndSubUser = async (userData) => {
     let roleIds = []
     roleIds.push(userData.role_id)
@@ -571,4 +572,15 @@ module.exports.getUserAndSubUser = async (userData) => {
         }
     }
     return returnData
+}
+
+// add notifications in this function 
+module.exports.notificationsOperations = async (nfData, userId) => {
+    console.log(nfData,"nfData");
+        for( let id of nfData.notification_userId){
+            let s0 = dbScript(db_sql['Q8'], {var1 : userId})
+            let findUserName = await connection.query(s0)
+            let s1 = dbScript(db_sql['Q289'], {var1: findUserName.rows[0].full_name + notificationEnum.notificationMsg[nfData.msg], var2: nfData.notification_typeId , var3: id, var4: notificationEnum.notificationType[nfData.type] })
+            let notificationsData = await connection.query(s1);
+        }
 }

@@ -1,5 +1,4 @@
 const express = require('express')
-const { sales } = require('../controllers/index')
 var router = express.Router()
 var controller = require('../controllers/index')
 const { verifyTokenFn } = require('../utils/jwt')
@@ -22,6 +21,7 @@ router.put('/updateCompanyLogo', verifyTokenFn,uploadLogo.single('file'), contro
 //-------------------------------------Users-------------------------------------------------
 router.post('/addUser' , verifyTokenFn, controller.users.addUser)
 router.get('/usersList',verifyTokenFn, controller.users.usersList)
+router.get('/usersDetails',verifyTokenFn, controller.users.usersDetails)
 router.get('/showUserById' , verifyTokenFn, controller.users.showUserById)
 router.put('/updateUser' , verifyTokenFn, controller.users.updateUser)
 router.put('/deleteUser' , verifyTokenFn, controller.users.deleteUser)
@@ -88,6 +88,7 @@ router.post('/createSalesCommission',verifyTokenFn, controller.sales.createSales
 router.get('/allSalesCommissionList',verifyTokenFn, controller.sales.allSalesCommissionList)
 router.get('/activeSalesCommissionList',verifyTokenFn, controller.sales.activeSalesCommissionList)
 router.get('/closedSalesCommissionList',verifyTokenFn, controller.sales.closedSalesCommissionList)
+router.get('/salesDetails',verifyTokenFn, controller.sales.salesDetails)
 
 router.put('/updateSalesCommission',verifyTokenFn, controller.sales.updateSalesCommission)
 router.put('/deleteSalesCommission',verifyTokenFn, controller.sales.deleteSalesCommission)
@@ -101,6 +102,9 @@ router.get('/transferBackList', verifyTokenFn, controller.sales.transferBackList
 router.post('/uploadSalesInvoice', verifyTokenFn,uploadSalesInvoice.single('file'), controller.sales.uploadSalesInvoice)
 router.post('/addRecognizedRevenue', verifyTokenFn, controller.sales.addRecognizedRevenue)
 router.get('/recognizedRevenueList', verifyTokenFn, controller.sales.recognizedRevenueList)
+router.get('/getRemainingTargetAmount', verifyTokenFn, controller.sales.getRemainingTargetAmount)
+router.get('/getAllApiDeatilsRelatedSales', verifyTokenFn, controller.sales.getAllApiDeatilsRelatedSales)
+
 //----------------------------------------Reports------------------------------------------
 router.get('/revenuePerCustomer',verifyTokenFn, controller.reports.revenuePerCustomer)
 router.get('/revenuePerProduct',verifyTokenFn, controller.reports.revenuePerProduct)
@@ -116,13 +120,13 @@ router.get('/totalExpectedRevenueCounts', verifyTokenFn, controller.dashboard.to
 //-------------------------------------Revenue Forecast----------------------------------
 
 router.post('/createRevenueForecast',verifyTokenFn, controller.revenueForecast.createRevenueForecast)
-router.get('/revenueForecastList',verifyTokenFn, controller.revenueForecast.allRevenueForecastList)
-router.get('/activeForecastList',verifyTokenFn, controller.revenueForecast.activeForecastList)
-router.get('/closedForecastList',verifyTokenFn, controller.revenueForecast.closedForecastList)
+router.get('/revenueForecastList',verifyTokenFn, controller.revenueForecast.revenueForecastList)
+router.get('/forecastDetails',verifyTokenFn, controller.revenueForecast.forecastDetails)
+router.put('/auditForecast', verifyTokenFn, controller.revenueForecast.auditForecast)
 router.get('/actualVsForecast',verifyTokenFn, controller.revenueForecast.actualVsForecast)
-router.put('/closeRevenueForecast', verifyTokenFn, controller.revenueForecast.closeRevenueForecast)
 router.put('/editRevenueForecast', verifyTokenFn, controller.revenueForecast.editRevenueForecast)
 router.put('/deleteRevenueForecast', verifyTokenFn, controller.revenueForecast.deleteRevenueForecast)
+router.put('/deleteAssignedUserForecast', verifyTokenFn, controller.revenueForecast.deleteAssignedUserForecast)
 
 //---------------------------------------Business and Revenue Contact-------------------------
 
@@ -159,19 +163,25 @@ router.get('/inbox', verifyTokenFn, controller.email.inbox)
 router.post('/readEmail', verifyTokenFn, controller.email.readEmail)
 router.get('/SentEmailList/:salesId', verifyTokenFn, controller.email.SentEmailList)
 
+//-------------------------------Leads-----------------------------------------
+router.get('/organizationList',verifyTokenFn, controller.leads.organizationList)
+router.post('/createLead',verifyTokenFn, controller.leads.createLead)
+router.get('/leadsList',verifyTokenFn, controller.leads.leadsList)
+router.put('/updateLead',verifyTokenFn, controller.leads.updateLead)
+router.put('/deleteLead',verifyTokenFn, controller.leads.deleteLead)
+router.put('/rejectLead',verifyTokenFn, controller.leads.rejectLead)
+router.get('/totalVsRejectedLeads', verifyTokenFn, controller.leads.rejectedLeads )
+router.post('/createOrganization' , verifyTokenFn, controller.leads.createOrganization)
+router.put('/updateOrganization', verifyTokenFn, controller.leads.updateOrganization)
+router.put('/deleteOrganization', verifyTokenFn, controller.leads.deleteOrganization)
+// router.post('/convertLeadToCustomer',verifyTokenFn, controller.leads.convertLeadToCustomer)
+
 //-------------------------------Marketing strategy-----------------------------------------
-router.get('/organizationList',verifyTokenFn, controller.marketingStrategy.organizationList)
-router.post('/createLead',verifyTokenFn, controller.marketingStrategy.createLead)
-router.get('/leadsList',verifyTokenFn, controller.marketingStrategy.leadsList)
-router.put('/updateLead',verifyTokenFn, controller.marketingStrategy.updateLead)
-router.put('/deleteLead',verifyTokenFn, controller.marketingStrategy.deleteLead)
-router.put('/rejectLead',verifyTokenFn, controller.marketingStrategy.rejectLead)
-router.get('/totalVsRejectedLeads', verifyTokenFn, controller.marketingStrategy.rejectedLeads )
-router.post('/convertLeadToCustomer',verifyTokenFn, controller.marketingStrategy.convertLeadToCustomer)
 router.get('/marketingDashboard',verifyTokenFn, controller.marketingStrategy.marketingDashboard)
 
 router.post('/addBudget', verifyTokenFn, controller.marketingStrategy.addBudget)
 router.get('/budgetList', verifyTokenFn, controller.marketingStrategy.budgetList)
+router.get('/budgetDetails', verifyTokenFn, controller.marketingStrategy.budgetDetails)
 router.put('/deleteBudget', verifyTokenFn, controller.marketingStrategy.deleteBudget)
 router.put('/updateBudget', verifyTokenFn, controller.marketingStrategy.updateBudget)
 router.get('/budgetLogList', verifyTokenFn, controller.marketingStrategy.budgetLogList)
@@ -194,6 +204,13 @@ router.post('/addLeadSource',verifyTokenFn, controller.configuration.addLeadSour
 router.get('/leadSourceList',verifyTokenFn, controller.configuration.leadSourceList)
 router.put('/updateLeadSource',verifyTokenFn, controller.configuration.updateLeadSource)
 router.put('/deleteLeadSource',verifyTokenFn, controller.configuration.deleteLeadSource)
+
+
+
+//----------------------------------------Notifications------------------------------------
+router.get('/notificationList',verifyTokenFn, controller.notifications.notificationList)
+router.put('/notificationRead',verifyTokenFn, controller.notifications.notificationRead)
+
 
 
 
