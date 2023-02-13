@@ -1569,6 +1569,7 @@ const db_sql = {
                   timeline ASC`,
       "Q320" : `SELECT 
                   o.id as organization_id, o.organization_name, u.full_name as created_by,
+                  o.company_id ,
                   (
                   select json_agg(leads.*)
                   from leads 
