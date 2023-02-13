@@ -85,11 +85,7 @@ const db_sql = {
                       leads.assigned_sales_lead_to,leads.additional_marketing_notes,leads.user_id as creator_id,
                       leads.reason, leads.created_at, leads.updated_at, 
                       leads.marketing_qualified_lead, leads.is_rejected, leads.organization_id,
-                      u1.full_name as created_by,
-                      s.source,
-                      t.title,
-                      i.industry,
-                      c.id as customer_id
+                      u1.full_name as created_by,s.source,t.title,i.industry,c.id as customer_id
                     FROM leads 
                     LEFT JOIN users AS u1 ON u1.id = leads.user_id
                     LEFT JOIN lead_sources AS s ON s.id = leads.source

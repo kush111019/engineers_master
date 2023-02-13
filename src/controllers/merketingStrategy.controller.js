@@ -318,7 +318,7 @@ module.exports.budgetDetails = async(req, res) => {
                 res.json({
                     status: 200,
                     success: false,
-                    message: 'Empty budget list',
+                    message: 'Empty budget details',
                     data: budgetList.rows
                 })
             }
