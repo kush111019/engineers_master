@@ -171,6 +171,9 @@ router.put('/updateLead',verifyTokenFn, controller.leads.updateLead)
 router.put('/deleteLead',verifyTokenFn, controller.leads.deleteLead)
 router.put('/rejectLead',verifyTokenFn, controller.leads.rejectLead)
 router.get('/totalVsRejectedLeads', verifyTokenFn, controller.leads.rejectedLeads )
+router.post('/createOrganization' , verifyTokenFn, controller.leads.createOrganization)
+router.put('/updateOrganization', verifyTokenFn, controller.leads.updateOrganization)
+router.put('/deleteOrganization', verifyTokenFn, controller.leads.deleteOrganization)
 // router.post('/convertLeadToCustomer',verifyTokenFn, controller.leads.convertLeadToCustomer)
 
 //-------------------------------Marketing strategy-----------------------------------------

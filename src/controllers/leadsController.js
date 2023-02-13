@@ -108,8 +108,8 @@ module.exports.createLead = async (req, res) => {
                 let rId = []
                 organizationName = `${organizationName} - (Qualified)`
                 let id = uuid.v4()
-                let currency = '$'
-                let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: organizationId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11: createLead.rows[0].id, var12: false })
+                let currency = 'United States Dollar (USD)'
+                let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: organizationId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : createLead.rows[0].id, var12 : false })
                 let createCustomer = await connection.query(s3)
             }
             // add notification in notification list
@@ -305,9 +305,10 @@ module.exports.updateLead = async (req, res) => {
         if (checkPermission.rows[0].permission_to_update) {
             let s4 = dbScript(db_sql['Q264'], { var1: organizationId })
             let findOrganization = await connection.query(s4)
-            if (findOrganization.rowCount > 0) {
-                if (findOrganization.rows[0].organization_name != organizationName) {
-                    let s6 = dbScript(db_sql['Q265'], { var1: organizationId, var2: organizationName })
+            if(findOrganization.rowCount > 0){
+                if(findOrganization.rows[0].organization_name != organizationName){
+                    let _dt = new Date().toISOString()
+                    let s6 = dbScript(db_sql['Q265'],{var1 : organizationId, var2 : organizationName, var3 : _dt})
                     let updateOrganizationName = await connection.query(s6)
                 }
             }
@@ -319,8 +320,8 @@ module.exports.updateLead = async (req, res) => {
                 let rId = []
                 organizationName = `${organizationName} - (Qualified)`
                 let id = uuid.v4()
-                let currency = '$'
-                let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: organizationId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11: leadId, var12: false })
+                let currency = 'United States Dollar (USD)'
+                let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: organizationId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : leadId, var12 : false })
                 let createCustomer = await connection.query(s3)
             }
             // add notification in notification list
@@ -619,3 +620,153 @@ module.exports.rejectedLeads = async (req, res) => {
 //         })
 //     }
 // }
+
+module.exports.createOrganization = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { organizationName } = req.body
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_create) {
+            let s2 = dbScript(db_sql['Q323'], { var1: organizationName })
+            let findOrganization = await connection.query(s2)
+            if (findOrganization.rowCount == 0) {
+                let orgId = uuid.v4()
+                let s3 = dbScript(db_sql['Q37'], { var1: orgId, var2: mysql_real_escape_string(organizationName), var3: checkPermission.rows[0].company_id })
+                let addOrganization = await connection.query(s3)
+                if (addOrganization.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Organization added successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Organization name already exists"
+                })
+            }
+
+        } else {
+            await connection.query('ROLLBACK')
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.updateOrganization = async(req, res) => {
+    try {
+        let userId = req.user.id 
+        let { organizationId, organizationName } = req.body 
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_update) {
+            let _dt = new Date().toISOString()
+            let s2 = dbScript(db_sql['Q265'],{var1 : organizationId, var2 : organizationName, var3 : _dt})
+            let updateOrganization = await connection.query(s2)
+            if(updateOrganization.rowCount > 0){
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Organization updated successfully"
+                })
+            }else{
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        }else{
+            await connection.query('ROLLBACK')
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.deleteOrganization = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { organizationId } = req.query
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_delete) {
+            let s2 = dbScript(db_sql['Q324'],{var1 : organizationId})
+            let findUsedOrganization = await connection.query(s2)
+            if(findUsedOrganization.rowCount == 0){
+                let _dt = new Date().toISOString() 
+                let s3 = dbScript(db_sql['Q325'],{var1 : _dt, var2 : organizationId})
+                let deleteOrganization = await connection.query(s3)
+                if(deleteOrganization.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Organization deleted successfully"
+                    })
+                }else{
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            }else{
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Organization details has been used in Leads."
+                    })
+            }
+        } else {
+            await connection.query('ROLLBACK')
+            res.json({
+                status: 400,
+                success: false,
+                message: "Something went wrong"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
