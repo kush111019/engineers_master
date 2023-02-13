@@ -1568,7 +1568,7 @@ const db_sql = {
                 ORDER BY 
                   timeline ASC`,
       "Q320" : `SELECT 
-                  o.id as organization_id, o.organization_name, u.full_name as created_by
+                  o.id as organization_id, o.organization_name, u.full_name as created_by,
                   (
                   select json_agg(leads.*)
                   from leads 
