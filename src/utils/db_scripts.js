@@ -827,7 +827,7 @@ const db_sql = {
               industry_type = '{var12}',marketing_qualified_lead = '{var13}',assigned_sales_lead_to = '{var14}',additional_marketing_notes = '{var15}',
               updated_at = '{var16}', organization_id = '{var17}' WHERE id = '{var1}' AND deleted_at is null`,
               
-    "Q205"  :`UPDATE leads SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at is null`,
+    "Q205"  :`UPDATE leads SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`,
     
     "Q206"  :`SELECT COUNT(*) from leads WHERE company_id = '{var1}' AND deleted_at IS NULL`,
 
