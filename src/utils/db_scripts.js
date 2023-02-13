@@ -74,7 +74,34 @@ const db_sql = {
                 c.id, c.organization_id, c.customer_name, c.source, 
                 c.user_id,c.lead_id, c.business_contact_id, c.revenue_contact_id, 
                 c.created_at, c.address, c.currency,c.is_rejected,
-                u.full_name AS created_by 
+                u.full_name AS created_by,
+                (
+                  SELECT json_agg(leads.*)
+                  FROM (
+                    SELECT 
+                      leads.id,leads.full_name, leads.title as title_id, leads.email_address,
+                      leads.phone_number,leads.address,leads.organization_name, leads.source as source_id,
+                      leads.linkedin_url,leads.website, leads.targeted_value,leads.industry_type as industry_id,
+                      leads.assigned_sales_lead_to,leads.additional_marketing_notes,leads.user_id as creator_id,
+                      leads.reason, leads.created_at, leads.updated_at, 
+                      leads.marketing_qualified_lead, leads.is_rejected, leads.organization_id,
+                      u1.full_name as created_by,
+                      s.source,
+                      t.title,
+                      i.industry,
+                      c.id as customer_id
+                    FROM leads 
+                    LEFT JOIN users AS u1 ON u1.id = leads.user_id
+                    LEFT JOIN lead_sources AS s ON s.id = leads.source
+                    LEFT JOIN lead_titles AS t ON t.id = leads.title
+                    LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
+                    LEFT JOIN customers as c ON c.lead_id = leads.id
+                    WHERE c.organization_id  = leads.organization_id 
+                      AND leads.marketing_qualified_lead= true 
+                      AND leads.is_rejected = false AND u1.deleted_at IS NULL  
+                      AND leads.deleted_at IS NULL
+                  ) leads
+                ) as lead_data 
               FROM 
                 customers AS c 
               INNER JOIN 
@@ -1106,7 +1133,7 @@ const db_sql = {
     "Q262" : `SELECT * FROM lead_organizations WHERE company_id = '{var1}' AND deleted_at IS NULL`,
     "Q263" : `INSERT INTO lead_organizations(id, organization_name, user_id, company_id) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
     "Q264" : `SELECT * FROM lead_organizations WHERE id = '{var1}' AND deleted_at IS NULL`,
-    "Q265" : `UPDATE lead_organizations SET organization_name = '{var2}' WHERE id = '{var1}' RETURNING *`,
+    "Q265" : `UPDATE lead_organizations SET organization_name = '{var2}', updated_at = '{var3}' WHERE id = '{var1}' RETURNING *`,
     "Q266" : `UPDATE companies SET is_locked = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q267"  : `UPDATE users SET is_locked = '{var1}', updated_at = '{var3}' WHERE company_id = '{var2}' AND deleted_at IS NULL RETURNING * `,
     "Q268" : `SELECT 
@@ -1510,7 +1537,34 @@ const db_sql = {
                 ORDER BY 
                   created_at DESC`, 
       "Q316" : `SELECT c.id, c.organization_id ,c.customer_name, c.source, c.user_id, c.address, c.deleted_at, c.business_contact_id, c.revenue_contact_id ,
-                  u.full_name AS created_by 
+                  u.full_name AS created_by,
+                  (
+                    SELECT json_agg(leads.*)
+                    FROM (
+                      SELECT 
+                        leads.id,leads.full_name, leads.title as title_id, leads.email_address,
+                        leads.phone_number,leads.address,leads.organization_name, leads.source as source_id,
+                        leads.linkedin_url,leads.website, leads.targeted_value,leads.industry_type as industry_id,
+                        leads.assigned_sales_lead_to,leads.additional_marketing_notes,leads.user_id as creator_id,
+                        leads.reason, leads.created_at, leads.updated_at, 
+                        leads.marketing_qualified_lead, leads.is_rejected, leads.organization_id,
+                        u1.full_name as created_by,
+                        s.source,
+                        t.title,
+                        i.industry,
+                        c.id as customer_id
+                      FROM leads 
+                      LEFT JOIN users AS u1 ON u1.id = leads.user_id
+                      LEFT JOIN lead_sources AS s ON s.id = leads.source
+                      LEFT JOIN lead_titles AS t ON t.id = leads.title
+                      LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
+                      LEFT JOIN customers as c ON c.lead_id = leads.id
+                      WHERE c.organization_id  = leads.organization_id 
+                        AND leads.marketing_qualified_lead= true 
+                        AND leads.is_rejected = false AND u1.deleted_at IS NULL  
+                        AND leads.deleted_at IS NULL
+                    ) leads
+                  ) as lead_data 
                 FROM 
                   customers AS c 
                 INNER JOIN 
@@ -1634,7 +1688,10 @@ const db_sql = {
                   WHERE (o.user_id IN '{var1}') AND o.deleted_at IS NULL 
                 ORDER BY 
                   o.created_at DESC`,
-      "Q322" : `UPDATE customers SET updated_at = '{var1}', is_qualified = true WHERE id = '{var2}' RETURNING *`
+      "Q322" : `UPDATE customers SET updated_at = '{var1}', is_qualified = true WHERE id = '{var2}' RETURNING *`,
+      "Q323" : `SELECT id, organization_name FROM lead_organizations WHERE LOWER(organization_name) = LOWER('{var1}') AND deleted_at IS NULL`,
+      "Q324" : `SELECT * FROM leads WHERE organization_id = '{var1}' AND deleted_at IS NULL`,
+      "Q325" : `UPDATE lead_organizations SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
   
   
   }
