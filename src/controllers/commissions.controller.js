@@ -3,6 +3,8 @@ const { db_sql, dbScript} = require('../utils/db_scripts');
 const uuid = require("node-uuid");
 const moduleName = process.env.COMMISSIONS_MODULE
 
+const { getUserAndSubUser } = require('../utils/helper')
+
 module.exports.commissionSplit = async (req, res) => {
     try {
         let userId = req.user.id
@@ -131,31 +133,15 @@ module.exports.commissionSplitList = async (req, res) => {
             }
 
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            
-            userIds.push(userId);
-            let commissionList = []
-            let s3 = dbScript(db_sql['Q163'],{var1 : checkPermission.rows[0].role_id})
-            let findUsers = await connection.query(s3)
-            if(findUsers.rowCount > 0){
-                for(user of findUsers.rows){
-                    userIds.push(user.id)
-                }
-            }
-            for(id of userIds){
-                let s4 = dbScript(db_sql['Q164'],{var1 : id})
-                let findCommission = await connection.query(s4)
-                if(findCommission.rowCount > 0){
-                    findCommission.rows.map(value => {
-                        commissionList.push(value)
-                    })
-                }
-            }
-            if (commissionList.length > 0) {
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            let s4 = dbScript(db_sql['Q318'], { var1: roleUsers.join(",") })
+            let commissionList = await connection.query(s4)
+            if (commissionList.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: "Commission split list",
-                    data: commissionList
+                    data: commissionList.rows
                 })
             } else {
                 res.json({

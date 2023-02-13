@@ -25,7 +25,8 @@ const db_sql = {
                 users AS u1 
               INNER JOIN 
                 users AS u2 ON u2.id = u1.created_by  
-              INNER JOIN roles as r on r.id = u1.role_id
+              INNER JOIN 
+                roles as r on r.id = u1.role_id
               WHERE 
                 u1.company_id = '{var1}' AND u1.deleted_at IS NULL 
               ORDER BY 
@@ -1517,20 +1518,22 @@ const db_sql = {
                 WHERE 
                   c.user_id IN ({var1}) 
                 AND 
-                  c.is_rejected = '{var2}'`,
+                  c.is_rejected = '{var2}' AND c.is_qualified = true`,
       "Q317" : `SELECT 
                   u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
                   u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
-                  u1.is_main_admin, u1.created_by, u2.full_name AS creator_name 
-                FROM 
-                  users AS u1 
-                INNER JOIN 
+                  u1.is_main_admin, u1.created_by, u2.full_name AS creator_name, r.role_name AS roleName
+                FROM
+                  users AS u1
+                INNER JOIN
                   users AS u2 ON u2.id = u1.created_by  
+                INNER JOIN 
+                  roles as r on r.id = u1.role_id
                 WHERE 
                   u1.id IN ({var1}) AND u1.deleted_at IS NULL 
                 ORDER BY 
                   created_at DESC`,
-      "Q318" : `SELECT * 
+      "Q318" : `SELECT id, closer_percentage, supporter_percentage
                 FROM 
                   commission_split
                 WHERE 
