@@ -187,11 +187,11 @@ module.exports.addBudget = async (req, res) => {
                 if (description.length > 0) {
                     for (let descData of description) {
                         let desId = uuid.v4()
-                        let s3 = dbScript(db_sql['Q234'], { var1: desId, var2: createBudget.rows[0].id, var3: descData.title, var4: descData.amount, var5: checkPermission.rows[0].id, var6: checkPermission.rows[0].company_id })
+                        let s3 = dbScript(db_sql['Q234'], { var1: desId, var2: createBudget.rows[0].id, var3: mysql_real_escape_string(descData.title), var4: descData.amount, var5: checkPermission.rows[0].id, var6: checkPermission.rows[0].company_id })
                         let addDescription = await connection.query(s3)
 
                         let logDesId = uuid.v4()
-                        let s4 = dbScript(db_sql['Q235'], { var1: logDesId, var2: addDescription.rows[0].id, var3: createBudget.rows[0].id, var4: descData.title, var5: descData.amount, var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
+                        let s4 = dbScript(db_sql['Q235'], { var1: logDesId, var2: addDescription.rows[0].id, var3: createBudget.rows[0].id, var4: mysql_real_escape_string(descData.title), var5: descData.amount, var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
                         let addDescLog = await connection.query(s4)
                     }
                 }
@@ -417,11 +417,11 @@ module.exports.updateBudget = async (req, res) => {
             if (description.length > 0) {
                 for (let desc of description) {
                     if (desc.id != '') {
-                        let s3 = dbScript(db_sql['Q242'], { var1: desc.title, var2: desc.amount, var3: desc.id })
+                        let s3 = dbScript(db_sql['Q242'], { var1: mysql_real_escape_string(descData.title), var2: desc.amount, var3: desc.id })
                         let updateDescription = await connection.query(s3)
 
                         let logDesId = uuid.v4()
-                        let s4 = dbScript(db_sql['Q235'], { var1: logDesId, var2: updateDescription.rows[0].id, var3: budgetId, var4: desc.title, var5: desc.amount, var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
+                        let s4 = dbScript(db_sql['Q235'], { var1: logDesId, var2: updateDescription.rows[0].id, var3: budgetId, var4: mysql_real_escape_string(descData.title), var5: desc.amount, var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
                         let addDescLog = await connection.query(s4)
 
                     } else {
