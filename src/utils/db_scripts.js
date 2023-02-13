@@ -104,7 +104,7 @@ const db_sql = {
                 users AS u ON u.id = c.user_id
               WHERE 
                 c.company_id = '{var1}' AND c.deleted_at IS NULL AND 
-                u.deleted_at IS NULL AND c.is_rejected = '{var2}' AND c.is_qaulified = true 
+                u.deleted_at IS NULL AND c.is_rejected = '{var2}' AND c.is_qualified = true 
               ORDER BY 
                 created_at desc`,
     "Q40"  : `UPDATE sales_commission SET closed_at = '{var1}', updated_at = '{var2}', contract = '{var4}' WHERE id = '{var3}' RETURNING *`,
