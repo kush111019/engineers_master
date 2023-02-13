@@ -100,6 +100,16 @@ module.exports.createLead = async (req, res) => {
             let s2 = dbScript(db_sql['Q201'], { var1: id, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: mysql_real_escape_string(organizationName), var8: source, var9: linkedinUrl, var10: website, var11: targetedValue, var12: industryType, var13: marketingQualifiedLead, var14: assignedSalesLeadTo, var15: mysql_real_escape_string(additionalMarketingNotes), var16: userId, var17: checkPermission.rows[0].company_id, var18 : organizationId })
             let createLead = await connection.query(s2)
 
+            if(marketingQualifiedLead){
+                let bId = []
+                let rId = []
+                organizationName = `${organizationName} - (Qualified)`
+                let id = uuid.v4()
+                let currency = '$'
+                let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: organizationId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : createLead.rows[0].id })
+                let createCustomer = await connection.query(s3)
+            }
+
             if (createLead.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
@@ -135,7 +145,7 @@ module.exports.createLead = async (req, res) => {
 module.exports.leadsList = async (req, res) => {
     try {
         let userId = req.user.id
-        let {status} = req.query
+        let { status } = req.query
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global) {
@@ -294,7 +304,15 @@ module.exports.updateLead = async (req, res) => {
             let _dt = new Date().toISOString();
             let s5 = dbScript(db_sql['Q204'], { var1: leadId, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: mysql_real_escape_string(organizationName), var8: source, var9: linkedinUrl, var10: website, var11: targetedValue, var12: industryType, var13: marketingQualifiedLead, var14: assignedSalesLeadTo, var15: mysql_real_escape_string(additionalMarketingNotes), var16: _dt, var17 : organizationId })
             let updateLead = await connection.query(s5)
-
+            if(marketingQualifiedLead){
+                let bId = []
+                let rId = []
+                organizationName = `${organizationName} - (Qualified)`
+                let id = uuid.v4()
+                let currency = '$'
+                let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: organizationId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : leadId })
+                let createCustomer = await connection.query(s3)
+            }
             if (updateLead.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
@@ -502,74 +520,74 @@ module.exports.rejectedLeads = async (req, res) => {
     }
 }
 
-module.exports.convertLeadToCustomer = async (req, res) => {
-    try {
-        let userId = req.user.id
-        let {
-            leadId,
-            address,
-            organizationName,
-            source,
-            marketingQualifiedLead,
-            currency
-        } = req.body
+// module.exports.convertLeadToCustomer = async (req, res) => {
+//     try {
+//         let userId = req.user.id
+//         let {
+//             leadId,
+//             address,
+//             organizationName,
+//             source,
+//             marketingQualifiedLead,
+//             currency
+//         } = req.body
 
-        await connection.query('BEGIN')
+//         await connection.query('BEGIN')
 
-        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s1)
-        if (checkPermission.rows[0].permission_to_update) {
-            if (marketingQualifiedLead) {
-                let compId = uuid.v4()
-                let s2 = dbScript(db_sql['Q37'], { var1: compId, var2: mysql_real_escape_string(organizationName), var3: checkPermission.rows[0].company_id })
-                let addCustomerCom = await connection.query(s2)
-                if (addCustomerCom.rowCount > 0) {
-                    compId = addCustomerCom.rows[0].id
-                }
-                let bId = []
-                let rId = []
-                organizationName = `${organizationName} - (Qualified)`
-                let id = uuid.v4()
-                let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: compId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : leadId })
-                let createCustomer = await connection.query(s3)
+//         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+//         let checkPermission = await connection.query(s1)
+//         if (checkPermission.rows[0].permission_to_update) {
+//             if (marketingQualifiedLead) {
+//                 let compId = uuid.v4()
+//                 let s2 = dbScript(db_sql['Q37'], { var1: compId, var2: mysql_real_escape_string(organizationName), var3: checkPermission.rows[0].company_id })
+//                 let addCustomerCom = await connection.query(s2)
+//                 if (addCustomerCom.rowCount > 0) {
+//                     compId = addCustomerCom.rows[0].id
+//                 }
+//                 let bId = []
+//                 let rId = []
+//                 organizationName = `${organizationName} - (Qualified)`
+//                 let id = uuid.v4()
+//                 let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: compId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : leadId })
+//                 let createCustomer = await connection.query(s3)
 
-                let _dt = new Date().toISOString()
-                let s4 = dbScript(db_sql['Q222'],{var1 : true, var2 : _dt, var3 : leadId})
-                let updateLead = await connection.query(s4)
-                if (createCustomer.rowCount > 0 && updateLead.rowCount > 0) {
-                    await connection.query('COMMIT')
-                    res.json({
-                        status: 201,
-                        success: true,
-                        message: "Lead converted to customer successfully"
-                    })
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "something went wrong"
-                    })
-                }
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: "Lead is not Qualified",
-                })
-            }
-        } else {
-            await connection.query('ROLLBACK')
-            res.status(403).json({
-                success: false,
-                message: "Unathorised"
-            })
-        }
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
+//                 let _dt = new Date().toISOString()
+//                 let s4 = dbScript(db_sql['Q222'],{var1 : true, var2 : _dt, var3 : leadId})
+//                 let updateLead = await connection.query(s4)
+//                 if (createCustomer.rowCount > 0 && updateLead.rowCount > 0) {
+//                     await connection.query('COMMIT')
+//                     res.json({
+//                         status: 201,
+//                         success: true,
+//                         message: "Lead converted to customer successfully"
+//                     })
+//                 } else {
+//                     await connection.query('ROLLBACK')
+//                     res.json({
+//                         status: 400,
+//                         success: false,
+//                         message: "something went wrong"
+//                     })
+//                 }
+//             } else {
+//                 res.json({
+//                     status: 200,
+//                     success: false,
+//                     message: "Lead is not Qualified",
+//                 })
+//             }
+//         } else {
+//             await connection.query('ROLLBACK')
+//             res.status(403).json({
+//                 success: false,
+//                 message: "Unathorised"
+//             })
+//         }
+//     } catch (error) {
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }

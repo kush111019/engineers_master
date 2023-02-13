@@ -298,6 +298,45 @@ module.exports.budgetList = async (req, res) => {
     }
 }
 
+module.exports.budgetDetails = async(req, res) => {
+    try {
+        let userId = req.user.id
+        let { budgetId } = req.query
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
+            let s2 = dbScript(db_sql['Q319'], { var1: budgetId })
+            let budgetList = await connection.query(s2)
+            if (budgetList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Budget details',
+                    data: budgetList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty budget list',
+                    data: budgetList.rows
+                })
+            }
+        }else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    } 
+}
+
 module.exports.deleteBudget = async (req, res) => {
     try {
         let userId = req.user.id

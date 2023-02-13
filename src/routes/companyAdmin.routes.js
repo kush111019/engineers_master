@@ -123,14 +123,10 @@ router.post('/createRevenueForecast',verifyTokenFn, controller.revenueForecast.c
 router.get('/revenueForecastList',verifyTokenFn, controller.revenueForecast.revenueForecastList)
 router.get('/forecastDetails',verifyTokenFn, controller.revenueForecast.forecastDetails)
 router.put('/auditForecast', verifyTokenFn, controller.revenueForecast.auditForecast)
-// router.get('/activeForecastList',verifyTokenFn, controller.revenueForecast.activeForecastList)
-// router.get('/closedForecastList',verifyTokenFn, controller.revenueForecast.closedForecastList)
 router.get('/actualVsForecast',verifyTokenFn, controller.revenueForecast.actualVsForecast)
-// router.put('/closeRevenueForecast', verifyTokenFn, controller.revenueForecast.closeRevenueForecast)
 router.put('/editRevenueForecast', verifyTokenFn, controller.revenueForecast.editRevenueForecast)
 router.put('/deleteRevenueForecast', verifyTokenFn, controller.revenueForecast.deleteRevenueForecast)
 router.put('/deleteAssignedUserForecast', verifyTokenFn, controller.revenueForecast.deleteAssignedUserForecast)
-
 
 //---------------------------------------Business and Revenue Contact-------------------------
 
@@ -175,13 +171,14 @@ router.put('/updateLead',verifyTokenFn, controller.leads.updateLead)
 router.put('/deleteLead',verifyTokenFn, controller.leads.deleteLead)
 router.put('/rejectLead',verifyTokenFn, controller.leads.rejectLead)
 router.get('/totalVsRejectedLeads', verifyTokenFn, controller.leads.rejectedLeads )
-router.post('/convertLeadToCustomer',verifyTokenFn, controller.leads.convertLeadToCustomer)
+// router.post('/convertLeadToCustomer',verifyTokenFn, controller.leads.convertLeadToCustomer)
 
 //-------------------------------Marketing strategy-----------------------------------------
 router.get('/marketingDashboard',verifyTokenFn, controller.marketingStrategy.marketingDashboard)
 
 router.post('/addBudget', verifyTokenFn, controller.marketingStrategy.addBudget)
 router.get('/budgetList', verifyTokenFn, controller.marketingStrategy.budgetList)
+router.get('/budgetDetails', verifyTokenFn, controller.marketingStrategy.budgetDetails)
 router.put('/deleteBudget', verifyTokenFn, controller.marketingStrategy.deleteBudget)
 router.put('/updateBudget', verifyTokenFn, controller.marketingStrategy.updateBudget)
 router.get('/budgetLogList', verifyTokenFn, controller.marketingStrategy.budgetLogList)

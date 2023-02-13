@@ -6,13 +6,102 @@ const moduleName = process.env.SALES_MODULE
 const customerModule = process.env.CUSTOMERS_MODULE
 const userModule = process.env.USERS_MODULE
 
-module.exports.customerListforSales = async (req, res) => {
+// module.exports.customerListforSales = async (req, res) => {
+//     try {
+//         let userId = req.user.id
+//         let s3 = dbScript(db_sql['Q41'], { var1: customerModule, var2: userId })
+//         let checkPermission = await connection.query(s3)
+//         if (checkPermission.rows[0].permission_to_view_global) {
+//             let s4 = dbScript(db_sql['Q52'], { var1: checkPermission.rows[0].company_id, var2: false })
+//             let customerList = await connection.query(s4)
+//             if (customerList.rowCount > 0) {
+//                 res.json({
+//                     status: 200,
+//                     success: true,
+//                     message: 'Customers list',
+//                     data: customerList.rows
+//                 })
+//             } else {
+//                 res.json({
+//                     status: 200,
+//                     success: false,
+//                     message: 'Empty customers list',
+//                     data: []
+//                 })
+//             }
+//         } else if (checkPermission.rows[0].permission_to_view_own) {
+//             let customerListForSalesArr = []
+//             let roleUsers = []
+//             let roleIds = []
+//             roleIds.push(checkPermission.rows[0].role_id)
+//             let getRoles = async (id) => {
+//                 let s7 = dbScript(db_sql['Q16'], { var1: id })
+//                 let getChild = await connection.query(s7);
+//                 if (getChild.rowCount > 0) {
+//                     for (let item of getChild.rows) {
+//                         if (roleIds.includes(item.id) == false) {
+//                             roleIds.push(item.id)
+//                             await getRoles(item.id)
+//                         }
+//                     }
+//                 }
+//             }
+//             await getRoles(checkPermission.rows[0].role_id)
+//             for (let roleId of roleIds) {
+//                 let s3 = dbScript(db_sql['Q185'], { var1: roleId })
+//                 let findUsers = await connection.query(s3)
+//                 if (findUsers.rowCount > 0) {
+//                     for (let user of findUsers.rows) {
+//                         roleUsers.push(user.id)
+//                     }
+//                 }
+//             }
+//             for (id of roleUsers) {
+//                 let s4 = dbScript(db_sql['Q177'], { var1: id, var2: false })
+//                 let customerList = await connection.query(s4)
+//                 if (customerList.rowCount > 0) {
+//                     for (let customer of customerList.rows) {
+//                         customerListForSalesArr.push(customer)
+//                     }
+//                 }
+//             }
+//             if (customerListForSalesArr.length > 0) {
+//                 res.json({
+//                     status: 200,
+//                     success: true,
+//                     message: 'Customers list',
+//                     data: customerListForSalesArr
+//                 })
+//             } else {
+//                 res.json({
+//                     status: 200,
+//                     success: false,
+//                     message: 'Empty customers list',
+//                     data: []
+//                 })
+//             }
+//         } else {
+//             res.status(403).json({
+//                 success: false,
+//                 message: "Unathorised"
+//             })
+//         }
+//     } catch (error) {
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }
+
+module.exports.customerListforSales = async(req, res) => {
     try {
         let userId = req.user.id
         let s3 = dbScript(db_sql['Q41'], { var1: customerModule, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
-            let s4 = dbScript(db_sql['Q52'], { var1: checkPermission.rows[0].company_id, var2: false })
+            let s4 = dbScript(db_sql['Q320'], { var1: checkPermission.rows[0].company_id })
             let customerList = await connection.query(s4)
             if (customerList.rowCount > 0) {
                 res.json({
@@ -30,49 +119,17 @@ module.exports.customerListforSales = async (req, res) => {
                 })
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            let customerListForSalesArr = []
-            let roleUsers = []
-            let roleIds = []
-            roleIds.push(checkPermission.rows[0].role_id)
-            let getRoles = async (id) => {
-                let s7 = dbScript(db_sql['Q16'], { var1: id })
-                let getChild = await connection.query(s7);
-                if (getChild.rowCount > 0) {
-                    for (let item of getChild.rows) {
-                        if (roleIds.includes(item.id) == false) {
-                            roleIds.push(item.id)
-                            await getRoles(item.id)
-                        }
-                    }
-                }
-            }
-            await getRoles(checkPermission.rows[0].role_id)
-            for (let roleId of roleIds) {
-                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
-                let findUsers = await connection.query(s3)
-                if (findUsers.rowCount > 0) {
-                    for (let user of findUsers.rows) {
-                        roleUsers.push(user.id)
-                    }
-                }
-            }
-            for (id of roleUsers) {
-                let s4 = dbScript(db_sql['Q177'], { var1: id, var2: false })
-                let customerList = await connection.query(s4)
-                if (customerList.rowCount > 0) {
-                    for (let customer of customerList.rows) {
-                        customerListForSalesArr.push(customer)
-                    }
-                }
-            }
-            if (customerListForSalesArr.length > 0) {
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0])
+            let s4 = dbScript(db_sql['Q321'], { var1: roleUsers.join(",") })
+            let customerList = await connection.query(s4)
+            if (customerList.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Customers list',
-                    data: customerListForSalesArr
+                    data: customerList.rows
                 })
-            } else {
+            }else {
                 res.json({
                     status: 200,
                     success: false,
@@ -239,6 +296,7 @@ module.exports.createSalesCommission = async (req, res) => {
             let id = uuid.v4()
             let s5 = dbScript(db_sql['Q53'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: checkPermission.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16: currency, var17: userId, var18: slabId, var19: leadId, var20: totalCommission })
             let createSalesConversion = await connection.query(s5)
+            console.log(createSalesConversion.rows,"createSalesConversion");
             // add notification in notification list
             notification_typeId = createSalesConversion.rows[0].id;
             await notificationsOperations({ type: 1, msg: 1.1, notification_typeId, notification_userId }, userId);
@@ -249,7 +307,7 @@ module.exports.createSalesCommission = async (req, res) => {
             let closerId = uuid.v4()
             let s7 = dbScript(db_sql['Q58'], { var1: closerId, var2: customerCloserId, var3: closer_percentage, var4: customerCommissionSplitId, var5: createSalesConversion.rows[0].id, var6: checkPermission.rows[0].company_id })
             let addSalesCloser = await connection.query(s7)
-
+            console.log(addSalesCloser.rows,"addSalesCloser");
             if (supporters.length > 0) {
                 for (let supporterData of supporters) {
                     let supporterId = uuid.v4()
@@ -273,6 +331,7 @@ module.exports.createSalesCommission = async (req, res) => {
                 var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: checkPermission.rows[0].company_id, var12: revenueId, var13: businessId, var14: customerCloserId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate, var19: currency, var20: slabId, var21: closer_percentage
             })
             let createLog = await connection.query(s9)
+            console.log(createLog.rows,"createLog");
 
             if (createSalesConversion.rowCount > 0 && findSalescommission.rowCount > 0 && addSalesCloser.rowCount > 0 && createLog.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -1899,10 +1958,17 @@ module.exports.closeSales = async (req, res) => {
 
             let s3 = dbScript(db_sql['Q158'], { var1: _dt, var2: _dt, var3: salesCommissionId })
             let updateSalesLog = await connection.query(s3)
+
+            let s4 = dbScript(db_sql['Q271'], {var1 : salesCommissionId})
+            let findSales = await connection.query(s4)
+
+            let s5 = dbScript(db_sql['Q322'],{ var1: _dt, var2 : findSales.rows[0].customer_id })
+            let updateCustomer = await connection.query(s5)
+
             // add notification in notification list
             await notificationsOperations({ type: 1, msg: 1.4, notification_typeId, notification_userId }, userId);
 
-            if (closeSales.rowCount > 0 && updateSalesLog.rowCount > 0) {
+            if (closeSales.rowCount > 0 && updateSalesLog.rowCount > 0 && updateCustomer.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 200,
