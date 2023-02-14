@@ -80,6 +80,99 @@ module.exports.createCustomer = async (req, res) => {
     }
 }
 
+module.exports.createCustomerWithLead = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let {
+            leadName,
+            leadTitle,
+            leadEmail,
+            leadPhoneNumber,
+            leadIndustryId,
+            leadSource,
+            customerName,
+            source,
+            industry,
+            address,
+            businessContact,
+            revenueContact,
+            currency
+        } = req.body
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_create) {
+            let id = uuid.v4()
+            let s2 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: mysql_real_escape_string(customerName), var4: mysql_real_escape_string(source), var5: checkPermission.rows[0].company_id, var6: mysql_real_escape_string(address), var7: currency, var8: industry })
+            let createCustomer = await connection.query(s2)
+            if (createCustomer.rowCount > 0) {
+                if (businessContact.length > 0 && revenueContact.length > 0) {
+                    for (let businessData of businessContact) {
+                        if (businessData.businessId == '') {
+                            let businessId = uuid.v4()
+                            let s6 = dbScript(db_sql['Q70'], { var1: businessId, var2: mysql_real_escape_string(businessData.businessContactName), var3: businessData.businessEmail, var4: businessData.businessPhoneNumber, var5: createCustomer.rows[0].id })
+                            let addBusinessContact = await connection.query(s6)
+                        } else {
+                            let _dt = new Date().toISOString();
+                            let s8 = dbScript(db_sql['Q72'], { var1: businessData.businessId, var2: mysql_real_escape_string(businessData.businessContactName), var3: businessData.businessEmail, var4: businessData.businessPhoneNumber, var5: _dt })
+                            let updateBusinessContact = await connection.query(s8)
+                        }
+                    }
+                    for (let revenueData of revenueContact) {
+                        if (revenueData.revenueId == '') {
+                            let revenueId = uuid.v4()
+                            let s7 = dbScript(db_sql['Q71'], { var1: revenueId, var2: mysql_real_escape_string(revenueData.revenueContactName), var3: revenueData.revenueEmail, var4: revenueData.revenuePhoneNumber, var5: createCustomer.rows[0].id })
+                            let addRevenueContact = await connection.query(s7)
+                        } else {
+                            let _dt = new Date().toISOString();
+                            let s9 = dbScript(db_sql['Q73'], { var1: revenueData.revenueId, var2: mysql_real_escape_string(revenueData.revenueContactName), var3: revenueData.revenueEmail, var4: revenueData.revenuePhoneNumber, var5: _dt })
+                            let updateRevenueContact = await connection.query(s9)
+                            rId.push(updateRevenueContact.rows[0].id)
+                        }
+                    }
+                }
+                let leadId = uuid.v4()
+                let s10 = dbScript(db_sql['Q200'], { var1: leadId, var2: leadName, var3: leadTitle, var4: leadEmail, var5: leadPhoneNumber, var6: leadSource, var7: leadIndustryId, var8: createCustomer.rows[0].id, var9 : checkPermission.rows[0].id, var10 : checkPermission.rows[0].company_id })
+                let createLead = await connection.query(s10)
+                if (createLead.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Customer created successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "something went wrong"
+                    })
+                }
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "something went wrong"
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 module.exports.customerList = async (req, res) => {
     try {
         let userId = req.user.id

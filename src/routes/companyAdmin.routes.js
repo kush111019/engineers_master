@@ -57,6 +57,7 @@ router.put('/deleteNotes',verifyTokenFn, controller.sales.deleteNote)
 //------------------------------------customers---------------------------------------
 
 router.post('/createCustomer',verifyTokenFn, controller.customers.createCustomer)
+router.post('/createCustomerWithLead',verifyTokenFn, controller.customers.createCustomerWithLead)
 router.get('/customerList',verifyTokenFn, controller.customers.customerList)
 router.put('/editCustomer',verifyTokenFn, controller.customers.editCustomer)
 router.put('/deleteContactForCustomer',verifyTokenFn, controller.customers.deleteContactForCustomer)

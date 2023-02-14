@@ -803,11 +803,8 @@ const db_sql = {
                 end_date = '{var5}', updated_at = '{var6}' 
               WHERE 
                 id = '{var1}' AND deleted_at IS NULL RETURNING *`,
-    // "Q200"  :`SELECT 
-    //             target_amount
-    //           FROM sales 
-    //           WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_at BETWEEN '{var2}' AND '{var3}' `,
-
+    "Q200"  :`INSERT INTO leads(id, full_name, title, email_address, phone_number,source, industry_type, customer_id, user_id, company_id)
+              VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}') `,
     "Q201"  :`INSERT INTO leads(id,full_name,title,email_address,phone_number,
               address,source,linkedin_url,website,targeted_value,industry_type,marketing_qualified_lead,
               assigned_sales_lead_to,additional_marketing_notes,user_id,company_id, customer_id)
