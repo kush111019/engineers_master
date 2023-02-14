@@ -67,12 +67,12 @@ const db_sql = {
               p.permission_to_update, p.permission_to_delete FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
               INNER JOIN roles AS r ON r.id = p.role_id WHERE m.id = '{var1}' AND r.id = '{var2}' 
               AND m.deleted_at IS NULL AND p.deleted_at IS NULL`,
-    "Q36"  : `INSERT INTO customers(id, user_id,customer_name, source, company_id, address, currency) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') RETURNING *`,
+    "Q36"  : `INSERT INTO customers(id, user_id,customer_name, source, company_id, address, currency, industry) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}', '{var8}') RETURNING *`,
     "Q37"  : `INSERT INTO lead_organizations(id, organization_name, company_id) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
     "Q38"  : `SELECT id, organization_name FROM lead_organizations WHERE id = '{var1}' AND deleted_at IS NULL`,
     "Q39"  : `SELECT 
                 c.id, c.customer_name, c.source, 
-                c.user_id,
+                c.user_id, c.industry,
                 c.created_at, c.address, c.currency,
                 u.full_name AS created_by,
                 (
@@ -127,7 +127,7 @@ const db_sql = {
               INNER JOIN users AS u ON u.role_id = p.role_id
               WHERE m.module_name = '{var1}' AND u.id = '{var2}' AND m.deleted_at IS NULL 
               AND p.deleted_at IS NULL AND u.deleted_at IS NULL`,   
-    "Q42"  : `UPDATE customers SET customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', address = '{var4}', currency = '{var5}' WHERE id = '{var6}' AND company_id = '{var7}' AND deleted_at IS NULL RETURNING *`,
+    "Q42"  : `UPDATE customers SET customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', address = '{var4}', currency = '{var5}', industry = '{var8}' WHERE id = '{var6}' AND company_id = '{var7}' AND deleted_at IS NULL RETURNING *`,
     "Q43"  : `INSERT INTO sales_logs(id,sales_commission_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_contact_id, business_contact_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date, currency, slab_id, closer_percentage) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}', '{var17}', '{var18}', '{var19}', '{var20}', '{var21}' ) RETURNING *`,
     "Q44"  : `SELECT sl.id, sl.sales_commission_id, sl.customer_commission_split_id, sl.qualification, sl.is_qualified, sl.target_amount, sl.currency, 
               sl.products, sl.target_closing_date, sl.customer_id, sl.is_overwrite, sl.company_id, sl.revenue_contact_id, sl.business_contact_id, sl.closer_id, 

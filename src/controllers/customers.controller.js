@@ -13,14 +13,15 @@ module.exports.createCustomer = async (req, res) => {
             address,
             businessContact,
             revenueContact,
-            currency
+            currency,
+            industry
         } = req.body
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_create) {
             let id = uuid.v4()
-            let s2 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: mysql_real_escape_string(customerName), var4: mysql_real_escape_string(source), var5: checkPermission.rows[0].company_id, var6: mysql_real_escape_string(address), var7: currency })
+            let s2 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: mysql_real_escape_string(customerName), var4: mysql_real_escape_string(source), var5: checkPermission.rows[0].company_id, var6: mysql_real_escape_string(address), var7: currency, var8 : industry })
             let createCustomer = await connection.query(s2)
             if (createCustomer.rowCount > 0) {
                 if (businessContact.length > 0 && revenueContact.length > 0) {
@@ -148,7 +149,8 @@ module.exports.editCustomer = async (req, res) => {
             businessContact,
             revenueContact,
             address,
-            currency
+            currency,
+            industry
         } = req.body
         await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
@@ -179,7 +181,7 @@ module.exports.editCustomer = async (req, res) => {
                 }
             }
             let _dt = new Date().toISOString();
-            let s5 = dbScript(db_sql['Q42'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: _dt,  var4: mysql_real_escape_string(address), var5: currency, var6: customerId, var7: checkPermission.rows[0].company_id })
+            let s5 = dbScript(db_sql['Q42'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: _dt,  var4: mysql_real_escape_string(address), var5: currency, var6: customerId, var7: checkPermission.rows[0].company_id , var8 : industry})
             let updateCustomer = await connection.query(s5)
             if (updateCustomer.rowCount > 0) {
                 await connection.query('COMMIT')
