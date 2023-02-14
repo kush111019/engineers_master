@@ -213,11 +213,11 @@ module.exports.slabList = async (req, res) => {
             let s3 = dbScript(db_sql['Q163'], { var1: checkPermission.rows[0].role_id })
             let findUsers = await connection.query(s3)
             if (findUsers.rowCount > 0) {
-                for (user of findUsers.rows) {
+                for (let user of findUsers.rows) {
                     userIds.push(user.id)
                 }
             }
-            for (id of userIds) {
+            for (let id of userIds) {
                 let s4 = dbScript(db_sql['Q165'], { var1: id })
                 let findSlabs = await connection.query(s4)
                 if (findSlabs.rowCount > 0) {

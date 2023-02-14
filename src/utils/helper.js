@@ -408,7 +408,7 @@ module.exports.removeDuplicates = async (originalArray, prop) => {
         lookupObject[originalArray[i][prop]] = originalArray[i];
     }
 
-    for (i in lookupObject) {
+    for (let i in lookupObject) {
         newArray.push(lookupObject[i]);
     }
     return newArray;
@@ -564,7 +564,7 @@ module.exports.getUserAndSubUser = async (userData) => {
     await getRoles(userData.role_id)
     let returnData = [];
     returnData.push("'" + userData.id.toString() + "'")
-    for (id of roleIds) {
+    for (let id of roleIds) {
         let s2 = dbScript(db_sql['Q287'], { var1: id })
         let getUserData = await connection.query(s2);
         if (getUserData.rowCount > 0 && getUserData.rows[0].role_id != userData.role_id ) {

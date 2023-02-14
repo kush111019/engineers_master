@@ -100,7 +100,7 @@ module.exports.marketingDashboard = async (req, res) => {
             let leadCount = await connection.query(s4)
             if (leadCount.rowCount > 0) {
                 totalCounts += leadCount.rowCount
-                for (leads of leadCount.rows) {
+                for ( let leads of leadCount.rows) {
                     let obj = {}
                     let lCount = 0
                     let mCount = 0
@@ -556,7 +556,7 @@ module.exports.budgetLogList = async (req, res) => {
                     }
                 }
             }
-            for (id of roleUsers) {
+            for ( let id of roleUsers) {
                 let s5 = dbScript(db_sql['Q244'], { var1: id, var2: budgetId })
                 let budgetLogList = await connection.query(s5)
                 if (budgetLogList.rowCount > 0) {

@@ -74,7 +74,7 @@ module.exports.rolesList = async (req, res) => {
                         let s5 = dbScript(db_sql['Q35'], { var1: moduleId, var2: data.id })
                         let permissionList = await connection.query(s5)
 
-                        for (permissionData of permissionList.rows) {
+                        for ( let permissionData of permissionList.rows) {
                             modulePermissions.push({
                                 moduleId: moduleId,
                                 permissionToCreate: permissionData.permission_to_create,
@@ -101,7 +101,7 @@ module.exports.rolesList = async (req, res) => {
                         let s7 = dbScript(db_sql['Q35'], { var1: moduleId, var2: data.id })
                         let permissionList = await connection.query(s7)
 
-                        for (permissionData of permissionList.rows) {
+                        for (let permissionData of permissionList.rows) {
                             modulePermissions.push({
                                 moduleId: moduleId,
                                 permissionToCreate: permissionData.permission_to_create,
@@ -170,7 +170,7 @@ module.exports.rolesList = async (req, res) => {
                             let s5 = dbScript(db_sql['Q35'], { var1: moduleId, var2: data.id })
                             let permissionList = await connection.query(s5)
 
-                            for (permissionData of permissionList.rows) {
+                            for (let permissionData of permissionList.rows) {
                                 modulePermissions.push({
                                     moduleId: moduleId,
                                     permissionToCreate: permissionData.permission_to_create,
@@ -197,7 +197,7 @@ module.exports.rolesList = async (req, res) => {
                             let s7 = dbScript(db_sql['Q35'], { var1: moduleId, var2: data.id })
                             let permissionList = await connection.query(s7)
 
-                            for (permissionData of permissionList.rows) {
+                            for (let permissionData of permissionList.rows) {
                                 modulePermissions.push({
                                     moduleId: moduleId,
                                     permissionToCreate: permissionData.permission_to_create,
