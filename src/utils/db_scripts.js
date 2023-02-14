@@ -67,7 +67,7 @@ const db_sql = {
               p.permission_to_update, p.permission_to_delete FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
               INNER JOIN roles AS r ON r.id = p.role_id WHERE m.id = '{var1}' AND r.id = '{var2}' 
               AND m.deleted_at IS NULL AND p.deleted_at IS NULL`,
-    "Q36"  : `INSERT INTO customers(id, user_id,organization_id,customer_name, source, company_id, business_contact_id, revenue_contact_id, address, currency, lead_id, is_qaulified) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}', '{var10}', '{var11}','{var12}') RETURNING *`,
+    "Q36"  : `INSERT INTO customers(id, user_id,organization_id,customer_name, source, company_id, business_contact_id, revenue_contact_id, address, currency, lead_id, is_qualified) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}', '{var10}', '{var11}','{var12}') RETURNING *`,
     "Q37"  : `INSERT INTO lead_organizations(id, organization_name, company_id) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
     "Q38"  : `SELECT id, organization_name FROM lead_organizations WHERE id = '{var1}' AND deleted_at IS NULL`,
     "Q39"  : `SELECT 
@@ -104,7 +104,7 @@ const db_sql = {
                 users AS u ON u.id = c.user_id
               WHERE 
                 c.company_id = '{var1}' AND c.deleted_at IS NULL AND 
-                u.deleted_at IS NULL AND c.is_rejected = '{var2}' AND c.is_qaulified = true 
+                u.deleted_at IS NULL AND c.is_rejected = '{var2}' AND c.is_qualified = true 
               ORDER BY 
                 created_at desc`,
     "Q40"  : `UPDATE sales SET closed_at = '{var1}', updated_at = '{var2}', contract = '{var4}' WHERE id = '{var3}' RETURNING *`,
@@ -1688,6 +1688,7 @@ const db_sql = {
       "Q323" : `SELECT id, organization_name FROM lead_organizations WHERE LOWER(organization_name) = LOWER('{var1}') AND deleted_at IS NULL`,
       "Q324" : `SELECT * FROM leads WHERE organization_id = '{var1}' AND deleted_at IS NULL`,
       "Q325" : `UPDATE lead_organizations SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
+      "Q326" :`SELECT * FROM lead_sources WHERE id = '{var1}' and company_id = '{var2}' AND deleted_at IS NULL`,
   
   
   }

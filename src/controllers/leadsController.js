@@ -29,9 +29,7 @@ module.exports.organizationList = async (req, res) => {
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            console.log(roleUsers, 'roleUsers')
             let s4 = dbScript(db_sql['Q261'], { var1: roleUsers.join("','") })
-            console.log(s4, "s4");
             let organizationList = await connection.query(s4)
             if (organizationList.length > 0) {
                 res.json({
@@ -73,7 +71,7 @@ module.exports.createLead = async (req, res) => {
             phoneNumber,
             address,
             organizationId,
-            organizationName,
+            //organizationName,
             source,
             linkedinUrl,
             website,
@@ -86,8 +84,10 @@ module.exports.createLead = async (req, res) => {
         //add notification deatils
         let notification_userId = [assignedSalesLeadTo];
         let notification_typeId;
-
         await connection.query('BEGIN')
+        let s0 = dbScript(db_sql['Q38'],{var1 : organizationId})
+        let findOrganization = await connection.query(s0)
+        let organizationName = findOrganization.rows[0].organization_name
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_create) {
@@ -102,15 +102,16 @@ module.exports.createLead = async (req, res) => {
 
             let s2 = dbScript(db_sql['Q201'], { var1: id, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: mysql_real_escape_string(organizationName), var8: source, var9: linkedinUrl, var10: website, var11: targetedValue, var12: industryType, var13: marketingQualifiedLead, var14: assignedSalesLeadTo, var15: mysql_real_escape_string(additionalMarketingNotes), var16: userId, var17: checkPermission.rows[0].company_id, var18: organizationId })
             let createLead = await connection.query(s2)
-
             if (marketingQualifiedLead) {
+                let s3 = dbScript(db_sql['Q326'], {var1 : source, var2 : checkPermission.rows[0].company_id})
+                let findSource = await connection.query(s3)
                 let bId = []
                 let rId = []
                 organizationName = `${organizationName} - (Qualified)`
                 let id = uuid.v4()
                 let currency = 'United States Dollar (USD)'
-                let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: organizationId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : createLead.rows[0].id, var12 : false })
-                let createCustomer = await connection.query(s3)
+                let s4 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: organizationId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(findSource.rows[0].source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : createLead.rows[0].id, var12 : false })
+                let createCustomer = await connection.query(s4)
             }
             // add notification in notification list
             notification_typeId = createLead.rows[0].id;
@@ -316,12 +317,14 @@ module.exports.updateLead = async (req, res) => {
             let s5 = dbScript(db_sql['Q204'], { var1: leadId, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: mysql_real_escape_string(organizationName), var8: source, var9: linkedinUrl, var10: website, var11: targetedValue, var12: industryType, var13: marketingQualifiedLead, var14: assignedSalesLeadTo, var15: mysql_real_escape_string(additionalMarketingNotes), var16: _dt, var17: organizationId })
             let updateLead = await connection.query(s5)
             if (marketingQualifiedLead) {
+                let s6 = dbScript(db_sql['Q326'],{var1 : source, var2 : checkPermission.rows[0].company_id})
+                let findSource = await connection.query(s6)
                 let bId = []
                 let rId = []
                 organizationName = `${organizationName} - (Qualified)`
                 let id = uuid.v4()
                 let currency = 'United States Dollar (USD)'
-                let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: organizationId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : leadId, var12 : false })
+                let s3 = dbScript(db_sql['Q36'], { var1: id, var2: checkPermission.rows[0].id, var3: organizationId, var4: mysql_real_escape_string(organizationName), var5: mysql_real_escape_string(findSource.rows[0].source), var6: checkPermission.rows[0].company_id, var7: JSON.stringify(bId), var8: JSON.stringify(rId), var9: mysql_real_escape_string(address), var10: currency, var11 : leadId, var12 : false })
                 let createCustomer = await connection.query(s3)
             }
             // add notification in notification list
@@ -441,7 +444,6 @@ module.exports.deleteLead = async (req, res) => {
                 let _dt = new Date().toISOString();
                 let s5 = dbScript(db_sql['Q205'], { var1: leadId, var2: _dt })
                 let deleteLead = await connection.query(s5)
-                console.log(deleteLead.rows[0].assigned_sales_lead_to, deleteLead.rows[0].user_id)
                 // add notification in notification list
                 let notification_userId = [];
                 notification_userId.push(deleteLead.rows[0].assigned_sales_lead_to)
