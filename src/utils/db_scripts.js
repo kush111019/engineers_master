@@ -1067,7 +1067,20 @@ const db_sql = {
     "Q248" :`SELECT COUNT(*) from leads WHERE assigned_sales_lead_to = '{var1}'  AND deleted_at IS NULL`,
     "Q249" :`UPDATE companies SET company_logo = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q250" :`UPDATE leads SET is_rejected = '{var2}', reason = '{var3}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`, 
-    //"Q251" :`UPDATE customers SET is_rejected = '{var2}' WHERE lead_id = '{var1}' AND deleted_at is null RETURNING *`, 
+    "Q251" :`SELECT 
+                COUNT(*),
+                u.full_name AS created_by
+              FROM 
+                customers AS cus 
+              INNER JOIN 
+                users AS u ON u.id = cus.user_id
+              WHERE 
+                cus.user_id = '{var1}' AND cus.deleted_at IS NULL AND u.deleted_at IS NULL 
+              GROUP BY 
+                u.full_name
+              ORDER BY 
+                count {var4}
+              LIMIT {var2} OFFSET {var3}`, 
     "Q252" :`SELECT * FROM sales WHERE lead_id = '{var1}' AND deleted_at IS NULL`,
     "Q253" :`SELECT COUNT(*) from leads WHERE company_id = '{var1}' AND is_rejected = '{var2}' AND deleted_at IS NULL`,
     "Q254" :`SELECT COUNT(*) from leads WHERE user_id = '{var1}' AND is_rejected = true AND deleted_at IS NULL`,
@@ -1739,7 +1752,7 @@ const db_sql = {
       //             WHERE (o.user_id IN '{var1}') AND o.deleted_at IS NULL 
       //           ORDER BY 
       //             o.created_at DESC`,
-      "Q322" : `UPDATE customers SET updated_at = '{var1}', is_qualified = true WHERE id = '{var2}' RETURNING *`,
+      "Q322" : `UPDATE leads SET updated_at = '{var1}', is_converted = true WHERE id = '{var2}' RETURNING *`,
      // "Q323" : `SELECT id, organization_name FROM lead_organizations WHERE LOWER(organization_name) = LOWER('{var1}') AND deleted_at IS NULL`,
       "Q324" : `SELECT * FROM leads WHERE organization_id = '{var1}' AND deleted_at IS NULL`,
      // "Q325" : `UPDATE lead_organizations SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,

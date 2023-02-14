@@ -1962,13 +1962,13 @@ module.exports.closeSales = async (req, res) => {
             let s4 = dbScript(db_sql['Q271'], {var1 : salesCommissionId})
             let findSales = await connection.query(s4)
 
-            let s5 = dbScript(db_sql['Q322'],{ var1: _dt, var2 : findSales.rows[0].customer_id })
-            let updateCustomer = await connection.query(s5)
+            let s5 = dbScript(db_sql['Q322'],{ var1: _dt, var2 : findSales.rows[0].lead_id })
+            let updateLead = await connection.query(s5)
 
             // add notification in notification list
             await notificationsOperations({ type: 1, msg: 1.4, notification_typeId, notification_userId }, userId);
 
-            if (closeSales.rowCount > 0 && updateSalesLog.rowCount > 0 && updateCustomer.rowCount > 0) {
+            if (closeSales.rowCount > 0 && updateSalesLog.rowCount > 0 && updateLead.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 200,
