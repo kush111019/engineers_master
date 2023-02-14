@@ -169,10 +169,10 @@ const db_sql = {
     "Q59"  : `SELECT id, supporter_id, supporter_percentage FROM sales_supporter WHERE sales_commission_id = '{var1}' AND deleted_at IS NULL `,
     "Q60"  : `UPDATE sales SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
     "Q61"  : `UPDATE sales_supporter SET deleted_at = '{var1}' WHERE sales_commission_id = '{var2}' AND company_id = '{var3}' RETURNING * `,
-    "Q62"  : `UPDATE sales_closer SET deleted_at = '{var1}' WHERE sales_commission_id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
+    //"Q62"  : `UPDATE sales_closer SET deleted_at = '{var1}' WHERE sales_commission_id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
     "Q63"  : `UPDATE sales SET customer_id = '{var1}', customer_commission_split_id = '{var2}', is_overwrite = '{var3}', updated_at = '{var4}',business_contact_id = '{var7}', revenue_contact_id = '{var8}', qualification = '{var9}', is_qualified = '{var10}', target_amount = '{var11}', target_closing_date = '{var12}', sales_type = '{var14}', subscription_plan = '{var15}', recurring_date = '{var16}', currency = '{var17}', slab_id = '{var18}', lead_id = '{var19}', booking_commission= '{var20}'  WHERE id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
     "Q64"  : `UPDATE sales_closer SET closer_id = '{var1}', closer_percentage = '{var2}', commission_split_id = '{var3}', updated_at = '{var4}' WHERE sales_commission_id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
-    "Q65"  : `UPDATE sales_supporter SET deleted_at = '{var3}' WHERE sales_commission_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
+    //"Q65"  : `UPDATE sales_supporter SET deleted_at = '{var3}' WHERE sales_commission_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
     "Q66"  : `UPDATE follow_up_notes SET deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL`,
     "Q67"  : `INSERT INTO forecast(timeline, amount, start_date,end_date,pid, assigned_to, created_by)
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}') RETURNING * `,
@@ -198,7 +198,7 @@ const db_sql = {
                 (f.assigned_to = '{var1}') AND f.deleted_at IS NULL 
               ORDER BY 
                 timeline ASC`,  
-    "Q69"  : `SELECT * FROM revenue_forecast WHERE id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL  ` ,            
+    //"Q69"  : `SELECT * FROM revenue_forecast WHERE id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL  ` ,            
     "Q70"  : `INSERT INTO business_contact(id, full_name, email_address, phone_number, customer_company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
     "Q71"  : `INSERT INTO revenue_contact(id, full_name, email_address, phone_number, customer_company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
     "Q72"  : `UPDATE business_contact SET full_name = '{var2}', email_address = '{var3}', phone_number = '{var4}', updated_at = '{var5}' WHERE id = '{var1}' AND deleted_at IS NULL RETURNING *`,
@@ -211,16 +211,16 @@ const db_sql = {
               FROM business_contact WHERE id = '{var1}' AND deleted_at is NULL`,  
     "Q77"  : `SELECT id, full_name AS revenue_contact_name, email_address AS revenue_email, phone_number AS revenue_phone_number
               FROM revenue_contact WHERE id = '{var1}' AND deleted_at is NULL`,
-    "Q78"  : `SELECT 
-                id as sales_commission_id, sales_type
-              FROM sales 
-              WHERE user_id = '{var1}' AND deleted_at IS NULL AND closed_at BETWEEN '{var2}' AND '{var3}' 
-              LIMIT {var4} OFFSET {var5}`,
+    // "Q78"  : `SELECT 
+    //             id as sales_commission_id, sales_type
+    //           FROM sales 
+    //           WHERE user_id = '{var1}' AND deleted_at IS NULL AND closed_at BETWEEN '{var2}' AND '{var3}' 
+    //           LIMIT {var4} OFFSET {var5}`,
     "Q79"  : `UPDATE customers SET business_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
     "Q80"  : `UPDATE customers SET revenue_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
     "Q81"  : `SELECT s.id, s.supporter_id, s.supporter_percentage, u.full_name, u.email_address FROM sales_supporter AS s 
               INNER JOIN users AS u ON u.id = s.supporter_id WHERE s.id ='{var1}' `,
-    "Q82"  : `SELECT customer_id, sales_type, subscription_plan, recurring_date FROM sales WHERE deleted_at IS NULL`,
+    //"Q82"  : `SELECT customer_id, sales_type, subscription_plan, recurring_date FROM sales WHERE deleted_at IS NULL`,
     "Q83"  : `INSERT INTO configurations(id, currency, phone_format, date_format,user_id, company_id ) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
     "Q84"  : `SELECT id,currency,phone_format,date_format,user_id,company_id,created_at
               FROM configurations WHERE company_id = '{var1}' AND deleted_at IS NULL `,
@@ -322,10 +322,10 @@ const db_sql = {
     "Q98"  : `SELECT id, name, email, encrypted_password FROM super_admin WHERE email = '{var1}'`,
     "Q99"  : `SELECT id, company_name, company_logo, company_address, is_imap_enable,is_locked, is_marketing_enable, created_at, expiry_date, user_count FROM companies WHERE deleted_at IS NULL`,
     "Q100" : `UPDATE super_admin SET encrypted_password = '{var2}' WHERE email = '{var1}'`,
-    "Q101" : `SELECT  sc.target_amount,  sc.closed_at ,com.id AS company_id, com.company_name FROM sales AS sc 
-              INNER JOIN customers AS c ON sc.customer_id = c.id 
-              INNER JOIN companies AS com ON sc.company_id = com.id 
-              WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND c.deleted_at IS NULL Order by sc.closed_at asc`,
+    // "Q101" : `SELECT  sc.target_amount,  sc.closed_at ,com.id AS company_id, com.company_name FROM sales AS sc 
+    //           INNER JOIN customers AS c ON sc.customer_id = c.id 
+    //           INNER JOIN companies AS com ON sc.company_id = com.id 
+    //           WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND c.deleted_at IS NULL Order by sc.closed_at asc`,
     "Q102" : `INSERT INTO payment_plans(id, product_id, name, description, active_status,
               admin_price_id, admin_amount,user_price_id, user_amount, interval, currency) 
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', 
@@ -352,7 +352,7 @@ const db_sql = {
     "Q116" : `UPDATE transactions SET stripe_customer_id = '{var1}', stripe_subscription_id = '{var2}', 
               stripe_card_id = '{var3}', stripe_token_id = '{var4}', stripe_charge_id = '{var5}', 
               expiry_date = '{var6}', updated_at = '{var7}', total_amount = '{var9}', immediate_upgrade = '{var10}', payment_receipt = '{var11}', user_count = '{var12}', plan_id = '{var13}', upgraded_transaction_id = '{var14}'  WHERE id = '{var8}' AND deleted_at IS NULL RETURNING *`,
-    "Q117" : `UPDATE transactions SET stripe_charge_id = '{var1}', payment_receipt = '{var4}', immediate_upgrade = '', updated_at = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
+    //"Q117" : `UPDATE transactions SET stripe_charge_id = '{var1}', payment_receipt = '{var4}', immediate_upgrade = '', updated_at = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
     "Q118" : `UPDATE transactions SET is_canceled = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
     "Q119" : `SELECT id, chat_name, is_group_chat, last_message, group_admin,user_a, user_b, created_at FROM chat WHERE is_group_chat = 'false' AND ((user_a = '{var1}' AND user_b = '{var2}') or (user_a = '{var2}' AND user_b = '{var1}')) AND deleted_at IS NULL`,
     "Q120" : `INSERT INTO message(id, chat_id, sender, content) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
@@ -418,7 +418,7 @@ const db_sql = {
               AND c.deleted_at IS NULL AND r.deleted_at IS NULL AND con.deleted_at IS NULL`,
     "Q146" : `UPDATE companies SET is_imap_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q147" : `SELECT id, product_name, product_image, description, available_quantity, price, end_of_life, currency, company_id, created_at, updated_at FROM products WHERE product_name = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL ORDER BY created_at desc `,
-    "Q148" : `UPDATE revenue_forecast SET closed_date = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' AND company_id = '{var4}' RETURNING *`,
+    //"Q148" : `UPDATE revenue_forecast SET closed_date = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' AND company_id = '{var4}' RETURNING *`,
     "Q149" : `INSERT INTO upgraded_transactions(id, user_id, company_id, plan_id, stripe_customer_id,
               stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, expiry_date,
               user_count, payment_status,total_amount, payment_receipt) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', 
@@ -477,11 +477,11 @@ const db_sql = {
     "Q163" : `SELECT u.id, u.full_name, r.id as role_id  FROM roles AS r 
               INNER JOIN users AS u ON u.role_id = r.id 
               WHERE reporter = '{var1}' AND r.deleted_at IS NULL`,
-    "Q164" : `SELECT * FROM commission_split WHERE user_id = '{var1}' AND deleted_at IS NULL`,
+   // "Q164" : `SELECT * FROM commission_split WHERE user_id = '{var1}' AND deleted_at IS NULL`,
     "Q165" : `SELECT * FROM slabs WHERE user_id ='{var1}' AND deleted_at IS NULL GROUP BY slab_id, id ORDER BY slab_ctr ASC`,
-    "Q166" : `SELECT c.id, c.organization_id , c.customer_name, c.source, c.user_id, c.business_contact_id, c.revenue_contact_id, c.created_at, c.address, c.currency,
-              u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
-              WHERE c.user_id IN '{var1}' AND c.is_rejected = false AND c.is_qualified = true AND c.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`,
+    // "Q166" : `SELECT c.id, c.organization_id , c.customer_name, c.source, c.user_id, c.business_contact_id, c.revenue_contact_id, c.created_at, c.address, c.currency,
+    //           u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
+    //           WHERE c.user_id IN '{var1}' AND c.is_rejected = false AND c.is_qualified = true AND c.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`,
     "Q167" : `SELECT 
                 sc.id AS sales_commission_id,
                 sc.closed_at,
@@ -505,36 +505,36 @@ const db_sql = {
               ORDER BY 
               sc.closed_at {var2}`,
 
-    "Q168" : `SELECT 
-              sc.id AS sales_commission_id, sc.target_amount as amount, 
-              sc.closed_at, sc.slab_id, sc.sales_type 
-              FROM 
-                sales AS sc 
-              INNER JOIN 
-                sales_closer AS c ON sc.id = c.sales_commission_id
-              INNER JOIN 
-                sales_supporter AS s ON sc.id = s.sales_commission_id
-              WHERE 
-                sc.user_id IN ({var1}) OR c.closer_id IN ({var1}) OR s.supporter_id IN ({var1})
-              AND sc.deleted_at IS NULL
-              GROUP BY
-                sc.id ,
-                sc.target_amount,
-                sc.closed_at,
-                sc.slab_id,
-                sc.sales_type `,
+    // "Q168" : `SELECT 
+    //           sc.id AS sales_commission_id, sc.target_amount as amount, 
+    //           sc.closed_at, sc.slab_id, sc.sales_type 
+    //           FROM 
+    //             sales AS sc 
+    //           INNER JOIN 
+    //             sales_closer AS c ON sc.id = c.sales_commission_id
+    //           INNER JOIN 
+    //             sales_supporter AS s ON sc.id = s.sales_commission_id
+    //           WHERE 
+    //             sc.user_id IN ({var1}) OR c.closer_id IN ({var1}) OR s.supporter_id IN ({var1})
+    //           AND sc.deleted_at IS NULL
+    //           GROUP BY
+    //             sc.id ,
+    //             sc.target_amount,
+    //             sc.closed_at,
+    //             sc.slab_id,
+    //             sc.sales_type `,
                 
-    "Q169" : `SELECT 
-                p.id, p.product_name, p.product_image, p.description, p.available_quantity, p.price, 
-                p.end_of_life, p.currency, p.company_id, p.created_at, p.updated_at, p.user_id, u.full_name as created_by 
-              FROM 
-                products AS p
-              INNER JOIN 
-                users AS u ON p.user_id = u.id
-              WHERE 
-                p.user_id = '{var1}' AND p.deleted_at IS NULL
-              ORDER BY 
-                created_at DESC`, 
+    // "Q169" : `SELECT 
+    //             p.id, p.product_name, p.product_image, p.description, p.available_quantity, p.price, 
+    //             p.end_of_life, p.currency, p.company_id, p.created_at, p.updated_at, p.user_id, u.full_name as created_by 
+    //           FROM 
+    //             products AS p
+    //           INNER JOIN 
+    //             users AS u ON p.user_id = u.id
+    //           WHERE 
+    //             p.user_id = '{var1}' AND p.deleted_at IS NULL
+    //           ORDER BY 
+    //             created_at DESC`, 
 
     "Q170" : `SELECT            
                   DISTINCT(sc.id) AS sales_commission_id,
@@ -572,24 +572,24 @@ const db_sql = {
                   AND sc.closed_at BETWEEN '{var3}' AND '{var4}'
                   AND sc.deleted_at IS NULL 
                   AND sc.closed_at IS NOT NULL`, 
-    "Q172" : `SELECT 
-                  u.full_name AS sales_rep,
-                  SUM(sc.target_amount::DECIMAL) AS revenue
-              FROM  
-                  sales AS sc 
-                  INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
-                  INNER JOIN users AS u ON u.id = cr.closer_id
-              WHERE 
-                  sc.closed_at is not null 
-                  AND sc.user_id = '{var1}' 
-                  AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
-                  AND sc.deleted_at IS NULL AND cr.deleted_at IS NULL 
-                  AND u.deleted_at IS NULL
-              GROUP BY 
-                  u.full_name 
-              ORDER BY 
-                  revenue {var2}
-              LIMIT {var3} OFFSET {var4}`,
+    // "Q172" : `SELECT 
+    //               u.full_name AS sales_rep,
+    //               SUM(sc.target_amount::DECIMAL) AS revenue
+    //           FROM  
+    //               sales AS sc 
+    //               INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
+    //               INNER JOIN users AS u ON u.id = cr.closer_id
+    //           WHERE 
+    //               sc.closed_at is not null 
+    //               AND sc.user_id = '{var1}' 
+    //               AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
+    //               AND sc.deleted_at IS NULL AND cr.deleted_at IS NULL 
+    //               AND u.deleted_at IS NULL
+    //           GROUP BY 
+    //               u.full_name 
+    //           ORDER BY 
+    //               revenue {var2}
+    //           LIMIT {var3} OFFSET {var4}`,
     "Q173"  : `SELECT 
                 DISTINCT(sc.id) AS sales_commission_id,
                 DATE_TRUNC('{var2}',sc.closed_at) AS  date,
@@ -628,7 +628,7 @@ const db_sql = {
                 f.assigned_to::varchar IN ({var1}) AND f.deleted_at IS NULL 
               ORDER BY 
                 timeline ASC`,  
-    "Q175" : `SELECT * FROM roles WHERE user_id = '{var1}' AND deleted_at IS NULL`,
+    // "Q175" : `SELECT * FROM roles WHERE user_id = '{var1}' AND deleted_at IS NULL`,
     "Q176" : `SELECT 
                 u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
                 u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
@@ -641,9 +641,9 @@ const db_sql = {
                 u1.created_by = '{var1}' AND u1.deleted_at IS NULL 
               ORDER BY 
                 created_at DESC`,
-    "Q177" : `SELECT c.id, c.organization_id ,c.customer_name, c.source, c.user_id, c.address, c.deleted_at,
-              u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
-              WHERE c.user_id = '{var1}' AND c.is_rejected = '{var2}'`,
+    // "Q177" : `SELECT c.id, c.organization_id ,c.customer_name, c.source, c.user_id, c.address, c.deleted_at,
+    //           u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
+    //           WHERE c.user_id = '{var1}' AND c.is_rejected = '{var2}'`,
     "Q178" : `SELECT distinct(sc.id), sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date,sc.transfered_back_by, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
@@ -710,80 +710,80 @@ const db_sql = {
     "Q185"  :`SELECT u.id, u.full_name, r.id as role_id,r.role_name, r.module_ids, r.reporter  FROM roles AS r 
               INNER JOIN users AS u ON u.role_id = r.id 
               WHERE r.id = '{var1}'  AND r.deleted_at IS NULL`,
-    "Q186"  : `SELECT 
-                  u.full_name AS user,
-                  sc.target_amount::DECIMAL AS revenue
-              FROM  
-                  sales AS sc 
-              INNER JOIN users AS u ON u.id = sc.user_id
-              INNER JOIN 
-                sales_closer AS cl ON sc.id = cl.sales_commission_id  
-              INNER JOIN 
-                sales_supporter AS s ON sc.id = s.sales_commission_id 
-              WHERE 
-                  sc.closed_at is not null 
-                  AND (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
-                  AND sc.closed_at BETWEEN '{var4}' AND '{var5}'
-                  AND sc.deleted_at IS NULL
-              GROUP BY 
-                  u.full_name,
-                  sc.target_amount 
-              LIMIT {var2} OFFSET {var3}`,
+    // "Q186"  : `SELECT 
+    //               u.full_name AS user,
+    //               sc.target_amount::DECIMAL AS revenue
+    //           FROM  
+    //               sales AS sc 
+    //           INNER JOIN users AS u ON u.id = sc.user_id
+    //           INNER JOIN 
+    //             sales_closer AS cl ON sc.id = cl.sales_commission_id  
+    //           INNER JOIN 
+    //             sales_supporter AS s ON sc.id = s.sales_commission_id 
+    //           WHERE 
+    //               sc.closed_at is not null 
+    //               AND (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
+    //               AND sc.closed_at BETWEEN '{var4}' AND '{var5}'
+    //               AND sc.deleted_at IS NULL
+    //           GROUP BY 
+    //               u.full_name,
+    //               sc.target_amount 
+    //           LIMIT {var2} OFFSET {var3}`,
     "Q187"  :`SELECT * FROM contact_us WHERE deleted_at IS NULL`,
     "Q188"  :`SELECT * from chat where is_group_chat = 'true' AND company_id = '{var1}' AND deleted_at IS NULL`,
     "Q189"  :`SELECT user_id FROM chat_room_members where room_id = '{var1}' AND deleted_at IS NULL`,
-    "Q190"  :`SELECT * FROM actual_forecast_data WHERE revenue_forecast_id = '{var1}' and deleted_at IS null`,
-    "Q191"  :`INSERT INTO actual_forecast_data(id, revenue_forecast_id, actual_revenue, forecast_revenue, forecast_date)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
-    "Q192"  :`UPDATE actual_forecast_data SET deleted_at = '{var1}' WHERE revenue_forecast_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
-    "Q193"  :`SELECT * FROM actual_forecast_data WHERE revenue_forecast_id = '{var1}' and deleted_at IS null AND forecast_date BETWEEN '{var4}' AND '{var5}' LIMIT '{var2}' OFFSET '{var3}'`,
-    "Q194"  :`SELECT 
-                f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
-                f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
-                u.full_name AS creator_name  
-              FROM 
-                revenue_forecast AS f
-              INNER JOIN 
-                users AS u ON u.id = f.user_id 
-              WHERE 
-                f.company_id = '{var1}' AND f.deleted_at IS NULL AND closed_date IS NULL
-              ORDER BY 
-                timeline ASC`, 
-    "Q195"  :`SELECT 
-                f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
-                f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
-                u.full_name AS creator_name  
-              FROM 
-                revenue_forecast AS f
-              INNER JOIN 
-                users AS u ON u.id = f.user_id 
-              WHERE 
-                f.company_id = '{var1}' AND f.deleted_at IS NULL AND closed_date IS NOT NULL
-              ORDER BY 
-                timeline ASC`,
-    "Q196"  :`SELECT 
-                f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
-                f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
-                u.full_name AS creator_name  
-              FROM 
-                revenue_forecast AS f
-              INNER JOIN 
-                users AS u ON u.id = f.user_id 
-              WHERE 
-                user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NULL 
-              ORDER BY 
-                timeline ASC`,
-    "Q197"  :`SELECT 
-                f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
-                f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
-                u.full_name AS creator_name  
-              FROM 
-                revenue_forecast AS f
-              INNER JOIN 
-                users AS u ON u.id = f.user_id 
-              WHERE 
-                user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NOT NULL 
-              ORDER BY 
-                timeline ASC`,   
+    // "Q190"  :`SELECT * FROM actual_forecast_data WHERE revenue_forecast_id = '{var1}' and deleted_at IS null`,
+    // "Q191"  :`INSERT INTO actual_forecast_data(id, revenue_forecast_id, actual_revenue, forecast_revenue, forecast_date)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
+    // "Q192"  :`UPDATE actual_forecast_data SET deleted_at = '{var1}' WHERE revenue_forecast_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
+    // "Q193"  :`SELECT * FROM actual_forecast_data WHERE revenue_forecast_id = '{var1}' and deleted_at IS null AND forecast_date BETWEEN '{var4}' AND '{var5}' LIMIT '{var2}' OFFSET '{var3}'`,
+    // "Q194"  :`SELECT 
+    //             f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
+    //             f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
+    //             u.full_name AS creator_name  
+    //           FROM 
+    //             revenue_forecast AS f
+    //           INNER JOIN 
+    //             users AS u ON u.id = f.user_id 
+    //           WHERE 
+    //             f.company_id = '{var1}' AND f.deleted_at IS NULL AND closed_date IS NULL
+    //           ORDER BY 
+    //             timeline ASC`, 
+    // "Q195"  :`SELECT 
+    //             f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
+    //             f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
+    //             u.full_name AS creator_name  
+    //           FROM 
+    //             revenue_forecast AS f
+    //           INNER JOIN 
+    //             users AS u ON u.id = f.user_id 
+    //           WHERE 
+    //             f.company_id = '{var1}' AND f.deleted_at IS NULL AND closed_date IS NOT NULL
+    //           ORDER BY 
+    //             timeline ASC`,
+    // "Q196"  :`SELECT 
+    //             f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
+    //             f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
+    //             u.full_name AS creator_name  
+    //           FROM 
+    //             revenue_forecast AS f
+    //           INNER JOIN 
+    //             users AS u ON u.id = f.user_id 
+    //           WHERE 
+    //             user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NULL 
+    //           ORDER BY 
+    //             timeline ASC`,
+    // "Q197"  :`SELECT 
+    //             f.id, f.timeline, f.revenue, f.growth_window, f.growth_percentage, f.start_date, 
+    //             f.end_date, f.user_id, f.company_id, f.currency, f.created_at, f.closed_date,
+    //             u.full_name AS creator_name  
+    //           FROM 
+    //             revenue_forecast AS f
+    //           INNER JOIN 
+    //             users AS u ON u.id = f.user_id 
+    //           WHERE 
+    //             user_id = '{var1}' AND deleted_at IS NULL AND closed_date IS NOT NULL 
+    //           ORDER BY 
+    //             timeline ASC`,   
     "Q198"  :`UPDATE forecast SET deleted_at = '{var1}' WHERE id = '{var2}' OR pid = '{var2}' RETURNING *`,
     "Q199"  :`UPDATE 
                 forecast 
@@ -792,10 +792,10 @@ const db_sql = {
                 end_date = '{var5}', updated_at = '{var6}' 
               WHERE 
                 id = '{var1}' AND deleted_at IS NULL RETURNING *`,
-    "Q200"  :`SELECT 
-                target_amount
-              FROM sales 
-              WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_at BETWEEN '{var2}' AND '{var3}' `,
+    // "Q200"  :`SELECT 
+    //             target_amount
+    //           FROM sales 
+    //           WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_at BETWEEN '{var2}' AND '{var3}' `,
 
     "Q201"  :`INSERT INTO leads(id,full_name,title,email_address,phone_number,
               address,organization_name,source,linkedin_url,website,targeted_value,industry_type,marketing_qualified_lead,
@@ -868,20 +868,20 @@ const db_sql = {
               ORDER BY 
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
-    "Q208"  :`SELECT 
-                COUNT(*),
-                u.full_name AS created_by
-              FROM 
-                leads AS l 
-              INNER JOIN 
-                users AS u ON u.id = l.user_id
-              WHERE 
-                l.user_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
-              GROUP BY 
-                u.full_name
-              ORDER BY 
-                count {var4}
-              LIMIT {var2} OFFSET {var3}`,
+    // "Q208"  :`SELECT 
+    //             COUNT(*),
+    //             u.full_name AS created_by
+    //           FROM 
+    //             leads AS l 
+    //           INNER JOIN 
+    //             users AS u ON u.id = l.user_id
+    //           WHERE 
+    //             l.user_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+    //           GROUP BY 
+    //             u.full_name
+    //           ORDER BY 
+    //             count {var4}
+    //           LIMIT {var2} OFFSET {var3}`,
     "Q209"  :`select 
                 distinct(l.id),l.user_id,l.assigned_sales_lead_to, u.full_name as created_by, 
                 l.is_rejected, l.is_converted
@@ -910,7 +910,7 @@ const db_sql = {
     "Q219"  :`UPDATE lead_sources set source = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q220"  :`UPDATE lead_sources set deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
     "Q221"  :`SELECT * FROM lead_sources WHERE company_id = '{var1}'`,
-    "Q222"  :`UPDATE leads SET is_converted = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
+    // "Q222"  :`UPDATE leads SET is_converted = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q223"  :`SELECT 
                 COUNT(*),
                 u.full_name AS created_by
@@ -925,24 +925,24 @@ const db_sql = {
               ORDER BY 
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
-    "Q224"  :`SELECT 
-                COUNT(*),
-                u.full_name AS created_by
-              FROM 
-                leads AS l 
-              INNER JOIN 
-                users AS u ON u.id = l.user_id
-              WHERE 
-                l.user_id = '{var1}' AND l.is_converted = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
-              GROUP BY 
-                u.full_name
-              ORDER BY 
-                count {var4}
-              LIMIT {var2} OFFSET {var3}`,
+    // "Q224"  :`SELECT 
+    //             COUNT(*),
+    //             u.full_name AS created_by
+    //           FROM 
+    //             leads AS l 
+    //           INNER JOIN 
+    //             users AS u ON u.id = l.user_id
+    //           WHERE 
+    //             l.user_id = '{var1}' AND l.is_converted = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+    //           GROUP BY 
+    //             u.full_name
+    //           ORDER BY 
+    //             count {var4}
+    //           LIMIT {var2} OFFSET {var3}`,
     "Q225" :`SELECT * FROM lead_sources WHERE LOWER(source) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
     "Q226" :`SELECT * FROM lead_titles WHERE LOWER(title) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
     "Q227" :`SELECT * FROM lead_industries WHERE LOWER(industry) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
-    "Q228" :`SELECT COUNT(*) from leads WHERE user_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
+    // "Q228" :`SELECT COUNT(*) from leads WHERE user_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
     "Q229" :`SELECT COUNT(*) from leads WHERE company_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
     "Q230" : `UPDATE companies SET is_marketing_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q231" :`UPDATE companies SET expiry_date = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
@@ -1069,45 +1069,45 @@ const db_sql = {
               ORDER BY 
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
-    "Q256" : `SELECT 
-                COUNT(*),
-                u.full_name AS created_by
-              FROM 
-                leads AS l 
-              INNER JOIN 
-                users AS u ON u.id = l.user_id
-              WHERE 
-                l.user_id = '{var1}' AND l.is_rejected = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
-              GROUP BY 
-                u.full_name
-              ORDER BY 
-                count {var4}
-              LIMIT {var2} OFFSET {var3}`,
+    // "Q256" : `SELECT 
+    //             COUNT(*),
+    //             u.full_name AS created_by
+    //           FROM 
+    //             leads AS l 
+    //           INNER JOIN 
+    //             users AS u ON u.id = l.user_id
+    //           WHERE 
+    //             l.user_id = '{var1}' AND l.is_rejected = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+    //           GROUP BY 
+    //             u.full_name
+    //           ORDER BY 
+    //             count {var4}
+    //           LIMIT {var2} OFFSET {var3}`,
 
-    "Q257" : `SELECT 
-                u.full_name AS sales_rep, 
-                SUM(sc.target_amount::DECIMAL) as amount,
-                sc.closed_at, sc.slab_id
-              FROM
-                sales AS sc 
-              INNER JOIN 
-                sales_closer AS cr ON cr.sales_commission_id = sc.id
-              INNER JOIN 
-                users AS u ON u.id = cr.closer_id
-              INNER JOIN 
-                customers AS c ON c.id = sc.customer_id
-              WHERE 
-                sc.closed_at is not null 
-                AND sc.company_id = '{var1}'
-                AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
-                AND sc.deleted_at IS NULL AND c.deleted_at IS NULL
-                AND cr.deleted_at IS NULL AND u.deleted_at IS NULL
-              GROUP BY 
-                sc.closed_at,
-                u.full_name,
-                sc.slab_id 
-              ORDER BY 
-              sc.closed_at {var2}`,
+    // "Q257" : `SELECT 
+    //             u.full_name AS sales_rep, 
+    //             SUM(sc.target_amount::DECIMAL) as amount,
+    //             sc.closed_at, sc.slab_id
+    //           FROM
+    //             sales AS sc 
+    //           INNER JOIN 
+    //             sales_closer AS cr ON cr.sales_commission_id = sc.id
+    //           INNER JOIN 
+    //             users AS u ON u.id = cr.closer_id
+    //           INNER JOIN 
+    //             customers AS c ON c.id = sc.customer_id
+    //           WHERE 
+    //             sc.closed_at is not null 
+    //             AND sc.company_id = '{var1}'
+    //             AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
+    //             AND sc.deleted_at IS NULL AND c.deleted_at IS NULL
+    //             AND cr.deleted_at IS NULL AND u.deleted_at IS NULL
+    //           GROUP BY 
+    //             sc.closed_at,
+    //             u.full_name,
+    //             sc.slab_id 
+    //           ORDER BY 
+    //           sc.closed_at {var2}`,
      "Q258" : `SELECT 
                   DISTINCT(sc.id) as sales_commission_id,
                   u.full_name AS sales_rep,
@@ -1125,11 +1125,11 @@ const db_sql = {
 
     "Q259" : `SELECT * FROM sales WHERE customer_id = '{var1}' AND deleted_at IS NULL`,
     "Q260" : `SELECT * FROM product_in_sales WHERE product_id = '{var1}' AND deleted_at IS NULL`,
-    "Q261" : `SELECT * FROM lead_organizations WHERE user_id IN ({var1}) AND deleted_at IS NULL`,
-    "Q262" : `SELECT * FROM lead_organizations WHERE company_id = '{var1}' AND deleted_at IS NULL`,
-    "Q263" : `INSERT INTO lead_organizations(id, organization_name, user_id, company_id) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
-    "Q264" : `SELECT * FROM lead_organizations WHERE id = '{var1}' AND deleted_at IS NULL`,
-    "Q265" : `UPDATE lead_organizations SET organization_name = '{var2}', updated_at = '{var3}' WHERE id = '{var1}' RETURNING *`,
+    // "Q261" : `SELECT * FROM lead_organizations WHERE user_id IN ({var1}) AND deleted_at IS NULL`,
+    // "Q262" : `SELECT * FROM lead_organizations WHERE company_id = '{var1}' AND deleted_at IS NULL`,
+    // "Q263" : `INSERT INTO lead_organizations(id, organization_name, user_id, company_id) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
+    // "Q264" : `SELECT * FROM lead_organizations WHERE id = '{var1}' AND deleted_at IS NULL`,
+    // "Q265" : `UPDATE lead_organizations SET organization_name = '{var2}', updated_at = '{var3}' WHERE id = '{var1}' RETURNING *`,
     "Q266" : `UPDATE companies SET is_locked = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q267"  : `UPDATE users SET is_locked = '{var1}', updated_at = '{var3}' WHERE company_id = '{var2}' AND deleted_at IS NULL RETURNING * `,
     "Q268" : `SELECT 
@@ -1150,13 +1150,13 @@ const db_sql = {
     "Q272" : `INSERT INTO recognized_revenue(id, recognized_date, recognized_amount, booking_amount, notes, invoice, sales_id, user_id, company_id)
               VALUES('{var0}','{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}')RETURNING *`,
     "Q273" : `SELECT * FROM recognized_revenue WHERE sales_id = '{var1}' AND deleted_at IS NULL`,
-    "Q274" : `SELECT 
-                SUM(recognized_amount :: DECIMAL) AS recognized_amount
-              FROM 
-                recognized_revenue 
-              WHERE sales_id = '{var1}' AND deleted_at IS NULL
-              GROUP BY
-                sales_id`,
+    // "Q274" : `SELECT 
+    //             SUM(recognized_amount :: DECIMAL) AS recognized_amount
+    //           FROM 
+    //             recognized_revenue 
+    //           WHERE sales_id = '{var1}' AND deleted_at IS NULL
+    //           GROUP BY
+    //             sales_id`,
 
     "Q275"  :`SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
@@ -1412,7 +1412,7 @@ const db_sql = {
                 created_at DESC`, 
         "Q294" : `INSERT INTO forecast_data(forecast_id, amount, start_date, end_date, type, created_by)
                   VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
-        "Q295" : `SELECT * FROM forecast_data WHERE forecast_id = '{var1}'`,       
+        // "Q295" : `SELECT * FROM forecast_data WHERE forecast_id = '{var1}'`,       
         "Q296" : `UPDATE sales SET revenue_commission =  '{var1}' WHERE id = '{var2}' RETURNING *`,      
         "Q298" : `SELECT  SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
                   FROM 
@@ -1456,13 +1456,13 @@ const db_sql = {
                   WHERE 
                   sales_id IN ({var1}) 
                   AND deleted_at IS NULL` , 
-        "Q297" : `UPDATE 
-                    forecast 
-                  SET 
-                    timeline = '{var2}', amount = '{var3}', start_date = '{var4}', 
-                    end_date = '{var5}', assigned_to = '{var6}', updated_at = '{var7}' 
-                  WHERE 
-                    pid = '{var1}' AND deleted_at IS NULL RETURNING *`,
+        // "Q297" : `UPDATE 
+        //             forecast 
+        //           SET 
+        //             timeline = '{var2}', amount = '{var3}', start_date = '{var4}', 
+        //             end_date = '{var5}', assigned_to = '{var6}', updated_at = '{var7}' 
+        //           WHERE 
+        //             pid = '{var1}' AND deleted_at IS NULL RETURNING *`,
         "Q305" : `UPDATE 
                     forecast_data
                   SET 
