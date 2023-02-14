@@ -71,9 +71,9 @@ const db_sql = {
     "Q37"  : `INSERT INTO lead_organizations(id, organization_name, company_id) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
     "Q38"  : `SELECT id, organization_name FROM lead_organizations WHERE id = '{var1}' AND deleted_at IS NULL`,
     "Q39"  : `SELECT 
-                c.id, c.customer_name, c.source, 
-                c.user_id, c.industry,
-                c.created_at, c.address, c.currency,
+                cus.id, cus.customer_name, cus.source, 
+                cus.user_id, cus.industry,
+                cus.created_at, cus.address, cus.currency,
                 u.full_name AS created_by,
                 (
                   SELECT json_agg(leads.*)
@@ -92,7 +92,7 @@ const db_sql = {
                     LEFT JOIN lead_titles AS t ON t.id = leads.title
                     LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
                     LEFT JOIN customers as c ON c.id = leads.customer_id
-                    WHERE c.id  = leads.customer_id 
+                    WHERE leads.customer_id = cus.id
                       AND leads.is_rejected = false AND u1.deleted_at IS NULL  
                       AND leads.deleted_at IS NULL
                   ) leads
@@ -100,21 +100,21 @@ const db_sql = {
                 (
                   SELECT json_agg(business_contact.*)
                   FROM business_contact
-                  WHERE business_contact.customer_id = c.id 
+                  WHERE business_contact.customer_id = cus.id 
                     AND business_contact.deleted_at IS NULL
                 ) AS business_contacts,
                 (
                   SELECT json_agg(revenue_contact.*)
                   FROM revenue_contact
-                  WHERE revenue_contact.customer_id = c.id 
+                  WHERE revenue_contact.customer_id = cus.id 
                     AND revenue_contact.deleted_at IS NULL
                 ) AS revenue_contacts
               FROM 
-                customers AS c 
+                customers AS cus 
               INNER JOIN 
-                users AS u ON u.id = c.user_id
+                users AS u ON u.id = cus.user_id
               WHERE 
-                c.company_id = '{var1}' AND c.deleted_at IS NULL AND 
+                cus.company_id = '{var1}' AND cus.deleted_at IS NULL AND 
                 u.deleted_at IS NULL 
               ORDER BY 
                 created_at desc`,
@@ -1583,9 +1583,9 @@ const db_sql = {
                   p.user_id IN ({var1}) AND p.deleted_at IS NULL
                 ORDER BY 
                   created_at DESC`, 
-      "Q316" : `SELECT c.id, c.customer_name, c.source, 
-                  c.user_id,
-                  c.created_at, c.address, c.currency,
+      "Q316" : `SELECT cus.id, cus.customer_name, cus.source, 
+                  cus.user_id,
+                  cus.created_at, cus.address, cus.currency,
                   u.full_name AS created_by,
                   (
                     SELECT json_agg(leads.*)
@@ -1604,7 +1604,7 @@ const db_sql = {
                       LEFT JOIN lead_titles AS t ON t.id = leads.title
                       LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
                       LEFT JOIN customers as c ON c.id = leads.customer_id
-                      WHERE c.id  = leads.customer_id 
+                      WHERE cus.id  = leads.customer_id 
                         AND leads.is_rejected = false AND u1.deleted_at IS NULL  
                         AND leads.deleted_at IS NULL
                     ) leads
@@ -1612,19 +1612,19 @@ const db_sql = {
                   (
                     SELECT json_agg(business_contact.*)
                     from business_contact
-                    where business_contact.customer_id = c.id
+                    where business_contact.customer_id = cus.id
                   ) AS business_contacts,
                   (
                     SELECT json_agg(revenue_contact.*)
                     from revenue_contact
-                    where revenue_contact.customer_id = c.id
+                    where revenue_contact.customer_id = cus.id
                   ) AS revenue_contacts
                   FROM 
                     customers AS c 
                   INNER JOIN 
-                    users AS u ON u.id = c.user_id
+                    users AS u ON u.id = cus.user_id
                   WHERE 
-                    c.user_id IN ({var1})
+                    cus.user_id IN ({var1})
                   ORDER BY 
                     created_at desc`,
       "Q317" : `SELECT 
@@ -1692,7 +1692,7 @@ const db_sql = {
       //                   s.source,
       //                   t.title,
       //                   i.industry,
-      //                   c.id as customer_id
+      //                   cus.id as customer_id
       //                 FROM leads 
       //                 LEFT JOIN users AS u1 ON u1.id = leads.user_id
       //                 LEFT JOIN lead_sources AS s ON s.id = leads.source
