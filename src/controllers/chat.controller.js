@@ -363,7 +363,7 @@ module.exports.createGroupChat = async (req, res) => {
                     index) => users.indexOf(item) === index);
 
                 let usersArr = []
-                for (userId of users) {
+                for ( let userId of users) {
                     await connection.query('BEGIN')
                     let memberId = uuid.v4()
                     let s5 = dbScript(db_sql['Q122'], { var1: memberId, var2: createGroup.rows[0].id, var3: userId, var4: name })
@@ -439,7 +439,7 @@ module.exports.allMessages = async (req, res) => {
 
             let s2 = dbScript(db_sql['Q132'], { var1: chatId })
             let chatMessage = await connection.query(s2)
-            for (messageData of chatMessage.rows) {
+            for ( let messageData of chatMessage.rows) {
                 chatArr.push({
                     sender: {
                         full_name: messageData.full_name,

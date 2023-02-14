@@ -269,7 +269,7 @@ module.exports.uploadMailAttechment = async (req, res) => {
     try {
         let files = req.files
         uploadedArr = []
-        for(item of files){
+        for(let item of files){
             let path = `${process.env.MAIL_ATTECHMENT_PATH}/${item.originalname}`
             uploadedArr.push(
                 {
