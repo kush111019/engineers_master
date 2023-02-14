@@ -396,7 +396,8 @@ module.exports.addBusinessContact = async (req, res) => {
                 res.json({
                     status: 201,
                     success: true,
-                    message: "Business contact added successfully"
+                    message: "Business contact added successfully",
+                    data : addBusinessContact.rows
                 })
             } else {
                 await connection.query('ROLLBACK')
@@ -445,7 +446,8 @@ module.exports.addRevenueContact = async (req, res) => {
                 res.json({
                     status: 201,
                     success: true,
-                    message: "Revenue contact added successfully"
+                    message: "Revenue contact added successfully",
+                    data : addRevenueContact.rows
                 })
             } else {
                 res.json({
