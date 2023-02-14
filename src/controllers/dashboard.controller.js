@@ -47,7 +47,7 @@ module.exports.revenues = async (req, res) => {
                             let supporterPercentage = await connection.query(s6)
                             if (supporterPercentage.rowCount > 0) {
                                 let sCommission = 0
-                                for (supporter of supporterPercentage.rows) {
+                                for ( let supporter of supporterPercentage.rows) {
                                     sCommission += ((Number(supporter.supporter_percentage) / 100) * Number(commission))
                                 }
                                 revenueCommissionByDateObj.commission = sCommission
@@ -117,7 +117,7 @@ module.exports.revenues = async (req, res) => {
                             let supporterPercentage = await connection.query(s6)
                             if (supporterPercentage.rowCount > 0) {
                                 let sCommission = 0
-                                for (supporter of supporterPercentage.rows) {
+                                for ( let supporter of supporterPercentage.rows) {
                                     sCommission += ((Number(supporter.supporter_percentage) / 100) * Number(commission))
                                 }
                                 revenueCommissionByDateObj.commission = sCommission

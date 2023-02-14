@@ -57,7 +57,7 @@ let createAdmin = async (bodyData, cId, res) => {
             let s6 = dbScript(db_sql['Q6'], {})
             let findModules = await connection.query(s6)
             let moduleArr = []
-            for (data of findModules.rows) {
+            for ( let data of findModules.rows) {
                 moduleArr.push(data.id)
                 let perId = uuid.v4()
                 let s7 = dbScript(db_sql['Q20'], { var1: perId, var2: createRole.rows[0].id, var3: data.id, var4: true, var5: true, var6: true, var7: true, var8: true, var9: saveuser.rows[0].id })
@@ -350,7 +350,7 @@ module.exports.login = async (req, res) => {
 
                         let moduleId = JSON.parse(admin.rows[0].module_ids)
                         let modulePemissions = []
-                        for (data of moduleId) {
+                        for ( let data of moduleId) {
                             let s3 = dbScript(db_sql['Q35'], { var1: data, var2: admin.rows[0].role_id })
                             let findModulePermissions = await connection.query(s3)
                             modulePemissions.push({
