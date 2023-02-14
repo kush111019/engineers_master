@@ -107,7 +107,7 @@ const db_sql = {
                 u.deleted_at IS NULL AND c.is_rejected = '{var2}' AND c.is_qualified = true 
               ORDER BY 
                 created_at desc`,
-    "Q40"  : `UPDATE sales_commission SET closed_at = '{var1}', updated_at = '{var2}', contract = '{var4}' WHERE id = '{var3}' RETURNING *`,
+    "Q40"  : `UPDATE sales SET closed_at = '{var1}', updated_at = '{var2}', contract = '{var4}' WHERE id = '{var3}' RETURNING *`,
     "Q41"  : `SELECT u.id, u.company_id, u.role_id, u.avatar, u.full_name,u.email_address,u.mobile_number,u.phone_number,u.address,u.is_verified,u.created_by,
               m.id AS module_id, m.module_name, m.module_type, p.id AS permission_id, p.permission_to_view_global, p.permission_to_view_own,
               p.permission_to_create, p.permission_to_update, p.permission_to_delete
@@ -141,7 +141,7 @@ const db_sql = {
                 customers AS c 
               INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.company_id = '{var1}' AND c.is_rejected = '{var2}'`,
-    "Q53"  : `INSERT INTO sales_commission (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency, user_id, slab_id, lead_id ,booking_commission) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var13}', '{var14}', '{var15}', '{var16}', '{var17}', '{var18}', '{var19}','{var20}') RETURNING *`,
+    "Q53"  : `INSERT INTO sales (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency, user_id, slab_id, lead_id ,booking_commission) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var13}', '{var14}', '{var15}', '{var16}', '{var17}', '{var18}', '{var19}','{var20}') RETURNING *`,
     "Q54"  : `SELECT 
                 sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
                 sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
@@ -149,7 +149,7 @@ const db_sql = {
                 c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name as creator_name,
                 sc.transfered_back_by
               FROM 
-                sales_commission AS sc 
+                sales AS sc 
               INNER JOIN 
                 sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN 
@@ -167,10 +167,10 @@ const db_sql = {
     "Q57"  : `INSERT INTO sales_supporter(id, commission_split_id ,supporter_id, supporter_percentage, sales_commission_id, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') RETURNING *`,
     "Q58"  : `INSERT INTO sales_closer(id, closer_id, closer_percentage, commission_split_id, sales_commission_id, company_id) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') RETURNING *`,
     "Q59"  : `SELECT id, supporter_id, supporter_percentage FROM sales_supporter WHERE sales_commission_id = '{var1}' AND deleted_at IS NULL `,
-    "Q60"  : `UPDATE sales_commission SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
+    "Q60"  : `UPDATE sales SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
     "Q61"  : `UPDATE sales_supporter SET deleted_at = '{var1}' WHERE sales_commission_id = '{var2}' AND company_id = '{var3}' RETURNING * `,
     "Q62"  : `UPDATE sales_closer SET deleted_at = '{var1}' WHERE sales_commission_id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
-    "Q63"  : `UPDATE sales_commission SET customer_id = '{var1}', customer_commission_split_id = '{var2}', is_overwrite = '{var3}', updated_at = '{var4}',business_contact_id = '{var7}', revenue_contact_id = '{var8}', qualification = '{var9}', is_qualified = '{var10}', target_amount = '{var11}', target_closing_date = '{var12}', sales_type = '{var14}', subscription_plan = '{var15}', recurring_date = '{var16}', currency = '{var17}', slab_id = '{var18}', lead_id = '{var19}', booking_commission= '{var20}'  WHERE id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
+    "Q63"  : `UPDATE sales SET customer_id = '{var1}', customer_commission_split_id = '{var2}', is_overwrite = '{var3}', updated_at = '{var4}',business_contact_id = '{var7}', revenue_contact_id = '{var8}', qualification = '{var9}', is_qualified = '{var10}', target_amount = '{var11}', target_closing_date = '{var12}', sales_type = '{var14}', subscription_plan = '{var15}', recurring_date = '{var16}', currency = '{var17}', slab_id = '{var18}', lead_id = '{var19}', booking_commission= '{var20}'  WHERE id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
     "Q64"  : `UPDATE sales_closer SET closer_id = '{var1}', closer_percentage = '{var2}', commission_split_id = '{var3}', updated_at = '{var4}' WHERE sales_commission_id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
     "Q65"  : `UPDATE sales_supporter SET deleted_at = '{var3}' WHERE sales_commission_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
     "Q66"  : `UPDATE follow_up_notes SET deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL`,
@@ -213,14 +213,14 @@ const db_sql = {
               FROM revenue_contact WHERE id = '{var1}' AND deleted_at is NULL`,
     "Q78"  : `SELECT 
                 id as sales_commission_id, sales_type
-              FROM sales_commission 
+              FROM sales 
               WHERE user_id = '{var1}' AND deleted_at IS NULL AND closed_at BETWEEN '{var2}' AND '{var3}' 
               LIMIT {var4} OFFSET {var5}`,
     "Q79"  : `UPDATE customers SET business_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
     "Q80"  : `UPDATE customers SET revenue_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
     "Q81"  : `SELECT s.id, s.supporter_id, s.supporter_percentage, u.full_name, u.email_address FROM sales_supporter AS s 
               INNER JOIN users AS u ON u.id = s.supporter_id WHERE s.id ='{var1}' `,
-    "Q82"  : `SELECT customer_id, sales_type, subscription_plan, recurring_date FROM sales_commission WHERE deleted_at IS NULL`,
+    "Q82"  : `SELECT customer_id, sales_type, subscription_plan, recurring_date FROM sales WHERE deleted_at IS NULL`,
     "Q83"  : `INSERT INTO configurations(id, currency, phone_format, date_format,user_id, company_id ) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
     "Q84"  : `SELECT id,currency,phone_format,date_format,user_id,company_id,created_at
               FROM configurations WHERE company_id = '{var1}' AND deleted_at IS NULL `,
@@ -233,7 +233,7 @@ const db_sql = {
                sc.closed_at,
                booking_commission, 
                revenue_commission from 
-               sales_commission as sc 
+               sales as sc 
               LEFT JOIN sales_closer as scl
                 on sc.id=scl.sales_commission_id
               LEFT JOIN sales_supporter as ss
@@ -259,7 +259,7 @@ const db_sql = {
                 DATE_TRUNC('{var2}',sc.closed_at) AS  date,
                 sc.sales_type
               FROM 
-                sales_commission AS sc 
+                sales AS sc 
               WHERE 
                 sc.company_id = '{var1}' AND 
                 sc.deleted_at IS NULL AND 
@@ -272,7 +272,7 @@ const db_sql = {
                   sc.id AS sales_commission_id,
                   sc.sales_type
               FROM 
-                  sales_commission sc
+                  sales sc
                   LEFT JOIN customers c ON c.id = sc.customer_id
               WHERE 
                   sc.closed_at is not null AND 
@@ -285,7 +285,7 @@ const db_sql = {
                   u.full_name AS sales_rep,
                   SUM(sc.target_amount::DECIMAL) AS revenue
               FROM  
-                  sales_commission AS sc 
+                  sales AS sc 
                   INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
                   INNER JOIN users AS u ON u.id = cr.closer_id
                   INNER JOIN customers AS c ON c.id = sc.customer_id
@@ -322,7 +322,7 @@ const db_sql = {
     "Q98"  : `SELECT id, name, email, encrypted_password FROM super_admin WHERE email = '{var1}'`,
     "Q99"  : `SELECT id, company_name, company_logo, company_address, is_imap_enable,is_locked, is_marketing_enable, created_at, expiry_date, user_count FROM companies WHERE deleted_at IS NULL`,
     "Q100" : `UPDATE super_admin SET encrypted_password = '{var2}' WHERE email = '{var1}'`,
-    "Q101" : `SELECT  sc.target_amount,  sc.closed_at ,com.id AS company_id, com.company_name FROM sales_commission AS sc 
+    "Q101" : `SELECT  sc.target_amount,  sc.closed_at ,com.id AS company_id, com.company_name FROM sales AS sc 
               INNER JOIN customers AS c ON sc.customer_id = c.id 
               INNER JOIN companies AS com ON sc.company_id = com.id 
               WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND c.deleted_at IS NULL Order by sc.closed_at asc`,
@@ -363,7 +363,7 @@ const db_sql = {
     "Q125" : `SELECT u.id, u.full_name, u.avatar FROM chat_room_members AS cm 
               INNER JOIN users AS u ON u.id = cm.user_id
               WHERE room_id = '{var1}' AND cm.deleted_at IS NULL AND u.deleted_at IS NULL`,
-    "Q126" : `SELECT sc.id,c.closer_id,sc.customer_id, u.full_name, cc.user_id AS creator_id FROM sales_commission AS sc 
+    "Q126" : `SELECT sc.id,c.closer_id,sc.customer_id, u.full_name, cc.user_id AS creator_id FROM sales AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id 
               INNER JOIN users AS u ON c.closer_id = u.id 
               INNER JOIN customers AS cc ON cc.id = sc.customer_id WHERE sc.id = '{var1}'
@@ -433,7 +433,7 @@ const db_sql = {
                   sc.sales_type, 
                   p.product_name
               FROM 
-                  sales_commission AS sc 
+                  sales AS sc 
               LEFT JOIN 
                   customers AS c ON sc.customer_id = c.id 
               LEFT JOIN 
@@ -455,7 +455,7 @@ const db_sql = {
               WHERE ps.sales_commission_id = '{var1}' AND ps.deleted_at IS NULL and p.deleted_at IS NULL` ,
     "Q158" : `UPDATE sales_commission_logs SET closed_at = '{var1}', updated_at = '{var2}' WHERE sales_commission_id = '{var3}' RETURNING *`,
     "Q159" : `SELECT sc.id AS sales_commission_id, sc.target_amount as amount, sc.target_closing_date,
-              sc.closed_at, sc.slab_id,sc.sales_type FROM sales_commission AS sc WHERE sc.company_id = '{var1}' 
+              sc.closed_at, sc.slab_id,sc.sales_type FROM sales AS sc WHERE sc.company_id = '{var1}' 
               AND sc.deleted_at IS NULL`,
     "Q160" : `SELECT 
                 id, company_name, company_logo, company_address, is_imap_enable, created_at, is_locked 
@@ -466,7 +466,7 @@ const db_sql = {
                   SUM(sc.target_amount::DECIMAL) as amount,
                   sc.closed_at, sc.slab_id
                 FROM
-                  sales_commission AS sc 
+                  sales AS sc 
                 WHERE 
                   sc.company_id = '{var1}' AND 
                   sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
@@ -488,7 +488,7 @@ const db_sql = {
                 sc.booking_commission,
                 sc.revenue_commission
               FROM
-                sales_commission AS sc 
+                sales AS sc 
               LEFT JOIN 
                 sales_closer AS c ON sc.id = c.sales_commission_id  
               LEFT JOIN 
@@ -509,7 +509,7 @@ const db_sql = {
               sc.id AS sales_commission_id, sc.target_amount as amount, 
               sc.closed_at, sc.slab_id, sc.sales_type 
               FROM 
-                sales_commission AS sc 
+                sales AS sc 
               INNER JOIN 
                 sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN 
@@ -541,7 +541,7 @@ const db_sql = {
                   c.customer_name,
                   sc.sales_type
               FROM 
-                  sales_commission sc
+                  sales sc
               LEFT JOIN customers c ON c.id = sc.customer_id
               LEFT JOIN 
                 sales_closer AS cl ON sc.id = cl.sales_commission_id  
@@ -558,7 +558,7 @@ const db_sql = {
                   p.product_name,
                   sc.sales_type
               FROM 
-                  sales_commission AS sc 
+                  sales AS sc 
               LEFT JOIN 
                   product_in_sales AS ps ON sc.id = ps.sales_commission_id
               LEFT JOIN 
@@ -576,7 +576,7 @@ const db_sql = {
                   u.full_name AS sales_rep,
                   SUM(sc.target_amount::DECIMAL) AS revenue
               FROM  
-                  sales_commission AS sc 
+                  sales AS sc 
                   INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
                   INNER JOIN users AS u ON u.id = cr.closer_id
               WHERE 
@@ -595,7 +595,7 @@ const db_sql = {
                 DATE_TRUNC('{var2}',sc.closed_at) AS  date,
                 sc.sales_type
               FROM 
-                sales_commission AS sc 
+                sales AS sc 
               LEFT JOIN 
                 sales_closer AS cl ON sc.id = cl.sales_commission_id  
               LEFT JOIN 
@@ -649,7 +649,7 @@ const db_sql = {
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name,
               sup.supporter_id, sup.supporter_percentage,u2.email_address as supporter_email 
-              FROM sales_commission AS sc 
+              FROM sales AS sc 
               LEFT JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               LEFT JOIN sales_supporter AS sup ON sc.id = sup.sales_commission_id
               LEFT JOIN users AS u ON u.id = c.closer_id
@@ -662,7 +662,7 @@ const db_sql = {
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name ,
               sc.transfered_back_by
-              FROM sales_commission AS sc 
+              FROM sales AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN users AS u1 ON u1.id = sc.user_id
@@ -673,7 +673,7 @@ const db_sql = {
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name,
               sc.transfered_back_by 
-              FROM sales_commission AS sc 
+              FROM sales AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN users AS u ON u.id = c.closer_id
               INNER JOIN users AS u1 ON u1.id = sc.user_id
@@ -684,7 +684,7 @@ const db_sql = {
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name,
               sup.supporter_id, sup.supporter_percentage,u2.email_address as supporter_email 
-              FROM sales_commission AS sc 
+              FROM sales AS sc 
               LEFT JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               LEFT JOIN sales_supporter AS sup ON sc.id = sup.sales_commission_id
               LEFT JOIN users AS u ON u.id = c.closer_id
@@ -697,7 +697,7 @@ const db_sql = {
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
               c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name,
               sup.supporter_id, sup.supporter_percentage,u2.email_address as supporter_email 
-              FROM sales_commission AS sc 
+              FROM sales AS sc 
               LEFT JOIN sales_closer AS c ON sc.id = c.sales_commission_id
               LEFT JOIN sales_supporter AS sup ON sc.id = sup.sales_commission_id
               LEFT JOIN users AS u ON u.id = c.closer_id
@@ -714,7 +714,7 @@ const db_sql = {
                   u.full_name AS user,
                   sc.target_amount::DECIMAL AS revenue
               FROM  
-                  sales_commission AS sc 
+                  sales AS sc 
               INNER JOIN users AS u ON u.id = sc.user_id
               INNER JOIN 
                 sales_closer AS cl ON sc.id = cl.sales_commission_id  
@@ -794,7 +794,7 @@ const db_sql = {
                 id = '{var1}' AND deleted_at IS NULL RETURNING *`,
     "Q200"  :`SELECT 
                 target_amount
-              FROM sales_commission 
+              FROM sales 
               WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_at BETWEEN '{var2}' AND '{var3}' `,
 
     "Q201"  :`INSERT INTO leads(id,full_name,title,email_address,phone_number,
@@ -1052,7 +1052,7 @@ const db_sql = {
     "Q249" :`UPDATE companies SET company_logo = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q250" :`UPDATE leads SET is_rejected = '{var2}', reason = '{var3}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`, 
     "Q251" :`UPDATE customers SET is_rejected = '{var2}' WHERE lead_id = '{var1}' AND deleted_at is null RETURNING *`, 
-    "Q252" :`SELECT * FROM sales_commission WHERE lead_id = '{var1}' AND deleted_at IS NULL`,
+    "Q252" :`SELECT * FROM sales WHERE lead_id = '{var1}' AND deleted_at IS NULL`,
     "Q253" :`SELECT COUNT(*) from leads WHERE company_id = '{var1}' AND is_rejected = '{var2}' AND deleted_at IS NULL`,
     "Q254" :`SELECT COUNT(*) from leads WHERE user_id = '{var1}' AND is_rejected = true AND deleted_at IS NULL`,
     "Q255" :`SELECT 
@@ -1089,7 +1089,7 @@ const db_sql = {
                 SUM(sc.target_amount::DECIMAL) as amount,
                 sc.closed_at, sc.slab_id
               FROM
-                sales_commission AS sc 
+                sales AS sc 
               INNER JOIN 
                 sales_closer AS cr ON cr.sales_commission_id = sc.id
               INNER JOIN 
@@ -1113,7 +1113,7 @@ const db_sql = {
                   u.full_name AS sales_rep,
                   sc.closed_at,sc.booking_commission,sc.revenue_commission
               FROM  
-                  sales_commission AS sc 
+                  sales AS sc 
               LEFT JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
               LEFT JOIN sales_supporter AS s ON s.sales_commission_id = sc.id
               LEFT JOIN users AS u ON u.id = cr.closer_id
@@ -1123,7 +1123,7 @@ const db_sql = {
                   AND sc.closed_at BETWEEN '{var3}' AND '{var4}'
                   AND sc.deleted_at IS NULL`,
 
-    "Q259" : `SELECT * FROM sales_commission WHERE customer_id = '{var1}' AND deleted_at IS NULL`,
+    "Q259" : `SELECT * FROM sales WHERE customer_id = '{var1}' AND deleted_at IS NULL`,
     "Q260" : `SELECT * FROM product_in_sales WHERE product_id = '{var1}' AND deleted_at IS NULL`,
     "Q261" : `SELECT * FROM lead_organizations WHERE user_id IN ({var1}) AND deleted_at IS NULL`,
     "Q262" : `SELECT * FROM lead_organizations WHERE company_id = '{var1}' AND deleted_at IS NULL`,
@@ -1145,8 +1145,8 @@ const db_sql = {
             ORDER BY 
               created_at DESC`,
     "Q269" : `UPDATE sales_closer SET closer_id = '{var1}', updated_at = '{var2}' WHERE sales_commission_id = '{var3}' RETURNING * `,
-    "Q270" : `UPDATE sales_commission SET transfer_reason = '{var1}',transfered_back_by = '{var4}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING * `,
-    "Q271" : `SELECT * FROM sales_commission WHERE id = '{var1}' AND deleted_at is null`,
+    "Q270" : `UPDATE sales SET transfer_reason = '{var1}',transfered_back_by = '{var4}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING * `,
+    "Q271" : `SELECT * FROM sales WHERE id = '{var1}' AND deleted_at is null`,
     "Q272" : `INSERT INTO recognized_revenue(id, recognized_date, recognized_amount, booking_amount, notes, invoice, sales_id, user_id, company_id)
               VALUES('{var0}','{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}')RETURNING *`,
     "Q273" : `SELECT * FROM recognized_revenue WHERE sales_id = '{var1}' AND deleted_at IS NULL`,
@@ -1369,7 +1369,7 @@ const db_sql = {
               INNER JOIN 
                 users AS u2 ON u2.id = t.transferd_back_to_id
               INNER JOIN 
-                sales_commission AS sc ON sc.id = t.sales_id
+                sales AS sc ON sc.id = t.sales_id
               INNER JOIN 
                 customers AS c ON sc.customer_id = c.id
               WHERE 
@@ -1387,7 +1387,7 @@ const db_sql = {
                 c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name as creator_name,
                 sc.transfered_back_by
               FROM 
-                sales_commission AS sc 
+                sales AS sc 
               INNER JOIN 
                 sales_closer AS c ON sc.id = c.sales_commission_id
               INNER JOIN 
@@ -1413,10 +1413,10 @@ const db_sql = {
         "Q294" : `INSERT INTO forecast_data(forecast_id, amount, start_date, end_date, type, created_by)
                   VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
         "Q295" : `SELECT * FROM forecast_data WHERE forecast_id = '{var1}'`,       
-        "Q296" : `UPDATE sales_commission SET revenue_commission =  '{var1}' WHERE id = '{var2}' RETURNING *`,      
+        "Q296" : `UPDATE sales SET revenue_commission =  '{var1}' WHERE id = '{var2}' RETURNING *`,      
         "Q298" : `SELECT  SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
                   FROM 
-                    sales_commission AS sc 
+                    sales AS sc 
                   WHERE 
                     company_id = '{var1}' 
                   AND 
@@ -1434,7 +1434,7 @@ const db_sql = {
                     deleted_at IS NULL`,
         "Q301" : `SELECT DISTINCT(sc.id)
                   FROM 
-                    sales_commission AS sc 
+                    sales AS sc 
                   LEFT JOIN 
                     sales_closer AS c ON sc.id = c.sales_commission_id
                   LEFT JOIN 
@@ -1445,7 +1445,7 @@ const db_sql = {
 
         "Q302" : `SELECT SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
                   FROM 
-                    sales_commission 
+                    sales 
                   WHERE 
                     id IN ({var1}) 
                   AND deleted_at IS NULL`,
@@ -1510,7 +1510,7 @@ const db_sql = {
       "Q311" : `SELECT start_date, end_date, created_by,amount as forecast_amount,
                   (
                     SELECT json_agg(sc.id)
-                    FROM sales_commission as sc
+                    FROM sales as sc
                     LEFT JOIN sales_closer AS c ON c.sales_commission_id = sc.id
                     LEFT JOIN sales_supporter AS s ON s.sales_commission_id = sc.id
                     WHERE 
