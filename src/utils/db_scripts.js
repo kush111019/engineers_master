@@ -67,44 +67,56 @@ const db_sql = {
               p.permission_to_update, p.permission_to_delete FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
               INNER JOIN roles AS r ON r.id = p.role_id WHERE m.id = '{var1}' AND r.id = '{var2}' 
               AND m.deleted_at IS NULL AND p.deleted_at IS NULL`,
-    "Q36"  : `INSERT INTO customers(id, user_id,organization_id,customer_name, source, company_id, business_contact_id, revenue_contact_id, address, currency, lead_id, is_qualified) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}', '{var10}', '{var11}','{var12}') RETURNING *`,
+    "Q36"  : `INSERT INTO customers(id, user_id,customer_name, source, company_id, address, currency) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') RETURNING *`,
     "Q37"  : `INSERT INTO lead_organizations(id, organization_name, company_id) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
     "Q38"  : `SELECT id, organization_name FROM lead_organizations WHERE id = '{var1}' AND deleted_at IS NULL`,
     "Q39"  : `SELECT 
-                c.id, c.organization_id, c.customer_name, c.source, 
-                c.user_id,c.lead_id, c.business_contact_id, c.revenue_contact_id, 
-                c.created_at, c.address, c.currency,c.is_rejected,
+                c.id, c.customer_name, c.source, 
+                c.user_id,
+                c.created_at, c.address, c.currency,
                 u.full_name AS created_by,
                 (
                   SELECT json_agg(leads.*)
                   FROM (
                     SELECT 
                       leads.id,leads.full_name, leads.title as title_id, leads.email_address,
-                      leads.phone_number,leads.address,leads.organization_name, leads.source as source_id,
+                      leads.phone_number,leads.address, leads.source as source_id,
                       leads.linkedin_url,leads.website, leads.targeted_value,leads.industry_type as industry_id,
                       leads.assigned_sales_lead_to,leads.additional_marketing_notes,leads.user_id as creator_id,
                       leads.reason, leads.created_at, leads.updated_at, 
-                      leads.marketing_qualified_lead, leads.is_rejected, leads.organization_id,
-                      u1.full_name as created_by,s.source,t.title,i.industry,c.id as customer_id
+                      leads.marketing_qualified_lead, leads.is_rejected, leads.customer_id,
+                      u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
                     FROM leads 
                     LEFT JOIN users AS u1 ON u1.id = leads.user_id
                     LEFT JOIN lead_sources AS s ON s.id = leads.source
                     LEFT JOIN lead_titles AS t ON t.id = leads.title
                     LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
-                    LEFT JOIN customers as c ON c.lead_id = leads.id
-                    WHERE c.organization_id  = leads.organization_id 
+                    LEFT JOIN customers as c ON c.id = leads.customer_id
+                    WHERE c.id  = leads.customer_id 
                       AND leads.marketing_qualified_lead= true 
                       AND leads.is_rejected = false AND u1.deleted_at IS NULL  
                       AND leads.deleted_at IS NULL
                   ) leads
-                ) as lead_data 
+                ) as lead_data,
+                (
+                  SELECT json_agg(business_contact.*)
+                  FROM business_contact
+                  WHERE business_contact.customer_id = c.id 
+                    AND business_contact.deleted_at IS NULL
+                ) AS business_contacts,
+                (
+                  SELECT json_agg(revenue_contact.*)
+                  FROM revenue_contact
+                  WHERE revenue_contact.customer_id = c.id 
+                    AND revenue_contact.deleted_at IS NULL
+                ) AS revenue_contacts
               FROM 
                 customers AS c 
               INNER JOIN 
                 users AS u ON u.id = c.user_id
               WHERE 
                 c.company_id = '{var1}' AND c.deleted_at IS NULL AND 
-                u.deleted_at IS NULL AND c.is_rejected = '{var2}' AND c.is_qualified = true 
+                u.deleted_at IS NULL 
               ORDER BY 
                 created_at desc`,
     "Q40"  : `UPDATE sales SET closed_at = '{var1}', updated_at = '{var2}', contract = '{var4}' WHERE id = '{var3}' RETURNING *`,
@@ -115,7 +127,7 @@ const db_sql = {
               INNER JOIN users AS u ON u.role_id = p.role_id
               WHERE m.module_name = '{var1}' AND u.id = '{var2}' AND m.deleted_at IS NULL 
               AND p.deleted_at IS NULL AND u.deleted_at IS NULL`,   
-    "Q42"  : `UPDATE customers SET customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', business_contact_id = '{var4}', revenue_contact_id = '{var5}', address = '{var7}', currency = '{var9}' WHERE id = '{var6}' AND company_id = '{var8}' AND deleted_at IS NULL RETURNING *`,
+    "Q42"  : `UPDATE customers SET customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', address = '{var4}', currency = '{var5}' WHERE id = '{var6}' AND company_id = '{var7}' AND deleted_at IS NULL RETURNING *`,
     "Q43"  : `INSERT INTO sales_logs(id,sales_commission_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_contact_id, business_contact_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date, currency, slab_id, closer_percentage) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}', '{var17}', '{var18}', '{var19}', '{var20}', '{var21}' ) RETURNING *`,
     "Q44"  : `SELECT sl.id, sl.sales_commission_id, sl.customer_commission_split_id, sl.qualification, sl.is_qualified, sl.target_amount, sl.currency, 
               sl.products, sl.target_closing_date, sl.customer_id, sl.is_overwrite, sl.company_id, sl.revenue_contact_id, sl.business_contact_id, sl.closer_id, 
@@ -199,14 +211,14 @@ const db_sql = {
               ORDER BY 
                 timeline ASC`,  
     "Q69"  : `SELECT * FROM revenue_forecast WHERE id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL  ` ,            
-    "Q70"  : `INSERT INTO business_contact(id, full_name, email_address, phone_number, customer_company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
-    "Q71"  : `INSERT INTO revenue_contact(id, full_name, email_address, phone_number, customer_company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
+    "Q70"  : `INSERT INTO business_contact(id, full_name, email_address, phone_number, customer_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
+    "Q71"  : `INSERT INTO revenue_contact(id, full_name, email_address, phone_number, customer_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
     "Q72"  : `UPDATE business_contact SET full_name = '{var2}', email_address = '{var3}', phone_number = '{var4}', updated_at = '{var5}' WHERE id = '{var1}' AND deleted_at IS NULL RETURNING *`,
     "Q73"  : `UPDATE revenue_contact SET full_name = '{var2}', email_address = '{var3}', phone_number = '{var4}', updated_at = '{var5}' WHERE id = '{var1}' AND deleted_at IS NULL RETURNING *`,
     "Q74"  : `SELECT id, full_name AS business_contact_name, email_address AS business_email, phone_number AS business_phone_number
-              FROM business_contact WHERE customer_company_id = '{var1}' AND deleted_at IS NULL`,
+              FROM business_contact WHERE customer_id = '{var1}' AND deleted_at IS NULL`,
     "Q75"  : `SELECT id, full_name AS revenue_contact_name, email_address AS revenue_email, phone_number AS revenue_phone_number
-              FROM revenue_contact WHERE customer_company_id = '{var1}' AND deleted_at IS NULL`,
+              FROM revenue_contact WHERE customer_id = '{var1}' AND deleted_at IS NULL`,
     "Q76"  : `SELECT id, full_name AS business_contact_name, email_address AS business_email, phone_number AS business_phone_number
               FROM business_contact WHERE id = '{var1}' AND deleted_at is NULL`,  
     "Q77"  : `SELECT id, full_name AS revenue_contact_name, email_address AS revenue_email, phone_number AS revenue_phone_number
@@ -393,8 +405,8 @@ const db_sql = {
     "Q135" : `SELECT id, message_id, to_mail, from_mail,from_name, mail_date, subject, mail_html, mail_text, mail_text_as_html, attechments, company_id, read_status, created_at FROM emails WHERE company_id = '{var1}' AND user_id = '{var2}' AND deleted_at IS NULL order by mail_date desc`,
     "Q136" : `SELECT b.email_address AS business_email, r.email_address AS revenue_email
               FROM business_contact AS b 
-              INNER JOIN lead_organizations AS c ON c.id = b.customer_company_id
-              INNER JOIN revenue_contact AS r ON b.customer_company_id = r.customer_company_id
+              INNER JOIN customers AS c ON c.id = b.customer_id
+              INNER JOIN revenue_contact AS r ON b.customer_id = r.customer_id
               WHERE '{var1}' IN (b.email_address, r.email_address) AND c.company_id = '{var2}' AND
               b.deleted_at IS NULL AND c.deleted_at IS NULL AND r.deleted_at IS NULL`,
     "Q137" : `INSERT INTO emails (id, message_id, to_mail, from_mail,from_name, mail_date, subject, 
@@ -798,27 +810,31 @@ const db_sql = {
               WHERE company_id = '{var1}' AND deleted_at IS NULL AND closed_at BETWEEN '{var2}' AND '{var3}' `,
 
     "Q201"  :`INSERT INTO leads(id,full_name,title,email_address,phone_number,
-              address,organization_name,source,linkedin_url,website,targeted_value,industry_type,marketing_qualified_lead,
-              assigned_sales_lead_to,additional_marketing_notes,user_id,company_id, organization_id)
+              address,source,linkedin_url,website,targeted_value,industry_type,marketing_qualified_lead,
+              assigned_sales_lead_to,additional_marketing_notes,user_id,company_id, customer_id)
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
-              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}','{var18}') RETURNING *`,
+              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}') RETURNING *`,
 
     "Q202"  :`SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
-                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.address,l.customer_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name 
+                u1.full_name AS creator_name, c.customer_name , u2.full_name as assigned_sales_lead_name
               FROM 
                 leads AS l
-              INNER JOIN 
+              LEFt JOIN 
                 users AS u1 ON u1.id = l.user_id
-              INNER JOIN
+              LEFt JOIN 
+                users AS u2 ON u2.id = l.assigned_sales_lead_to
+              LEFt JOIN
                 lead_sources AS s ON s.id = l.source
-              INNER JOIN
+              LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              INNER JOIN
+              LEFt JOIN
                 lead_industries AS i ON i.id = l.industry_type
+              LEFT JOIN 
+                customers AS c ON c.id = l.customer_id
               WHERE 
                 l.company_id = '{var1}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               ORDER BY 
@@ -826,29 +842,33 @@ const db_sql = {
 
     "Q203"  :`SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
-                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.address,l.customer_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name 
+                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
               FROM 
                 leads AS l 
-              INNER JOIN 
+              LEFt JOIN 
                 users AS u1 ON u1.id = l.user_id
-              INNER JOIN
+              LEFt JOIN 
+                users AS u2 ON u2.id = l.assigned_sales_lead_to
+              LEFt JOIN
                 lead_sources AS s ON s.id = l.source
-              INNER JOIN
+              LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              INNER JOIN
+              LEFt JOIN
                 lead_industries AS i ON i.id = l.industry_type
+              LEFT JOIN 
+                customers AS c ON c.id = l.customer_id
               WHERE 
                 (l.user_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1})) AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               ORDER BY 
                 l.created_at DESC`,
     
     "Q204"  :`UPDATE leads SET full_name = '{var2}', title = '{var3}',email_address = '{var4}',phone_number = '{var5}',
-              address = '{var6}', organization_name = '{var7}',source = '{var8}',linkedin_url = '{var9}',website = '{var10}',targeted_value = '{var11}',
-              industry_type = '{var12}',marketing_qualified_lead = '{var13}',assigned_sales_lead_to = '{var14}',additional_marketing_notes = '{var15}',
-              updated_at = '{var16}', organization_id = '{var17}' WHERE id = '{var1}' AND deleted_at is null`,
+              address = '{var6}',source = '{var7}',linkedin_url = '{var8}',website = '{var9}',targeted_value = '{var10}',
+              industry_type = '{var11}',marketing_qualified_lead = '{var12}',assigned_sales_lead_to = '{var13}',additional_marketing_notes = '{var14}',
+              updated_at = '{var15}', customer_id = '{var16}' WHERE id = '{var1}' AND deleted_at is null`,
               
     "Q205"  :`UPDATE leads SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`,
     
@@ -1051,7 +1071,7 @@ const db_sql = {
     "Q248" :`SELECT COUNT(*) from leads WHERE assigned_sales_lead_to = '{var1}'  AND deleted_at IS NULL`,
     "Q249" :`UPDATE companies SET company_logo = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
     "Q250" :`UPDATE leads SET is_rejected = '{var2}', reason = '{var3}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`, 
-    "Q251" :`UPDATE customers SET is_rejected = '{var2}' WHERE lead_id = '{var1}' AND deleted_at is null RETURNING *`, 
+    //"Q251" :`UPDATE customers SET is_rejected = '{var2}' WHERE lead_id = '{var1}' AND deleted_at is null RETURNING *`, 
     "Q252" :`SELECT * FROM sales WHERE lead_id = '{var1}' AND deleted_at IS NULL`,
     "Q253" :`SELECT COUNT(*) from leads WHERE company_id = '{var1}' AND is_rejected = '{var2}' AND deleted_at IS NULL`,
     "Q254" :`SELECT COUNT(*) from leads WHERE user_id = '{var1}' AND is_rejected = true AND deleted_at IS NULL`,
@@ -1160,20 +1180,24 @@ const db_sql = {
 
     "Q275"  :`SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
-                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.address,l.customer_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name 
+                u1.full_name AS creator_name , c.customer_name ,u2.full_name as assigned_sales_lead_name
               FROM 
                 leads AS l
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u1 ON u1.id = l.user_id
-              INNER JOIN
+              LEFT JOIN 
+                users AS u2 ON u2.id = l.assigned_sales_lead_to
+              LEFT JOIN
                 lead_sources AS s ON s.id = l.source
-              INNER JOIN
+              LEFT JOIN
                 lead_titles AS t ON t.id = l.title
-              INNER JOIN
+              LEFT JOIN
                 lead_industries AS i ON i.id = l.industry_type
+              LEFT JOIN 
+                customers AS c ON c.id = l.customer_id
               WHERE 
                 l.company_id = '{var1}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
                 AND l.is_rejected = TRUE
@@ -1182,20 +1206,24 @@ const db_sql = {
                 
     "Q276"  :`SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
-                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.address,l.organization_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name 
+                u1.full_name AS creator_name ,c.customer_name , u2.full_name as assigned_sales_lead_name
               FROM 
                 leads AS l
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u1 ON u1.id = l.user_id
-              INNER JOIN
+              LEFT JOIN 
+                users AS u2 ON u2.id = l.assigned_sales_lead_to
+              LEFT JOIN
                 lead_sources AS s ON s.id = l.source
-              INNER JOIN
+              LEFT JOIN
                 lead_titles AS t ON t.id = l.title
-              INNER JOIN
+              LEFT JOIN
                 lead_industries AS i ON i.id = l.industry_type
+              LEFT JOIN 
+                customers AS c ON c.id = l.customer_id
               WHERE 
                 l.company_id = '{var1}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
                 AND l.marketing_qualified_lead = TRUE
@@ -1204,20 +1232,24 @@ const db_sql = {
 
     "Q277"  :`SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
-                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.address,l.customer_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name 
+                u1.full_name AS creator_name,c.customer_name , u2.full_name as assigned_sales_lead_name 
               FROM 
                 leads AS l
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u1 ON u1.id = l.user_id
-              INNER JOIN
+              LEFT JOIN 
+                users AS u2 ON u2.id = l.assigned_sales_lead_to
+              LEFT JOIN
                 lead_sources AS s ON s.id = l.source
-              INNER JOIN
+              LEFT JOIN
                 lead_titles AS t ON t.id = l.title
-              INNER JOIN
+              LEFT JOIN
                 lead_industries AS i ON i.id = l.industry_type
+              LEFT JOIN 
+                customers AS c ON c.id = l.customer_id
               WHERE 
                 l.company_id = '{var1}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
                 AND l.is_converted = TRUE
@@ -1225,20 +1257,24 @@ const db_sql = {
                 l.created_at DESC`, 
     "Q278"  :`SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
-                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.address,l.customer_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name 
+                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
               FROM 
                 leads AS l 
-              INNER JOIN 
+              LEFt JOIN 
                 users AS u1 ON u1.id = l.user_id
-              INNER JOIN
+              LEFt JOIN 
+                users AS u2 ON u2.id = l.assigned_sales_lead_to
+              LEFt JOIN
                 lead_sources AS s ON s.id = l.source
-              INNER JOIN
+              LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              INNER JOIN
+              LEFt JOIN
                 lead_industries AS i ON i.id = l.industry_type
+              LEFT JOIN 
+                customers AS c ON c.id = l.customer_id
               WHERE 
                 (l.user_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1}))
                  AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
@@ -1248,20 +1284,24 @@ const db_sql = {
 
     "Q279"  :`SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
-                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.address,l.customer_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name 
+                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
               FROM 
                 leads AS l 
-              INNER JOIN 
+              LEFt JOIN 
                 users AS u1 ON u1.id = l.user_id
-              INNER JOIN
+              LEFt JOIN 
+                users AS u2 ON u2.id = l.assigned_sales_lead_to
+              LEFt JOIN
                 lead_sources AS s ON s.id = l.source
-              INNER JOIN
+              LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              INNER JOIN
+              LEFt JOIN
                 lead_industries AS i ON i.id = l.industry_type
+              LEFT JOIN 
+                customers AS c ON c.id = l.customer_id
               WHERE 
                 (l.user_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1}))
                   AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
@@ -1270,63 +1310,71 @@ const db_sql = {
                 l.created_at DESC`,
     "Q280"  :`SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
-                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.address,l.customer_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name 
+                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
               FROM 
                 leads AS l 
-              INNER JOIN 
+              LEFt JOIN 
                 users AS u1 ON u1.id = l.user_id
-              INNER JOIN
+              LEFt JOIN 
+                users AS u2 ON u2.id = l.assigned_sales_lead_to
+              LEFt JOIN
                 lead_sources AS s ON s.id = l.source
-              INNER JOIN
+              LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              INNER JOIN
+              LEFt JOIN
                 lead_industries AS i ON i.id = l.industry_type
+              LEFT JOIN 
+                customers AS c ON c.id = l.customer_id
               WHERE 
                 (l.user_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1}))
                   AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
                   AND l.is_converted = TRUE
               ORDER BY 
                 l.created_at DESC`,
-    "Q281"  :`SELECT 
-                l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
-                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
-                l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name 
-              FROM 
-                leads AS l
-              INNER JOIN 
-                users AS u1 ON u1.id = l.user_id
-              INNER JOIN
-                lead_sources AS s ON s.id = l.source
-              INNER JOIN
-                lead_titles AS t ON t.id = l.title
-              INNER JOIN
-                lead_industries AS i ON i.id = l.industry_type
-              WHERE 
-                l.assigned_sales_lead_to = '{var1}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
-                AND l.is_converted = TRUE
-              ORDER BY 
-                l.created_at DESC`,
+    // "Q281"  :`SELECT 
+    //             l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+    //             l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+    //             l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+    //             l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
+    //             u1.full_name AS creator_name 
+    //           FROM 
+    //             leads AS l
+    //           INNER JOIN 
+    //             users AS u1 ON u1.id = l.user_id
+    //           INNER JOIN
+    //             lead_sources AS s ON s.id = l.source
+    //           INNER JOIN
+    //             lead_titles AS t ON t.id = l.title
+    //           INNER JOIN
+    //             lead_industries AS i ON i.id = l.industry_type
+    //           WHERE 
+    //             l.assigned_sales_lead_to = '{var1}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+    //             AND l.is_converted = TRUE
+    //           ORDER BY 
+    //             l.created_at DESC`,
     "Q282"  :`SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
-                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.address,l.customer_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name 
+                u1.full_name AS creator_name, c.customer_name, u2.full_name as assigned_sales_lead_name
               FROM 
                 leads AS l 
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u1 ON u1.id = l.user_id
-              INNER JOIN
+              LEFT JOIN 
+                users AS u2 ON u2.id = l.assigned_sales_lead_to
+              LEFT JOIN
                 lead_sources AS s ON s.id = l.source
-              INNER JOIN
+              LEFT JOIN
                 lead_titles AS t ON t.id = l.title
-              INNER JOIN
+              LEFT JOIN
                 lead_industries AS i ON i.id = l.industry_type
+              LEFT JOIN 
+                customers AS c ON c.id = l.customer_id
               WHERE 
                 l.assigned_sales_lead_to = '{var1}'
                 AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
@@ -1335,20 +1383,24 @@ const db_sql = {
 
     "Q283"  :`SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
-                l.address,l.organization_id,l.organization_name,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.address,l.customer_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name 
+                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
               FROM 
                 leads AS l 
-              INNER JOIN 
+              LEFt JOIN 
                 users AS u1 ON u1.id = l.user_id
-              INNER JOIN
+              LEFt JOIN 
+                users AS u2 ON u2.id = l.assigned_sales_lead_to
+              LEFt JOIN
                 lead_sources AS s ON s.id = l.source
-              INNER JOIN
+              LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              INNER JOIN
+              LEFt JOIN
                 lead_industries AS i ON i.id = l.industry_type
+              LEFT JOIN 
+                customers AS c ON c.id = l.customer_id
               WHERE 
                 l.assigned_sales_lead_to IN ({var1})
                 AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
@@ -1532,43 +1584,51 @@ const db_sql = {
                   p.user_id IN ({var1}) AND p.deleted_at IS NULL
                 ORDER BY 
                   created_at DESC`, 
-      "Q316" : `SELECT c.id, c.organization_id ,c.customer_name, c.source, c.user_id, c.address, c.deleted_at, c.business_contact_id, c.revenue_contact_id ,
+      "Q316" : `SELECT c.id, c.customer_name, c.source, 
+                  c.user_id,
+                  c.created_at, c.address, c.currency,
                   u.full_name AS created_by,
                   (
                     SELECT json_agg(leads.*)
                     FROM (
                       SELECT 
                         leads.id,leads.full_name, leads.title as title_id, leads.email_address,
-                        leads.phone_number,leads.address,leads.organization_name, leads.source as source_id,
+                        leads.phone_number,leads.address, leads.source as source_id,
                         leads.linkedin_url,leads.website, leads.targeted_value,leads.industry_type as industry_id,
                         leads.assigned_sales_lead_to,leads.additional_marketing_notes,leads.user_id as creator_id,
                         leads.reason, leads.created_at, leads.updated_at, 
-                        leads.marketing_qualified_lead, leads.is_rejected, leads.organization_id,
-                        u1.full_name as created_by,
-                        s.source,
-                        t.title,
-                        i.industry,
-                        c.id as customer_id
+                        leads.marketing_qualified_lead, leads.is_rejected, leads.customer_id,
+                        u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
                       FROM leads 
                       LEFT JOIN users AS u1 ON u1.id = leads.user_id
                       LEFT JOIN lead_sources AS s ON s.id = leads.source
                       LEFT JOIN lead_titles AS t ON t.id = leads.title
                       LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
-                      LEFT JOIN customers as c ON c.lead_id = leads.id
-                      WHERE c.organization_id  = leads.organization_id 
+                      LEFT JOIN customers as c ON c.id = leads.customer_id
+                      WHERE c.id  = leads.customer_id 
                         AND leads.marketing_qualified_lead= true 
                         AND leads.is_rejected = false AND u1.deleted_at IS NULL  
                         AND leads.deleted_at IS NULL
                     ) leads
-                  ) as lead_data 
-                FROM 
-                  customers AS c 
-                INNER JOIN 
-                  users AS u ON u.id = c.user_id
-                WHERE 
-                  c.user_id IN ({var1}) 
-                AND 
-                  c.is_rejected = '{var2}' AND c.is_qualified = true`,
+                  ) as lead_data,
+                  (
+                    SELECT json_agg(business_contact.*)
+                    from business_contact
+                    where business_contact.customer_id = c.id
+                  ) AS business_contacts,
+                  (
+                    SELECT json_agg(revenue_contact.*)
+                    from revenue_contact
+                    where revenue_contact.customer_id = c.id
+                  ) AS revenue_contacts
+                  FROM 
+                    customers AS c 
+                  INNER JOIN 
+                    users AS u ON u.id = c.user_id
+                  WHERE 
+                    c.user_id IN ({var1})
+                  ORDER BY 
+                    created_at desc`,
       "Q317" : `SELECT 
                   u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
                   u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
@@ -1617,78 +1677,80 @@ const db_sql = {
                   (b.id = '{var1}') AND b.deleted_at IS NULL 
                 ORDER BY 
                   timeline ASC`,
-      "Q320" : `SELECT 
-                  o.id as organization_id, o.organization_name, u.full_name as created_by,
-                  o.company_id , 
-                  (
-                    SELECT json_agg(leads.*)
-                    FROM (
-                      SELECT 
-                        leads.id,leads.full_name, leads.title as title_id, leads.email_address,
-                        leads.phone_number,leads.address,leads.organization_name, leads.source as source_id,
-                        leads.linkedin_url,leads.website, leads.targeted_value,leads.industry_type as industry_id,
-                        leads.assigned_sales_lead_to,leads.additional_marketing_notes,leads.user_id as creator_id,
-                        leads.reason, leads.created_at, leads.updated_at, 
-                        leads.marketing_qualified_lead, leads.is_rejected, leads.organization_id,
-                        u1.full_name as created_by,
-                        s.source,
-                        t.title,
-                        i.industry,
-                        c.id as customer_id
-                      FROM leads 
-                      LEFT JOIN users AS u1 ON u1.id = leads.user_id
-                      LEFT JOIN lead_sources AS s ON s.id = leads.source
-                      LEFT JOIN lead_titles AS t ON t.id = leads.title
-                      LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
-                      LEFT JOIN customers as c ON c.lead_id = leads.id
-                      WHERE o.id = leads.organization_id 
-                        AND leads.marketing_qualified_lead= true 
-                        AND leads.is_rejected = false AND u1.deleted_at IS NULL  
-                        AND leads.deleted_at IS NULL
-                    ) leads
-                  ) as lead_data
-                FROM lead_organizations AS o
-                LEFT JOIN users AS u ON u.id = o.user_id
-                WHERE o.company_id = '{var1}' AND o.deleted_at IS NULL AND u.deleted_at IS NULL 
-                ORDER BY o.created_at DESC`,
-      "Q321" : `SELECT 
-                  o.id as organization_id, o.organization_name,
-                  SELECT json_agg(leads.*)
-                    FROM (
-                      SELECT 
-                        leads.id,leads.full_name, leads.title as title_id, leads.email_address,
-                        leads.phone_number,leads.address,leads.organization_name, leads.source as source_id,
-                        leads.linkedin_url,leads.website, leads.targeted_value,leads.industry_type as industry_id,
-                        leads.assigned_sales_lead_to,leads.additional_marketing_notes,leads.user_id as creator_id,
-                        leads.reason, leads.created_at, leads.updated_at, 
-                        leads.marketing_qualified_lead, leads.is_rejected, leads.organization_id,
-                        u1.full_name as created_by,
-                        s.source,
-                        t.title,
-                        i.industry,
-                        c.id as customer_id
-                      FROM leads 
-                      LEFT JOIN users AS u1 ON u1.id = leads.user_id
-                      LEFT JOIN lead_sources AS s ON s.id = leads.source
-                      LEFT JOIN lead_titles AS t ON t.id = leads.title
-                      LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
-                      LEFT JOIN customers as c ON c.lead_id = leads.id
-                      WHERE o.id = leads.organization_id 
-                        AND leads.marketing_qualified_lead= true 
-                        AND leads.is_rejected = false AND u1.deleted_at IS NULL  
-                        AND leads.deleted_at IS NULL
-                    ) leads
-                  ) as lead_data
-                FROM 
-                  lead_organizations AS o
-                  WHERE (o.user_id IN '{var1}') AND o.deleted_at IS NULL 
-                ORDER BY 
-                  o.created_at DESC`,
+      // "Q320" : `SELECT 
+      //             o.id as organization_id, o.organization_name, u.full_name as created_by,
+      //             o.company_id , 
+      //             (
+      //               SELECT json_agg(leads.*)
+      //               FROM (
+      //                 SELECT 
+      //                   leads.id,leads.full_name, leads.title as title_id, leads.email_address,
+      //                   leads.phone_number,leads.address,leads.organization_name, leads.source as source_id,
+      //                   leads.linkedin_url,leads.website, leads.targeted_value,leads.industry_type as industry_id,
+      //                   leads.assigned_sales_lead_to,leads.additional_marketing_notes,leads.user_id as creator_id,
+      //                   leads.reason, leads.created_at, leads.updated_at, 
+      //                   leads.marketing_qualified_lead, leads.is_rejected, leads.organization_id,
+      //                   u1.full_name as created_by,
+      //                   s.source,
+      //                   t.title,
+      //                   i.industry,
+      //                   c.id as customer_id
+      //                 FROM leads 
+      //                 LEFT JOIN users AS u1 ON u1.id = leads.user_id
+      //                 LEFT JOIN lead_sources AS s ON s.id = leads.source
+      //                 LEFT JOIN lead_titles AS t ON t.id = leads.title
+      //                 LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
+      //                 LEFT JOIN customers as c ON c.lead_id = leads.id
+      //                 WHERE o.id = leads.organization_id 
+      //                   AND leads.marketing_qualified_lead= true 
+      //                   AND leads.is_rejected = false AND u1.deleted_at IS NULL  
+      //                   AND leads.deleted_at IS NULL
+      //               ) leads
+      //             ) as lead_data
+      //           FROM lead_organizations AS o
+      //           LEFT JOIN users AS u ON u.id = o.user_id
+      //           WHERE o.company_id = '{var1}' AND o.deleted_at IS NULL AND u.deleted_at IS NULL 
+      //           ORDER BY o.created_at DESC`,
+      // "Q321" : `SELECT 
+      //             o.id as organization_id, o.organization_name,
+      //             SELECT json_agg(leads.*)
+      //               FROM (
+      //                 SELECT 
+      //                   leads.id,leads.full_name, leads.title as title_id, leads.email_address,
+      //                   leads.phone_number,leads.address,leads.organization_name, leads.source as source_id,
+      //                   leads.linkedin_url,leads.website, leads.targeted_value,leads.industry_type as industry_id,
+      //                   leads.assigned_sales_lead_to,leads.additional_marketing_notes,leads.user_id as creator_id,
+      //                   leads.reason, leads.created_at, leads.updated_at, 
+      //                   leads.marketing_qualified_lead, leads.is_rejected, leads.organization_id,
+      //                   u1.full_name as created_by,
+      //                   s.source,
+      //                   t.title,
+      //                   i.industry,
+      //                   c.id as customer_id
+      //                 FROM leads 
+      //                 LEFT JOIN users AS u1 ON u1.id = leads.user_id
+      //                 LEFT JOIN lead_sources AS s ON s.id = leads.source
+      //                 LEFT JOIN lead_titles AS t ON t.id = leads.title
+      //                 LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
+      //                 LEFT JOIN customers as c ON c.lead_id = leads.id
+      //                 WHERE o.id = leads.organization_id 
+      //                   AND leads.marketing_qualified_lead= true 
+      //                   AND leads.is_rejected = false AND u1.deleted_at IS NULL  
+      //                   AND leads.deleted_at IS NULL
+      //               ) leads
+      //             ) as lead_data
+      //           FROM 
+      //             lead_organizations AS o
+      //             WHERE (o.user_id IN '{var1}') AND o.deleted_at IS NULL 
+      //           ORDER BY 
+      //             o.created_at DESC`,
       "Q322" : `UPDATE customers SET updated_at = '{var1}', is_qualified = true WHERE id = '{var2}' RETURNING *`,
-      "Q323" : `SELECT id, organization_name FROM lead_organizations WHERE LOWER(organization_name) = LOWER('{var1}') AND deleted_at IS NULL`,
+     // "Q323" : `SELECT id, organization_name FROM lead_organizations WHERE LOWER(organization_name) = LOWER('{var1}') AND deleted_at IS NULL`,
       "Q324" : `SELECT * FROM leads WHERE organization_id = '{var1}' AND deleted_at IS NULL`,
-      "Q325" : `UPDATE lead_organizations SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
+     // "Q325" : `UPDATE lead_organizations SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
       "Q326" :`SELECT * FROM lead_sources WHERE id = '{var1}' and company_id = '{var2}' AND deleted_at IS NULL`,
+      "Q327"  : `UPDATE business_contact SET  deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
+      "Q328"  : `UPDATE revenue_contact SET  deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   
   
   }
