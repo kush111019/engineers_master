@@ -93,7 +93,6 @@ const db_sql = {
                     LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
                     LEFT JOIN customers as c ON c.id = leads.customer_id
                     WHERE c.id  = leads.customer_id 
-                      AND leads.marketing_qualified_lead= true 
                       AND leads.is_rejected = false AND u1.deleted_at IS NULL  
                       AND leads.deleted_at IS NULL
                   ) leads
@@ -1606,7 +1605,6 @@ const db_sql = {
                       LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
                       LEFT JOIN customers as c ON c.id = leads.customer_id
                       WHERE c.id  = leads.customer_id 
-                        AND leads.marketing_qualified_lead= true 
                         AND leads.is_rejected = false AND u1.deleted_at IS NULL  
                         AND leads.deleted_at IS NULL
                     ) leads
