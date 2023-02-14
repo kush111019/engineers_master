@@ -85,28 +85,25 @@ module.exports.customerList = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
-            let customerArr = []
             let s4 = dbScript(db_sql['Q39'], { var1: checkPermission.rows[0].company_id })
             let customerList = await connection.query(s4)
             if (customerList.rowCount > 0) {
-                if (customerArr.length > 0) {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: 'Customers list',
-                        data: customerList.rows
-                    })
-                } else {
-                    res.json({
-                        status: 200,
-                        success: false,
-                        message: 'Empty customers list',
-                        data: customerList.rows
-                    })
-                }
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Customers list',
+                    data: customerList.rows
+                }) 
+            }else{
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty customers list',
+                    data: customerList.rows
+                })
             }
-        }
-        else if (checkPermission.rows[0].permission_to_view_own) {
+                    
+        }else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s2 = dbScript(db_sql['Q316'], { var1: roleUsers.join(","), var2: false })
             let customerList = await connection.query(s2)
