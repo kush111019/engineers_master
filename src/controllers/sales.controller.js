@@ -296,7 +296,6 @@ module.exports.createSalesCommission = async (req, res) => {
             let id = uuid.v4()
             let s5 = dbScript(db_sql['Q53'], { var1: id, var2: customerId, var3: customerCommissionSplitId, var4: is_overwrite, var5: checkPermission.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16: currency, var17: userId, var18: slabId, var19: leadId, var20: totalCommission })
             let createSalesConversion = await connection.query(s5)
-            console.log(createSalesConversion.rows,"createSalesConversion");
             // add notification in notification list
             notification_typeId = createSalesConversion.rows[0].id;
             await notificationsOperations({ type: 1, msg: 1.1, notification_typeId, notification_userId }, userId);
@@ -331,7 +330,6 @@ module.exports.createSalesCommission = async (req, res) => {
                 var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: checkPermission.rows[0].company_id, var12: revenueId, var13: businessId, var14: customerCloserId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate, var19: currency, var20: slabId, var21: closer_percentage
             })
             let createLog = await connection.query(s9)
-            console.log(createLog.rows,"createLog");
 
             if (createSalesConversion.rowCount > 0 && findSalescommission.rowCount > 0 && addSalesCloser.rowCount > 0 && createLog.rowCount > 0) {
                 await connection.query('COMMIT')

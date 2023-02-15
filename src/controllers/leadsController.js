@@ -119,23 +119,23 @@ module.exports.leadsList = async (req, res) => {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let findLeadList
             if (status.toLowerCase() == 'all') {
-                let s4 = dbScript(db_sql['Q203'], { var1: roleUsers.join("','") })
+                let s4 = dbScript(db_sql['Q203'], { var1: roleUsers.join(",") })
                 findLeadList = await connection.query(s4)
             }
             else if (status.toLowerCase() == 'rejected') {
-                let s5 = dbScript(db_sql['Q278'], { var1: roleUsers.join("','") })
+                let s5 = dbScript(db_sql['Q278'], { var1: roleUsers.join(",") })
                 findLeadList = await connection.query(s5)
             }
             else if (status.toLowerCase() == 'qualified') {
-                let s5 = dbScript(db_sql['Q279'], { var1: roleUsers.join("','") })
+                let s5 = dbScript(db_sql['Q279'], { var1: roleUsers.join(",") })
                 findLeadList = await connection.query(s5)
             }
             else if (status.toLowerCase() == 'converted') {
-                let s5 = dbScript(db_sql['Q280'], { var1: roleUsers.join("','") })
+                let s5 = dbScript(db_sql['Q280'], { var1: roleUsers.join(",") })
                 findLeadList = await connection.query(s5)
             }
             else if (status.toLowerCase() == 'assigned') {
-                let s6 = dbScript(db_sql['Q283'], { var1: roleUsers.join("','") })
+                let s6 = dbScript(db_sql['Q283'], { var1: roleUsers.join(",") })
                 findLeadList = await connection.query(s6)
             }
             if (findLeadList.rowCount > 0) {
