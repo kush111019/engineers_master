@@ -50,10 +50,13 @@ module.exports.createCustomer = async (req, res) => {
                     }
                 }
                 await connection.query('COMMIT')
+                createCustomer.rows[0].business_contacts = []
+                createCustomer.rows[0].revenue_contacts = []
                 res.json({
                     status: 201,
                     success: true,
-                    message: "Customer created successfully"
+                    message: "Customer created successfully",
+                    data : createCustomer.rows
                 })
             } else {
                 await connection.query('ROLLBACK')
@@ -127,7 +130,6 @@ module.exports.createCustomerWithLead = async (req, res) => {
                             let _dt = new Date().toISOString();
                             let s9 = dbScript(db_sql['Q73'], { var1: revenueData.revenueId, var2: mysql_real_escape_string(revenueData.revenueContactName), var3: revenueData.revenueEmail, var4: revenueData.revenuePhoneNumber, var5: _dt })
                             let updateRevenueContact = await connection.query(s9)
-                            rId.push(updateRevenueContact.rows[0].id)
                         }
                     }
                 }
@@ -195,8 +197,7 @@ module.exports.customerList = async (req, res) => {
                     message: 'Empty customers list',
                     data: customerList.rows
                 })
-            }
-                    
+            }       
         }else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s2 = dbScript(db_sql['Q316'], { var1: roleUsers.join(","), var2: false })
@@ -213,7 +214,7 @@ module.exports.customerList = async (req, res) => {
                     status: 200,
                     success: false,
                     message: 'Empty customers list',
-                    data: customerList
+                    data: customerList.rows
                 })
             }
         }
