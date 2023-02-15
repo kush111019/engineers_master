@@ -197,8 +197,7 @@ module.exports.customerList = async (req, res) => {
                     message: 'Empty customers list',
                     data: customerList.rows
                 })
-            }
-                    
+            }       
         }else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s2 = dbScript(db_sql['Q316'], { var1: roleUsers.join(","), var2: false })
@@ -215,7 +214,7 @@ module.exports.customerList = async (req, res) => {
                     status: 200,
                     success: false,
                     message: 'Empty customers list',
-                    data: customerList
+                    data: customerList.rows
                 })
             }
         }
