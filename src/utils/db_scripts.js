@@ -1445,13 +1445,13 @@ const db_sql = {
                 sc.transfered_back_by
               FROM 
                 sales AS sc 
-              INNER JOIN 
+              LEFT JOIN 
                 sales_closer AS c ON sc.id = c.sales_commission_id
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u ON u.id = c.closer_id
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u1 ON u1.id = sc.user_id
-              INNER JOIN 
+              LEFT JOIN 
                 customers AS cus ON cus.id = sc.customer_id
               WHERE 
                 sc.company_id = '{var1}' AND sc.id = '{var2}' AND sc.deleted_at IS NULL 
@@ -1626,7 +1626,7 @@ const db_sql = {
                     where revenue_contact.customer_id = cus.id
                   ) AS revenue_contacts
                   FROM 
-                    customers AS c 
+                    customers AS cus 
                   INNER JOIN 
                     users AS u ON u.id = cus.user_id
                   WHERE 
