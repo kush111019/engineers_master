@@ -322,7 +322,8 @@ module.exports.addLeadTitle = async (req, res) => {
                     res.json({
                         status: 201,
                         success: true,
-                        message: "Lead title added successfully"
+                        message: "Lead title added successfully",
+                        data : addTitle.rows
                     })
                 } else {
                     await connection.query('ROLLBACK')
@@ -520,7 +521,8 @@ module.exports.addLeadIndustry = async (req, res) => {
                     res.json({
                         status: 201,
                         success: true,
-                        message: "Lead industry added successfully"
+                        message: "Lead industry added successfully",
+                        data : addIndustry.rows
                     })
                 } else {
                     await connection.query('ROLLBACK')
@@ -717,7 +719,8 @@ module.exports.addLeadSource = async (req, res) => {
                     res.json({
                         status: 201,
                         success: true,
-                        message: "Lead source added successfully"
+                        message: "Lead source added successfully",
+                        data : addSource.rows
                     })
                 } else {
                     await connection.query('ROLLBACK')
