@@ -489,9 +489,9 @@ const db_sql = {
                   sc.closed_at,
                   sc.id, sc.slab_id`,
     "Q162" : `SELECT id, closer_percentage, supporter_percentage, deleted_at FROM commission_split WHERE company_id ='{var1}'`,
-    "Q163" : `SELECT u.id, u.full_name, r.id as role_id  FROM roles AS r 
-              INNER JOIN users AS u ON u.role_id = r.id 
-              WHERE reporter = '{var1}' AND r.deleted_at IS NULL`,
+    // "Q163" : `SELECT u.id, u.full_name, r.id as role_id  FROM roles AS r 
+    //           INNER JOIN users AS u ON u.role_id = r.id 
+    //           WHERE reporter = '{var1}' AND r.deleted_at IS NULL`,
    // "Q164" : `SELECT * FROM commission_split WHERE user_id = '{var1}' AND deleted_at IS NULL`,
     "Q165" : `SELECT
                 s.slab_id, s.slab_name, s.commission_split_id, c.closer_percentage,c.supporter_percentage,
