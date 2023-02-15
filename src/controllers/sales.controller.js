@@ -2432,6 +2432,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global) {
+            // here we are getting product, customer, user, slab,commissionSlab deatils by global permission
             let allDetails = {};
             let s2 = dbScript(db_sql['Q94'], { var1: checkPermission.rows[0].company_id })
             let productList = await connection.query(s2)
@@ -2439,32 +2440,9 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
                 allDetails.productList = productList.rows
             }
 
-            let s3 = dbScript(db_sql['Q52'], { var1: checkPermission.rows[0].company_id, var2: false })
+            let s3 = dbScript(db_sql['Q39'], { var1: checkPermission.rows[0].company_id })
             let customerList = await connection.query(s3)
             if (customerList.rowCount > 0) {
-                for (let customerData of customerList.rows) {
-
-                    let businessContactIds = JSON.parse(customerData.business_contact_id)
-                    if (customerData.business_contact_id.length > 0) {
-                        let businessContact = []
-                        for (let id of businessContactIds) {
-                            let s4 = dbScript(db_sql['Q76'], { var1: id })
-                            let businessDetails = await connection.query(s4)
-                            businessContact.push(businessDetails.rows[0])
-                        }
-                        customerData.businessContact = (businessContact.length > 0) ? businessContact : [];
-                    }
-                    let revenueContactIds = JSON.parse(customerData.revenue_contact_id)
-                    if (customerData.revenue_contact_id.length > 0) {
-                        let revenuContact = []
-                        for (let id of revenueContactIds) {
-                            let s4 = dbScript(db_sql['Q77'], { var1: id })
-                            let revenueDetails = await connection.query(s4)
-                            revenuContact.push(revenueDetails.rows[0])
-                        }
-                        customerData.revenuContact = (revenuContact.length > 0) ? revenuContact : []
-                    }
-                }
                 allDetails.customerList = customerList.rows
             }
 
@@ -2474,8 +2452,16 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
                 allDetails.userList = userList.rows
             }
 
-            let s5 = dbScript(db_sql['Q50'], { var1: checkPermission.rows[0].company_id })
-            let commissionList = await connection.query(s5)
+            //get slab list here 
+            let s5 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
+            let slabList = await connection.query(s5)
+            if (slabList.rowCount > 0) {
+                const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()]
+                allDetails.slabList = unique;
+            }
+
+            let s6 = dbScript(db_sql['Q50'], { var1: checkPermission.rows[0].company_id })
+            let commissionList = await connection.query(s6)
             if (commissionList.rowCount > 0) {
                 allDetails.commissionList = commissionList.rows
             }
@@ -2496,6 +2482,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
                 })
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
+             // here we are getting product, customer, user, slab,commissionSlab deatils by own permission of user and its child user
             let allDetails = {};
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
 
@@ -2508,29 +2495,6 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             let s2 = dbScript(db_sql['Q316'], { var1: roleUsers.join(","), var2: false })
             let customerList = await connection.query(s2)
             if (customerList.rowCount > 0) {
-                for (let customerData of customerList.rows) {
-
-                    let businessContactIds = JSON.parse(customerData.business_contact_id)
-                    if (customerData.business_contact_id.length > 0) {
-                        let businessContact = []
-                        for (let id of businessContactIds) {
-                            let s4 = dbScript(db_sql['Q76'], { var1: id })
-                            let businessDetails = await connection.query(s4)
-                            businessContact.push(businessDetails.rows[0])
-                        }
-                        customerData.businessContact = (businessContact.length > 0) ? businessContact : [];
-                    }
-                    let revenueContactIds = JSON.parse(customerData.revenue_contact_id)
-                    if (customerData.revenue_contact_id.length > 0) {
-                        let revenuContact = []
-                        for (let id of revenueContactIds) {
-                            let s4 = dbScript(db_sql['Q77'], { var1: id })
-                            let revenueDetails = await connection.query(s4)
-                            revenuContact.push(revenueDetails.rows[0])
-                        }
-                        customerData.revenuContact = (revenuContact.length > 0) ? revenuContact : []
-                    }
-                }
                 allDetails.customerList = customerList.rows
             }
 
@@ -2540,8 +2504,15 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
                 allDetails.userList = userList.rows
             }
 
-            let s4 = dbScript(db_sql['Q318'], { var1: roleUsers.join(",") })
-            let commissionList = await connection.query(s4)
+            let s4 = dbScript(db_sql['Q165'], { var1: roleUsers.join(",") })
+            let slabList = await connection.query(s4)
+            if (slabList.rowCount > 0) {
+                const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()];
+                allDetails.slabList = unique;
+            }
+
+            let s5 = dbScript(db_sql['Q318'], { var1: roleUsers.join(",") })
+            let commissionList = await connection.query(s5)
             if (commissionList.rowCount > 0) {
                 allDetails.commissionList = commissionList.rows
             }

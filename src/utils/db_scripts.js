@@ -32,17 +32,21 @@ const db_sql = {
               ORDER BY 
                 created_at DESC`,
     "Q16"  : `SELECT * FROM roles WHERE reporter = '{var1}' AND deleted_at IS NULL`,
-    "Q17"  : `SELECT 
-                id, min_amount, max_amount, percentage, is_max, slab_ctr, slab_id, 
-                slab_name, commission_split_id, currency, user_id, company_id,created_at 
-              FROM 
-                slabs 
-              WHERE 
-                company_id ='{var1}' AND deleted_at IS NULL 
-              GROUP BY 
-                slab_id, id 
-              ORDER BY 
-                slab_ctr ASC`,
+    "Q17"  : `SELECT
+                s.slab_id, s.slab_name, s.commission_split_id, c.closer_percentage,c.supporter_percentage,
+                (
+                  SELECT json_agg(slabs.*)
+                  FROM slabs 
+                  WHERE s.slab_id = slabs.slab_id AND slabs.deleted_at IS NULL
+                ) AS slabs
+              FROM
+                slabs AS s
+              LEFT JOIN  
+                commission_split AS c ON c.id = s.commission_split_id
+              WHERE
+                s.company_id ='{var1}' AND s.deleted_at IS NULL
+              GROUP BY
+                s.slab_id, s.id,c.closer_percentage,c.supporter_percentage `,
     "Q18"  : `INSERT INTO slabs(id,min_amount, max_amount, percentage, is_max, company_id, currency, slab_ctr, user_id, slab_id, slab_name, commission_split_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}','{var12}') RETURNING * `,
     "Q19"  : `UPDATE slabs SET slab_name = '{var1}', min_amount = '{var2}', max_amount = '{var3}', percentage = '{var4}', is_max = '{var5}', company_id = '{var6}',currency = '{var7}', slab_ctr = '{var8}', user_id = '{var9}', updated_at = '{var12}', commission_split_id = '{var13}' WHERE id = '{var10}' AND slab_id = '{var11}' AND deleted_at IS NULL RETURNING *`,
     "Q20"  : `INSERT INTO permissions(id, role_id, module_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view_global,permission_to_view_own, user_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') RETURNING *`,
@@ -485,11 +489,25 @@ const db_sql = {
                   sc.closed_at,
                   sc.id, sc.slab_id`,
     "Q162" : `SELECT id, closer_percentage, supporter_percentage, deleted_at FROM commission_split WHERE company_id ='{var1}'`,
-    "Q163" : `SELECT u.id, u.full_name, r.id as role_id  FROM roles AS r 
-              INNER JOIN users AS u ON u.role_id = r.id 
-              WHERE reporter = '{var1}' AND r.deleted_at IS NULL`,
+    // "Q163" : `SELECT u.id, u.full_name, r.id as role_id  FROM roles AS r 
+    //           INNER JOIN users AS u ON u.role_id = r.id 
+    //           WHERE reporter = '{var1}' AND r.deleted_at IS NULL`,
    // "Q164" : `SELECT * FROM commission_split WHERE user_id = '{var1}' AND deleted_at IS NULL`,
-    "Q165" : `SELECT * FROM slabs WHERE user_id ='{var1}' AND deleted_at IS NULL GROUP BY slab_id, id ORDER BY slab_ctr ASC`,
+    "Q165" : `SELECT
+                s.slab_id, s.slab_name, s.commission_split_id, c.closer_percentage,c.supporter_percentage,
+                (
+                  SELECT json_agg(slabs.*)
+                  FROM slabs 
+                  WHERE s.slab_id = slabs.slab_id AND slabs.deleted_at IS NULL
+                ) AS slabs
+              FROM
+                slabs AS s
+              LEFT JOIN  
+                commission_split AS c ON c.id = s.commission_split_id
+              WHERE
+                s.user_id IN ({var1}) AND s.deleted_at IS NULL
+              GROUP BY
+                s.slab_id, s.id,c.closer_percentage,c.supporter_percentage`,
     // "Q166" : `SELECT c.id, c.organization_id , c.customer_name, c.source, c.user_id, c.business_contact_id, c.revenue_contact_id, c.created_at, c.address, c.currency,
     //           u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
     //           WHERE c.user_id IN '{var1}' AND c.is_rejected = false AND c.is_qualified = true AND c.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`,
