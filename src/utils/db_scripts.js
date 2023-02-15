@@ -1011,7 +1011,7 @@ const db_sql = {
                     AND marketing_budget_data.deleted_at IS NULL
                 ) as budget_data,
                 (
-                  SELECt json_agg(marketing_budget_description.*)
+                  SELECT json_agg(marketing_budget_description.*)
                   FROM marketing_budget_description
                   WHERE marketing_budget_description.budget_id::uuid = b.id::uuid
                   AND marketing_budget_description.deleted_at IS NULL
@@ -1026,28 +1026,40 @@ const db_sql = {
     "Q241" :`UPDATE marketing_budget SET timeline = '{var1}', amount = '{var2}', start_date = '{var3}', end_date = '{var4}'
               WHERE id = '{var6}' AND deleted_at IS NULL RETURNING *`,
     "Q242" :`UPDATE marketing_budget_description SET title = '{var1}', amount = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
-    "Q243" :`SELECT
-               b.id, b.budget_year, b.quarter_one, b.quarter_two, b.quarter_three, 
-               b.quarter_four, b.is_finalize,b.created_at, b.user_id, d.id as description_id, d.title, d.amount,
-               u.full_name AS creator_name 
-             FROM 
-               marketing_budget_logs AS b
-             INNER JOIN 
-               marketing_budget_description_logs AS d ON d.budget_id = b.budget_id
-             INNER JOIN 
-               users AS u ON u.id = b.user_id 
-             WHERE b.budget_id = '{var1}' AND b.deleted_at IS NULL AND d.deleted_at IS NULL`,
-    "Q244" :`SELECT
-              b.id, b.budget_year, b.quarter_one, b.quarter_two, b.quarter_three, 
-              b.quarter_four, b.is_finalize,b.created_at, b.user_id, d.id as description_id, d.title, d.amount,
-              u.full_name AS creator_name  
+    "Q243" :`SELECT 
+              b.id, b.timeline, b.amount, b.start_date,
+              b.end_date, b.created_by,b.created_at,b.is_finalize,
+              u1.full_name as creator_name,
+              (
+                SELECT json_agg(marketing_budget_description_logs.*)
+                FROM marketing_budget_description_logs
+                WHERE marketing_budget_description_logs.budget_id::uuid = b.budget_id::uuid
+                AND marketing_budget_description_logs.deleted_at IS NULL
+              )as budget_description
             FROM 
               marketing_budget_logs AS b
-            INNER JOIN 
-              marketing_budget_description_logs AS d ON d.budget_id = b.budget_id
-            INNER JOIN 
-              users AS u ON u.id = b.user_id 
-            WHERE b.user_id = '{var1}' AND b.budget_id = '{var2}' AND b.deleted_at IS NULL AND d.deleted_at IS NULL`,
+            LEFT JOIN users as u1 on u1.id::uuid = b.created_by::uuid	
+            WHERE 
+              (b.budget_id = '{var1}') AND b.deleted_at IS NULL 
+            ORDER BY 
+              timeline ASC`,
+    "Q244" :`SELECT 
+                b.id, b.timeline, b.amount, b.start_date,
+                b.end_date, b.created_by,b.created_at,b.is_finalize,
+                u1.full_name as creator_name,
+                (
+                  SELECT json_agg(marketing_budget_description_logs.*)
+                  FROM marketing_budget_description_logs
+                  WHERE marketing_budget_description_logs.budget_id::uuid = b.budget_id::uuid
+                  AND marketing_budget_description_logs.deleted_at IS NULL
+                )as budget_description
+              FROM 
+                marketing_budget_logs AS b
+              LEFT JOIN users as u1 on u1.id::uuid = b.created_by::uuid	
+              WHERE 
+                (b.budget_id = '{var1}' AND b.created_by IN ({var2})) AND b.deleted_at IS NULL 
+              ORDER BY 
+                timeline ASC`,
     "Q245" : `UPDATE marketing_budget_description SET deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
     "Q246" : `UPDATE marketing_budget SET is_finalize = true, updated_at = '{var2}' WHERE id = '{var1}' AND deleted_at IS NULL RETURNING *`,
     "Q247" : `SELECT 
@@ -1673,7 +1685,7 @@ const db_sql = {
                       AND marketing_budget_data.deleted_at IS NULL
                   ) as budget_data,
                   (
-                    SELECt json_agg(marketing_budget_description.*)
+                    SELECT json_agg(marketing_budget_description.*)
                     FROM marketing_budget_description
                     WHERE marketing_budget_description.budget_id::uuid = b.id::uuid
                     AND marketing_budget_description.deleted_at IS NULL

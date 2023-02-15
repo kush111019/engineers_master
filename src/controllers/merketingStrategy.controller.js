@@ -406,7 +406,7 @@ module.exports.updateBudget = async (req, res) => {
 
             let s2 = dbScript(db_sql['Q241'], { var1: timeline, var2: amount, var3: startDate, var4: endDate, var6: budgetId })
             let updateBudget = await connection.query(s2)
-            
+
             let s5 = dbScript(db_sql['Q236'], { var1: budgetId, var2: timeline, var3: amount, var4: startDate, var5: endDate, var6: userId })
             let addBudgetLog = await connection.query(s5)
             if (budgetData.length > 0) {
@@ -477,52 +477,13 @@ module.exports.budgetLogList = async (req, res) => {
             let s2 = dbScript(db_sql['Q243'], { var1: budgetId })
             let budgetLogList = await connection.query(s2)
             if (budgetLogList.rowCount > 0) {
-                const transformedArray = budgetLogList.rows.reduce((acc, curr) => {
-                    const existingDesc = acc.find(s => s.id === curr.id);
-                    if (existingDesc) {
-                        existingDesc.description.push({
-                            id: curr.description_id,
-                            title: curr.title,
-                            amount: curr.amount
-                        });
-                    } else {
-                        acc.push({
-                            id: curr.id,
-                            budgetYear: curr.budget_year,
-                            quarterOne: curr.quarter_one,
-                            quarterTwo: curr.quarter_two,
-                            quarterThree: curr.quarter_three,
-                            quarterFour: curr.quarter_four,
-                            isFinalize: curr.is_finalize,
-                            createdAt: curr.created_at,
-                            creatorName: curr.creator_name,
-                            description: [
-                                {
-                                    id: curr.description_id,
-                                    title: curr.title,
-                                    amount: curr.amount
-                                },
-                            ],
-                        });
-                    }
-                    return acc;
-                }, []);
-                if (transformedArray.length > 0) {
                     res.json({
                         status: 200,
                         success: true,
                         message: "budget logs list",
-                        data: transformedArray
+                        data: budgetLogList.rows
                     })
-                } else {
-                    res.json({
-                        status: 200,
-                        success: false,
-                        message: "Empty budget logs list",
-                        data: []
-                    })
-                }
-            } else {
+            }else {
                 res.json({
                     status: 200,
                     success: false,
@@ -531,79 +492,17 @@ module.exports.budgetLogList = async (req, res) => {
                 })
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            let roleUsers = []
-            let roleIds = []
-            let budgetLogDataArr = []
-            roleIds.push(checkPermission.rows[0].role_id)
-            let getRoles = async (id) => {
-                let s3 = dbScript(db_sql['Q16'], { var1: id })
-                let getChild = await connection.query(s3);
-                if (getChild.rowCount > 0) {
-                    for (let item of getChild.rows) {
-                        if (roleIds.includes(item.id) == false) {
-                            roleIds.push(item.id)
-                            await getRoles(item.id)
-                        }
-                    }
-                }
-            }
-            await getRoles(checkPermission.rows[0].role_id)
-            for (let roleId of roleIds) {
-                let s4 = dbScript(db_sql['Q185'], { var1: roleId })
-                let findUsers = await connection.query(s4)
-                if (findUsers.rowCount > 0) {
-                    for (let user of findUsers.rows) {
-                        roleUsers.push(user.id)
-                    }
-                }
-            }
-            for ( let id of roleUsers) {
-                let s5 = dbScript(db_sql['Q244'], { var1: id, var2: budgetId })
-                let budgetLogList = await connection.query(s5)
-                if (budgetLogList.rowCount > 0) {
-                    for (let budgetData of budgetLogList.rows) {
-                        budgetLogDataArr.push(budgetData)
-                    }
-                }
-            }
-            const transformedArray = budgetLogDataArr.reduce((acc, curr) => {
-                const existingDesc = acc.find(s => s.id === curr.id);
-                if (existingDesc) {
-                    existingDesc.description.push({
-                        id: curr.description_id,
-                        title: curr.title,
-                        amount: curr.amount
-                    });
-                } else {
-                    acc.push({
-                        id: curr.id,
-                        budgetYear: curr.budget_year,
-                        quarterOne: curr.quarter_one,
-                        quarterTwo: curr.quarter_two,
-                        quarterThree: curr.quarter_three,
-                        quarterFour: curr.quarter_four,
-                        isFinalize: curr.is_finalize,
-                        createdAt: curr.created_at,
-                        creatorName: curr.creator_name,
-                        description: [
-                            {
-                                id: curr.description_id,
-                                title: curr.title,
-                                amount: curr.amount
-                            },
-                        ],
-                    });
-                }
-                return acc;
-            }, []);
-            if (transformedArray.length > 0) {
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0])
+            let s5 = dbScript(db_sql['Q244'], { var1: budgetId, var2: roleUsers.join(",") })
+            let budgetLogList = await connection.query(s5)
+            if (budgetLogList.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: "budget logs list",
-                    data: transformedArray
+                    data: budgetLogList.rows
                 })
-            } else {
+            }else {
                 res.json({
                     status: 200,
                     success: false,
@@ -617,7 +516,6 @@ module.exports.budgetLogList = async (req, res) => {
                 message: "Unathorised"
             })
         }
-
     } catch (error) {
         res.json({
             status: 400,
