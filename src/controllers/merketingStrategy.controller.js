@@ -406,6 +406,7 @@ module.exports.updateBudget = async (req, res) => {
 
             let s2 = dbScript(db_sql['Q241'], { var1: timeline, var2: amount, var3: startDate, var4: endDate, var6: budgetId })
             let updateBudget = await connection.query(s2)
+            
             let s5 = dbScript(db_sql['Q236'], { var1: budgetId, var2: timeline, var3: amount, var4: startDate, var5: endDate, var6: userId })
             let addBudgetLog = await connection.query(s5)
             if (budgetData.length > 0) {
@@ -417,11 +418,11 @@ module.exports.updateBudget = async (req, res) => {
             if (description.length > 0) {
                 for (let desc of description) {
                     if (desc.id != '') {
-                        let s3 = dbScript(db_sql['Q242'], { var1: mysql_real_escape_string(descData.title), var2: desc.amount, var3: desc.id })
+                        let s3 = dbScript(db_sql['Q242'], { var1: mysql_real_escape_string(desc.title), var2: desc.amount, var3: desc.id })
                         let updateDescription = await connection.query(s3)
 
                         let logDesId = uuid.v4()
-                        let s4 = dbScript(db_sql['Q235'], { var1: logDesId, var2: updateDescription.rows[0].id, var3: budgetId, var4: mysql_real_escape_string(descData.title), var5: desc.amount, var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
+                        let s4 = dbScript(db_sql['Q235'], { var1: logDesId, var2: updateDescription.rows[0].id, var3: budgetId, var4: mysql_real_escape_string(desc.title), var5: desc.amount, var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
                         let addDescLog = await connection.query(s4)
 
                     } else {
