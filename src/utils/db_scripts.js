@@ -899,11 +899,11 @@ const db_sql = {
     //             count {var4}
     //           LIMIT {var2} OFFSET {var3}`,
     "Q209"  :`select 
-                distinct(l.id),l.user_id,l.assigned_sales_lead_to, u.full_name as created_by, 
+                distinct(l.id),l.user_id,l.assigned_sales_lead_to, u.full_name as created_by,l.customer_id,
                 l.is_rejected, l.is_converted
               FROM 
                 leads AS l 
-              left join 
+              LEFT JOIN 
                 users u ON u.id = l.user_id
               where 
                 (l.user_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1})) AND 
@@ -1110,45 +1110,29 @@ const db_sql = {
               ORDER BY 
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
-    // "Q256" : `SELECT 
-    //             COUNT(*),
-    //             u.full_name AS created_by
-    //           FROM 
-    //             leads AS l 
-    //           INNER JOIN 
-    //             users AS u ON u.id = l.user_id
-    //           WHERE 
-    //             l.user_id = '{var1}' AND l.is_rejected = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
-    //           GROUP BY 
-    //             u.full_name
-    //           ORDER BY 
-    //             count {var4}
-    //           LIMIT {var2} OFFSET {var3}`,
+      "Q256" :`SELECT 
+                COUNT(*) 
+              FROM 
+                customers AS c
+              LEFT JOIN sales AS s ON c.id = s.customer_id
+              WHERE c.company_id = '{var1}' AND s.closed_at IS NOT NULL AND c.deleted_at IS NULL`,
 
-    // "Q257" : `SELECT 
-    //             u.full_name AS sales_rep, 
-    //             SUM(sc.target_amount::DECIMAL) as amount,
-    //             sc.closed_at, sc.slab_id
-    //           FROM
-    //             sales AS sc 
-    //           INNER JOIN 
-    //             sales_closer AS cr ON cr.sales_commission_id = sc.id
-    //           INNER JOIN 
-    //             users AS u ON u.id = cr.closer_id
-    //           INNER JOIN 
-    //             customers AS c ON c.id = sc.customer_id
-    //           WHERE 
-    //             sc.closed_at is not null 
-    //             AND sc.company_id = '{var1}'
-    //             AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
-    //             AND sc.deleted_at IS NULL AND c.deleted_at IS NULL
-    //             AND cr.deleted_at IS NULL AND u.deleted_at IS NULL
-    //           GROUP BY 
-    //             sc.closed_at,
-    //             u.full_name,
-    //             sc.slab_id 
-    //           ORDER BY 
-    //           sc.closed_at {var2}`,
+    "Q257" : `SELECT 
+                COUNT(*),
+                u.full_name AS created_by
+              FROM 
+                customers AS c
+              LEFT JOIN 
+                users AS u ON u.id = c.user_id
+              LEFT JOIN
+                sales AS s ON s.customer_id = c.id
+              WHERE 
+              c.company_id = '{var1}'  AND c.deleted_at IS NULL AND s.closed_at IS NOT NULL AND u.deleted_at IS NULL 
+              GROUP BY 
+                u.full_name
+              ORDER BY 
+                count {var4}
+              LIMIT {var2} OFFSET {var3}`,
      "Q258" : `SELECT 
                   DISTINCT(sc.id) as sales_commission_id,
                   u.full_name AS sales_rep,
