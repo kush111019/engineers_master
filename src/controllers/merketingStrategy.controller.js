@@ -424,7 +424,7 @@ module.exports.updateBudget = async (req, res) => {
             let addBudgetLog = await connection.query(s5)
             if (budgetData.length > 0) {
                 for (let data of budgetData) {
-                    let s6 = dbScript(db_sql['Q314'], { var1: data.amount, var2: data.start_date, var3: data.end_date, var4: type, var5: data.id })
+                    let s6 = dbScript(db_sql['Q314'], { var1: data.amount, var2: data.startDate, var3: data.endDate, var4: type, var5: data.id })
                     let updateBudgetData = await connection.query(s6)
                 }
             }
