@@ -157,26 +157,84 @@ const db_sql = {
               INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.company_id = '{var1}' AND c.is_rejected = '{var2}'`,
     "Q53"  : `INSERT INTO sales (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency, user_id, slab_id, lead_id ,booking_commission) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var13}', '{var14}', '{var15}', '{var16}', '{var17}', '{var18}', '{var19}','{var20}') RETURNING *`,
-    "Q54"  : `SELECT 
-                sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
-                sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
-                sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,sc.lead_id,
-                c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name as creator_name,
-                sc.transfered_back_by
-              FROM 
-                sales AS sc 
-              INNER JOIN 
-                sales_closer AS c ON sc.id = c.sales_commission_id
-              INNER JOIN 
-                users AS u ON u.id = c.closer_id
-              INNER JOIN 
-                users AS u1 ON u1.id = sc.user_id
-              INNER JOIN 
-                customers AS cus ON cus.id = sc.customer_id
-              WHERE 
-                sc.company_id = '{var1}' AND sc.deleted_at IS NULL 
-              ORDER BY 
-                sc.created_at DESC`,
+    "Q54"  : `SELECT
+                sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,sc.business_contact_id,
+                sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
+                sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
+                c.closer_id, c.closer_percentage, 
+                u.full_name as closer_name, u.email_address as closer_email, 
+                cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
+                sc.transfered_back_by as transfered_back_by_id ,
+                bc.id as business_contact_id ,bc.full_name as business_contact_name, bc.email_address as business_contact_email,
+                rc.id as revenue_contact_id ,rc.full_name as revenue_contact_name, rc.email_address as revenue_contact_email,
+                slab.slab_name,
+                u2.full_name as tranfer_back_by_name,
+                (
+                  SELECT json_agg(leads.*)
+                  FROM (
+                    SELECT 
+                      leads.id,leads.full_name, leads.title as title_id, leads.email_address,
+                      leads.phone_number,leads.address, leads.source as source_id,
+                      leads.linkedin_url,leads.website, leads.targeted_value,leads.industry_type as industry_id,
+                      leads.assigned_sales_lead_to,leads.additional_marketing_notes,leads.user_id as creator_id,
+                      leads.reason, leads.created_at, leads.updated_at, 
+                      leads.marketing_qualified_lead, leads.is_rejected, leads.customer_id,
+                      u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                    FROM leads 
+                    LEFT JOIN users AS u1 ON u1.id = leads.user_id
+                    LEFT JOIN lead_sources AS s ON s.id = leads.source
+                    LEFT JOIN lead_titles AS t ON t.id = leads.title
+                    LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
+                    LEFT JOIN customers as c ON c.id = leads.customer_id
+                    WHERE leads.customer_id = sc.customer_id
+                      AND leads.is_rejected = false AND u1.deleted_at IS NULL  
+                      AND leads.deleted_at IS NULL
+                  ) leads
+                ) as lead_data,
+                (
+                  SELECT json_agg(sales_supporter.*)
+                  FROM (
+                    SELECT 
+                    ss.supporter_id as id ,ss.supporter_percentage as percentage ,u1.full_name as name,u1.email_address as email
+                    FROM sales_supporter as ss
+                    LEFT JOIN users AS u1 ON u1.id = ss.supporter_id
+                    WHERE ss.sales_commission_id= sc.id AND ss.deleted_at IS NULL AND  u1.deleted_at IS NULL
+                  ) sales_supporter
+                ) as supporters,
+                (
+                  SELECT json_agg(product_in_sales.*)
+                  FROM (
+                    SELECT 
+                      p.id ,p.product_name as name
+                    FROM product_in_sales as pis
+                    LEFT JOIN products AS p ON p.id = pis.product_id
+                    WHERE sc.id= pis.sales_commission_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
+                  ) product_in_sales
+                ) as products
+            FROM
+              sales AS sc
+            LEFT JOIN
+              sales_closer AS c ON sc.id = c.sales_commission_id
+            LEFT JOIN
+              users AS u ON u.id = c.closer_id
+            LEFT JOIN
+              users AS u1 ON u1.id = sc.user_id
+            LEFT JOIN
+              customers AS cus ON cus.id = sc.customer_id
+            LEFT JOIN
+              business_contact AS bc ON bc.id = sc.business_contact_id
+            LEFT JOIN
+              revenue_contact AS rc ON rc.id = sc.revenue_contact_id
+            LEFT JOIN
+              products AS p ON p.id = sc.revenue_contact_id
+            LEFT JOIN
+              slabs AS slab ON slab.id = sc.slab_id
+            LEFT JOIN
+              users AS u2 ON u2.id = sc.transfered_back_by
+            WHERE
+              sc.company_id = '{var1}' AND sc.deleted_at IS NULL
+            ORDER BY
+              sc.created_at DESC`,
     "Q55"  : `SELECT * FROM customers WHERE id = '{var1}'`,
     "Q56"  : `SELECT id, closer_percentage, supporter_percentage FROM commission_split WHERE id ='{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
     "Q57"  : `INSERT INTO sales_supporter(id, commission_split_id ,supporter_id, supporter_percentage, sales_commission_id, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') RETURNING *`,
@@ -673,19 +731,87 @@ const db_sql = {
     // "Q177" : `SELECT c.id, c.organization_id ,c.customer_name, c.source, c.user_id, c.address, c.deleted_at,
     //           u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
     //           WHERE c.user_id = '{var1}' AND c.is_rejected = '{var2}'`,
-    "Q178" : `SELECT distinct(sc.id), sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
-              sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date,sc.transfered_back_by, 
-              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
-              c.closer_id, c.closer_percentage, u.full_name, u.email_address, cus.customer_name, cus.user_id as creater_id, u1.full_name AS creator_name,
-              sup.supporter_id, sup.supporter_percentage,u2.email_address as supporter_email 
-              FROM sales AS sc 
-              LEFT JOIN sales_closer AS c ON sc.id = c.sales_commission_id
-              LEFT JOIN sales_supporter AS sup ON sc.id = sup.sales_commission_id
-              LEFT JOIN users AS u ON u.id = c.closer_id
-              LEFT JOIN users AS u1 ON u1.id = sc.user_id
-              LEFT JOIN customers AS cus ON cus.id = sc.customer_id
-              LEFT JOIN users AS u2 ON u2.id = sup.supporter_id
-              WHERE (sc.user_id = '{var1}' OR c.closer_id = '{var1}' OR sup.supporter_id = '{var1}') AND sc.deleted_at IS NULL ORDER BY sc.created_at desc`,
+    "Q178" : `SELECT
+                sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,sc.business_contact_id,
+                sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
+                sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
+                c.closer_id, c.closer_percentage, 
+                u.full_name as closer_name, u.email_address as closer_email, 
+                cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
+                sc.transfered_back_by as transfered_back_by_id ,
+                bc.id as business_contact_id ,bc.full_name as business_contact_name, bc.email_address as business_contact_email,
+                rc.id as revenue_contact_id ,rc.full_name as revenue_contact_name, rc.email_address as revenue_contact_email,
+                slab.slab_name,
+                u2.full_name as tranfer_back_by_name,
+                sup.supporter_id,
+                (
+                  SELECT json_agg(leads.*)
+                  FROM (
+                    SELECT 
+                      leads.id,leads.full_name, leads.title as title_id, leads.email_address,
+                      leads.phone_number,leads.address, leads.source as source_id,
+                      leads.linkedin_url,leads.website, leads.targeted_value,leads.industry_type as industry_id,
+                      leads.assigned_sales_lead_to,leads.additional_marketing_notes,leads.user_id as creator_id,
+                      leads.reason, leads.created_at, leads.updated_at, 
+                      leads.marketing_qualified_lead, leads.is_rejected, leads.customer_id,
+                      u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                    FROM leads 
+                    LEFT JOIN users AS u1 ON u1.id = leads.user_id
+                    LEFT JOIN lead_sources AS s ON s.id = leads.source
+                    LEFT JOIN lead_titles AS t ON t.id = leads.title
+                    LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
+                    LEFT JOIN customers as c ON c.id = leads.customer_id
+                    WHERE leads.customer_id = sc.customer_id
+                      AND leads.is_rejected = false AND u1.deleted_at IS NULL  
+                      AND leads.deleted_at IS NULL
+                  ) leads
+                ) as lead_data,
+                (
+                  SELECT json_agg(sales_supporter.*)
+                  FROM (
+                    SELECT 
+                    ss.supporter_id as id ,ss.supporter_percentage as percentage ,u1.full_name as name,u1.email_address as email
+                    FROM sales_supporter as ss
+                    LEFT JOIN users AS u1 ON u1.id = ss.supporter_id
+                    WHERE ss.sales_commission_id= sc.id AND ss.deleted_at IS NULL AND  u1.deleted_at IS NULL
+                  ) sales_supporter
+                ) as supporters,
+                (
+                  SELECT json_agg(product_in_sales.*)
+                  FROM (
+                    SELECT 
+                      p.id ,p.product_name as name
+                    FROM product_in_sales as pis
+                    LEFT JOIN products AS p ON p.id = pis.product_id
+                    WHERE sc.id= pis.sales_commission_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
+                  ) product_in_sales
+                ) as products
+            FROM
+              sales AS sc
+            LEFT JOIN
+              sales_closer AS c ON sc.id = c.sales_commission_id
+            LEFT JOIN 
+              sales_supporter AS sup ON sc.id = sup.sales_commission_id
+            LEFT JOIN
+              users AS u ON u.id = c.closer_id
+            LEFT JOIN
+              users AS u1 ON u1.id = sc.user_id
+            LEFT JOIN
+              customers AS cus ON cus.id = sc.customer_id
+            LEFT JOIN
+              business_contact AS bc ON bc.id = sc.business_contact_id
+            LEFT JOIN
+              revenue_contact AS rc ON rc.id = sc.revenue_contact_id
+            LEFT JOIN
+              products AS p ON p.id = sc.revenue_contact_id
+            LEFT JOIN
+              slabs AS slab ON slab.id = sc.slab_id
+            LEFT JOIN
+              users AS u2 ON u2.id = sc.transfered_back_by
+            WHERE
+              (sc.user_id IN ({var1}) OR c.closer_id IN ({var1}) OR sup.supporter_id IN ({var1}) )
+            ORDER BY
+              sc.created_at DESC`,
     "Q179"  :`SELECT sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id, 
               sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount, sc.currency, sc.target_closing_date, 
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at,sc.slab_id,sc.lead_id,
