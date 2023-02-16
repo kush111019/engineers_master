@@ -1,7 +1,7 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
-const { mysql_real_escape_string } = require('../utils/helper')
+const { mysql_real_escape_string ,getUserAndSubUser} = require('../utils/helper')
 const moduleName = process.env.ROLES_MODULE
 
 
@@ -9,37 +9,21 @@ const moduleName = process.env.ROLES_MODULE
 
 module.exports.moduleList = async (req, res) => {
     try {
-        let userId = req.user.id
-
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findAdmin = await connection.query(s1)
-
-        if (findAdmin.rows.length > 0) {
-
-            let s3 = dbScript(db_sql['Q6'], {})
-            let moduleList = await connection.query(s3)
-
-            if (moduleList.rows.length > 0) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "Module list",
-                    data: moduleList.rows
-                })
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: "Empty module list",
-                    data: []
-                })
-            }
-
+        let s3 = dbScript(db_sql['Q6'], {})
+        let moduleList = await connection.query(s3)
+        if (moduleList.rows.length > 0) {
+            res.json({
+                status: 200,
+                success: true,
+                message: "Module list",
+                data: moduleList.rows
+            })
         } else {
             res.json({
-                status: 400,
+                status: 200,
                 success: false,
-                message: "Admin not found"
+                message: "Empty module list",
+                data: []
             })
         }
     } catch (error) {
@@ -265,7 +249,7 @@ module.exports.createRole = async (req, res) => {
             await connection.query('BEGIN')
             let roleId = uuid.v4()
 
-            let s4 = dbScript(db_sql['Q13'], { var1: roleId, var2: mysql_real_escape_string(roleName), var3: reporter, var4: checkPermission.rows[0].company_id, var5 : userId })
+            let s4 = dbScript(db_sql['Q13'], { var1: roleId, var2: mysql_real_escape_string(roleName), var3: reporter, var4: checkPermission.rows[0].company_id, var5: userId })
             createRole = await connection.query(s4)
 
             let addPermission;
@@ -276,7 +260,7 @@ module.exports.createRole = async (req, res) => {
                 moduleIds.push(moduleData.moduleId)
 
                 let permissionId = uuid.v4()
-                let s5 = dbScript(db_sql['Q20'], { var1: permissionId, var2: createRole.rows[0].id, var3: moduleData.moduleId, var4: moduleData.permissionToCreate, var5: moduleData.permissionToUpdate, var6: moduleData.permissionToDelete, var7: moduleData.permissionToViewGlobal,var8: moduleData.permissionToViewOwn, var9: checkPermission.rows[0].id })
+                let s5 = dbScript(db_sql['Q20'], { var1: permissionId, var2: createRole.rows[0].id, var3: moduleData.moduleId, var4: moduleData.permissionToCreate, var5: moduleData.permissionToUpdate, var6: moduleData.permissionToDelete, var7: moduleData.permissionToViewGlobal, var8: moduleData.permissionToViewOwn, var9: checkPermission.rows[0].id })
                 addPermission = await connection.query(s5)
             }
 
