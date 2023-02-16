@@ -32,6 +32,7 @@ module.exports.marketingDashboard = async (req, res) => {
             //Total Customer count
             let s6 = dbScript(db_sql['Q256'],{ var1: checkPermission.rows[0].company_id })
             let CCount = await connection.query(s6) 
+            console.log(CCount.rows, "Ccount");
 
             let s7 = dbScript(db_sql['Q207'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let leadData = await connection.query(s7)
@@ -66,18 +67,27 @@ module.exports.marketingDashboard = async (req, res) => {
                     }
                 });
             });
-
+            let count = 0 
             lists.forEach(list => {
                 list.forEach(item => {
                     if (list === leadData.rows) counts[item.created_by].count = item.count;
                     if (list === mqlLeads.rows) counts[item.created_by].mqlCount = item.count;
                     if (list === assignedLeads.rows) counts[item.created_by].assignedCount = item.count;
                     if (list === rejectedLeads.rows) counts[item.created_by].rejectedCount = item.count;
-                    if (list === customerlist.rows) counts[item.created_by].customerCount = item.count;
+                    if (list === customerlist.rows) {
+                        list.map(e => {
+                            if(e.created_by = item.created_by){
+                                count += 1
+                                list.pop()
+                            }
+                        })
+                        counts[item.created_by].customerCount = count;
+                    }
                 });
             });
 
             const LeadCount = Object.values(counts);
+
             res.json({
                 status: 200,
                 success: true,
@@ -87,7 +97,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     totalMQLCount: MCount.rows[0].count,
                     totalAssignedCount: ACount.rows[0].count,
                     totalRejectedCount: RCount.rows[0].count,
-                    totalCustomerCount : CCount.rows[0].count,
+                    totalCustomerCount : CCount.rowCount,
                     leadData: LeadCount
                 }
             })
@@ -106,6 +116,7 @@ module.exports.marketingDashboard = async (req, res) => {
             //Total Lead count
             let s4 = dbScript(db_sql['Q209'], { var1: roleUsers.join(","), var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let leadCount = await connection.query(s4)
+            console.log(leadCount.rows,"leadCount");
             if (leadCount.rowCount > 0) {
                 totalCounts += leadCount.rowCount
                 for ( let leads of leadCount.rows) {
@@ -130,9 +141,9 @@ module.exports.marketingDashboard = async (req, res) => {
                     totalCustomerCount += cCount
                 }
             }
-            console.log(leadData);
+            console.log(leadData,"lead data");
             let combinedData = leadData.reduce((acc, curr) => {
-                let existing = acc.find(item => item.created_by === curr.created_by);
+                let existing = acc.find(item => item.created_by === curr.created_by && item.customer_id === curr.customer_id);
                 if (existing) {
                     existing.count += curr.count;
                     existing.assignedCount += curr.assignedCount;

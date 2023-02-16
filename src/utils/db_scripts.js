@@ -1129,14 +1129,14 @@ const db_sql = {
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
       "Q256" :`SELECT 
-                COUNT(*) 
+                DISTINCT(c.id)
               FROM 
                 customers AS c
               LEFT JOIN sales AS s ON c.id = s.customer_id
               WHERE c.company_id = '{var1}' AND s.closed_at IS NOT NULL AND c.deleted_at IS NULL`,
 
     "Q257" : `SELECT 
-                COUNT(*),
+                DISTINCT(c.id),
                 u.full_name AS created_by
               FROM 
                 customers AS c
@@ -1147,9 +1147,10 @@ const db_sql = {
               WHERE 
               c.company_id = '{var1}'  AND c.deleted_at IS NULL AND s.closed_at IS NOT NULL AND u.deleted_at IS NULL 
               GROUP BY 
-                u.full_name
+                u.full_name,
+                c.id
               ORDER BY 
-                count {var4}
+              u.full_name {var4}
               LIMIT {var2} OFFSET {var3}`,
      "Q258" : `SELECT 
                   DISTINCT(sc.id) as sales_commission_id,
