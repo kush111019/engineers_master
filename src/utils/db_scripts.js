@@ -1255,14 +1255,14 @@ const db_sql = {
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
       "Q256" :`SELECT 
-                COUNT(*) 
+                DISTINCT(c.id)
               FROM 
                 customers AS c
               LEFT JOIN sales AS s ON c.id = s.customer_id
               WHERE c.company_id = '{var1}' AND s.closed_at IS NOT NULL AND c.deleted_at IS NULL`,
 
     "Q257" : `SELECT 
-                COUNT(*),
+                DISTINCT(c.id),
                 u.full_name AS created_by
               FROM 
                 customers AS c
@@ -1273,9 +1273,10 @@ const db_sql = {
               WHERE 
               c.company_id = '{var1}'  AND c.deleted_at IS NULL AND s.closed_at IS NOT NULL AND u.deleted_at IS NULL 
               GROUP BY 
-                u.full_name
+                u.full_name,
+                c.id
               ORDER BY 
-                count {var4}
+              u.full_name {var4}
               LIMIT {var2} OFFSET {var3}`,
      "Q258" : `SELECT 
                   DISTINCT(sc.id) as sales_commission_id,
@@ -1355,7 +1356,7 @@ const db_sql = {
                 
     "Q276"  :`SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
-                l.address,l.organization_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+                l.address,l.customer_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.user_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
                 u1.full_name AS creator_name ,c.customer_name , u2.full_name as assigned_sales_lead_name
@@ -1899,6 +1900,7 @@ const db_sql = {
       "Q326" :`SELECT * FROM lead_sources WHERE id = '{var1}' and company_id = '{var2}' AND deleted_at IS NULL`,
       "Q327"  : `UPDATE business_contact SET  deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
       "Q328"  : `UPDATE revenue_contact SET  deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
+      "Q329" : `INSERT INTO sales(id, company_id, user_id, sales_type, recurring_date, subscription_plan )`
   
   
   }
