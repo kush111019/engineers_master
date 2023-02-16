@@ -373,9 +373,11 @@ module.exports.allSalesCommissionList = async (req, res) => {
             let salesCommissionList = await connection.query(s3)
             for (let salesCommissionData of salesCommissionList.rows) {
                 salesCommissionData.closer_commission_amount = ((Number(salesCommissionData.closer_percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
-                salesCommissionData.supporters.map(value => {
-                    value.supporter_commission_amount = ((Number(value.percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
-                })
+                if (salesCommissionData.supporters) {
+                    salesCommissionData.supporters.map(value => {
+                        value.supporter_commission_amount = ((Number(value.percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
+                    })
+                }
             }
             if (salesCommissionList.rowCount > 0) {
                 res.json({
@@ -397,7 +399,6 @@ module.exports.allSalesCommissionList = async (req, res) => {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s3 = dbScript(db_sql['Q178'], { var1: roleUsers.join(",") })
             let salesCommissionList = await connection.query(s3)
-            console.log(salesCommissionList.rows)
             for (let salesCommissionData of salesCommissionList.rows) {
                 salesCommissionData.closer_commission_amount = ((Number(salesCommissionData.closer_percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
                 if (salesCommissionData.supporters) {
@@ -443,115 +444,22 @@ module.exports.activeSalesCommissionList = async (req, res) => {
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global) {
-
             let s3 = dbScript(db_sql['Q179'], { var1: checkPermission.rows[0].company_id })
             let salesCommissionList = await connection.query(s3)
-            let commissionList = []
-            for (let data of salesCommissionList.rows) {
-                let closer = {}
-                let supporters = []
-
-                let s4 = dbScript(db_sql['Q59'], { var1: data.id })
-                let supporter = await connection.query(s4)
-                if (supporter.rowCount > 0) {
-                    if (supporter.rows[0].supporter_id != "") {
-                        for (let supporterData of supporter.rows) {
-                            let s5 = dbScript(db_sql['Q81'], { var1: supporterData.id })
-                            let supporterName = await connection.query(s5)
-                            if (supporterName.rowCount > 0) {
-                                supporters.push({
-                                    id: supporterName.rows[0].supporter_id,
-                                    name: supporterName.rows[0].full_name,
-                                    email: supporterName.rows[0].email_address,
-                                    percentage: supporterName.rows[0].supporter_percentage
-                                })
-                            }
-                        }
-                    }
+            for (let salesCommissionData of salesCommissionList.rows) {
+                salesCommissionData.closer_commission_amount = ((Number(salesCommissionData.closer_percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
+                if (salesCommissionData.supporters) {
+                    salesCommissionData.supporters.map(value => {
+                        value.supporter_commission_amount = ((Number(value.percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
+                    })
                 }
-                let slabName = ''
-                if (data.slab_id) {
-                    let s6 = dbScript(db_sql['Q184'], { var1: data.slab_id })
-                    let slabData = await connection.query(s6)
-                    slabName = slabData.rows[0].slab_name;
-                }
-                let s9 = dbScript(db_sql['Q157'], { var1: data.id })
-                let productData = await connection.query(s9)
-
-                if (data.business_contact_id != '' && data.revenue_contact_id != '') {
-
-                    let s7 = dbScript(db_sql['Q76'], { var1: data.business_contact_id })
-                    let businessData = await connection.query(s7);
-
-                    closer.businessContactId = businessData.rows[0].id,
-                        closer.businessContactName = businessData.rows[0].business_contact_name
-                    closer.businessContactEmail = businessData.rows[0].business_email
-
-                    let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_contact_id })
-                    let revenueData = await connection.query(s8);
-
-                    closer.revenueContactId = revenueData.rows[0].id,
-                        closer.revenueContactName = revenueData.rows[0].revenue_contact_name
-                    closer.revenueContactEmail = revenueData.rows[0].revenue_email
-                } else {
-                    closer.businessContactId = ""
-                    closer.businessContactName = ""
-                    closer.businessContactEmail = ""
-                    closer.revenueContactId = ""
-                    closer.revenueContactName = ""
-                    closer.revenueContactEmail = ""
-                }
-
-                let transfered_back_by_name = ''
-                if (data.transfered_back_by) {
-                    let s10 = dbScript(db_sql['Q8'], { var1: data.transfered_back_by })
-                    let transferedBackBy = await connection.query(s10)
-                    if (transferedBackBy.rowCount > 0) {
-                        transfered_back_by_name = transferedBackBy.rows[0].full_name
-                    }
-                }
-
-                closer.id = data.id
-                closer.customerId = data.customer_id
-                closer.customerName = data.customer_name
-                closer.customerCreator = data.creater_id
-                closer.commissionSplitId = data.customer_commission_split_id
-                closer.qualification = data.qualification
-                closer.is_qualified = data.is_qualified
-                closer.targetAmount = data.target_amount
-                closer.currency = data.currency
-                closer.targetClosingDate = data.target_closing_date
-                closer.productMatch = data.product_match
-                closer.is_overwrite = data.is_overwrite
-                closer.closerId = data.closer_id
-                closer.closerName = data.full_name
-                closer.closerEmail = data.email_address
-                closer.closerPercentage = data.closer_percentage
-                closer.supporters = supporters
-                closer.createdAt = data.created_at
-                closer.closedAt = data.closed_at
-                closer.createdBy = data.creator_name
-                closer.salesType = data.sales_type
-                closer.subscriptionPlan = data.subscription_plan
-                closer.recurringDate = data.recurring_date
-                closer.products = (productData.rowCount > 0) ? productData.rows : []
-                closer.slabId = (data.slab_id) ? data.slab_id : ''
-                closer.slabName = slabName
-                closer.leadId = data.lead_id
-                closer.contract = data.contract
-                closer.creatorId = data.user_id
-                closer.transferReason = data.transfer_reason
-                closer.transferedBackById = data.transfered_back_by
-                closer.transferedBackByName = transfered_back_by_name
-
-                commissionList.push(closer)
             }
-            if (commissionList.length > 0) {
+            if (salesCommissionList.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Sales commission list',
-                    data: commissionList
+                    data: salesCommissionList.rows
                 })
             } else {
                 res.json({
@@ -563,120 +471,23 @@ module.exports.activeSalesCommissionList = async (req, res) => {
             }
 
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            let salesListArr = []
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            for (let id of roleUsers) {
-                let s3 = dbScript(db_sql['Q181'], { var1: id.slice(1, -1) })
-                let salesCommissionList = await connection.query(s3)
-                for (let data of salesCommissionList.rows) {
-                    let closer = {}
-                    let supporters = []
-
-                    let s4 = dbScript(db_sql['Q59'], { var1: data.id })
-                    let supporter = await connection.query(s4)
-                    if (supporter.rowCount > 0) {
-                        if (supporter.rows[0].supporter_id != "") {
-                            for (let supporterData of supporter.rows) {
-                                let s5 = dbScript(db_sql['Q81'], { var1: supporterData.id })
-                                let supporterName = await connection.query(s5)
-                                if (supporterName.rowCount > 0) {
-                                    supporters.push({
-                                        id: supporterName.rows[0].supporter_id,
-                                        name: supporterName.rows[0].full_name,
-                                        email: supporterName.rows[0].email_address,
-                                        percentage: supporterName.rows[0].supporter_percentage
-                                    })
-                                }
-                            }
-                        }
-                    }
-
-                    let slabName = ''
-                    if (data.slab_id) {
-                        let s6 = dbScript(db_sql['Q184'], { var1: data.slab_id })
-                        let slabData = await connection.query(s6)
-                        slabName = slabData.rows[0].slab_name;
-                    }
-
-                    let s9 = dbScript(db_sql['Q157'], { var1: data.id })
-                    let productData = await connection.query(s9)
-
-                    if (data.business_contact_id != '' && data.revenue_contact_id != '') {
-
-                        let s7 = dbScript(db_sql['Q76'], { var1: data.business_contact_id })
-                        let businessData = await connection.query(s7);
-
-                        closer.businessContactId = businessData.rows[0].id,
-                            closer.businessContactName = businessData.rows[0].business_contact_name
-                        closer.businessContactEmail = businessData.rows[0].business_email
-
-                        let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_contact_id })
-                        let revenueData = await connection.query(s8);
-
-                        closer.revenueContactId = revenueData.rows[0].id,
-                            closer.revenueContactName = revenueData.rows[0].revenue_contact_name
-                        closer.revenueContactEmail = revenueData.rows[0].revenue_email
-                    } else {
-                        closer.businessContactId = ""
-                        closer.businessContactName = ""
-                        closer.businessContactEmail = ""
-                        closer.revenueContactId = ""
-                        closer.revenueContactName = ""
-                        closer.revenueContactEmail = ""
-                    }
-
-                    let transfered_back_by_name = ''
-                    if (data.transfered_back_by) {
-                        let s10 = dbScript(db_sql['Q8'], { var1: data.transfered_back_by })
-                        let transferedBackBy = await connection.query(s10)
-                        if (transferedBackBy.rowCount > 0) {
-                            transfered_back_by_name = transferedBackBy.rows[0].full_name
-                        }
-                    }
-
-                    closer.id = data.id
-                    closer.customerId = data.customer_id
-                    closer.customerName = data.customer_name
-                    closer.customerCreator = data.creater_id
-                    closer.commissionSplitId = data.customer_commission_split_id
-                    closer.qualification = data.qualification
-                    closer.is_qualified = data.is_qualified
-                    closer.targetAmount = data.target_amount
-                    closer.currency = data.currency
-                    closer.targetClosingDate = data.target_closing_date
-                    closer.productMatch = data.product_match
-                    closer.is_overwrite = data.is_overwrite
-                    closer.closerId = data.closer_id
-                    closer.closerName = data.full_name
-                    closer.closerEmail = data.email_address
-                    closer.closerPercentage = data.closer_percentage
-                    closer.supporters = supporters
-                    closer.createdAt = data.created_at
-                    closer.createdBy = data.creator_name
-                    closer.closedAt = data.closed_at
-                    closer.salesType = data.sales_type
-                    closer.subscriptionPlan = data.subscription_plan
-                    closer.recurringDate = data.recurring_date
-                    closer.products = (productData.rowCount > 0) ? productData.rows : []
-                    closer.slabId = (data.slab_id) ? data.slab_id : ''
-                    closer.slabName = slabName
-                    closer.leadId = data.lead_id
-                    closer.contract = data.contract
-                    closer.creatorId = data.user_id
-                    closer.transferReason = data.transfer_reason
-                    closer.transferedBackById = data.transfered_back_by
-                    closer.transferedBackByName = transfered_back_by_name
-
-                    salesListArr.push(closer)
+            let s3 = dbScript(db_sql['Q181'], { var1: roleUsers.join(",") })
+            let salesCommissionList = await connection.query(s3)
+            for (let salesCommissionData of salesCommissionList.rows) {
+                salesCommissionData.closer_commission_amount = ((Number(salesCommissionData.closer_percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
+                if (salesCommissionData.supporters) {
+                    salesCommissionData.supporters.map(value => {
+                        value.supporter_commission_amount = ((Number(value.percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
+                    })
                 }
             }
-            if (salesListArr.length > 0) {
-                const array = [...new Map(salesListArr.map(item => [item.id, item])).values()];
+            if (salesCommissionList.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Sales commission list',
-                    data: array
+                    data: salesCommissionList.rows
                 })
             } else {
                 res.json({
@@ -711,141 +522,20 @@ module.exports.closedSalesCommissionList = async (req, res) => {
 
             let s3 = dbScript(db_sql['Q180'], { var1: checkPermission.rows[0].company_id })
             let salesCommissionList = await connection.query(s3)
-            let commissionList = []
-            for (let data of salesCommissionList.rows) {
-                let closer = {}
-                let supporters = []
-
-                let slabName = ''
-                let remainingAmount = Number(data.target_amount);
-                let commission = 0
-                if (data.slab_id) {
-                    let s6 = dbScript(db_sql['Q184'], { var1: data.slab_id })
-                    let slabData = await connection.query(s6)
-                    slabName = slabData.rows[0].slab_name;
-                    //if remainning amount is 0 then no reason to check 
-                    for (let i = 0; i < slabData.rows.length && remainingAmount > 0; i++) {
-                        let slab_percentage = Number(slabData.rows[i].percentage)
-                        let slab_maxAmount = Number(slabData.rows[i].max_amount)
-                        let slab_minAmount = Number(slabData.rows[i].min_amount)
-                        if (slabData.rows[i].is_max) {
-                            // Reached the last slab
-                            commission += ((slab_percentage / 100) * remainingAmount)
-                            break;
-                        }
-                        else {
-                            // This is not the last slab
-                            let diff = slab_minAmount == 0 ? 0 : 1
-                            let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-                            slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-                            commission += ((slab_percentage / 100) * slab_diff)
-                            remainingAmount -= slab_diff
-                            if (remainingAmount <= 0) {
-                                break;
-                            }
-                        }
-                    }
-
+            for (let salesCommissionData of salesCommissionList.rows) {
+                salesCommissionData.closer_commission_amount = ((Number(salesCommissionData.closer_percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
+                if (salesCommissionData.supporters) {
+                    salesCommissionData.supporters.map(value => {
+                        value.supporter_commission_amount = ((Number(value.percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
+                    })
                 }
-
-                let s4 = dbScript(db_sql['Q59'], { var1: data.id })
-                let supporter = await connection.query(s4)
-                if (supporter.rowCount > 0) {
-                    if (supporter.rows[0].supporter_id != "") {
-                        for (let supporterData of supporter.rows) {
-                            let s5 = dbScript(db_sql['Q81'], { var1: supporterData.id })
-                            let supporterName = await connection.query(s5)
-                            if (supporterName.rowCount > 0) {
-                                supporters.push({
-                                    id: supporterName.rows[0].supporter_id,
-                                    name: supporterName.rows[0].full_name,
-                                    email: supporterName.rows[0].email_address,
-                                    percentage: supporterName.rows[0].supporter_percentage,
-                                    supporterCommissionAmount: ((Number(supporterName.rows[0].supporter_percentage) / 100) * commission)
-                                })
-                            }
-                        }
-                    }
-                }
-
-                let s9 = dbScript(db_sql['Q157'], { var1: data.id })
-                let productData = await connection.query(s9)
-
-                if (data.business_contact_id != '' && data.revenue_contact_id != '') {
-
-                    let s7 = dbScript(db_sql['Q76'], { var1: data.business_contact_id })
-                    let businessData = await connection.query(s7);
-
-                    closer.businessContactId = businessData.rows[0].id,
-                        closer.businessContactName = businessData.rows[0].business_contact_name
-                    closer.businessContactEmail = businessData.rows[0].business_email
-
-                    let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_contact_id })
-                    let revenueData = await connection.query(s8);
-
-                    closer.revenueContactId = revenueData.rows[0].id,
-                        closer.revenueContactName = revenueData.rows[0].revenue_contact_name
-                    closer.revenueContactEmail = revenueData.rows[0].revenue_email
-                } else {
-                    closer.businessContactId = ""
-                    closer.businessContactName = ""
-                    closer.businessContactEmail = ""
-                    closer.revenueContactId = ""
-                    closer.revenueContactName = ""
-                    closer.revenueContactEmail = ""
-                }
-
-                let transfered_back_by_name = ''
-                if (data.transfered_back_by) {
-                    let s10 = dbScript(db_sql['Q8'], { var1: data.transfered_back_by })
-                    let transferedBackBy = await connection.query(s10)
-                    if (transferedBackBy.rowCount > 0) {
-                        transfered_back_by_name = transferedBackBy.rows[0].full_name
-                    }
-                }
-
-                closer.id = data.id
-                closer.customerId = data.customer_id
-                closer.customerName = data.customer_name
-                closer.customerCreator = data.creater_id
-                closer.commissionSplitId = data.customer_commission_split_id
-                closer.qualification = data.qualification
-                closer.is_qualified = data.is_qualified
-                closer.targetAmount = data.target_amount
-                closer.currency = data.currency
-                closer.targetClosingDate = data.target_closing_date
-                closer.productMatch = data.product_match
-                closer.is_overwrite = data.is_overwrite
-                closer.closerId = data.closer_id
-                closer.closerName = data.full_name
-                closer.closerEmail = data.email_address
-                closer.closerPercentage = data.closer_percentage
-                closer.closerCommissionAmount = ((Number(data.closer_percentage) / 100) * commission)
-                closer.supporters = supporters
-                closer.createdAt = data.created_at
-                closer.createdBy = data.creator_name
-                closer.closedAt = data.closed_at
-                closer.salesType = data.sales_type
-                closer.subscriptionPlan = data.subscription_plan
-                closer.recurringDate = data.recurring_date
-                closer.products = (productData.rowCount > 0) ? productData.rows : []
-                closer.slabId = (data.slab_id) ? data.slab_id : ''
-                closer.slabName = slabName
-                closer.leadId = data.lead_id
-                closer.contract = data.contract
-                closer.creatorId = data.user_id
-                closer.transferReason = data.transfer_reason
-                closer.transferedBackById = data.transfered_back_by
-                closer.transferedBackByName = transfered_back_by_name
-
-                commissionList.push(closer)
             }
-            if (commissionList.length > 0) {
+            if (salesCommissionList.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Sales commission list',
-                    data: commissionList
+                    data: salesCommissionList.rows
                 })
             } else {
                 res.json({
@@ -857,145 +547,23 @@ module.exports.closedSalesCommissionList = async (req, res) => {
             }
 
         } else if (checkPermission.rows[0].permission_to_view_own) {
-            let salesListArr = []
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            for (let id of roleUsers) {
-                let s3 = dbScript(db_sql['Q182'], { var1: id.slice(1, -1) })
-                let salesCommissionList = await connection.query(s3)
-                for (let data of salesCommissionList.rows) {
-                    let closer = {}
-                    let supporters = []
-                    let remainingAmount = Number(data.target_amount);
-                    let commission = 0
-                    let slabName = ''
-                    if (data.slab_id) {
-                        let s6 = dbScript(db_sql['Q184'], { var1: data.slab_id })
-                        let slabData = await connection.query(s6)
-                        slabName = slabData.rows[0].slab_name;
-                        //if remainning amount is 0 then no reason to check 
-                        for (let i = 0; i < slabData.rows.length && remainingAmount > 0; i++) {
-                            let slab_percentage = Number(slabData.rows[i].percentage)
-                            let slab_maxAmount = Number(slabData.rows[i].max_amount)
-                            let slab_minAmount = Number(slabData.rows[i].min_amount)
-                            if (slabData.rows[i].is_max) {
-                                // Reached the last slab
-                                commission += ((slab_percentage / 100) * remainingAmount)
-                                break;
-                            }
-                            else {
-                                // This is not the last slab
-                                let diff = slab_minAmount == 0 ? 0 : 1
-                                let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-                                slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-                                commission += ((slab_percentage / 100) * slab_diff)
-                                remainingAmount -= slab_diff
-                                if (remainingAmount <= 0) {
-                                    break;
-                                }
-                            }
-                        }
-
-                    }
-                    let s4 = dbScript(db_sql['Q59'], { var1: data.id })
-                    let supporter = await connection.query(s4)
-                    if (supporter.rowCount > 0) {
-                        if (supporter.rows[0].supporter_id != "") {
-                            for (let supporterData of supporter.rows) {
-                                let s5 = dbScript(db_sql['Q81'], { var1: supporterData.id })
-                                let supporterName = await connection.query(s5)
-                                if (supporterName.rowCount > 0) {
-                                    supporters.push({
-                                        id: supporterName.rows[0].supporter_id,
-                                        name: supporterName.rows[0].full_name,
-                                        email: supporterName.rows[0].email_address,
-                                        percentage: supporterName.rows[0].supporter_percentage,
-                                        supporterCommissionAmount: ((Number(supporterName.rows[0].supporter_percentage) / 100) * commission)
-                                    })
-                                }
-                            }
-                        }
-                    }
-
-                    let s9 = dbScript(db_sql['Q157'], { var1: data.id })
-                    let productData = await connection.query(s9)
-
-                    if (data.business_contact_id != '' && data.revenue_contact_id != '') {
-
-                        let s7 = dbScript(db_sql['Q76'], { var1: data.business_contact_id })
-                        let businessData = await connection.query(s7);
-
-                        closer.businessContactId = businessData.rows[0].id,
-                            closer.businessContactName = businessData.rows[0].business_contact_name
-                        closer.businessContactEmail = businessData.rows[0].business_email
-
-                        let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_contact_id })
-                        let revenueData = await connection.query(s8);
-
-                        closer.revenueContactId = revenueData.rows[0].id,
-                            closer.revenueContactName = revenueData.rows[0].revenue_contact_name
-                        closer.revenueContactEmail = revenueData.rows[0].revenue_email
-                    } else {
-                        closer.businessContactId = ""
-                        closer.businessContactName = ""
-                        closer.businessContactEmail = ""
-                        closer.revenueContactId = ""
-                        closer.revenueContactName = ""
-                        closer.revenueContactEmail = ""
-                    }
-
-                    let transfered_back_by_name = ''
-                    if (data.transfered_back_by) {
-                        let s10 = dbScript(db_sql['Q8'], { var1: data.transfered_back_by })
-                        let transferedBackBy = await connection.query(s10)
-                        if (transferedBackBy.rowCount > 0) {
-                            transfered_back_by_name = transferedBackBy.rows[0].full_name
-                        }
-                    }
-
-                    closer.id = data.id
-                    closer.customerId = data.customer_id
-                    closer.customerName = data.customer_name
-                    closer.customerCreator = data.creater_id
-                    closer.commissionSplitId = data.customer_commission_split_id
-                    closer.qualification = data.qualification
-                    closer.is_qualified = data.is_qualified
-                    closer.targetAmount = data.target_amount
-                    closer.currency = data.currency
-                    closer.targetClosingDate = data.target_closing_date
-                    closer.productMatch = data.product_match
-                    closer.is_overwrite = data.is_overwrite
-                    closer.closerId = data.closer_id
-                    closer.closerName = data.full_name
-                    closer.closerEmail = data.email_address
-                    closer.closerPercentage = data.closer_percentage
-                    closer.closerCommissionAmount = ((Number(data.closer_percentage) / 100) * commission)
-                    closer.supporters = supporters
-                    closer.createdAt = data.created_at
-                    closer.createdBy = data.creator_name
-                    closer.closedAt = data.closed_at
-                    closer.salesType = data.sales_type
-                    closer.subscriptionPlan = data.subscription_plan
-                    closer.recurringDate = data.recurring_date
-                    closer.products = (productData.rowCount > 0) ? productData.rows : []
-                    closer.slabId = (data.slab_id) ? data.slab_id : ''
-                    closer.slabName = slabName
-                    closer.leadId = data.lead_id
-                    closer.contract = data.contract
-                    closer.creatorId = data.user_id
-                    closer.transferReason = data.transfer_reason
-                    closer.transferedBackById = data.transfered_back_by
-                    closer.transferedBackByName = transfered_back_by_name
-
-                    salesListArr.push(closer)
+            let s3 = dbScript(db_sql['Q182'], { var1: roleUsers.join(",") })
+            let salesCommissionList = await connection.query(s3)
+            for (let salesCommissionData of salesCommissionList.rows) {
+                salesCommissionData.closer_commission_amount = ((Number(salesCommissionData.closer_percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
+                if (salesCommissionData.supporters) {
+                    salesCommissionData.supporters.map(value => {
+                        value.supporter_commission_amount = ((Number(value.percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
+                    })
                 }
             }
-            if (salesListArr.length > 0) {
-                const array = [...new Map(salesListArr.map(item => [item.id, item])).values()];
+            if (salesCommissionList.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Sales commission list',
-                    data: array
+                    data: salesCommissionList.rows
                 })
             } else {
                 res.json({
@@ -1028,162 +596,28 @@ module.exports.salesDetails = async (req, res) => {
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-            let s3 = dbScript(db_sql['Q292'], { var1: checkPermission.rows[0].company_id, var2: salesId })
+            let s3 = dbScript(db_sql['Q292'], { var1: checkPermission.rows[0].company_id ,var2: salesId})
             let salesCommissionList = await connection.query(s3)
-            let commissionList = []
-            for (let data of salesCommissionList.rows) {
-                let closer = {}
-                let supporters = []
-
-                let slabName = ''
-                let remainingAmount = Number(data.target_amount);
-                let commission = 0
-                if (data.slab_id) {
-                    let s6 = dbScript(db_sql['Q184'], { var1: data.slab_id })
-                    let slabData = await connection.query(s6)
-                    slabName = slabData.rows[0].slab_name;
-                    //if remainning amount is 0 then no reason to check 
-                    for (let i = 0; i < slabData.rows.length && remainingAmount > 0; i++) {
-                        let slab_percentage = Number(slabData.rows[i].percentage)
-                        let slab_maxAmount = Number(slabData.rows[i].max_amount)
-                        let slab_minAmount = Number(slabData.rows[i].min_amount)
-                        if (slabData.rows[i].is_max) {
-                            // Reached the last slab
-                            commission += ((slab_percentage / 100) * remainingAmount)
-                            break;
-                        }
-                        else {
-                            // This is not the last slab
-                            let diff = slab_minAmount == 0 ? 0 : 1
-                            let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-                            slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-                            commission += ((slab_percentage / 100) * slab_diff)
-                            remainingAmount -= slab_diff
-                            if (remainingAmount <= 0) {
-                                break;
-                            }
-                        }
-                    }
-
+            for (let salesCommissionData of salesCommissionList.rows) {
+                salesCommissionData.closer_commission_amount = ((Number(salesCommissionData.closer_percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
+                if (salesCommissionData.supporters) {
+                    salesCommissionData.supporters.map(value => {
+                        value.supporter_commission_amount = ((Number(value.percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
+                    })
                 }
-
-                let s4 = dbScript(db_sql['Q59'], { var1: data.id })
-                let supporter = await connection.query(s4)
-                if (supporter.rowCount > 0) {
-                    if (supporter.rows[0].supporter_id != "") {
-                        for (let supporterData of supporter.rows) {
-                            let s5 = dbScript(db_sql['Q81'], { var1: supporterData.id })
-                            let supporterName = await connection.query(s5)
-                            if (supporterName.rowCount > 0) {
-                                if (data.closed_at != null) {
-                                    closer.closerCommissionAmount = ((Number(data.closer_percentage) / 100) * commission)
-                                    supporters.push({
-                                        id: supporterName.rows[0].supporter_id,
-                                        name: supporterName.rows[0].full_name,
-                                        email: supporterName.rows[0].email_address,
-                                        percentage: supporterName.rows[0].supporter_percentage,
-                                        supporterCommissionAmount: ((Number(supporterName.rows[0].supporter_percentage) / 100) * commission)
-                                    })
-                                } else {
-                                    supporters.push({
-                                        id: supporterName.rows[0].supporter_id,
-                                        name: supporterName.rows[0].full_name,
-                                        email: supporterName.rows[0].email_address,
-                                        percentage: supporterName.rows[0].supporter_percentage,
-                                        supporterCommissionAmount: ((Number(supporterName.rows[0].supporter_percentage) / 100) * commission)
-                                    })
-                                }
-
-                            }
-                        }
-                    }
-                }
-
-                let s9 = dbScript(db_sql['Q157'], { var1: data.id })
-                let productData = await connection.query(s9)
-
-                if (data.business_contact_id != '' && data.revenue_contact_id != '') {
-
-                    let s7 = dbScript(db_sql['Q76'], { var1: data.business_contact_id })
-                    let businessData = await connection.query(s7);
-
-                    closer.businessContactId = businessData.rows[0].id,
-                        closer.businessContactName = businessData.rows[0].business_contact_name
-                    closer.businessContactEmail = businessData.rows[0].business_email
-
-                    let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_contact_id })
-                    let revenueData = await connection.query(s8);
-
-                    closer.revenueContactId = revenueData.rows[0].id,
-                        closer.revenueContactName = revenueData.rows[0].revenue_contact_name
-                    closer.revenueContactEmail = revenueData.rows[0].revenue_email
-                } else {
-                    closer.businessContactId = ""
-                    closer.businessContactName = ""
-                    closer.businessContactEmail = ""
-                    closer.revenueContactId = ""
-                    closer.revenueContactName = ""
-                    closer.revenueContactEmail = ""
-                }
-
-                let transfered_back_by_name = ''
-                if (data.transfered_back_by) {
-                    let s10 = dbScript(db_sql['Q8'], { var1: data.transfered_back_by })
-                    let transferedBackBy = await connection.query(s10)
-                    if (transferedBackBy.rowCount > 0) {
-                        transfered_back_by_name = transferedBackBy.rows[0].full_name
-                    }
-                }
-
-
-                closer.id = data.id
-                closer.customerId = data.customer_id
-                closer.customerName = data.customer_name
-                closer.customerCreator = data.creater_id
-                closer.commissionSplitId = data.customer_commission_split_id
-                closer.qualification = data.qualification
-                closer.is_qualified = data.is_qualified
-                closer.targetAmount = data.target_amount
-                closer.currency = data.currency
-                closer.targetClosingDate = data.target_closing_date
-                closer.productMatch = data.product_match
-                closer.is_overwrite = data.is_overwrite
-                closer.closerId = data.closer_id
-                closer.closerName = data.full_name
-                closer.closerEmail = data.email_address
-                closer.closerPercentage = data.closer_percentage
-                closer.closerCommissionAmount = ((Number(data.closer_percentage) / 100) * commission)
-                closer.supporters = supporters
-                closer.createdAt = data.created_at
-                closer.createdBy = data.creator_name
-                closer.closedAt = data.closed_at
-                closer.salesType = data.sales_type
-                closer.subscriptionPlan = data.subscription_plan
-                closer.recurringDate = data.recurring_date
-                closer.products = (productData.rowCount > 0) ? productData.rows : []
-                closer.slabId = (data.slab_id) ? data.slab_id : ''
-                closer.slabName = slabName
-                closer.leadId = data.lead_id,
-                    closer.contract = data.contract
-                closer.creatorId = data.user_id
-                closer.transferReason = data.transfer_reason
-                closer.transferedBackById = data.transfered_back_by
-                closer.transferedBackByName = transfered_back_by_name
-
-                commissionList.push(closer)
             }
-            if (commissionList.length > 0) {
+            if (salesCommissionList.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
-                    message: 'Sales Details',
-                    data: commissionList
+                    message: 'Sales commission list',
+                    data: salesCommissionList.rows
                 })
             } else {
                 res.json({
                     status: 200,
                     success: false,
-                    message: 'Empty sales details',
+                    message: 'Empty sales commission list',
                     data: []
                 })
             }
@@ -1406,103 +840,32 @@ module.exports.salesCommissionLogsList = async (req, res) => {
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-            let commissionList = []
             let s3 = dbScript(db_sql['Q44'], { var1: salesCommissionId })
             let salesCommissionlogList = await connection.query(s3)
-            for (let data of salesCommissionlogList.rows) {
-                let closer = {}
-                let supporters = []
-                for (let supporterId of JSON.parse(data.supporter_id)) {
-                    let s4 = dbScript(db_sql['Q81'], { var1: supporterId })
-                    let supporter = await connection.query(s4)
-                    if (supporter.rowCount > 0) {
-                        supporters.push({
-                            id: supporter.rows[0].supporter_id,
-                            name: supporter.rows[0].full_name,
-                            percentage: supporter.rows[0].supporter_percentage
-                        })
-                    }
+            for (let salesCommissionData of salesCommissionlogList.rows) {
+                salesCommissionData.closer_commission_amount = ((Number(salesCommissionData.closer_percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
+                if (salesCommissionData.supporters) {
+                    salesCommissionData.supporters.map(value => {
+                        value.supporter_commission_amount = ((Number(value.percentage) / 100) * (salesCommissionData.booking_commission) ? salesCommissionData.booking_commission : 0)
+                    })
                 }
-
-                let slabName = ''
-                if (data.slab_id) {
-                    let s6 = dbScript(db_sql['Q184'], { var1: data.slab_id })
-                    let slabData = await connection.query(s6)
-                    slabName = slabData.rows[0].slab_name;
-                }
-
-                let productName = []
-                for (let productIds of JSON.parse(data.products)) {
-                    let s6 = dbScript(db_sql['Q96'], { var1: productIds, var2: checkPermission.rows[0].company_id })
-                    let product = await connection.query(s6)
-                    if (product.rowCount > 0) {
-                        productName.push({
-                            id: product.rows[0].id,
-                            name: product.rows[0].product_name
-                        })
-                    }
-                }
-
-                if (data.business_contact_id != '' && data.revenue_contact_id != '') {
-
-                    let s7 = dbScript(db_sql['Q76'], { var1: data.business_contact_id })
-                    let businessData = await connection.query(s7);
-
-                    closer.businessContactId = businessData.rows[0].id,
-                        closer.businessContactName = businessData.rows[0].business_contact_name
-
-                    let s8 = dbScript(db_sql['Q77'], { var1: data.revenue_contact_id })
-                    let revenueData = await connection.query(s8);
-
-                    closer.revenueContactId = revenueData.rows[0].id,
-                        closer.revenueContactName = revenueData.rows[0].revenue_contact_name
-                } else {
-                    closer.businessContactId = ""
-                    closer.businessContactName = ""
-                    closer.revenueContactId = ""
-                    closer.revenueContactName = ""
-                }
-                closer.id = data.id
-                closer.customerId = data.customer_id
-                closer.customerName = data.customer_name
-                closer.commissionSplitId = data.customer_commission_split_id
-                closer.qualification = data.qualification
-                closer.is_qualified = data.is_qualified
-                closer.targetAmount = data.target_amount
-                closer.currency = data.currency
-                closer.targetClosingDate = data.target_closing_date
-                closer.productMatch = data.product_match
-                closer.is_overwrite = data.is_overwrite
-                closer.closerId = data.closer_id
-                closer.closerName = data.closer_name
-                closer.closerPercentage = data.closer_percentage
-                closer.supporters = supporters
-                closer.createdAt = data.created_at
-                closer.closedAt = data.closed_at
-                closer.salesType = data.sales_type
-                closer.subscriptionPlan = data.subscription_plan
-                closer.recurringDate = data.recurring_date
-                closer.products = productName
-                closer.slabId = (data.slab_id) ? data.slab_id : ''
-                closer.slabName = slabName
-
-                commissionList.push(closer)
             }
-            if (commissionList.length > 0) {
+            if (salesCommissionlogList.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
-                    message: 'Sales Commission log list',
-                    data: commissionList
+                    message: 'Sales commission list',
+                    data: salesCommissionlogList.rows
                 })
             } else {
                 res.json({
                     status: 200,
                     success: false,
-                    message: 'Empty Sales Commission log list',
+                    message: 'Empty sales commission list',
                     data: []
                 })
             }
+            
         } else {
             res.status(403).json({
                 success: false,
