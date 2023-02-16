@@ -1969,16 +1969,19 @@ const db_sql = {
                 sc.company_id = '{var1}' AND sc.id = '{var2}' AND sc.deleted_at IS NULL
               ORDER BY
                 sc.created_at DESC`,
-  "Q293": `SELECT 
-                id, email_address, full_name, company_id, avatar, mobile_number, 
-                phone_number, address, role_id, is_admin, expiry_date, created_at,is_verified, 
-                is_main_admin, created_by
-              FROM 
-                users  
-              WHERE 
-                company_id = '{var1}' AND id = '{var2}' AND deleted_at IS NULL 
-              ORDER BY 
-                created_at DESC`,
+  "Q293": `SELECT
+            u.id, u.email_address, u.full_name, u.company_id, u.avatar, u.mobile_number,
+            u.phone_number, u.address, u.role_id, u.is_admin, u.expiry_date, u.created_at,u.is_verified,
+            u.is_main_admin, u.created_by,
+            r.role_name
+          FROM
+            users as u
+          LEFT JOIN
+            roles as r ON r.id = u.role_id
+          WHERE
+            u.company_id = '{var1}' AND u.id = '{var2}' AND u.deleted_at IS NULL
+          ORDER BY
+            u.created_at DESC`,
   "Q294": `INSERT INTO forecast_data(forecast_id, amount, start_date, end_date, type, created_by)
                 VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
   // "Q295" : `SELECT * FROM forecast_data WHERE forecast_id = '{var1}'`,       
