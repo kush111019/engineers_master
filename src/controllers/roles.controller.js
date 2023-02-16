@@ -47,15 +47,18 @@ module.exports.rolesList = async (req, res) => {
             let list = []
             let s3 = dbScript(db_sql['Q14'], { var1: checkPermission.rows[0].company_id })
             let rolesList = await connection.query(s3)
-            console.log(s3)
             for (let data of rolesList.rows) {
                 let modulePermissions = []
+
+                let s4 = dbScript(db_sql['Q21'], { var1: data.id, var2: checkPermission.rows[0].company_id })
+                let getUser = await connection.query(s4)
 
                 if (data.reporter != '') {
                     for (let moduleId of JSON.parse(data.module_ids)) {
                         let s5 = dbScript(db_sql['Q35'], { var1: moduleId, var2: data.id })
                         let permissionList = await connection.query(s5)
-                        for (let permissionData of permissionList.rows) {
+
+                        for ( let permissionData of permissionList.rows) {
                             modulePermissions.push({
                                 moduleId: moduleId,
                                 permissionToCreate: permissionData.permission_to_create,
@@ -68,15 +71,15 @@ module.exports.rolesList = async (req, res) => {
                     }
                     let s6 = dbScript(db_sql['Q12'], { var1: data.reporter })
                     let reporterRole = await connection.query(s6)
+
                     list.push({
                         roleId: data.id,
                         roleName: data.role_name,
                         reporterId: reporterRole.rows[0].id,
                         reporterRole: reporterRole.rows[0].role_name,
                         modulePermissions: modulePermissions,
-                        isUserAssigned: (data.assigned_user_id) ? true : false
+                        isUserAssigned: (getUser.rowCount > 0) ? true : false
                     })
-                   
                 } else {
                     for (let moduleId of JSON.parse(data.module_ids)) {
                         let s7 = dbScript(db_sql['Q35'], { var1: moduleId, var2: data.id })
@@ -99,7 +102,7 @@ module.exports.rolesList = async (req, res) => {
                         reporterId: "",
                         reporterRole: "",
                         modulePermissions: modulePermissions,
-                        isUserAssigned: (data.assigned_user_id) ? true : false
+                        isUserAssigned: (getUser.rowCount > 0) ? true : false
                     })
                 }
             }
@@ -138,11 +141,13 @@ module.exports.rolesList = async (req, res) => {
             }
             await getRoles(checkPermission.rows[0].role_id)
             for (let roleId of roleIds) {
-                let s3 = dbScript(db_sql['Q12'], { var1: roleId,var2: checkPermission.rows[0].company_id  })
-                console.log(s3)
+                let s3 = dbScript(db_sql['Q12'], { var1: roleId })
                 let rolesList = await connection.query(s3)
                 for (let data of rolesList.rows) {
                     let modulePermissions = []
+
+                    let s4 = dbScript(db_sql['Q21'], { var1: data.id, var2: checkPermission.rows[0].company_id })
+                    let getUser = await connection.query(s4)
 
                     if (data.reporter != '') {
                         for (let moduleId of JSON.parse(data.module_ids)) {
@@ -169,7 +174,7 @@ module.exports.rolesList = async (req, res) => {
                             reporterId: reporterRole.rows[0].id,
                             reporterRole: reporterRole.rows[0].role_name,
                             modulePermissions: modulePermissions,
-                            isUserAssigned: (data.assigned_user_id) ? true : false
+                            isUserAssigned: (getUser.rowCount > 0) ? true : false
                         })
                     } else {
                         for (let moduleId of JSON.parse(data.module_ids)) {
@@ -193,7 +198,7 @@ module.exports.rolesList = async (req, res) => {
                             reporterId: "",
                             reporterRole: "",
                             modulePermissions: modulePermissions,
-                            isUserAssigned: (data.assigned_user_id ) ? true : false
+                            isUserAssigned: (getUser.rowCount > 0) ? true : false
                         })
                     }
                 }

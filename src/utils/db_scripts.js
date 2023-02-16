@@ -14,22 +14,9 @@ const db_sql = {
   "Q9": `SELECT * FROM companies WHERE id = '{var1}' AND deleted_at IS NULL`,
   "Q10": `UPDATE users SET full_name='{var1}',avatar = '{var2}', email_address = '{var3}',phone_number = '{var4}',mobile_number = '{var5}',address = '{var6}' ,updated_at = '{var7}' WHERE id = '{var8}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `,
   "Q11": `INSERT INTO roles(id,role_name,reporter,company_id) VALUES('{var1}','Admin','','{var2}') RETURNING *`,
-  "Q12": `SELECT r.*, u.id as assigned_user_id 
-          FROM 
-            roles as r
-          LEFT JOIN 
-            users as u ON u.role_id = r.id AND u.company_id='{var2}'
-          WHERE 
-            r.id = '{var1}' AND r.deleted_at IS NULL
-  `,
+  "Q12"  : `SELECT * FROM roles WHERE id = '{var1}' AND deleted_at IS NULL`,
   "Q13": `INSERT INTO roles(id,role_name,reporter,company_id,user_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
-  "Q14": `SELECT r.*,u.id as assigned_user_id
-          FROM 
-            roles as r
-          LEFT JOIN 
-            users as u ON u.role_id = r.id
-          WHERE 
-            r.company_id = '{var1}' AND r.deleted_at IS NULL`,
+  "Q14"  : `SELECT * FROM roles WHERE company_id = '{var1}' AND deleted_at IS NULL` ,
   "Q15": `SELECT 
                 u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
                 u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
