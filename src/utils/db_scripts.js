@@ -702,12 +702,10 @@ const db_sql = {
                   sales sc
               LEFT JOIN customers c ON c.id = sc.customer_id
               LEFT JOIN 
-                sales_closer AS cl ON sc.id = cl.sales_commission_id  
-              LEFT JOIN 
-                sales_supporter AS s ON sc.id = s.sales_commission_id 
+                sales_users AS su ON sc.id = su.sales_id  
               WHERE 
                   sc.closed_at is not null AND 
-                  (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
+                  (sc.user_id IN ({var1}) OR su.user_id IN ({var1}) )
                   AND sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
                   c.deleted_at IS NULL AND
                   sc.deleted_at IS NULL `,
@@ -722,11 +720,9 @@ const db_sql = {
               LEFT JOIN 
                   products AS p ON p.id = ps.product_id
               LEFT JOIN 
-                sales_closer AS cl ON sc.id = cl.sales_commission_id  
-              LEFT JOIN 
-                sales_supporter AS s ON sc.id = s.sales_commission_id 
+                sales_users AS su ON sc.id = su.sales_id  
               WHERE 
-                  (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
+                  (sc.user_id IN ({var1}) OR su.user_id IN ({var1}))
                   AND sc.closed_at BETWEEN '{var3}' AND '{var4}'
                   AND sc.deleted_at IS NULL 
                   AND sc.closed_at IS NOT NULL`,
@@ -755,11 +751,9 @@ const db_sql = {
               FROM 
                 sales AS sc 
               LEFT JOIN 
-                sales_closer AS cl ON sc.id = cl.sales_commission_id  
-              LEFT JOIN 
-                sales_supporter AS s ON sc.id = s.sales_commission_id 
+                sales_users AS su ON sc.id = su.sales_id  
               WHERE 
-              (sc.user_id IN ({var1}) OR cl.closer_id IN ({var1}) OR s.supporter_id IN ({var1})) AND
+              (sc.user_id IN ({var1}) OR su.user_id IN ({var1})) AND
                 sc.deleted_at IS NULL AND 
                 sc.closed_at IS NOT NULL 
               ORDER BY 
@@ -1632,19 +1626,33 @@ const db_sql = {
               u.full_name {var4}
               LIMIT {var2} OFFSET {var3}`,
   "Q258": `SELECT 
-                  DISTINCT(sc.id) as sales_commission_id,
-                  u.full_name AS sales_rep,
-                  sc.closed_at,sc.booking_commission,sc.revenue_commission
-              FROM  
-                  sales AS sc 
-              LEFT JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
-              LEFT JOIN sales_supporter AS s ON s.sales_commission_id = sc.id
-              LEFT JOIN users AS u ON u.id = cr.closer_id
-              WHERE 
-                  sc.closed_at is not null 
-                  AND (sc.user_id IN ({var1}) OR cr.closer_id IN ({var1}) OR s.supporter_id IN ({var1}))
-                  AND sc.closed_at BETWEEN '{var3}' AND '{var4}'
-                  AND sc.deleted_at IS NULL`,
+            sc.id as sales_commission_id,
+            sc.closed_at,
+            sc.booking_commission,
+            sc.revenue_commission,
+            (
+                      SELECT json_agg(sales_users.*)
+                      FROM (
+                        SELECT 
+                        su.user_id as id ,su.user_percentage as percentage, su.user_type,u1.full_name as name,u1.email_address as email
+                        FROM sales_users as su
+                        LEFT JOIN users AS u1 ON u1.id = su.user_id
+                        WHERE su.sales_id= sc.id AND su.deleted_at IS NULL AND  u1.deleted_at IS NULL
+                      ) sales_users
+                    ) as sales_users
+                  
+          FROM  
+          sales AS sc 
+          LEFT JOIN 
+          sales_users AS su 
+          ON su.sales_id = sc.id
+          WHERE 
+          sc.closed_at is not null 
+          AND (sc.user_id IN ({var1}) OR su.user_id IN ({var1}) )
+          AND sc.closed_at BETWEEN '{var3}' AND '{var4}'
+          AND sc.deleted_at IS NULL
+          GROUP BY   
+          sc.id, sc.closed_at, sc.booking_commission, sc.revenue_commission`,
 
   "Q259": `SELECT * FROM sales WHERE customer_id = '{var1}' AND deleted_at IS NULL`,
   "Q260": `SELECT * FROM product_in_sales WHERE product_id = '{var1}' AND deleted_at IS NULL`,

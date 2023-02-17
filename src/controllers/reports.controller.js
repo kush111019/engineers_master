@@ -338,28 +338,29 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         if (recognizedRevenueData.rows[0].amount) {
                             revenueCommissionByDateObj.revenue = Number(recognizedRevenueData.rows[0].amount)
                             revenueCommissionByDateObj.sales_rep = saleData.sales_rep;
+                            for (let user of saleData.sales_users) {
+                                if (user.user_type == process.env.CAPTAIN) {
+                                    revenueCommissionByDateObj.sales_rep = user.name;
+                                }
+                            }
                             let commission = saleData.revenue_commission ? Number(saleData.revenue_commission) : 0;
 
                             if (filterBy.toLowerCase() == 'all') {
                                 revenueCommissionByDateObj.commission = Number(commission);
                                 revenueCommissionBydate.push(revenueCommissionByDateObj)
                             } else if (filterBy.toLowerCase() == 'lead') {
-                                let s6 = dbScript(db_sql['Q86'], { var1: saleData.sales_commission_id })
-                                let leadPercentage = await connection.query(s6)
-                                if (leadPercentage.rowCount > 0) {
-                                    revenueCommissionByDateObj.commission = ((Number(leadPercentage.rows[0].closer_percentage) / 100) * Number(commission))
-                                    revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                for (let user of saleData.sales_users) {
+                                    if (user.user_type == process.env.CAPTAIN) {
+                                        revenueCommissionByDateObj.commission = ((Number(user.percentage) / 100) * Number(commission))
+                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                    }
                                 }
                             } else {
-                                let s6 = dbScript(db_sql['Q59'], { var1: saleData.sales_commission_id })
-                                let supporterPercentage = await connection.query(s6)
-                                if (supporterPercentage.rowCount > 0) {
-                                    let sCommission = 0
-                                    for (let supporter of supporterPercentage.rows) {
-                                        sCommission += ((Number(supporter.supporter_percentage) / 100) * Number(commission))
+                                for (let user of saleData.sales_users) {
+                                    if (user.user_type == process.env.SUPPORT) {
+                                        revenueCommissionByDateObj.commission = ((Number(user.percentage) / 100) * Number(commission))
+                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
                                     }
-                                    revenueCommissionByDateObj.commission = sCommission
-                                    revenueCommissionBydate.push(revenueCommissionByDateObj)
                                 }
                             }
                         }
@@ -426,28 +427,29 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         if (recognizedRevenueData.rows[0].amount) {
                             revenueCommissionByDateObj.revenue = Number(recognizedRevenueData.rows[0].amount)
                             revenueCommissionByDateObj.sales_rep = saleData.sales_rep;
+                            for (let user of saleData.sales_users) {
+                                if (user.user_type == process.env.CAPTAIN) {
+                                    revenueCommissionByDateObj.sales_rep = user.name;
+                                }
+                            }
                             let commission = saleData.revenue_commission ? Number(saleData.revenue_commission) : 0;
 
                             if (filterBy.toLowerCase() == 'all') {
                                 revenueCommissionByDateObj.commission = Number(commission);
                                 revenueCommissionBydate.push(revenueCommissionByDateObj)
                             } else if (filterBy.toLowerCase() == 'lead') {
-                                let s6 = dbScript(db_sql['Q86'], { var1: saleData.sales_commission_id })
-                                let leadPercentage = await connection.query(s6)
-                                if (leadPercentage.rowCount > 0) {
-                                    revenueCommissionByDateObj.commission = ((Number(leadPercentage.rows[0].closer_percentage) / 100) * Number(commission))
-                                    revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                for (let user of saleData.sales_users) {
+                                    if (user.user_type == process.env.CAPTAIN) {
+                                        revenueCommissionByDateObj.commission = ((Number(user.percentage) / 100) * Number(commission))
+                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                    }
                                 }
                             } else {
-                                let s6 = dbScript(db_sql['Q59'], { var1: saleData.sales_commission_id })
-                                let supporterPercentage = await connection.query(s6)
-                                if (supporterPercentage.rowCount > 0) {
-                                    let sCommission = 0
-                                    for (let supporter of supporterPercentage.rows) {
-                                        sCommission += ((Number(supporter.supporter_percentage) / 100) * Number(commission))
+                                for (let user of saleData.sales_users) {
+                                    if (user.user_type == process.env.SUPPORT) {
+                                        revenueCommissionByDateObj.commission = ((Number(user.percentage) / 100) * Number(commission))
+                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
                                     }
-                                    revenueCommissionByDateObj.commission = sCommission
-                                    revenueCommissionBydate.push(revenueCommissionByDateObj)
                                 }
                             }
                         }
