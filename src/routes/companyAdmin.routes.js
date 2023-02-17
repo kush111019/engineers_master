@@ -80,20 +80,21 @@ router.get('/productList',verifyTokenFn, controller.products.productList)
 router.put('/deleteProduct',verifyTokenFn, controller.products.deleteProduct)
 router.post('/uploadProductImage',verifyTokenFn, uploadProductImage.single('image'),controller.products.uploadProductImage);
 router.post('/uploadProductFile',verifyTokenFn,uploadProductFile.single('file'), controller.products.uploadProductFile)
-//----------------------------------------sales conversion --------------------------------
+
+//----------------------------------------sales --------------------------------
 router.get('/customerListforSales',verifyTokenFn, controller.sales.customerListforSales)
 // router.get('/customerContactDetailsForSales',verifyTokenFn, controller.sales.customerContactDetailsForSales)
 
-router.post('/createSalesCommission',verifyTokenFn, controller.sales.createSalesCommission)
+router.post('/createSales',verifyTokenFn, controller.sales.createSales)
 
-router.get('/allSalesCommissionList',verifyTokenFn, controller.sales.allSalesCommissionList)
-router.get('/activeSalesCommissionList',verifyTokenFn, controller.sales.activeSalesCommissionList)
-router.get('/closedSalesCommissionList',verifyTokenFn, controller.sales.closedSalesCommissionList)
+router.get('/allSalesList',verifyTokenFn, controller.sales.allSalesList)
+router.get('/activeSalesList',verifyTokenFn, controller.sales.activeSalesList)
+router.get('/closedSalesList',verifyTokenFn, controller.sales.closedSalesList)
 router.get('/salesDetails',verifyTokenFn, controller.sales.salesDetails)
 
-router.put('/updateSalesCommission',verifyTokenFn, controller.sales.updateSalesCommission)
-router.put('/deleteSalesCommission',verifyTokenFn, controller.sales.deleteSalesCommission)
-router.get('/salesCommissionLogsList',verifyTokenFn, controller.sales.salesCommissionLogsList)
+router.put('/updateSales',verifyTokenFn, controller.sales.updateSales)
+router.put('/deleteSales',verifyTokenFn, controller.sales.deleteSales)
+router.get('/salesLogsList',verifyTokenFn, controller.sales.salesLogsList)
 router.post('/uploadSalesContract', verifyTokenFn,uploadSalesContract.single('file'), controller.sales.uploadSalesContract )
 router.post('/closeSales',verifyTokenFn, controller.sales.closeSales)
 router.get('/usersListForSales', verifyTokenFn, controller.sales.usersListForSales)
