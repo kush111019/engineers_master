@@ -209,22 +209,30 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             //get sales id on behalf of user list
             let s1 = dbScript(db_sql['Q301'], { var1: roleUsers.join(",") })
             let salesIdData = await connection.query(s1)
+            console.log(s1,'s1',salesIdData.rows)
             let salesId = [];
             for (let saleId of salesIdData.rows) {
                 salesId.push("'" + saleId.id.toString() + "'")
             }
+            console.log(salesId,'salesId')
             if (salesId.length > 0) {
                 //get sum of all totalBooking , bookingCommission, revenueBooking , revenueBooking 
                 let s4 = dbScript(db_sql['Q302'], { var1: salesId.join(",") })
                 let salesData = await connection.query(s4)
                 let s5 = dbScript(db_sql['Q303'], { var1: salesId.join(",") })
                 let recognizedRevenueData = await connection.query(s5)
+                console.log(s4,'s4',salesData.rows)
+                console.log(s5,'s5',recognizedRevenueData.rows)
                 if (salesData.rowCount > 0) {
                     let totalBooking = salesData.rows[0].amount ? Number(salesData.rows[0].amount) : 0;
                     let bookingCommission = salesData.rows[0].booking_commission ? Number(salesData.rows[0].booking_commission) : 0;
 
                     let revenueBooking = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0;
                     let revenueCommission = salesData.rows[0].revenue_commission ? Number(salesData.rows[0].revenue_commission) : 0;
+                    console.log(totalBooking,
+                        bookingCommission,
+                        revenueBooking,
+                        revenueCommission)
                     res.json({
                         status: 200,
                         success: true,
