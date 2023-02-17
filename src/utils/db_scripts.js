@@ -354,29 +354,38 @@ const db_sql = {
               AND cr.deleted_at IS NULL AND u.deleted_at IS NULL`,
 
   "Q87": `SELECT sc.id AS sales_commission_id, 
-               sc.closed_at,
-               booking_commission, 
-               revenue_commission from 
-               sales as sc 
-              LEFT JOIN sales_closer as scl
-                on sc.id=scl.sales_commission_id
-              LEFT JOIN sales_supporter as ss
-                on sc.id=ss.sales_commission_id
-              WHERE (
-                ss.supporter_id in ({var5}) OR 
-                scl.closer_id in ({var5}) OR 
-                sc.user_id in ({var5})
-            
-              ) AND sc.company_id = '{var1}' AND 
-                    sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
-                    sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
-             GROUP BY 
-                    sc.closed_at,
-                    sc.id,
-                    sc.booking_commission,
-                     sc.revenue_commission
-             ORDER BY 
-                  sc.closed_at {var2}`,
+            sc.closed_at,
+            sc.booking_commission, 
+            sc.revenue_commission,
+            (
+              SELECT json_agg(sales_users.*)
+              FROM (
+                SELECT 
+                su.user_id as id ,su.user_percentage as percentage, su.user_type,u1.full_name as name,u1.email_address as email
+                FROM sales_users as su
+                LEFT JOIN users AS u1 ON u1.id = su.user_id
+                WHERE su.sales_id= sc.id AND su.deleted_at IS NULL AND  u1.deleted_at IS NULL
+              ) sales_users
+            ) as sales_users
+          FROM 
+            sales as sc 
+          LEFT JOIN sales_users as su
+            on sc.id=su.sales_id
+          WHERE (
+            su.user_id in ({var5}) OR 
+              sc.user_id in ({var5})
+            ) 
+          AND 
+            sc.company_id = '{var1}' AND 
+            sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
+            sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
+          GROUP BY 
+            sc.closed_at,
+            sc.id,
+            sc.booking_commission,
+            sc.revenue_commission
+          ORDER BY 
+            sc.closed_at {var2}`,
 
   "Q88": `SELECT 
                 sc.id AS sales_commission_id,
@@ -621,27 +630,38 @@ const db_sql = {
   //           u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
   //           WHERE c.user_id IN '{var1}' AND c.is_rejected = false AND c.is_qualified = true AND c.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`,
   "Q167": `SELECT 
-                sc.id AS sales_commission_id,
-                sc.closed_at,
-                sc.booking_commission,
-                sc.revenue_commission
-              FROM
-                sales AS sc 
-              LEFT JOIN 
-                sales_closer AS c ON sc.id = c.sales_commission_id  
-              LEFT JOIN 
-                sales_supporter AS s ON sc.id = s.sales_commission_id  
-              WHERE 
-                (sc.user_id IN ({var1}) OR c.closer_id IN ({var1}) OR s.supporter_id IN ({var1})) 
-                AND sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
-                sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
-              GROUP BY 
-                sc.closed_at,
-                sc.id,
-                sc.booking_commission,
-                sc.revenue_commission
-              ORDER BY 
-              sc.closed_at {var2}`,
+            sc.id AS sales_commission_id, 
+            sc.closed_at,
+            sc.booking_commission, 
+            sc.revenue_commission,
+            (
+              SELECT json_agg(sales_users.*)
+              FROM (
+                SELECT 
+                su.user_id as id ,su.user_percentage as percentage, su.user_type,u1.full_name as name,u1.email_address as email
+                FROM sales_users as su
+                LEFT JOIN users AS u1 ON u1.id = su.user_id
+                WHERE su.sales_id= sc.id AND su.deleted_at IS NULL AND  u1.deleted_at IS NULL
+              ) sales_users
+            ) as sales_users
+          FROM 
+            sales as sc 
+          LEFT JOIN sales_users as su
+            on sc.id=su.sales_id
+          WHERE (
+            su.user_id in ({var1}) OR 
+              sc.user_id in ({var1})
+            ) 
+          AND 
+            sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
+            sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
+          GROUP BY 
+            sc.closed_at,
+            sc.id,
+            sc.booking_commission,
+            sc.revenue_commission
+          ORDER BY 
+            sc.closed_at {var2}`,
 
   // "Q168" : `SELECT 
   //           sc.id AS sales_commission_id, sc.target_amount as amount, 
@@ -2027,15 +2047,17 @@ const db_sql = {
               AND 
                 deleted_at IS NULL`,
   "Q301": `SELECT DISTINCT(sc.id)
-              FROM 
-                sales AS sc 
-              LEFT JOIN 
-                sales_closer AS c ON sc.id = c.sales_commission_id
-              LEFT JOIN 
-                sales_supporter AS s ON sc.id = s.sales_commission_id
-              WHERE 
-                ( sc.user_id IN ({var1}) OR c.closer_id IN ({var1}) OR s.supporter_id IN ({var1}) )
-              AND sc.deleted_at IS NULL`,
+          FROM
+            sales AS sc
+          LEFT JOIN
+            sales_users AS su ON sc.id = su.sales_id
+          WHERE
+            ( 
+              sc.user_id IN ({var1}) 
+            OR 
+              su.user_id IN ({var1})
+            )
+          AND sc.deleted_at IS NULL`,
 
   "Q302": `SELECT SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
               FROM 
