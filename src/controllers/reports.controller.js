@@ -93,35 +93,35 @@ module.exports.revenuePerCustomer = async (req, res) => {
                             })
                         }
                     }
-                if (revenuePerCustomerArr.length > 0) {
-                    let returnData = await reduceArrayWithCustomer(revenuePerCustomerArr)
-                    if (returnData.length > 0) {
-                        let paginatedArr = await paginatedResults(returnData, page)
-                        if (orderBy.toLowerCase() == 'asc') {
-                            paginatedArr = paginatedArr.sort((a, b) => {
-                                return a.revenue - b.revenue
-                            })
-                        } else {
-                            paginatedArr = paginatedArr.sort((a, b) => {
-                                return b.revenue - a.revenue
+                    if (revenuePerCustomerArr.length > 0) {
+                        let returnData = await reduceArrayWithCustomer(revenuePerCustomerArr)
+                        if (returnData.length > 0) {
+                            let paginatedArr = await paginatedResults(returnData, page)
+                            if (orderBy.toLowerCase() == 'asc') {
+                                paginatedArr = paginatedArr.sort((a, b) => {
+                                    return a.revenue - b.revenue
+                                })
+                            } else {
+                                paginatedArr = paginatedArr.sort((a, b) => {
+                                    return b.revenue - a.revenue
+                                })
+                            }
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "Revenue per customer",
+                                data: paginatedArr
                             })
                         }
+                    } else {
                         res.json({
                             status: 200,
-                            success: true,
-                            message: "Revenue per customer",
-                            data: paginatedArr
+                            success: false,
+                            message: "Empty revenue per customer",
+                            data: []
                         })
                     }
                 } else {
-                    res.json({
-                        status: 200,
-                        success: false,
-                        message: "Empty revenue per customer",
-                        data: []
-                    })
-                }
-             } else {
                     res.json({
                         status: 200,
                         success: false,
@@ -338,9 +338,11 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         if (recognizedRevenueData.rows[0].amount) {
                             revenueCommissionByDateObj.revenue = Number(recognizedRevenueData.rows[0].amount)
                             revenueCommissionByDateObj.sales_rep = saleData.sales_rep;
-                            for (let user of saleData.sales_users) {
-                                if (user.user_type == process.env.CAPTAIN) {
-                                    revenueCommissionByDateObj.sales_rep = user.name;
+                            if (saleData.sales_users) {
+                                for (let user of saleData.sales_users) {
+                                    if (user.user_type == process.env.CAPTAIN) {
+                                        revenueCommissionByDateObj.sales_rep = user.name;
+                                    }
                                 }
                             }
                             let commission = saleData.revenue_commission ? Number(saleData.revenue_commission) : 0;
@@ -349,17 +351,21 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                                 revenueCommissionByDateObj.commission = Number(commission);
                                 revenueCommissionBydate.push(revenueCommissionByDateObj)
                             } else if (filterBy.toLowerCase() == 'lead') {
-                                for (let user of saleData.sales_users) {
-                                    if (user.user_type == process.env.CAPTAIN) {
-                                        revenueCommissionByDateObj.commission = ((Number(user.percentage) / 100) * Number(commission))
-                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                if (saleData.sales_users) {
+                                    for (let user of saleData.sales_users) {
+                                        if (user.user_type == process.env.CAPTAIN) {
+                                            revenueCommissionByDateObj.commission = ((Number(user.percentage) / 100) * Number(commission))
+                                            revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                        }
                                     }
                                 }
                             } else {
-                                for (let user of saleData.sales_users) {
-                                    if (user.user_type == process.env.SUPPORT) {
-                                        revenueCommissionByDateObj.commission = ((Number(user.percentage) / 100) * Number(commission))
-                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                if (saleData.sales_users) {
+                                    for (let user of saleData.sales_users) {
+                                        if (user.user_type == process.env.SUPPORT) {
+                                            revenueCommissionByDateObj.commission = ((Number(user.percentage) / 100) * Number(commission))
+                                            revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                        }
                                     }
                                 }
                             }
