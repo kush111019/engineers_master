@@ -78,7 +78,6 @@ module.exports.marketingDashboard = async (req, res) => {
                         list.map(e => {
                             if(e.created_by === item.created_by){
                                 count += 1
-                                list.pop()
                             }
                         })
                         counts[item.created_by].customerCount = count;
