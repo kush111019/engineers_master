@@ -63,7 +63,7 @@ router.put('/editCustomer',verifyTokenFn, controller.customers.editCustomer)
 router.put('/deleteContactForCustomer',verifyTokenFn, controller.customers.deleteContactForCustomer)
 
 // router.get('/customerCompanyList',verifyTokenFn, controller.customers.customerCompanyList)
-router.get('/customerContactDetails',verifyTokenFn, controller.customers.customerContactDetails)
+// router.get('/customerContactDetails',verifyTokenFn, controller.customers.customerContactDetails)
 router.put('/deleteCustomer',verifyTokenFn, controller.customers.deleteCustomer)
 
 //------------------------------------Commisions-----------------------------------------
@@ -132,8 +132,8 @@ router.put('/deleteAssignedUserForecast', verifyTokenFn, controller.revenueForec
 
 //---------------------------------------Business and Revenue Contact-------------------------
 
-router.post('/addBusinessContact',verifyTokenFn, controller.customers.addBusinessContact)
-router.post('/addRevenueContact',verifyTokenFn, controller.customers.addRevenueContact)
+router.post('/addBusinessAndRevenueContact',verifyTokenFn, controller.customers.addBusinessAndRevenueContact)
+// router.post('/addRevenueContact',verifyTokenFn, controller.customers.addRevenueContact)
 
 //-------------------------------------------Configurations----------------------------------
 router.post('/addConfigs', verifyTokenFn, controller.configuration.addConfigs)
