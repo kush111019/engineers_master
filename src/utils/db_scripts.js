@@ -71,7 +71,7 @@ const db_sql = {
               p.permission_to_update, p.permission_to_delete FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
               INNER JOIN roles AS r ON r.id = p.role_id WHERE m.id = '{var1}' AND r.id = '{var2}' 
               AND m.deleted_at IS NULL AND p.deleted_at IS NULL`,
-  "Q36": `INSERT INTO customers(id, user_id,customer_name, source, company_id, address, currency, industry) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}', '{var8}') RETURNING *`,
+  "Q36": `INSERT INTO customer_companies (id, user_id,customer_name, source, company_id, address, currency, industry) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}', '{var8}') RETURNING *`,
   "Q37": `INSERT INTO lead_organizations(id, organization_name, company_id) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
   "Q38": `SELECT id, organization_name FROM lead_organizations WHERE id = '{var1}' AND deleted_at IS NULL`,
   "Q39": `SELECT 
@@ -95,7 +95,7 @@ const db_sql = {
                     LEFT JOIN lead_sources AS s ON s.id = leads.source
                     LEFT JOIN lead_titles AS t ON t.id = leads.title
                     LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
-                    LEFT JOIN customers as c ON c.id = leads.customer_id
+                    LEFT JOIN customer_companies as c ON c.id = leads.customer_id
                     WHERE leads.customer_id = cus.id
                       AND leads.is_rejected = false AND u1.deleted_at IS NULL  
                       AND leads.deleted_at IS NULL
@@ -114,7 +114,7 @@ const db_sql = {
                     AND revenue_contact.deleted_at IS NULL
                 ) AS revenue_contacts
               FROM 
-                customers AS cus 
+                customer_companies AS cus 
               INNER JOIN 
                 users AS u ON u.id = cus.user_id
               WHERE 
@@ -130,7 +130,7 @@ const db_sql = {
               INNER JOIN users AS u ON u.role_id = p.role_id
               WHERE m.module_name = '{var1}' AND u.id = '{var2}' AND m.deleted_at IS NULL 
               AND p.deleted_at IS NULL AND u.deleted_at IS NULL`,
-  "Q42": `UPDATE customers SET customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', address = '{var4}', currency = '{var5}', industry = '{var8}' WHERE id = '{var6}' AND company_id = '{var7}' AND deleted_at IS NULL RETURNING *`,
+  "Q42": `UPDATE customer_companies SET customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', address = '{var4}', currency = '{var5}', industry = '{var8}' WHERE id = '{var6}' AND company_id = '{var7}' AND deleted_at IS NULL RETURNING *`,
   "Q43": `INSERT INTO 
             sales_logs(id,sales_commission_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_contact_id, business_contact_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date, currency, slab_id, closer_percentage,booking_commission) 
           VALUES 
@@ -169,7 +169,7 @@ const db_sql = {
           LEFT JOIN 
             users AS u ON u.id = sl.closer_id
           LEFT JOIN 
-            customers AS c ON c.id = sl.customer_id
+            customer_companies AS c ON c.id = sl.customer_id
           LEFT JOIN 
             sales_closer AS cr ON cr.sales_commission_id = sl.sales_commission_id
           LEFT JOIN
@@ -184,7 +184,7 @@ const db_sql = {
   "Q45": `INSERT INTO users(id,full_name,company_id,avatar,email_address,mobile_number,encrypted_password,role_id,address,is_admin,is_verified,created_by) 
               VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}',false,'{var11}') RETURNING *`,
   "Q46": `SELECT id, organization_name FROM lead_organizations WHERE company_id = '{var1}' AND replace(organization_name, ' ', '') ILIKE '%{var2}%' AND deleted_at IS NULL`,
-  "Q47": `UPDATE customers SET  deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING *`,
+  "Q47": `UPDATE customer_companies SET  deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING *`,
   "Q48": `INSERT INTO commission_split(id, closer_percentage,  supporter_percentage, company_id, user_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING * `,
   "Q49": `UPDATE commission_split SET closer_percentage = '{var1}', supporter_percentage = '{var2}' , updated_at = '{var4}'  WHERE  id = '{var3}' AND company_id = '{var5}' AND deleted_at IS NULL RETURNING *`,
   "Q50": `SELECT id, closer_percentage, supporter_percentage FROM commission_split WHERE company_id ='{var1}' AND deleted_at IS NULL`,
@@ -195,7 +195,7 @@ const db_sql = {
                 c.business_contact_id, c.revenue_contact_id ,
                 u.full_name AS created_by 
               FROM 
-                customers AS c 
+                customer_companies AS c 
               INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.company_id = '{var1}' AND c.is_rejected = '{var2}'`,
   "Q53": `INSERT INTO sales (id, customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency, user_id, slab_id, lead_id ,booking_commission) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var13}', '{var14}', '{var15}', '{var16}', '{var17}', '{var18}', '{var19}','{var20}') RETURNING *`,
@@ -225,7 +225,7 @@ const db_sql = {
                 LEFT JOIN lead_sources AS s ON s.id = leads.source
                 LEFT JOIN lead_titles AS t ON t.id = leads.title
                 LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
-                LEFT JOIN customers as c ON c.id = leads.customer_id
+                LEFT JOIN customer_companies as c ON c.id = leads.customer_id
                 WHERE leads.customer_id = sc.customer_id
                   AND leads.is_rejected = false AND u1.deleted_at IS NULL  
                   AND leads.deleted_at IS NULL
@@ -256,7 +256,7 @@ const db_sql = {
           LEFT JOIN
             users AS u1 ON u1.id = sc.user_id
           LEFT JOIN
-            customers AS cus ON cus.id = sc.customer_id
+            customer_companies AS cus ON cus.id = sc.customer_id
           LEFT JOIN
             business_contact AS bc ON bc.id = sc.business_contact_id
           LEFT JOIN
@@ -271,7 +271,7 @@ const db_sql = {
             sc.company_id = '{var1}' AND sc.deleted_at IS NULL
           ORDER BY
             sc.created_at DESC`,
-  "Q55": `SELECT * FROM customers WHERE id = '{var1}'`,
+  "Q55": `SELECT * FROM customer_companies WHERE id = '{var1}'`,
   //"Q56": `SELECT id, closer_percentage, supporter_percentage FROM commission_split WHERE id ='{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
  // "Q57": `INSERT INTO sales_supporter(id, commission_split_id ,supporter_id, supporter_percentage, sales_commission_id, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') RETURNING *`,
   "Q58": `INSERT INTO 
@@ -340,8 +340,8 @@ const db_sql = {
   //           FROM sales 
   //           WHERE user_id = '{var1}' AND deleted_at IS NULL AND closed_at BETWEEN '{var2}' AND '{var3}' 
   //           LIMIT {var4} OFFSET {var5}`,
-  "Q79": `UPDATE customers SET business_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
-  "Q80": `UPDATE customers SET revenue_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
+  "Q79": `UPDATE customer_companies SET business_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
+  "Q80": `UPDATE customer_companies SET revenue_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
   // "Q81": `SELECT s.id, s.supporter_id, s.supporter_percentage, u.full_name, u.email_address FROM sales_supporter AS s 
   //             INNER JOIN users AS u ON u.id = s.supporter_id WHERE s.id ='{var1}' `,
   //"Q82"  : `SELECT customer_id, sales_type, subscription_plan, recurring_date FROM sales WHERE deleted_at IS NULL`,
@@ -406,7 +406,7 @@ const db_sql = {
                   sc.sales_type
               FROM 
                   sales sc
-                  LEFT JOIN customers c ON c.id = sc.customer_id
+                  LEFT JOIN customer_companies c ON c.id = sc.customer_id
               WHERE 
                   sc.closed_at is not null AND 
                   sc.company_id = '{var1}' AND 
@@ -421,7 +421,7 @@ const db_sql = {
                   sales AS sc 
                   INNER JOIN sales_closer AS cr ON cr.sales_commission_id = sc.id
                   INNER JOIN users AS u ON u.id = cr.closer_id
-                  INNER JOIN customers AS c ON c.id = sc.customer_id
+                  INNER JOIN customer_companies AS c ON c.id = sc.customer_id
               WHERE 
                   sc.closed_at is not null 
                   AND sc.company_id = '{var1}' 
@@ -456,7 +456,7 @@ const db_sql = {
   "Q99": `SELECT id, company_name, company_logo, company_address, is_imap_enable,is_locked, is_marketing_enable, created_at, expiry_date, user_count FROM companies WHERE deleted_at IS NULL`,
   "Q100": `UPDATE super_admin SET encrypted_password = '{var2}' WHERE email = '{var1}'`,
   // "Q101" : `SELECT  sc.target_amount,  sc.closed_at ,com.id AS company_id, com.company_name FROM sales AS sc 
-  //           INNER JOIN customers AS c ON sc.customer_id = c.id 
+  //           INNER JOIN customer_companies AS c ON sc.customer_id = c.id 
   //           INNER JOIN companies AS com ON sc.company_id = com.id 
   //           WHERE sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND c.deleted_at IS NULL Order by sc.closed_at asc`,
   "Q102": `INSERT INTO payment_plans(id, product_id, name, description, active_status,
@@ -499,7 +499,7 @@ const db_sql = {
   "Q126": `SELECT sc.id,c.closer_id,sc.customer_id, u.full_name, cc.user_id AS creator_id FROM sales AS sc 
               INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id 
               INNER JOIN users AS u ON c.closer_id = u.id 
-              INNER JOIN customers AS cc ON cc.id = sc.customer_id WHERE sc.id = '{var1}'
+              INNER JOIN customer_companies AS cc ON cc.id = sc.customer_id WHERE sc.id = '{var1}'
               AND sc.deleted_at IS NULL AND c.deleted_at IS NULL AND u.deleted_at IS NULL
               AND cc.deleted_at IS NULL`,
   "Q127": `SELECT s.supporter_id, u.full_name FROM sales_supporter AS s
@@ -526,7 +526,7 @@ const db_sql = {
   "Q135": `SELECT id, message_id, to_mail, from_mail,from_name, mail_date, subject, mail_html, mail_text, mail_text_as_html, attechments, company_id, read_status, created_at FROM emails WHERE company_id = '{var1}' AND user_id = '{var2}' AND deleted_at IS NULL order by mail_date desc`,
   "Q136": `SELECT b.email_address AS business_email, r.email_address AS revenue_email
               FROM business_contact AS b 
-              INNER JOIN customers AS c ON c.id = b.customer_id
+              INNER JOIN customer_companies AS c ON c.id = b.customer_id
               INNER JOIN revenue_contact AS r ON b.customer_id = r.customer_id
               WHERE '{var1}' IN (b.email_address, r.email_address) AND c.company_id = '{var2}' AND
               b.deleted_at IS NULL AND c.deleted_at IS NULL AND r.deleted_at IS NULL`,
@@ -568,7 +568,7 @@ const db_sql = {
               FROM 
                   sales AS sc 
               LEFT JOIN 
-                  customers AS c ON sc.customer_id = c.id 
+                  customer_companies AS c ON sc.customer_id = c.id 
               LEFT JOIN 
                   product_in_sales AS ps ON sc.id = ps.sales_commission_id
               LEFT JOIN 
@@ -627,7 +627,7 @@ const db_sql = {
               GROUP BY
                 s.slab_id, s.id,c.closer_percentage,c.supporter_percentage`,
   // "Q166" : `SELECT c.id, c.organization_id , c.customer_name, c.source, c.user_id, c.business_contact_id, c.revenue_contact_id, c.created_at, c.address, c.currency,
-  //           u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
+  //           u.full_name AS created_by FROM customer_companies AS c INNER JOIN users AS u ON u.id = c.user_id
   //           WHERE c.user_id IN '{var1}' AND c.is_rejected = false AND c.is_qualified = true AND c.deleted_at IS NULL AND u.deleted_at IS NULL ORDER BY created_at desc`,
   "Q167": `SELECT 
             sc.id AS sales_commission_id, 
@@ -700,7 +700,7 @@ const db_sql = {
                   sc.sales_type
               FROM 
                   sales sc
-              LEFT JOIN customers c ON c.id = sc.customer_id
+              LEFT JOIN customer_companies c ON c.id = sc.customer_id
               LEFT JOIN 
                 sales_users AS su ON sc.id = su.sales_id  
               WHERE 
@@ -794,7 +794,7 @@ const db_sql = {
               ORDER BY 
                 created_at DESC`,
   // "Q177" : `SELECT c.id, c.organization_id ,c.customer_name, c.source, c.user_id, c.address, c.deleted_at,
-  //           u.full_name AS created_by FROM customers AS c INNER JOIN users AS u ON u.id = c.user_id
+  //           u.full_name AS created_by FROM customer_companies AS c INNER JOIN users AS u ON u.id = c.user_id
   //           WHERE c.user_id = '{var1}' AND c.is_rejected = '{var2}'`,
   "Q178": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,sc.business_contact_id,
@@ -822,7 +822,7 @@ const db_sql = {
                 LEFT JOIN lead_sources AS s ON s.id = leads.source
                 LEFT JOIN lead_titles AS t ON t.id = leads.title
                 LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
-                LEFT JOIN customers as c ON c.id = leads.customer_id
+                LEFT JOIN customer_companies as c ON c.id = leads.customer_id
                 WHERE leads.customer_id = sc.customer_id
                   AND leads.is_rejected = false AND u1.deleted_at IS NULL  
                   AND leads.deleted_at IS NULL
@@ -855,7 +855,7 @@ const db_sql = {
           LEFT JOIN
             users AS u1 ON u1.id = sc.user_id
           LEFT JOIN
-            customers AS cus ON cus.id = sc.customer_id
+            customer_companies AS cus ON cus.id = sc.customer_id
           LEFT JOIN
             business_contact AS bc ON bc.id = sc.business_contact_id
           LEFT JOIN
@@ -911,7 +911,7 @@ const db_sql = {
                 LEFT JOIN lead_sources AS s ON s.id = leads.source
                 LEFT JOIN lead_titles AS t ON t.id = leads.title
                 LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
-                LEFT JOIN customers as c ON c.id = leads.customer_id
+                LEFT JOIN customer_companies as c ON c.id = leads.customer_id
                 WHERE leads.customer_id = sc.customer_id
                   AND leads.is_rejected = false AND u1.deleted_at IS NULL  
                   AND leads.deleted_at IS NULL
@@ -942,7 +942,7 @@ const db_sql = {
           LEFT JOIN
             users AS u1 ON u1.id = sc.user_id
           LEFT JOIN
-            customers AS cus ON cus.id = sc.customer_id
+            customer_companies AS cus ON cus.id = sc.customer_id
           LEFT JOIN
             business_contact AS bc ON bc.id = sc.business_contact_id
           LEFT JOIN
@@ -983,7 +983,7 @@ const db_sql = {
                 LEFT JOIN lead_sources AS s ON s.id = leads.source
                 LEFT JOIN lead_titles AS t ON t.id = leads.title
                 LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
-                LEFT JOIN customers as c ON c.id = leads.customer_id
+                LEFT JOIN customer_companies as c ON c.id = leads.customer_id
                 WHERE leads.customer_id = sc.customer_id
                   AND leads.is_rejected = false AND u1.deleted_at IS NULL  
                   AND leads.deleted_at IS NULL
@@ -1014,7 +1014,7 @@ const db_sql = {
           LEFT JOIN
             users AS u1 ON u1.id = sc.user_id
           LEFT JOIN
-            customers AS cus ON cus.id = sc.customer_id
+            customer_companies AS cus ON cus.id = sc.customer_id
           LEFT JOIN
             business_contact AS bc ON bc.id = sc.business_contact_id
           LEFT JOIN
@@ -1055,7 +1055,7 @@ const db_sql = {
                 LEFT JOIN lead_sources AS s ON s.id = leads.source
                 LEFT JOIN lead_titles AS t ON t.id = leads.title
                 LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
-                LEFT JOIN customers as c ON c.id = leads.customer_id
+                LEFT JOIN customer_companies as c ON c.id = leads.customer_id
                 WHERE leads.customer_id = sc.customer_id
                   AND leads.is_rejected = false AND u1.deleted_at IS NULL  
                   AND leads.deleted_at IS NULL
@@ -1088,7 +1088,7 @@ const db_sql = {
           LEFT JOIN
             users AS u1 ON u1.id = sc.user_id
           LEFT JOIN
-            customers AS cus ON cus.id = sc.customer_id
+            customer_companies AS cus ON cus.id = sc.customer_id
           LEFT JOIN
             business_contact AS bc ON bc.id = sc.business_contact_id
           LEFT JOIN
@@ -1144,7 +1144,7 @@ const db_sql = {
                 LEFT JOIN lead_sources AS s ON s.id = leads.source
                 LEFT JOIN lead_titles AS t ON t.id = leads.title
                 LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
-                LEFT JOIN customers as c ON c.id = leads.customer_id
+                LEFT JOIN customer_companies as c ON c.id = leads.customer_id
                 WHERE leads.customer_id = sc.customer_id
                   AND leads.is_rejected = false AND u1.deleted_at IS NULL  
                   AND leads.deleted_at IS NULL
@@ -1177,7 +1177,7 @@ const db_sql = {
           LEFT JOIN
             users AS u1 ON u1.id = sc.user_id
           LEFT JOIN
-            customers AS cus ON cus.id = sc.customer_id
+            customer_companies AS cus ON cus.id = sc.customer_id
           LEFT JOIN
             business_contact AS bc ON bc.id = sc.business_contact_id
           LEFT JOIN
@@ -1321,7 +1321,7 @@ const db_sql = {
               LEFt JOIN
                 lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
-                customers AS c ON c.id = l.customer_id
+                customer_companies AS c ON c.id = l.customer_id
               WHERE 
                 l.company_id = '{var1}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               ORDER BY 
@@ -1346,7 +1346,7 @@ const db_sql = {
               LEFt JOIN
                 lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
-                customers AS c ON c.id = l.customer_id
+                customer_companies AS c ON c.id = l.customer_id
               WHERE 
                 (l.user_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1})) AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               ORDER BY 
@@ -1574,7 +1574,7 @@ const db_sql = {
                 COUNT(*),
                 u.full_name AS created_by
               FROM 
-                customers AS cus 
+                customer_companies AS cus 
               INNER JOIN 
                 users AS u ON u.id = cus.user_id
               WHERE 
@@ -1604,7 +1604,7 @@ const db_sql = {
   "Q256": `SELECT 
                 DISTINCT(c.id)
               FROM 
-                customers AS c
+                customer_companies AS c
               LEFT JOIN sales AS s ON c.id = s.customer_id
               WHERE c.company_id = '{var1}' AND s.closed_at IS NOT NULL AND c.deleted_at IS NULL`,
 
@@ -1612,7 +1612,7 @@ const db_sql = {
                 DISTINCT(c.id),
                 u.full_name AS created_by
               FROM 
-                customers AS c
+                customer_companies AS c
               LEFT JOIN 
                 users AS u ON u.id = c.user_id
               LEFT JOIN
@@ -1712,7 +1712,7 @@ const db_sql = {
               LEFT JOIN
                 lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
-                customers AS c ON c.id = l.customer_id
+                customer_companies AS c ON c.id = l.customer_id
               WHERE 
                 l.company_id = '{var1}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
                 AND l.is_rejected = TRUE
@@ -1738,7 +1738,7 @@ const db_sql = {
               LEFT JOIN
                 lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
-                customers AS c ON c.id = l.customer_id
+                customer_companies AS c ON c.id = l.customer_id
               WHERE 
                 l.company_id = '{var1}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
                 AND l.marketing_qualified_lead = TRUE
@@ -1764,7 +1764,7 @@ const db_sql = {
               LEFT JOIN
                 lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
-                customers AS c ON c.id = l.customer_id
+                customer_companies AS c ON c.id = l.customer_id
               WHERE 
                 l.company_id = '{var1}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
                 AND l.is_converted = TRUE
@@ -1789,7 +1789,7 @@ const db_sql = {
               LEFt JOIN
                 lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
-                customers AS c ON c.id = l.customer_id
+                customer_companies AS c ON c.id = l.customer_id
               WHERE 
                 (l.user_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1}))
                  AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
@@ -1816,7 +1816,7 @@ const db_sql = {
               LEFt JOIN
                 lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
-                customers AS c ON c.id = l.customer_id
+                customer_companies AS c ON c.id = l.customer_id
               WHERE 
                 (l.user_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1}))
                   AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
@@ -1842,7 +1842,7 @@ const db_sql = {
               LEFt JOIN
                 lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
-                customers AS c ON c.id = l.customer_id
+                customer_companies AS c ON c.id = l.customer_id
               WHERE 
                 (l.user_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1}))
                   AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
@@ -1889,7 +1889,7 @@ const db_sql = {
               LEFT JOIN
                 lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
-                customers AS c ON c.id = l.customer_id
+                customer_companies AS c ON c.id = l.customer_id
               WHERE 
                 l.assigned_sales_lead_to = '{var1}'
                 AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
@@ -1915,7 +1915,7 @@ const db_sql = {
               LEFt JOIN
                 lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
-                customers AS c ON c.id = l.customer_id
+                customer_companies AS c ON c.id = l.customer_id
               WHERE 
                 l.assigned_sales_lead_to IN ({var1})
                 AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
@@ -1938,7 +1938,7 @@ const db_sql = {
               INNER JOIN 
                 sales AS sc ON sc.id = t.sales_id
               INNER JOIN 
-                customers AS c ON sc.customer_id = c.id
+                customer_companies AS c ON sc.customer_id = c.id
               WHERE 
                 sales_id = '{var1}'`,
   "Q286": `UPDATE users SET session_time = '{var2}' WHERE id = '{var1}' RETURNING *`,
@@ -1973,7 +1973,7 @@ const db_sql = {
                 LEFT JOIN lead_sources AS s ON s.id = leads.source
                 LEFT JOIN lead_titles AS t ON t.id = leads.title
                 LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
-                LEFT JOIN customers as c ON c.id = leads.customer_id
+                LEFT JOIN customer_companies as c ON c.id = leads.customer_id
                 WHERE leads.customer_id = sc.customer_id
                   AND leads.is_rejected = false AND u1.deleted_at IS NULL  
                   AND leads.deleted_at IS NULL
@@ -2004,7 +2004,7 @@ const db_sql = {
           LEFT JOIN
             users AS u1 ON u1.id = sc.user_id
           LEFT JOIN
-            customers AS cus ON cus.id = sc.customer_id
+            customer_companies AS cus ON cus.id = sc.customer_id
           LEFT JOIN
             business_contact AS bc ON bc.id = sc.business_contact_id
           LEFT JOIN
@@ -2176,7 +2176,7 @@ const db_sql = {
                   LEFT JOIN lead_sources AS s ON s.id = leads.source
                   LEFT JOIN lead_titles AS t ON t.id = leads.title
                   LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
-                  LEFT JOIN customers as c ON c.id = leads.customer_id
+                  LEFT JOIN customer_companies as c ON c.id = leads.customer_id
                   WHERE cus.id  = leads.customer_id 
                     AND leads.is_rejected = false AND u1.deleted_at IS NULL  
                     AND leads.deleted_at IS NULL
@@ -2193,7 +2193,7 @@ const db_sql = {
                 where revenue_contact.customer_id = cus.id
               ) AS revenue_contacts
               FROM 
-                customers AS cus 
+                customer_companies AS cus 
               INNER JOIN 
                 users AS u ON u.id = cus.user_id
               WHERE 
@@ -2271,7 +2271,7 @@ const db_sql = {
   //                 LEFT JOIN lead_sources AS s ON s.id = leads.source
   //                 LEFT JOIN lead_titles AS t ON t.id = leads.title
   //                 LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
-  //                 LEFT JOIN customers as c ON c.lead_id = leads.id
+  //                 LEFT JOIN customer_companies as c ON c.lead_id = leads.id
   //                 WHERE o.id = leads.organization_id 
   //                   AND leads.marketing_qualified_lead= true 
   //                   AND leads.is_rejected = false AND u1.deleted_at IS NULL  
@@ -2303,7 +2303,7 @@ const db_sql = {
   //                 LEFT JOIN lead_sources AS s ON s.id = leads.source
   //                 LEFT JOIN lead_titles AS t ON t.id = leads.title
   //                 LEFT JOIN lead_industries AS i ON i.id = leads.industry_type
-  //                 LEFT JOIN customers as c ON c.lead_id = leads.id
+  //                 LEFT JOIN customer_companies as c ON c.lead_id = leads.id
   //                 WHERE o.id = leads.organization_id 
   //                   AND leads.marketing_qualified_lead= true 
   //                   AND leads.is_rejected = false AND u1.deleted_at IS NULL  
