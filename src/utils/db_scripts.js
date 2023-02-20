@@ -1257,11 +1257,11 @@ const db_sql = {
                 end_date = '{var5}', updated_at = '{var6}' 
               WHERE 
                 id = '{var1}' AND deleted_at IS NULL RETURNING *`,
-  "Q200": `INSERT INTO leads
+  "Q200": `INSERT INTO customer_company_employees
             (id, full_name, title, email_address, phone_number,source, industry_type, customer_company_id, creator_id, company_id,emp_type)
            VALUES
             ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}') RETURNING *`,
-  "Q201": `INSERT INTO leads(id,full_name,title,email_address,phone_number,
+  "Q201": `INSERT INTO customer_company_employees (id,full_name,title,email_address,phone_number,
               address,source,linkedin_url,website,targeted_value,industry_type,marketing_qualified_lead,
               assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type)
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
