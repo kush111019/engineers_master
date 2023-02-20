@@ -497,16 +497,17 @@ const db_sql = {
   "Q125": `SELECT u.id, u.full_name, u.avatar FROM chat_room_members AS cm 
               INNER JOIN users AS u ON u.id = cm.user_id
               WHERE room_id = '{var1}' AND cm.deleted_at IS NULL AND u.deleted_at IS NULL`,
-  "Q126": `SELECT sc.id,c.closer_id,sc.customer_id, u.full_name, cc.user_id AS creator_id FROM sales AS sc 
-              INNER JOIN sales_closer AS c ON sc.id = c.sales_commission_id 
-              INNER JOIN users AS u ON c.closer_id = u.id 
-              INNER JOIN customer_companies AS cc ON cc.id = sc.customer_id WHERE sc.id = '{var1}'
-              AND sc.deleted_at IS NULL AND c.deleted_at IS NULL AND u.deleted_at IS NULL
-              AND cc.deleted_at IS NULL`,
-  "Q127": `SELECT s.supporter_id, u.full_name FROM sales_supporter AS s
-              INNER JOIN users AS u ON s.supporter_id = u.id
-              WHERE s.sales_commission_id = '{var1}' 
-              AND s.deleted_at IS NULL AND u.deleted_at IS NULL`,
+  "Q126": `SELECT 
+              sc.id,su.user_id,sc.customer_id, u.full_name
+           FROM sales AS sc 
+           INNER JOIN sales_users AS su ON sc.id = su.sales_id 
+           INNER JOIN users AS u ON su.user_id = u.id 
+           WHERE sc.id = '{var1}' 
+           AND sc.deleted_at IS NULL AND su.deleted_at IS NULL AND u.deleted_at IS NULL`,
+  // "Q127": `SELECT s.supporter_id, u.full_name FROM sales_supporter AS s
+  //             INNER JOIN users AS u ON s.supporter_id = u.id
+  //             WHERE s.sales_commission_id = '{var1}' 
+  //             AND s.deleted_at IS NULL AND u.deleted_at IS NULL`,
   "Q128": `INSERT INTO chat(id, chat_name, is_group_chat, user_a, user_b, group_admin, sales_id, company_id) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}','{var6}','{var7}','{var8}') RETURNING *`,
   "Q129": `SELECT id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin FROM chat WHERE id = '{var1}' AND company_id = '{var2}' AND is_group_chat = '{var3}' AND deleted_at IS NULL`,
   "Q130": `SELECT m.id, m.sender, m.content, m.chat_id, m.read_by, m.created_at, u.full_name,

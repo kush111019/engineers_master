@@ -75,12 +75,12 @@ module.exports.marketingDashboard = async (req, res) => {
                     if (list === assignedLeads.rows) counts[item.created_by].assignedCount = item.count;
                     if (list === rejectedLeads.rows) counts[item.created_by].rejectedCount = item.count;
                     if (list === customerlist.rows) {
-                        list.map(e => {
-                            if(e.created_by = item.created_by){
-                                count += 1
-                                list.pop()
+                        let count = 0; // Reset count for each user
+                        list.forEach(e => {
+                            if (e.created_by === item.created_by) {
+                            count++;
                             }
-                        })
+                        });
                         counts[item.created_by].customerCount = count;
                     }
                 });
