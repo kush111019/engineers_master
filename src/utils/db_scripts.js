@@ -146,25 +146,27 @@ const db_sql = {
             rc.id as revenue_contact_id ,rc.full_name as revenue_contact_name, rc.email_address as revenue_contact_email,
                       
             (
-                        SELECT json_agg(sales_users.*)
-                        FROM (
-                          SELECT 
-                          ss.user_id as id ,ss.user_percentage as percentage,ss.user_type ,u1.full_name as name,u1.email_address as email
-                          FROM sales_users as ss
-                          LEFT JOIN users AS u1 ON u1.id = ss.user_id
-                          WHERE ss.sales_id= '{var1}' AND ss.deleted_at IS NULL AND  u1.deleted_at IS NULL
-                        ) sales_users
-                    ) as sales_users,
-              (
-                        SELECT json_agg(product_in_sales.*)
-                        FROM (
-                          SELECT 
-                            p.id ,p.product_name as name
-                          FROM product_in_sales as pis
-                          LEFT JOIN products AS p ON p.id = pis.product_id
-                          WHERE  pis.sales_commission_id = '{var1}' AND  p.deleted_at IS NULL
-                        ) product_in_sales
-                      ) as products
+              SELECT json_agg(sales_users.*)
+              FROM 
+                (
+                  SELECT 
+                  ss.user_id as id ,ss.user_percentage as percentage,ss.user_type ,u1.full_name as name,u1.email_address as email
+                  FROM sales_users as ss
+                  LEFT JOIN users AS u1 ON u1.id = ss.user_id
+                  WHERE ss.sales_id= '{var1}' AND ss.deleted_at IS NULL AND  u1.deleted_at IS NULL
+                ) sales_users
+           ) as sales_users,
+           (
+              SELECT json_agg(product_in_sales.*)
+              FROM 
+                (
+                  SELECT 
+                    DISTINCT(p.id) ,p.product_name as name
+                  FROM product_in_sales as pis
+                  LEFT JOIN products AS p ON p.id = pis.product_id
+                  WHERE  pis.sales_commission_id = '{var1}' AND  p.deleted_at IS NULL
+                ) product_in_sales
+            ) as products
           FROM sales_logs AS sl 
           LEFT JOIN 
             users AS u ON u.id = sl.closer_id
@@ -245,7 +247,7 @@ const db_sql = {
               SELECT json_agg(product_in_sales.*)
               FROM (
                 SELECT 
-                  p.id ,p.product_name as name
+                  DISTINCT(p.id),p.product_name as name
                 FROM product_in_sales as pis
                 LEFT JOIN products AS p ON p.id = pis.product_id
                 WHERE sc.id= pis.sales_commission_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
@@ -261,8 +263,6 @@ const db_sql = {
             business_contact AS bc ON bc.id = sc.business_contact_id
           LEFT JOIN
             revenue_contact AS rc ON rc.id = sc.revenue_contact_id
-          LEFT JOIN
-            products AS p ON p.id = sc.revenue_contact_id
           LEFT JOIN
             slabs AS slab ON slab.id = sc.slab_id
           LEFT JOIN
@@ -842,7 +842,7 @@ const db_sql = {
               SELECT json_agg(product_in_sales.*)
               FROM (
                 SELECT 
-                  p.id ,p.product_name as name
+                  DISTINCt(p.id) ,p.product_name as name
                 FROM product_in_sales as pis
                 LEFT JOIN products AS p ON p.id = pis.product_id
                 WHERE sc.id= pis.sales_commission_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
@@ -860,8 +860,6 @@ const db_sql = {
             business_contact AS bc ON bc.id = sc.business_contact_id
           LEFT JOIN
             revenue_contact AS rc ON rc.id = sc.revenue_contact_id
-          LEFT JOIN
-            products AS p ON p.id = sc.revenue_contact_id
           LEFT JOIN
             slabs AS slab ON slab.id = sc.slab_id
           LEFT JOIN
@@ -931,7 +929,7 @@ const db_sql = {
               SELECT json_agg(product_in_sales.*)
               FROM (
                 SELECT 
-                  p.id ,p.product_name as name
+                  DISTINCT(p.id) ,p.product_name as name
                 FROM product_in_sales as pis
                 LEFT JOIN products AS p ON p.id = pis.product_id
                 WHERE sc.id= pis.sales_commission_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
@@ -947,8 +945,6 @@ const db_sql = {
             business_contact AS bc ON bc.id = sc.business_contact_id
           LEFT JOIN
             revenue_contact AS rc ON rc.id = sc.revenue_contact_id
-          LEFT JOIN
-            products AS p ON p.id = sc.revenue_contact_id
           LEFT JOIN
             slabs AS slab ON slab.id = sc.slab_id
           LEFT JOIN
@@ -1003,7 +999,7 @@ const db_sql = {
               SELECT json_agg(product_in_sales.*)
               FROM (
                 SELECT 
-                  p.id ,p.product_name as name
+                  DISTINCT(p.id) ,p.product_name as name
                 FROM product_in_sales as pis
                 LEFT JOIN products AS p ON p.id = pis.product_id
                 WHERE sc.id= pis.sales_commission_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
@@ -1019,8 +1015,6 @@ const db_sql = {
             business_contact AS bc ON bc.id = sc.business_contact_id
           LEFT JOIN
             revenue_contact AS rc ON rc.id = sc.revenue_contact_id
-          LEFT JOIN
-            products AS p ON p.id = sc.revenue_contact_id
           LEFT JOIN
             slabs AS slab ON slab.id = sc.slab_id
           LEFT JOIN
@@ -1075,7 +1069,7 @@ const db_sql = {
               SELECT json_agg(product_in_sales.*)
               FROM (
                 SELECT 
-                  p.id ,p.product_name as name
+                  DISTINCT(p.id) ,p.product_name as name
                 FROM product_in_sales as pis
                 LEFT JOIN products AS p ON p.id = pis.product_id
                 WHERE sc.id= pis.sales_commission_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
@@ -1093,8 +1087,6 @@ const db_sql = {
             business_contact AS bc ON bc.id = sc.business_contact_id
           LEFT JOIN
             revenue_contact AS rc ON rc.id = sc.revenue_contact_id
-          LEFT JOIN
-            products AS p ON p.id = sc.revenue_contact_id
           LEFT JOIN
             slabs AS slab ON slab.id = sc.slab_id
           LEFT JOIN
@@ -1164,7 +1156,7 @@ const db_sql = {
               SELECT json_agg(product_in_sales.*)
               FROM (
                 SELECT 
-                  p.id ,p.product_name as name
+                  DISTINCT(p.id) ,p.product_name as name
                 FROM product_in_sales as pis
                 LEFT JOIN products AS p ON p.id = pis.product_id
                 WHERE sc.id= pis.sales_commission_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
@@ -1182,8 +1174,6 @@ const db_sql = {
             business_contact AS bc ON bc.id = sc.business_contact_id
           LEFT JOIN
             revenue_contact AS rc ON rc.id = sc.revenue_contact_id
-          LEFT JOIN
-            products AS p ON p.id = sc.revenue_contact_id
           LEFT JOIN
             slabs AS slab ON slab.id = sc.slab_id
           LEFT JOIN
@@ -1993,7 +1983,7 @@ const db_sql = {
               SELECT json_agg(product_in_sales.*)
               FROM (
                 SELECT 
-                  p.id ,p.product_name as name
+                  DISTINCT(p.id) ,p.product_name as name
                 FROM product_in_sales as pis
                 LEFT JOIN products AS p ON p.id = pis.product_id
                 WHERE sc.id= pis.sales_commission_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
@@ -2009,8 +1999,6 @@ const db_sql = {
             business_contact AS bc ON bc.id = sc.business_contact_id
           LEFT JOIN
             revenue_contact AS rc ON rc.id = sc.revenue_contact_id
-          LEFT JOIN
-            products AS p ON p.id = sc.revenue_contact_id
           LEFT JOIN
             slabs AS slab ON slab.id = sc.slab_id
           LEFT JOIN
