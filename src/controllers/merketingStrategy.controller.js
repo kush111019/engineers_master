@@ -76,7 +76,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     if (list === rejectedLeads.rows) counts[item.created_by].rejectedCount = item.count;
                     if (list === customerlist.rows) {
                         list.map(e => {
-                            if(e.created_by = item.created_by){
+                            if(e.created_by === item.created_by){
                                 count += 1
                                 list.pop()
                             }
