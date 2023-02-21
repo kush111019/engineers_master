@@ -17,19 +17,6 @@ module.exports.createRevenueForecast = async (req, res) => {
             type,
             forecastData
         } = req.body
-        //add notification deatils
-        let notification_userId = [];
-        let notification_typeId;
-        if (assignedTo.length > 0) {
-            for (let sid of assignedTo) {
-                console.log(sid.userId)
-                notification_userId.push(sid.userId)
-            }
-            notification_userId.push(userId)
-        } else {
-            notification_userId.push(userId)
-        }
-
         await connection.query('BEGIN')
         //checking permission to create for user
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
@@ -46,17 +33,19 @@ module.exports.createRevenueForecast = async (req, res) => {
                     let s3 = dbScript(db_sql['Q294'], { var1: createForecast.rows[0].id, var2: data.amount, var3: data.startDate, var4: data.endDate, var5: type, var6: userId })
                     let addForecastData = await connection.query(s3)
                 }
-                // add notification in notification list
-                notification_typeId = createForecast.rows[0].id;
-                await notificationsOperations({ type: 3, msg: 3.1, notification_typeId, notification_userId }, userId);
-
                 // Checking if assigned users length > 0 then
                 if (assignedTo.length > 0) {
                     // adding assigned users forecast
                     for (let data of assignedTo) {
+                        let notification_userId = [];
+                        notification_userId.push(data.userId)
                         let pId = createForecast.rows[0].id
                         let s4 = dbScript(db_sql['Q67'], { var1: timeline, var2: data.amount, var3: startDate, var4: endDate, var5: pId, var6: data.userId, var7: req.user.id })
                         let createForecastForAssignedUsers = await connection.query(s4)
+
+                        // add notification in notification list
+                        let notification_typeId = createForecastForAssignedUsers.rows[0].id;
+                        await notificationsOperations({ type: 3, msg: 3.1, notification_typeId, notification_userId }, userId);
                     }
                     await connection.query('COMMIT')
                     res.json({
