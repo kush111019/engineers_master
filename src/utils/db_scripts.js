@@ -1176,7 +1176,7 @@ const db_sql = {
               l.created_at DESC`,
   "Q209": `select 
                 distinct(l.id),l.creator_id,l.assigned_sales_lead_to, u.full_name as created_by,l.customer_company_id,
-                l.is_rejected, l.is_converted
+                l.is_rejected, l.marketing_qualified_lead
               FROM 
                 customer_company_employees AS l 
               LEFT JOIN 
@@ -1210,7 +1210,7 @@ const db_sql = {
               INNER JOIN 
                 users AS u ON u.id = l.creator_id
               WHERE 
-                l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.is_converted = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+                l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.marketing_qualified_lead = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
               GROUP BY 
                 u.full_name
               ORDER BY 
@@ -1219,7 +1219,7 @@ const db_sql = {
   "Q225": `SELECT * FROM lead_sources WHERE LOWER(source) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
   "Q226": `SELECT * FROM lead_titles WHERE LOWER(title) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
   "Q227": `SELECT * FROM lead_industries WHERE LOWER(industry) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
-   "Q229": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND emp_type = 'lead' AND is_converted = true AND deleted_at IS NULL`,
+  "Q229": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND emp_type = 'lead' AND marketing_qualified_lead = true AND deleted_at IS NULL`,
   "Q230": `UPDATE companies SET is_marketing_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q231": `UPDATE companies SET expiry_date = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   "Q232": `UPDATE companies SET expiry_date = '{var1}', user_count = '{var2}', updated_at = '{var3}' WHERE id = '{var4}' AND deleted_at IS NULL RETURNING *`,
