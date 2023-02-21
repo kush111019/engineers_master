@@ -116,7 +116,6 @@ module.exports.marketingDashboard = async (req, res) => {
             //Total Lead count
             let s4 = dbScript(db_sql['Q209'], { var1: roleUsers.join(","), var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let leadCount = await connection.query(s4)
-            console.log(leadCount.rows,"leadCount");
             if (leadCount.rowCount > 0) {
                 totalCounts += leadCount.rowCount
                 for ( let leads of leadCount.rows) {
@@ -141,7 +140,6 @@ module.exports.marketingDashboard = async (req, res) => {
                     totalCustomerCount += cCount
                 }
             }
-            console.log(leadData,"lead data");
             let combinedData = leadData.reduce((acc, curr) => {
                 let existing = acc.find(item => item.created_by === curr.created_by && item.customer_id === curr.customer_id);
                 if (existing) {
@@ -169,7 +167,6 @@ module.exports.marketingDashboard = async (req, res) => {
                     leadData: combinedData
                 }
             })
-
         }
         else {
             res.status(403).json({

@@ -1134,7 +1134,7 @@ const db_sql = {
 
   "Q205": `UPDATE customer_company_employees SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`,
 
-  "Q206": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND deleted_at IS NULL`,
+  "Q206": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND emp_type = 'lead' AND deleted_at IS NULL`,
 
   "Q207": `SELECT 
                 COUNT(*),
@@ -1183,7 +1183,7 @@ const db_sql = {
                 users u ON u.id = l.creator_id
               where 
                 (l.creator_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1})) AND 
-                l.deleted_at IS NULL AND u.deleted_at IS NULL
+                l.emp_type = 'lead' AND l.deleted_at IS NULL AND u.deleted_at IS NULL
               ORDER BY 
                 u.full_name {var4}
               LIMIT {var2} OFFSET {var3}`,
