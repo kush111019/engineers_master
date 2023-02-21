@@ -24,6 +24,7 @@ module.exports.createLead = async (req, res) => {
             additionalMarketingNotes,
             empType
         } = req.body
+        console.log(req.body);
         //add notification deatils
         let notification_userId = [assignedSalesLeadTo];
         let notification_typeId;
@@ -34,11 +35,14 @@ module.exports.createLead = async (req, res) => {
 
             let id = uuid.v4()
             let s2 = dbScript(db_sql['Q201'], { var1: id, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: source, var8: linkedinUrl, var9: website, var10: targetedValue, var11: industryType, var12: marketingQualifiedLead, var13: assignedSalesLeadTo, var14: mysql_real_escape_string(additionalMarketingNotes), var15: userId, var16: checkPermission.rows[0].company_id, var17: customerId, var18: empType })
+            console.log(s2,"s2");
             let createLead = await connection.query(s2)
-
+            console.log(createLead.rows,"createLead");
             // add notification in notification list
             notification_typeId = createLead.rows[0].id;
+            console.log('000000000000000',notification_typeId, notification_userId);
             await notificationsOperations({ type: 4, msg: 4.1, notification_typeId, notification_userId }, userId);
+            console.log('11111111111111');
 
             if (createLead.rowCount > 0) {
                 await connection.query('COMMIT')
