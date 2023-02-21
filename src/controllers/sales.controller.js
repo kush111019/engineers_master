@@ -296,18 +296,23 @@ module.exports.createSales = async (req, res) => {
             let id = uuid.v4()
             let s5 = dbScript(db_sql['Q53'], { var1: id, var2: customerId, var3: commissionSplitId, var4: is_overwrite, var5: checkPermission.rows[0].company_id, var6: businessId, var7: revenueId, var8: mysql_real_escape_string(qualification), var9: is_qualified, var10: targetAmount, var11: targetClosingDate, var13: salesType, var14: subscriptionPlan, var15: recurringDate, var16: currency, var17: userId, var18: slabId, var19: leadId, var20: totalCommission })
             let createSales = await connection.query(s5)
-
+            let salesUsersForLog = [];
             let s7 = dbScript(db_sql['Q58'], { var1: captainId, var2: Number(captainPercentage), var3: process.env.CAPTAIN, var4: commissionSplitId, var5: createSales.rows[0].id, var6: checkPermission.rows[0].company_id })
             let addSalesCaptain = await connection.query(s7)
+            if (addSalesCaptain.rowCount > 0) {
+                salesUsersForLog.push(addSalesCaptain.rows[0])
+            }
+
             if (supporters.length > 0) {
                 for (let supporterData of supporters) {
-                    // let supporterId = uuid.v4()
                     let s8 = dbScript(db_sql['Q58'], { var1: supporterData.id, var2: Number(supporterData.percentage), var3: process.env.SUPPORT, var4: commissionSplitId, var5: createSales.rows[0].id, var6: checkPermission.rows[0].company_id })
                     addSalesSupporter = await connection.query(s8)
                     supporterIds.push(addSalesSupporter.rows[0].id)
+                    if (addSalesCaptain.rowCount > 0) {
+                        salesUsersForLog.push(addSalesSupporter.rows[0])
+                    }
                 }
             }
-
             if (products.length > 0) {
                 for (let productId of products) {
                     let prId = uuid.v4()
@@ -319,7 +324,7 @@ module.exports.createSales = async (req, res) => {
             let logId = uuid.v4()
             let s9 = dbScript(db_sql['Q43'], {
                 var1: logId, var2: createSales.rows[0].id, var3: commissionSplitId, var4: mysql_real_escape_string(qualification), var5: is_qualified, var6: targetAmount, var7: JSON.stringify(products),
-                var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: checkPermission.rows[0].company_id, var12: revenueId, var13: businessId, var14: captainId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate, var19: currency, var20: slabId, var21: Number(captainPercentage),var22:totalCommission
+                var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: checkPermission.rows[0].company_id, var12: revenueId, var13: businessId, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17: currency, var18: slabId, var19: totalCommission, var20: JSON.stringify(salesUsersForLog)
             })
             let createLog = await connection.query(s9)
 
@@ -369,10 +374,10 @@ module.exports.allSalesList = async (req, res) => {
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
                     salesData.sales_users.map(value => {
-                        if(value.user_type == process.env.CAPTAIN){
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        }else{
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        if (value.user_type == process.env.CAPTAIN) {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        } else {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
                         }
                     })
                 }
@@ -400,10 +405,10 @@ module.exports.allSalesList = async (req, res) => {
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
                     salesData.sales_users.map(value => {
-                        if(value.user_type == process.env.CAPTAIN){
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        }else{
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        if (value.user_type == process.env.CAPTAIN) {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        } else {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
                         }
                     })
                 }
@@ -450,10 +455,10 @@ module.exports.activeSalesList = async (req, res) => {
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
                     salesData.sales_users.map(value => {
-                        if(value.user_type == process.env.CAPTAIN){
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        }else{
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        if (value.user_type == process.env.CAPTAIN) {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        } else {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
                         }
                     })
                 }
@@ -481,10 +486,10 @@ module.exports.activeSalesList = async (req, res) => {
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
                     salesData.sales_users.map(value => {
-                        if(value.user_type == process.env.CAPTAIN){
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        }else{
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        if (value.user_type == process.env.CAPTAIN) {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        } else {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
                         }
                     })
                 }
@@ -532,10 +537,10 @@ module.exports.closedSalesList = async (req, res) => {
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
                     salesData.sales_users.map(value => {
-                        if(value.user_type == process.env.CAPTAIN){
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        }else{
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        if (value.user_type == process.env.CAPTAIN) {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        } else {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
                         }
                     })
                 }
@@ -563,10 +568,10 @@ module.exports.closedSalesList = async (req, res) => {
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
                     salesData.sales_users.map(value => {
-                        if(value.user_type == process.env.CAPTAIN){
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        }else{
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        if (value.user_type == process.env.CAPTAIN) {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        } else {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
                         }
                     })
                 }
@@ -614,10 +619,10 @@ module.exports.salesDetails = async (req, res) => {
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
                     salesData.sales_users.map(value => {
-                        if(value.user_type == process.env.CAPTAIN){
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        }else{
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        if (value.user_type == process.env.CAPTAIN) {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        } else {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
                         }
                     })
                 }
@@ -732,9 +737,12 @@ module.exports.updateSales = async (req, res) => {
             // let findSalesCommission = await connection.query(s6)
 
             // let closer_percentage = closerPercentage
-
+            let salesUsersForLog = []
             let s7 = dbScript(db_sql['Q64'], { var1: captainId, var2: captainPercentage, var3: commissionSplitId, var4: _dt, var5: salesId, var6: checkPermission.rows[0].company_id, var7: process.env.CAPTAIN })
             let updateSalesCaptain = await connection.query(s7)
+            if (updateSalesCaptain.rowCount > 0) {
+                salesUsersForLog.push(updateSalesCaptain.rows[0])
+            }
 
             let s8 = dbScript(db_sql['Q61'], { var1: _dt, var2: salesId, var3: checkPermission.rows[0].company_id, var4: process.env.SUPPORT })
             let updateSupporter = await connection.query(s8)
@@ -743,6 +751,9 @@ module.exports.updateSales = async (req, res) => {
                     let s8 = dbScript(db_sql['Q58'], { var1: supporterData.id, var2: Number(supporterData.percentage), var3: process.env.SUPPORT, var4: commissionSplitId, var5: salesId, var6: checkPermission.rows[0].company_id })
                     let addSalesSupporter = await connection.query(s8)
                     supporterIds.push(addSalesSupporter.rows[0].id)
+                    if (addSalesSupporter.rowCount > 0) {
+                        salesUsersForLog.push(addSalesSupporter.rows[0])
+                    }
                 }
             }
 
@@ -756,7 +767,9 @@ module.exports.updateSales = async (req, res) => {
                 }
             }
             let logId = uuid.v4()
-            let s10 = dbScript(db_sql['Q43'], { var1: logId, var2: updateSales.rows[0].id, var3: commissionSplitId, var4: mysql_real_escape_string(qualification), var5: is_qualified, var6: targetAmount, var7: JSON.stringify(products), var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: checkPermission.rows[0].company_id, var12: revenueId, var13: businessId, var14: captainId, var15: JSON.stringify(supporterIds), var16: salesType, var17: subscriptionPlan, var18: recurringDate, var19: currency, var20: slabId, var21: captainPercentage })
+            let s10 = dbScript(db_sql['Q43'], {
+                var1: logId, var2: updateSales.rows[0].id, var3: commissionSplitId, var4: mysql_real_escape_string(qualification), var5: is_qualified, var6: targetAmount, var7: JSON.stringify(products), var8: targetClosingDate, var9: customerId, var10: is_overwrite, var11: checkPermission.rows[0].company_id, var12: revenueId, var13: businessId, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17: currency, var18: slabId, var19: totalCommission, var20: JSON.stringify(salesUsersForLog)
+            })
             let createLog = await connection.query(s10)
 
             if (updateSales.rowCount > 0 && updateSalesCaptain.rowCount > 0 && createLog.rowCount > 0) {
@@ -858,16 +871,29 @@ module.exports.salesLogsList = async (req, res) => {
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
             let s3 = dbScript(db_sql['Q44'], { var1: salesId })
             let saleslogList = await connection.query(s3)
+
             for (let salesData of saleslogList.rows) {
+                let sales_users = [];
+                let products = [];
                 if (salesData.sales_users) {
-                    salesData.sales_users.map(value => {
-                        if(value.user_type == process.env.CAPTAIN){
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        }else{
-                            value.user_commission_amount = (salesData.booking_commission)  ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                    JSON.parse(salesData.sales_users).map(value => {
+                        if (value.user_type == process.env.CAPTAIN) {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.user_percentage) / 100) * (salesData.booking_commission)) : 0;
+                        } else {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.user_percentage) / 100) * (salesData.booking_commission)) : 0;
                         }
+                        sales_users.push(value)
                     })
                 }
+                if (salesData.products) {
+                    for (let productId of JSON.parse(salesData.products)) {
+                        let s4 = dbScript(db_sql['Q96'], { var1: productId, var2: checkPermission.rows[0].company_id })
+                        let productsList = await connection.query(s4)
+                        products.push(productsList.rows[0])
+                    }
+                }
+                salesData.sales_users = sales_users
+                salesData.products = products
             }
             if (saleslogList.rowCount > 0) {
                 res.json({
@@ -1276,7 +1302,7 @@ module.exports.transferBackSales = async (req, res) => {
         if (checkPermission.rows[0].permission_to_update) {
             await connection.query('BEGIN')
             let _dt = new Date().toISOString()
-            let s2 = dbScript(db_sql['Q269'], { var1: creatorId, var2: _dt, var3: salesId ,var4:process.env.CAPTAIN})
+            let s2 = dbScript(db_sql['Q269'], { var1: creatorId, var2: _dt, var3: salesId, var4: process.env.CAPTAIN })
             let transferSales = await connection.query(s2)
 
             let s3 = dbScript(db_sql['Q270'], { var1: mysql_real_escape_string(transferReason), var2: _dt, var3: salesId, var4: userId })

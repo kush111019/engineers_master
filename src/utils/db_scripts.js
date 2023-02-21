@@ -121,16 +121,18 @@ const db_sql = {
               AND p.deleted_at IS NULL AND u.deleted_at IS NULL`,
   "Q42": `UPDATE customer_companies SET customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', address = '{var4}', currency = '{var5}', industry = '{var8}' WHERE id = '{var6}' AND company_id = '{var7}' AND deleted_at IS NULL RETURNING *`,
   "Q43": `INSERT INTO 
-            sales_logs(id,sales_commission_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_contact_id, business_contact_id,closer_id, supporter_id, sales_type, subscription_plan, recurring_date, currency, slab_id, closer_percentage,booking_commission) 
+            sales_logs(id,sales_commission_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_contact_id, business_contact_id, sales_type, subscription_plan, recurring_date, currency, slab_id, booking_commission,sales_users) 
           VALUES 
-            ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}', '{var17}', '{var18}', '{var19}', '{var20}', '{var21}','{var22}') RETURNING *`,
+            ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}','{var13}','{var14}', '{var15}','{var16}', '{var17}', '{var18}', '{var19}', '{var20}') RETURNING *`,
   "Q44": `SELECT 	  	  
-            sl.id, sl.sales_commission_id, sl.customer_commission_split_id, sl.qualification, sl.is_qualified, 
+            sl.id, sl.sales_commission_id, sl.customer_commission_split_id,
+            sl.qualification, sl.is_qualified, 
             sl.target_amount,sl.booking_commission, sl.currency, 
             sl.target_closing_date, sl.customer_id, sl.is_overwrite, sl.company_id, 
             sl.revenue_contact_id, sl.business_contact_id,  
             sl.sales_type, sl.subscription_plan, sl.recurring_date, 
             sl.created_at,sl.closed_at,  c.customer_name, 
+            sl.sales_users,sl.products,
             (
               SELECT json_agg(customer_company_employees.*)
               FROM (
@@ -143,39 +145,14 @@ const db_sql = {
                   u1.full_name as created_by
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
-                WHERE( customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id ) 
+                WHERE( customer_company_employees.id = sl.business_contact_id OR customer_company_employees.id = sl.revenue_contact_id ) 
                 AND customer_company_employees.deleted_at IS NULL
               ) customer_company_employees
-            ) as lead_data,         
-            (
-              SELECT json_agg(sales_users.*)
-              FROM 
-                (
-                  SELECT 
-                  ss.user_id as id ,ss.user_percentage as percentage,ss.user_type ,u1.full_name as name,u1.email_address as email
-                  FROM sales_users as ss
-                  LEFT JOIN users AS u1 ON u1.id = ss.user_id
-                  WHERE ss.sales_id= '{var1}' AND ss.deleted_at IS NULL AND  u1.deleted_at IS NULL
-                ) sales_users
-           ) as sales_users,
-           (
-              SELECT json_agg(product_in_sales.*)
-              FROM 
-                (
-                  SELECT 
-                    DISTINCT(p.id) ,p.product_name as name
-                  FROM product_in_sales as pis
-                  LEFT JOIN products AS p ON p.id = pis.product_id
-                  WHERE  pis.sales_commission_id = '{var1}' AND  p.deleted_at IS NULL
-                ) product_in_sales
-            ) as products
+            ) as lead_data        
+            
           FROM sales_logs AS sl 
           LEFT JOIN 
-            users AS u ON u.id = sl.closer_id
-          LEFT JOIN 
             customer_companies AS c ON c.id = sl.customer_id
-          LEFT JOIN 
-            sales_closer AS cr ON cr.sales_commission_id = sl.sales_commission_id
           WHERE 
             sl.sales_commission_id = '{var1}' AND sl.deleted_at IS NULL 
           ORDER BY
