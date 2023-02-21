@@ -300,6 +300,9 @@ module.exports.createSales = async (req, res) => {
             let s7 = dbScript(db_sql['Q58'], { var1: captainId, var2: Number(captainPercentage), var3: process.env.CAPTAIN, var4: commissionSplitId, var5: createSales.rows[0].id, var6: checkPermission.rows[0].company_id })
             let addSalesCaptain = await connection.query(s7)
             if (addSalesCaptain.rowCount > 0) {
+                let s8 = dbScript(db_sql['Q8'], { var1: addSalesCaptain.rows[0].user_id })
+                let userName = await connection.query(s8)
+                addSalesCaptain.rows[0].user_name =(userName.rows[0].full_name)?userName.rows[0].full_name:"";
                 salesUsersForLog.push(addSalesCaptain.rows[0])
             }
 
@@ -309,6 +312,9 @@ module.exports.createSales = async (req, res) => {
                     addSalesSupporter = await connection.query(s8)
                     supporterIds.push(addSalesSupporter.rows[0].id)
                     if (addSalesCaptain.rowCount > 0) {
+                        let s8 = dbScript(db_sql['Q8'], { var1: addSalesSupporter.rows[0].user_id })
+                        let userName = await connection.query(s8)
+                        addSalesSupporter.rows[0].user_name = (userName.rows[0].full_name)?userName.rows[0].full_name:"";
                         salesUsersForLog.push(addSalesSupporter.rows[0])
                     }
                 }
@@ -741,6 +747,9 @@ module.exports.updateSales = async (req, res) => {
             let s7 = dbScript(db_sql['Q64'], { var1: captainId, var2: captainPercentage, var3: commissionSplitId, var4: _dt, var5: salesId, var6: checkPermission.rows[0].company_id, var7: process.env.CAPTAIN })
             let updateSalesCaptain = await connection.query(s7)
             if (updateSalesCaptain.rowCount > 0) {
+                let s8 = dbScript(db_sql['Q8'], { var1: updateSalesCaptain.rows[0].user_id })
+                let userName = await connection.query(s8)
+                updateSalesCaptain.rows[0].user_name = (userName.rows[0].full_name)?userName.rows[0].full_name:"";
                 salesUsersForLog.push(updateSalesCaptain.rows[0])
             }
 
@@ -752,11 +761,13 @@ module.exports.updateSales = async (req, res) => {
                     let addSalesSupporter = await connection.query(s8)
                     supporterIds.push(addSalesSupporter.rows[0].id)
                     if (addSalesSupporter.rowCount > 0) {
+                        let s8 = dbScript(db_sql['Q8'], { var1: addSalesSupporter.rows[0].user_id })
+                        let userName = await connection.query(s8)
+                        addSalesSupporter.rows[0].user_name = (userName.rows[0].full_name)?userName.rows[0].full_name:"";
                         salesUsersForLog.push(addSalesSupporter.rows[0])
                     }
                 }
             }
-
             let s9 = dbScript(db_sql['Q156'], { var1: _dt, var2: salesId, var3: checkPermission.rows[0].company_id })
             let updateProduct = await connection.query(s9)
             if (products.length > 0) {
