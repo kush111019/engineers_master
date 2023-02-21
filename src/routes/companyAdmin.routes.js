@@ -63,7 +63,7 @@ router.put('/editCustomer',verifyTokenFn, controller.customers.editCustomer)
 router.put('/deleteContactForCustomer',verifyTokenFn, controller.customers.deleteContactForCustomer)
 
 // router.get('/customerCompanyList',verifyTokenFn, controller.customers.customerCompanyList)
-router.get('/customerContactDetails',verifyTokenFn, controller.customers.customerContactDetails)
+// router.get('/customerContactDetails',verifyTokenFn, controller.customers.customerContactDetails)
 router.put('/deleteCustomer',verifyTokenFn, controller.customers.deleteCustomer)
 
 //------------------------------------Commisions-----------------------------------------
@@ -80,20 +80,21 @@ router.get('/productList',verifyTokenFn, controller.products.productList)
 router.put('/deleteProduct',verifyTokenFn, controller.products.deleteProduct)
 router.post('/uploadProductImage',verifyTokenFn, uploadProductImage.single('image'),controller.products.uploadProductImage);
 router.post('/uploadProductFile',verifyTokenFn,uploadProductFile.single('file'), controller.products.uploadProductFile)
-//----------------------------------------sales conversion --------------------------------
+
+//----------------------------------------sales --------------------------------
 router.get('/customerListforSales',verifyTokenFn, controller.sales.customerListforSales)
 // router.get('/customerContactDetailsForSales',verifyTokenFn, controller.sales.customerContactDetailsForSales)
 
-router.post('/createSalesCommission',verifyTokenFn, controller.sales.createSalesCommission)
+router.post('/createSales',verifyTokenFn, controller.sales.createSales)
 
-router.get('/allSalesCommissionList',verifyTokenFn, controller.sales.allSalesCommissionList)
-router.get('/activeSalesCommissionList',verifyTokenFn, controller.sales.activeSalesCommissionList)
-router.get('/closedSalesCommissionList',verifyTokenFn, controller.sales.closedSalesCommissionList)
+router.get('/allSalesList',verifyTokenFn, controller.sales.allSalesList)
+router.get('/activeSalesList',verifyTokenFn, controller.sales.activeSalesList)
+router.get('/closedSalesList',verifyTokenFn, controller.sales.closedSalesList)
 router.get('/salesDetails',verifyTokenFn, controller.sales.salesDetails)
 
-router.put('/updateSalesCommission',verifyTokenFn, controller.sales.updateSalesCommission)
-router.put('/deleteSalesCommission',verifyTokenFn, controller.sales.deleteSalesCommission)
-router.get('/salesCommissionLogsList',verifyTokenFn, controller.sales.salesCommissionLogsList)
+router.put('/updateSales',verifyTokenFn, controller.sales.updateSales)
+router.put('/deleteSales',verifyTokenFn, controller.sales.deleteSales)
+router.get('/salesLogsList',verifyTokenFn, controller.sales.salesLogsList)
 router.post('/uploadSalesContract', verifyTokenFn,uploadSalesContract.single('file'), controller.sales.uploadSalesContract )
 router.post('/closeSales',verifyTokenFn, controller.sales.closeSales)
 router.get('/usersListForSales', verifyTokenFn, controller.sales.usersListForSales)
@@ -131,8 +132,8 @@ router.put('/deleteAssignedUserForecast', verifyTokenFn, controller.revenueForec
 
 //---------------------------------------Business and Revenue Contact-------------------------
 
-router.post('/addBusinessContact',verifyTokenFn, controller.customers.addBusinessContact)
-router.post('/addRevenueContact',verifyTokenFn, controller.customers.addRevenueContact)
+router.post('/addBusinessAndRevenueContact',verifyTokenFn, controller.customers.addBusinessAndRevenueContact)
+// router.post('/addRevenueContact',verifyTokenFn, controller.customers.addRevenueContact)
 
 //-------------------------------------------Configurations----------------------------------
 router.post('/addConfigs', verifyTokenFn, controller.configuration.addConfigs)
@@ -168,6 +169,7 @@ router.get('/SentEmailList/:salesId', verifyTokenFn, controller.email.SentEmailL
 // router.get('/organizationList',verifyTokenFn, controller.leads.organizationList)
 router.post('/createLead',verifyTokenFn, controller.leads.createLead)
 router.get('/leadsList',verifyTokenFn, controller.leads.leadsList)
+router.get('/leadsDetails',verifyTokenFn, controller.leads.leadsDetails)
 router.put('/updateLead',verifyTokenFn, controller.leads.updateLead)
 router.put('/deleteLead',verifyTokenFn, controller.leads.deleteLead)
 router.put('/rejectLead',verifyTokenFn, controller.leads.rejectLead)

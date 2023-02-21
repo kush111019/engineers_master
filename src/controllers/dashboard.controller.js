@@ -18,15 +18,14 @@ module.exports.revenues = async (req, res) => {
         let checkPermission = await connection.query(s3);
         if (checkPermission.rows[0].permission_to_view_global) {
             let revenueCommissionBydate = []
-            let userList = await getUserAndSubUser(checkPermission.rows[0]);
-            let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate, var5: userList.join(',') })
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate, var5: roleUsers.join(',') })
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
                 for (let saleData of salesData.rows) {
                     let revenueCommissionByDateObj = {}
                     let s5 = dbScript(db_sql['Q300'], { var1: saleData.sales_commission_id })
                     let recognizedRevenueData = await connection.query(s5)
-
                     if (recognizedRevenueData.rows[0].amount) {
                         revenueCommissionByDateObj.revenue = Number(recognizedRevenueData.rows[0].amount)
                         revenueCommissionByDateObj.date = moment(saleData.closed_at).format('MM/DD/YYYY')
@@ -36,22 +35,18 @@ module.exports.revenues = async (req, res) => {
                             revenueCommissionByDateObj.commission = Number(commission);
                             revenueCommissionBydate.push(revenueCommissionByDateObj)
                         } else if (filterBy.toLowerCase() == 'lead') {
-                            let s6 = dbScript(db_sql['Q86'], { var1: saleData.sales_commission_id })
-                            let leadPercentage = await connection.query(s6)
-                            if (leadPercentage.rowCount > 0) {
-                                revenueCommissionByDateObj.commission = ((Number(leadPercentage.rows[0].closer_percentage) / 100) * Number(commission))
-                                revenueCommissionBydate.push(revenueCommissionByDateObj)
+                            for (let user of saleData.sales_users) {
+                                if (user.user_type == process.env.CAPTAIN) {
+                                    revenueCommissionByDateObj.commission = ((Number(user.percentage) / 100) * Number(commission))
+                                    revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                }
                             }
                         } else {
-                            let s6 = dbScript(db_sql['Q59'], { var1: saleData.sales_commission_id })
-                            let supporterPercentage = await connection.query(s6)
-                            if (supporterPercentage.rowCount > 0) {
-                                let sCommission = 0
-                                for ( let supporter of supporterPercentage.rows) {
-                                    sCommission += ((Number(supporter.supporter_percentage) / 100) * Number(commission))
+                            for (let user of saleData.sales_users) {
+                                if (user.user_type == process.env.SUPPORT) {
+                                    revenueCommissionByDateObj.commission = ((Number(user.percentage) / 100) * Number(commission))
+                                    revenueCommissionBydate.push(revenueCommissionByDateObj)
                                 }
-                                revenueCommissionByDateObj.commission = sCommission
-                                revenueCommissionBydate.push(revenueCommissionByDateObj)
                             }
                         }
                     }
@@ -106,22 +101,18 @@ module.exports.revenues = async (req, res) => {
                             revenueCommissionByDateObj.commission = Number(commission);
                             revenueCommissionBydate.push(revenueCommissionByDateObj)
                         } else if (filterBy.toLowerCase() == 'lead') {
-                            let s6 = dbScript(db_sql['Q86'], { var1: saleData.sales_commission_id })
-                            let leadPercentage = await connection.query(s6)
-                            if (leadPercentage.rowCount > 0) {
-                                revenueCommissionByDateObj.commission = ((Number(leadPercentage.rows[0].closer_percentage) / 100) * Number(commission))
-                                revenueCommissionBydate.push(revenueCommissionByDateObj)
+                            for (let user of saleData.sales_users) {
+                                if (user.user_type == process.env.CAPTAIN) {
+                                    revenueCommissionByDateObj.commission = ((Number(user.percentage) / 100) * Number(commission))
+                                    revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                }
                             }
                         } else {
-                            let s6 = dbScript(db_sql['Q59'], { var1: saleData.sales_commission_id })
-                            let supporterPercentage = await connection.query(s6)
-                            if (supporterPercentage.rowCount > 0) {
-                                let sCommission = 0
-                                for ( let supporter of supporterPercentage.rows) {
-                                    sCommission += ((Number(supporter.supporter_percentage) / 100) * Number(commission))
+                            for (let user of saleData.sales_users) {
+                                if (user.user_type == process.env.SUPPORT) {
+                                    revenueCommissionByDateObj.commission = ((Number(user.percentage) / 100) * Number(commission))
+                                    revenueCommissionBydate.push(revenueCommissionByDateObj)
                                 }
-                                revenueCommissionByDateObj.commission = sCommission
-                                revenueCommissionBydate.push(revenueCommissionByDateObj)
                             }
                         }
                     }
@@ -180,13 +171,15 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
             let salesData = await connection.query(s4)
 
             let s5 = dbScript(db_sql['Q299'], { var1: checkPermission.rows[0].company_id })
+            
             let recognizedRevenueData = await connection.query(s5)
-            if (salesData.rowCount > 0) {
-                let totalBooking = salesData.rows[0].amount ? salesData.rows[0].amount : 0;
-                let bookingCommission = salesData.rows[0].booking_commission ? salesData.rows[0].booking_commission : 0;
 
-                let revenueBooking = recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0;
-                let revenueCommission = salesData.rows[0].revenue_commission ? salesData.rows[0].revenue_commission : 0;
+            if (salesData.rowCount > 0) {
+                let totalBooking = salesData.rows[0].amount ? Number(salesData.rows[0].amount) : 0;
+                let bookingCommission = salesData.rows[0].booking_commission ? Number(salesData.rows[0].booking_commission) : 0;
+
+                let revenueBooking = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0;
+                let revenueCommission = salesData.rows[0].revenue_commission ? Number(salesData.rows[0].revenue_commission ): 0;
                 res.json({
                     status: 200,
                     success: true,
@@ -227,15 +220,13 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                 let s4 = dbScript(db_sql['Q302'], { var1: salesId.join(",") })
                 let salesData = await connection.query(s4)
                 let s5 = dbScript(db_sql['Q303'], { var1: salesId.join(",") })
-                console.log(s5, 's5')
                 let recognizedRevenueData = await connection.query(s5)
-                console.log(recognizedRevenueData.rows, 'recognizedRevenueData')
                 if (salesData.rowCount > 0) {
-                    let totalBooking = salesData.rows[0].amount ? salesData.rows[0].amount : 0;
-                    let bookingCommission = salesData.rows[0].booking_commission ? salesData.rows[0].booking_commission : 0;
+                    let totalBooking = salesData.rows[0].amount ? Number(salesData.rows[0].amount) : 0;
+                    let bookingCommission = salesData.rows[0].booking_commission ? Number(salesData.rows[0].booking_commission) : 0;
 
-                    let revenueBooking = recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0;
-                    let revenueCommission = salesData.rows[0].revenue_commission ? salesData.rows[0].revenue_commission : 0;
+                    let revenueBooking = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0;
+                    let revenueCommission = salesData.rows[0].revenue_commission ? Number(salesData.rows[0].revenue_commission) : 0;
                     res.json({
                         status: 200,
                         success: true,

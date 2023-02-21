@@ -343,13 +343,10 @@ module.exports.createGroupChat = async (req, res) => {
 
                 let s2 = dbScript(db_sql['Q126'], { var1: salesId })
                 let salesDetails = await connection.query(s2)
-                users.push(salesDetails.rows[0].closer_id)
-                users.push(salesDetails.rows[0].creator_id)
-                
-                let s3 = dbScript(db_sql['Q127'], { var1: salesId })
-                let supporters = await connection.query(s3)
-                for (let supporterData of supporters.rows) {
-                    users.push(supporterData.supporter_id)
+                for (let salesData of salesDetails.rows) {
+                    if(users.includes(salesData.user_id) == false){
+                        users.push(salesData.user_id)
+                    }
                 }
 
                 if(users.includes(id) == false){
