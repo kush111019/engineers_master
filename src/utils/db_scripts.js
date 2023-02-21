@@ -2075,7 +2075,7 @@ const db_sql = {
                 (
                   SELECT json_agg(fa.*)
                     from forecast_audit fa
-                  WHERE (fa.forecast_id::uuid = f.id OR fa.pid::uuid = f.id)
+                  WHERE (fa.forecast_id::uuid = f.id OR fa.forecast_id::uuid = f.pid::uuid)
                 ) as audit_forecast
               FROM 
                 forecast AS f
