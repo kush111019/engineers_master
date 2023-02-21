@@ -1219,7 +1219,7 @@ const db_sql = {
   "Q225": `SELECT * FROM lead_sources WHERE LOWER(source) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
   "Q226": `SELECT * FROM lead_titles WHERE LOWER(title) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
   "Q227": `SELECT * FROM lead_industries WHERE LOWER(industry) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
-   "Q229": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND is_converted = true AND deleted_at IS NULL`,
+   "Q229": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND emp_type = 'lead' AND is_converted = true AND deleted_at IS NULL`,
   "Q230": `UPDATE companies SET is_marketing_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q231": `UPDATE companies SET expiry_date = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   "Q232": `UPDATE companies SET expiry_date = '{var1}', user_count = '{var2}', updated_at = '{var3}' WHERE id = '{var4}' AND deleted_at IS NULL RETURNING *`,
@@ -1336,7 +1336,7 @@ const db_sql = {
               ORDER BY 
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
-  "Q248": `SELECT COUNT(*) from customer_company_employees WHERE assigned_sales_lead_to = '{var1}'  AND deleted_at IS NULL`,
+  "Q248": `SELECT COUNT(*) from customer_company_employees WHERE assigned_sales_lead_to = '{var1}' AND emp_type = 'lead'  AND deleted_at IS NULL`,
   "Q249": `UPDATE companies SET company_logo = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q250": `UPDATE customer_company_employees SET is_rejected = '{var2}', reason = '{var3}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`,
   "Q251": `SELECT 
@@ -1354,7 +1354,7 @@ const db_sql = {
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
   "Q252": `SELECT * FROM sales WHERE lead_id = '{var1}' AND deleted_at IS NULL`,
-  "Q253": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND is_rejected = '{var2}' AND deleted_at IS NULL`,
+  "Q253": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND emp_type = 'lead' AND is_rejected = '{var2}' AND deleted_at IS NULL`,
    "Q255": `SELECT 
                 COUNT(*),
                 u.full_name AS created_by
