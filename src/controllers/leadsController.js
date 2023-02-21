@@ -171,6 +171,46 @@ module.exports.leadsList = async (req, res) => {
     }
 }
 
+module.exports.leadsDetails = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { id } = req.query
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        let type = 'lead';
+        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
+            let s2 = dbScript(db_sql['Q208'], { var1: id, var2: type })
+            leadList = await connection.query(s2)
+            if (leadList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Lead details',
+                    data: leadList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty lead details',
+                    data: leadList.rows
+                })
+            }
+        }else {
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 module.exports.updateLead = async (req, res) => {
     try {
         let userId = req.user.id

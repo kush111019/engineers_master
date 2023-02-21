@@ -169,6 +169,7 @@ router.get('/SentEmailList/:salesId', verifyTokenFn, controller.email.SentEmailL
 // router.get('/organizationList',verifyTokenFn, controller.leads.organizationList)
 router.post('/createLead',verifyTokenFn, controller.leads.createLead)
 router.get('/leadsList',verifyTokenFn, controller.leads.leadsList)
+router.get('/leadsDetails',verifyTokenFn, controller.leads.leadsDetails)
 router.put('/updateLead',verifyTokenFn, controller.leads.updateLead)
 router.put('/deleteLead',verifyTokenFn, controller.leads.deleteLead)
 router.put('/rejectLead',verifyTokenFn, controller.leads.rejectLead)

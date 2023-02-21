@@ -1321,20 +1321,30 @@ const db_sql = {
               ORDER BY 
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
-  // "Q208"  :`SELECT 
-  //             COUNT(*),
-  //             u.full_name AS created_by
-  //           FROM 
-  //             customer_company_employees AS l 
-  //           INNER JOIN 
-  //             users AS u ON u.id = l.user_id
-  //           WHERE 
-  //             l.user_id = '{var1}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
-  //           GROUP BY 
-  //             u.full_name
-  //           ORDER BY 
-  //             count {var4}
-  //           LIMIT {var2} OFFSET {var3}`,
+  "Q208"  :`SELECT 
+              l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+              l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+              l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+              l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
+              u1.full_name AS creator_name, c.customer_name , u2.full_name as assigned_sales_lead_name
+            FROM 
+              customer_company_employees AS l
+            LEFt JOIN 
+              users AS u1 ON u1.id = l.creator_id
+            LEFt JOIN 
+              users AS u2 ON u2.id = l.assigned_sales_lead_to
+            LEFt JOIN
+              lead_sources AS s ON s.id = l.source
+            LEFt JOIN
+              lead_titles AS t ON t.id = l.title
+            LEFt JOIN
+              lead_industries AS i ON i.id = l.industry_type
+            LEFT JOIN 
+              customer_companies AS c ON c.id = l.customer_company_id
+            WHERE 
+              l.id = '{var1}' AND emp_type = '{var2}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+            ORDER BY 
+              l.created_at DESC`,
   "Q209": `select 
                 distinct(l.id),l.creator_id,l.assigned_sales_lead_to, u.full_name as created_by,l.customer_company_id,
                 l.is_rejected, l.is_converted
