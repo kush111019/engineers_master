@@ -251,7 +251,7 @@ module.exports.editCustomer = async (req, res) => {
                 for (let contactData of customerContact) {
                     if (contactData.empId == '') {
                         let empId = uuid.v4()
-                        let s6 = dbScript(db_sql['Q70'], { var1: empId, var2: mysql_real_escape_string(contactData.empContactName), var3: contactData.empEmail, var4: contactData.empPhoneNumber, var5: createCustomer.rows[0].id, var6: contactData.empType, var7: userId, var8: checkPermission.rows[0].company_id })
+                        let s6 = dbScript(db_sql['Q70'], { var1: empId, var2: mysql_real_escape_string(contactData.empContactName), var3: contactData.empEmail, var4: contactData.empPhoneNumber, var5: customerId, var6: contactData.empType, var7: userId, var8: checkPermission.rows[0].company_id })
                         let addCustomerContact = await connection.query(s6)
                     } else {
                         let _dt = new Date().toISOString();
