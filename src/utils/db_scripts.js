@@ -526,12 +526,15 @@ const db_sql = {
   "Q134": `SELECT room_id, user_id, group_name FROM chat_room_members WHERE user_id = '{var1}' AND deleted_at IS NULL`,
 
   "Q135": `SELECT id, message_id, to_mail, from_mail,from_name, mail_date, subject, mail_html, mail_text, mail_text_as_html, attechments, company_id, read_status, created_at FROM emails WHERE company_id = '{var1}' AND user_id = '{var2}' AND deleted_at IS NULL order by mail_date desc`,
-  "Q136": `SELECT b.email_address AS business_email, r.email_address AS revenue_email
-              FROM business_contact AS b 
-              INNER JOIN customer_companies AS c ON c.id = b.customer_id
-              INNER JOIN revenue_contact AS r ON b.customer_id = r.customer_id
-              WHERE '{var1}' IN (b.email_address, r.email_address) AND c.company_id = '{var2}' AND
-              b.deleted_at IS NULL AND c.deleted_at IS NULL AND r.deleted_at IS NULL`,
+  "Q136": `SELECT 
+             cc.email_address 
+           FROM 
+             customer_company_employees AS cc
+           WHERE 
+             '{var1}' IN (cc.email_address) 
+             AND cc.company_id = '{var2}' 
+             AND (cc.emp_type = 'business' OR cc.emp_type = 'revenue') 
+             AND cc.deleted_at IS NULL`,
   "Q137": `INSERT INTO emails (id, message_id, to_mail, from_mail,from_name, mail_date, subject, 
               mail_html, mail_text, mail_text_as_html, company_id, attechments, user_id) VALUES('{var1}', '{var2}', 
               '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}', '{var10}','{var11}', '{var12}', '{var13}') RETURNING *` ,
