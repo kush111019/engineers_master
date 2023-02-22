@@ -1819,32 +1819,40 @@ const db_sql = {
               WHERE 
                 id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   "Q306": `SELECT 
-                f.id, f.timeline, f.amount, f.start_date, f.pid,
-                f.end_date, f.created_by,f.created_at, f.assigned_to,
-                u1.full_name as creator_name, u2.full_name as assigned_name, 
-                (
-                  SELECT json_agg(forecast_data.*)
-                    from forecast_data
-                    where forecast_data.forecast_id::uuid = f.id AND forecast_data.deleted_at IS NULL
-                ) as forecast_data,
-                (
-                  SELECT json_agg(forecast)
-                    from forecast
-                    where forecast.pid::varchar = f.id::varchar AND forecast.deleted_at IS NULL
-                ) as assigned_forecast,
-                (
-                  SELECT json_agg(fa.*)
-                    from forecast_audit fa
-                  WHERE (fa.forecast_id::uuid = f.id OR fa.pid::uuid = f.id::uuid)
-                ) as audit_forecast
-              FROM 
-                forecast AS f
-              LEFT JOIN users as u1 on u1.id::uuid	 = f.created_by::uuid	
-              LEFT JOIN users as u2 on u2.id::uuid	 = f.assigned_to::uuid
-              WHERE 
-                f.id = '{var1}' AND f.deleted_at IS NULL 
-              ORDER BY 
-                timeline ASC`,
+              f.id, f.timeline, f.amount, f.start_date, f.pid,
+              f.end_date, f.created_by,f.created_at, f.assigned_to,
+              u1.full_name as creator_name, u2.full_name as assigned_name, 
+              (
+                SELECT json_agg(forecast_data.*)
+                  FROM forecast_data
+                  WHERE forecast_data.forecast_id::uuid = f.id AND forecast_data.deleted_at IS NULL
+              ) as forecast_data,
+              (
+                SELECT json_agg(forecast) 
+                  FROM (
+                    SELECT forecast.*,
+                      (
+                        SELECT json_agg(forecast_data.*)
+                          FROM forecast_data
+                          WHERE forecast_data.forecast_id::uuid = forecast.id AND forecast_data.deleted_at IS NULL
+                      ) as forecast_data
+                    FROM forecast
+                    WHERE forecast.pid::varchar = f.id::varchar AND forecast.deleted_at IS NULL
+                  ) forecast
+              ) as assigned_forecast,
+              (
+                SELECT json_agg(fa.*)
+                  FROM forecast_audit fa
+                WHERE (fa.forecast_id::uuid = f.id OR fa.pid::uuid = f.id::uuid)
+              ) as audit_forecast
+            FROM 
+              forecast AS f
+            LEFT JOIN users as u1 on u1.id::uuid	 = f.created_by::uuid	
+            LEFT JOIN users as u2 on u2.id::uuid	 = f.assigned_to::uuid
+            WHERE 
+              f.id = '{var1}' AND f.deleted_at IS NULL 
+            ORDER BY 
+              timeline ASC`,
 
   "Q307": `UPDATE 
               forecast
