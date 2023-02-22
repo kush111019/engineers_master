@@ -1857,19 +1857,18 @@ const db_sql = {
   "Q309": `UPDATE forecast SET deleted_at = '{var1}' WHERE assigned_to = '{var2}' AND id = '{var3}' RETURNING *`,
   "Q310": `UPDATE forecast_data SET deleted_at = '{var1}' WHERE forecast_id = '{var2}' RETURNING *`,
   "Q311": `SELECT start_date, end_date, created_by,amount as forecast_amount,
-              (
-                SELECT json_agg(sc.id)
-                FROM sales as sc
-                LEFT JOIN sales_closer AS c ON c.sales_commission_id = sc.id
-                LEFT JOIN sales_supporter AS s ON s.sales_commission_id = sc.id
-                WHERE 
-                  ( sc.user_id::uuid = fd.created_by 
-                    OR c.closer_id::uuid = fd.created_by::uuid 
-                    OR s.supporter_id::uuid = fd.created_by::uuid ) 
-                    AND sc.closed_at BETWEEN fd.start_date::date AND fd.end_date::date 
-                    AND sc.deleted_at is null
-              ) AS sales_data
-            FROM forecast_data AS fd WHERE fd.forecast_id = '{var1}' AND fd.deleted_at IS NULL`,
+            (
+              SELECT json_agg(sc.id)
+              FROM sales as sc
+              LEFT JOIN sales_users AS su ON su.sales_id = sc.id
+              WHERE 
+                ( sc.user_id::uuid = fd.created_by 
+                  OR su.user_id::uuid = fd.created_by::uuid 
+                  ) 
+                  AND sc.closed_at BETWEEN fd.start_date::date AND fd.end_date::date 
+                  AND sc.deleted_at is null
+            ) AS sales_data
+          FROM forecast_data AS fd WHERE fd.forecast_id = '{var1}' AND fd.deleted_at IS NULL`,
   "Q315": `SELECT 
               p.id, p.product_name, p.product_image, p.description, p.available_quantity, p.price, 
               p.end_of_life, p.currency, p.company_id, p.created_at, p.updated_at, p.user_id, u.full_name as created_by 
