@@ -280,7 +280,7 @@ module.exports.editRevenueForecast = async (req, res) => {
 module.exports.auditForecast = async (req, res) => {
     try {
         let userId = req.user.id
-        let { forecastId, pid, reason, amount } = req.body
+        let { forecastId, pid, reason, amount, forecastAmount } = req.body
 
         //add notification deatils
         let notification_userId;
@@ -289,7 +289,7 @@ module.exports.auditForecast = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
-            let s2 = dbScript(db_sql['Q308'], { var1: forecastId, var2: amount, var3: reason, var4: userId , var5 :pid})
+            let s2 = dbScript(db_sql['Q308'], { var1: forecastId, var2: amount, var3: reason, var4: userId , var5 :pid, var6 : forecastAmount})
             let createAudit = await connection.query(s2)
 
             let s3 = dbScript(db_sql['Q306'], { var1: forecastId });
@@ -298,7 +298,6 @@ module.exports.auditForecast = async (req, res) => {
                 // add notification in notification list
                 notification_userId = [revenueForecastList.rows[0].created_by];
                 await notificationsOperations({ type: 3, msg: 3.3, notification_typeId, notification_userId }, userId);
-
                 res.json({
                     status: 200,
                     success: true,

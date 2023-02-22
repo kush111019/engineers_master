@@ -1860,8 +1860,8 @@ const db_sql = {
                 amount = '{var2}', assigned_to = '{var3}'
             WHERE 
               id = '{var1}' AND deleted_at IS NULL RETURNING *`,
-  "Q308": `INSERT INTO forecast_audit(forecast_id,amount,reason,created_by,pid)
-            VALUES('{var1}', '{var2}', '{var3}', '{var4}','{var5}') RETURNING *`,
+  "Q308": `INSERT INTO forecast_audit(forecast_id,amount,reason,created_by,pid, forecast_amount)
+            VALUES('{var1}', '{var2}', '{var3}', '{var4}','{var5}', '{var6}') RETURNING *`,
   "Q309": `UPDATE forecast SET deleted_at = '{var1}' WHERE assigned_to = '{var2}' AND id = '{var3}' RETURNING *`,
   "Q310": `UPDATE forecast_data SET deleted_at = '{var1}' WHERE forecast_id = '{var2}' RETURNING *`,
   "Q311": `SELECT start_date, end_date, created_by,amount as forecast_amount,
