@@ -17,8 +17,8 @@ module.exports.commissionSplit = async (req, res) => {
         if (checkPermission.rows[0].permission_to_create) {
             await connection.query('BEGIN')
 
-            let id = uuid.v4()
-            let s4 = dbScript(db_sql['Q48'], { var1: id, var2: closerPercentage, var3: supporterPercentage, var4: checkPermission.rows[0].company_id, var5 : userId })
+            // let id = uuid.v4()
+            let s4 = dbScript(db_sql['Q48'], { var1: closerPercentage, var2: supporterPercentage, var3: checkPermission.rows[0].company_id, var4 : userId })
             var createCommission = await connection.query(s4)
 
             await connection.query('COMMIT')

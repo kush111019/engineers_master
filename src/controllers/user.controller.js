@@ -97,7 +97,7 @@ module.exports.addUser = async (req, res) => {
 
         avatar = (avatar == "") ? process.env.DEFAULT_LOGO : avatar;
 
-        let id = uuid.v4()
+        //let id = uuid.v4()
         // first check user email is exits in our data base or not
         let s2 = dbScript(db_sql['Q4'], { var1: emailAddress })
         let findUser = await connection.query(s2)
@@ -113,7 +113,7 @@ module.exports.addUser = async (req, res) => {
 
                 // and user added in db and update there permission in db
                 await connection.query('BEGIN')
-                let s5 = dbScript(db_sql['Q45'], { var1: id, var2: mysql_real_escape_string(name), var3: checkPermission.rows[0].company_id, var4: avatar, var5: emailAddress.toLowerCase(), var6: mobileNumber, var7: encryptedPassword, var8: roleId, var9: mysql_real_escape_string(address), var10: isAdmin, var11: userId })
+                let s5 = dbScript(db_sql['Q45'], { var1: mysql_real_escape_string(name), var2: checkPermission.rows[0].company_id, var3: avatar, var4: emailAddress.toLowerCase(), var5: mobileNumber, var6: encryptedPassword, var7: roleId, var8: mysql_real_escape_string(address), var9: isAdmin, var10: userId })
                 let addUser = await connection.query(s5)
 
                 let _dt = new Date().toISOString();

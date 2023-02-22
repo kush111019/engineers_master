@@ -22,8 +22,8 @@ module.exports.addConfigs = async (req, res) => {
             let s2 = dbScript(db_sql['Q85'], { var1: _dt, var2: findAdmin.rows[0].company_id })
             let config = await connection.query(s2)
 
-            let id = uuid.v4()
-            let s3 = dbScript(db_sql['Q83'], { var1: id, var2: currency, var3: phoneFormat, var4: dateFormat, var5: findAdmin.rows[0].id, var6: findAdmin.rows[0].company_id })
+            //let id = uuid.v4()
+            let s3 = dbScript(db_sql['Q83'], { var1:currency, var2: phoneFormat, var3: dateFormat, var4: findAdmin.rows[0].id, var5: findAdmin.rows[0].company_id })
 
             let addConfig = await connection.query(s3)
 

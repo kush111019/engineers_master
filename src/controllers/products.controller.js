@@ -28,8 +28,7 @@ module.exports.addProduct = async (req, res) => {
             let findProduct = await connection.query(s3)
             if (findProduct.rowCount == 0) {
                 await connection.query('BEGIN')
-                let id = uuid.v4()
-                let s4 = dbScript(db_sql['Q92'], { var1: id, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: endOfLife, var8: checkPermission.rows[0].company_id, var9: currency, var10: userId })
+                let s4 = dbScript(db_sql['Q92'], { var1:productName, var2: productImage, var3: mysql_real_escape_string(description), var4: availableQuantity, var5: price, var6: endOfLife, var7: checkPermission.rows[0].company_id, var8: currency, var9: userId })
                 let addProduct = await connection.query(s4)
                 if (addProduct.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -284,8 +283,8 @@ module.exports.uploadProductFile = async (req, res) => {
                             if (findProduct.rowCount == 0) {
                                 (row[1] == "") ? row[1] = process.env.DEFAULT_PRODUCT_IMAGE : row[1];
                                 //unique id for every row 
-                                id = uuid.v4()
-                                let s4 = dbScript(db_sql['Q97'], { var1: id, var2: checkPermission.rows[0].company_id, var3: userId })
+                               
+                                let s4 = dbScript(db_sql['Q97'], { var1: checkPermission.rows[0].company_id, var2: userId })
                                 connection.query(s4, row, (err, res) => {
                                     if (err) {
                                         throw err
