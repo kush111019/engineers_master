@@ -202,7 +202,7 @@ module.exports.addBudget = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_create) {
 
-            let s2 = dbScript(db_sql['Q233'], { var1: timeline, var2: amount, var3: startDate, var4: endDate, var5: userId })
+            let s2 = dbScript(db_sql['Q233'], { var1: timeline, var2: amount, var3: startDate, var4: endDate, var5: userId, var6 : checkPermission.rows[0].company_id })
             let createBudget = await connection.query(s2)
 
             if (createBudget.rowCount > 0) {
@@ -216,7 +216,7 @@ module.exports.addBudget = async (req, res) => {
                         let addDescLog = await connection.query(s4)
                     }
                 }
-                let s5 = dbScript(db_sql['Q236'], { var1: createBudget.rows[0].id, var2: timeline, var3: amount, var4: startDate, var5: endDate, var6: userId })
+                let s5 = dbScript(db_sql['Q236'], { var1: createBudget.rows[0].id, var2: timeline, var3: amount, var4: startDate, var5: endDate, var6: userId, var7 : checkPermission.rows[0].company_id })
                 let addBudgetLog = await connection.query(s5)
                 if (budgetData.length > 0) {
                     for (let data of budgetData) {
@@ -427,7 +427,7 @@ module.exports.updateBudget = async (req, res) => {
             let s2 = dbScript(db_sql['Q241'], { var1: timeline, var2: amount, var3: startDate, var4: endDate, var6: budgetId })
             let updateBudget = await connection.query(s2)
 
-            let s5 = dbScript(db_sql['Q236'], { var1: budgetId, var2: timeline, var3: amount, var4: startDate, var5: endDate, var6: userId })
+            let s5 = dbScript(db_sql['Q236'], { var1: budgetId, var2: timeline, var3: amount, var4: startDate, var5: endDate, var6: userId, var7 : checkPermission.rows[0].company_id })
             
             let addBudgetLog = await connection.query(s5)
             if (budgetData.length > 0) {

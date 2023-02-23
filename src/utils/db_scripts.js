@@ -1222,8 +1222,8 @@ const db_sql = {
   "Q231": `UPDATE companies SET expiry_date = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   "Q232": `UPDATE companies SET expiry_date = '{var1}', user_count = '{var2}', updated_at = '{var3}' WHERE id = '{var4}' AND deleted_at IS NULL RETURNING *`,
 
-  "Q233": `INSERT INTO marketing_budget(timeline,amount,start_date,end_date,created_by)
-             VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}') RETURNING *`,
+  "Q233": `INSERT INTO marketing_budget(timeline,amount,start_date,end_date,created_by, company_id)
+             VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') RETURNING *`,
 
   "Q234": `INSERT INTO marketing_budget_description( budget_id,title, amount,user_id, company_id)
              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}') RETURNING *`,
@@ -1231,8 +1231,8 @@ const db_sql = {
   "Q235": `INSERT INTO marketing_budget_description_logs(budget_description_id,budget_id,title, amount,user_id, company_id)
              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') RETURNING *`,
 
-  "Q236": `INSERT INTO marketing_budget_logs(budget_id,timeline,amount,start_date,end_date,created_by)
-             VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') RETURNING *`,
+  "Q236": `INSERT INTO marketing_budget_logs(budget_id,timeline,amount,start_date,end_date,created_by, company_id)
+             VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}') RETURNING *`,
   "Q237": `SELECT 
                 b.id, b.timeline, b.amount, b.start_date,
                 b.end_date, b.created_by,b.created_at,b.is_finalize,
@@ -1253,7 +1253,7 @@ const db_sql = {
                 marketing_budget AS b
               LEFT JOIN users as u1 on u1.id = b.created_by	
               WHERE 
-                (b.created_by = '{var1}') AND b.deleted_at IS NULL 
+                (b.company_id = '{var1}') AND b.deleted_at IS NULL 
               ORDER BY 
                 timeline ASC`,
   "Q238": `UPDATE marketing_budget SET deleted_at = '{var2}' where id = '{var1}' AND deleted_at IS NULL RETURNING *`,
