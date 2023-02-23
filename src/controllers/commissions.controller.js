@@ -1,5 +1,5 @@
 const connection = require('../database/connection')
-const { db_sql, dbScript} = require('../utils/db_scripts');
+const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid");
 const moduleName = process.env.COMMISSIONS_MODULE
 
@@ -12,18 +12,23 @@ module.exports.commissionSplit = async (req, res) => {
             closerPercentage,
             supporterPercentage
         } = req.body
+        await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_create) {
-            await connection.query('BEGIN')
+
 
             // let id = uuid.v4()
-            let s4 = dbScript(db_sql['Q48'], { var1: closerPercentage, var2: supporterPercentage, var3: checkPermission.rows[0].company_id, var4 : userId })
+            let s4 = dbScript(db_sql['Q48'], { var1: closerPercentage, var2: supporterPercentage, var3: checkPermission.rows[0].company_id, var4: userId })
             var createCommission = await connection.query(s4)
 
-            await connection.query('COMMIT')
+            let _dt = new Date().toISOString();
+            let s7 = dbScript(db_sql['Q331'], { var1: _dt, var2: checkPermission.rows[0].company_id })
+            updateStatusInCompany = await connection.query(s7)
+            
 
-            if (createCommission.rowCount > 0) {
+            if (createCommission.rowCount > 0 && updateStatusInCompany.rowCount > 0) {
+                await connection.query('COMMIT')
                 res.json({
                     status: 201,
                     success: true,

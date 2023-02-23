@@ -361,12 +361,14 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                                 }
                             } else {
                                 if (saleData.sales_users) {
+                                    let commission1 = 0;
                                     for (let user of saleData.sales_users) {
                                         if (user.user_type == process.env.SUPPORT) {
-                                            revenueCommissionByDateObj.commission = ((Number(user.percentage) / 100) * Number(commission))
-                                            revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                            commission1 = commission1 + ((Number(user.percentage) / 100) * Number(commission))
                                         }
                                     }
+                                    revenueCommissionByDateObj.commission = commission1
+                                    revenueCommissionBydate.push(revenueCommissionByDateObj)
                                 }
                             }
                         }
@@ -422,8 +424,9 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         roleUsers = userData;
                     }
                 }
-                let s4 = dbScript(db_sql['Q258'], { var1: roleUsers.join("','"), var2: orderBy, var3: sDate, var4: eDate })
+                let s4 = dbScript(db_sql['Q258'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
                 let salesData = await connection.query(s4)
+
                 if (salesData.rowCount > 0) {
                     for (let saleData of salesData.rows) {
                         let revenueCommissionByDateObj = {}
@@ -451,12 +454,14 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                                     }
                                 }
                             } else {
+                                let commission1 = 0;
                                 for (let user of saleData.sales_users) {
                                     if (user.user_type == process.env.SUPPORT) {
-                                        revenueCommissionByDateObj.commission = ((Number(user.percentage) / 100) * Number(commission))
-                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                        commission1 = commission1 + ((Number(user.percentage) / 100) * Number(commission))
                                     }
                                 }
+                                revenueCommissionByDateObj.commission = commission1
+                                revenueCommissionBydate.push(revenueCommissionByDateObj)
                             }
                         }
                     }

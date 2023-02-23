@@ -103,14 +103,12 @@ module.exports.createPayment = async (req, res) => {
                         source: card.id
                     });
                     if (charge && customer && subscription && token && card) {
-
-                        let id = uuid.v4()
                         await connection.query('BEGIN')
                         let s4 = dbScript(db_sql['Q107'], {
-                            var1: id, var2: user.id, var3: checkuser.rows[0].company_id,
-                            var4: planId, var5: customer.id, var6: subscription.id, var7: card.id,
-                            var8: token.id, var9: charge.id, var10: subscription.current_period_end,
-                            var11: userCount, var12: charge.status, var13: Math.round(totalAmount), var14: charge.receipt_url
+                            var1: user.id, var2: checkuser.rows[0].company_id,
+                            var3: planId, var4: customer.id, var5: subscription.id, var6: card.id,
+                            var7: token.id, var8: charge.id, var9: subscription.current_period_end,
+                            var10: userCount, var11: charge.status, var12: Math.round(totalAmount), var13: charge.receipt_url
                         })
                         let saveTrasaction = await connection.query(s4)
 

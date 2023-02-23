@@ -120,8 +120,11 @@ module.exports.addUser = async (req, res) => {
                 let s6 = dbScript(db_sql['Q33'], { var1: roleId, var2: addUser.rows[0].id, var3: _dt })
                 let addPermission = await connection.query(s6)
 
+                let s7 = dbScript(db_sql['Q331'], { var1: _dt, var2: checkPermission.rows[0].company_id })
+                updateStatusInCompany = await connection.query(s7)
 
-                if (addUser.rowCount > 0 && addPermission.rowCount > 0) {
+
+                if (addUser.rowCount > 0 && addPermission.rowCount > 0 && updateStatusInCompany.rowCount > 0) {
                     await connection.query('COMMIT')
                     const payload = {
                         id: addUser.rows[0].id,
@@ -353,7 +356,7 @@ module.exports.usersDetails = async (req, res) => {
         let checkPermission = await connection.query(s3)
         //get user details on behalf of user and company id 
         let s4 = dbScript(db_sql['Q293'], { var1: checkPermission.rows[0].company_id, var2: user_id })
-        
+
         let findUsers = await connection.query(s4);
         if (findUsers.rows.length > 0) {
             res.json({

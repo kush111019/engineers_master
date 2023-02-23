@@ -10,21 +10,26 @@ module.exports.createSlab = async (req, res) => {
         let {
             slabsData
         } = req.body
+        await connection.query('BEGIN')
         //here check user all permission's
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_create) {
-            await connection.query('BEGIN')
+        
             let slabId = uuid.v4()
             //insert slab entries into db here
             for (let data of slabsData.slabs) {
                 //id = uuid.v4()
                 let s5 = dbScript(db_sql['Q18'], { var1: data.minAmount, var2: data.maxAmount, var3: data.percentage, var4: data.isMax, var5: checkPermission.rows[0].company_id, var6: data.currency, var7: Number(data.slab_ctr), var8: userId, var9: slabId, var10: slabsData.slabName, var11: slabsData.commissionSplitId ? slabsData.commissionSplitId : 'null' })
-                console.log(s5)
-                var createSlab = await connection.query(s5)
-                await connection.query('COMMIT')
+                let createSlab = await connection.query(s5)
+                
             }
-            if (createSlab.rowCount > 0) {
+
+            let _dt = new Date().toISOString();
+            let s7 = dbScript(db_sql['Q331'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+            updateStatusInCompany = await connection.query(s7)
+            if ( updateStatusInCompany.rowCount > 0) {
+                await connection.query('COMMIT')
                 res.json({
                     status: 201,
                     success: true,

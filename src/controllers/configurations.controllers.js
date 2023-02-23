@@ -187,8 +187,7 @@ module.exports.addImapCredentials = async (req, res) => {
                             let s2 = dbScript(db_sql['Q142'], { var1: _dt, var2: findAdmin.rows[0].id, var3: findAdmin.rows[0].company_id })
                             let updateCredential = await connection.query(s2)
                             let encryptedAppPassword = JSON.stringify(encrypt(appPassword))
-                            let id = uuid.v4()
-                            let s3 = dbScript(db_sql['Q143'], { var1: id, var2: email, var3: encryptedAppPassword, var4: findAdmin.rows[0].id, var5: imapHost, var6: imapPort, var7: smtpHost, var8: smtpPort, var9: findAdmin.rows[0].company_id })
+                            let s3 = dbScript(db_sql['Q143'], { var1:  email, var2: encryptedAppPassword, var3: findAdmin.rows[0].id, var4: imapHost, var5: imapPort, var6: smtpHost, var7: smtpPort, var8: findAdmin.rows[0].company_id })
                             let addCredentails = await connection.query(s3)
 
                             if (addCredentails.rowCount > 0) {
@@ -303,20 +302,17 @@ module.exports.addLeadTitle = async (req, res) => {
         let userId = req.user.id
         let { leadTitle } = req.body
 
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            await connection.query('BEGIN')
-
-            let s2 = dbScript(db_sql['Q226'], { var1: mysql_real_escape_string(leadTitle), var2: findAdmin.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q226'], { var1: mysql_real_escape_string(leadTitle), var2:findAdmin.rows[0].company_id })
             let findTitle = await connection.query(s2)
             if (findTitle.rowCount == 0) {
-
-                let id = uuid.v4()
-                let s3 = dbScript(db_sql['Q210'], { var1: id, var2: mysql_real_escape_string(leadTitle), var3: findAdmin.rows[0].company_id })
+                let s3 = dbScript(db_sql['Q210'], { var1: mysql_real_escape_string(leadTitle), var2: findAdmin.rows[0].company_id })
                 let addTitle = await connection.query(s3)
-
+               
                 if (addTitle.rowCount > 0) {
                     await connection.query('COMMIT')
                     res.json({
@@ -340,7 +336,6 @@ module.exports.addLeadTitle = async (req, res) => {
                     message: "Lead title already exist"
                 })
             }
-
         } else {
             res.json({
                 status: 400,
@@ -411,12 +406,10 @@ module.exports.deleteLeadTitle = async (req, res) => {
         let userId = req.user.id
         let { titleId } = req.body
 
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-
         if (findAdmin.rows.length > 0) {
-            await connection.query('BEGIN')
-
             let _dt = new Date().toISOString()
             let s3 = dbScript(db_sql['Q212'], { var1: _dt, var2: titleId })
 
@@ -513,8 +506,7 @@ module.exports.addLeadIndustry = async (req, res) => {
             let s2 = dbScript(db_sql['Q227'], { var1: mysql_real_escape_string(leadIndustry), var2: findAdmin.rows[0].company_id })
             let findIndustry = await connection.query(s2)
             if (findIndustry.rowCount == 0) {
-                let id = uuid.v4()
-                let s3 = dbScript(db_sql['Q214'], { var1: id, var2: mysql_real_escape_string(leadIndustry), var3: findAdmin.rows[0].company_id })
+                let s3 = dbScript(db_sql['Q214'], { var1: mysql_real_escape_string(leadIndustry), var2: findAdmin.rows[0].company_id })
                 let addIndustry = await connection.query(s3)
                 if (addIndustry.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -711,8 +703,7 @@ module.exports.addLeadSource = async (req, res) => {
             let s2 = dbScript(db_sql['Q225'], { var1: mysql_real_escape_string(leadSource), var2: findAdmin.rows[0].company_id })
             let findTitle = await connection.query(s2)
             if (findTitle.rowCount == 0) {
-                let id = uuid.v4()
-                let s3 = dbScript(db_sql['Q218'], { var1: id, var2: mysql_real_escape_string(leadSource), var3: findAdmin.rows[0].company_id })
+                let s3 = dbScript(db_sql['Q218'], { var1: mysql_real_escape_string(leadSource), var2: findAdmin.rows[0].company_id })
                 let addSource = await connection.query(s3)
                 if (addSource.rowCount > 0) {
                     await connection.query('COMMIT')

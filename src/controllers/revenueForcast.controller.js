@@ -222,14 +222,11 @@ module.exports.editRevenueForecast = async (req, res) => {
             let updateForecast = await connection.query(s2)
             if (updateForecast.rowCount > 0) {
                 if (forecastData.length > 0) {
+                    let s3 = dbScript(db_sql['Q305'], { var1: forecastId, var2:_dt })
+                    let updateForecastData = await connection.query(s3)
                     for (let data of forecastData) {
-                        if (data.id) {
-                            let s3 = dbScript(db_sql['Q305'], { var1: data.id, var2: data.type, var3: data.startDate, var4: data.endDate, var5: data.amount })
-                            let updateForecastData = await connection.query(s3)
-                        } else {
                             let s4 = dbScript(db_sql['Q294'], { var1: forecastId, var2: data.amount, var3: data.startDate, var4: data.endDate, var5: data.type, var6: userId })
                             let addForecastData = await connection.query(s4)
-                        }
                     }
                 }
                 if (assignedForecast.length > 0) {
@@ -440,12 +437,12 @@ module.exports.actualVsForecast = async (req, res) => {
     try {
         let userId = req.user.id
         let { forecastId } = req.query
-        console.log(forecastId, "forecast id");
         await connection.query('BEGIN')
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
             let s3 = dbScript(db_sql['Q311'], { var1: forecastId })
+            console.log(s3)
             let forecastData = await connection.query(s3)
             if (forecastData.rowCount > 0) {
                 for (let data of forecastData.rows) {

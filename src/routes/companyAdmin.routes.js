@@ -117,6 +117,7 @@ router.get('/totalRevenue',verifyTokenFn, controller.reports.totalRevenue)
 
 router.get('/revenues',verifyTokenFn, controller.dashboard.revenues)
 router.get('/totalExpectedRevenueCounts', verifyTokenFn, controller.dashboard.totalExpectedRevenueCounts)
+router.get('/dataCreationStatus', verifyTokenFn, controller.dashboard.dataCreationStatus)
 
 
 //-------------------------------------Revenue Forecast----------------------------------

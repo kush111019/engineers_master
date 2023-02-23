@@ -20,17 +20,22 @@ module.exports.addProduct = async (req, res) => {
         } = req.body
 
         productImage = (productImage == "") ? process.env.DEFAULT_PRODUCT_IMAGE : productImage;
-
+        await connection.query('BEGIN')
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_create) {
             let s3 = dbScript(db_sql['Q147'], { var1: productName, var2: checkPermission.rows[0].company_id })
             let findProduct = await connection.query(s3)
             if (findProduct.rowCount == 0) {
-                await connection.query('BEGIN')
+              
                 let s4 = dbScript(db_sql['Q92'], { var1:productName, var2: productImage, var3: mysql_real_escape_string(description), var4: availableQuantity, var5: price, var6: endOfLife, var7: checkPermission.rows[0].company_id, var8: currency, var9: userId })
                 let addProduct = await connection.query(s4)
-                if (addProduct.rowCount > 0) {
+
+                let _dt = new Date().toISOString();
+                let s7 = dbScript(db_sql['Q334'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+                updateStatusInCompany = await connection.query(s7)
+
+                if (addProduct.rowCount > 0 && updateStatusInCompany.rowCount > 0) {
                     await connection.query('COMMIT')
                     res.json({
                         status: 201,

@@ -34,6 +34,9 @@ module.exports.createCustomer = async (req, res) => {
                         }
                     }
                 }
+                let _dt = new Date().toISOString();
+                let s7 = dbScript(db_sql['Q333'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+                updateStatusInCompany = await connection.query(s7)
                 await connection.query('COMMIT')
                 createCustomer.rows[0].customer_contacts = []
                 res.json({
