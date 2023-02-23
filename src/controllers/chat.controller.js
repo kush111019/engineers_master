@@ -1,6 +1,5 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const { mysql_real_escape_string } = require('../utils/helper')
 
 module.exports.accessChat = async (req, res) => {

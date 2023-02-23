@@ -1,6 +1,5 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const moduleName = process.env.SLABS_MODULE
 const { getUserAndSubUser } = require('../utils/helper')
 
@@ -15,8 +14,6 @@ module.exports.createSlab = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_create) {
-        
-            let slabId = uuid.v4()
             //insert slab entries into db here
             for (let data of slabsData.slabs) {
                 //id = uuid.v4()

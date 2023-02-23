@@ -1,6 +1,5 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const moduleName = process.env.COMMISSIONS_MODULE
 
 const { getUserAndSubUser } = require('../utils/helper')

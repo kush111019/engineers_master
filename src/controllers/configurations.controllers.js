@@ -1,6 +1,5 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const Imap = require('node-imap')
 const nodemailer = require("nodemailer");
 const { encrypt, decrypt } = require('../utils/crypto');

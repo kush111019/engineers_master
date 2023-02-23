@@ -1,6 +1,5 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const { mysql_real_escape_string ,getUserAndSubUser} = require('../utils/helper')
 const fs = require("fs");
 const fastcsv = require("fast-csv");
@@ -316,12 +315,22 @@ module.exports.uploadProductFile = async (req, res) => {
                 throw err
             })
 
-            res.json({
-                status: 201,
-                success: true,
-                message: "Products exported to DB"
-            })
-
+            let _dt = new Date().toISOString();
+            let s7 = dbScript(db_sql['Q334'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+            updateStatusInCompany = await connection.query(s7)
+            if(updateStatusInCompany.rowCount > 0){
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Products exported to DB"
+                })
+            }else{
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
         } else {
             res.status(403).json({
                 success: false,

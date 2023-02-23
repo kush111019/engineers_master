@@ -7,7 +7,6 @@ const {
     welcomeEmail2,
 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const { mysql_real_escape_string, verifyTokenFn } = require('../utils/helper')
 
 

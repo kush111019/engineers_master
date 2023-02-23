@@ -1,5 +1,4 @@
 const connection = require('../database/connection')
-const uuid = require("node-uuid")
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const stripe = require('stripe')(process.env.SECRET_KEY)
 const {verifyTokenFn, immediateUpgradeSubFn, laterUpgradeSubFn} = require('../utils/helper')

@@ -4,7 +4,6 @@ const {
     contactUsMail2
 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const { mysql_real_escape_string } = require('../utils/helper')
 
 module.exports.contactUs = async (req, res) => {

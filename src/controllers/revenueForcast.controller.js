@@ -1,6 +1,5 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const { getUserAndSubUser, notificationsOperations } = require('../utils/helper')
 const moduleName = process.env.FORECAST_MODULE
 const moment = require('moment');
