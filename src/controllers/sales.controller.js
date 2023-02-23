@@ -1579,18 +1579,24 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             let productList = await connection.query(s2)
             if (productList.rowCount > 0) {
                 allDetails.productList = productList.rows
+            }else{
+                allDetails.productList = []
             }
 
             let s3 = dbScript(db_sql['Q39'], { var1: checkPermission.rows[0].company_id })
             let customerList = await connection.query(s3)
             if (customerList.rowCount > 0) {
                 allDetails.customerList = customerList.rows
+            }else{
+                allDetails.customerList = []
             }
 
             let s4 = dbScript(db_sql['Q15'], { var1: checkPermission.rows[0].company_id })
             let userList = await connection.query(s4);
             if (userList.rowCount > 0) {
                 allDetails.userList = userList.rows
+            }else{
+                allDetails.userList = []
             }
 
             //get slab list here 
@@ -1599,12 +1605,16 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             if (slabList.rowCount > 0) {
                 const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()]
                 allDetails.slabList = unique;
+            }else{
+                allDetails.slabList = []
             }
 
             let s6 = dbScript(db_sql['Q50'], { var1: checkPermission.rows[0].company_id })
             let commissionList = await connection.query(s6)
             if (commissionList.rowCount > 0) {
                 allDetails.commissionList = commissionList.rows
+            }else{
+                allDetails.commissionList = []
             }
 
             if (allDetails) {
@@ -1631,18 +1641,24 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             let productList = await connection.query(s1)
             if (productList.rowCount > 0) {
                 allDetails.productList = productList.rows
+            }else{
+                allDetails.productList = []
             }
 
             let s2 = dbScript(db_sql['Q316'], { var1: roleUsers.join(","), var2: false })
             let customerList = await connection.query(s2)
             if (customerList.rowCount > 0) {
                 allDetails.customerList = customerList.rows
+            }else{
+                allDetails.customerList = []
             }
 
             let s3 = dbScript(db_sql['Q317'], { var1: roleUsers.join(",") })
             let userList = await connection.query(s3);
             if (userList.rowCount > 0) {
                 allDetails.userList = userList.rows
+            }else{
+                allDetails.userList = []
             }
 
             let s4 = dbScript(db_sql['Q165'], { var1: roleUsers.join(",") })
@@ -1650,12 +1666,16 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             if (slabList.rowCount > 0) {
                 const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()];
                 allDetails.slabList = unique;
+            }else{
+                allDetails.slabList = []
             }
 
             let s5 = dbScript(db_sql['Q318'], { var1: roleUsers.join(",") })
             let commissionList = await connection.query(s5)
             if (commissionList.rowCount > 0) {
                 allDetails.commissionList = commissionList.rows
+            }else{
+                allDetails.commissionList = []
             }
             if (allDetails) {
                 res.json({
