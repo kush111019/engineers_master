@@ -1,6 +1,5 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const { mysql_real_escape_string ,getUserAndSubUser} = require('../utils/helper')
 const moduleName = process.env.ROLES_MODULE
 
@@ -247,9 +246,9 @@ module.exports.createRole = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_create) {
             await connection.query('BEGIN')
-            let roleId = uuid.v4()
+            //let roleId = uuid.v4()
 
-            let s4 = dbScript(db_sql['Q13'], { var1: roleId, var2: mysql_real_escape_string(roleName), var3: reporter, var4: checkPermission.rows[0].company_id, var5: userId })
+            let s4 = dbScript(db_sql['Q13'], { var1: mysql_real_escape_string(roleName), var2: reporter, var3: checkPermission.rows[0].company_id, var4: userId })
             createRole = await connection.query(s4)
 
             let addPermission;
@@ -259,16 +258,19 @@ module.exports.createRole = async (req, res) => {
 
                 moduleIds.push(moduleData.moduleId)
 
-                let permissionId = uuid.v4()
-                let s5 = dbScript(db_sql['Q20'], { var1: permissionId, var2: createRole.rows[0].id, var3: moduleData.moduleId, var4: moduleData.permissionToCreate, var5: moduleData.permissionToUpdate, var6: moduleData.permissionToDelete, var7: moduleData.permissionToViewGlobal, var8: moduleData.permissionToViewOwn, var9: checkPermission.rows[0].id })
+                // let permissionId = uuid.v4()
+                let s5 = dbScript(db_sql['Q20'], { var1: createRole.rows[0].id, var2: moduleData.moduleId, var3: moduleData.permissionToCreate, var4: moduleData.permissionToUpdate, var5: moduleData.permissionToDelete, var6: moduleData.permissionToViewGlobal, var7: moduleData.permissionToViewOwn, var8: checkPermission.rows[0].id })
                 addPermission = await connection.query(s5)
             }
 
             let _dt = new Date().toISOString();
             let s6 = dbScript(db_sql['Q34'], { var1: JSON.stringify(moduleIds), var2: _dt, var3: createRole.rows[0].id })
             updateRole = await connection.query(s6)
+            
+            let s7 = dbScript(db_sql['Q330'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+            updateStatusInCompany = await connection.query(s7)
 
-            if (createRole.rowCount > 0 && addPermission.rowCount > 0 && updateRole.rowCount > 0) {
+            if (createRole.rowCount > 0 && addPermission.rowCount > 0 && updateRole.rowCount > 0 && updateStatusInCompany.rowCount >0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,

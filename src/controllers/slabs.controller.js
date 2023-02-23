@@ -1,6 +1,5 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const moduleName = process.env.SLABS_MODULE
 const { getUserAndSubUser } = require('../utils/helper')
 
@@ -10,20 +9,24 @@ module.exports.createSlab = async (req, res) => {
         let {
             slabsData
         } = req.body
+        await connection.query('BEGIN')
         //here check user all permission's
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_create) {
-            await connection.query('BEGIN')
-            let slabId = uuid.v4()
             //insert slab entries into db here
             for (let data of slabsData.slabs) {
-                id = uuid.v4()
-                let s5 = dbScript(db_sql['Q18'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: Number(data.slab_ctr), var9: userId, var10: slabId, var11: slabsData.slabName, var12: slabsData.commissionSplitId })
-                var createSlab = await connection.query(s5)
-                await connection.query('COMMIT')
+                //id = uuid.v4()
+                let s5 = dbScript(db_sql['Q18'], { var1: data.minAmount, var2: data.maxAmount, var3: data.percentage, var4: data.isMax, var5: checkPermission.rows[0].company_id, var6: data.currency, var7: Number(data.slab_ctr), var8: userId, var9: slabId, var10: slabsData.slabName, var11: slabsData.commissionSplitId ? slabsData.commissionSplitId : 'null' })
+                let createSlab = await connection.query(s5)
+                
             }
-            if (createSlab.rowCount > 0) {
+
+            let _dt = new Date().toISOString();
+            let s7 = dbScript(db_sql['Q331'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+            updateStatusInCompany = await connection.query(s7)
+            if ( updateStatusInCompany.rowCount > 0) {
+                await connection.query('COMMIT')
                 res.json({
                     status: 201,
                     success: true,
@@ -59,7 +62,6 @@ module.exports.updateSlab = async (req, res) => {
         let {
             slabsData
         } = req.body
-        console.log(slabsData, "slabsData");
         //here check user all permission's
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
@@ -69,11 +71,11 @@ module.exports.updateSlab = async (req, res) => {
             for (let data of slabsData.slabs) {
                 let _dt = new Date().toISOString()
                 if (data.id != '') {
-                    let s2 = dbScript(db_sql['Q19'], { var1: slabsData.slabName, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: Number(data.slab_ctr), var9: userId, var10: data.id, var11: slabsData.slabId, var12: _dt, var13: slabsData.commissionSplitId })
+                    let s2 = dbScript(db_sql['Q19'], { var1: slabsData.slabName, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: Number(data.slab_ctr), var9: userId, var10: data.id, var11: slabsData.slabId, var12: _dt, var13: slabsData.commissionSplitId ?slabsData.commissionSplitId:'null' })
                     var updateSlab = await connection.query(s2)
                 } else {
-                    let id = uuid.v4()
-                    let s5 = dbScript(db_sql['Q18'], { var1: id, var2: data.minAmount, var3: data.maxAmount, var4: data.percentage, var5: data.isMax, var6: checkPermission.rows[0].company_id, var7: data.currency, var8: Number(data.slab_ctr), var9: userId, var10: slabsData.slabId, var11: slabsData.slabName, var12: slabsData.commissionSplitId })
+                    
+                    let s5 = dbScript(db_sql['Q18'], { var1: data.minAmount, var2: data.maxAmount, var3: data.percentage, var4: data.isMax, var5: checkPermission.rows[0].company_id, var6: data.currency, var7: Number(data.slab_ctr), var8: userId, var9: slabsData.slabId, var10: slabsData.slabName, var11: slabsData.commissionSplitId ? slabsData.commissionSplitId:'null' })
                     var createSlab = await connection.query(s5)
                 }
             }

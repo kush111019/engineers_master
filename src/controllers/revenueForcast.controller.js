@@ -1,6 +1,5 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const { getUserAndSubUser, notificationsOperations } = require('../utils/helper')
 const moduleName = process.env.FORECAST_MODULE
 const moment = require('moment');
@@ -17,19 +16,6 @@ module.exports.createRevenueForecast = async (req, res) => {
             type,
             forecastData
         } = req.body
-        //add notification deatils
-        let notification_userId = [];
-        let notification_typeId;
-        if (assignedTo.length > 0) {
-            for (let sid of assignedTo) {
-                console.log(sid.userId)
-                notification_userId.push(sid.userId)
-            }
-            notification_userId.push(userId)
-        } else {
-            notification_userId.push(userId)
-        }
-
         await connection.query('BEGIN')
         //checking permission to create for user
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
@@ -46,17 +32,19 @@ module.exports.createRevenueForecast = async (req, res) => {
                     let s3 = dbScript(db_sql['Q294'], { var1: createForecast.rows[0].id, var2: data.amount, var3: data.startDate, var4: data.endDate, var5: type, var6: userId })
                     let addForecastData = await connection.query(s3)
                 }
-                // add notification in notification list
-                notification_typeId = createForecast.rows[0].id;
-                await notificationsOperations({ type: 3, msg: 3.1, notification_typeId, notification_userId }, userId);
-
                 // Checking if assigned users length > 0 then
                 if (assignedTo.length > 0) {
                     // adding assigned users forecast
                     for (let data of assignedTo) {
+                        let notification_userId = [];
+                        notification_userId.push(data.userId)
                         let pId = createForecast.rows[0].id
                         let s4 = dbScript(db_sql['Q67'], { var1: timeline, var2: data.amount, var3: startDate, var4: endDate, var5: pId, var6: data.userId, var7: req.user.id })
                         let createForecastForAssignedUsers = await connection.query(s4)
+
+                        // add notification in notification list
+                        let notification_typeId = createForecastForAssignedUsers.rows[0].id;
+                        await notificationsOperations({ type: 3, msg: 3.1, notification_typeId, notification_userId }, userId);
                     }
                     await connection.query('COMMIT')
                     res.json({
@@ -233,14 +221,11 @@ module.exports.editRevenueForecast = async (req, res) => {
             let updateForecast = await connection.query(s2)
             if (updateForecast.rowCount > 0) {
                 if (forecastData.length > 0) {
+                    let s3 = dbScript(db_sql['Q305'], { var1: forecastId, var2:_dt })
+                    let updateForecastData = await connection.query(s3)
                     for (let data of forecastData) {
-                        if (data.id) {
-                            let s3 = dbScript(db_sql['Q305'], { var1: data.id, var2: data.type, var3: data.startDate, var4: data.endDate, var5: data.amount })
-                            let updateForecastData = await connection.query(s3)
-                        } else {
                             let s4 = dbScript(db_sql['Q294'], { var1: forecastId, var2: data.amount, var3: data.startDate, var4: data.endDate, var5: data.type, var6: userId })
                             let addForecastData = await connection.query(s4)
-                        }
                     }
                 }
                 if (assignedForecast.length > 0) {
@@ -291,7 +276,7 @@ module.exports.editRevenueForecast = async (req, res) => {
 module.exports.auditForecast = async (req, res) => {
     try {
         let userId = req.user.id
-        let { forecastId, reason, amount } = req.body
+        let { forecastId, pid, reason, amount, forecastAmount } = req.body
 
         //add notification deatils
         let notification_userId;
@@ -300,7 +285,7 @@ module.exports.auditForecast = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
-            let s2 = dbScript(db_sql['Q308'], { var1: forecastId, var2: amount, var3: reason, var4: userId })
+            let s2 = dbScript(db_sql['Q308'], { var1: forecastId, var2: amount, var3: reason, var4: userId , var5 :pid, var6 : forecastAmount})
             let createAudit = await connection.query(s2)
 
             let s3 = dbScript(db_sql['Q306'], { var1: forecastId });
@@ -309,7 +294,6 @@ module.exports.auditForecast = async (req, res) => {
                 // add notification in notification list
                 notification_userId = [revenueForecastList.rows[0].created_by];
                 await notificationsOperations({ type: 3, msg: 3.3, notification_typeId, notification_userId }, userId);
-
                 res.json({
                     status: 200,
                     success: true,
@@ -452,12 +436,12 @@ module.exports.actualVsForecast = async (req, res) => {
     try {
         let userId = req.user.id
         let { forecastId } = req.query
-        console.log(forecastId, "forecast id");
         await connection.query('BEGIN')
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
             let s3 = dbScript(db_sql['Q311'], { var1: forecastId })
+            console.log(s3)
             let forecastData = await connection.query(s3)
             if (forecastData.rowCount > 0) {
                 for (let data of forecastData.rows) {

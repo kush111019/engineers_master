@@ -4,7 +4,6 @@ const {
     contactUsMail2
 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const { mysql_real_escape_string } = require('../utils/helper')
 
 module.exports.contactUs = async (req, res) => {
@@ -18,8 +17,7 @@ module.exports.contactUs = async (req, res) => {
         } = req.body
 
         await connection.query('BEGIN')
-        let id = uuid.v4()
-        let s1 = dbScript(db_sql['Q91'], { var1: id, var2: fullName, var3: email, var4: subject, var5: mysql_real_escape_string(message), var6: address })
+        let s1 = dbScript(db_sql['Q91'], { var1: fullName, var2: email, var3: subject, var4: mysql_real_escape_string(message), var5: address })
 
         let addContactUs = await connection.query(s1)
         if (addContactUs.rowCount > 0) {

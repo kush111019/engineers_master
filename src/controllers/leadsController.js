@@ -1,6 +1,5 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const { mysql_real_escape_string, getUserAndSubUser, notificationsOperations } = require('../utils/helper')
 const moduleName = process.env.LEADS_MODULE
 
@@ -22,24 +21,25 @@ module.exports.createLead = async (req, res) => {
             marketingQualifiedLead,
             assignedSalesLeadTo,
             additionalMarketingNotes,
+            empType
         } = req.body
         //add notification deatils
-        let notification_userId = [assignedSalesLeadTo];
+        let notification_userId = assignedSalesLeadTo ? [assignedSalesLeadTo] : [];
         let notification_typeId;
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_create) {
-
-            let id = uuid.v4()
-            let s2 = dbScript(db_sql['Q201'], { var1: id, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: source, var8: linkedinUrl, var9: website, var10: targetedValue, var11: industryType, var12: marketingQualifiedLead, var13: assignedSalesLeadTo, var14: mysql_real_escape_string(additionalMarketingNotes), var15: userId, var16: checkPermission.rows[0].company_id, var17: customerId })
+            let s2 = dbScript(db_sql['Q201'], { var1: fullName, var2: title, var3: emailAddress, var4: phoneNumber, var5: mysql_real_escape_string(address), var6: source, var7: linkedinUrl, var8: website, var9: targetedValue, var10: industryType, var11: marketingQualifiedLead, var12: assignedSalesLeadTo ?assignedSalesLeadTo : 'null', var13: mysql_real_escape_string(additionalMarketingNotes), var14: userId, var15: checkPermission.rows[0].company_id, var16: customerId, var17: empType })
             let createLead = await connection.query(s2)
-
             // add notification in notification list
             notification_typeId = createLead.rows[0].id;
             await notificationsOperations({ type: 4, msg: 4.1, notification_typeId, notification_userId }, userId);
-
-            if (createLead.rowCount > 0) {
+            
+            let _dt= new Date().toISOString()
+            let s3 = dbScript(db_sql['Q332'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+            updateStatusInCompany = await connection.query(s3)
+            if (createLead.rowCount > 0 && updateStatusInCompany.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,
@@ -77,26 +77,27 @@ module.exports.leadsList = async (req, res) => {
         let { status } = req.query
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
+        let type = 'lead';
         if (checkPermission.rows[0].permission_to_view_global) {
             let leadList
             if (status.toLowerCase() == 'all') {
-                let s2 = dbScript(db_sql['Q202'], { var1: checkPermission.rows[0].company_id })
+                let s2 = dbScript(db_sql['Q202'], { var1: checkPermission.rows[0].company_id, var2: type })
                 leadList = await connection.query(s2)
             }
             else if (status.toLowerCase() == 'rejected') {
-                let s3 = dbScript(db_sql['Q275'], { var1: checkPermission.rows[0].company_id })
+                let s3 = dbScript(db_sql['Q275'], { var1: checkPermission.rows[0].company_id, var2: type })
                 leadList = await connection.query(s3)
             }
             else if (status.toLowerCase() == 'qualified') {
-                let s4 = dbScript(db_sql['Q276'], { var1: checkPermission.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q276'], { var1: checkPermission.rows[0].company_id, var2: type })
                 leadList = await connection.query(s4)
             }
             else if (status.toLowerCase() == 'converted') {
-                let s5 = dbScript(db_sql['Q277'], { var1: checkPermission.rows[0].company_id })
+                let s5 = dbScript(db_sql['Q277'], { var1: checkPermission.rows[0].company_id, var2: type })
                 leadList = await connection.query(s5)
             }
             else if (status.toLowerCase() == 'assigned') {
-                let s6 = dbScript(db_sql['Q282'], { var1: checkPermission.rows[0].id })
+                let s6 = dbScript(db_sql['Q282'], { var1: checkPermission.rows[0].id, var2: type })
                 leadList = await connection.query(s6)
             }
             if (leadList.rowCount > 0) {
@@ -119,23 +120,23 @@ module.exports.leadsList = async (req, res) => {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let findLeadList
             if (status.toLowerCase() == 'all') {
-                let s4 = dbScript(db_sql['Q203'], { var1: roleUsers.join(",") })
+                let s4 = dbScript(db_sql['Q203'], { var1: roleUsers.join(","), var2: type })
                 findLeadList = await connection.query(s4)
             }
             else if (status.toLowerCase() == 'rejected') {
-                let s5 = dbScript(db_sql['Q278'], { var1: roleUsers.join(",") })
+                let s5 = dbScript(db_sql['Q278'], { var1: roleUsers.join(","), var2: type })
                 findLeadList = await connection.query(s5)
             }
             else if (status.toLowerCase() == 'qualified') {
-                let s5 = dbScript(db_sql['Q279'], { var1: roleUsers.join(",") })
+                let s5 = dbScript(db_sql['Q279'], { var1: roleUsers.join(","), var2: type })
                 findLeadList = await connection.query(s5)
             }
             else if (status.toLowerCase() == 'converted') {
-                let s5 = dbScript(db_sql['Q280'], { var1: roleUsers.join(",") })
+                let s5 = dbScript(db_sql['Q280'], { var1: roleUsers.join(","), var2: type })
                 findLeadList = await connection.query(s5)
             }
             else if (status.toLowerCase() == 'assigned') {
-                let s6 = dbScript(db_sql['Q283'], { var1: roleUsers.join(",") })
+                let s6 = dbScript(db_sql['Q283'], { var1: roleUsers.join(","), var2: type })
                 findLeadList = await connection.query(s6)
             }
             if (findLeadList.rowCount > 0) {
@@ -155,6 +156,46 @@ module.exports.leadsList = async (req, res) => {
             }
         }
         else {
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.leadsDetails = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { id } = req.query
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        let type = 'lead';
+        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
+            let s2 = dbScript(db_sql['Q208'], { var1: id, var2: type })
+            leadList = await connection.query(s2)
+            if (leadList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Lead details',
+                    data: leadList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty lead details',
+                    data: leadList.rows
+                })
+            }
+        }else {
             res.status(403).json({
                 success: false,
                 message: "UnAthorised"
@@ -191,7 +232,7 @@ module.exports.updateLead = async (req, res) => {
         } = req.body
 
         //add notification deatils
-        let notification_userId = [assignedSalesLeadTo];
+        let notification_userId = assignedSalesLeadTo ? [assignedSalesLeadTo] : [];
         let notification_typeId = leadId;
 
         await connection.query('BEGIN')
@@ -200,9 +241,9 @@ module.exports.updateLead = async (req, res) => {
         if (checkPermission.rows[0].permission_to_update) {
 
             let _dt = new Date().toISOString();
-            let s5 = dbScript(db_sql['Q204'], { var1: leadId, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: source, var8: linkedinUrl, var9: website, var10: targetedValue, var11: industryType, var12: marketingQualifiedLead, var13: assignedSalesLeadTo, var14: mysql_real_escape_string(additionalMarketingNotes), var15: _dt, var16: customerId })
+            let s5 = dbScript(db_sql['Q204'], { var1: leadId, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: source, var8: linkedinUrl, var9: website, var10: targetedValue, var11: industryType, var12: marketingQualifiedLead, var13: assignedSalesLeadTo ? assignedSalesLeadTo : 'null', var14: mysql_real_escape_string(additionalMarketingNotes), var15: _dt, var16: customerId })
             let updateLead = await connection.query(s5)
-            
+
             // add notification in notification list
             await notificationsOperations({ type: 4, msg: 4.2, notification_typeId, notification_userId }, userId);
 
@@ -258,7 +299,7 @@ module.exports.rejectLead = async (req, res) => {
                 let rejectLead = await connection.query(s5)
 
                 // add notification in notification list
-                let notification_userId = [rejectLead.rows[0].assigned_sales_lead_to ];
+                let notification_userId = rejectLead.rows[0].assigned_sales_lead_to ? [rejectLead.rows[0].assigned_sales_lead_to] :[];
                 await notificationsOperations({ type: 4, msg: 4.3, notification_typeId, notification_userId }, userId);
 
                 if (rejectLead.rowCount > 0) {
@@ -306,7 +347,7 @@ module.exports.deleteLead = async (req, res) => {
         let userId = req.user.id
         let { leadId } = req.query
         //add notification deatils
-        let notification_typeId = leadId;
+        // let notification_typeId = leadId;
 
         await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
@@ -319,10 +360,10 @@ module.exports.deleteLead = async (req, res) => {
                 let s5 = dbScript(db_sql['Q205'], { var1: leadId, var2: _dt })
                 let deleteLead = await connection.query(s5)
                 // add notification in notification list
-                let notification_userId = [];
-                notification_userId.push(deleteLead.rows[0].assigned_sales_lead_to)
-                notification_userId.push(deleteLead.rows[0].user_id)
-                await notificationsOperations({ type: 4, msg: 4.4, notification_typeId, notification_userId }, userId);
+                // let notification_userId = [];
+                // notification_userId.push(deleteLead.rows[0].assigned_sales_lead_to)
+                // notification_userId.push(deleteLead.rows[0].user_id)
+                // await notificationsOperations({ type: 4, msg: 4.4, notification_typeId, notification_userId }, userId);
 
                 if (deleteLead.rowCount > 0) {
                     await connection.query('COMMIT')
