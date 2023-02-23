@@ -268,7 +268,7 @@ module.exports.budgetList = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global) {
-            let s2 = dbScript(db_sql['Q237'], { var1: userId })
+            let s2 = dbScript(db_sql['Q237'], { var1: checkPermission.rows[0].company_id })
             let budgetList = await connection.query(s2)
             if (budgetList.rowCount > 0) {
                 res.json({
