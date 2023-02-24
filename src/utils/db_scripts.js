@@ -1876,7 +1876,7 @@ const db_sql = {
             VALUES('{var1}', '{var2}', '{var3}', '{var4}','{var5}', '{var6}') RETURNING *`,
   "Q309": `UPDATE forecast SET deleted_at = '{var1}' WHERE assigned_to = '{var2}' AND id = '{var3}' RETURNING *`,
   "Q310": `UPDATE forecast_data SET deleted_at = '{var1}' WHERE forecast_id = '{var2}' RETURNING *`,
-  "Q311": `SELECT start_date, end_date, created_by,amount as forecast_amount,
+  "Q311": `SELECT start_date, end_date, created_by,amount as forecast_amount,type,
             (
               SELECT json_agg(DISTINCT(sc.id))
               FROM sales as sc
