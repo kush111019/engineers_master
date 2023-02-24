@@ -29,7 +29,7 @@ module.exports.revenues = async (req, res) => {
                     
                     if(saleData.sales_type == 'Perpetual'){
                         revenueCommissionByDateObj.booking = Number(saleData.target_amount);
-                        revenueCommissionByDateObj.subscriptionBooking = 0;
+                        revenueCommissionByDateObj.subscription_booking = 0;
                     }else{
                         let s4 = dbScript(db_sql['Q295'], { var1: saleData.sales_commission_id })
                         let salesSubscriptionData = await connection.query(s4)
@@ -43,7 +43,7 @@ module.exports.revenues = async (req, res) => {
                             }
                         }
                         revenueCommissionByDateObj.booking =0;
-                        revenueCommissionByDateObj.subscriptionBooking = Number(subscriptionBooking);
+                        revenueCommissionByDateObj.subscription_booking = Number(subscriptionBooking);
                     }
 
 
