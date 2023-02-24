@@ -273,7 +273,7 @@ const db_sql = {
   "Q68": `SELECT 
                 f.id, f.timeline, f.amount, f.start_date, f.pid,
                 f.end_date, f.created_by,f.created_at, f.assigned_to,
-                u1.full_name as creator_name, u2.full_name as assigned_name, 
+                u1.full_name as creator_name, u2.full_name as assigned_name,f.is_accepted,
                 (
                   SELECT json_agg(forecast_data.*)
                     from forecast_data
@@ -655,7 +655,7 @@ const db_sql = {
   "Q174": `SELECT 
                 f.id, f.timeline, f.amount, f.start_date, f.pid,
                 f.end_date, f.created_by,f.created_at, f.assigned_to,
-                u1.full_name as creator_name, u2.full_name as assigned_name, 
+                u1.full_name as creator_name, u2.full_name as assigned_name, f.is_accepted, 
                 (
                   SELECT json_agg(forecast_data.*)
                     from forecast_data
@@ -1798,7 +1798,7 @@ const db_sql = {
                 forecast_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   "Q306": `SELECT 
               f.id, f.timeline, f.amount, f.start_date, f.pid,
-              f.end_date, f.created_by,f.created_at, f.assigned_to,
+              f.end_date, f.created_by,f.created_at, f.assigned_to,f.is_accepted,
               u1.full_name as creator_name, u2.full_name as assigned_name, 
               (
                 SELECT json_agg(forecast_data.*)
