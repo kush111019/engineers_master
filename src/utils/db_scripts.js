@@ -1069,17 +1069,19 @@ const db_sql = {
            VALUES
             ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}') RETURNING *`,
   "Q201": `INSERT INTO customer_company_employees (full_name,title,email_address,phone_number,
-              address,source,linkedin_url,website,targeted_value,industry_type,marketing_qualified_lead,
+              address,source,linkedin_url,website,targeted_value,marketing_qualified_lead,
               assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type)
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
-              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}') RETURNING *`,
+              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}') RETURNING *`,
 
   "Q202": `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
-                l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name, c.customer_name , u2.full_name as assigned_sales_lead_name
+                l.website,l.targeted_value,l.marketing_qualified_lead,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,
+                l.created_at,l.is_converted,l.is_rejected,
+                u1.full_name AS creator_name, c.customer_name ,
+                 u2.full_name as assigned_sales_lead_name
               FROM 
                 customer_company_employees AS l
               LEFt JOIN 
@@ -1090,8 +1092,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFt JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1102,7 +1102,7 @@ const db_sql = {
   "Q203": `SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
                 u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
@@ -1116,8 +1116,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFt JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1127,8 +1125,8 @@ const db_sql = {
 
   "Q204": `UPDATE customer_company_employees SET full_name = '{var2}', title = '{var3}',email_address = '{var4}',phone_number = '{var5}',
               address = '{var6}',source = '{var7}',linkedin_url = '{var8}',website = '{var9}',targeted_value = '{var10}',
-              industry_type = '{var11}',marketing_qualified_lead = '{var12}',assigned_sales_lead_to = '{var13}',additional_marketing_notes = '{var14}',
-              updated_at = '{var15}', customer_company_id = '{var16}' WHERE id = '{var1}' AND deleted_at is null`,
+              marketing_qualified_lead = '{var11}',assigned_sales_lead_to = '{var12}',additional_marketing_notes = '{var13}',
+              updated_at = '{var14}', customer_company_id = '{var15}' WHERE id = '{var1}' AND deleted_at is null`,
 
   "Q205": `UPDATE customer_company_employees SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`,
 
@@ -1151,7 +1149,7 @@ const db_sql = {
   "Q208"  :`SELECT 
               l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
               l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-              l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+              l.website,l.targeted_value,l.marketing_qualified_lead,
               l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
               u1.full_name AS creator_name, c.customer_name , u2.full_name as assigned_sales_lead_name
             FROM 
@@ -1164,8 +1162,6 @@ const db_sql = {
               lead_sources AS s ON s.id = l.source
             LEFt JOIN
               lead_titles AS t ON t.id = l.title
-            LEFt JOIN
-              lead_industries AS i ON i.id = l.industry_type
             LEFT JOIN 
               customer_companies AS c ON c.id = l.customer_company_id
             WHERE 
@@ -1449,7 +1445,7 @@ const db_sql = {
   "Q275": `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
                 u1.full_name AS creator_name , c.customer_name ,u2.full_name as assigned_sales_lead_name
               FROM 
@@ -1462,8 +1458,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFT JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFT JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1475,7 +1469,7 @@ const db_sql = {
   "Q276": `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
                 u1.full_name AS creator_name ,c.customer_name , u2.full_name as assigned_sales_lead_name
               FROM 
@@ -1488,8 +1482,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFT JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFT JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1501,7 +1493,7 @@ const db_sql = {
   "Q277": `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
                 u1.full_name AS creator_name,c.customer_name , u2.full_name as assigned_sales_lead_name 
               FROM 
@@ -1514,8 +1506,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFT JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFT JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1526,7 +1516,7 @@ const db_sql = {
   "Q278": `SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
                 u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
@@ -1540,8 +1530,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFt JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1555,7 +1543,7 @@ const db_sql = {
   "Q279": `SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
                 u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
@@ -1569,8 +1557,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFt JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1583,7 +1569,7 @@ const db_sql = {
   "Q280": `SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
                 u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
@@ -1597,8 +1583,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFt JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1611,7 +1595,7 @@ const db_sql = {
   "Q282": `SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
                 u1.full_name AS creator_name, c.customer_name, u2.full_name as assigned_sales_lead_name
               FROM 
@@ -1624,8 +1608,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFT JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFT JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1637,7 +1619,7 @@ const db_sql = {
   "Q283": `SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
                 u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
@@ -1651,8 +1633,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFt JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
