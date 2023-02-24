@@ -25,7 +25,6 @@ module.exports.revenues = async (req, res) => {
                 for (let saleData of salesData.rows) {
 
                     let revenueCommissionByDateObj = {}
-                    
                     if(saleData.sales_type == 'Perpetual'){
                         revenueCommissionByDateObj.booking = Number(saleData.target_amount);
                         revenueCommissionByDateObj.subscription_booking = 0;
@@ -83,7 +82,7 @@ module.exports.revenues = async (req, res) => {
             }
             console.log(revenueCommissionBydate,'revenueCommissionBydate')
             if (revenueCommissionBydate.length > 0) {
-                let returnData = revenueCommissionBydate;// await reduceArrayWithCommission(revenueCommissionBydate)
+                let returnData = await reduceArrayWithCommission(revenueCommissionBydate)
                 console.log(returnData,'returnData')
                 if (returnData.length > 0) {
                     let paginatedArr = await paginatedResults(returnData, page)
