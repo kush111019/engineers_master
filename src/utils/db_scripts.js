@@ -311,6 +311,7 @@ const db_sql = {
             sc.booking_commission, 
             sc.revenue_commission,
             sc.target_amount,
+            sc.sales_type,
             (
               SELECT json_agg(sales_users.*)
               FROM (
@@ -1749,6 +1750,20 @@ const db_sql = {
             u.created_at DESC`,
   "Q294": `INSERT INTO forecast_data(forecast_id, amount, start_date, end_date, type, created_by)
                 VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+  "Q295": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
+              sc.revenue_commission::DECIMAL as subscription_revenue_commission,
+            (
+            select sum(recognized_revenue.recognized_amount :: decimal) as recognized_amount
+            from recognized_revenue 
+            where recognized_revenue.sales_id = sc.id
+            )
+
+            FROM
+              sales AS sc
+            WHERE
+              sc.id = '{var1}' AND sc.sales_type = 'Subscription'
+            AND
+              sc.deleted_at IS NULL`,
   "Q296": `UPDATE sales SET revenue_commission =  '{var1}' WHERE id = '{var2}' RETURNING *`,
   "Q297": `SELECT  SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
             FROM 

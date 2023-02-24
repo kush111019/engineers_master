@@ -24,12 +24,34 @@ module.exports.revenues = async (req, res) => {
             console.log(salesData.rows);
             if (salesData.rowCount > 0) {
                 for (let saleData of salesData.rows) {
-                    let revenueCommissionByDateObj = {}
-                    revenueCommissionByDateObj.booking = Number(saleData.target_amount);
 
+                    let revenueCommissionByDateObj = {}
+                    
+                    if(saleData.sales_type == 'Perpetual'){
+                        revenueCommissionByDateObj.booking = Number(saleData.target_amount);
+                        revenueCommissionByDateObj.subscriptionBooking = 0;
+                    }else{
+                        let s4 = dbScript(db_sql['Q295'], { var1: saleData.sales_commission_id })
+                        let salesSubscriptionData = await connection.query(s4)
+                        console.log(salesSubscriptionData.rows,'subscription')
+                        let subscriptionBooking = 0;
+                        for( let subscription of salesSubscriptionData.rows){
+                            if(Number(subscription.recognized_amount) <= Number(subscription.subscription_amount)){
+                                subscriptionBooking = Number(subscription.subscription_amount)
+                            }else{
+                                subscriptionBooking = Number(subscription.recognized_amount)
+                            }
+                        }
+                        revenueCommissionByDateObj.booking =0;
+                        revenueCommissionByDateObj.subscriptionBooking = Number(subscriptionBooking);
+                    }
+
+
+                   
+                   
                     let s5 = dbScript(db_sql['Q300'], { var1: saleData.sales_commission_id })
                     let recognizedRevenueData = await connection.query(s5)
-                    console.log(recognizedRevenueData.rows);
+                    console.log(recognizedRevenueData.rows,'recognizedRevenueData');
                     if (recognizedRevenueData.rows[0].amount) {
                         revenueCommissionByDateObj.revenue = Number(recognizedRevenueData.rows[0].amount)
                         revenueCommissionByDateObj.date = moment(saleData.closed_at).format('MM/DD/YYYY')
