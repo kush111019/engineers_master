@@ -8,17 +8,24 @@ module.exports.createCustomer = async (req, res) => {
         let userId = req.user.id
         let {
             customerName,
-            source,
             address,
             customerContact,
             currency,
-            industry
+            industry,
+            industryId
         } = req.body
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_create) {
-            let s2 = dbScript(db_sql['Q36'], { var1: checkPermission.rows[0].id, var2: mysql_real_escape_string(customerName), var3: mysql_real_escape_string(source), var4: checkPermission.rows[0].company_id, var5: mysql_real_escape_string(address), var6: currency, var7: industry })
+
+            if(industryId == ''){
+                let s3 = dbScript(db_sql['Q214'], { var1: mysql_real_escape_string(industry), var2: checkPermission.rows[0].company_id })
+                let addIndustry = await connection.query(s3);
+                industryId = addIndustry.rows[0].id ;
+            }
+            
+            let s2 = dbScript(db_sql['Q36'], { var1: checkPermission.rows[0].id, var2: mysql_real_escape_string(customerName), var3: checkPermission.rows[0].company_id, var4: mysql_real_escape_string(address), var5: currency, var6: industryId })
             let createCustomer = await connection.query(s2)
             if (createCustomer.rowCount > 0) {
                 if (customerContact.length > 0) {
@@ -75,13 +82,14 @@ module.exports.createCustomerWithLead = async (req, res) => {
         let {
             leadName,
             leadTitle,
+            leadTitleId,
             leadEmail,
             leadPhoneNumber,
-            leadIndustryId,
             leadSource,
+            leadSourceId,
             customerName,
-            source,
             industry,
+            industryId,
             address,
             customerContact,
             currency,
@@ -91,7 +99,26 @@ module.exports.createCustomerWithLead = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_create) {
-            let s2 = dbScript(db_sql['Q36'], { var1:checkPermission.rows[0].id, var2: mysql_real_escape_string(customerName), var3: mysql_real_escape_string(source), var4: checkPermission.rows[0].company_id, var5: mysql_real_escape_string(address), var6: currency, var7: industry })
+
+            if(leadTitleId == ''){
+                let s3 = dbScript(db_sql['Q210'], { var1: mysql_real_escape_string(leadTitle), var2: checkPermission.rows[0].company_id })
+                let addTitle = await connection.query(s3)
+                leadTitleId = addTitle.rows[0].id;
+            }
+
+            if(leadSourceId == ''){
+                let s3 = dbScript(db_sql['Q218'], { var1: mysql_real_escape_string(leadSource), var2: checkPermission.rows[0].company_id})
+                let addSource = await connection.query(s3)
+                leadSourceId = addSource.rows[0].id
+            }
+
+            if(industryId == ''){
+                let s3 = dbScript(db_sql['Q214'], { var1: mysql_real_escape_string(industry), var2: checkPermission.rows[0].company_id })
+                let addIndustry = await connection.query(s3);
+                industryId = addIndustry.rows[0].id ;
+            }
+
+            let s2 = dbScript(db_sql['Q36'], { var1:checkPermission.rows[0].id, var2: mysql_real_escape_string(customerName), var3: checkPermission.rows[0].company_id, var4: mysql_real_escape_string(address), var5: currency, var6: industryId })
             let createCustomer = await connection.query(s2)
             if (createCustomer.rowCount > 0) {
                 if (customerContact.length > 0) {
@@ -106,7 +133,7 @@ module.exports.createCustomerWithLead = async (req, res) => {
                         }
                     }
                 }
-                let s10 = dbScript(db_sql['Q200'], { var1: leadName, var2: leadTitle, var3: leadEmail, var4: leadPhoneNumber, var5: leadSource, var6: leadIndustryId, var7: createCustomer.rows[0].id, var8: checkPermission.rows[0].id, var9: checkPermission.rows[0].company_id, var10: empType })
+                let s10 = dbScript(db_sql['Q200'], { var1: leadName, var2: leadTitleId, var3: leadEmail, var4: leadPhoneNumber, var5: leadSourceId, var6: createCustomer.rows[0].id, var7: checkPermission.rows[0].id, var8: checkPermission.rows[0].company_id, var9: empType })
                 let createLead = await connection.query(s10)
                 if (createLead.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -211,11 +238,11 @@ module.exports.editCustomer = async (req, res) => {
         let {
             customerId,
             customerName,
-            source,
             customerContact,
             address,
             currency,
-            industry
+            industry,
+            industryId
         } = req.body
         await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
@@ -234,8 +261,15 @@ module.exports.editCustomer = async (req, res) => {
                     }
                 }
             }
+
+            if(industryId == ''){
+                let s3 = dbScript(db_sql['Q214'], { var1: mysql_real_escape_string(industry), var2: checkPermission.rows[0].company_id })
+                let addIndustry = await connection.query(s3);
+                industryId = addIndustry.rows[0].id ;
+            }
+
             let _dt = new Date().toISOString();
-            let s5 = dbScript(db_sql['Q42'], { var1: mysql_real_escape_string(customerName), var2: mysql_real_escape_string(source), var3: _dt, var4: mysql_real_escape_string(address), var5: currency, var6: customerId, var7: checkPermission.rows[0].company_id, var8: industry })
+            let s5 = dbScript(db_sql['Q42'], { var1: mysql_real_escape_string(customerName), var2: _dt, var3: mysql_real_escape_string(address), var4: currency, var5: customerId, var6: checkPermission.rows[0].company_id, var7: industryId })
             let updateCustomer = await connection.query(s5)
             if (updateCustomer.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -314,45 +348,6 @@ module.exports.deleteContactForCustomer = async (req, res) => {
     }
 }
 
-// module.exports.customerContactDetails = async (req, res) => {
-//     try {
-//         let { customerId } = req.query
-//         let userId = req.user.id
-//         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-//         let checkPermission = await connection.query(s3)
-//         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-//             let customerContactDetails = {};
-
-//             let s4 = dbScript(db_sql['Q74'], { var1: customerId })
-//             let businessDetails = await connection.query(s4)
-
-//             let s5 = dbScript(db_sql['Q75'], { var1: customerId })
-//             let revenueDetails = await connection.query(s5)
-
-//             customerContactDetails.businessDetails = (businessDetails.rowCount > 0) ? businessDetails.rows : []
-//             customerContactDetails.revenueDetails = (revenueDetails.rowCount > 0) ? revenueDetails.rows : []
-
-//             res.json({
-//                 status: 200,
-//                 success: true,
-//                 message: 'Customer contact details',
-//                 data: customerContactDetails
-//             })
-
-//         } else {
-//             res.status(403).json({
-//                 success: false,
-//                 message: "UnAthorised"
-//             })
-//         }
-//     } catch (error) {
-//         res.json({
-//             status: 400,
-//             success: false,
-//             message: error.message,
-//         })
-//     }
-// }
 
 module.exports.deleteCustomer = async (req, res) => {
     try {
@@ -458,51 +453,3 @@ module.exports.addBusinessAndRevenueContact = async (req, res) => {
     }
 }
 
-// module.exports.addRevenueContact = async (req, res) => {
-//     try {
-//         let userId = req.user.id
-//         let {
-//             customerId,
-//             revenueEmail,
-//             revenueContactName,
-//             revenuePhoneNumber
-//         } = req.body
-//         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-//         let checkPermission = await connection.query(s3)
-//         if (checkPermission.rows[0].permission_to_create) {
-//             await connection.query('BEGIN')
-
-//             let revenueId = uuid.v4()
-//             let s6 = dbScript(db_sql['Q71'], { var1: revenueId, var2: mysql_real_escape_string(revenueContactName), var3: revenueEmail, var4: revenuePhoneNumber, var5: customerId })
-//             let addRevenueContact = await connection.query(s6)
-
-//             if (addRevenueContact.rowCount > 0) {
-//                 await connection.query('COMMIT')
-//                 res.json({
-//                     status: 201,
-//                     success: true,
-//                     message: "Revenue contact added successfully",
-//                     data: addRevenueContact.rows
-//                 })
-//             } else {
-//                 res.json({
-//                     status: 400,
-//                     success: false,
-//                     message: "Something went wrong"
-//                 })
-//             }
-//         } else {
-//             res.status(403).json({
-//                 success: false,
-//                 message: "Unathorised"
-//             })
-//         }
-//     } catch (error) {
-//         await connection.query('ROLLBACK')
-//         res.json({
-//             status: 400,
-//             success: false,
-//             message: error.message,
-//         })
-//     }
-// }
