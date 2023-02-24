@@ -126,8 +126,10 @@ router.post('/createRevenueForecast',verifyTokenFn, controller.revenueForecast.c
 router.get('/revenueForecastList',verifyTokenFn, controller.revenueForecast.revenueForecastList)
 router.get('/forecastDetails',verifyTokenFn, controller.revenueForecast.forecastDetails)
 router.put('/auditForecast', verifyTokenFn, controller.revenueForecast.auditForecast)
+router.put('/acceptForecast', verifyTokenFn, controller.revenueForecast.acceptForecast)
 router.get('/actualVsForecast',verifyTokenFn, controller.revenueForecast.actualVsForecast)
 router.put('/editRevenueForecast', verifyTokenFn, controller.revenueForecast.editRevenueForecast)
+router.put('/updateAssignedUsersForecast', verifyTokenFn, controller.revenueForecast.updateAssignedUsersForecast)
 router.put('/deleteRevenueForecast', verifyTokenFn, controller.revenueForecast.deleteRevenueForecast)
 router.put('/deleteAssignedUserForecast', verifyTokenFn, controller.revenueForecast.deleteAssignedUserForecast)
 
