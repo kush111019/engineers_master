@@ -78,8 +78,10 @@ module.exports.revenues = async (req, res) => {
                             revenueCommissionBydate.push(revenueCommissionByDateObj)
                         }
                     }
+                    console.log(revenueCommissionByDateObj,'revenueCommissionByDateObj')
                 }
             }
+            console.log(revenueCommissionBydate,'revenueCommissionBydate')
             if (revenueCommissionBydate.length > 0) {
                 let returnData = await reduceArrayWithCommission(revenueCommissionBydate)
                 if (returnData.length > 0) {
