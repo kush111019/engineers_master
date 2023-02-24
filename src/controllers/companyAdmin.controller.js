@@ -7,12 +7,11 @@ const {
     welcomeEmail2,
 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const { mysql_real_escape_string, verifyTokenFn } = require('../utils/helper')
 
 
 let createAdmin = async (bodyData, cId, res) => {
-    let id = uuid.v4()
+    //let id = uuid.v4()
     let {
         name,
         companyLogo,
@@ -29,8 +28,8 @@ let createAdmin = async (bodyData, cId, res) => {
     let findUser = await connection.query(s3)
     if (findUser.rowCount == 0) {
         await connection.query('BEGIN')
-        let roleId = uuid.v4()
-        let s4 = dbScript(db_sql['Q11'], { var1: roleId, var2: cId })
+        //let roleId = uuid.v4()
+        let s4 = dbScript(db_sql['Q11'], { var1: cId })
         let createRole = await connection.query(s4)
 
         let s9 = dbScript(db_sql['Q112'], {})
@@ -43,15 +42,21 @@ let createAdmin = async (bodyData, cId, res) => {
 
             let role_id = createRole.rows[0].id
             let s5 = dbScript(db_sql['Q3'], {
-                var1: id, var2: mysql_real_escape_string(name),
-                var3: cId, var4: companyLogo, var5: emailAddress.toLowerCase(), var6: mobileNumber,
-                var7: phoneNumber, var8: encryptedPassword, var9: role_id,
-                var10: mysql_real_escape_string(companyAddress), var11: expiryDate, var12 : id
+                var1: mysql_real_escape_string(name),
+                var2: cId, var3: companyLogo, var4: emailAddress.toLowerCase(), var5: mobileNumber,
+                var6: phoneNumber, var7: encryptedPassword, var8: role_id,
+                var9: mysql_real_escape_string(companyAddress), var10: expiryDate
             })
             let saveuser = await connection.query(s5)
+            if( saveuser.rowCount>0){
+                let s6 = dbScript(db_sql['Q56'], {
+                    var1: saveuser.rows[0].id,
+                })
+                let updateuser = await connection.query(s6)  
+            }
 
-            let configId = uuid.v4()
-            let s10 = dbScript(db_sql['Q83'], { var1: configId, var2: "$", var3: "us", var4: "MM-DD-YYYY", var5: saveuser.rows[0].id, var6: cId })
+            //let configId = uuid.v4()
+            let s10 = dbScript(db_sql['Q83'], { var1: "$", var2: "us", var3: "MM-DD-YYYY", var4: saveuser.rows[0].id, var5: cId })
             let addConfig = await connection.query(s10)
 
             let s6 = dbScript(db_sql['Q6'], {})
@@ -59,8 +64,8 @@ let createAdmin = async (bodyData, cId, res) => {
             let moduleArr = []
             for ( let data of findModules.rows) {
                 moduleArr.push(data.id)
-                let perId = uuid.v4()
-                let s7 = dbScript(db_sql['Q20'], { var1: perId, var2: createRole.rows[0].id, var3: data.id, var4: true, var5: true, var6: true, var7: true, var8: true, var9: saveuser.rows[0].id })
+                //let perId = uuid.v4()
+                let s7 = dbScript(db_sql['Q20'], { var1: createRole.rows[0].id, var2: data.id, var3: true, var4: true, var5: true, var6: true, var7: true, var8: saveuser.rows[0].id })
                 var addPermission = await connection.query(s7)
             }
             let _dt = new Date().toISOString();
@@ -178,9 +183,7 @@ module.exports.signUp = async (req, res) => {
                 expiryDate = new Date(currentDate.setDate(currentDate.getDate() + Number(trialDays.rows[0].trial_days))).toISOString()
                 
                 await connection.query('BEGIN')
-                let cId = uuid.v4()
-
-                let s3 = dbScript(db_sql['Q2'], { var1: cId, var2: mysql_real_escape_string(companyName), var3: companyLogo, var4: mysql_real_escape_string(companyAddress), var5 : expiryDate, var6 : trialDays.rows[0].trial_users })
+                let s3 = dbScript(db_sql['Q2'], { var1:  mysql_real_escape_string(companyName), var2: companyLogo, var3: mysql_real_escape_string(companyAddress), var4 : expiryDate, var5 : trialDays.rows[0].trial_users })
                 let saveCompanyDetails = await connection.query(s3)
 
                 if (saveCompanyDetails.rowCount > 0) {

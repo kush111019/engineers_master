@@ -1,6 +1,5 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const { mysql_real_escape_string ,getUserAndSubUser} = require('../utils/helper')
 const fs = require("fs");
 const fastcsv = require("fast-csv");
@@ -20,18 +19,22 @@ module.exports.addProduct = async (req, res) => {
         } = req.body
 
         productImage = (productImage == "") ? process.env.DEFAULT_PRODUCT_IMAGE : productImage;
-
+        await connection.query('BEGIN')
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_create) {
             let s3 = dbScript(db_sql['Q147'], { var1: productName, var2: checkPermission.rows[0].company_id })
             let findProduct = await connection.query(s3)
             if (findProduct.rowCount == 0) {
-                await connection.query('BEGIN')
-                let id = uuid.v4()
-                let s4 = dbScript(db_sql['Q92'], { var1: id, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: endOfLife, var8: checkPermission.rows[0].company_id, var9: currency, var10: userId })
+              
+                let s4 = dbScript(db_sql['Q92'], { var1:productName, var2: productImage, var3: mysql_real_escape_string(description), var4: availableQuantity, var5: price, var6: endOfLife, var7: checkPermission.rows[0].company_id, var8: currency, var9: userId })
                 let addProduct = await connection.query(s4)
-                if (addProduct.rowCount > 0) {
+
+                let _dt = new Date().toISOString();
+                let s7 = dbScript(db_sql['Q334'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+                updateStatusInCompany = await connection.query(s7)
+
+                if (addProduct.rowCount > 0 && updateStatusInCompany.rowCount > 0) {
                     await connection.query('COMMIT')
                     res.json({
                         status: 201,
@@ -284,8 +287,8 @@ module.exports.uploadProductFile = async (req, res) => {
                             if (findProduct.rowCount == 0) {
                                 (row[1] == "") ? row[1] = process.env.DEFAULT_PRODUCT_IMAGE : row[1];
                                 //unique id for every row 
-                                id = uuid.v4()
-                                let s4 = dbScript(db_sql['Q97'], { var1: id, var2: checkPermission.rows[0].company_id, var3: userId })
+                               
+                                let s4 = dbScript(db_sql['Q97'], { var1: checkPermission.rows[0].company_id, var2: userId })
                                 connection.query(s4, row, (err, res) => {
                                     if (err) {
                                         throw err
@@ -312,12 +315,22 @@ module.exports.uploadProductFile = async (req, res) => {
                 throw err
             })
 
-            res.json({
-                status: 201,
-                success: true,
-                message: "Products exported to DB"
-            })
-
+            let _dt = new Date().toISOString();
+            let s7 = dbScript(db_sql['Q334'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+            updateStatusInCompany = await connection.query(s7)
+            if(updateStatusInCompany.rowCount > 0){
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Products exported to DB"
+                })
+            }else{
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
         } else {
             res.status(403).json({
                 success: false,

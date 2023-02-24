@@ -1,6 +1,5 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const uuid = require("node-uuid");
 const { mysql_real_escape_string, getUserAndSubUser, notificationsOperations } = require('../utils/helper')
 const moduleName = process.env.LEADS_MODULE
 
@@ -10,15 +9,16 @@ module.exports.createLead = async (req, res) => {
         let {
             fullName,
             title,
+            titleId,
             emailAddress,
             phoneNumber,
             address,
             customerId,
             source,
+            sourceId,
             linkedinUrl,
             website,
             targetedValue,
-            industryType,
             marketingQualifiedLead,
             assignedSalesLeadTo,
             additionalMarketingNotes,
@@ -32,14 +32,28 @@ module.exports.createLead = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_create) {
 
-            let id = uuid.v4()
-            let s2 = dbScript(db_sql['Q201'], { var1: id, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: source, var8: linkedinUrl, var9: website, var10: targetedValue, var11: industryType, var12: marketingQualifiedLead, var13: assignedSalesLeadTo, var14: mysql_real_escape_string(additionalMarketingNotes), var15: userId, var16: checkPermission.rows[0].company_id, var17: customerId, var18: empType })
+            if(titleId == ''){
+                let s3 = dbScript(db_sql['Q210'], { var1: mysql_real_escape_string(title), var2: checkPermission.rows[0].company_id })
+                let addTitle = await connection.query(s3)
+                titleId = addTitle.rows[0].id;
+            }
+
+            if(sourceId == ''){
+                let s3 = dbScript(db_sql['Q218'], { var1: mysql_real_escape_string(source), var2: checkPermission.rows[0].company_id})
+                let addSource = await connection.query(s3)
+                sourceId = addSource.rows[0].id
+            }
+
+            let s2 = dbScript(db_sql['Q201'], { var1: fullName, var2: titleId, var3: emailAddress, var4: phoneNumber, var5: mysql_real_escape_string(address), var6: sourceId, var7: linkedinUrl, var8: website, var9: targetedValue, var10: marketingQualifiedLead, var11: assignedSalesLeadTo ?assignedSalesLeadTo : 'null', var12: mysql_real_escape_string(additionalMarketingNotes), var13: userId, var14: checkPermission.rows[0].company_id, var15: customerId, var16: empType })
             let createLead = await connection.query(s2)
             // add notification in notification list
             notification_typeId = createLead.rows[0].id;
             await notificationsOperations({ type: 4, msg: 4.1, notification_typeId, notification_userId }, userId);
-
-            if (createLead.rowCount > 0) {
+            
+            let _dt= new Date().toISOString()
+            let s3 = dbScript(db_sql['Q332'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+            updateStatusInCompany = await connection.query(s3)
+            if (createLead.rowCount > 0 && updateStatusInCompany.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,
@@ -117,6 +131,7 @@ module.exports.leadsList = async (req, res) => {
             }
         }
         else if (checkPermission.rows[0].permission_to_view_own) {
+            console.log('shuham')
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let findLeadList
             if (status.toLowerCase() == 'all') {
@@ -217,15 +232,16 @@ module.exports.updateLead = async (req, res) => {
             leadId,
             fullName,
             title,
+            titleId,
             emailAddress,
             phoneNumber,
             address,
             customerId,
             source,
+            sourceId,
             linkedinUrl,
             website,
             targetedValue,
-            industryType,
             marketingQualifiedLead,
             assignedSalesLeadTo,
             additionalMarketingNotes,
@@ -240,8 +256,20 @@ module.exports.updateLead = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_update) {
 
+            if(titleId == ''){
+                let s3 = dbScript(db_sql['Q210'], { var1: mysql_real_escape_string(title), var2: checkPermission.rows[0].company_id })
+                let addTitle = await connection.query(s3)
+                titleId = addTitle.rows[0].id;
+            }
+
+            if(sourceId == ''){
+                let s3 = dbScript(db_sql['Q218'], { var1: mysql_real_escape_string(source), var2: checkPermission.rows[0].company_id})
+                let addSource = await connection.query(s3)
+                sourceId = addSource.rows[0].id
+            }
+
             let _dt = new Date().toISOString();
-            let s5 = dbScript(db_sql['Q204'], { var1: leadId, var2: fullName, var3: title, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: source, var8: linkedinUrl, var9: website, var10: targetedValue, var11: industryType, var12: marketingQualifiedLead, var13: assignedSalesLeadTo, var14: mysql_real_escape_string(additionalMarketingNotes), var15: _dt, var16: customerId })
+            let s5 = dbScript(db_sql['Q204'], { var1: leadId, var2: fullName, var3: titleId, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: sourceId, var8: linkedinUrl, var9: website, var10: targetedValue, var11: marketingQualifiedLead, var12: assignedSalesLeadTo ? assignedSalesLeadTo : 'null', var13: mysql_real_escape_string(additionalMarketingNotes), var14: _dt, var15: customerId })
             let updateLead = await connection.query(s5)
 
             // add notification in notification list
@@ -299,7 +327,7 @@ module.exports.rejectLead = async (req, res) => {
                 let rejectLead = await connection.query(s5)
 
                 // add notification in notification list
-                let notification_userId = [rejectLead.rows[0].assigned_sales_lead_to];
+                let notification_userId = rejectLead.rows[0].assigned_sales_lead_to ? [rejectLead.rows[0].assigned_sales_lead_to] :[];
                 await notificationsOperations({ type: 4, msg: 4.3, notification_typeId, notification_userId }, userId);
 
                 if (rejectLead.rowCount > 0) {
@@ -346,8 +374,6 @@ module.exports.deleteLead = async (req, res) => {
     try {
         let userId = req.user.id
         let { leadId } = req.query
-        //add notification deatils
-        let notification_typeId = leadId;
 
         await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
@@ -359,12 +385,6 @@ module.exports.deleteLead = async (req, res) => {
                 let _dt = new Date().toISOString();
                 let s5 = dbScript(db_sql['Q205'], { var1: leadId, var2: _dt })
                 let deleteLead = await connection.query(s5)
-                // add notification in notification list
-                let notification_userId = [];
-                notification_userId.push(deleteLead.rows[0].assigned_sales_lead_to)
-                notification_userId.push(deleteLead.rows[0].user_id)
-                await notificationsOperations({ type: 4, msg: 4.4, notification_typeId, notification_userId }, userId);
-
                 if (deleteLead.rowCount > 0) {
                     await connection.query('COMMIT')
                     res.json({

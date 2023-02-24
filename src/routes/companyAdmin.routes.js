@@ -117,6 +117,7 @@ router.get('/totalRevenue',verifyTokenFn, controller.reports.totalRevenue)
 
 router.get('/revenues',verifyTokenFn, controller.dashboard.revenues)
 router.get('/totalExpectedRevenueCounts', verifyTokenFn, controller.dashboard.totalExpectedRevenueCounts)
+router.get('/dataCreationStatus', verifyTokenFn, controller.dashboard.dataCreationStatus)
 
 
 //-------------------------------------Revenue Forecast----------------------------------
@@ -125,15 +126,16 @@ router.post('/createRevenueForecast',verifyTokenFn, controller.revenueForecast.c
 router.get('/revenueForecastList',verifyTokenFn, controller.revenueForecast.revenueForecastList)
 router.get('/forecastDetails',verifyTokenFn, controller.revenueForecast.forecastDetails)
 router.put('/auditForecast', verifyTokenFn, controller.revenueForecast.auditForecast)
+router.put('/acceptForecast', verifyTokenFn, controller.revenueForecast.acceptForecast)
 router.get('/actualVsForecast',verifyTokenFn, controller.revenueForecast.actualVsForecast)
 router.put('/editRevenueForecast', verifyTokenFn, controller.revenueForecast.editRevenueForecast)
+router.put('/updateAssignedUsersForecast', verifyTokenFn, controller.revenueForecast.updateAssignedUsersForecast)
 router.put('/deleteRevenueForecast', verifyTokenFn, controller.revenueForecast.deleteRevenueForecast)
 router.put('/deleteAssignedUserForecast', verifyTokenFn, controller.revenueForecast.deleteAssignedUserForecast)
 
 //---------------------------------------Business and Revenue Contact-------------------------
 
 router.post('/addBusinessAndRevenueContact',verifyTokenFn, controller.customers.addBusinessAndRevenueContact)
-// router.post('/addRevenueContact',verifyTokenFn, controller.customers.addRevenueContact)
 
 //-------------------------------------------Configurations----------------------------------
 router.post('/addConfigs', verifyTokenFn, controller.configuration.addConfigs)

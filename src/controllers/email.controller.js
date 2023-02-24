@@ -1,7 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const { sendEmailToContact2 } = require("../utils/sendMail")
-const uuid = require("node-uuid");
 const {simpleParser} = require('mailparser');
 const Imap = require('node-imap')
 const {containsObject, setEmailRead} = require('../utils/helper')
@@ -82,8 +81,7 @@ module.exports.fetchEmails = async (req, res) => {
                                                 let attachments = (parsed.attachments.length > 0) ? (Buffer.from(JSON.stringify(parsed.attachments), "utf8")).toString('base64') : ""
                                                 let date = parsed.date.toISOString()
 
-                                                let id = uuid.v4()
-                                                let s4 = dbScript(db_sql['Q137'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5: parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: checkAdmin.rows[0].company_id, var12: attachments, var13 : checkAdmin.rows[0].id })
+                                                let s4 = dbScript(db_sql['Q137'], { var1: parsed.messageId, var2: parsed.to.value[0].address, var3: parsed.from.value[0].address, var4: parsed.from.value[0].name, var5: date, var6: parsed.subject, var7: html, var8: text, var9: textAsHtml, var10: checkAdmin.rows[0].company_id, var11: attachments, var12 : checkAdmin.rows[0].id })
                                                 let insertEmail = await connection.query(s4)
                                                 if (insertEmail.rowCount > 0) {
                                                     mainArray.push(insertEmail);
@@ -102,8 +100,7 @@ module.exports.fetchEmails = async (req, res) => {
                                             let attachments = (parsed.attachments.length > 0) ? (Buffer.from(JSON.stringify(parsed.attachments), "utf8")).toString('base64') : ""
                                             let date = parsed.date.toISOString()
 
-                                            let id = uuid.v4()
-                                            let s6 = dbScript(db_sql['Q137'], { var1: id, var2: parsed.messageId, var3: parsed.to.value[0].address, var4: parsed.from.value[0].address, var5: parsed.from.value[0].name, var6: date, var7: parsed.subject, var8: html, var9: text, var10: textAsHtml, var11: checkAdmin.rows[0].company_id, var12: attachments, var13 : checkAdmin.rows[0].id })
+                                            let s6 = dbScript(db_sql['Q137'], { var1: parsed.messageId, var2: parsed.to.value[0].address, var3: parsed.from.value[0].address, var4: parsed.from.value[0].name, var5: date, var6: parsed.subject, var7: html, var8: text, var9: textAsHtml, var10: checkAdmin.rows[0].company_id, var11: attachments, var12 : checkAdmin.rows[0].id })
                                             let insertEmail = await connection.query(s6)
                                             if (insertEmail.rowCount > 0) {
                                                 mainArray.push(insertEmail);
@@ -317,7 +314,7 @@ module.exports.sendEmail = async (req, res) => {
                 let bufferedMessage = (Buffer.from(message, "utf8")).toString('base64')
 
                 await connection.query('BEGIN')
-                let s2 = dbScript(db_sql['Q140'], { var1: id, var2: findCredentials.rows[0].email, var3: JSON.stringify(emails), var4: JSON.stringify(cc), var5: subject, var6: bufferedMessage, var7: checkAdmin.rows[0].company_id, var8: salesId, var9: JSON.stringify(attachments), var10 : checkAdmin.rows[0].id })
+                let s2 = dbScript(db_sql['Q140'], { var1:findCredentials.rows[0].email, var2: JSON.stringify(emails), var3: JSON.stringify(cc), var4: subject, var5: bufferedMessage, var6: checkAdmin.rows[0].company_id, var7: salesId, var8: JSON.stringify(attachments), var9 : checkAdmin.rows[0].id })
                 let storeSentMail = await connection.query(s2)
 
                 let attachmentsArr = [];

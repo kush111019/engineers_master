@@ -192,7 +192,8 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
             let s6 = dbScript(db_sql['Q232'], { var1: expiryDate, var2: userCount, var3: _dt, var4: user.rows[0].company_id })
             let updateCompanyExpiryDate = await connection.query(s6)
 
-            if (updateTransaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && updateCompanyExpiryDate > 0) {
+
+            if (updateTransaction.rowCount > 0 && updateTransaction.rowCount  > 0 && updateTransaction.rowCount  > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,
@@ -270,11 +271,10 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
         }
         if (token && card && subscription) {
             let _dt = new Date().toISOString();
-            let upTransId = uuid.v4()
 
             let s3 = dbScript(db_sql['Q149'], {
-                var1: upTransId, var2: user.rows[0].id, var3: transaction.rows[0].company_id, var4: planId, var5: transaction.rows[0].stripe_customer_id, var6: subscription.id, var7: card.id, var8: token.id, var9: "", var10: subscription.current_period_end, var11: userCount, var12: "",
-                var13: Math.round(totalAmount), var14: ""
+                var1: user.rows[0].id, var2: transaction.rows[0].company_id, var3: planId, var4: transaction.rows[0].stripe_customer_id, var5: subscription.id, var6: card.id, var7: token.id, var8: "", var9: subscription.current_period_end, var10: userCount, var11: "",
+                var12: Math.round(totalAmount), var13: ""
             })
             let createUpgradedTransaction = await connection.query(s3)
 
