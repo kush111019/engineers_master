@@ -71,11 +71,11 @@ const db_sql = {
               p.permission_to_update, p.permission_to_delete FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
               INNER JOIN roles AS r ON r.id = p.role_id WHERE m.id = '{var1}' AND r.id = '{var2}' 
               AND m.deleted_at IS NULL AND p.deleted_at IS NULL`,
-  "Q36": `INSERT INTO customer_companies ( user_id,customer_name, source, company_id, address, currency, industry) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') RETURNING *`,
+  "Q36": `INSERT INTO customer_companies ( user_id,customer_name, company_id, address, currency, industry) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
   "Q37": `INSERT INTO lead_organizations(id, organization_name, company_id) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
   "Q38": `SELECT id, organization_name FROM lead_organizations WHERE id = '{var1}' AND deleted_at IS NULL`,
   "Q39": `SELECT 
-                cus.id, cus.customer_name, cus.source, 
+                cus.id, cus.customer_name, 
                 cus.user_id, cus.industry as industry_id,
                 cus.created_at, cus.address, cus.currency,
                 u.full_name AS created_by,
@@ -86,17 +86,16 @@ const db_sql = {
                     SELECT 
                       customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                       customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                      customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                      customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                       customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id ,
                       customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, 
                       customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
                       customer_company_employees.emp_type,customer_company_employees.is_converted,customer_company_employees.reason,
-                      u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                      u1.full_name as created_by,s.source,t.title,c.customer_name
                     FROM customer_company_employees 
                     LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                     LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                     LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                    LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                     LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                     WHERE customer_company_employees.customer_company_id = cus.id
                       AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -122,7 +121,7 @@ const db_sql = {
               INNER JOIN users AS u ON u.role_id = p.role_id
               WHERE m.module_name = '{var1}' AND u.id = '{var2}' AND m.deleted_at IS NULL 
               AND p.deleted_at IS NULL AND u.deleted_at IS NULL`,
-  "Q42": `UPDATE customer_companies SET customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', address = '{var4}', currency = '{var5}', industry = '{var8}' WHERE id = '{var6}' AND company_id = '{var7}' AND deleted_at IS NULL RETURNING *`,
+  "Q42": `UPDATE customer_companies SET customer_name = '{var1}', updated_at = '{var2}', address = '{var3}', currency = '{var4}', industry = '{var7}' WHERE id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
   "Q43": `INSERT INTO 
             sales_logs(sales_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_contact_id, business_contact_id, sales_type, subscription_plan, recurring_date, currency, slab_id, booking_commission,sales_users) 
           VALUES 
@@ -1065,9 +1064,9 @@ const db_sql = {
               WHERE 
                 id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   "Q200": `INSERT INTO customer_company_employees
-            (full_name, title, email_address, phone_number,source, industry_type, customer_company_id, creator_id, company_id,emp_type)
+            (full_name, title, email_address, phone_number,source, customer_company_id, creator_id, company_id,emp_type)
            VALUES
-            ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}') RETURNING *`,
+            ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') RETURNING *`,
   "Q201": `INSERT INTO customer_company_employees (full_name,title,email_address,phone_number,
               address,source,linkedin_url,website,targeted_value,marketing_qualified_lead,
               assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type)
@@ -1866,7 +1865,7 @@ const db_sql = {
               p.user_id IN ({var1}) AND p.deleted_at IS NULL
             ORDER BY 
               created_at DESC`,
-  "Q316": `SELECT cus.id, cus.customer_name, cus.source, 
+  "Q316": `SELECT cus.id, cus.customer_name,
               cus.user_id,cus.industry as industry_id,
               cus.created_at, cus.address, cus.currency,
               u.full_name AS created_by,
@@ -1877,17 +1876,16 @@ const db_sql = {
                   SELECT 
                     customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                     customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                    customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                    customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                     customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                     customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, 
                     customer_company_employees.emp_type,customer_company_employees.is_converted,customer_company_employees.reason,
                     customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                    u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                    u1.full_name as created_by,s.source,t.title,c.customer_name
                   FROM customer_company_employees 
                   LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                   LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                   LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                  LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                   LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                   WHERE cus.id  = customer_company_employees.customer_company_id 
                     AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  

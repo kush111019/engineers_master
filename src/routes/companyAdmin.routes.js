@@ -134,7 +134,6 @@ router.put('/deleteAssignedUserForecast', verifyTokenFn, controller.revenueForec
 //---------------------------------------Business and Revenue Contact-------------------------
 
 router.post('/addBusinessAndRevenueContact',verifyTokenFn, controller.customers.addBusinessAndRevenueContact)
-// router.post('/addRevenueContact',verifyTokenFn, controller.customers.addRevenueContact)
 
 //-------------------------------------------Configurations----------------------------------
 router.post('/addConfigs', verifyTokenFn, controller.configuration.addConfigs)
