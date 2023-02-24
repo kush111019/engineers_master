@@ -25,7 +25,7 @@ module.exports.createSlab = async (req, res) => {
             }
 
             let _dt = new Date().toISOString();
-            let s7 = dbScript(db_sql['Q331'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+            let s7 = dbScript(db_sql['Q336'], { var1:_dt, var2: checkPermission.rows[0].company_id })
             updateStatusInCompany = await connection.query(s7)
             if ( updateStatusInCompany.rowCount > 0) {
                 await connection.query('COMMIT')
