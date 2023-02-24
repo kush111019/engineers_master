@@ -114,6 +114,7 @@ module.exports.revenues = async (req, res) => {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s4 = dbScript(db_sql['Q167'], { var1: roleUsers.join(','), var2: orderBy, var3: sDate, var4: eDate })
             let salesData = await connection.query(s4)
+            console.log(salesData.rows)
             if (salesData.rowCount > 0) {
                 for (let saleData of salesData.rows) {
                     let revenueCommissionByDateObj = {}
@@ -132,7 +133,7 @@ module.exports.revenues = async (req, res) => {
                                 subscriptionBooking = Number(subscription.recognized_amount)
                             }
                         }
-                        revenueCommissionByDateObj.booking =0;
+                        revenueCommissionByDateObj.booking = 0;
                         revenueCommissionByDateObj.subscription_booking = Number(subscriptionBooking);
                     }
 

@@ -575,6 +575,7 @@ const db_sql = {
             sc.booking_commission, 
             sc.revenue_commission,
             sc.target_amount,
+            sc.sales_type,
             (
               SELECT json_agg(sales_users.*)
               FROM (
