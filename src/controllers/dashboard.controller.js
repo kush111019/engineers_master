@@ -84,6 +84,7 @@ module.exports.revenues = async (req, res) => {
             console.log(revenueCommissionBydate,'revenueCommissionBydate')
             if (revenueCommissionBydate.length > 0) {
                 let returnData = await reduceArrayWithCommission(revenueCommissionBydate)
+                console.log(returnData,'returnData')
                 if (returnData.length > 0) {
                     let paginatedArr = await paginatedResults(returnData, page)
                     if (orderBy.toLowerCase() == 'asc') {
@@ -95,6 +96,7 @@ module.exports.revenues = async (req, res) => {
                             return b.revenue - a.revenue
                         })
                     }
+                    
                     res.json({
                         status: 200,
                         success: true,
