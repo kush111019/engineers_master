@@ -193,16 +193,15 @@ const db_sql = {
                 SELECT 
                   customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                   customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                   customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                   customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type, 
                   customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                 LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                 LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                 LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                 WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
                   AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -700,16 +699,15 @@ const db_sql = {
                 SELECT 
                   customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                   customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                   customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                   customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
                   customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                 LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                 LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                 LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                 WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
                   AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -778,16 +776,15 @@ const db_sql = {
                 SELECT 
                   customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                   customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                   customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                   customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type, 
                   customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                 LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                 LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                 LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                 WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
                   AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -841,16 +838,15 @@ const db_sql = {
                 SELECT 
                   customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                   customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                   customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                   customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
                   customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                 LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                 LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                 LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                 WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
                   AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -904,16 +900,15 @@ const db_sql = {
                 SELECT 
                   customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                   customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                   customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                   customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
                   customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                 LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                 LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                 LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                 WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
                   AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -982,16 +977,15 @@ const db_sql = {
                 SELECT 
                   customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                   customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                   customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                   customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type, 
                   customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                 LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                 LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                 LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                 WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
                   AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -1679,16 +1673,15 @@ const db_sql = {
                 SELECT 
                   customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                   customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                   customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                   customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type, 
                   customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                 LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                 LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                 LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                 WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
                   AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
