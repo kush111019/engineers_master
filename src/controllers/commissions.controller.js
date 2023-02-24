@@ -22,7 +22,7 @@ module.exports.commissionSplit = async (req, res) => {
             var createCommission = await connection.query(s4)
 
             let _dt = new Date().toISOString();
-            let s7 = dbScript(db_sql['Q331'], { var1: _dt, var2: checkPermission.rows[0].company_id })
+            let s7 = dbScript(db_sql['Q335'], { var1: _dt, var2: checkPermission.rows[0].company_id })
             updateStatusInCompany = await connection.query(s7)
             
 

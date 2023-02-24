@@ -437,25 +437,28 @@ module.exports.reduceArray = async (data) => {
 }
 
 module.exports.reduceArrayWithCommission = async (data) => {
-    let returnData = [];
-    for (let i = 0; i < data.length; i++) {
-        let found = 0;
-        for (let j = 0; j < returnData.length; j++) {
-            let date1 = new Date(data[i].date).toString();
-            let date2 = new Date(returnData[j].date).toString();
-            if (date1.slice(0, 10) === date2.slice(0, 10)) {
-                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
-                returnData[j].revenue = revenueOfJ;
-                let commissionOfJ = Number(returnData[j].commission) + Number(data[i].commission)
-                returnData[j].commission = commissionOfJ;
-                found = 1;
-            }
+    const groupedData = new Map();
+
+    data.forEach(obj => {
+        const date = obj.date;
+        if (groupedData.has(date)) {
+            const mergedObj = {
+            booking: groupedData.get(date).booking + obj.booking,
+            subscription_booking: groupedData.get(date).subscription_booking + obj.subscription_booking,
+            revenue: obj.revenue,
+            date: obj.date,
+            booking_commission: obj.booking_commission,
+            commission: obj.commission
+            };
+            groupedData.set(date, mergedObj);
+        } else {
+            groupedData.set(date, obj);
         }
-        if (found === 0) {
-            returnData.push(data[i]);
-        }
-    }
-    return returnData
+    });
+
+    const merged = [...groupedData.values()];
+
+    return merged;
 }
 
 module.exports.reduceArrayWithName = async (data) => {

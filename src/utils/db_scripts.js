@@ -71,11 +71,11 @@ const db_sql = {
               p.permission_to_update, p.permission_to_delete FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
               INNER JOIN roles AS r ON r.id = p.role_id WHERE m.id = '{var1}' AND r.id = '{var2}' 
               AND m.deleted_at IS NULL AND p.deleted_at IS NULL`,
-  "Q36": `INSERT INTO customer_companies ( user_id,customer_name, source, company_id, address, currency, industry) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') RETURNING *`,
+  "Q36": `INSERT INTO customer_companies ( user_id,customer_name, company_id, address, currency, industry) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
   "Q37": `INSERT INTO lead_organizations(id, organization_name, company_id) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
   "Q38": `SELECT id, organization_name FROM lead_organizations WHERE id = '{var1}' AND deleted_at IS NULL`,
   "Q39": `SELECT 
-                cus.id, cus.customer_name, cus.source, 
+                cus.id, cus.customer_name, 
                 cus.user_id, cus.industry as industry_id,
                 cus.created_at, cus.address, cus.currency,
                 u.full_name AS created_by,
@@ -86,17 +86,16 @@ const db_sql = {
                     SELECT 
                       customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                       customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                      customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                      customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                       customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id ,
                       customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, 
                       customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
                       customer_company_employees.emp_type,customer_company_employees.is_converted,customer_company_employees.reason,
-                      u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                      u1.full_name as created_by,s.source,t.title,c.customer_name
                     FROM customer_company_employees 
                     LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                     LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                     LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                    LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                     LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                     WHERE customer_company_employees.customer_company_id = cus.id
                       AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -122,7 +121,7 @@ const db_sql = {
               INNER JOIN users AS u ON u.role_id = p.role_id
               WHERE m.module_name = '{var1}' AND u.id = '{var2}' AND m.deleted_at IS NULL 
               AND p.deleted_at IS NULL AND u.deleted_at IS NULL`,
-  "Q42": `UPDATE customer_companies SET customer_name = '{var1}', source = '{var2}', updated_at = '{var3}', address = '{var4}', currency = '{var5}', industry = '{var8}' WHERE id = '{var6}' AND company_id = '{var7}' AND deleted_at IS NULL RETURNING *`,
+  "Q42": `UPDATE customer_companies SET customer_name = '{var1}', updated_at = '{var2}', address = '{var3}', currency = '{var4}', industry = '{var7}' WHERE id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
   "Q43": `INSERT INTO 
             sales_logs(sales_id, customer_commission_split_id, qualification, is_qualified, target_amount,products, target_closing_date,customer_id, is_overwrite, company_id, revenue_contact_id, business_contact_id, sales_type, subscription_plan, recurring_date, currency, slab_id, booking_commission,sales_users) 
           VALUES 
@@ -180,7 +179,7 @@ const db_sql = {
   "Q53": `INSERT INTO sales (customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency, user_id, slab_id, lead_id ,booking_commission) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}', '{var16}', '{var17}', '{var18}') RETURNING *`,
   "Q54": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
-            sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, 
+            sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
             sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,
             sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,
@@ -194,16 +193,15 @@ const db_sql = {
                 SELECT 
                   customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                   customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                   customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                   customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type, 
                   customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                 LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                 LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                 LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                 WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
                   AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -273,7 +271,7 @@ const db_sql = {
   "Q68": `SELECT 
                 f.id, f.timeline, f.amount, f.start_date, f.pid,
                 f.end_date, f.created_by,f.created_at, f.assigned_to,
-                u1.full_name as creator_name, u2.full_name as assigned_name, 
+                u1.full_name as creator_name, u2.full_name as assigned_name,f.is_accepted,
                 (
                   SELECT json_agg(forecast_data.*)
                     from forecast_data
@@ -313,6 +311,7 @@ const db_sql = {
             sc.booking_commission, 
             sc.revenue_commission,
             sc.target_amount,
+            sc.sales_type,
             (
               SELECT json_agg(sales_users.*)
               FROM (
@@ -576,6 +575,7 @@ const db_sql = {
             sc.booking_commission, 
             sc.revenue_commission,
             sc.target_amount,
+            sc.sales_type,
             (
               SELECT json_agg(sales_users.*)
               FROM (
@@ -655,7 +655,7 @@ const db_sql = {
   "Q174": `SELECT 
                 f.id, f.timeline, f.amount, f.start_date, f.pid,
                 f.end_date, f.created_by,f.created_at, f.assigned_to,
-                u1.full_name as creator_name, u2.full_name as assigned_name, 
+                u1.full_name as creator_name, u2.full_name as assigned_name, f.is_accepted, 
                 (
                   SELECT json_agg(forecast_data.*)
                     from forecast_data
@@ -688,7 +688,8 @@ const db_sql = {
                 created_at DESC`,
    "Q178": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
-            sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
+            sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
+            sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,
             sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
@@ -701,16 +702,15 @@ const db_sql = {
                 SELECT 
                   customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                   customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                   customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                   customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
                   customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                 LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                 LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                 LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                 WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
                   AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -767,8 +767,11 @@ const db_sql = {
           ORDER BY
             sc.created_at DESC`,
   "Q179": `SELECT
-            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
-            sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
+            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
+            sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.revenue_commission,
+            sc.currency, sc.target_closing_date,
+            sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason,
+             sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
             slab.slab_name,
@@ -779,16 +782,15 @@ const db_sql = {
                 SELECT 
                   customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                   customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                   customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                   customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type, 
                   customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                 LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                 LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                 LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                 WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
                   AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -830,7 +832,9 @@ const db_sql = {
           ORDER BY
             sc.created_at DESC`,
   "Q180": `SELECT
-            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
+            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
+            sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
+             sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
@@ -842,16 +846,15 @@ const db_sql = {
                 SELECT 
                   customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                   customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                   customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                   customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
                   customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                 LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                 LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                 LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                 WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
                   AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -893,7 +896,9 @@ const db_sql = {
           ORDER BY
             sc.created_at DESC`,
   "Q181": `SELECT
-            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
+            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
+             sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
+              sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
@@ -905,16 +910,15 @@ const db_sql = {
                 SELECT 
                   customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                   customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                   customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                   customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
                   customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                 LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                 LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                 LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                 WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
                   AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -971,7 +975,9 @@ const db_sql = {
           ORDER BY
             sc.created_at DESC`,
   "Q182": `SELECT
-            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
+            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
+            sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
+             sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
@@ -983,16 +989,15 @@ const db_sql = {
                 SELECT 
                   customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                   customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                   customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                   customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type, 
                   customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                 LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                 LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                 LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                 WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
                   AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -1065,21 +1070,23 @@ const db_sql = {
               WHERE 
                 id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   "Q200": `INSERT INTO customer_company_employees
-            (full_name, title, email_address, phone_number,source, industry_type, customer_company_id, creator_id, company_id,emp_type)
+            (full_name, title, email_address, phone_number,source, customer_company_id, creator_id, company_id,emp_type)
            VALUES
-            ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}') RETURNING *`,
+            ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') RETURNING *`,
   "Q201": `INSERT INTO customer_company_employees (full_name,title,email_address,phone_number,
-              address,source,linkedin_url,website,targeted_value,industry_type,marketing_qualified_lead,
+              address,source,linkedin_url,website,targeted_value,marketing_qualified_lead,
               assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type)
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
-              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}') RETURNING *`,
+              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}') RETURNING *`,
 
   "Q202": `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
-                l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name, c.customer_name , u2.full_name as assigned_sales_lead_name
+                l.website,l.targeted_value,l.marketing_qualified_lead,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,
+                l.created_at,l.is_converted,l.is_rejected,
+                u1.full_name AS creator_name, c.customer_name ,
+                 u2.full_name as assigned_sales_lead_name
               FROM 
                 customer_company_employees AS l
               LEFt JOIN 
@@ -1090,8 +1097,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFt JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1102,7 +1107,7 @@ const db_sql = {
   "Q203": `SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
                 u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
@@ -1116,8 +1121,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFt JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1127,8 +1130,8 @@ const db_sql = {
 
   "Q204": `UPDATE customer_company_employees SET full_name = '{var2}', title = '{var3}',email_address = '{var4}',phone_number = '{var5}',
               address = '{var6}',source = '{var7}',linkedin_url = '{var8}',website = '{var9}',targeted_value = '{var10}',
-              industry_type = '{var11}',marketing_qualified_lead = '{var12}',assigned_sales_lead_to = '{var13}',additional_marketing_notes = '{var14}',
-              updated_at = '{var15}', customer_company_id = '{var16}' WHERE id = '{var1}' AND deleted_at is null`,
+              marketing_qualified_lead = '{var11}',assigned_sales_lead_to = '{var12}',additional_marketing_notes = '{var13}',
+              updated_at = '{var14}', customer_company_id = '{var15}' WHERE id = '{var1}' AND deleted_at is null`,
 
   "Q205": `UPDATE customer_company_employees SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`,
 
@@ -1151,7 +1154,7 @@ const db_sql = {
   "Q208"  :`SELECT 
               l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
               l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-              l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+              l.website,l.targeted_value,l.marketing_qualified_lead,
               l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
               u1.full_name AS creator_name, c.customer_name , u2.full_name as assigned_sales_lead_name
             FROM 
@@ -1164,8 +1167,6 @@ const db_sql = {
               lead_sources AS s ON s.id = l.source
             LEFt JOIN
               lead_titles AS t ON t.id = l.title
-            LEFt JOIN
-              lead_industries AS i ON i.id = l.industry_type
             LEFT JOIN 
               customer_companies AS c ON c.id = l.customer_company_id
             WHERE 
@@ -1449,7 +1450,7 @@ const db_sql = {
   "Q275": `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
                 u1.full_name AS creator_name , c.customer_name ,u2.full_name as assigned_sales_lead_name
               FROM 
@@ -1462,8 +1463,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFT JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFT JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1475,7 +1474,7 @@ const db_sql = {
   "Q276": `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
                 u1.full_name AS creator_name ,c.customer_name , u2.full_name as assigned_sales_lead_name
               FROM 
@@ -1488,8 +1487,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFT JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFT JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1501,7 +1498,7 @@ const db_sql = {
   "Q277": `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
                 u1.full_name AS creator_name,c.customer_name , u2.full_name as assigned_sales_lead_name 
               FROM 
@@ -1514,8 +1511,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFT JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFT JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1526,7 +1521,7 @@ const db_sql = {
   "Q278": `SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
                 u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
@@ -1540,8 +1535,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFt JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1555,7 +1548,7 @@ const db_sql = {
   "Q279": `SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
                 u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
@@ -1569,8 +1562,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFt JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1583,7 +1574,7 @@ const db_sql = {
   "Q280": `SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
                 u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
@@ -1597,8 +1588,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFt JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1611,7 +1600,7 @@ const db_sql = {
   "Q282": `SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
                 u1.full_name AS creator_name, c.customer_name, u2.full_name as assigned_sales_lead_name
               FROM 
@@ -1624,8 +1613,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFT JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFT JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1637,7 +1624,7 @@ const db_sql = {
   "Q283": `SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-                l.website,l.targeted_value,l.industry_type AS industry_id,i.industry AS industry_name,l.marketing_qualified_lead,
+                l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
                 u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
@@ -1651,8 +1638,6 @@ const db_sql = {
                 lead_sources AS s ON s.id = l.source
               LEFt JOIN
                 lead_titles AS t ON t.id = l.title
-              LEFt JOIN
-                lead_industries AS i ON i.id = l.industry_type
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
@@ -1688,7 +1673,9 @@ const db_sql = {
   "Q290": `SELECT * FROM  notifications WHERE user_id= '{var1}' and is_read= false and deleted_at IS NULL`,
   "Q291": `UPDATE notifications SET is_read = true WHERE id = '{var1}' RETURNING *`,
   "Q292": `SELECT
-            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
+            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
+            sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
+            sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
@@ -1700,16 +1687,15 @@ const db_sql = {
                 SELECT 
                   customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                   customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                   customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                   customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type, 
                   customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                 LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                 LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                 LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                 WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
                   AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -1765,14 +1751,42 @@ const db_sql = {
             u.created_at DESC`,
   "Q294": `INSERT INTO forecast_data(forecast_id, amount, start_date, end_date, type, created_by)
                 VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+  "Q295": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
+              sc.revenue_commission::DECIMAL as subscription_revenue_commission,
+            (
+            select sum(recognized_revenue.recognized_amount :: decimal) as recognized_amount
+            from recognized_revenue 
+            where recognized_revenue.sales_id = sc.id
+            )
+
+            FROM
+              sales AS sc
+            WHERE
+              sc.id = '{var1}' AND sc.sales_type = 'Subscription'
+            AND
+              sc.deleted_at IS NULL`,
   "Q296": `UPDATE sales SET revenue_commission =  '{var1}' WHERE id = '{var2}' RETURNING *`,
-  "Q298": `SELECT  SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
-              FROM 
-                sales AS sc 
-              WHERE 
-                company_id = '{var1}' 
-              AND 
-                deleted_at IS NULL`,
+  "Q297": `SELECT  SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
+            FROM 
+              sales AS sc 
+            WHERE 
+              company_id = '{var1}' AND sales_type = 'Perpetual'
+            AND 
+              deleted_at IS NULL`,
+  "Q298": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
+              sc.revenue_commission::DECIMAL as subscription_revenue_commission,
+            (
+            select sum(recognized_revenue.recognized_amount :: decimal) as recognized_amount
+            from recognized_revenue 
+            where recognized_revenue.sales_id = sc.id
+            )
+
+            FROM
+              sales AS sc
+            WHERE
+              sc.company_id = '{var1}' AND sc.sales_type = 'Subscription'
+            AND
+              sc.deleted_at IS NULL`,
   "Q299": `SELECT  SUM(recognized_amount::DECIMAL) as amount FROM 
                 recognized_revenue 
               WHERE 
@@ -1818,7 +1832,7 @@ const db_sql = {
                 forecast_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   "Q306": `SELECT 
               f.id, f.timeline, f.amount, f.start_date, f.pid,
-              f.end_date, f.created_by,f.created_at, f.assigned_to,
+              f.end_date, f.created_by,f.created_at, f.assigned_to,f.is_accepted,
               u1.full_name as creator_name, u2.full_name as assigned_name, 
               (
                 SELECT json_agg(forecast_data.*)
@@ -1855,14 +1869,14 @@ const db_sql = {
   "Q307": `UPDATE 
               forecast
             SET 
-                amount = '{var2}', assigned_to = '{var3}'
+                amount = '{var2}', assigned_to = '{var3}', is_accepted = {var4}
             WHERE 
               id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   "Q308": `INSERT INTO forecast_audit(forecast_id,amount,reason,created_by,pid, forecast_amount)
             VALUES('{var1}', '{var2}', '{var3}', '{var4}','{var5}', '{var6}') RETURNING *`,
   "Q309": `UPDATE forecast SET deleted_at = '{var1}' WHERE assigned_to = '{var2}' AND id = '{var3}' RETURNING *`,
   "Q310": `UPDATE forecast_data SET deleted_at = '{var1}' WHERE forecast_id = '{var2}' RETURNING *`,
-  "Q311": `SELECT start_date, end_date, created_by,amount as forecast_amount,
+  "Q311": `SELECT start_date, end_date, created_by,amount as forecast_amount,type,
             (
               SELECT json_agg(DISTINCT(sc.id))
               FROM sales as sc
@@ -1886,7 +1900,7 @@ const db_sql = {
               p.user_id IN ({var1}) AND p.deleted_at IS NULL
             ORDER BY 
               created_at DESC`,
-  "Q316": `SELECT cus.id, cus.customer_name, cus.source, 
+  "Q316": `SELECT cus.id, cus.customer_name,
               cus.user_id,cus.industry as industry_id,
               cus.created_at, cus.address, cus.currency,
               u.full_name AS created_by,
@@ -1897,17 +1911,16 @@ const db_sql = {
                   SELECT 
                     customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
                     customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                    customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,customer_company_employees.industry_type as industry_id,
+                    customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
                     customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                     customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, 
                     customer_company_employees.emp_type,customer_company_employees.is_converted,customer_company_employees.reason,
                     customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                    u1.full_name as created_by,s.source,t.title,i.industry,c.customer_name
+                    u1.full_name as created_by,s.source,t.title,c.customer_name
                   FROM customer_company_employees 
                   LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                   LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                   LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                  LEFT JOIN lead_industries AS i ON i.id = customer_company_employees.industry_type
                   LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
                   WHERE cus.id  = customer_company_employees.customer_company_id 
                     AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
@@ -1983,6 +1996,8 @@ const db_sql = {
    "Q334": `UPDATE companies SET updated_at = '{var1}', is_products_created = true WHERE id = '{var2}' RETURNING *`,
    "Q335": `UPDATE companies SET updated_at = '{var1}', is_commissions_created = true WHERE id = '{var2}' RETURNING *`,
    "Q336": `UPDATE companies SET updated_at = '{var1}', is_slabs_created = true WHERE id = '{var2}' RETURNING *`,
+
+   "Q337": `UPDATE forecast SET updated_at = '{var1}', is_accepted = true WHERE id = '{var2}' RETURNING *`
 
 
 

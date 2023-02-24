@@ -1,5 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
+const uuid = require("node-uuid")
 const moduleName = process.env.SLABS_MODULE
 const { getUserAndSubUser } = require('../utils/helper')
 
@@ -14,16 +15,17 @@ module.exports.createSlab = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_create) {
+            
+            let slabId = uuid.v4()
             //insert slab entries into db here
             for (let data of slabsData.slabs) {
                 //id = uuid.v4()
                 let s5 = dbScript(db_sql['Q18'], { var1: data.minAmount, var2: data.maxAmount, var3: data.percentage, var4: data.isMax, var5: checkPermission.rows[0].company_id, var6: data.currency, var7: Number(data.slab_ctr), var8: userId, var9: slabId, var10: slabsData.slabName, var11: slabsData.commissionSplitId ? slabsData.commissionSplitId : 'null' })
-                let createSlab = await connection.query(s5)
-                
+                let createSlab = await connection.query(s5)  
             }
 
             let _dt = new Date().toISOString();
-            let s7 = dbScript(db_sql['Q331'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+            let s7 = dbScript(db_sql['Q336'], { var1:_dt, var2: checkPermission.rows[0].company_id })
             updateStatusInCompany = await connection.query(s7)
             if ( updateStatusInCompany.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -62,11 +64,11 @@ module.exports.updateSlab = async (req, res) => {
         let {
             slabsData
         } = req.body
+        await connection.query('BEGIN')
         //here check user all permission's
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
-            await connection.query('BEGIN')
             //here we update slab deatails 
             for (let data of slabsData.slabs) {
                 let _dt = new Date().toISOString()
@@ -222,7 +224,6 @@ module.exports.deleteSlab = async (req, res) => {
                 })
 
             }
-
         } else {
             res.status(403).json({
                 success: false,
