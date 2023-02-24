@@ -272,7 +272,7 @@ module.exports.updateAssignedUsersForecast = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
             if (forecastId) {
-                let s3 = dbScript(db_sql['Q307'], { var1: forecastId, var2: amount, var3: assignedTo })
+                let s3 = dbScript(db_sql['Q307'], { var1: forecastId, var2: amount, var3: assignedTo, var4 : false })
                 let updateAssignedForecast = await connection.query(s3)
 
                 // add notification in notification list
@@ -349,11 +349,12 @@ module.exports.auditForecast = async (req, res) => {
             let s2 = dbScript(db_sql['Q308'], { var1: forecastId, var2: amount, var3: reason, var4: userId , var5 :pid, var6 : forecastAmount})
             let createAudit = await connection.query(s2)
 
-            let s3 = dbScript(db_sql['Q307'], { var1 : forecastId, var2 : amount, var3 : userId })
-            let updateAmount = await connection.query(s3)
-
             let s4 = dbScript(db_sql['Q306'], { var1: forecastId });
             let revenueForecastList = await connection.query(s4);
+
+            let s3 = dbScript(db_sql['Q307'], { var1 : forecastId, var2 : amount, var3 : userId, var4 : revenueForecastList.rows[0].is_accepted })
+            let updateAmount = await connection.query(s3)
+
             if (createAudit.rowCount > 0 && updateAmount.rowCount > 0) {
                 // add notification in notification list
                 notification_userId = [revenueForecastList.rows[0].created_by];

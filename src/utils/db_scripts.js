@@ -1869,7 +1869,7 @@ const db_sql = {
   "Q307": `UPDATE 
               forecast
             SET 
-                amount = '{var2}', assigned_to = '{var3}'
+                amount = '{var2}', assigned_to = '{var3}', is_accepted = {var4}
             WHERE 
               id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   "Q308": `INSERT INTO forecast_audit(forecast_id,amount,reason,created_by,pid, forecast_amount)
