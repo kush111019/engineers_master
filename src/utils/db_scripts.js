@@ -179,7 +179,7 @@ const db_sql = {
   "Q53": `INSERT INTO sales (customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency, user_id, slab_id, lead_id ,booking_commission) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}', '{var16}', '{var17}', '{var18}') RETURNING *`,
   "Q54": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
-            sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, 
+            sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
             sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,
             sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,
@@ -686,7 +686,8 @@ const db_sql = {
                 created_at DESC`,
    "Q178": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
-            sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
+            sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
+            sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,
             sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
@@ -764,8 +765,11 @@ const db_sql = {
           ORDER BY
             sc.created_at DESC`,
   "Q179": `SELECT
-            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
-            sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
+            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
+            sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.revenue_commission,
+            sc.currency, sc.target_closing_date,
+            sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason,
+             sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
             slab.slab_name,
@@ -826,7 +830,9 @@ const db_sql = {
           ORDER BY
             sc.created_at DESC`,
   "Q180": `SELECT
-            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
+            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
+            sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
+             sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
@@ -888,7 +894,9 @@ const db_sql = {
           ORDER BY
             sc.created_at DESC`,
   "Q181": `SELECT
-            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
+            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
+             sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
+              sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
@@ -965,7 +973,9 @@ const db_sql = {
           ORDER BY
             sc.created_at DESC`,
   "Q182": `SELECT
-            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
+            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
+            sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
+             sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
@@ -1661,7 +1671,9 @@ const db_sql = {
   "Q290": `SELECT * FROM  notifications WHERE user_id= '{var1}' and is_read= false and deleted_at IS NULL`,
   "Q291": `UPDATE notifications SET is_read = true WHERE id = '{var1}' RETURNING *`,
   "Q292": `SELECT
-            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
+            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
+            sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
+            sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
@@ -1738,13 +1750,27 @@ const db_sql = {
   "Q294": `INSERT INTO forecast_data(forecast_id, amount, start_date, end_date, type, created_by)
                 VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
   "Q296": `UPDATE sales SET revenue_commission =  '{var1}' WHERE id = '{var2}' RETURNING *`,
-  "Q298": `SELECT  SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
-              FROM 
-                sales AS sc 
-              WHERE 
-                company_id = '{var1}' 
-              AND 
-                deleted_at IS NULL`,
+  "Q297": `SELECT  SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
+            FROM 
+              sales AS sc 
+            WHERE 
+              company_id = '{var1}' AND sales_type = 'Perpetual'
+            AND 
+              deleted_at IS NULL`,
+  "Q298": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
+              sc.revenue_commission::DECIMAL as subscription_revenue_commission,
+            (
+            select sum(recognized_revenue.recognized_amount :: decimal) as recognized_amount
+            from recognized_revenue 
+            where recognized_revenue.sales_id = sc.id
+            )
+
+            FROM
+              sales AS sc
+            WHERE
+              sc.company_id = '{var1}' AND sc.sales_type = 'Subscription'
+            AND
+              sc.deleted_at IS NULL`,
   "Q299": `SELECT  SUM(recognized_amount::DECIMAL) as amount FROM 
                 recognized_revenue 
               WHERE 
