@@ -21,7 +21,7 @@ module.exports.marketingDashboard = async (req, res) => {
             let MCount = await connection.query(s3)
 
             //Total Assigned Lead count
-            let s4 = dbScript(db_sql['Q248'], { var1: checkPermission.rows[0].id })
+            let s4 = dbScript(db_sql['Q248'], { var1: checkPermission.rows[0].company_id })
             let ACount = await connection.query(s4)
 
             //Total Rejected Lead count

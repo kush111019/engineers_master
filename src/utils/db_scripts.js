@@ -1336,7 +1336,7 @@ const db_sql = {
               ORDER BY 
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
-  "Q248": `SELECT COUNT(*) from customer_company_employees WHERE assigned_sales_lead_to = '{var1}' AND emp_type = 'lead'  AND deleted_at IS NULL`,
+  "Q248": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND assigned_sales_lead_to IS NOT NULL AND emp_type = 'lead'  AND deleted_at IS NULL`,
   "Q249": `UPDATE companies SET company_logo = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q250": `UPDATE customer_company_employees SET is_rejected = '{var2}', reason = '{var3}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`,
   "Q251": `SELECT 
