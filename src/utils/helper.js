@@ -405,7 +405,7 @@ module.exports.reduceArray = async (data) => {
         if (groupedData.has(date)) {
             const mergedObj = {
                 date: obj.date,
-                revenue: groupedData.get(date).revenue + obj.revenue
+                revenue: Number(groupedData.get(date).revenue) + Number(obj.revenue)
             };
             groupedData.set(date, mergedObj);
         } else {
@@ -443,15 +443,17 @@ module.exports.reduceArrayWithCommission = async (data) => {
 }
 
 module.exports.reduceArrayWithName = async (data) => {
-
+console.log(data,"data");
     const groupedData = new Map();
 
     data.forEach(obj => {
+        console.log(obj,"obj");
         const salesRep = obj.sales_rep;
         if (groupedData.has(salesRep)) {
             const mergedObj = {
-                salesRep: obj.salesRep,
-                revenue: groupedData.get(salesRep).revenue + obj.revenue
+                salesRep: obj.sales_rep,
+                revenue: Number(groupedData.get(salesRep).revenue) + Number(obj.revenue),
+                commission:  groupedData.get(salesRep).commission + obj.commission
             };
             groupedData.set(salesRep, mergedObj);
         } else {
@@ -471,8 +473,8 @@ module.exports.reduceArrayWithCustomer = async (data) => {
         const customer = obj.customer_name;
         if (groupedData.has(customer)) {
             const mergedObj = {
-                customer: obj.customer,
-                revenue: groupedData.get(customer).revenue + obj.revenue
+                customer: obj.customer_name,
+                revenue: Number(groupedData.get(customer).revenue) + Number(obj.revenue)
             };
             groupedData.set(customer, mergedObj);
         } else {
@@ -492,8 +494,8 @@ module.exports.reduceArrayWithProduct = async (data) => {
         const product = obj.product_name;
         if (groupedData.has(product)) {
             const mergedObj = {
-                product: obj.product,
-                revenue: groupedData.get(product).revenue + obj.revenue
+                product: obj.product_name,
+                revenue: Number(groupedData.get(product).revenue) + Number(obj.revenue)
             };
             groupedData.set(product, mergedObj);
         } else {
