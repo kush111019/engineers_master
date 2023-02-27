@@ -39,13 +39,7 @@ module.exports.marketingDashboard = async (req, res) => {
             let s8 = dbScript(db_sql['Q223'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let mqlLeads = await connection.query(s8)
 
-            let ids = []
-            let roleUsers = await getUserAndSubUser(checkPermission.rows[0])
-            roleUsers.map(e => {
-               ids.push(e.slice(1,-1))
-            })
-
-            let s9 = dbScript(db_sql['Q247'], { var1: roleUsers.join(","), var2: limit, var3: offset, var4: orderBy.toLowerCase() })
+            let s9 = dbScript(db_sql['Q247'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let assignedLeads = await connection.query(s9)
 
             let s10 = dbScript(db_sql['Q255'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase(), var5: true })
@@ -55,13 +49,10 @@ module.exports.marketingDashboard = async (req, res) => {
             let customerlist = await connection.query(s11)
 
             const lists = [leadData.rows, mqlLeads.rows, assignedLeads.rows, rejectedLeads.rows, customerlist.rows];
-            console.log(lists,"lists11111111111111");
             const counts = {};
 
             lists.forEach(list => {
-                console.log(list,"lists22222222222222");
                 list.forEach(item => {
-                    console.log(item,"item11111111111111111");
                     if (!counts[item.created_by]) {
                         counts[item.created_by] = {
                             created_by: item.created_by,
@@ -76,9 +67,7 @@ module.exports.marketingDashboard = async (req, res) => {
             });
             let count = 0 
             lists.forEach(list => {
-                console.log(list,"lists33333333333333333");
                 list.forEach(item => {
-                    console.log(item,"item4444444444444");
                     if (list === leadData.rows) counts[item.created_by].count = item.count;
                     if (list === mqlLeads.rows) counts[item.created_by].mqlCount = item.count;
                     if (list === assignedLeads.rows) counts[item.created_by].assignedCount = item.count;
@@ -94,11 +83,8 @@ module.exports.marketingDashboard = async (req, res) => {
                     }
                 });
             });
-            console.log(counts,"counts5555555555555555555");
             
             const LeadCount = Object.values(counts);
-
-            console.log(LeadCount,"LeadCount66666666666666666666666");
 
             res.json({
                 status: 200,

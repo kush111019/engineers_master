@@ -1330,7 +1330,7 @@ const db_sql = {
               INNER JOIN 
                 users AS u ON u.id = l.assigned_sales_lead_to
               WHERE 
-                l.assigned_sales_lead_to IN ({var1}) AND l.emp_type = 'lead' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+              l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
               GROUP BY 
                 u.full_name
               ORDER BY 
