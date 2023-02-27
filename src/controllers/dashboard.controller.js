@@ -20,9 +20,7 @@ module.exports.revenues = async (req, res) => {
             let revenueCommissionBydate = []
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate, var5: roleUsers.join(',') })
-            console.log(s4,'s4')
             let salesData = await connection.query(s4)
-            console.log(salesData.rows,'sales data')
             if (salesData.rowCount > 0) {
                 for (let saleData of salesData.rows) {
 
@@ -79,13 +77,10 @@ module.exports.revenues = async (req, res) => {
                             revenueCommissionBydate.push(revenueCommissionByDateObj)
                         }
                     }
-                    console.log(revenueCommissionByDateObj,'revenueCommissionByDateObj')
                 }
             }
-            console.log(revenueCommissionBydate,'revenueCommissionBydate')
             if (revenueCommissionBydate.length > 0) {
                 let returnData = await reduceArrayWithCommission(revenueCommissionBydate)
-                console.log(returnData,'returnData')
                 if (returnData.length > 0) {
                     let paginatedArr = await paginatedResults(returnData, page)
                     if (orderBy.toLowerCase() == 'asc') {
@@ -97,7 +92,6 @@ module.exports.revenues = async (req, res) => {
                             return b.revenue - a.revenue
                         })
                     }
-                    
                     res.json({
                         status: 200,
                         success: true,
@@ -119,7 +113,6 @@ module.exports.revenues = async (req, res) => {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s4 = dbScript(db_sql['Q167'], { var1: roleUsers.join(','), var2: orderBy, var3: sDate, var4: eDate })
             let salesData = await connection.query(s4)
-            console.log(salesData.rows)
             if (salesData.rowCount > 0) {
                 for (let saleData of salesData.rows) {
                     let revenueCommissionByDateObj = {}
