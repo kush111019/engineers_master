@@ -315,13 +315,9 @@ module.exports.revenuePerSalesRep = async (req, res) => {
         if (checkPermission.rows[0].permission_to_view_global) {
             if ((startDate != undefined && startDate != '') && (endDate != undefined && endDate != '')) {
                 let roleUsers;
-                let roleObj = {
-                    role_id : role_id,
-                    id : checkPermission.rows[0].id
-                }
                 let revenueCommissionBydate = []
                 if (isAll == 'true') {
-                    roleUsers = await getUserAndSubUser(roleObj);
+                    roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
                 } else {
                     let userData = [];
                     let s2 = dbScript(db_sql['Q21'], { var1: role_id, var2: checkPermission.rows[0].company_id })
