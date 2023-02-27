@@ -397,24 +397,23 @@ module.exports.getYearDifference = async (startDate, endDate) => {
 }
 
 module.exports.reduceArray = async (data) => {
-
-    const groupedData = new Map();
-
-    data.forEach(obj => {
-        const date = obj.date;
-        if (groupedData.has(date)) {
-            const mergedObj = {
-                date: obj.date,
-                revenue: Number(groupedData.get(date).revenue) + Number(obj.revenue)
-            };
-            groupedData.set(date, mergedObj);
-        } else {
-            groupedData.set(date, obj);
+    let returnData = [];
+    for (let i = 0; i < data.length; i++) {
+        let found = 0;
+        for (let j = 0; j < returnData.length; j++) {
+            let date1 = new Date(data[i].date).toISOString();
+            let date2 = new Date(returnData[j].date).toISOString();
+            if (date1.slice(0, 10) === date2.slice(0, 10)) {
+                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
+                returnData[j].revenue = revenueOfJ;
+                found = 1;
+            }
         }
-    });
-
-    const merged = [...groupedData.values()];
-    return merged
+        if (found === 0) {
+            returnData.push(data[i]);
+        }
+    }
+    return returnData
 }
 
 module.exports.reduceArrayWithCommission = async (data) => {
