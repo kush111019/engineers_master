@@ -445,10 +445,10 @@ module.exports.reduceArrayWithCommission = async (data) => {
             const mergedObj = {
             booking: groupedData.get(date).booking + obj.booking,
             subscription_booking: groupedData.get(date).subscription_booking + obj.subscription_booking,
-            revenue: obj.revenue,
+            revenue: groupedData.get(date).revenue + obj.revenue,
             date: obj.date,
-            booking_commission: obj.booking_commission,
-            commission: obj.commission
+            booking_commission:  groupedData.get(date).booking_commission + obj.booking_commission,
+            commission:  groupedData.get(date).commission + obj.commission
             };
             groupedData.set(date, mergedObj);
         } else {
