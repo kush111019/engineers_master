@@ -20,6 +20,7 @@ module.exports.revenues = async (req, res) => {
             let revenueCommissionBydate = []
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate, var5: roleUsers.join(',') })
+            console.log(s4,'s4')
             let salesData = await connection.query(s4)
             console.log(salesData.rows,'sales data')
             if (salesData.rowCount > 0) {
