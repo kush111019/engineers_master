@@ -48,29 +48,29 @@ module.exports.rolesList = async (req, res) => {
             let rolesList = await connection.query(s3)
             for (let data of rolesList.rows) {
                 let modulePermissions = []
-
+                let moduleIds = []
+                JSON.parse(data.module_ids).map(e => {
+                    moduleIds.push(e)
+                })
                 let s4 = dbScript(db_sql['Q21'], { var1: data.id, var2: checkPermission.rows[0].company_id })
                 let getUser = await connection.query(s4)
 
-                if (data.reporter != '') {
-                    for (let moduleId of JSON.parse(data.module_ids)) {
-                        let s5 = dbScript(db_sql['Q35'], { var1: moduleId, var2: data.id })
-                        let permissionList = await connection.query(s5)
+                let s5 = dbScript(db_sql['Q35'], { var1: moduleIds.join("','"), var2: data.id })
+                let permissionList = await connection.query(s5)
 
-                        for ( let permissionData of permissionList.rows) {
-                            modulePermissions.push({
-                                moduleId: moduleId,
-                                permissionToCreate: permissionData.permission_to_create,
-                                permissionToUpdate: permissionData.permission_to_update,
-                                permissionToViewGlobal: permissionData.permission_to_view_global,
-                                permissionToViewOwn: permissionData.permission_to_view_own,
-                                permissionToDelete: permissionData.permission_to_delete
-                            })
-                        }
-                    }
+                for (let permissionData of permissionList.rows) {
+                    modulePermissions.push({
+                        moduleId: permissionData.id,
+                        permissionToCreate: permissionData.permission_to_create,
+                        permissionToUpdate: permissionData.permission_to_update,
+                        permissionToViewGlobal: permissionData.permission_to_view_global,
+                        permissionToViewOwn: permissionData.permission_to_view_own,
+                        permissionToDelete: permissionData.permission_to_delete
+                    })
+                }
+                if (data.reporter != '') {
                     let s6 = dbScript(db_sql['Q12'], { var1: data.reporter })
                     let reporterRole = await connection.query(s6)
-
                     list.push({
                         roleId: data.id,
                         roleName: data.role_name,
@@ -80,21 +80,6 @@ module.exports.rolesList = async (req, res) => {
                         isUserAssigned: (getUser.rowCount > 0) ? true : false
                     })
                 } else {
-                    for (let moduleId of JSON.parse(data.module_ids)) {
-                        let s7 = dbScript(db_sql['Q35'], { var1: moduleId, var2: data.id })
-                        let permissionList = await connection.query(s7)
-
-                        for (let permissionData of permissionList.rows) {
-                            modulePermissions.push({
-                                moduleId: moduleId,
-                                permissionToCreate: permissionData.permission_to_create,
-                                permissionToUpdate: permissionData.permission_to_update,
-                                permissionToViewGlobal: permissionData.permission_to_view_global,
-                                permissionToViewOwn: permissionData.permission_to_view_own,
-                                permissionToDelete: permissionData.permission_to_delete
-                            })
-                        }
-                    }
                     list.push({
                         roleId: data.id,
                         roleName: data.role_name,
@@ -144,29 +129,30 @@ module.exports.rolesList = async (req, res) => {
                 let rolesList = await connection.query(s3)
                 for (let data of rolesList.rows) {
                     let modulePermissions = []
-
+                    let moduleIds = []
+                    JSON.parse(data.module_ids).map(e => {
+                        moduleIds.push(e)
+                    })
                     let s4 = dbScript(db_sql['Q21'], { var1: data.id, var2: checkPermission.rows[0].company_id })
                     let getUser = await connection.query(s4)
 
-                    if (data.reporter != '') {
-                        for (let moduleId of JSON.parse(data.module_ids)) {
-                            let s5 = dbScript(db_sql['Q35'], { var1: moduleId, var2: data.id })
-                            let permissionList = await connection.query(s5)
+                    let s5 = dbScript(db_sql['Q35'], { var1: moduleIds.join("','"), var2: data.id })
+                    let permissionList = await connection.query(s5)
 
-                            for (let permissionData of permissionList.rows) {
-                                modulePermissions.push({
-                                    moduleId: moduleId,
-                                    permissionToCreate: permissionData.permission_to_create,
-                                    permissionToUpdate: permissionData.permission_to_update,
-                                    permissionToViewGlobal: permissionData.permission_to_view_global,
-                                    permissionToViewOwn: permissionData.permission_to_view_own,
-                                    permissionToDelete: permissionData.permission_to_delete
-                                })
-                            }
-                        }
+                    for (let permissionData of permissionList.rows) {
+                        modulePermissions.push({
+                            moduleId: permissionData.id,
+                            permissionToCreate: permissionData.permission_to_create,
+                            permissionToUpdate: permissionData.permission_to_update,
+                            permissionToViewGlobal: permissionData.permission_to_view_global,
+                            permissionToViewOwn: permissionData.permission_to_view_own,
+                            permissionToDelete: permissionData.permission_to_delete
+                        })
+                    }
+
+                    if (data.reporter != '') {
                         let s6 = dbScript(db_sql['Q12'], { var1: data.reporter })
                         let reporterRole = await connection.query(s6)
-
                         list.push({
                             roleId: data.id,
                             roleName: data.role_name,
@@ -176,21 +162,6 @@ module.exports.rolesList = async (req, res) => {
                             isUserAssigned: (getUser.rowCount > 0) ? true : false
                         })
                     } else {
-                        for (let moduleId of JSON.parse(data.module_ids)) {
-                            let s7 = dbScript(db_sql['Q35'], { var1: moduleId, var2: data.id })
-                            let permissionList = await connection.query(s7)
-
-                            for (let permissionData of permissionList.rows) {
-                                modulePermissions.push({
-                                    moduleId: moduleId,
-                                    permissionToCreate: permissionData.permission_to_create,
-                                    permissionToUpdate: permissionData.permission_to_update,
-                                    permissionToViewGlobal: permissionData.permission_to_view_global,
-                                    permissionToViewOwn: permissionData.permission_to_view_own,
-                                    permissionToDelete: permissionData.permission_to_delete
-                                })
-                            }
-                        }
                         list.push({
                             roleId: data.id,
                             roleName: data.role_name,

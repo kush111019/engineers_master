@@ -67,10 +67,11 @@ const db_sql = {
               WHERE sales_id = '{var1}' AND f.deleted_at IS NULL ORDER BY created_at DESC`,
   "Q33": `UPDATE permissions SET user_id = '{var2}' WHERE role_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   "Q34": `UPDATE roles SET module_ids = '{var1}' , updated_at = '{var2}' WHERE id = '{var3}' RETURNING * `,
-  "Q35": `SELECT m.module_name, p.permission_to_view_global,p.permission_to_view_own, p.permission_to_create, 
+  "Q35": `SELECT m.id, m.module_name, p.permission_to_view_global,p.permission_to_view_own, p.permission_to_create, 
               p.permission_to_update, p.permission_to_delete FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
-              INNER JOIN roles AS r ON r.id = p.role_id WHERE m.id = '{var1}' AND r.id = '{var2}' 
-              AND m.deleted_at IS NULL AND p.deleted_at IS NULL`,
+              INNER JOIN roles AS r ON r.id = p.role_id WHERE m.id IN ('{var1}') AND r.id = '{var2}' 
+              AND m.deleted_at IS NULL AND p.deleted_at IS NULL
+              ORDER BY m.module_ctr ASC`,
   "Q36": `INSERT INTO customer_companies ( user_id,customer_name, company_id, address, currency, industry) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
   "Q37": `INSERT INTO lead_organizations(id, organization_name, company_id) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
   "Q38": `SELECT id, organization_name FROM lead_organizations WHERE id = '{var1}' AND deleted_at IS NULL`,
@@ -248,6 +249,10 @@ const db_sql = {
             sales_users( user_id, user_percentage,user_type, commission_split_id, sales_id, company_id) 
           VALUES
             ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') RETURNING *`,
+  "Q59":`SELECT m.id, m.module_name, p.permission_to_view_global,p.permission_to_view_own, p.permission_to_create, 
+          p.permission_to_update, p.permission_to_delete FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
+          INNER JOIN roles AS r ON r.id = p.role_id WHERE m.id = '{var1}' AND r.id = '{var2}' 
+          AND m.deleted_at IS NULL AND p.deleted_at IS NULL`,
   "Q60": `UPDATE sales SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
   "Q61": `UPDATE sales_users 
           SET 
