@@ -315,17 +315,23 @@ module.exports.revenuePerSalesRep = async (req, res) => {
         if (checkPermission.rows[0].permission_to_view_global) {
             if ((startDate != undefined && startDate != '') && (endDate != undefined && endDate != '')) {
                 let roleUsers;
+                let roleObj = {
+                    role_id : role_id,
+                    id : checkPermission.rows[0].id
+                }
                 let revenueCommissionBydate = []
                 if (isAll == 'true') {
-                    roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+                    roleUsers = await getUserAndSubUser(roleObj);
                 } else {
                     let userData = [];
-                    let s2 = dbScript(db_sql['Q288'], { var1: role_id, var2: userId })
+                    let s2 = dbScript(db_sql['Q21'], { var1: role_id, var2: checkPermission.rows[0].company_id })
                     let getUserData = await connection.query(s2);
                     if (getUserData.rowCount > 0) {
-                        userData.push("'" + getUserData.rows[0].id.toString() + "'");
-                        roleUsers = userData;
+                        getUserData.rows.map(e => {
+                            userData.push("'" + e.id.toString() + "'");
+                        })
                     }
+                    roleUsers = userData;
                 }
                 let s4 = dbScript(db_sql['Q258'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
                 let salesData = await connection.query(s4)
@@ -417,12 +423,14 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                     roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
                 } else {
                     let userData = [];
-                    let s2 = dbScript(db_sql['Q288'], { var1: role_id, var2: userId })
+                    let s2 = dbScript(db_sql['Q21'], { var1: role_id, var2: checkPermission.rows[0].company_id })
                     let getUserData = await connection.query(s2);
                     if (getUserData.rowCount > 0) {
-                        userData.push("'" + getUserData.rows[0].id.toString() + "'");
-                        roleUsers = userData;
+                        getUserData.rows.map(e => {
+                            userData.push("'" + e.id.toString() + "'");
+                        })
                     }
+                    roleUsers = userData;
                 }
                 let s4 = dbScript(db_sql['Q258'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
                 let salesData = await connection.query(s4)
