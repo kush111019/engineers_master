@@ -333,6 +333,14 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                     }
                     roleUsers = userData;
                 }
+                if(roleUsers.length == 0){
+                    return res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty Revenues and Commissions per sales captain",
+                        data: []
+                    })
+                }
                 let s4 = dbScript(db_sql['Q258'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0) {
@@ -431,6 +439,15 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         })
                     }
                     roleUsers = userData;
+                }
+
+                if(roleUsers.length == 0){
+                    return res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty Revenues and Commissions per sales captain",
+                        data: []
+                    })
                 }
                 let s4 = dbScript(db_sql['Q258'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
                 let salesData = await connection.query(s4)
