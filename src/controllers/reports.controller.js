@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { reduceArray, paginatedResults, paginatedResults1, reduceArrayWithName, reduceArrayWithName1, reduceArrayWithCustomer, reduceArrayWithProduct, getUserAndSubUser } = require('../utils/helper')
+const { reduceArray, paginatedResults, paginatedResults1, reduceArrayWithName, reduceArrayWithCustomer, reduceArrayWithProduct, getUserAndSubUser } = require('../utils/helper')
 const moduleName = process.env.REPORTS_MODULE
 
 module.exports.revenuePerCustomer = async (req, res) => {
@@ -625,97 +625,3 @@ module.exports.totalRevenue = async (req, res) => {
         })
     }
 }
-
-// module.exports.roleWiseRevenue = async (req, res) => {
-//     try {
-//         let userId = req.user.id
-//         let { page, orderBy, startDate, endDate, role_id, isAll } = req.query
-//         startDate = new Date(startDate)
-//         startDate.setHours(0, 0, 0, 0)
-//         let sDate = new Date(startDate).toISOString()
-//         endDate = new Date(endDate)
-//         endDate.setHours(23, 59, 59, 999)
-//         let eDate = new Date(endDate).toISOString()
-//         let limit = 10;
-//         let offset = (page - 1) * limit
-//         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-//         let checkPermission = await connection.query(s3)
-//         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-//             if ((startDate != undefined && startDate != '') && (endDate != undefined && endDate != '')) {
-//                 let roleIds = []
-//                 let roleUsers = []
-//                 let revenueList = []
-//                 roleIds.push(role_id)
-//                 if(isAll == 'true'){
-//                     let getRoles = async (id) => {
-//                         let s7 = dbScript(db_sql['Q16'], { var1: id })
-//                         let getChild = await connection.query(s7);
-//                         if (getChild.rowCount > 0) {
-//                             for (let item of getChild.rows) {
-//                                 if (roleIds.includes(item.id) == false) {
-//                                     roleIds.push(item.id)
-//                                     await getRoles(item.id)
-//                                 }
-//                             }
-//                         }
-//                     }
-//                     await getRoles(role_id)
-//                 }
-//                 for(let roleId of roleIds){
-//                     let s3 = dbScript(db_sql['Q185'], { var1: roleId })
-//                     let findUsers = await connection.query(s3)
-//                     if (findUsers.rowCount > 0) {
-//                         for (let user of findUsers.rows) {
-//                             roleUsers.push(user.id)
-//                         }
-//                     }
-//                 }
-//                 let s4 = dbScript(db_sql['Q186'], {  var1: "'"+roleUsers.join("','")+"'", var2: limit, var3: offset, var4: sDate, var5: eDate })
-//                 let salesData = await connection.query(s4)
-//                 if (salesData.rowCount > 0) {
-//                     let returnData = await reduceArrayWithName1(salesData.rows)
-//                     if(orderBy.toLowerCase() == 'asc'){
-//                         returnData = returnData.sort((a,b) => {
-//                             return a.revenue - b.revenue
-//                         })
-//                     }else{
-//                         returnData = returnData.sort((a,b) => {
-//                             return b.revenue - a.revenue
-//                         })
-//                     }
-//                     res.json({
-//                         status: 200,
-//                         success: true,
-//                         message: "Revenue per role wise user",
-//                         data: returnData
-//                     })
-//                 } else {
-//                     res.json({
-//                         status: 200,
-//                         success: true,
-//                         message: "Empty revenue per role wise user",
-//                         data: revenueList
-//                     })
-//                 }
-//             } else {
-//                 res.json({
-//                     status: 400,
-//                     success: false,
-//                     message: "Start date and End date is required",
-//                 })
-//             }
-//         }
-//         else {
-//             res.status(403).json({
-//                 success: false,
-//                 message: "Unauthorised"
-//             })
-//         }
-//     } catch (error) {
-//         res.json({
-//             status: 400,
-//             success: false,
-//             message: error.message,
-//         })
-//     }
-// }

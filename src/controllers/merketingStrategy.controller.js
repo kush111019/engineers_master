@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { mysql_real_escape_string, getUserAndSubUser, containsObject } = require('../utils/helper')
+const { mysql_real_escape_string, getUserAndSubUser } = require('../utils/helper')
 const moduleName = process.env.MARKETING_MODULE
 
 module.exports.marketingDashboard = async (req, res) => {

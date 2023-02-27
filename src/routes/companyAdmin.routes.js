@@ -61,9 +61,6 @@ router.post('/createCustomerWithLead',verifyTokenFn, controller.customers.create
 router.get('/customerList',verifyTokenFn, controller.customers.customerList)
 router.put('/editCustomer',verifyTokenFn, controller.customers.editCustomer)
 router.put('/deleteContactForCustomer',verifyTokenFn, controller.customers.deleteContactForCustomer)
-
-// router.get('/customerCompanyList',verifyTokenFn, controller.customers.customerCompanyList)
-// router.get('/customerContactDetails',verifyTokenFn, controller.customers.customerContactDetails)
 router.put('/deleteCustomer',verifyTokenFn, controller.customers.deleteCustomer)
 
 //------------------------------------Commisions-----------------------------------------
@@ -83,7 +80,6 @@ router.post('/uploadProductFile',verifyTokenFn,uploadProductFile.single('file'),
 
 //----------------------------------------sales --------------------------------
 router.get('/customerListforSales',verifyTokenFn, controller.sales.customerListforSales)
-// router.get('/customerContactDetailsForSales',verifyTokenFn, controller.sales.customerContactDetailsForSales)
 
 router.post('/createSales',verifyTokenFn, controller.sales.createSales)
 
@@ -111,7 +107,6 @@ router.get('/getAllApiDeatilsRelatedSales', verifyTokenFn, controller.sales.getA
 router.get('/revenuePerCustomer',verifyTokenFn, controller.reports.revenuePerCustomer)
 router.get('/revenuePerProduct',verifyTokenFn, controller.reports.revenuePerProduct)
 router.get('/revenuePerSalesRep',verifyTokenFn, controller.reports.revenuePerSalesRep)
-// router.get('/roleWiseRevenue',verifyTokenFn, controller.reports.roleWiseRevenue)
 router.get('/totalRevenue',verifyTokenFn, controller.reports.totalRevenue)
 //---------------------------------------DashBoard counts -------------------------------
 
@@ -168,18 +163,12 @@ router.post('/readEmail', verifyTokenFn, controller.email.readEmail)
 router.get('/SentEmailList/:salesId', verifyTokenFn, controller.email.SentEmailList)
 
 //-------------------------------Leads-----------------------------------------
-// router.get('/organizationList',verifyTokenFn, controller.leads.organizationList)
 router.post('/createLead',verifyTokenFn, controller.leads.createLead)
 router.get('/leadsList',verifyTokenFn, controller.leads.leadsList)
 router.get('/leadsDetails',verifyTokenFn, controller.leads.leadsDetails)
 router.put('/updateLead',verifyTokenFn, controller.leads.updateLead)
 router.put('/deleteLead',verifyTokenFn, controller.leads.deleteLead)
 router.put('/rejectLead',verifyTokenFn, controller.leads.rejectLead)
-//router.get('/totalVsRejectedLeads', verifyTokenFn, controller.leads.rejectedLeads )
-// router.post('/createOrganization' , verifyTokenFn, controller.leads.createOrganization)
-// router.put('/updateOrganization', verifyTokenFn, controller.leads.updateOrganization)
-// router.put('/deleteOrganization', verifyTokenFn, controller.leads.deleteOrganization)
-// router.post('/convertLeadToCustomer',verifyTokenFn, controller.leads.convertLeadToCustomer)
 
 //-------------------------------Marketing strategy-----------------------------------------
 router.get('/marketingDashboard',verifyTokenFn, controller.marketingStrategy.marketingDashboard)
