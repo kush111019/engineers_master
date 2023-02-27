@@ -39,7 +39,13 @@ module.exports.marketingDashboard = async (req, res) => {
             let s8 = dbScript(db_sql['Q223'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let mqlLeads = await connection.query(s8)
 
-            let s9 = dbScript(db_sql['Q247'], { var1: checkPermission.rows[0].id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
+            let ids = []
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0])
+            roleUsers.map(e => {
+               ids.push(e.slice(1,-1))
+            })
+
+            let s9 = dbScript(db_sql['Q247'], { var1: roleUsers.join(","), var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let assignedLeads = await connection.query(s9)
 
             let s10 = dbScript(db_sql['Q255'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase(), var5: true })
