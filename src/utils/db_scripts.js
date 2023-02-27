@@ -326,11 +326,7 @@ const db_sql = {
             sales as sc 
           LEFT JOIN sales_users as su
             on sc.id=su.sales_id
-          WHERE (
-            su.user_id in ({var5}) OR 
-              sc.user_id in ({var5})
-            ) 
-          AND 
+          WHERE 
             sc.company_id = '{var1}' AND 
             sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
             sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
