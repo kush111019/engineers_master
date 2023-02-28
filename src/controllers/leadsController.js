@@ -131,7 +131,6 @@ module.exports.leadsList = async (req, res) => {
             }
         }
         else if (checkPermission.rows[0].permission_to_view_own) {
-            console.log('shuham')
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let findLeadList
             if (status.toLowerCase() == 'all') {

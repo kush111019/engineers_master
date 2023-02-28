@@ -1085,7 +1085,7 @@ const db_sql = {
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,
-                l.created_at,l.is_converted,l.is_rejected,
+                l.created_at,l.is_converted,l.is_rejected,l.reason,
                 u1.full_name AS creator_name, c.customer_name ,
                  u2.full_name as assigned_sales_lead_name
               FROM 
@@ -1110,7 +1110,7 @@ const db_sql = {
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
-                l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
+                l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.reason,l.emp_type,
                 u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
               FROM 
                 customer_company_employees AS l 
@@ -1452,7 +1452,8 @@ const db_sql = {
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
-                l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,
+                l.created_at,l.is_converted,l.is_rejected,l.reason,
                 u1.full_name AS creator_name , c.customer_name ,u2.full_name as assigned_sales_lead_name
               FROM 
                 customer_company_employees AS l
@@ -1524,7 +1525,7 @@ const db_sql = {
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
-                l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
+                l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.reason,l.emp_type,
                 u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
               FROM 
                 customer_company_employees AS l 
