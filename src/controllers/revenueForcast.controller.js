@@ -444,9 +444,27 @@ module.exports.deleteRevenueForecast = async (req, res) => {
         let notification_typeId = forecastId;
 
         await connection.query('BEGIN')
-        let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s2)
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_delete) {
+
+            let s2 = dbScript(db_sql['Q306'], { var1: forecastId });
+            let revenueForecastList = await connection.query(s2);
+            let checkUserAccepted = false;
+            if( revenueForecastList.rows[0].assigned_forecast){
+                revenueForecastList.rows[0].assigned_forecast.map(value=>{
+                    if(value.is_accepted){
+                        checkUserAccepted = true;
+                    }
+                })
+            }
+            if( revenueForecastList.rows[0].is_accepted || checkUserAccepted ){
+               return res.json({
+                    status: 200,
+                    success: false,
+                    message: "Can not delete this forecast because it is accepted by assigned user"
+                })
+            }
             let _dt = new Date().toISOString();
             let s3 = dbScript(db_sql['Q198'], { var1: _dt, var2: forecastId })
             let deleteForecast = await connection.query(s3)
@@ -506,6 +524,26 @@ module.exports.deleteAssignedUserForecast = async (req, res) => {
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_delete) {
+
+            let s2 = dbScript(db_sql['Q306'], { var1: forecastId });
+            let revenueForecastList = await connection.query(s2);
+            let checkUserAccepted = false;
+            if( revenueForecastList.rows[0].assigned_forecast){
+                revenueForecastList.rows[0].assigned_forecast.map(value=>{
+                    if(value.is_accepted){
+                        checkUserAccepted = true;
+                    }
+                })
+            }
+            if( revenueForecastList.rows[0].is_accepted || checkUserAccepted ){
+               return res.json({
+                    status: 200,
+                    success: false,
+                    message: "Can not delete this forecast because it is accepted by assigned user"
+                })
+            }
+
+
             let _dt = new Date().toISOString();
             let s3 = dbScript(db_sql['Q309'], { var1: _dt, var2: assignedUserId, var3: forecastId })
             let deleteAssignedUser = await connection.query(s3)

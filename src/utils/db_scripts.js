@@ -1085,7 +1085,7 @@ const db_sql = {
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,
-                l.created_at,l.is_converted,l.is_rejected,
+                l.created_at,l.is_converted,l.is_rejected,l.reason,
                 u1.full_name AS creator_name, c.customer_name ,
                  u2.full_name as assigned_sales_lead_name
               FROM 
@@ -1110,7 +1110,7 @@ const db_sql = {
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
-                l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
+                l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.reason,l.emp_type,
                 u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
               FROM 
                 customer_company_employees AS l 
@@ -1262,7 +1262,7 @@ const db_sql = {
   "Q239": `UPDATE marketing_budget_description SET deleted_at = '{var2}' where budget_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   "Q240": `SELECT 
                 b.id, b.timeline, b.amount, b.start_date,
-                b.end_date, b.created_by,b.created_at,
+                b.end_date, b.created_by,b.created_at,b.is_finalize,
                 u1.full_name as creator_name,
                 (
                   SELECT json_agg(marketing_budget_data.*)
@@ -1452,7 +1452,8 @@ const db_sql = {
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
-                l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
+                l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,
+                l.created_at,l.is_converted,l.is_rejected,l.reason,
                 u1.full_name AS creator_name , c.customer_name ,u2.full_name as assigned_sales_lead_name
               FROM 
                 customer_company_employees AS l
@@ -1524,7 +1525,7 @@ const db_sql = {
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
-                l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
+                l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.reason,l.emp_type,
                 u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
               FROM 
                 customer_company_employees AS l 
@@ -1753,13 +1754,8 @@ const db_sql = {
   "Q294": `INSERT INTO forecast_data(forecast_id, amount, start_date, end_date, type, created_by)
                 VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
   "Q295": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
-              sc.revenue_commission::DECIMAL as subscription_revenue_commission,
-            (
-            select sum(recognized_revenue.recognized_amount :: decimal) as recognized_amount
-            from recognized_revenue 
-            where recognized_revenue.sales_id = sc.id
-            )
-
+              sc.booking_commission::DECIMAL as subscription_booking_commission,
+              sc.revenue_commission::DECIMAL as subscription_revenue_commission
             FROM
               sales AS sc
             WHERE
@@ -1769,29 +1765,35 @@ const db_sql = {
   "Q296": `UPDATE sales SET revenue_commission =  '{var1}' WHERE id = '{var2}' RETURNING *`,
   "Q297": `SELECT  SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
             FROM 
-              sales AS sc 
+              sales 
             WHERE 
-              company_id = '{var1}' AND sales_type = 'Perpetual'
+              company_id = '{var1}' 
+            AND 
+              sales_type = '{var2}' 
+            AND
+              created_at BETWEEN '{var3}' AND '{var4}'
             AND 
               deleted_at IS NULL`,
-  "Q298": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
-              sc.revenue_commission::DECIMAL as subscription_revenue_commission,
-            (
-            select sum(recognized_revenue.recognized_amount :: decimal) as recognized_amount
-            from recognized_revenue 
-            where recognized_revenue.sales_id = sc.id
-            )
+  // "Q298": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
+  //             sc.revenue_commission::DECIMAL as subscription_revenue_commission,
+  //           (
+  //           select sum(recognized_revenue.recognized_amount :: decimal) as recognized_amount
+  //           from recognized_revenue 
+  //           where recognized_revenue.sales_id = sc.id
+  //           )
 
-            FROM
-              sales AS sc
-            WHERE
-              sc.company_id = '{var1}' AND sc.sales_type = 'Subscription'
-            AND
-              sc.deleted_at IS NULL`,
+  //           FROM
+  //             sales AS sc
+  //           WHERE
+  //             sc.company_id = '{var1}' AND sc.sales_type = 'Subscription'
+  //           AND
+  //             sc.deleted_at IS NULL`,
   "Q299": `SELECT  SUM(recognized_amount::DECIMAL) as amount FROM 
                 recognized_revenue 
               WHERE 
                 company_id = '{var1}' 
+              AND
+                created_at BETWEEN '{var3}' AND '{var4}'
               AND 
                 deleted_at IS NULL`,
   "Q300": `SELECT SUM(recognized_amount::DECIMAL) as amount FROM recognized_revenue
@@ -1810,14 +1812,19 @@ const db_sql = {
             OR 
               su.user_id IN ({var1})
             )
-          AND sc.deleted_at IS NULL`,
+          AND 
+            sc.created_at BETWEEN '{var2}' AND '{var3}'
+          AND 
+            sc.deleted_at IS NULL`,
 
-  "Q302": `SELECT SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
-              FROM 
-                sales 
-              WHERE 
-                id IN ({var1}) 
-              AND deleted_at IS NULL`,
+  "Q302": `SELECT SUM(target_amount::DECIMAL) as amount, 
+            SUM(booking_commission::DECIMAL) as booking_commission, 
+            SUM(revenue_commission::DECIMAL) as revenue_commission
+          FROM 
+            sales 
+          WHERE 
+            id IN ({var1}) AND sales_type = '{var2}'
+          AND deleted_at IS NULL`,
 
   "Q303": `SELECT SUM(recognized_amount::DECIMAL) as amount
               FROM 
@@ -1998,8 +2005,11 @@ const db_sql = {
    "Q335": `UPDATE companies SET updated_at = '{var1}', is_commissions_created = true WHERE id = '{var2}' RETURNING *`,
    "Q336": `UPDATE companies SET updated_at = '{var1}', is_slabs_created = true WHERE id = '{var2}' RETURNING *`,
 
-   "Q337": `UPDATE forecast SET updated_at = '{var1}', is_accepted = true WHERE id = '{var2}' RETURNING *`
-
+   "Q337": `UPDATE forecast SET updated_at = '{var1}', is_accepted = true WHERE id = '{var2}' RETURNING *`,
+   "Q338": `SELECT 
+              is_roles_created, is_users_created, is_leads_created, is_customers_created,
+              is_products_created, is_commissions_created, is_slabs_created 
+            FROM companies WHERE id = '{var1}' AND deleted_at IS NULL`
 
 
 }
