@@ -1754,13 +1754,8 @@ const db_sql = {
   "Q294": `INSERT INTO forecast_data(forecast_id, amount, start_date, end_date, type, created_by)
                 VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
   "Q295": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
-              sc.revenue_commission::DECIMAL as subscription_revenue_commission,
-            (
-            select sum(recognized_revenue.recognized_amount :: decimal) as recognized_amount
-            from recognized_revenue 
-            where recognized_revenue.sales_id = sc.id
-            )
-
+              sc.booking_commission::DECIMAL as subscription_booking_commission,
+              sc.revenue_commission::DECIMAL as subscription_revenue_commission
             FROM
               sales AS sc
             WHERE
@@ -1770,9 +1765,13 @@ const db_sql = {
   "Q296": `UPDATE sales SET revenue_commission =  '{var1}' WHERE id = '{var2}' RETURNING *`,
   "Q297": `SELECT  SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
             FROM 
-              sales AS sc 
+              sales 
             WHERE 
-              company_id = '{var1}' AND sales_type = '{var2}'
+              company_id = '{var1}' 
+            AND 
+              sales_type = '{var2}' 
+            AND
+              created_at BETWEEN '{var3}' AND '{var4}'
             AND 
               deleted_at IS NULL`,
   // "Q298": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
@@ -1793,6 +1792,8 @@ const db_sql = {
                 recognized_revenue 
               WHERE 
                 company_id = '{var1}' 
+              AND
+                created_at BETWEEN '{var3}' AND '{var4}'
               AND 
                 deleted_at IS NULL`,
   "Q300": `SELECT SUM(recognized_amount::DECIMAL) as amount FROM recognized_revenue
@@ -1811,7 +1812,10 @@ const db_sql = {
             OR 
               su.user_id IN ({var1})
             )
-          AND sc.deleted_at IS NULL`,
+          AND 
+            sc.created_at BETWEEN '{var2}' AND '{var3}'
+          AND 
+            sc.deleted_at IS NULL`,
 
   "Q302": `SELECT SUM(target_amount::DECIMAL) as amount, 
             SUM(booking_commission::DECIMAL) as booking_commission, 
