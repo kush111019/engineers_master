@@ -1262,7 +1262,7 @@ const db_sql = {
   "Q239": `UPDATE marketing_budget_description SET deleted_at = '{var2}' where budget_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   "Q240": `SELECT 
                 b.id, b.timeline, b.amount, b.start_date,
-                b.end_date, b.created_by,b.created_at,
+                b.end_date, b.created_by,b.created_at,b.is_finalize,
                 u1.full_name as creator_name,
                 (
                   SELECT json_agg(marketing_budget_data.*)
