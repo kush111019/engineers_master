@@ -193,7 +193,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
             let updateCompanyExpiryDate = await connection.query(s6)
 
 
-            if (updateTransaction.rowCount > 0 && updateTransaction.rowCount  > 0 && updateTransaction.rowCount  > 0) {
+            if (updateTransaction.rowCount > 0 && updateUserExpiryDate.rowCount  > 0 && updateCompanyExpiryDate.rowCount  > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,
@@ -396,27 +396,7 @@ module.exports.getYearDifference = async (startDate, endDate) => {
     return Number(roundedYearDifference)
 }
 
-module.exports.removeDuplicates = async (originalArray, prop) => {
-    var newArray = [];
-    var lookupObject = {};
-
-    for (var i in originalArray) {
-        let mainValue = 0;
-        if (lookupObject[originalArray[i][prop]]) {
-            mainValue = lookupObject[originalArray[i][prop]].revenue + originalArray[i].revenue;
-            originalArray[i].revenue = mainValue;
-        }
-        lookupObject[originalArray[i][prop]] = originalArray[i];
-    }
-
-    for (let i in lookupObject) {
-        newArray.push(lookupObject[i]);
-    }
-    return newArray;
-}
-
 module.exports.reduceArray = async (data) => {
-
     let returnData = [];
     for (let i = 0; i < data.length; i++) {
         let found = 0;
@@ -445,10 +425,10 @@ module.exports.reduceArrayWithCommission = async (data) => {
             const mergedObj = {
             booking: groupedData.get(date).booking + obj.booking,
             subscription_booking: groupedData.get(date).subscription_booking + obj.subscription_booking,
-            revenue: obj.revenue,
+            revenue: groupedData.get(date).revenue + obj.revenue,
             date: obj.date,
-            booking_commission: obj.booking_commission,
-            commission: obj.commission
+            booking_commission:  groupedData.get(date).booking_commission + obj.booking_commission,
+            commission:  groupedData.get(date).commission + obj.commission
             };
             groupedData.set(date, mergedObj);
         } else {
@@ -462,86 +442,68 @@ module.exports.reduceArrayWithCommission = async (data) => {
 }
 
 module.exports.reduceArrayWithName = async (data) => {
+console.log(data,"data");
+    const groupedData = new Map();
 
-    let returnData = [];
-    for (let i = 0; i < data.length; i++) {
-        let found = 0;
-        for (let j = 0; j < returnData.length; j++) {
-            let salesRep1 = data[i].sales_rep
-            let salesRep2 = returnData[j].sales_rep
-            if (salesRep1 === salesRep2) {
-                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
-                returnData[j].revenue = revenueOfJ;
-                found = 1;
-            }
+    data.forEach(obj => {
+        console.log(obj,"obj");
+        const salesRep = obj.sales_rep;
+        if (groupedData.has(salesRep)) {
+            const mergedObj = {
+                sales_rep: obj.sales_rep,
+                revenue: Number(groupedData.get(salesRep).revenue) + Number(obj.revenue),
+                commission:  groupedData.get(salesRep).commission + obj.commission
+            };
+            groupedData.set(salesRep, mergedObj);
+        } else {
+            groupedData.set(salesRep, obj);
         }
-        if (found === 0) {
-            returnData.push(data[i]);
-        }
-    }
-    return returnData
-}
+    });
 
-module.exports.reduceArrayWithName1 = async (data) => {
-
-    let returnData = [];
-    for (let i = 0; i < data.length; i++) {
-        let found = 0;
-        for (let j = 0; j < returnData.length; j++) {
-            let user1 = data[i].user
-            let user2 = returnData[j].user
-            if (user1 === user2) {
-                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
-                returnData[j].revenue = revenueOfJ;
-                found = 1;
-            }
-        }
-        if (found === 0) {
-            returnData.push(data[i]);
-        }
-    }
-    return returnData
+    const merged = [...groupedData.values()];
+    return merged
 }
 
 module.exports.reduceArrayWithCustomer = async (data) => {
 
-    let returnData = [];
-    for (let i = 0; i < data.length; i++) {
-        let found = 0;
-        for (let j = 0; j < returnData.length; j++) {
-            let customer1 = data[i].customer_name
-            let customer2 = returnData[j].customer_name
-            if (customer1 === customer2) {
-                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
-                returnData[j].revenue = revenueOfJ;
-                found = 1;
-            }
+    const groupedData = new Map();
+
+    data.forEach(obj => {
+        const customer = obj.customer_name;
+        if (groupedData.has(customer)) {
+            const mergedObj = {
+                customer_name: obj.customer_name,
+                revenue: Number(groupedData.get(customer).revenue) + Number(obj.revenue)
+            };
+            groupedData.set(customer, mergedObj);
+        } else {
+            groupedData.set(customer, obj);
         }
-        if (found === 0) {
-            returnData.push(data[i]);
-        }
-    }
-    return returnData
+    });
+
+    const merged = [...groupedData.values()];
+    return merged
 }
 
 module.exports.reduceArrayWithProduct = async (data) => {
-    let returnData = [];
-    for (let i = 0; i < data.length; i++) {
-        let found = 0;
-        for (let j = 0; j < returnData.length; j++) {
-            let product1 = data[i].product_name
-            let product2 = returnData[j].product_name
-            if (product1 === product2) {
-                let revenueOfJ = Number(returnData[j].revenue) + Number(data[i].revenue)
-                returnData[j].revenue = revenueOfJ;
-                found = 1;
-            }
+
+    const groupedData = new Map();
+
+    data.forEach(obj => {
+        const product = obj.product_name;
+        if (groupedData.has(product)) {
+            const mergedObj = {
+                product_name: obj.product_name,
+                revenue: Number(groupedData.get(product).revenue) + Number(obj.revenue)
+            };
+            groupedData.set(product, mergedObj);
+        } else {
+            groupedData.set(product, obj);
         }
-        if (found === 0) {
-            returnData.push(data[i]);
-        }
-    }
-    return returnData
+    });
+
+    const merged = [...groupedData.values()];
+    return merged
 }
 
 module.exports.getMinutesBetweenDates = async (startDate, endDate) => {

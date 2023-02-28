@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { mysql_real_escape_string, getUserAndSubUser, containsObject } = require('../utils/helper')
+const { mysql_real_escape_string, getUserAndSubUser } = require('../utils/helper')
 const moduleName = process.env.MARKETING_MODULE
 
 module.exports.marketingDashboard = async (req, res) => {
@@ -21,7 +21,7 @@ module.exports.marketingDashboard = async (req, res) => {
             let MCount = await connection.query(s3)
 
             //Total Assigned Lead count
-            let s4 = dbScript(db_sql['Q248'], { var1: checkPermission.rows[0].id })
+            let s4 = dbScript(db_sql['Q248'], { var1: checkPermission.rows[0].company_id })
             let ACount = await connection.query(s4)
 
             //Total Rejected Lead count
@@ -39,7 +39,7 @@ module.exports.marketingDashboard = async (req, res) => {
             let s8 = dbScript(db_sql['Q223'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let mqlLeads = await connection.query(s8)
 
-            let s9 = dbScript(db_sql['Q247'], { var1: checkPermission.rows[0].id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
+            let s9 = dbScript(db_sql['Q247'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let assignedLeads = await connection.query(s9)
 
             let s10 = dbScript(db_sql['Q255'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase(), var5: true })
@@ -49,7 +49,6 @@ module.exports.marketingDashboard = async (req, res) => {
             let customerlist = await connection.query(s11)
 
             const lists = [leadData.rows, mqlLeads.rows, assignedLeads.rows, rejectedLeads.rows, customerlist.rows];
-
             const counts = {};
 
             lists.forEach(list => {
@@ -84,7 +83,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     }
                 });
             });
-
+            
             const LeadCount = Object.values(counts);
 
             res.json({
@@ -125,7 +124,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     let rCount = 0;
                     let cCount = 0;
                     obj.created_by = leads.created_by
-                    obj.count = (ids.includes(leads.user_id)) ? lCount + 1 : lCount;
+                    obj.count = (ids.includes(leads.creator_id)) ? lCount + 1 : lCount;
                     aCount = obj.assignedCount = (ids.includes(leads.assigned_sales_lead_to)) ? aCount + 1 : aCount;
                     mCount = obj.mqlCount = (leads.marketing_qualified_lead) ? mCount + 1 : mCount;
                     rCount = obj.rejectedCount = (leads.is_rejected) ? rCount + 1 : rCount

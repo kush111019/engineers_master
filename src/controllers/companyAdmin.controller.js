@@ -354,7 +354,7 @@ module.exports.login = async (req, res) => {
                         let moduleId = JSON.parse(admin.rows[0].module_ids)
                         let modulePemissions = []
                         for ( let data of moduleId) {
-                            let s3 = dbScript(db_sql['Q35'], { var1: data, var2: admin.rows[0].role_id })
+                            let s3 = dbScript(db_sql['Q59'], { var1: data, var2: admin.rows[0].role_id })
                             let findModulePermissions = await connection.query(s3)
                             modulePemissions.push({
                                 moduleId: data,
