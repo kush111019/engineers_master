@@ -2005,8 +2005,11 @@ const db_sql = {
    "Q335": `UPDATE companies SET updated_at = '{var1}', is_commissions_created = true WHERE id = '{var2}' RETURNING *`,
    "Q336": `UPDATE companies SET updated_at = '{var1}', is_slabs_created = true WHERE id = '{var2}' RETURNING *`,
 
-   "Q337": `UPDATE forecast SET updated_at = '{var1}', is_accepted = true WHERE id = '{var2}' RETURNING *`
-
+   "Q337": `UPDATE forecast SET updated_at = '{var1}', is_accepted = true WHERE id = '{var2}' RETURNING *`,
+   "Q338": `SELECT 
+              is_roles_created, is_users_created, is_leads_created, is_customers_created,
+              is_products_created, is_commissions_created, is_slabs_created 
+            FROM companies WHERE id = '{var1}' AND deleted_at IS NULL`
 
 
 }

@@ -418,7 +418,7 @@ module.exports.dataCreationStatus = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rowCount > 0) {
 
-            let s4 = dbScript(db_sql['Q9'], { var1: checkPermission.rows[0].company_id })
+            let s4 = dbScript(db_sql['Q338'], { var1: checkPermission.rows[0].company_id })
             let companyData = await connection.query(s4)
 
             if (companyData.rowCount > 0) {
