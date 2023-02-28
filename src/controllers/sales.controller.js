@@ -1507,22 +1507,24 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
                 allDetails.userList = []
             }
 
-            let s4 = dbScript(db_sql['Q165'], { var1: roleUsers.join(",") })
+            //get slab list here 
+            let s4 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
             let slabList = await connection.query(s4)
             if (slabList.rowCount > 0) {
-                const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()];
+                const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()]
                 allDetails.slabList = unique;
             }else{
                 allDetails.slabList = []
             }
 
-            let s5 = dbScript(db_sql['Q318'], { var1: roleUsers.join(",") })
+            let s5 = dbScript(db_sql['Q50'], { var1: checkPermission.rows[0].company_id })
             let commissionList = await connection.query(s5)
             if (commissionList.rowCount > 0) {
                 allDetails.commissionList = commissionList.rows
             }else{
                 allDetails.commissionList = []
             }
+
             if (allDetails) {
                 res.json({
                     status: 200,
