@@ -1771,23 +1771,23 @@ const db_sql = {
             FROM 
               sales AS sc 
             WHERE 
-              company_id = '{var1}' AND sales_type = 'Perpetual'
+              company_id = '{var1}' AND sales_type = '{var2}'
             AND 
               deleted_at IS NULL`,
-  "Q298": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
-              sc.revenue_commission::DECIMAL as subscription_revenue_commission,
-            (
-            select sum(recognized_revenue.recognized_amount :: decimal) as recognized_amount
-            from recognized_revenue 
-            where recognized_revenue.sales_id = sc.id
-            )
+  // "Q298": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
+  //             sc.revenue_commission::DECIMAL as subscription_revenue_commission,
+  //           (
+  //           select sum(recognized_revenue.recognized_amount :: decimal) as recognized_amount
+  //           from recognized_revenue 
+  //           where recognized_revenue.sales_id = sc.id
+  //           )
 
-            FROM
-              sales AS sc
-            WHERE
-              sc.company_id = '{var1}' AND sc.sales_type = 'Subscription'
-            AND
-              sc.deleted_at IS NULL`,
+  //           FROM
+  //             sales AS sc
+  //           WHERE
+  //             sc.company_id = '{var1}' AND sc.sales_type = 'Subscription'
+  //           AND
+  //             sc.deleted_at IS NULL`,
   "Q299": `SELECT  SUM(recognized_amount::DECIMAL) as amount FROM 
                 recognized_revenue 
               WHERE 
@@ -1812,12 +1812,14 @@ const db_sql = {
             )
           AND sc.deleted_at IS NULL`,
 
-  "Q302": `SELECT SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
-              FROM 
-                sales 
-              WHERE 
-                id IN ({var1}) 
-              AND deleted_at IS NULL`,
+  "Q302": `SELECT SUM(target_amount::DECIMAL) as amount, 
+            SUM(booking_commission::DECIMAL) as booking_commission, 
+            SUM(revenue_commission::DECIMAL) as revenue_commission
+          FROM 
+            sales 
+          WHERE 
+            id IN ({var1}) AND sales_type = '{var2}'
+          AND deleted_at IS NULL`,
 
   "Q303": `SELECT SUM(recognized_amount::DECIMAL) as amount
               FROM 
