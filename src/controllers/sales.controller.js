@@ -1160,7 +1160,7 @@ module.exports.transferBackSales = async (req, res) => {
             let s3 = dbScript(db_sql['Q270'], { var1: mysql_real_escape_string(transferReason), var2: _dt, var3: salesId, var4: userId })
             let updateReason = await connection.query(s3)
 
-            let s4 = dbScript(db_sql['Q284'], { var1: userId, var2: creatorId, var3: _dt, var4: salesId, var5: transferReason, var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
+            let s4 = dbScript(db_sql['Q284'], { var1: userId, var2: creatorId, var3: _dt, var4: salesId, var5:  mysql_real_escape_string(transferReason), var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
             let addTransferSales = await connection.query(s4)
             // add notification in notification list
             await notificationsOperations({ type: 1, msg: 1.3, notification_typeId, notification_userId }, userId);
