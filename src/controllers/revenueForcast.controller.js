@@ -43,7 +43,7 @@ module.exports.createRevenueForecast = async (req, res) => {
 
                         // add notification in notification list
                         let notification_typeId = createForecastForAssignedUsers.rows[0].id;
-                        await notificationsOperations({ type: 3, msg: 3.1, notification_typeId, notification_userId }, userId);
+                        await notificationsOperations({ type: 3, msg: 3.6, notification_typeId, notification_userId }, userId);
                     }
                     await connection.query('COMMIT')
                     res.json({

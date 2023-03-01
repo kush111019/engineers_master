@@ -21,6 +21,7 @@ module.exports.notificationMsg = {
     3.3: ' has audited Forecast ',
     3.4: ' has deleted Forecast',
     3.5: ' has accepted Forecast ',
+    3.6: ' has assigned a Forecast',
 
     4.1: ' has created a Lead',
     4.2: ' has updated Lead',
