@@ -579,7 +579,7 @@ module.exports.updateSales = async (req, res) => {
                 }
             }
             totalCommission = totalCommission + commission
-            let s5 = dbScript(db_sql['Q63'], { var1: customerId, var2: commissionSplitId, var3: is_overwrite, var4: _dt, var5: salesId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: qualification, var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17: currency, var18: slabId, var19: leadId, var20: totalCommission })
+            let s5 = dbScript(db_sql['Q63'], { var1: customerId, var2: commissionSplitId, var3: is_overwrite, var4: _dt, var5: salesId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: mysql_real_escape_string(qualification), var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17: currency, var18: slabId, var19: leadId, var20: totalCommission })
             let updateSales = await connection.query(s5)
 
 

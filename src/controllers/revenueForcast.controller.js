@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { getUserAndSubUser, notificationsOperations } = require('../utils/helper')
+const { getUserAndSubUser, notificationsOperations, mysql_real_escape_string } = require('../utils/helper')
 const moduleName = process.env.FORECAST_MODULE
 
 module.exports.createRevenueForecast = async (req, res) => {
@@ -346,7 +346,7 @@ module.exports.auditForecast = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
-            let s2 = dbScript(db_sql['Q308'], { var1: forecastId, var2: amount, var3: reason, var4: userId , var5 :pid, var6 : forecastAmount})
+            let s2 = dbScript(db_sql['Q308'], { var1: forecastId, var2: amount, var3: mysql_real_escape_string(reason), var4: userId , var5 :pid, var6 : forecastAmount})
             let createAudit = await connection.query(s2)
 
             let s4 = dbScript(db_sql['Q306'], { var1: forecastId });
