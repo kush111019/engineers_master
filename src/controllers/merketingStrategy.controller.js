@@ -125,7 +125,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     let cCount = 0;
                     obj.created_by = leads.created_by
                     obj.count = (ids.includes(leads.creator_id)) ? lCount + 1 : lCount;
-                    aCount = obj.assignedCount = (ids.includes(leads.assigned_sales_lead_to) || ids.includes(leads.creator_id)) ? aCount + 1 : aCount;
+                    aCount = obj.assignedCount = (ids.includes(leads.assigned_sales_lead_to)) ? aCount + 1 : aCount;
                     mCount = obj.mqlCount = (leads.marketing_qualified_lead) ? mCount + 1 : mCount;
                     rCount = obj.rejectedCount = (leads.is_rejected) ? rCount + 1 : rCount
                     cCount = obj.customerCount = (leads.customer_company_id) ? cCount + 1 : cCount
