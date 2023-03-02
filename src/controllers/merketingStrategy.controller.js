@@ -64,7 +64,6 @@ module.exports.marketingDashboard = async (req, res) => {
                     }
                 });
             });
-            console.log(lists,"lists");
             lists.forEach(list => {
                 list.forEach(item => {
                     if (list === leadData.rows) counts[item.created_by].count = item.count;
@@ -82,9 +81,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     }
                 });
             });
-            console.log(counts,"counts");
             const LeadCount = Object.values(counts);
-            console.log(LeadCount,"LeadCount");
             res.json({
                 status: 200,
                 success: true,
