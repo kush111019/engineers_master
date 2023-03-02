@@ -1771,7 +1771,7 @@ const db_sql = {
             AND 
               sales_type = '{var2}' 
             AND
-              created_at BETWEEN '{var3}' AND '{var4}'
+              closed_at BETWEEN '{var3}' AND '{var4}'
             AND 
               deleted_at IS NULL`,
   // "Q298": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
@@ -1813,7 +1813,7 @@ const db_sql = {
               su.user_id IN ({var1})
             )
           AND 
-            sc.created_at BETWEEN '{var2}' AND '{var3}'
+            sc.closed_at BETWEEN '{var2}' AND '{var3}'
           AND 
             sc.deleted_at IS NULL`,
 
