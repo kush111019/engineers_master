@@ -1813,7 +1813,7 @@ const db_sql = {
               su.user_id IN ({var1})
             )
           AND 
-            sc.created_at BETWEEN '{var2}' AND '{var3}'
+            sc.closed_at BETWEEN '{var2}' AND '{var3}'
           AND 
             sc.deleted_at IS NULL`,
 
