@@ -64,7 +64,6 @@ module.exports.marketingDashboard = async (req, res) => {
                     }
                 });
             });
-            let count = 0 
             lists.forEach(list => {
                 list.forEach(item => {
                     if (list === leadData.rows) counts[item.created_by].count = item.count;
