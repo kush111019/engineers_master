@@ -593,7 +593,6 @@ module.exports.actualVsForecast = async (req, res) => {
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
             let s3 = dbScript(db_sql['Q311'], { var1: forecastId })
-            console.log(s3)
             let forecastData = await connection.query(s3)
             if (forecastData.rowCount > 0) {
                 for (let data of forecastData.rows) {

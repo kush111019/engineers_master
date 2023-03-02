@@ -31,7 +31,6 @@ module.exports.marketingDashboard = async (req, res) => {
             //Total Customer count
             let s6 = dbScript(db_sql['Q256'],{ var1: checkPermission.rows[0].company_id })
             let CCount = await connection.query(s6) 
-            console.log(CCount.rows, "Ccount");
 
             let s7 = dbScript(db_sql['Q207'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
             let leadData = await connection.query(s7)

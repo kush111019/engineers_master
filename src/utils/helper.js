@@ -442,11 +442,9 @@ module.exports.reduceArrayWithCommission = async (data) => {
 }
 
 module.exports.reduceArrayWithName = async (data) => {
-console.log(data,"data");
     const groupedData = new Map();
 
     data.forEach(obj => {
-        console.log(obj,"obj");
         const salesRep = obj.sales_rep;
         if (groupedData.has(salesRep)) {
             const mergedObj = {
