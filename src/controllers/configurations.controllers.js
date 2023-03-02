@@ -357,11 +357,12 @@ module.exports.updateLeadTitle = async (req, res) => {
         let userId = req.user.id
         let { titleId, leadTitle } = req.body
 
+        await connection.query('BEGIN')
+
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            await connection.query('BEGIN')
 
             let _dt = new Date().toISOString()
             let s3 = dbScript(db_sql['Q211'], { var1: mysql_real_escape_string(leadTitle), var2: _dt, var3: titleId })
@@ -409,6 +410,18 @@ module.exports.deleteLeadTitle = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0) {
+
+            let s2 = dbScript(db_sql['Q339'],{ var1 : titleId })
+            let checkTitleInLead = await connection.query(s2)
+
+            if(checkTitleInLead.rowCount > 0){
+                return res.json({
+                    status: 200,
+                    success: false,
+                    message: "Can not delete this title, because it is used in leads"
+                })
+            }
+
             let _dt = new Date().toISOString()
             let s3 = dbScript(db_sql['Q212'], { var1: _dt, var2: titleId })
 
@@ -600,11 +613,23 @@ module.exports.deleteLeadIndustry = async (req, res) => {
         let userId = req.user.id
         let { industryId } = req.body
 
+        await connection.query('BEGIN')
+        
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            await connection.query('BEGIN')
+
+            let s2 = dbScript(db_sql['Q341'],{ var1 : industryId })
+            let checkIndustryInCustomers = await connection.query(s2)
+
+            if(checkIndustryInCustomers.rowCount > 0){
+                return res.json({
+                    status: 200,
+                    success: false,
+                    message: "Can not delete this industry, because it is used in customers"
+                })
+            }
 
             let _dt = new Date().toISOString()
             let s3 = dbScript(db_sql['Q216'], { var1: _dt, var2: industryId })
@@ -797,11 +822,23 @@ module.exports.deleteLeadSource = async (req, res) => {
         let userId = req.user.id
         let { sourceId } = req.body
 
+        await connection.query('BEGIN')
+        
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            await connection.query('BEGIN')
+
+            let s2 = dbScript(db_sql['Q340'],{ var1 : sourceId })
+            let checkSourceInLead = await connection.query(s2)
+
+            if(checkSourceInLead.rowCount > 0){
+                return res.json({
+                    status: 200,
+                    success: false,
+                    message: "Can not delete this source, because it is used in leads"
+                })
+            }
 
             let _dt = new Date().toISOString()
             let s3 = dbScript(db_sql['Q220'], { var1: _dt, var2: sourceId })

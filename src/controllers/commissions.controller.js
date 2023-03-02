@@ -176,10 +176,24 @@ module.exports.deletecommissionSplit = async (req, res) => {
         let {
             commissionId
         } = req.body
-        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s3)
+
+        await connection.query('BEGIN')
+
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_delete) {
-            await connection.query('BEGIN')
+
+            let s2 = dbScript(db_sql['Q344'],{ var1 : commissionId })
+            let checkCommissionInSales = await connection.query(s2)
+
+            if(checkCommissionInSales.rowCount > 0){
+                return res.json({
+                    status: 200,
+                    success: false,
+                    message: "Can not delete this commission split, because it is used in slabs/sales"
+                })
+            }
+
             let _dt = new Date().toISOString();
             let s4 = dbScript(db_sql['Q51'], { var1: _dt, var2: commissionId, var3: checkPermission.rows[0].company_id })
             var deleteSlab = await connection.query(s4)

@@ -1191,17 +1191,17 @@ const db_sql = {
   "Q210": `INSERT INTO lead_titles( title, company_id ) VALUES('{var1}','{var2}') RETURNING *`,
   "Q211": `UPDATE lead_titles set title = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q212": `UPDATE lead_titles set deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
-  "Q213": `SELECT * FROM lead_titles WHERE company_id = '{var1}'`,
+  "Q213": `SELECT * FROM lead_titles WHERE company_id = '{var1}' AND deleted_at IS NULL`,
 
   "Q214": `INSERT INTO lead_industries(industry, company_id ) VALUES('{var1}','{var2}') RETURNING *`,
   "Q215": `UPDATE lead_industries set industry = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q216": `UPDATE lead_industries set deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
-  "Q217": `SELECT * FROM lead_industries WHERE company_id = '{var1}'`,
+  "Q217": `SELECT * FROM lead_industries WHERE company_id = '{var1}' AND deleted_at IS NULL`,
 
   "Q218": `INSERT INTO lead_sources(source, company_id ) VALUES('{var1}','{var2}') RETURNING *`,
   "Q219": `UPDATE lead_sources set source = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q220": `UPDATE lead_sources set deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
-  "Q221": `SELECT * FROM lead_sources WHERE company_id = '{var1}'`,
+  "Q221": `SELECT * FROM lead_sources WHERE company_id = '{var1}' AND deleted_at IS NULL`,
   "Q223": `SELECT 
                 COUNT(*),
                 u.full_name AS created_by
@@ -2009,7 +2009,23 @@ const db_sql = {
    "Q338": `SELECT 
               is_roles_created, is_users_created, is_leads_created, is_customers_created,
               is_products_created, is_commissions_created, is_slabs_created 
-            FROM companies WHERE id = '{var1}' AND deleted_at IS NULL`
+            FROM companies WHERE id = '{var1}' AND deleted_at IS NULL`,
+    "Q339": `SELECT id FROM customer_company_employees WHERE title = '{var1}' AND deleted_at IS NULL`,
+    "Q340": `SELECT id FROM customer_company_employees WHERE source = '{var1}' AND deleted_at IS NULL`,
+    "Q341": `SELECT id FROM customer_companies WHERE industry = '{var1}' AND deleted_at IS NULL`,
+    "Q342": `SELECT id FROM sales WHERE slab_id = '{var1}' AND deleted_at IS NULL`,
+    "Q343": `SELECT s.slab_id FROM slabs AS s
+             LEFT JOIN 
+              sales AS sc ON sc.slab_id = s.slab_id
+             WHERE s.id = '{var1}' 
+             AND s.deleted_at is null AND sc.deleted_at is null`,
+    "Q344": `SELECT sc.id, s.id FROM commission_split AS c
+             LEFT JOIN 
+              sales AS sc ON sc.customer_commission_split_id = c.id
+             LEFT JOIN 
+              slabs AS s ON s.commission_split_id = c.id 
+             WHERE c.id = '{var1}' 
+             AND c.deleted_at is null AND s.deleted_at is null AND sc.deleted_at is null`
 
 
 }

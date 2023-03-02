@@ -196,11 +196,24 @@ module.exports.deleteSlab = async (req, res) => {
     try {
         let userId = req.user.id
         let { slabId } = req.body
+
+        await connection.query('BEGIN')
+
         //here check user all permission's
-        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s3)
+        let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_delete) {
-            await connection.query('BEGIN')
+
+            let s2 = dbScript(db_sql['Q342'],{ var1 : slabId })
+            let checkslabInSales = await connection.query(s2)
+
+            if(checkslabInSales.rowCount > 0){
+                return res.json({
+                    status: 200,
+                    success: false,
+                    message: "Can not delete this slab, because it is used in sales"
+                })
+            }
 
             let _dt = new Date().toISOString();
             //update slab status to deleted
@@ -244,16 +257,29 @@ module.exports.deleteSlabLayer = async (req, res) => {
     try {
         let userId = req.user.id
         let { slabLayerId } = req.body
+
+        await connection.query('BEGIN')
+
         //here check user all permission's
-        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s3)
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_delete) {
-            await connection.query('BEGIN')
+           
+            let s2 = dbScript(db_sql['Q341'],{ var1 : slabLayerId })
+            let checkSlabsInSales = await connection.query(s2)
+
+            if(checkSlabsInSales.rowCount > 0){
+                return res.json({
+                    status: 200,
+                    success: false,
+                    message: "Can not delete this slab layer, because it is used in sales"
+                })
+            }
 
             let _dt = new Date().toISOString();
             // here update slab layer to deleted
-            let s4 = dbScript(db_sql['Q29'], { var1: _dt, var2: slabLayerId, var3: checkPermission.rows[0].company_id })
-            let deleteSlab = await connection.query(s4)
+            let s3 = dbScript(db_sql['Q29'], { var1: _dt, var2: slabLayerId, var3: checkPermission.rows[0].company_id })
+            let deleteSlab = await connection.query(s3)
 
             if (deleteSlab.rowCount > 0) {
                 await connection.query('COMMIT')
