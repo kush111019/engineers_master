@@ -46,7 +46,7 @@ module.exports.revenues = async (req, res) => {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s5 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate, var5: roleUsers.join(',') })
             let salesData = await connection.query(s5)
-
+console.log(s5);
             if (salesData.rowCount > 0) {
                 for (let saleData of salesData.rows) {
 
@@ -103,6 +103,12 @@ module.exports.revenues = async (req, res) => {
                             revenueCommissionByDateObj.commission = commission1
                             revenueCommissionBydate.push(revenueCommissionByDateObj)
                         }
+                    }else{
+                        revenueCommissionByDateObj.booking_commission = 0;
+                        revenueCommissionByDateObj.commission = 0;
+                        revenueCommissionByDateObj.revenue = 0;
+                        revenueCommissionByDateObj.date = moment(saleData.closed_at).format('MM/DD/YYYY')
+                        revenueCommissionBydate.push(revenueCommissionByDateObj)
                     }
                 }
             }
