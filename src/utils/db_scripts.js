@@ -1672,7 +1672,7 @@ const db_sql = {
   "Q287": `SELECT * FROM  users  WHERE role_id = '{var1}' and deleted_at IS NULL `,
   "Q288": `SELECT * FROM  users  WHERE role_id = '{var1}' and id = '{var2}' and deleted_at IS NULL `,
   "Q289": `INSERT INTO notifications(title, type_id,user_id,type) VALUES ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
-  "Q290": `SELECT * FROM  notifications WHERE user_id= '{var1}' and is_read= false and deleted_at IS NULL`,
+  "Q290": `SELECT * FROM  notifications WHERE user_id= '{var1}' and is_read= false and deleted_at IS NULL ORDER BY created_at DESC`,
   "Q291": `UPDATE notifications SET is_read = true WHERE id = '{var1}' RETURNING *`,
   "Q292": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
