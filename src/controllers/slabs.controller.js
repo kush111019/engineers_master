@@ -265,7 +265,7 @@ module.exports.deleteSlabLayer = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_delete) {
            
-            let s2 = dbScript(db_sql['Q341'],{ var1 : slabLayerId })
+            let s2 = dbScript(db_sql['Q343'],{ var1 : slabLayerId })
             let checkSlabsInSales = await connection.query(s2)
 
             if(checkSlabsInSales.rowCount > 0){
