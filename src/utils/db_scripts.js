@@ -2028,13 +2028,16 @@ const db_sql = {
               sales AS sc ON sc.slab_id = s.slab_id
              WHERE s.id = '{var1}' 
              AND s.deleted_at is null AND sc.deleted_at is null`,
-    "Q344": `SELECT sc.id, s.id FROM commission_split AS c
+    "Q344": `SELECT sc.id FROM sales AS sc
              LEFT JOIN 
-              sales AS sc ON sc.customer_commission_split_id = c.id
-             LEFT JOIN 
-              slabs AS s ON s.commission_split_id = c.id 
-             WHERE c.id = '{var1}' 
-             AND c.deleted_at is null AND s.deleted_at is null AND sc.deleted_at is null`
+              commission_split AS c ON sc.customer_commission_split_id = c.id
+             WHERE sc.customer_commission_split_id = '{var1}' 
+             AND c.deleted_at is null AND sc.deleted_at is null`,
+    "Q345":`SELECT s.id FROM slabs AS s
+            LEFT JOIN 
+            commission_split AS c ON s.commission_split_id = c.id
+            WHERE s.commission_split_id = '{var1}' 
+            AND c.deleted_at is null AND s.deleted_at is null`
 
 
 }

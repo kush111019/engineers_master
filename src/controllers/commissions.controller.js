@@ -186,7 +186,10 @@ module.exports.deletecommissionSplit = async (req, res) => {
             let s2 = dbScript(db_sql['Q344'],{ var1 : commissionId })
             let checkCommissionInSales = await connection.query(s2)
 
-            if(checkCommissionInSales.rowCount > 0){
+            let s3 = dbScript(db_sql['Q345'],{ var1 : commissionId })
+            let checkCommissionInSlabs = await connection.query(s3)
+
+            if(checkCommissionInSales.rowCount > 0 || checkCommissionInSlabs.rowCount > 0){
                 return res.json({
                     status: 200,
                     success: false,
