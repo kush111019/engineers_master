@@ -234,7 +234,8 @@ module.exports.addBudget = async (req, res) => {
                     res.json({
                         status: 201,
                         success: true,
-                        message: 'Budget added successfully'
+                        message: 'Budget added successfully',
+                        data: createBudget.rows[0].id
                     })
                 } else {
                     await connection.query('ROLLBACK')

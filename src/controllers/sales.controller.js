@@ -87,7 +87,7 @@ module.exports.createSales = async (req, res) => {
             salesType,
             subscriptionPlan,
             recurringDate,
-           
+
         } = req.body
         //add notification deatils
         let notification_userId = [];
@@ -148,7 +148,7 @@ module.exports.createSales = async (req, res) => {
             if (addSalesCaptain.rowCount > 0) {
                 let s8 = dbScript(db_sql['Q8'], { var1: addSalesCaptain.rows[0].user_id })
                 let userName = await connection.query(s8)
-                addSalesCaptain.rows[0].user_name =(userName.rows[0].full_name)?userName.rows[0].full_name:"";
+                addSalesCaptain.rows[0].user_name = (userName.rows[0].full_name) ? userName.rows[0].full_name : "";
                 salesUsersForLog.push(addSalesCaptain.rows[0])
             }
 
@@ -160,7 +160,7 @@ module.exports.createSales = async (req, res) => {
                     if (addSalesCaptain.rowCount > 0) {
                         let s8 = dbScript(db_sql['Q8'], { var1: addSalesSupporter.rows[0].user_id })
                         let userName = await connection.query(s8)
-                        addSalesSupporter.rows[0].user_name = (userName.rows[0].full_name)?userName.rows[0].full_name:"";
+                        addSalesSupporter.rows[0].user_name = (userName.rows[0].full_name) ? userName.rows[0].full_name : "";
                         salesUsersForLog.push(addSalesSupporter.rows[0])
                     }
                 }
@@ -186,7 +186,8 @@ module.exports.createSales = async (req, res) => {
                 res.json({
                     status: 201,
                     success: true,
-                    message: "Sales created successfully"
+                    message: "Sales created successfully",
+                    data: createSales.rows[0].id
                 })
             } else {
                 await connection.query('ROLLBACK')
@@ -593,7 +594,7 @@ module.exports.updateSales = async (req, res) => {
             if (updateSalesCaptain.rowCount > 0) {
                 let s8 = dbScript(db_sql['Q8'], { var1: updateSalesCaptain.rows[0].user_id })
                 let userName = await connection.query(s8)
-                updateSalesCaptain.rows[0].user_name = (userName.rows[0].full_name)?userName.rows[0].full_name:"";
+                updateSalesCaptain.rows[0].user_name = (userName.rows[0].full_name) ? userName.rows[0].full_name : "";
                 salesUsersForLog.push(updateSalesCaptain.rows[0])
             }
 
@@ -607,7 +608,7 @@ module.exports.updateSales = async (req, res) => {
                     if (addSalesSupporter.rowCount > 0) {
                         let s8 = dbScript(db_sql['Q8'], { var1: addSalesSupporter.rows[0].user_id })
                         let userName = await connection.query(s8)
-                        addSalesSupporter.rows[0].user_name = (userName.rows[0].full_name)?userName.rows[0].full_name:"";
+                        addSalesSupporter.rows[0].user_name = (userName.rows[0].full_name) ? userName.rows[0].full_name : "";
                         salesUsersForLog.push(addSalesSupporter.rows[0])
                     }
                 }
@@ -1160,7 +1161,7 @@ module.exports.transferBackSales = async (req, res) => {
             let s3 = dbScript(db_sql['Q270'], { var1: mysql_real_escape_string(transferReason), var2: _dt, var3: salesId, var4: userId })
             let updateReason = await connection.query(s3)
 
-            let s4 = dbScript(db_sql['Q284'], { var1: userId, var2: creatorId, var3: _dt, var4: salesId, var5:  mysql_real_escape_string(transferReason), var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
+            let s4 = dbScript(db_sql['Q284'], { var1: userId, var2: creatorId, var3: _dt, var4: salesId, var5: mysql_real_escape_string(transferReason), var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
             let addTransferSales = await connection.query(s4)
             // add notification in notification list
             await notificationsOperations({ type: 1, msg: 1.3, notification_typeId, notification_userId }, userId);
@@ -1425,7 +1426,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             let productList = await connection.query(s2)
             if (productList.rowCount > 0) {
                 allDetails.productList = productList.rows
-            }else{
+            } else {
                 allDetails.productList = []
             }
 
@@ -1433,7 +1434,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             let customerList = await connection.query(s3)
             if (customerList.rowCount > 0) {
                 allDetails.customerList = customerList.rows
-            }else{
+            } else {
                 allDetails.customerList = []
             }
 
@@ -1441,7 +1442,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             let userList = await connection.query(s4);
             if (userList.rowCount > 0) {
                 allDetails.userList = userList.rows
-            }else{
+            } else {
                 allDetails.userList = []
             }
 
@@ -1451,7 +1452,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             if (slabList.rowCount > 0) {
                 const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()]
                 allDetails.slabList = unique;
-            }else{
+            } else {
                 allDetails.slabList = []
             }
 
@@ -1459,7 +1460,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             let commissionList = await connection.query(s6)
             if (commissionList.rowCount > 0) {
                 allDetails.commissionList = commissionList.rows
-            }else{
+            } else {
                 allDetails.commissionList = []
             }
 
@@ -1487,7 +1488,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             let productList = await connection.query(s1)
             if (productList.rowCount > 0) {
                 allDetails.productList = productList.rows
-            }else{
+            } else {
                 allDetails.productList = []
             }
 
@@ -1495,7 +1496,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             let customerList = await connection.query(s2)
             if (customerList.rowCount > 0) {
                 allDetails.customerList = customerList.rows
-            }else{
+            } else {
                 allDetails.customerList = []
             }
 
@@ -1503,7 +1504,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             let userList = await connection.query(s3);
             if (userList.rowCount > 0) {
                 allDetails.userList = userList.rows
-            }else{
+            } else {
                 allDetails.userList = []
             }
 
@@ -1513,7 +1514,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             if (slabList.rowCount > 0) {
                 const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()]
                 allDetails.slabList = unique;
-            }else{
+            } else {
                 allDetails.slabList = []
             }
 
@@ -1521,7 +1522,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             let commissionList = await connection.query(s5)
             if (commissionList.rowCount > 0) {
                 allDetails.commissionList = commissionList.rows
-            }else{
+            } else {
                 allDetails.commissionList = []
             }
 

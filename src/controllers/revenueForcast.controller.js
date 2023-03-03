@@ -49,9 +49,10 @@ module.exports.createRevenueForecast = async (req, res) => {
                     res.json({
                         status: 201,
                         success: true,
-                        message: 'Forecast created successfully'
+                        message: 'Forecast created successfully',
+                        data: createForecast.rows[0].id
                     })
-                } 
+                }
                 else {
                     await connection.query('COMMIT')
                     res.json({
@@ -196,7 +197,7 @@ module.exports.editRevenueForecast = async (req, res) => {
             startDate,
             endDate,
             forecastData,
-        } = req.body 
+        } = req.body
 
         await connection.query('BEGIN')
 
@@ -210,11 +211,11 @@ module.exports.editRevenueForecast = async (req, res) => {
             let updateForecast = await connection.query(s2)
             if (updateForecast.rowCount > 0) {
                 if (forecastData.length > 0) {
-                    let s3 = dbScript(db_sql['Q305'], { var1: forecastId, var2:_dt })
+                    let s3 = dbScript(db_sql['Q305'], { var1: forecastId, var2: _dt })
                     let updateForecastData = await connection.query(s3)
                     for (let data of forecastData) {
-                            let s4 = dbScript(db_sql['Q294'], { var1: forecastId, var2: data.amount, var3: data.startDate, var4: data.endDate, var5: data.type, var6: userId })
-                            let addForecastData = await connection.query(s4)
+                        let s4 = dbScript(db_sql['Q294'], { var1: forecastId, var2: data.amount, var3: data.startDate, var4: data.endDate, var5: data.type, var6: userId })
+                        let addForecastData = await connection.query(s4)
                     }
                 }
                 await connection.query('COMMIT')
@@ -272,7 +273,7 @@ module.exports.updateAssignedUsersForecast = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
             if (forecastId) {
-                let s3 = dbScript(db_sql['Q307'], { var1: forecastId, var2: amount, var3: assignedTo, var4 : false })
+                let s3 = dbScript(db_sql['Q307'], { var1: forecastId, var2: amount, var3: assignedTo, var4: false })
                 let updateAssignedForecast = await connection.query(s3)
 
                 // add notification in notification list
@@ -346,13 +347,13 @@ module.exports.auditForecast = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
-            let s2 = dbScript(db_sql['Q308'], { var1: forecastId, var2: amount, var3: mysql_real_escape_string(reason), var4: userId , var5 :pid, var6 : forecastAmount})
+            let s2 = dbScript(db_sql['Q308'], { var1: forecastId, var2: amount, var3: mysql_real_escape_string(reason), var4: userId, var5: pid, var6: forecastAmount })
             let createAudit = await connection.query(s2)
 
             let s4 = dbScript(db_sql['Q306'], { var1: forecastId });
             let revenueForecastList = await connection.query(s4);
 
-            let s3 = dbScript(db_sql['Q307'], { var1 : forecastId, var2 : amount, var3 : userId, var4 : revenueForecastList.rows[0].is_accepted })
+            let s3 = dbScript(db_sql['Q307'], { var1: forecastId, var2: amount, var3: userId, var4: revenueForecastList.rows[0].is_accepted })
             let updateAmount = await connection.query(s3)
 
             if (createAudit.rowCount > 0 && updateAmount.rowCount > 0) {
@@ -399,7 +400,7 @@ module.exports.acceptForecast = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
             let _dt = new Date().toISOString()
-            let s2 = dbScript(db_sql['Q337'], { var1 : _dt, var2: forecastId })
+            let s2 = dbScript(db_sql['Q337'], { var1: _dt, var2: forecastId })
             let acceptForecast = await connection.query(s2)
 
             let s3 = dbScript(db_sql['Q306'], { var1: forecastId });
@@ -451,15 +452,15 @@ module.exports.deleteRevenueForecast = async (req, res) => {
             let s2 = dbScript(db_sql['Q306'], { var1: forecastId });
             let revenueForecastList = await connection.query(s2);
             let checkUserAccepted = false;
-            if( revenueForecastList.rows[0].assigned_forecast){
-                revenueForecastList.rows[0].assigned_forecast.map(value=>{
-                    if(value.is_accepted){
+            if (revenueForecastList.rows[0].assigned_forecast) {
+                revenueForecastList.rows[0].assigned_forecast.map(value => {
+                    if (value.is_accepted) {
                         checkUserAccepted = true;
                     }
                 })
             }
-            if( revenueForecastList.rows[0].is_accepted || checkUserAccepted ){
-               return res.json({
+            if (revenueForecastList.rows[0].is_accepted || checkUserAccepted) {
+                return res.json({
                     status: 200,
                     success: false,
                     message: "Can not delete this forecast because it is accepted by assigned user"
@@ -528,15 +529,15 @@ module.exports.deleteAssignedUserForecast = async (req, res) => {
             let s2 = dbScript(db_sql['Q306'], { var1: forecastId });
             let revenueForecastList = await connection.query(s2);
             let checkUserAccepted = false;
-            if( revenueForecastList.rows[0].assigned_forecast){
-                revenueForecastList.rows[0].assigned_forecast.map(value=>{
-                    if(value.is_accepted){
+            if (revenueForecastList.rows[0].assigned_forecast) {
+                revenueForecastList.rows[0].assigned_forecast.map(value => {
+                    if (value.is_accepted) {
                         checkUserAccepted = true;
                     }
                 })
             }
-            if( revenueForecastList.rows[0].is_accepted || checkUserAccepted ){
-               return res.json({
+            if (revenueForecastList.rows[0].is_accepted || checkUserAccepted) {
+                return res.json({
                     status: 200,
                     success: false,
                     message: "Can not delete this forecast because it is accepted by assigned user"
