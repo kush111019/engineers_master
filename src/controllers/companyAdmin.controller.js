@@ -14,7 +14,6 @@ let createAdmin = async (bodyData, cId, res) => {
     //let id = uuid.v4()
     let {
         name,
-        companyLogo,
         emailAddress,
         mobileNumber,
         companyAddress,
@@ -22,7 +21,7 @@ let createAdmin = async (bodyData, cId, res) => {
         encryptedPassword
     } = bodyData
 
-    companyLogo = companyLogo == "" ? process.env.DEFAULT_LOGO : companyLogo;
+    let avatar = process.env.DEFAULT_LOGO;
 
     let s3 = dbScript(db_sql['Q4'], { var1: emailAddress })
     let findUser = await connection.query(s3)
@@ -43,7 +42,7 @@ let createAdmin = async (bodyData, cId, res) => {
             let role_id = createRole.rows[0].id
             let s5 = dbScript(db_sql['Q3'], {
                 var1: mysql_real_escape_string(name),
-                var2: cId, var3: companyLogo, var4: emailAddress.toLowerCase(), var5: mobileNumber,
+                var2: cId, var3: avatar, var4: emailAddress.toLowerCase(), var5: mobileNumber,
                 var6: phoneNumber, var7: encryptedPassword, var8: role_id,
                 var9: mysql_real_escape_string(companyAddress), var10: expiryDate
             })
