@@ -299,12 +299,21 @@ const db_sql = {
             ( full_name, email_address, phone_number, customer_company_id, emp_type, creator_id,company_id)
           VALUES
             ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') RETURNING *`,
-
+  "Q71": `SELECT id 
+          FROM 
+            users 
+          WHERE 
+            company_id = '{var1}' AND is_main_admin = true`,
   "Q72": `UPDATE customer_company_employees 
           SET 
             full_name = '{var2}', email_address = '{var3}', phone_number = '{var4}', updated_at = '{var5}' 
           WHERE 
             id = '{var1}' AND deleted_at IS NULL RETURNING *`,
+  "Q73": `SELECT created_by
+            FROM 
+              marketing_budget 
+            WHERE 
+              company_id = '{var1}' AND id = '{var2}'`,
   "Q79": `UPDATE customer_companies SET business_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
   "Q80": `UPDATE customer_companies SET revenue_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
   "Q83": `INSERT INTO configurations( currency, phone_format, date_format,user_id, company_id ) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,

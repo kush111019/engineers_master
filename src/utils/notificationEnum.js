@@ -2,7 +2,8 @@ module.exports.notificationType = {
     1: 'sales',
     2: 'users',
     3: 'forecast',
-    4: 'leads'
+    4: 'leads',
+    5: 'budget'
 }
 
 module.exports.notificationMsg = {
@@ -27,4 +28,9 @@ module.exports.notificationMsg = {
     4.2: ' has updated Lead',
     4.3: ' has rejected Lead',
     4.4: ' has deleted Lead',
+
+    5.1: ' has created a Budget',
+    5.2: ' has updated Budget',
+    5.3: ' has finalized Budget',
+    5.4: ' has deleted Budget',
 }
