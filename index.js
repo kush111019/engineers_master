@@ -82,15 +82,8 @@ let server = sticky(options, () => {
     socket.on("newNotification", (newNotificationRecieved) => {
       console.log(newNotificationRecieved, 'newNotificationRecieved111111111111')
       if (!newNotificationRecieved.id) return console.log("notification not defined");
-
       let checkNotification = instantNotificationsList(newNotificationRecieved, socket)
-      // if (checkNotification) {
-      //   checkNotification.forEach(element => {
-      //     console.log(element.user_id,'user id')
-      //     socket.in(element.user_id).emit("message recieved", element);
-      //   });
-      // }
-
+      
     });
 
     socket.off("setup", () => {

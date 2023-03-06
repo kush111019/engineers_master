@@ -572,18 +572,13 @@ module.exports.notificationsOperations = async (nfData, userId) => {
 
 // get notifications for socket conversion
 module.exports.instantNotificationsList = async (newNotificationRecieved, socket) => {
-    console.log(newNotificationRecieved, 'newNotificationRecieved')
-    // console.log(socket, 'socket');
-    let s1 = dbScript(db_sql['Q346'], { var1: newNotificationRecieved.id ,var2:newNotificationRecieved.type})
+    let s1 = dbScript(db_sql['Q346'], { var1: newNotificationRecieved.id, var2: newNotificationRecieved.type })
     let notificationList = await connection.query(s1);
-    console.log(notificationList.rows,'notificationList')
     if (notificationList.rowCount > 0) {
-
         notificationList.rows.forEach(element => {
-              console.log(element.user_id,'user id',element)
-              socket.in(element.user_id).emit("notification recieved", element);
-              console.log('*********************')
-            });
-        // return notificationList.rows
+            console.log(element.user_id, 'user id', element)
+            socket.in(element.user_id).emit("notificationRecieved", element);
+            console.log('*********************')
+        });
     }
 }
