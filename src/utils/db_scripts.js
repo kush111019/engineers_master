@@ -271,8 +271,8 @@ const db_sql = {
           WHERE 
             sales_id = '{var5}' AND company_id = '{var6}' AND user_type='{var7}' AND deleted_at IS NULL RETURNING *`,
   "Q66": `UPDATE follow_up_notes SET deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL`,
-  "Q67": `INSERT INTO forecast(timeline, amount, start_date,end_date,pid, assigned_to, created_by)
-              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}') RETURNING * `,
+  "Q67": `INSERT INTO forecast(timeline, amount, start_date,end_date,pid, assigned_to, created_by, company_id)
+              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}') RETURNING * `,
   "Q68": `SELECT 
                 f.id, f.timeline, f.amount, f.start_date, f.pid,
                 f.end_date, f.created_by,f.created_at, f.assigned_to,
@@ -1761,8 +1761,8 @@ const db_sql = {
             u.company_id = '{var1}' AND u.id = '{var2}' AND u.deleted_at IS NULL
           ORDER BY
             u.created_at DESC`,
-  "Q294": `INSERT INTO forecast_data(forecast_id, amount, start_date, end_date, type, created_by)
-                VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+  "Q294": `INSERT INTO forecast_data(forecast_id, amount, start_date, end_date, type, created_by, company_id)
+                VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') RETURNING *`,
   "Q295": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
               sc.booking_commission::DECIMAL as subscription_booking_commission,
               sc.revenue_commission::DECIMAL as subscription_revenue_commission
