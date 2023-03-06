@@ -688,7 +688,6 @@ module.exports.recurringSalesReminderMail2 = async (email,customerName,recurring
 }
 
 module.exports.notificationMail2 = async (email,msg) => {
-    console.log(email,msg);
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;

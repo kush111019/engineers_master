@@ -2038,7 +2038,11 @@ const db_sql = {
             LEFT JOIN 
             commission_split AS c ON s.commission_split_id = c.id
             WHERE s.commission_split_id = '{var1}' 
-            AND c.deleted_at is null AND s.deleted_at is null`
+            AND c.deleted_at is null AND s.deleted_at is null`,
+    "Q346": `SELECT * FROM  notifications 
+             WHERE type_id= '{var1}' AND type = '{var2}' AND is_read= false AND deleted_at IS NULL 
+             ORDER BY created_at DESC`,
+  
 
 
 }
