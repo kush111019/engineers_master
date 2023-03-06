@@ -292,7 +292,7 @@ const db_sql = {
               LEFT JOIN users as u1 on u1.id	 = f.created_by	
               LEFT JOIN users as u2 on u2.id	 = f.assigned_to
               WHERE 
-                (f.assigned_to = '{var1}') AND f.deleted_at IS NULL 
+                f.company_id = '{var1}' AND f.deleted_at IS NULL 
               ORDER BY 
                 timeline ASC`,
   "Q70": `INSERT INTO customer_company_employees 

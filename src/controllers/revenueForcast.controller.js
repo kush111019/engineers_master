@@ -94,14 +94,18 @@ module.exports.revenueForecastList = async (req, res) => {
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global) {
             // Getting forecast list by user Id
-            let s3 = dbScript(db_sql['Q68'], { var1: userId });
+            let s3 = dbScript(db_sql['Q68'], { var1: checkPermission.rows[0].company_id });
             let revenueForecastList = await connection.query(s3);
             if (revenueForecastList.rowCount > 0) {
+
+                const foreCastData = revenueForecastList.rows.filter((rf) => rf.pid == '0');
+                const foreCastOthers = revenueForecastList.rows.filter((rf) => rf.assigned_to != userId);
+
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Forecast list',
-                    data: revenueForecastList.rows
+                    data: [...foreCastData, ...foreCastOthers]
                 });
             } else {
                 res.json({
