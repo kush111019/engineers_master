@@ -576,8 +576,13 @@ module.exports.instantNotificationsList = async (newNotificationRecieved, socket
     console.log(socket, 'socket');
     let s1 = dbScript(db_sql['Q346'], { var1: newNotificationRecieved.id ,var2:newNotificationRecieved.type})
     let notificationList = await connection.query(s1);
+    console.log(notificationList.rows,'notificationList')
     if (notificationList.rowCount > 0) {
-        return notificationList.rows
-    }
 
+        notificationList.rows.forEach(element => {
+              console.log(element.user_id,'user id')
+              socket.in(element.user_id).emit("notification recieved", element);
+            });
+        // return notificationList.rows
+    }
 }
