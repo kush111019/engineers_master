@@ -86,7 +86,7 @@ let server = sticky(options, () => {
       let checkNotification = instantNotificationsList(newNotificationRecieved, socket)
       if (checkNotification) {
         checkNotification.forEach(element => {
-          console.log(element.user_id)
+          console.log(element.user_id,'user id')
           socket.in(element.user_id).emit("message recieved", element);
         });
       }
