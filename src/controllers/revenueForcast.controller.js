@@ -99,7 +99,7 @@ module.exports.revenueForecastList = async (req, res) => {
             if (revenueForecastList.rowCount > 0) {
 
                 const foreCastData = revenueForecastList.rows.filter((rf) => rf.pid == '0');
-                const foreCastOthers = revenueForecastList.rows.filter((rf) => rf.assigned_to != userId);
+                const foreCastOthers = foreCastData.filter((rf) => rf.assigned_to != userId);
 
                 res.json({
                     status: 200,
