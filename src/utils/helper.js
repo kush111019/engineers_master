@@ -580,7 +580,7 @@ module.exports.instantNotificationsList = async (newNotificationRecieved, socket
     if (notificationList.rowCount > 0) {
 
         notificationList.rows.forEach(element => {
-              console.log(element.user_id,'user id')
+              console.log(element.user_id,'user id',element)
               socket.in(element.user_id).emit("notification recieved", element);
               console.log('*********************')
             });
