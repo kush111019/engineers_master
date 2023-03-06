@@ -86,10 +86,13 @@ router.post('/createSales',verifyTokenFn, controller.sales.createSales)
 router.get('/allSalesList',verifyTokenFn, controller.sales.allSalesList)
 router.get('/activeSalesList',verifyTokenFn, controller.sales.activeSalesList)
 router.get('/closedSalesList',verifyTokenFn, controller.sales.closedSalesList)
+router.get('/archivedSalesList',verifyTokenFn, controller.sales.archivedSalesList)
 router.get('/salesDetails',verifyTokenFn, controller.sales.salesDetails)
 
 router.put('/updateSales',verifyTokenFn, controller.sales.updateSales)
 router.put('/deleteSales',verifyTokenFn, controller.sales.deleteSales)
+router.put('/archivedSales',verifyTokenFn, controller.sales.archivedSales)
+
 router.get('/salesLogsList',verifyTokenFn, controller.sales.salesLogsList)
 router.post('/uploadSalesContract', verifyTokenFn,uploadSalesContract.single('file'), controller.sales.uploadSalesContract )
 router.post('/closeSales',verifyTokenFn, controller.sales.closeSales)

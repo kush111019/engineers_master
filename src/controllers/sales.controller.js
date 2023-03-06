@@ -1555,3 +1555,131 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
         })
     }
 }
+
+module.exports.archivedSales = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let {
+            salesId
+        } = req.body
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_update) {
+
+            let _dt = new Date().toISOString();
+            let s2 = dbScript(db_sql['Q74'], { var1: _dt, var2: userId, var3: salesId, var4: checkPermission.rows[0].company_id })
+            let archivedSales = await connection.query(s2)
+
+            if (archivedSales.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Sales archived successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+
+}
+
+module.exports.archivedSalesList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s2)
+        if (checkPermission.rows[0].permission_to_view_global) {
+            let s3 = dbScript(db_sql['Q75'], { var1: checkPermission.rows[0].company_id })
+            let salesList = await connection.query(s3)
+            for (let salesData of salesList.rows) {
+                if (salesData.sales_users) {
+                    salesData.sales_users.map(value => {
+                        if (value.user_type == process.env.CAPTAIN) {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        } else {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        }
+                    })
+                }
+            }
+            if (salesList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Archived sales list',
+                    data: salesList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty archived sales list',
+                    data: []
+                })
+            }
+
+        } else if (checkPermission.rows[0].permission_to_view_own) {
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            let s3 = dbScript(db_sql['Q76'], { var1: roleUsers.join(",") })
+            let salesList = await connection.query(s3)
+            for (let salesData of salesList.rows) {
+                if (salesData.sales_users) {
+                    salesData.sales_users.map(value => {
+                        if (value.user_type == process.env.CAPTAIN) {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        } else {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        }
+                    })
+                }
+            }
+            if (salesList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Archived Sales list',
+                    data: salesList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty archived sales list',
+                    data: []
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+
+}
