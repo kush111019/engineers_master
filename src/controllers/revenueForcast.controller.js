@@ -98,8 +98,8 @@ module.exports.revenueForecastList = async (req, res) => {
             let revenueForecastList = await connection.query(s3);
             if (revenueForecastList.rowCount > 0) {
 
-                const foreCastData = revenueForecastList.rows.filter((rf) => rf.pid == '0' && rf.assigned_to == userId);
-                const foreCastOthers = revenueForecastList.rows.filter((rf) => rf.created_at != userId);
+                const foreCastData = revenueForecastList.rows.filter((rf) => rf.pid == '0');
+                const foreCastOthers = revenueForecastList.rows.filter((rf) => rf.created_by != userId && rf.pid != '0');
 
                 res.json({
                     status: 200,
