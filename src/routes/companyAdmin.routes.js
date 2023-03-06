@@ -204,6 +204,7 @@ router.put('/deleteLeadSource',verifyTokenFn, controller.configuration.deleteLea
 //----------------------------------------Notifications------------------------------------
 router.get('/notificationList',verifyTokenFn, controller.notifications.notificationList)
 router.put('/notificationRead',verifyTokenFn, controller.notifications.notificationRead)
+router.get('/instantNotificationsList',verifyTokenFn, controller.notifications.instantNotificationsList)
 
 
 
