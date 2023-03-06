@@ -21,15 +21,14 @@ module.exports.createRevenueForecast = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_create) {
             let pId = 0;
-            const companyId = checkPermission.rows[0].company_id;
             //Inserting forecast into forecast table
-            let s2 = dbScript(db_sql['Q67'], { var1: timeline, var2: amount, var3: startDate, var4: endDate, var5: pId, var6: userId, var7: userId })
+            let s2 = dbScript(db_sql['Q67'], { var1: timeline, var2: amount, var3: startDate, var4: endDate, var5: pId, var6: userId, var7: userId ,var8:checkPermission.rows[0].company_id})
             let createForecast = await connection.query(s2)
             //if forecast inserted into forecast table then
             if (createForecast.rowCount > 0) {
                 //inserting the forecast data into forecast_data table
                 for (let data of forecastData) {
-                    let s3 = dbScript(db_sql['Q294'], { var1: createForecast.rows[0].id, var2: data.amount, var3: data.startDate, var4: data.endDate, var5: type, var6: userId, var7: companyId })
+                    let s3 = dbScript(db_sql['Q294'], { var1: createForecast.rows[0].id, var2: data.amount, var3: data.startDate, var4: data.endDate, var5: type, var6: userId, var7: checkPermission.rows[0].company_id })
                     let addForecastData = await connection.query(s3)
                 }
                 // Checking if assigned users length > 0 then
@@ -39,7 +38,7 @@ module.exports.createRevenueForecast = async (req, res) => {
                         let notification_userId = [];
                         notification_userId.push(data.userId)
                         let pId = createForecast.rows[0].id
-                        let s4 = dbScript(db_sql['Q67'], { var1: timeline, var2: data.amount, var3: startDate, var4: endDate, var5: pId, var6: data.userId, var7: req.user.id, var8: companyId  })
+                        let s4 = dbScript(db_sql['Q67'], { var1: timeline, var2: data.amount, var3: startDate, var4: endDate, var5: pId, var6: data.userId, var7: req.user.id, var8: checkPermission.rows[0].company_id  })
                         let createForecastForAssignedUsers = await connection.query(s4)
 
                         // add notification in notification list
