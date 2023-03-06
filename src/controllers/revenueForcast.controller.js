@@ -300,7 +300,7 @@ module.exports.updateAssignedUsersForecast = async (req, res) => {
                     })
                 }
             } else {
-                let s4 = dbScript(db_sql['Q67'], { var1: timeline, var2: amount, var3: startDate, var4: endDate, var5: pid, var6: assignedTo, var7: userId })
+                let s4 = dbScript(db_sql['Q67'], { var1: timeline, var2: amount, var3: startDate, var4: endDate, var5: pid, var6: assignedTo, var7: userId ,var8: checkPermission.rows[0].company_id })
                 let addAssignedForecast = await connection.query(s4)
 
                 // add notification in notification list
