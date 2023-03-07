@@ -314,12 +314,12 @@ const db_sql = {
               marketing_budget 
             WHERE 
               company_id = '{var1}' AND id = '{var2}'`,
-  "Q74": `UPDATE sales SET archived_at = '{var1}' , archived_by = '{var2}'  
-          WHERE id = '{var3}' AND company_id = '{var4}' AND deleted_at IS NULL RETURNING * `,
+  "Q74": `UPDATE sales SET archived_at = '{var1}' , archived_by = '{var2}' , archived_reason ='{var3}'
+          WHERE id = '{var4}' AND company_id = '{var5}' AND deleted_at IS NULL RETURNING * `,
   "Q75": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
             sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.revenue_commission,
-            sc.currency, sc.target_closing_date,
+            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason,
             sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
@@ -384,7 +384,7 @@ const db_sql = {
   "Q76": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
              sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
-              sc.currency, sc.target_closing_date,
+              sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
@@ -451,7 +451,8 @@ const db_sql = {
             ) AND sc.deleted_at is NULL AND sc.archived_at IS NOT NULL   
           GROUP BY 
             sc.id,sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id,
-            sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
+            sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,
+            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id , u1.full_name ,
             sc.transfered_back_by ,
