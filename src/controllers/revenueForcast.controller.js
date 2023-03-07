@@ -38,13 +38,22 @@ module.exports.createRevenueForecast = async (req, res) => {
                         let notification_userId = [];
                         notification_userId.push(data.userId)
                         let pId = createForecast.rows[0].id
-                        let createForecastForAssignedUsers ;
+                        let createForecastForAssignedUsers;
                         if (data.userId == userId) {
                             let s4 = dbScript(db_sql['Q77'], { var1: timeline, var2: data.amount, var3: startDate, var4: endDate, var5: pId, var6: data.userId, var7: req.user.id, var8: checkPermission.rows[0].company_id, var9: true })
                             createForecastForAssignedUsers = await connection.query(s4)
+
+                            //inserting the forecast data into forecast_data table
+                            if(data.forecastData.length > 0){
+                                for (let userFrData of data.forecastData) {
+                                    let s5 = dbScript(db_sql['Q294'], { var1: createForecastForAssignedUsers.rows[0].id, var2: userFrData.amount, var3: userFrData.startDate, var4: userFrData.endDate, var5: data.type, var6: userId, var7: checkPermission.rows[0].company_id })
+                                    let addForecastData = await connection.query(s5)
+                                }
+                            }
+                           
                         } else {
-                            let s5 = dbScript(db_sql['Q67'], { var1: timeline, var2: data.amount, var3: startDate, var4: endDate, var5: pId, var6: data.userId, var7: req.user.id, var8: checkPermission.rows[0].company_id })
-                            createForecastForAssignedUsers = await connection.query(s5)
+                            let s6 = dbScript(db_sql['Q67'], { var1: timeline, var2: data.amount, var3: startDate, var4: endDate, var5: pId, var6: data.userId, var7: req.user.id, var8: checkPermission.rows[0].company_id })
+                            createForecastForAssignedUsers = await connection.query(s6)
                         }
 
                         // add notification in notification list
