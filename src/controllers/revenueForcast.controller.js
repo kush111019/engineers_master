@@ -38,8 +38,14 @@ module.exports.createRevenueForecast = async (req, res) => {
                         let notification_userId = [];
                         notification_userId.push(data.userId)
                         let pId = createForecast.rows[0].id
-                        let s4 = dbScript(db_sql['Q67'], { var1: timeline, var2: data.amount, var3: startDate, var4: endDate, var5: pId, var6: data.userId, var7: req.user.id, var8: checkPermission.rows[0].company_id })
-                        let createForecastForAssignedUsers = await connection.query(s4)
+                        let createForecastForAssignedUsers ;
+                        if (data.userId == userId) {
+                            let s4 = dbScript(db_sql['Q77'], { var1: timeline, var2: data.amount, var3: startDate, var4: endDate, var5: pId, var6: data.userId, var7: req.user.id, var8: checkPermission.rows[0].company_id, var9: true })
+                            createForecastForAssignedUsers = await connection.query(s4)
+                        } else {
+                            let s5 = dbScript(db_sql['Q67'], { var1: timeline, var2: data.amount, var3: startDate, var4: endDate, var5: pId, var6: data.userId, var7: req.user.id, var8: checkPermission.rows[0].company_id })
+                            createForecastForAssignedUsers = await connection.query(s5)
+                        }
 
                         // add notification in notification list
                         let notification_typeId = createForecastForAssignedUsers.rows[0].id;

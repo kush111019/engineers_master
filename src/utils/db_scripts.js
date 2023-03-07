@@ -461,7 +461,9 @@ const db_sql = {
             sc.deleted_at 
           ORDER BY
             sc.created_at DESC`,
-    
+  "Q77": `INSERT INTO forecast(timeline, amount, start_date,end_date,pid, assigned_to, created_by, company_id,is_accepted)
+          VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}') RETURNING * `,
+
   "Q79": `UPDATE customer_companies SET business_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
   "Q80": `UPDATE customer_companies SET revenue_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
   "Q83": `INSERT INTO configurations( currency, phone_format, date_format,user_id, company_id ) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
