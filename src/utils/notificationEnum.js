@@ -11,6 +11,7 @@ module.exports.notificationMsg = {
     1.2: ' has updated Sales',
     1.3: ' has transferred Sales to you',
     1.4: ' has closed Sales',
+    1.5: ' has archived Sales',
 
     2.1: ' has created a Users',
     2.2: ' has updated Users',

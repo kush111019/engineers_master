@@ -1561,8 +1561,13 @@ module.exports.archivedSales = async (req, res) => {
         let userId = req.user.id
         let {
             salesId,
+            userIds,
             reason
         } = req.body
+        //add notification deatils
+        let notification_userId = userIds;
+        let notification_typeId = salesId;
+
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
@@ -1573,6 +1578,9 @@ module.exports.archivedSales = async (req, res) => {
             let archivedSales = await connection.query(s2)
 
             if (archivedSales.rowCount > 0) {
+                // add notification in notification list
+                await notificationsOperations({ type: 1, msg: 1.5, notification_typeId, notification_userId }, userId);
+               
                 await connection.query('COMMIT')
                 res.json({
                     status: 200,
