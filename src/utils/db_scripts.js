@@ -181,7 +181,7 @@ const db_sql = {
   "Q54": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
             sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
-            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,
+            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,
             sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
@@ -847,7 +847,7 @@ const db_sql = {
    "Q178": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
             sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
-            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,
+            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,
             sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
@@ -915,7 +915,7 @@ const db_sql = {
             ) AND sc.deleted_at is NULL
           GROUP BY 
             sc.id,sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id,
-            sc.archived_at, sc.archived_by,
+            sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id , u1.full_name ,
@@ -928,7 +928,7 @@ const db_sql = {
   "Q179": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
             sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.revenue_commission,
-            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,
+            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason,
              sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
@@ -993,7 +993,7 @@ const db_sql = {
   "Q180": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
             sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
-             sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,
+             sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
@@ -1057,7 +1057,7 @@ const db_sql = {
   "Q181": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
              sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
-              sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,
+              sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
@@ -1124,7 +1124,7 @@ const db_sql = {
             ) AND sc.deleted_at is NULL AND sc.closed_at IS NULL AND sc.archived_at IS NULL
           GROUP BY 
             sc.id,sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id,
-            sc.archived_at, sc.archived_by,
+            sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id , u1.full_name ,
@@ -1137,7 +1137,7 @@ const db_sql = {
   "Q182": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
             sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
-             sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,
+             sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
@@ -1204,7 +1204,7 @@ const db_sql = {
             ) AND sc.deleted_at is NULL AND sc.closed_at IS NOT NULL AND archived_at IS NULL
           GROUP BY 
             sc.id,sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id,
-            sc.archived_at, sc.archived_by,
+            sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id , u1.full_name ,
@@ -1838,7 +1838,7 @@ const db_sql = {
   "Q292": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
             sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
-            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,
+            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
