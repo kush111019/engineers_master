@@ -7,6 +7,7 @@ const customers = require('./customers.controller')
 const commissions = require('./commissions.controller')
 const products = require('./products.controller')
 const sales = require('./sales.controller')
+const salesApproval = require('./salesApproval.controller')
 const reports = require('./reports.controller')
 const revenueForecast = require('./revenueForcast.controller')
 const configuration = require('./configurations.controllers')
@@ -30,6 +31,7 @@ const controller = {
     commissions,
     products,
     sales,
+    salesApproval,
     reports,
     revenueForecast,
     configuration,

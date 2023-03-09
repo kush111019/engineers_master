@@ -106,6 +106,13 @@ router.get('/recognizedRevenueList', verifyTokenFn, controller.sales.recognizedR
 router.get('/getRemainingTargetAmount', verifyTokenFn, controller.sales.getRemainingTargetAmount)
 router.get('/getAllApiDeatilsRelatedSales', verifyTokenFn, controller.sales.getAllApiDeatilsRelatedSales)
 
+
+
+//----------------------------------------Sales Approval --------------------------------
+router.get('/getUpperLevelUserList',verifyTokenFn, controller.salesApproval.getUpperLevelUserList)
+router.post('/sendApprovalRequestForSales',verifyTokenFn, controller.salesApproval.sendApprovalRequestForSales)
+
+
 //----------------------------------------Reports------------------------------------------
 router.get('/revenuePerCustomer',verifyTokenFn, controller.reports.revenuePerCustomer)
 router.get('/revenuePerProduct',verifyTokenFn, controller.reports.revenuePerProduct)
