@@ -464,10 +464,16 @@ const db_sql = {
             
   "Q79": `UPDATE customer_companies SET business_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
   "Q80": `UPDATE customer_companies SET revenue_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
-  "Q83": `INSERT INTO configurations( currency, phone_format, date_format,user_id, company_id ) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
-  "Q84": `SELECT id,currency,phone_format,date_format,user_id,company_id,created_at
-              FROM configurations WHERE company_id = '{var1}' AND deleted_at IS NULL `,
+  "Q83": `INSERT INTO 
+            configurations( currency, phone_format, date_format,user_id, company_id )
+          VALUES
+            ('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
+  "Q84": `SELECT * FROM configurations WHERE company_id = '{var1}' AND deleted_at IS NULL `,
   "Q85": `UPDATE configurations SET deleted_at = '{var1}' WHERE company_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
+  "Q86": `INSERT INTO 
+            configurations( currency, phone_format, date_format,user_id, company_id, before_closing_days, after_closing_days )
+          VALUES
+            ('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}', '{var7}') RETURNING *`,
   "Q87": `SELECT sc.id AS sales_commission_id, 
             sc.closed_at,
             sc.booking_commission, 
@@ -651,7 +657,7 @@ const db_sql = {
   "Q144": `SELECT id,full_name,avatar FROM users WHERE id IN ('{var1}','{var2}') AND deleted_at IS NULL`,
   "Q145": `SELECT u.id, u.full_name, u.company_id, u.email_address, u.encrypted_password, u.mobile_number, u.role_id, 
               u.avatar, u.expiry_date, u.is_verified, u.is_admin, u.is_locked, u.is_main_admin, c.company_name, c.company_address, c.company_logo, c.is_imap_enable,c.is_marketing_enable,
-              r.id as role_id,r.role_name, r.reporter, r.module_ids, con.id AS config_id, con.currency, con.phone_format, con.date_format
+              r.id as role_id,r.role_name, r.reporter, r.module_ids, con.id AS config_id, con.currency, con.phone_format, con.date_format, con.before_closing_days, con.after_closing_days
               FROM users AS u 
               INNER JOIN companies AS c ON c.id = u.company_id
               INNER JOIN roles AS r ON r.id = u.role_id 
