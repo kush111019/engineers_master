@@ -568,8 +568,6 @@ module.exports.notificationsOperations = async (nfData, userId) => {
 
 }
 
-
-
 // get notifications for socket conversion
 module.exports.instantNotificationsList = async (newNotificationRecieved, socket) => {
     let s1 = dbScript(db_sql['Q346'], { var1: newNotificationRecieved.id, var2: newNotificationRecieved.type })
@@ -579,4 +577,34 @@ module.exports.instantNotificationsList = async (newNotificationRecieved, socket
             socket.in(element.user_id).emit("notificationRecieved", element);
         });
     }
+}
+
+
+// get perent roles and their user's list from this function 
+module.exports.getParentUserList = async (userData, company_id) => {
+    let roleIds = []
+    let getRoles = async (id) => {
+        let s1 = dbScript(db_sql['Q12'], { var1: id })
+        let getParent = await connection.query(s1);
+        if (getParent.rowCount > 0) {
+            for (let item of getParent.rows) {
+                if (roleIds.includes(item.id) == false) {
+                    roleIds.push(item.id)
+                    if (item.reporter != '') {
+                        await getRoles(item.reporter)
+                    }
+                }
+            }
+        }
+    }
+    await getRoles(userData.reporter)
+    let returnData = [];
+    for (let id of roleIds) {
+        let s2 = dbScript(db_sql['Q21'], { var1: id, var2: company_id })
+        let getUserData = await connection.query(s2);
+        if (getUserData.rowCount > 0 ) {
+            returnData.push( getUserData.rows[0])
+        }
+    }
+    return returnData
 }

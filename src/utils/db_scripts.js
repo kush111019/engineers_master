@@ -50,7 +50,12 @@ const db_sql = {
   "Q18": `INSERT INTO slabs(min_amount, max_amount, percentage, is_max, company_id, currency, slab_ctr, user_id, slab_id, slab_name, commission_split_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}') RETURNING * `,
   "Q19": `UPDATE slabs SET slab_name = '{var1}', min_amount = '{var2}', max_amount = '{var3}', percentage = '{var4}', is_max = '{var5}', company_id = '{var6}',currency = '{var7}', slab_ctr = '{var8}', user_id = '{var9}', updated_at = '{var12}', commission_split_id = '{var13}' WHERE id = '{var10}' AND slab_id = '{var11}' AND deleted_at IS NULL RETURNING *`,
   "Q20": `INSERT INTO permissions( role_id, module_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view_global,permission_to_view_own, user_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}') RETURNING *`,
-  "Q21": `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id FROM users WHERE role_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL `,
+  "Q21": `SELECT u.id,u.email_address, u.full_name, u.company_id, 
+            u.avatar,u.mobile_number,u.phone_number,u.address,u.role_id ,r.role_name
+          FROM users AS u
+          LEFT JOIN  
+            roles AS r ON r.id = u.role_id
+          WHERE u.role_id = '{var1}' AND u.company_id = '{var2}' AND u.deleted_at IS NULL `,
   "Q22": `UPDATE users SET email_address = '{var1}', full_name ='{var2}', mobile_number = '{var3}', address = '{var4}', role_id = '{var5}' , updated_at = '{var7}',avatar = '{var8}', is_admin = '{var10}' WHERE id = '{var6}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `,
   "Q23": `UPDATE users SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
   "Q24": `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at, deleted_at,is_locked FROM users WHERE company_id = '{var1}' ORDER BY created_at desc`,
@@ -2193,6 +2198,14 @@ const db_sql = {
     "Q346": `SELECT * FROM  notifications 
              WHERE type_id= '{var1}' AND type = '{var2}' AND is_read= false AND deleted_at IS NULL 
              ORDER BY created_at DESC`,
+    "Q347": `INSERT INTO sales_approval 
+              ( percentage, description, sales_id,company_id, requested_user_id, approver_user_id)
+            VALUES
+              ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+    "Q348": `UPDATE sales 
+            SET updated_at = '{var1}', approval_status = '{var2}' 
+            WHERE id = '{var3}' RETURNING *`,
+  
   
 
 
