@@ -55,7 +55,7 @@ let createAdmin = async (bodyData, cId, res) => {
             }
 
             //let configId = uuid.v4()
-            let s10 = dbScript(db_sql['Q83'], { var1: "$", var2: "us", var3: "MM-DD-YYYY", var4: saveuser.rows[0].id, var5: cId })
+            let s10 = dbScript(db_sql['Q86'], { var1: "$", var2: "us", var3: "MM-DD-YYYY", var4: saveuser.rows[0].id, var5: cId ,var6: 3,var7: 2})
             let addConfig = await connection.query(s10)
 
             let s6 = dbScript(db_sql['Q6'], {})
