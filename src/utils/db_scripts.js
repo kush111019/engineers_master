@@ -2205,6 +2205,11 @@ const db_sql = {
     "Q348": `UPDATE sales 
             SET updated_at = '{var1}', approval_status = '{var2}' 
             WHERE id = '{var3}' RETURNING *`,
+    "Q349": `UPDATE sales_approval 
+            SET updated_at = '{var1}', status = '{var2}' 
+            WHERE id = '{var3}'  AND sales_id = '{var4}' RETURNING *`,
+    "Q350": `SELECT * FROM sales_approval WHERE id = '{var1}' AND sales_id = '{var2}' AND deleted_at IS NULL `,
+    "Q351": `SELECT * FROM sales_approval WHERE sales_id = '{var1}' AND deleted_at IS NULL `
   
   
 
