@@ -9,7 +9,7 @@ const { mysql_real_escape_string } = require('../utils/helper');
 module.exports.addConfigs = async (req, res) => {
     try {
         let userId = req.user.id
-        let { currency, phoneFormat, dateFormat } = req.body
+        let { currency, phoneFormat, dateFormat, beforeClosingDays, afterClosingDays } = req.body
 
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
@@ -22,7 +22,7 @@ module.exports.addConfigs = async (req, res) => {
             let config = await connection.query(s2)
 
             //let id = uuid.v4()
-            let s3 = dbScript(db_sql['Q83'], { var1:currency, var2: phoneFormat, var3: dateFormat, var4: findAdmin.rows[0].id, var5: findAdmin.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q86'], { var1:currency, var2: phoneFormat, var3: dateFormat, var4: findAdmin.rows[0].id, var5: findAdmin.rows[0].company_id, var6 : beforeClosingDays, var7 : afterClosingDays })
 
             let addConfig = await connection.query(s3)
 
@@ -72,11 +72,12 @@ module.exports.configList = async (req, res) => {
             let configuration = {}
 
             if (configList.rowCount > 0) {
-
                 configuration.id = configList.rows[0].id
                 configuration.currency = configList.rows[0].currency,
-                    configuration.phoneFormat = configList.rows[0].phone_format,
-                    configuration.dateFormat = configList.rows[0].date_format
+                configuration.phoneFormat = configList.rows[0].phone_format,
+                configuration.dateFormat = configList.rows[0].date_format,
+                configuration.beforeClosingDays = (configList.rows[0].before_closing_days) ? configList.rows[0].before_closing_days : '',
+                configuration.afterClosingDays = (configList.rows[0].after_closing_days) ? configList.rows[0].after_closing_days : ''
                 res.json({
                     status: 200,
                     success: true,
@@ -85,9 +86,11 @@ module.exports.configList = async (req, res) => {
                 })
             } else {
                 configuration.id = "",
-                    configuration.currency = "",
-                    configuration.phoneFormat = "",
-                    configuration.dateFormat = ""
+                configuration.currency = "",
+                configuration.phoneFormat = "",
+                configuration.dateFormat = "",
+                configuration.beforeClosingDays = "",
+                configuration.afterClosingDays = ""
                 res.json({
                     status: 200,
                     success: false,

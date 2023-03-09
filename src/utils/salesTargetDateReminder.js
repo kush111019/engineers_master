@@ -8,68 +8,82 @@ module.exports.targetDateReminder = async () => {
     let s1 = dbScript(db_sql['Q99'], {})
     let companies = await connection.query(s1)
     for (let data of companies.rows) {
-        let s2 = dbScript(db_sql['Q54'], { var1: data.id })
-        let salesData = await connection.query(s2)
+        let s2 = dbScript(db_sql['Q84'], { var1: data.id })
+        let configList = await connection.query(s2)
+        let beforeTargetDays = (configList.rowCount > 0) ? Number(configList.rows[0].before_closing_days) : 0
+        let afterTargetDays = (configList.rowCount > 0) ? Number(configList.rows[0].after_closing_days) : 0
+
+        let s3 = dbScript(db_sql['Q54'], { var1: data.id })
+        let salesData = await connection.query(s3)
         if (salesData.rowCount > 0) {
             for (let sData of salesData.rows) {
-                let emailsArr = []
-                if(sData.creator_email){
-                    emailsArr.push(sData.creator_email)
-                }
-                if(sData.closer_email && !emailsArr.includes(sData.closer_email) ){
-                    emailsArr.push(sData.closer_email)
-                }
-                if (sData.supporters) {
-                    for (let supporterData of sData.supporters) {
-                        if(supporterData.email && !emailsArr.includes(supporterData.email)){
-                            emailsArr.push(supporterData.email)
-                        }
+                if (sData.closed_at != '') {
+                    let emailsArr = []
+                    if (sData.sales_users) {
+                        sData.sales_users.map(user => {
+                            emailsArr.push(user.email)
+                        })
                     }
-                }
-                let currentDate = new Date()
-                currentDate = moment(currentDate).format('MM/DD/YYYY')
-                if (sData.sales_type == "Perpectual") {
-                    let targetDate = new Date(sData.target_closing_date);
-                    let fifteenDaysBefore = new Date(targetDate.getTime() - 15 * 24 * 60 * 60 * 1000);
-                    let sevenDaysBefore = new Date(targetDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    let currentDate = new Date()
+                    currentDate = moment(currentDate).format('MM/DD/YYYY')
+                    if (sData.sales_type == "Perpetual") {
+                        let targetDate = new Date(sData.target_closing_date);
+                        
+                        let beforeDays = new Date(targetDate.getTime() - beforeTargetDays * 24 * 60 * 60 * 1000);
 
-                    let forFifteenDaysBefore = moment(fifteenDaysBefore).format('MM/DD/YYYY')
-                    let forSevenDaysBefore = moment(sevenDaysBefore).format('MM/DD/YYYY')
-                    if (currentDate == forFifteenDaysBefore) {
-                        if (process.env.isLocalEmail == 'true') {
-                            await tagetClosingDateReminderMail2(emailsArr, sData.customer_name, sData.target_closing_date)
-                        } else {
-                            await tagetClosingDateReminderMail(emailsArr, sData.customer_name, sData.target_closing_date)
+                        let closingBeforeDays = moment(beforeDays).format('MM/DD/YYYY')
+
+                        let afterDays = new Date(targetDate.getTime() - afterTargetDays * 24 * 60 * 60 * 1000);
+                        let closingAfterDays = moment(afterDays).format('MM/DD/YYYY')
+
+                        if (currentDate == closingBeforeDays) {
+                            if (process.env.isLocalEmail == 'true') {
+                                await tagetClosingDateReminderMail2(emailsArr, sData.customer_name, sData.target_closing_date)
+                            } else {
+                                await tagetClosingDateReminderMail(emailsArr, sData.customer_name, sData.target_closing_date)
+                            }
+                        }else if(currentDate == moment(targetDate).format('MM/DD/YYYY')){
+                            if (process.env.isLocalEmail == 'true') {
+                                await tagetClosingDateReminderMail2(emailsArr, sData.customer_name, sData.target_closing_date)
+                            } else {
+                                await tagetClosingDateReminderMail(emailsArr, sData.customer_name, sData.target_closing_date)
+                            }
+                        }else if(currentDate == closingAfterDays){
+                            if (process.env.isLocalEmail == 'true') {
+                                await tagetClosingDateReminderMail2(emailsArr, sData.customer_name, sData.target_closing_date)
+                            } else {
+                                await tagetClosingDateReminderMail(emailsArr, sData.customer_name, sData.target_closing_date)
+                            }
                         }
+                    } else {
+                        let recurringDate = new Date(sData.recurring_date)
 
-                    } else if (currentDate == forSevenDaysBefore) {
-                        if (process.env.isLocalEmail == 'true') {
-                            await tagetClosingDateReminderMail2(emailsArr, sData.customer_name, sData.target_closing_date)
-                        } else {
-                            await tagetClosingDateReminderMail(emailsArr, sData.customer_name, sData.target_closing_date)
-                        }
-                    }
-                } else {
-                    let recurringDate = new Date(sData.recurring_date)
+                        let daysBefore = new Date(recurringDate.getTime() - beforeTargetDays * 24 * 60 * 60 * 1000);
 
-                    let fifteenDaysBefore = new Date(recurringDate.getTime() - 15 * 24 * 60 * 60 * 1000);
-                    let sevenDaysBefore = new Date(recurringDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        let forDaysBefore = moment(daysBefore).format('MM/DD/YYYY')
 
-                    let forFifteenDaysBefore = moment(fifteenDaysBefore).format('MM/DD/YYYY')
-                    let forSevenDaysBefore = moment(sevenDaysBefore).format('MM/DD/YYYY')
+                        let daysAfter = new Date(recurringDate.getTime() - afterTargetDays * 24 * 60 * 60 * 1000);
 
-                    if (currentDate == forFifteenDaysBefore) {
-                        if (process.env.isLocalEmail == 'true') {
-                            await recurringSalesReminderMail2(emailsArr, sData.customer_name, sData.recurring_date)
-                        } else {
-                            await recurringSalesReminderMail(emailsArr, sData.customer_name, sData.recurring_date)
-                        }
+                        let forDaysAfter = moment(daysAfter).format('MM/DD/YYYY')
 
-                    } else if (currentDate == forSevenDaysBefore) {
-                        if (process.env.isLocalEmail == 'true') {
-                            await recurringSalesReminderMail2(emailsArr, sData.customer_name, sData.recurring_date)
-                        } else {
-                            await recurringSalesReminderMail(emailsArr, sData.customer_name, sData.recurring_date)
+                        if (currentDate == forDaysBefore) {
+                            if (process.env.isLocalEmail == 'true') {
+                                await recurringSalesReminderMail2(emailsArr, sData.customer_name, sData.recurring_date)
+                            } else {
+                                await recurringSalesReminderMail(emailsArr, sData.customer_name, sData.recurring_date)
+                            }
+                        }else if(currentDate == moment(recurringDate).format('MM/DD/YYYY')){
+                            if (process.env.isLocalEmail == 'true') {
+                                await recurringSalesReminderMail2(emailsArr, sData.customer_name, sData.recurring_date)
+                            } else {
+                                await recurringSalesReminderMail(emailsArr, sData.customer_name, sData.recurring_date)
+                            }
+                        }else if(currentDate == forDaysAfter){
+                            if (process.env.isLocalEmail == 'true') {
+                                await recurringSalesReminderMail2(emailsArr, sData.customer_name, sData.recurring_date)
+                            } else {
+                                await recurringSalesReminderMail(emailsArr, sData.customer_name, sData.recurring_date)
+                            }
                         }
                     }
                 }

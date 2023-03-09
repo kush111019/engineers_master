@@ -344,7 +344,9 @@ module.exports.login = async (req, res) => {
                         configuration.id = admin.rows[0].config_id
                         configuration.currency = admin.rows[0].currency,
                         configuration.phoneFormat = admin.rows[0].phone_format,
-                        configuration.dateFormat = admin.rows[0].date_format
+                        configuration.dateFormat = admin.rows[0].date_format,
+                        configuration.beforeClosingDays = (admin.rows[0].before_closing_days) ? admin.rows[0].before_closing_days : '',
+                        configuration.afterClosingDays = (admin.rows[0].after_closing_days) ? admin.rows[0].after_closing_days : ''
 
                         let s2 = dbScript(db_sql['Q138'],{var1: admin.rows[0].id, var2: admin.rows[0].company_id })
                         let imapCreds = await connection.query(s2)
