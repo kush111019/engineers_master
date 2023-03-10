@@ -1897,10 +1897,16 @@ const db_sql = {
               ) product_in_sales
             ) as products,
             (
-                SELECT json_agg(sales_approval.*) 
-                FROM sales_approval 
-                WHERE sc.id= sales_approval.sales_id 
-                AND  sales_approval.deleted_at IS NULL AND sales_approval.status = 'Pending'
+              SELECT json_agg(sales_approval.*)
+              FROM (
+                SELECT sap.id,sap.percentage,sap.description,sap.sales_id,sap.company_id,sap.approver_user_id,
+                  sap.requested_user_id,sap.created_at,sap.updated_at,sap.deleted_at,sap.status,sap.reason,
+                  u1.full_name AS approver_user_name,u2.full_name AS requested_user_name
+                FROM sales_approval as sap
+                LEFT JOIN users as u1 ON u1.id = sap.approver_user_id
+                LEFT JOIN users as u2 ON u2.id = sap.requested_user_id
+                WHERE sap.sales_id = sc.id AND sap.deleted_at IS NULL AND sap.status = 'Pending'
+              ) sales_approval
             ) as sales_approval
           FROM
             sales AS sc
