@@ -2211,9 +2211,9 @@ const db_sql = {
              WHERE type_id= '{var1}' AND type = '{var2}' AND is_read= false AND deleted_at IS NULL 
              ORDER BY created_at DESC`,
     "Q347": `INSERT INTO sales_approval 
-              ( percentage, description, sales_id,company_id, requested_user_id, approver_user_id)
+              ( percentage, description, sales_id,company_id, requested_user_id, approver_user_id,status)
             VALUES
-              ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+              ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') RETURNING *`,
     "Q348": `UPDATE sales 
             SET updated_at = '{var1}', approval_status = '{var2}' 
             WHERE id = '{var3}' RETURNING *`,
