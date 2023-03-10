@@ -2215,7 +2215,13 @@ const db_sql = {
             SET updated_at = '{var1}', status = '{var2}' 
             WHERE id = '{var3}'  AND sales_id = '{var4}' RETURNING *`,
     "Q350": `SELECT * FROM sales_approval WHERE id = '{var1}' AND sales_id = '{var2}' AND deleted_at IS NULL `,
-    "Q351": `SELECT * FROM sales_approval WHERE sales_id = '{var1}' AND deleted_at IS NULL `
+    "Q351": `SELECT sap.id,sap.percentage,sap.description,sap.sales_id,sap.company_id,sap.approver_user_id,
+              sap.requested_user_id,sap.created_at,sap.updated_at,sap.deleted_at,sap.status,
+              u1.full_name AS approver_user_name,u2.full_name AS requested_user_name
+            FROM sales_approval as sap
+            LEFT JOIN users as u1 ON u1.id = sap.approver_user_id
+            LEFT JOIN users as u2 ON u2.id = sap.requested_user_id
+            WHERE sap.sales_id = 'dea813de-0824-47e1-9b39-0a2d757fa894' AND sap.deleted_at IS NULL `
   
   
 
