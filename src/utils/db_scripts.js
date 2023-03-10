@@ -1895,7 +1895,13 @@ const db_sql = {
                 LEFT JOIN products AS p ON p.id = pis.product_id
                 WHERE sc.id= pis.sales_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
               ) product_in_sales
-            ) as products
+            ) as products,
+            (
+                SELECT json_agg(sales_approval.*) 
+                FROM sales_approval 
+                WHERE sc.id= sales_approval.sales_id 
+                AND  sales_approval.deleted_at IS NULL AND sales_approval.status IS NULL
+            ) as sales_approval
           FROM
             sales AS sc
           LEFT JOIN
