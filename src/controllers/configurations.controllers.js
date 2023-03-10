@@ -9,7 +9,7 @@ const { mysql_real_escape_string } = require('../utils/helper');
 module.exports.addConfigs = async (req, res) => {
     try {
         let userId = req.user.id
-        let { currency, phoneFormat, dateFormat } = req.body
+        let { currency, phoneFormat, dateFormat, beforeClosingDays, afterClosingDays } = req.body
 
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
@@ -22,7 +22,7 @@ module.exports.addConfigs = async (req, res) => {
             let config = await connection.query(s2)
 
             //let id = uuid.v4()
-            let s3 = dbScript(db_sql['Q83'], { var1:currency, var2: phoneFormat, var3: dateFormat, var4: findAdmin.rows[0].id, var5: findAdmin.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q86'], { var1:currency, var2: phoneFormat, var3: dateFormat, var4: findAdmin.rows[0].id, var5: findAdmin.rows[0].company_id, var6 : beforeClosingDays, var7 : afterClosingDays })
 
             let addConfig = await connection.query(s3)
 
@@ -72,11 +72,12 @@ module.exports.configList = async (req, res) => {
             let configuration = {}
 
             if (configList.rowCount > 0) {
-
                 configuration.id = configList.rows[0].id
                 configuration.currency = configList.rows[0].currency,
-                    configuration.phoneFormat = configList.rows[0].phone_format,
-                    configuration.dateFormat = configList.rows[0].date_format
+                configuration.phoneFormat = configList.rows[0].phone_format,
+                configuration.dateFormat = configList.rows[0].date_format,
+                configuration.beforeClosingDays = (configList.rows[0].before_closing_days) ? configList.rows[0].before_closing_days : '',
+                configuration.afterClosingDays = (configList.rows[0].after_closing_days) ? configList.rows[0].after_closing_days : ''
                 res.json({
                     status: 200,
                     success: true,
@@ -85,9 +86,11 @@ module.exports.configList = async (req, res) => {
                 })
             } else {
                 configuration.id = "",
-                    configuration.currency = "",
-                    configuration.phoneFormat = "",
-                    configuration.dateFormat = ""
+                configuration.currency = "",
+                configuration.phoneFormat = "",
+                configuration.dateFormat = "",
+                configuration.beforeClosingDays = "",
+                configuration.afterClosingDays = ""
                 res.json({
                     status: 200,
                     success: false,
@@ -357,11 +360,12 @@ module.exports.updateLeadTitle = async (req, res) => {
         let userId = req.user.id
         let { titleId, leadTitle } = req.body
 
+        await connection.query('BEGIN')
+
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            await connection.query('BEGIN')
 
             let _dt = new Date().toISOString()
             let s3 = dbScript(db_sql['Q211'], { var1: mysql_real_escape_string(leadTitle), var2: _dt, var3: titleId })
@@ -409,6 +413,18 @@ module.exports.deleteLeadTitle = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0) {
+
+            let s2 = dbScript(db_sql['Q339'],{ var1 : titleId })
+            let checkTitleInLead = await connection.query(s2)
+
+            if(checkTitleInLead.rowCount > 0){
+                return res.json({
+                    status: 200,
+                    success: false,
+                    message: "Can not delete this title, because it is used in leads"
+                })
+            }
+
             let _dt = new Date().toISOString()
             let s3 = dbScript(db_sql['Q212'], { var1: _dt, var2: titleId })
 
@@ -600,11 +616,23 @@ module.exports.deleteLeadIndustry = async (req, res) => {
         let userId = req.user.id
         let { industryId } = req.body
 
+        await connection.query('BEGIN')
+        
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            await connection.query('BEGIN')
+
+            let s2 = dbScript(db_sql['Q341'],{ var1 : industryId })
+            let checkIndustryInCustomers = await connection.query(s2)
+
+            if(checkIndustryInCustomers.rowCount > 0){
+                return res.json({
+                    status: 200,
+                    success: false,
+                    message: "Can not delete this industry, because it is used in customers"
+                })
+            }
 
             let _dt = new Date().toISOString()
             let s3 = dbScript(db_sql['Q216'], { var1: _dt, var2: industryId })
@@ -797,11 +825,23 @@ module.exports.deleteLeadSource = async (req, res) => {
         let userId = req.user.id
         let { sourceId } = req.body
 
+        await connection.query('BEGIN')
+        
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            await connection.query('BEGIN')
+
+            let s2 = dbScript(db_sql['Q340'],{ var1 : sourceId })
+            let checkSourceInLead = await connection.query(s2)
+
+            if(checkSourceInLead.rowCount > 0){
+                return res.json({
+                    status: 200,
+                    success: false,
+                    message: "Can not delete this source, because it is used in leads"
+                })
+            }
 
             let _dt = new Date().toISOString()
             let s3 = dbScript(db_sql['Q220'], { var1: _dt, var2: sourceId })

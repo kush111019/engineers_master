@@ -193,7 +193,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
             let updateCompanyExpiryDate = await connection.query(s6)
 
 
-            if (updateTransaction.rowCount > 0 && updateUserExpiryDate.rowCount  > 0 && updateCompanyExpiryDate.rowCount  > 0) {
+            if (updateTransaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && updateCompanyExpiryDate.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,
@@ -423,12 +423,12 @@ module.exports.reduceArrayWithCommission = async (data) => {
         const date = obj.date;
         if (groupedData.has(date)) {
             const mergedObj = {
-            booking: groupedData.get(date).booking + obj.booking,
-            subscription_booking: groupedData.get(date).subscription_booking + obj.subscription_booking,
-            revenue: groupedData.get(date).revenue + obj.revenue,
-            date: obj.date,
-            booking_commission:  groupedData.get(date).booking_commission + obj.booking_commission,
-            commission:  groupedData.get(date).commission + obj.commission
+                booking: groupedData.get(date).booking + obj.booking,
+                subscription_booking: groupedData.get(date).subscription_booking + obj.subscription_booking,
+                revenue: groupedData.get(date).revenue + obj.revenue,
+                date: obj.date,
+                booking_commission: groupedData.get(date).booking_commission + obj.booking_commission,
+                commission: groupedData.get(date).commission + obj.commission
             };
             groupedData.set(date, mergedObj);
         } else {
@@ -442,17 +442,15 @@ module.exports.reduceArrayWithCommission = async (data) => {
 }
 
 module.exports.reduceArrayWithName = async (data) => {
-console.log(data,"data");
     const groupedData = new Map();
 
     data.forEach(obj => {
-        console.log(obj,"obj");
         const salesRep = obj.sales_rep;
         if (groupedData.has(salesRep)) {
             const mergedObj = {
                 sales_rep: obj.sales_rep,
                 revenue: Number(groupedData.get(salesRep).revenue) + Number(obj.revenue),
-                commission:  groupedData.get(salesRep).commission + obj.commission
+                commission: groupedData.get(salesRep).commission + obj.commission
             };
             groupedData.set(salesRep, mergedObj);
         } else {
@@ -568,4 +566,45 @@ module.exports.notificationsOperations = async (nfData, userId) => {
 
     }
 
+}
+
+// get notifications for socket conversion
+module.exports.instantNotificationsList = async (newNotificationRecieved, socket) => {
+    let s1 = dbScript(db_sql['Q346'], { var1: newNotificationRecieved.id, var2: newNotificationRecieved.type })
+    let notificationList = await connection.query(s1);
+    if (notificationList.rowCount > 0) {
+        notificationList.rows.forEach(element => {
+            socket.in(element.user_id).emit("notificationRecieved", element);
+        });
+    }
+}
+
+
+// get perent roles and their user's list from this function 
+module.exports.getParentUserList = async (userData, company_id) => {
+    let roleIds = []
+    let getRoles = async (id) => {
+        let s1 = dbScript(db_sql['Q12'], { var1: id })
+        let getParent = await connection.query(s1);
+        if (getParent.rowCount > 0) {
+            for (let item of getParent.rows) {
+                if (roleIds.includes(item.id) == false) {
+                    roleIds.push(item.id)
+                    if (item.reporter != '') {
+                        await getRoles(item.reporter)
+                    }
+                }
+            }
+        }
+    }
+    await getRoles(userData.reporter)
+    let returnData = [];
+    for (let id of roleIds) {
+        let s2 = dbScript(db_sql['Q21'], { var1: id, var2: company_id })
+        let getUserData = await connection.query(s2);
+        if (getUserData.rowCount > 0 ) {
+            returnData.push( getUserData.rows[0])
+        }
+    }
+    return returnData
 }

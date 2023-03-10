@@ -602,6 +602,7 @@ module.exports.addPlan = async (req, res) => {
     try {
         let { name, type, adminAmount, userAmount, description, currency } = req.body
         let sAEmail = req.user.email
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
@@ -626,12 +627,9 @@ module.exports.addPlan = async (req, res) => {
                 recurring: { interval: type },
             });
 
-
-            await connection.query('BEGIN')
-            let id = uuid.v4()
             let s2 = dbScript(db_sql['Q102'], {
-                var1: id, var2: product.id, var3: product.name,
-                var4: product.description, var5: product.active, var6: price1.id, var7: price1.unit_amount, var8: price2.id, var9: price2.unit_amount, var10: price1.recurring.interval, var11: price1.currency
+                var1: product.id, var2: product.name,
+                var3: product.description, var4: product.active, var5: price1.id, var6: price1.unit_amount, var7: price2.id, var8: price2.unit_amount, var9: price1.recurring.interval, var10: price1.currency
             })
             let addPlan = await connection.query(s2)
             if (addPlan.rowCount > 0) {
@@ -848,18 +846,14 @@ module.exports.addConfig = async (req, res) => {
 
         let { trialDays, trialUsers } = req.body
         let sAEmail = req.user.email
+        
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
-
-            let id = uuid.v4()
-
-            await connection.query('BEGIN')
-            let s2 = dbScript(db_sql['Q111'], { var1: id, var2: trialDays , var3 : trialUsers})
+            let s2 = dbScript(db_sql['Q111'], { var1: trialDays , var2 : trialUsers})
             let addConfig = await connection.query(s2)
-
             if (addConfig.rowCount > 0) {
-
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,
@@ -876,7 +870,6 @@ module.exports.addConfig = async (req, res) => {
                     data: ""
                 })
             }
-
         } else {
             res.json({
                 status: 400,

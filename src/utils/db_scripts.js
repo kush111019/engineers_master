@@ -50,7 +50,12 @@ const db_sql = {
   "Q18": `INSERT INTO slabs(min_amount, max_amount, percentage, is_max, company_id, currency, slab_ctr, user_id, slab_id, slab_name, commission_split_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}') RETURNING * `,
   "Q19": `UPDATE slabs SET slab_name = '{var1}', min_amount = '{var2}', max_amount = '{var3}', percentage = '{var4}', is_max = '{var5}', company_id = '{var6}',currency = '{var7}', slab_ctr = '{var8}', user_id = '{var9}', updated_at = '{var12}', commission_split_id = '{var13}' WHERE id = '{var10}' AND slab_id = '{var11}' AND deleted_at IS NULL RETURNING *`,
   "Q20": `INSERT INTO permissions( role_id, module_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view_global,permission_to_view_own, user_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}') RETURNING *`,
-  "Q21": `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id FROM users WHERE role_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL `,
+  "Q21": `SELECT u.id,u.email_address, u.full_name, u.company_id, 
+            u.avatar,u.mobile_number,u.phone_number,u.address,u.role_id ,r.role_name
+          FROM users AS u
+          LEFT JOIN  
+            roles AS r ON r.id = u.role_id
+          WHERE u.role_id = '{var1}' AND u.company_id = '{var2}' AND u.deleted_at IS NULL `,
   "Q22": `UPDATE users SET email_address = '{var1}', full_name ='{var2}', mobile_number = '{var3}', address = '{var4}', role_id = '{var5}' , updated_at = '{var7}',avatar = '{var8}', is_admin = '{var10}' WHERE id = '{var6}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `,
   "Q23": `UPDATE users SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
   "Q24": `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at, deleted_at,is_locked FROM users WHERE company_id = '{var1}' ORDER BY created_at desc`,
@@ -181,7 +186,7 @@ const db_sql = {
   "Q54": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
             sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
-            sc.currency, sc.target_closing_date,
+            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,
             sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
@@ -271,8 +276,8 @@ const db_sql = {
           WHERE 
             sales_id = '{var5}' AND company_id = '{var6}' AND user_type='{var7}' AND deleted_at IS NULL RETURNING *`,
   "Q66": `UPDATE follow_up_notes SET deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL`,
-  "Q67": `INSERT INTO forecast(timeline, amount, start_date,end_date,pid, assigned_to, created_by)
-              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}') RETURNING * `,
+  "Q67": `INSERT INTO forecast(timeline, amount, start_date,end_date,pid, assigned_to, created_by, company_id ,is_accepted)
+              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}') RETURNING * `,
   "Q68": `SELECT 
                 f.id, f.timeline, f.amount, f.start_date, f.pid,
                 f.end_date, f.created_by,f.created_at, f.assigned_to,
@@ -292,25 +297,188 @@ const db_sql = {
               LEFT JOIN users as u1 on u1.id	 = f.created_by	
               LEFT JOIN users as u2 on u2.id	 = f.assigned_to
               WHERE 
-                (f.assigned_to = '{var1}') AND f.deleted_at IS NULL 
+                f.company_id = '{var1}' AND f.deleted_at IS NULL 
               ORDER BY 
                 timeline ASC`,
   "Q70": `INSERT INTO customer_company_employees 
             ( full_name, email_address, phone_number, customer_company_id, emp_type, creator_id,company_id)
           VALUES
             ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') RETURNING *`,
-
+  "Q71": `SELECT id 
+          FROM 
+            users 
+          WHERE 
+            company_id = '{var1}' AND is_main_admin = true`,
   "Q72": `UPDATE customer_company_employees 
           SET 
             full_name = '{var2}', email_address = '{var3}', phone_number = '{var4}', updated_at = '{var5}' 
           WHERE 
             id = '{var1}' AND deleted_at IS NULL RETURNING *`,
+  "Q73": `SELECT created_by
+            FROM 
+              marketing_budget 
+            WHERE 
+              company_id = '{var1}' AND id = '{var2}'`,
+  "Q74": `UPDATE sales SET archived_at = '{var1}' , archived_by = '{var2}' , archived_reason ='{var3}'
+          WHERE id = '{var4}' AND company_id = '{var5}' AND deleted_at IS NULL RETURNING * `,
+  "Q75": `SELECT
+            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
+            sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.revenue_commission,
+            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
+            sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason,
+            sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
+            cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
+            sc.transfered_back_by as transfered_back_by_id ,
+            slab.slab_name,
+            u2.full_name as tranfer_back_by_name,
+            (
+              SELECT json_agg(customer_company_employees.*)
+              FROM (
+                SELECT 
+                  customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+                  customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
+                  customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
+                  customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type, 
+                  customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
+                FROM customer_company_employees 
+                LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+                WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
+                  AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
+                  AND customer_company_employees.deleted_at IS NULL
+              ) customer_company_employees
+            ) as lead_data,
+            (
+              SELECT json_agg(sales_users.*)
+              FROM (
+                SELECT 
+                ss.user_id as id ,ss.user_percentage as percentage,ss.user_type ,u1.full_name as name,u1.email_address as email
+                FROM sales_users as ss
+                LEFT JOIN users AS u1 ON u1.id = ss.user_id
+                WHERE ss.sales_id= sc.id AND ss.deleted_at IS NULL AND  u1.deleted_at IS NULL
+              ) sales_users
+            ) as sales_users,
+            (
+              SELECT json_agg(product_in_sales.*)
+              FROM (
+                SELECT 
+                  DISTINCT(p.id) ,p.product_name as name
+                FROM product_in_sales as pis
+                LEFT JOIN products AS p ON p.id = pis.product_id
+                WHERE sc.id= pis.sales_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
+              ) product_in_sales
+            ) as products
+          FROM
+            sales AS sc
+          LEFT JOIN
+            users AS u1 ON u1.id = sc.user_id
+          LEFT JOIN
+            customer_companies AS cus ON cus.id = sc.customer_id
+          LEFT JOIN
+            slabs AS slab ON slab.id = sc.slab_id
+          LEFT JOIN
+            users AS u2 ON u2.id = sc.transfered_back_by
+          WHERE
+            sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.archived_at IS NOT NULL  
+          ORDER BY
+            sc.created_at DESC`,
+  "Q76": `SELECT
+            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
+             sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
+              sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
+            sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
+            cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
+            sc.transfered_back_by as transfered_back_by_id ,
+            slab.slab_name,
+            u2.full_name as tranfer_back_by_name,
+            (
+              SELECT json_agg(customer_company_employees.*)
+              FROM (
+                SELECT 
+                  customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+                  customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
+                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
+                  customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
+                  customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
+                  customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                  u1.full_name as created_by,s.source,t.title,c.customer_name
+                FROM customer_company_employees 
+                LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+                WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
+                  AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
+                  AND customer_company_employees.deleted_at IS NULL
+              ) customer_company_employees
+            ) as lead_data,
+            (
+              SELECT json_agg(sales_users.*)
+              FROM (
+                SELECT 
+                ss.user_id as id ,ss.user_percentage as percentage, ss.user_type,u1.full_name as name,u1.email_address as email
+                FROM sales_users as ss
+                LEFT JOIN users AS u1 ON u1.id = ss.user_id
+                WHERE ss.sales_id= sc.id AND ss.deleted_at IS NULL AND  u1.deleted_at IS NULL
+              ) sales_users
+            ) as sales_users,
+            (
+              SELECT json_agg(product_in_sales.*)
+              FROM (
+                SELECT 
+                  DISTINCT(p.id) ,p.product_name as name
+                FROM product_in_sales as pis
+                LEFT JOIN products AS p ON p.id = pis.product_id
+                WHERE sc.id= pis.sales_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
+              ) product_in_sales
+            ) as products
+          FROM
+            sales AS sc
+          LEFT JOIN
+            sales_users AS su ON sc.id = su.sales_id
+          LEFT JOIN
+            users AS u1 ON u1.id = sc.user_id
+          LEFT JOIN
+            customer_companies AS cus ON cus.id = sc.customer_id
+          LEFT JOIN
+            slabs AS slab ON slab.id = sc.slab_id
+          LEFT JOIN
+            users AS u2 ON u2.id = sc.transfered_back_by
+          WHERE
+            (
+              sc.user_id IN ({var1})  
+            OR
+              su.user_id IN ({var1}) 
+            ) AND sc.deleted_at is NULL AND sc.archived_at IS NOT NULL   
+          GROUP BY 
+            sc.id,sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id,
+            sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,
+            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
+            sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,sc.lead_id,
+            cus.customer_name, cus.user_id , u1.full_name ,
+            sc.transfered_back_by ,
+            slab.slab_name,
+            u2.full_name,
+            sc.deleted_at 
+          ORDER BY
+            sc.created_at DESC`,
+            
   "Q79": `UPDATE customer_companies SET business_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
   "Q80": `UPDATE customer_companies SET revenue_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
-  "Q83": `INSERT INTO configurations( currency, phone_format, date_format,user_id, company_id ) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
-  "Q84": `SELECT id,currency,phone_format,date_format,user_id,company_id,created_at
-              FROM configurations WHERE company_id = '{var1}' AND deleted_at IS NULL `,
+  // "Q83": `INSERT INTO 
+  //           configurations( currency, phone_format, date_format,user_id, company_id )
+  //         VALUES
+  //           ('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
+  "Q84": `SELECT * FROM configurations WHERE company_id = '{var1}' AND deleted_at IS NULL `,
   "Q85": `UPDATE configurations SET deleted_at = '{var1}' WHERE company_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
+  "Q86": `INSERT INTO 
+            configurations( currency, phone_format, date_format,user_id, company_id, before_closing_days, after_closing_days )
+          VALUES
+            ('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}', '{var7}') RETURNING *`,
   "Q87": `SELECT sc.id AS sales_commission_id, 
             sc.closed_at,
             sc.booking_commission, 
@@ -412,10 +580,10 @@ const db_sql = {
   "Q98": `SELECT id, name, email, encrypted_password FROM super_admin WHERE email = '{var1}'`,
   "Q99": `SELECT id, company_name, company_logo, company_address, is_imap_enable,is_locked, is_marketing_enable, created_at, expiry_date, user_count FROM companies WHERE deleted_at IS NULL`,
   "Q100": `UPDATE super_admin SET encrypted_password = '{var2}' WHERE email = '{var1}'`,
-  "Q102": `INSERT INTO payment_plans(id, product_id, name, description, active_status,
+  "Q102": `INSERT INTO payment_plans(product_id, name, description, active_status,
               admin_price_id, admin_amount,user_price_id, user_amount, interval, currency) 
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', 
-              '{var9}','{var10}','{var11}') RETURNING *`,
+              '{var9}','{var10}') RETURNING *`,
   "Q103": `SELECT id,  name, description, active_status,
               interval, admin_amount,user_amount, currency FROM payment_plans WHERE active_status = 'true' AND  deleted_at IS NULL`,
   "Q104": `SELECT id, product_id, name, description, active_status,
@@ -430,7 +598,7 @@ const db_sql = {
   "Q108": `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade, is_canceled, payment_receipt  FROM transactions WHERE company_id = '{var1}' AND deleted_at IS NULL`,
   "Q109": `SELECT id, name, description, active_status, interval, admin_amount,user_amount, currency FROM payment_plans WHERE deleted_at IS NULL`,
   "Q110": `SELECT id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified, is_main_admin, expiry_date FROM users WHERE deleted_at IS NULL`,
-  "Q111": `INSERT INTO superadmin_config(id, trial_days, trial_users) VALUES('{var1}', '{var2}', '{var3}') RETURNING *`,
+  "Q111": `INSERT INTO superadmin_config(trial_days, trial_users) VALUES('{var1}', '{var2}') RETURNING *`,
   "Q112": `SELECT id, trial_days,trial_users, created_at FROM superadmin_config WHERE deleted_at IS NULL ORDER BY created_at desc `,
   "Q113": `UPDATE users SET expiry_date = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   "Q114": `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id,total_amount, immediate_upgrade, upgraded_transaction_id FROM transactions WHERE deleted_at IS NULL AND upgraded_transaction_id is not null`,
@@ -494,7 +662,7 @@ const db_sql = {
   "Q144": `SELECT id,full_name,avatar FROM users WHERE id IN ('{var1}','{var2}') AND deleted_at IS NULL`,
   "Q145": `SELECT u.id, u.full_name, u.company_id, u.email_address, u.encrypted_password, u.mobile_number, u.role_id, 
               u.avatar, u.expiry_date, u.is_verified, u.is_admin, u.is_locked, u.is_main_admin, c.company_name, c.company_address, c.company_logo, c.is_imap_enable,c.is_marketing_enable,
-              r.id as role_id,r.role_name, r.reporter, r.module_ids, con.id AS config_id, con.currency, con.phone_format, con.date_format
+              r.id as role_id,r.role_name, r.reporter, r.module_ids, con.id AS config_id, con.currency, con.phone_format, con.date_format, con.before_closing_days, con.after_closing_days
               FROM users AS u 
               INNER JOIN companies AS c ON c.id = u.company_id
               INNER JOIN roles AS r ON r.id = u.role_id 
@@ -690,7 +858,7 @@ const db_sql = {
    "Q178": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
             sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
-            sc.currency, sc.target_closing_date,
+            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,
             sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
@@ -758,6 +926,7 @@ const db_sql = {
             ) AND sc.deleted_at is NULL
           GROUP BY 
             sc.id,sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id,
+            sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id , u1.full_name ,
@@ -770,7 +939,7 @@ const db_sql = {
   "Q179": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
             sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.revenue_commission,
-            sc.currency, sc.target_closing_date,
+            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason,
              sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
@@ -829,13 +998,13 @@ const db_sql = {
           LEFT JOIN
             users AS u2 ON u2.id = sc.transfered_back_by
           WHERE
-            sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NULL  
+            sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NULL AND sc.archived_at IS NULL
           ORDER BY
             sc.created_at DESC`,
   "Q180": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
             sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
-             sc.currency, sc.target_closing_date,
+             sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
@@ -893,13 +1062,13 @@ const db_sql = {
           LEFT JOIN
             users AS u2 ON u2.id = sc.transfered_back_by
           WHERE
-            sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL  
+            sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL AND sc.archived_at IS NULL
           ORDER BY
             sc.created_at DESC`,
   "Q181": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
              sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
-              sc.currency, sc.target_closing_date,
+              sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
@@ -963,9 +1132,10 @@ const db_sql = {
               sc.user_id IN ({var1})  
             OR
               su.user_id IN ({var1}) 
-            ) AND sc.deleted_at is NULL AND sc.closed_at IS NULL 
+            ) AND sc.deleted_at is NULL AND sc.closed_at IS NULL AND sc.archived_at IS NULL
           GROUP BY 
             sc.id,sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id,
+            sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id , u1.full_name ,
@@ -978,7 +1148,7 @@ const db_sql = {
   "Q182": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
             sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
-             sc.currency, sc.target_closing_date,
+             sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
@@ -1042,9 +1212,10 @@ const db_sql = {
               sc.user_id IN ({var1})  
             OR
               su.user_id IN ({var1}) 
-            ) AND sc.deleted_at is NULL AND sc.closed_at IS NOT NULL 
+            ) AND sc.deleted_at is NULL AND sc.closed_at IS NOT NULL AND archived_at IS NULL
           GROUP BY 
             sc.id,sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id,
+            sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.revenue_contact_id,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission, sc.currency, sc.target_closing_date,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id , u1.full_name ,
@@ -1191,17 +1362,17 @@ const db_sql = {
   "Q210": `INSERT INTO lead_titles( title, company_id ) VALUES('{var1}','{var2}') RETURNING *`,
   "Q211": `UPDATE lead_titles set title = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q212": `UPDATE lead_titles set deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
-  "Q213": `SELECT * FROM lead_titles WHERE company_id = '{var1}'`,
+  "Q213": `SELECT * FROM lead_titles WHERE company_id = '{var1}' AND deleted_at IS NULL`,
 
   "Q214": `INSERT INTO lead_industries(industry, company_id ) VALUES('{var1}','{var2}') RETURNING *`,
   "Q215": `UPDATE lead_industries set industry = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q216": `UPDATE lead_industries set deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
-  "Q217": `SELECT * FROM lead_industries WHERE company_id = '{var1}'`,
+  "Q217": `SELECT * FROM lead_industries WHERE company_id = '{var1}' AND deleted_at IS NULL`,
 
   "Q218": `INSERT INTO lead_sources(source, company_id ) VALUES('{var1}','{var2}') RETURNING *`,
   "Q219": `UPDATE lead_sources set source = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q220": `UPDATE lead_sources set deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
-  "Q221": `SELECT * FROM lead_sources WHERE company_id = '{var1}'`,
+  "Q221": `SELECT * FROM lead_sources WHERE company_id = '{var1}' AND deleted_at IS NULL`,
   "Q223": `SELECT 
                 COUNT(*),
                 u.full_name AS created_by
@@ -1672,15 +1843,16 @@ const db_sql = {
   "Q287": `SELECT * FROM  users  WHERE role_id = '{var1}' and deleted_at IS NULL `,
   "Q288": `SELECT * FROM  users  WHERE role_id = '{var1}' and id = '{var2}' and deleted_at IS NULL `,
   "Q289": `INSERT INTO notifications(title, type_id,user_id,type) VALUES ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
-  "Q290": `SELECT * FROM  notifications WHERE user_id= '{var1}' and is_read= false and deleted_at IS NULL`,
+  "Q290": `SELECT * FROM  notifications WHERE user_id= '{var1}' and is_read= false and deleted_at IS NULL ORDER BY created_at DESC`,
+  "Q2901": `SELECT * FROM  notifications WHERE user_id= '{var1}' and deleted_at IS NULL ORDER BY created_at DESC Limit 50`,
   "Q291": `UPDATE notifications SET is_read = true WHERE id = '{var1}' RETURNING *`,
   "Q292": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
             sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
-            sc.currency, sc.target_closing_date,
+            sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
-            sc.transfered_back_by as transfered_back_by_id ,
+            sc.transfered_back_by as transfered_back_by_id ,sc.approval_status,
             slab.slab_name,
             u2.full_name as tranfer_back_by_name,
             (
@@ -1723,7 +1895,19 @@ const db_sql = {
                 LEFT JOIN products AS p ON p.id = pis.product_id
                 WHERE sc.id= pis.sales_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
               ) product_in_sales
-            ) as products
+            ) as products,
+            (
+              SELECT json_agg(sales_approval.*)
+              FROM (
+                SELECT sap.id,sap.percentage,sap.description,sap.sales_id,sap.company_id,sap.approver_user_id,
+                  sap.requested_user_id,sap.created_at,sap.updated_at,sap.deleted_at,sap.status,sap.reason,
+                  u1.full_name AS approver_user_name,u2.full_name AS requested_user_name
+                FROM sales_approval as sap
+                LEFT JOIN users as u1 ON u1.id = sap.approver_user_id
+                LEFT JOIN users as u2 ON u2.id = sap.requested_user_id
+                WHERE sap.sales_id = sc.id AND sap.deleted_at IS NULL AND sap.status = 'Pending'
+              ) sales_approval
+            ) as sales_approval
           FROM
             sales AS sc
           LEFT JOIN
@@ -1751,8 +1935,8 @@ const db_sql = {
             u.company_id = '{var1}' AND u.id = '{var2}' AND u.deleted_at IS NULL
           ORDER BY
             u.created_at DESC`,
-  "Q294": `INSERT INTO forecast_data(forecast_id, amount, start_date, end_date, type, created_by)
-                VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+  "Q294": `INSERT INTO forecast_data(forecast_id, amount, start_date, end_date, type, created_by, company_id)
+                VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') RETURNING *`,
   "Q295": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
               sc.booking_commission::DECIMAL as subscription_booking_commission,
               sc.revenue_commission::DECIMAL as subscription_revenue_commission
@@ -1771,7 +1955,7 @@ const db_sql = {
             AND 
               sales_type = '{var2}' 
             AND
-              created_at BETWEEN '{var3}' AND '{var4}'
+              closed_at BETWEEN '{var3}' AND '{var4}'
             AND 
               deleted_at IS NULL`,
   // "Q298": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
@@ -1813,7 +1997,7 @@ const db_sql = {
               su.user_id IN ({var1})
             )
           AND 
-            sc.created_at BETWEEN '{var2}' AND '{var3}'
+            sc.closed_at BETWEEN '{var2}' AND '{var3}'
           AND 
             sc.deleted_at IS NULL`,
 
@@ -2009,7 +2193,49 @@ const db_sql = {
    "Q338": `SELECT 
               is_roles_created, is_users_created, is_leads_created, is_customers_created,
               is_products_created, is_commissions_created, is_slabs_created 
-            FROM companies WHERE id = '{var1}' AND deleted_at IS NULL`
+            FROM companies WHERE id = '{var1}' AND deleted_at IS NULL`,
+    "Q339": `SELECT id FROM customer_company_employees WHERE title = '{var1}' AND deleted_at IS NULL`,
+    "Q340": `SELECT id FROM customer_company_employees WHERE source = '{var1}' AND deleted_at IS NULL`,
+    "Q341": `SELECT id FROM customer_companies WHERE industry = '{var1}' AND deleted_at IS NULL`,
+    "Q342": `SELECT id FROM sales WHERE slab_id = '{var1}' AND deleted_at IS NULL`,
+    "Q343": `SELECT s.slab_id FROM slabs AS s
+             LEFT JOIN 
+              sales AS sc ON sc.slab_id = s.slab_id
+             WHERE s.id = '{var1}' 
+             AND s.deleted_at is null AND sc.deleted_at is null`,
+    "Q344": `SELECT sc.id FROM sales AS sc
+             LEFT JOIN 
+              commission_split AS c ON sc.customer_commission_split_id = c.id
+             WHERE sc.customer_commission_split_id = '{var1}' 
+             AND c.deleted_at is null AND sc.deleted_at is null`,
+    "Q345":`SELECT s.id FROM slabs AS s
+            LEFT JOIN 
+            commission_split AS c ON s.commission_split_id = c.id
+            WHERE s.commission_split_id = '{var1}' 
+            AND c.deleted_at is null AND s.deleted_at is null`,
+    "Q346": `SELECT * FROM  notifications 
+             WHERE type_id= '{var1}' AND type = '{var2}' AND is_read= false AND deleted_at IS NULL 
+             ORDER BY created_at DESC`,
+    "Q347": `INSERT INTO sales_approval 
+              ( percentage, description, sales_id,company_id, requested_user_id, approver_user_id,status)
+            VALUES
+              ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') RETURNING *`,
+    "Q348": `UPDATE sales 
+            SET updated_at = '{var1}', approval_status = '{var2}' 
+            WHERE id = '{var3}' RETURNING *`,
+    "Q349": `UPDATE sales_approval 
+            SET updated_at = '{var1}', status = '{var2}' ,reason ='{var3}'
+            WHERE id = '{var4}'  AND sales_id = '{var5}' RETURNING *`,
+    "Q350": `SELECT * FROM sales_approval WHERE id = '{var1}' AND sales_id = '{var2}' AND deleted_at IS NULL `,
+    "Q351": `SELECT sap.id,sap.percentage,sap.description,sap.sales_id,sap.company_id,sap.approver_user_id,
+              sap.requested_user_id,sap.created_at,sap.updated_at,sap.deleted_at,sap.status,sap.reason,
+              u1.full_name AS approver_user_name,u2.full_name AS requested_user_name
+            FROM sales_approval as sap
+            LEFT JOIN users as u1 ON u1.id = sap.approver_user_id
+            LEFT JOIN users as u2 ON u2.id = sap.requested_user_id
+            WHERE sap.sales_id = '{var1}' AND sap.deleted_at IS NULL `
+  
+  
 
 
 }

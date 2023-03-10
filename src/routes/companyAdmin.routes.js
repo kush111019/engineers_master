@@ -86,10 +86,13 @@ router.post('/createSales',verifyTokenFn, controller.sales.createSales)
 router.get('/allSalesList',verifyTokenFn, controller.sales.allSalesList)
 router.get('/activeSalesList',verifyTokenFn, controller.sales.activeSalesList)
 router.get('/closedSalesList',verifyTokenFn, controller.sales.closedSalesList)
+router.get('/archivedSalesList',verifyTokenFn, controller.sales.archivedSalesList)
 router.get('/salesDetails',verifyTokenFn, controller.sales.salesDetails)
 
 router.put('/updateSales',verifyTokenFn, controller.sales.updateSales)
 router.put('/deleteSales',verifyTokenFn, controller.sales.deleteSales)
+router.put('/archivedSales',verifyTokenFn, controller.sales.archivedSales)
+
 router.get('/salesLogsList',verifyTokenFn, controller.sales.salesLogsList)
 router.post('/uploadSalesContract', verifyTokenFn,uploadSalesContract.single('file'), controller.sales.uploadSalesContract )
 router.post('/closeSales',verifyTokenFn, controller.sales.closeSales)
@@ -102,6 +105,16 @@ router.post('/addRecognizedRevenue', verifyTokenFn, controller.sales.addRecogniz
 router.get('/recognizedRevenueList', verifyTokenFn, controller.sales.recognizedRevenueList)
 router.get('/getRemainingTargetAmount', verifyTokenFn, controller.sales.getRemainingTargetAmount)
 router.get('/getAllApiDeatilsRelatedSales', verifyTokenFn, controller.sales.getAllApiDeatilsRelatedSales)
+
+
+
+//----------------------------------------Sales Approval --------------------------------
+router.get('/getUpperLevelUserList',verifyTokenFn, controller.salesApproval.getUpperLevelUserList)
+router.post('/sendApprovalRequestForSales',verifyTokenFn, controller.salesApproval.sendApprovalRequestForSales)
+router.put('/acceptOrRejectApproveRequestForSales',verifyTokenFn, controller.salesApproval.acceptOrRejectApproveRequestForSales)
+router.get('/approveRequestDetails',verifyTokenFn, controller.salesApproval.approveRequestDetails)
+router.get('/allApproveRequestList',verifyTokenFn, controller.salesApproval.allApproveRequestList)
+
 
 //----------------------------------------Reports------------------------------------------
 router.get('/revenuePerCustomer',verifyTokenFn, controller.reports.revenuePerCustomer)
@@ -203,6 +216,7 @@ router.put('/deleteLeadSource',verifyTokenFn, controller.configuration.deleteLea
 
 //----------------------------------------Notifications------------------------------------
 router.get('/notificationList',verifyTokenFn, controller.notifications.notificationList)
+router.get('/notifications',verifyTokenFn, controller.notifications.allNotificationList)
 router.put('/notificationRead',verifyTokenFn, controller.notifications.notificationRead)
 
 

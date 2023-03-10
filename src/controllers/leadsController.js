@@ -58,7 +58,8 @@ module.exports.createLead = async (req, res) => {
                 res.json({
                     status: 201,
                     success: true,
-                    message: "Lead created successfully"
+                    message: "Lead created successfully",
+                    data: createLead.rows[0].id
                 })
             } else {
                 await connection.query('ROLLBACK')

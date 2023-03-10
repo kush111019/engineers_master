@@ -21,9 +21,9 @@ module.exports.resetPassword = function (link, email, userName) {
                     <table style="background-color: #ededed; max-width:670px;  margin-top:25px; margin-bottom:25px; " width="100%" border="0"
                         align="center" cellpadding="0" cellspacing="0">
                         <tr>
-                            <td style="text-align:left; padding-top: 20px; padding-left: 35px;">
+                            <td style="text-align:left; padding-top: 20px; padding-left: 50px;">
                               <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
-                                <img src="https://hirisetech.com/img/core-img/logo.png" alt="logo" 
+                                <img src=${process.env.TEMPLATE_LOGO} alt="logo" 
                                 style=" width: 120px;">
                               </a>
                             </td>
@@ -52,7 +52,7 @@ module.exports.resetPassword = function (link, email, userName) {
                                             <br>
                                             Cheers,
                                             <br/>
-                                            HiRise Team <br>
+                                            Revenue Captain Team <br>
 
                                             <h5>If you have any questions. Please email us at <a style="color:#1bb2cc;"><u>Hirise@contactus.com</u></a>.</h5> 
                                             </p>

@@ -355,13 +355,17 @@ module.exports.deleteCustomer = async (req, res) => {
         let {
             customerId
         } = req.body
+        
+        await connection.query('BEGIN')
+
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
             let s2 = dbScript(db_sql['Q259'], { var1: customerId })
             let checkCustomerInSales = await connection.query(s2)
+            
             if (checkCustomerInSales.rowCount == 0) {
-                await connection.query('BEGIN')
+
                 let _dt = new Date().toISOString();
                 let s4 = dbScript(db_sql['Q47'], { var1: _dt, var2: customerId, var3: checkPermission.rows[0].company_id })
                 let deleteCustomer = await connection.query(s4)

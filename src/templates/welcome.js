@@ -21,9 +21,9 @@ module.exports.welcome = function (link, userName) {
                     <table style="background-color: #ededed; max-width:670px;  margin-top:25px; margin-bottom:25px; " width="100%" border="0"
                     align="center" cellpadding="0" cellspacing="0">
                         <tr>
-                            <td style="text-align:left; padding-top: 20px; padding-left: 35px;" >
+                            <td style="text-align:left; padding-top: 20px; padding-left: 50px;" >
                               <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
-                                <img src="https://hirisetech.com/img/core-img/logo.png" alt="logo" 
+                                <img src=${process.env.TEMPLATE_LOGO} alt="logo" 
                                 style=" width: 120px;">
                               </a>
                             </td>
@@ -40,7 +40,7 @@ module.exports.welcome = function (link, userName) {
                                             Hi ${userName}, <br>
                                             <br/>
     
-                                            Welcome to HiRise Technologies :). We are incredibly excited to have you on board and to 
+                                            Welcome to Revenue Captain :). We are incredibly excited to have you on board and to 
                                             help you start building stronger customer relationships across sales, revenue and 
                                             commission management. <br>
                                             <br/>
@@ -51,7 +51,7 @@ module.exports.welcome = function (link, userName) {
                                             <br>
                                             Cheers,
                                             <br/>
-                                            HiRise Team <br>
+                                            Revenue Captain Team <br>
     
                                         
                                             </p>
