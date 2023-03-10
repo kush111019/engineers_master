@@ -2227,7 +2227,7 @@ const db_sql = {
             FROM sales_approval as sap
             LEFT JOIN users as u1 ON u1.id = sap.approver_user_id
             LEFT JOIN users as u2 ON u2.id = sap.requested_user_id
-            WHERE sap.sales_id = 'dea813de-0824-47e1-9b39-0a2d757fa894' AND sap.deleted_at IS NULL `
+            WHERE sap.sales_id = '{var1}' AND sap.deleted_at IS NULL `
   
   
 
