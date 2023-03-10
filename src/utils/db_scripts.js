@@ -2218,8 +2218,8 @@ const db_sql = {
             SET updated_at = '{var1}', approval_status = '{var2}' 
             WHERE id = '{var3}' RETURNING *`,
     "Q349": `UPDATE sales_approval 
-            SET updated_at = '{var1}', status = '{var2}' 
-            WHERE id = '{var3}'  AND sales_id = '{var4}' RETURNING *`,
+            SET updated_at = '{var1}', status = '{var2}' ,reason ='{var3}'
+            WHERE id = '{var4}'  AND sales_id = '{var5}' RETURNING *`,
     "Q350": `SELECT * FROM sales_approval WHERE id = '{var1}' AND sales_id = '{var2}' AND deleted_at IS NULL `,
     "Q351": `SELECT sap.id,sap.percentage,sap.description,sap.sales_id,sap.company_id,sap.approver_user_id,
               sap.requested_user_id,sap.created_at,sap.updated_at,sap.deleted_at,sap.status,
