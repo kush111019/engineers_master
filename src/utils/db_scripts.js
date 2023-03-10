@@ -1852,7 +1852,7 @@ const db_sql = {
             sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
-            sc.transfered_back_by as transfered_back_by_id ,
+            sc.transfered_back_by as transfered_back_by_id ,sc.approval_status,
             slab.slab_name,
             u2.full_name as tranfer_back_by_name,
             (
