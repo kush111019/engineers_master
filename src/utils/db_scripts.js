@@ -1900,7 +1900,7 @@ const db_sql = {
                 SELECT json_agg(sales_approval.*) 
                 FROM sales_approval 
                 WHERE sc.id= sales_approval.sales_id 
-                AND  sales_approval.deleted_at IS NULL AND sales_approval.status IS NULL
+                AND  sales_approval.deleted_at IS NULL AND sales_approval.status = 'Pending'
             ) as sales_approval
           FROM
             sales AS sc
