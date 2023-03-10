@@ -63,7 +63,7 @@ module.exports.sendApprovalRequestForSales = async (req, res) => {
         //here check user all permission's
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
-        if (checkPermission.rows[0].permission_to_create) {
+        // if (checkPermission.rows[0].permission_to_create) {
 
             let s2 = dbScript(db_sql['Q347'], { var1: percentage, var2: description, var3: sales_id, var4: checkPermission.rows[0].company_id, var5: userId, var6: approver_user_id })
             let addSalesApprovalRequest = await connection.query(s2)
@@ -92,12 +92,12 @@ module.exports.sendApprovalRequestForSales = async (req, res) => {
                     message: "Something went wrong"
                 })
             }
-        } else {
-            res.status(403).json({
-                success: false,
-                message: "Unathorised"
-            })
-        }
+        // } else {
+        //     res.status(403).json({
+        //         success: false,
+        //         message: "Unathorised"
+        //     })
+        // }
     } catch (error) {
         await connection.query('ROLLBACK')
         res.json({
@@ -108,38 +108,28 @@ module.exports.sendApprovalRequestForSales = async (req, res) => {
     }
 }
 
-module.exports.salesDetails = async (req, res) => {
+module.exports.approveRequestDetails = async (req, res) => {
     try {
         let userId = req.user.id;
-        let salesId = req.query.id;
-        let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s2)
+        let { approval_id, sales_id } = req.body;
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-            let s3 = dbScript(db_sql['Q292'], { var1: checkPermission.rows[0].company_id, var2: salesId })
-            let salesList = await connection.query(s3)
-            for (let salesData of salesList.rows) {
-                if (salesData.sales_users) {
-                    salesData.sales_users.map(value => {
-                        if (value.user_type == process.env.CAPTAIN) {
-                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        } else {
-                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        }
-                    })
-                }
-            }
-            if (salesList.rowCount > 0) {
+           
+            let s2 = dbScript(db_sql['Q350'], { var1: approval_id, var2: sales_id })
+            let getAllApproveRequestDetails = await connection.query(s2)
+            if (getAllApproveRequestDetails.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
-                    message: 'Sales details',
-                    data: salesList.rows
+                    message: 'Approve request details for sales',
+                    data: getAllApproveRequestDetails.rows
                 })
             } else {
                 res.json({
                     status: 200,
                     success: false,
-                    message: 'Empty sales commission list',
+                    message: 'Empty approve request details',
                     data: []
                 })
             }
@@ -159,107 +149,39 @@ module.exports.salesDetails = async (req, res) => {
 
 }
 
-module.exports.addfollowUpNotes = async (req, res) => {
+module.exports.acceptOrRejectApproveRequestForSales = async (req, res) => {
     try {
         let userId = req.user.id
-        let { note, salesCommissionId } = req.body
-        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_create) {
-            let s4 = dbScript(db_sql['Q31'], { var1: salesCommissionId, var2: checkPermission.rows[0].company_id, var3: userId, var4: mysql_real_escape_string(note) })
-            let addNote = await connection.query(s4)
-            if (addNote.rowCount > 0) {
-                res.json({
-                    status: 201,
-                    success: true,
-                    message: "Note created successfully"
-                })
+        let { sales_id, approval_status, approval_id } = req.body
+        await connection.query('BEGIN');
+        //add notification deatils
+        let notification_typeId = sales_id;
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
 
-            } else {
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Something went wrong"
-                })
-            }
-        } else {
-            res.status(403).json({
-                success: false,
-                message: "UnAthorised"
-            })
-        }
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
-
-module.exports.notesList = async (req, res) => {
-    try {
-        let userId = req.user.id
-        let { salesCommissionId } = req.query
-        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-            let s4 = dbScript(db_sql['Q32'], { var1: salesCommissionId })
-            let findNOtes = await connection.query(s4)
-            if (findNOtes.rows.length > 0) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: 'Notes list',
-                    data: findNOtes.rows
-                })
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: 'Empty notes list',
-                    data: []
-                })
-            }
-        } else {
-            res.status(403).json({
-                success: false,
-                message: "Unathorised"
-            })
-        }
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
-
-module.exports.deleteNote = async (req, res) => {
-    try {
-        let userId = req.user.id
-        let {
-            noteId
-        } = req.body
-        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s3)
-        if (checkPermission.rows[0].permission_to_delete) {
-
-            await connection.query('BEGIN')
-
+        // if (checkPermission.rows[0].permission_to_create) {
             let _dt = new Date().toISOString();
-            let s4 = dbScript(db_sql['Q66'], { var1: _dt, var2: noteId })
-            let deleteDeal = await connection.query(s4)
 
-            await connection.query('COMMIT')
+            let s2 = dbScript(db_sql['Q348'], { var1: _dt, var2: approval_status, var3: sales_id })
+            let updateSalesApprovalStatusInSales = await connection.query(s2)
+            let s3 = dbScript(db_sql['Q349'], { var1: _dt, var2: approval_status, var3: approval_id, var4: sales_id })
+            let updateSalesApprovalStatus = await connection.query(s3)
 
-            if (deleteDeal.rowCount > 0) {
+            if (updateSalesApprovalStatusInSales.rowCount > 0 && updateSalesApprovalStatus.rowCount > 0) {
+                // add notification in notification list
+                let notification_userId = [updateSalesApprovalStatus.rows[0].requested_user_id];
+                if (approval_status == 'Accepted') {
+                    await notificationsOperations({ type: 1, msg: 1.7, notification_typeId, notification_userId }, userId);
+                } else {
+                    await notificationsOperations({ type: 1, msg: 1.8, notification_typeId, notification_userId }, userId);
+                }
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
-                    message: "Note deleted successfully"
+                    message: `Sales approval request has been ${approval_status.toLowerCase()} successfully`
                 })
+
             } else {
                 await connection.query('ROLLBACK')
                 res.json({
@@ -268,13 +190,12 @@ module.exports.deleteNote = async (req, res) => {
                     message: "Something went wrong"
                 })
             }
-
-        } else {
-            res.status(403).json({
-                success: false,
-                message: "Unathorised"
-            })
-        }
+        // } else {
+        //     res.status(403).json({
+        //         success: false,
+        //         message: "UnAthorised"
+        //     })
+        // }
     } catch (error) {
         await connection.query('ROLLBACK')
         res.json({
@@ -283,4 +204,45 @@ module.exports.deleteNote = async (req, res) => {
             message: error.message,
         })
     }
+}
+
+module.exports.allApproveRequestList = async (req, res) => {
+    try {
+        let userId = req.user.id;
+        let {  sales_id } = req.query;
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
+           
+            let s2 = dbScript(db_sql['Q351'], { var1: sales_id })
+            let getAllApproveRequestList = await connection.query(s2)
+            if (getAllApproveRequestList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Approve request list for sales',
+                    data: getAllApproveRequestList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty approve request list',
+                    data: []
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+
 }

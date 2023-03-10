@@ -469,10 +469,10 @@ const db_sql = {
             
   "Q79": `UPDATE customer_companies SET business_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
   "Q80": `UPDATE customer_companies SET revenue_contact_id = '{var2}' WHERE id = '{var1}' RETURNING *`,
-  "Q83": `INSERT INTO 
-            configurations( currency, phone_format, date_format,user_id, company_id )
-          VALUES
-            ('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
+  // "Q83": `INSERT INTO 
+  //           configurations( currency, phone_format, date_format,user_id, company_id )
+  //         VALUES
+  //           ('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
   "Q84": `SELECT * FROM configurations WHERE company_id = '{var1}' AND deleted_at IS NULL `,
   "Q85": `UPDATE configurations SET deleted_at = '{var1}' WHERE company_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   "Q86": `INSERT INTO 
@@ -2211,6 +2211,11 @@ const db_sql = {
     "Q348": `UPDATE sales 
             SET updated_at = '{var1}', approval_status = '{var2}' 
             WHERE id = '{var3}' RETURNING *`,
+    "Q349": `UPDATE sales_approval 
+            SET updated_at = '{var1}', status = '{var2}' 
+            WHERE id = '{var3}'  AND sales_id = '{var4}' RETURNING *`,
+    "Q350": `SELECT * FROM sales_approval WHERE id = '{var1}' AND sales_id = '{var2}' AND deleted_at IS NULL `,
+    "Q351": `SELECT * FROM sales_approval WHERE sales_id = '{var1}' AND deleted_at IS NULL `
   
   
 

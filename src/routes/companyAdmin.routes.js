@@ -111,6 +111,9 @@ router.get('/getAllApiDeatilsRelatedSales', verifyTokenFn, controller.sales.getA
 //----------------------------------------Sales Approval --------------------------------
 router.get('/getUpperLevelUserList',verifyTokenFn, controller.salesApproval.getUpperLevelUserList)
 router.post('/sendApprovalRequestForSales',verifyTokenFn, controller.salesApproval.sendApprovalRequestForSales)
+router.put('/acceptOrRejectApproveRequestForSales',verifyTokenFn, controller.salesApproval.acceptOrRejectApproveRequestForSales)
+router.get('/approveRequestDetails',verifyTokenFn, controller.salesApproval.approveRequestDetails)
+router.get('/allApproveRequestList',verifyTokenFn, controller.salesApproval.allApproveRequestList)
 
 
 //----------------------------------------Reports------------------------------------------
