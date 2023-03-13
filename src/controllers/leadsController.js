@@ -44,7 +44,7 @@ module.exports.createLead = async (req, res) => {
                 sourceId = addSource.rows[0].id
             }
 
-            let s2 = dbScript(db_sql['Q201'], { var1: fullName, var2: titleId, var3: emailAddress, var4: phoneNumber, var5: mysql_real_escape_string(address), var6: sourceId, var7: linkedinUrl, var8: website, var9: targetedValue, var10: marketingQualifiedLead, var11: assignedSalesLeadTo ?assignedSalesLeadTo : 'null', var12: mysql_real_escape_string(additionalMarketingNotes), var13: userId, var14: checkPermission.rows[0].company_id, var15: customerId, var16: empType })
+            let s2 = dbScript(db_sql['Q201'], { var1: mysql_real_escape_string(fullName), var2: titleId, var3: emailAddress, var4: phoneNumber, var5: mysql_real_escape_string(address), var6: sourceId, var7: linkedinUrl, var8: website, var9: targetedValue, var10: marketingQualifiedLead, var11: assignedSalesLeadTo ?assignedSalesLeadTo : 'null', var12: mysql_real_escape_string(additionalMarketingNotes), var13: userId, var14: checkPermission.rows[0].company_id, var15: customerId, var16: empType })
             let createLead = await connection.query(s2)
             // add notification in notification list
             notification_typeId = createLead.rows[0].id;
@@ -269,7 +269,7 @@ module.exports.updateLead = async (req, res) => {
             }
 
             let _dt = new Date().toISOString();
-            let s5 = dbScript(db_sql['Q204'], { var1: leadId, var2: fullName, var3: titleId, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: sourceId, var8: linkedinUrl, var9: website, var10: targetedValue, var11: marketingQualifiedLead, var12: assignedSalesLeadTo ? assignedSalesLeadTo : 'null', var13: mysql_real_escape_string(additionalMarketingNotes), var14: _dt, var15: customerId })
+            let s5 = dbScript(db_sql['Q204'], { var1: leadId, var2: mysql_real_escape_string(fullName), var3: titleId, var4: emailAddress, var5: phoneNumber, var6: mysql_real_escape_string(address), var7: sourceId, var8: linkedinUrl, var9: website, var10: targetedValue, var11: marketingQualifiedLead, var12: assignedSalesLeadTo ? assignedSalesLeadTo : 'null', var13: mysql_real_escape_string(additionalMarketingNotes), var14: _dt, var15: customerId })
             let updateLead = await connection.query(s5)
 
             // add notification in notification list

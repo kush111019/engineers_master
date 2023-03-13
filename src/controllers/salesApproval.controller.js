@@ -65,7 +65,7 @@ module.exports.sendApprovalRequestForSales = async (req, res) => {
         let checkPermission = await connection.query(s1)
         // if (checkPermission.rows[0].permission_to_create) {
 
-            let s2 = dbScript(db_sql['Q347'], { var1: percentage, var2: description, var3: sales_id, var4: checkPermission.rows[0].company_id, var5: userId, var6: approver_user_id })
+            let s2 = dbScript(db_sql['Q347'], { var1: percentage, var2: mysql_real_escape_string(description), var3: sales_id, var4: checkPermission.rows[0].company_id, var5: userId, var6: approver_user_id })
             let addSalesApprovalRequest = await connection.query(s2)
 
             let _dt = new Date().toISOString();
