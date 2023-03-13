@@ -1574,7 +1574,7 @@ module.exports.archivedSales = async (req, res) => {
         if (checkPermission.rows[0].permission_to_update) {
 
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q74'], { var1: _dt, var2: userId, var3: reason, var4: salesId, var5: checkPermission.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q74'], { var1: _dt, var2: userId, var3: mysql_real_escape_string(reason), var4: salesId, var5: checkPermission.rows[0].company_id })
             let archivedSales = await connection.query(s2)
 
             if (archivedSales.rowCount > 0) {

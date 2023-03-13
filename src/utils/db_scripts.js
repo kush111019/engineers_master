@@ -1895,7 +1895,19 @@ const db_sql = {
                 LEFT JOIN products AS p ON p.id = pis.product_id
                 WHERE sc.id= pis.sales_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
               ) product_in_sales
-            ) as products
+            ) as products,
+            (
+              SELECT json_agg(sales_approval.*)
+              FROM (
+                SELECT sap.id,sap.percentage,sap.description,sap.sales_id,sap.company_id,sap.approver_user_id,
+                  sap.requested_user_id,sap.created_at,sap.updated_at,sap.deleted_at,sap.status,sap.reason,
+                  u1.full_name AS approver_user_name,u2.full_name AS requested_user_name
+                FROM sales_approval as sap
+                LEFT JOIN users as u1 ON u1.id = sap.approver_user_id
+                LEFT JOIN users as u2 ON u2.id = sap.requested_user_id
+                WHERE sap.sales_id = sc.id AND sap.deleted_at IS NULL AND sap.status = 'Pending'
+              ) sales_approval
+            ) as sales_approval
           FROM
             sales AS sc
           LEFT JOIN
@@ -2205,17 +2217,23 @@ const db_sql = {
              WHERE type_id= '{var1}' AND type = '{var2}' AND is_read= false AND deleted_at IS NULL 
              ORDER BY created_at DESC`,
     "Q347": `INSERT INTO sales_approval 
-              ( percentage, description, sales_id,company_id, requested_user_id, approver_user_id)
+              ( percentage, description, sales_id,company_id, requested_user_id, approver_user_id,status)
             VALUES
-              ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+              ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') RETURNING *`,
     "Q348": `UPDATE sales 
             SET updated_at = '{var1}', approval_status = '{var2}' 
             WHERE id = '{var3}' RETURNING *`,
     "Q349": `UPDATE sales_approval 
-            SET updated_at = '{var1}', status = '{var2}' 
-            WHERE id = '{var3}'  AND sales_id = '{var4}' RETURNING *`,
+            SET updated_at = '{var1}', status = '{var2}' ,reason ='{var3}'
+            WHERE id = '{var4}'  AND sales_id = '{var5}' RETURNING *`,
     "Q350": `SELECT * FROM sales_approval WHERE id = '{var1}' AND sales_id = '{var2}' AND deleted_at IS NULL `,
-    "Q351": `SELECT * FROM sales_approval WHERE sales_id = '{var1}' AND deleted_at IS NULL ORDER BY created_at DESC `
+    "Q351": `SELECT sap.id,sap.percentage,sap.description,sap.sales_id,sap.company_id,sap.approver_user_id,
+              sap.requested_user_id,sap.created_at,sap.updated_at,sap.deleted_at,sap.status,sap.reason,
+              u1.full_name AS approver_user_name,u2.full_name AS requested_user_name
+            FROM sales_approval as sap
+            LEFT JOIN users as u1 ON u1.id = sap.approver_user_id
+            LEFT JOIN users as u2 ON u2.id = sap.requested_user_id
+            WHERE sap.sales_id = '{var1}' AND sap.deleted_at IS NULL ORDER BY sap.created_at DESC`
   
   
 

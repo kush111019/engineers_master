@@ -65,33 +65,33 @@ module.exports.sendApprovalRequestForSales = async (req, res) => {
         let checkPermission = await connection.query(s1)
         // if (checkPermission.rows[0].permission_to_create) {
 
-            let s2 = dbScript(db_sql['Q347'], { var1: percentage, var2: mysql_real_escape_string(description), var3: sales_id, var4: checkPermission.rows[0].company_id, var5: userId, var6: approver_user_id })
-            let addSalesApprovalRequest = await connection.query(s2)
+        let s2 = dbScript(db_sql['Q347'], { var1: percentage, var2: mysql_real_escape_string(description), var3: sales_id, var4: checkPermission.rows[0].company_id, var5: userId, var6: approver_user_id, var7: 'Pending' })
+        let addSalesApprovalRequest = await connection.query(s2)
 
-            let _dt = new Date().toISOString();
+        let _dt = new Date().toISOString();
 
-            let s3 = dbScript(db_sql['Q348'], { var1: _dt, var2: 'Pending', var3: sales_id })
-            let updateSalesApprovalStatus = await connection.query(s3)
+        let s3 = dbScript(db_sql['Q348'], { var1: _dt, var2: 'Pending', var3: sales_id })
+        let updateSalesApprovalStatus = await connection.query(s3)
 
 
-            if (addSalesApprovalRequest.rowCount > 0 && updateSalesApprovalStatus.rowCount > 0) {
-                // add notification in notification list
-                await notificationsOperations({ type: 1, msg: 1.6, notification_typeId, notification_userId }, userId);
-                await connection.query('COMMIT')
-                res.json({
-                    status: 201,
-                    success: true,
-                    message: "Sales approval request sent successfully",
-                    data: addSalesApprovalRequest.rows
-                })
-            } else {
-                await connection.query('ROLLBACK')
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Something went wrong"
-                })
-            }
+        if (addSalesApprovalRequest.rowCount > 0 && updateSalesApprovalStatus.rowCount > 0) {
+            // add notification in notification list
+            await notificationsOperations({ type: 1, msg: 1.6, notification_typeId, notification_userId }, userId);
+            await connection.query('COMMIT')
+            res.json({
+                status: 201,
+                success: true,
+                message: "Sales approval request sent successfully",
+                data: addSalesApprovalRequest.rows
+            })
+        } else {
+            await connection.query('ROLLBACK')
+            res.json({
+                status: 400,
+                success: false,
+                message: "Something went wrong"
+            })
+        }
         // } else {
         //     res.status(403).json({
         //         success: false,
@@ -115,7 +115,7 @@ module.exports.approveRequestDetails = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-           
+
             let s2 = dbScript(db_sql['Q350'], { var1: approval_id, var2: sales_id })
             let getAllApproveRequestDetails = await connection.query(s2)
             if (getAllApproveRequestDetails.rowCount > 0) {
@@ -152,7 +152,7 @@ module.exports.approveRequestDetails = async (req, res) => {
 module.exports.acceptOrRejectApproveRequestForSales = async (req, res) => {
     try {
         let userId = req.user.id
-        let { sales_id, approval_status, approval_id } = req.body
+        let { sales_id, approval_status, approval_id, reason } = req.body
         await connection.query('BEGIN');
         //add notification deatils
         let notification_typeId = sales_id;
@@ -160,36 +160,36 @@ module.exports.acceptOrRejectApproveRequestForSales = async (req, res) => {
         let checkPermission = await connection.query(s1)
 
         // if (checkPermission.rows[0].permission_to_create) {
-            let _dt = new Date().toISOString();
+        let _dt = new Date().toISOString();
 
-            let s2 = dbScript(db_sql['Q348'], { var1: _dt, var2: approval_status, var3: sales_id })
-            let updateSalesApprovalStatusInSales = await connection.query(s2)
-            let s3 = dbScript(db_sql['Q349'], { var1: _dt, var2: approval_status, var3: approval_id, var4: sales_id })
-            let updateSalesApprovalStatus = await connection.query(s3)
+        let s2 = dbScript(db_sql['Q348'], { var1: _dt, var2: approval_status, var3: sales_id })
+        let updateSalesApprovalStatusInSales = await connection.query(s2)
+        let s3 = dbScript(db_sql['Q349'], { var1: _dt, var2: approval_status, var3: mysql_real_escape_string(reason), var4: approval_id, var5: sales_id })
+        let updateSalesApprovalStatus = await connection.query(s3)
 
-            if (updateSalesApprovalStatusInSales.rowCount > 0 && updateSalesApprovalStatus.rowCount > 0) {
-                // add notification in notification list
-                let notification_userId = [updateSalesApprovalStatus.rows[0].requested_user_id];
-                if (approval_status == 'Accepted') {
-                    await notificationsOperations({ type: 1, msg: 1.7, notification_typeId, notification_userId }, userId);
-                } else {
-                    await notificationsOperations({ type: 1, msg: 1.8, notification_typeId, notification_userId }, userId);
-                }
-                await connection.query('COMMIT')
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: `Sales approval request has been ${approval_status.toLowerCase()} successfully`
-                })
-
+        if (updateSalesApprovalStatusInSales.rowCount > 0 && updateSalesApprovalStatus.rowCount > 0) {
+            // add notification in notification list
+            let notification_userId = [updateSalesApprovalStatus.rows[0].requested_user_id];
+            if (approval_status == 'Accepted') {
+                await notificationsOperations({ type: 1, msg: 1.7, notification_typeId, notification_userId }, userId);
             } else {
-                await connection.query('ROLLBACK')
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Something went wrong"
-                })
+                await notificationsOperations({ type: 1, msg: 1.8, notification_typeId, notification_userId }, userId);
             }
+            await connection.query('COMMIT')
+            res.json({
+                status: 200,
+                success: true,
+                message: `Sales approval request has been ${approval_status.toLowerCase()} successfully`
+            })
+
+        } else {
+            await connection.query('ROLLBACK')
+            res.json({
+                status: 400,
+                success: false,
+                message: "Something went wrong"
+            })
+        }
         // } else {
         //     res.status(403).json({
         //         success: false,
@@ -209,11 +209,11 @@ module.exports.acceptOrRejectApproveRequestForSales = async (req, res) => {
 module.exports.allApproveRequestList = async (req, res) => {
     try {
         let userId = req.user.id;
-        let {  sales_id } = req.query;
+        let { sales_id } = req.query;
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-           
+
             let s2 = dbScript(db_sql['Q351'], { var1: sales_id })
             let getAllApproveRequestList = await connection.query(s2)
             if (getAllApproveRequestList.rowCount > 0) {
