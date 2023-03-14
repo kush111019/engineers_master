@@ -1672,6 +1672,34 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             }
         }
 
+        let usersModule = process.env.USERS_MODULE;
+        let s5 = dbScript(db_sql['Q41'], { var1: usersModule, var2: userId })
+        let checkPermissionForusers = await connection.query(s5)
+        if (checkPermissionForusers.rows[0].permission_to_view_global) {
+            // here we are getting Users deatils by global permission
+            
+            let s4 = dbScript(db_sql['Q15'], { var1: checkPermissionForusers.rows[0].company_id })
+            let userList = await connection.query(s4);
+            if (userList.rowCount > 0) {
+                allDetails.userList = userList.rows
+            } else {
+                allDetails.userList = []
+            }
+
+        } else if (checkPermissionForusers.rows[0].permission_to_view_own) {
+            // here we are getting Users deatils by own permission of user and its child user
+            let roleUsers = await getUserAndSubUser(checkPermissionForusers.rows[0]);
+
+            let s3 = dbScript(db_sql['Q272'], { var1: roleUsers.join(",") })
+            let userList = await connection.query(s3);
+            if (userList.rowCount > 0) {
+                allDetails.userList = userList.rows
+            } else {
+                allDetails.userList = []
+            }
+
+        }
+
         if(allDetails){
             res.json({
                 status : 200,
