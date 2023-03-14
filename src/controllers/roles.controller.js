@@ -238,7 +238,7 @@ module.exports.createRole = async (req, res) => {
             let s6 = dbScript(db_sql['Q34'], { var1: JSON.stringify(moduleIds), var2: _dt, var3: createRole.rows[0].id })
             updateRole = await connection.query(s6)
             
-            let s7 = dbScript(db_sql['Q330'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+            let s7 = dbScript(db_sql['Q276'], { var1:_dt, var2: checkPermission.rows[0].company_id })
             updateStatusInCompany = await connection.query(s7)
 
             if (createRole.rowCount > 0 && addPermission.rowCount > 0 && updateRole.rowCount > 0 && updateStatusInCompany.rowCount >0) {

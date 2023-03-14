@@ -19,12 +19,12 @@ module.exports.revenuePerCustomer = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global) {
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
-                let s2 = dbScript(db_sql['Q89'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate })
+                let s2 = dbScript(db_sql['Q79'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate })
                 let customerCompanies = await connection.query(s2)
                 if (customerCompanies.rowCount > 0) {
                     let revenuePerCustomerArr = []
                     for (let data of customerCompanies.rows) {
-                        let s5 = dbScript(db_sql['Q300'], { var1: data.sales_commission_id })
+                        let s5 = dbScript(db_sql['Q256'], { var1: data.sales_commission_id })
                         let recognizedRevenueData = await connection.query(s5)
                         if (recognizedRevenueData.rowCount > 0) {
                             revenuePerCustomerArr.push({
@@ -80,11 +80,11 @@ module.exports.revenuePerCustomer = async (req, res) => {
             let revenuePerCustomerArr = []
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
-                let s2 = dbScript(db_sql['Q170'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
+                let s2 = dbScript(db_sql['Q150'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
                 let customerCompanies = await connection.query(s2)
                 if (customerCompanies.rowCount > 0) {
                     for (let data of customerCompanies.rows) {
-                        let s5 = dbScript(db_sql['Q300'], { var1: data.sales_commission_id })
+                        let s5 = dbScript(db_sql['Q256'], { var1: data.sales_commission_id })
                         let recognizedRevenueData = await connection.query(s5)
                         if (recognizedRevenueData.rowCount > 0) {
                             revenuePerCustomerArr.push({
@@ -167,12 +167,12 @@ module.exports.revenuePerProduct = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
-                let s4 = dbScript(db_sql['Q153'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate })
+                let s4 = dbScript(db_sql['Q139'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate })
                 let revenuePerProduct = await connection.query(s4)
                 if (revenuePerProduct.rowCount > 0) {
                     let revenuePerProductArr = []
                     for (let data of revenuePerProduct.rows) {
-                        let s5 = dbScript(db_sql['Q300'], { var1: data.sales_commission_id })
+                        let s5 = dbScript(db_sql['Q256'], { var1: data.sales_commission_id })
                         let recognizedRevenueData = await connection.query(s5)
                         if (recognizedRevenueData.rowCount > 0) {
                             revenuePerProductArr.push({
@@ -227,11 +227,11 @@ module.exports.revenuePerProduct = async (req, res) => {
             let revenuePerProductArr = []
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
-                let s4 = dbScript(db_sql['Q171'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
+                let s4 = dbScript(db_sql['Q151'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
                 let revenuePerProduct = await connection.query(s4)
                 if (revenuePerProduct.rowCount > 0) {
                     for (let product of revenuePerProduct.rows) {
-                        let s5 = dbScript(db_sql['Q300'], { var1: product.sales_commission_id })
+                        let s5 = dbScript(db_sql['Q256'], { var1: product.sales_commission_id })
                         let recognizedRevenueData = await connection.query(s5)
                         if (recognizedRevenueData.rowCount > 0) {
                             revenuePerProductArr.push({
@@ -337,12 +337,12 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         data: []
                     })
                 }
-                let s4 = dbScript(db_sql['Q258'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
+                let s4 = dbScript(db_sql['Q221'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
                 let salesData = await connection.query(s4)
                 if (salesData.rowCount > 0) {
                     for (let saleData of salesData.rows) {
                         let revenueCommissionByDateObj = {}
-                        let s5 = dbScript(db_sql['Q300'], { var1: saleData.sales_commission_id })
+                        let s5 = dbScript(db_sql['Q256'], { var1: saleData.sales_commission_id })
                         let recognizedRevenueData = await connection.query(s5)
 
                         if (recognizedRevenueData.rows[0].amount) {
@@ -445,13 +445,13 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         data: []
                     })
                 }
-                let s4 = dbScript(db_sql['Q258'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
+                let s4 = dbScript(db_sql['Q221'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
                 let salesData = await connection.query(s4)
 
                 if (salesData.rowCount > 0) {
                     for (let saleData of salesData.rows) {
                         let revenueCommissionByDateObj = {}
-                        let s5 = dbScript(db_sql['Q300'], { var1: saleData.sales_commission_id })
+                        let s5 = dbScript(db_sql['Q256'], { var1: saleData.sales_commission_id })
                         let recognizedRevenueData = await connection.query(s5)
 
                         if (recognizedRevenueData.rows[0].amount) {
@@ -547,12 +547,12 @@ module.exports.totalRevenue = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
-            let s4 = dbScript(db_sql['Q88'], { var1: checkPermission.rows[0].company_id, var2: format })
+            let s4 = dbScript(db_sql['Q78'], { var1: checkPermission.rows[0].company_id, var2: format })
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
                 let totalRevenueArr = []
                 for (let data of salesData.rows) {
-                    let s5 = dbScript(db_sql['Q300'], { var1: data.sales_commission_id })
+                    let s5 = dbScript(db_sql['Q256'], { var1: data.sales_commission_id })
                     let recognizedRevenueData = await connection.query(s5)
                     if (recognizedRevenueData.rowCount > 0) {
                         totalRevenueArr.push({
@@ -590,12 +590,12 @@ module.exports.totalRevenue = async (req, res) => {
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            let s4 = dbScript(db_sql['Q173'], { var1: roleUsers.join(","), var2: format })
+            let s4 = dbScript(db_sql['Q152'], { var1: roleUsers.join(","), var2: format })
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
                 let totalRevenueArr = []
                 for (let data of salesData.rows) {
-                    let s5 = dbScript(db_sql['Q300'], { var1: data.sales_commission_id })
+                    let s5 = dbScript(db_sql['Q256'], { var1: data.sales_commission_id })
                     let recognizedRevenueData = await connection.query(s5)
                     if (recognizedRevenueData.rowCount > 0) {
                         totalRevenueArr.push({

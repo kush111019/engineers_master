@@ -80,7 +80,7 @@ module.exports.setEmailRead = async (imapConfig, messageId, res) => {
                         })
                     } else {
                         await connection.query('BEGIN')
-                        let s2 = dbScript(db_sql['Q139'], { var1: messageId, var2: true })
+                        let s2 = dbScript(db_sql['Q126'], { var1: messageId, var2: true })
                         let updateReadStatus = await connection.query(s2)
                         if (updateReadStatus.rowCount > 0) {
                             await connection.query('COMMIT')
@@ -133,7 +133,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
         cvc
     } = req.body
 
-    let s2 = dbScript(db_sql['Q104'], { var1: planId })
+    let s2 = dbScript(db_sql['Q93'], { var1: planId })
     let planData = await connection.query(s2)
     if (planData.rowCount > 0) {
         const token = await stripe.tokens.create({
@@ -176,7 +176,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
         if (token && card && subscription && charge) {
             let _dt = new Date().toISOString();
 
-            let s3 = dbScript(db_sql['Q116'], {
+            let s3 = dbScript(db_sql['Q105'], {
                 var1: transaction.rows[0].stripe_customer_id, var2: subscription.id,
                 var3: card.id, var4: token.id, var5: charge.id, var6: subscription.current_period_end,
                 var7: _dt, var8: transaction.rows[0].id, var9: Math.round(totalAmount), var10: true,
@@ -186,10 +186,10 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
 
             let expiryDate = new Date(Number(subscription.current_period_end) * 1000).toISOString()
 
-            let s5 = dbScript(db_sql['Q113'], { var1: expiryDate, var2: user.rows[0].id, var3: _dt })
+            let s5 = dbScript(db_sql['Q102'], { var1: expiryDate, var2: user.rows[0].id, var3: _dt })
             let updateUserExpiryDate = await connection.query(s5)
 
-            let s6 = dbScript(db_sql['Q232'], { var1: expiryDate, var2: userCount, var3: _dt, var4: user.rows[0].company_id })
+            let s6 = dbScript(db_sql['Q197'], { var1: expiryDate, var2: userCount, var3: _dt, var4: user.rows[0].company_id })
             let updateCompanyExpiryDate = await connection.query(s6)
 
 
@@ -235,7 +235,7 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
         cvc
     } = req.body
 
-    let s2 = dbScript(db_sql['Q104'], { var1: planId })
+    let s2 = dbScript(db_sql['Q93'], { var1: planId })
     let planData = await connection.query(s2)
     if (planData.rowCount > 0) {
         const token = await stripe.tokens.create({
@@ -272,13 +272,13 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
         if (token && card && subscription) {
             let _dt = new Date().toISOString();
 
-            let s3 = dbScript(db_sql['Q149'], {
+            let s3 = dbScript(db_sql['Q135'], {
                 var1: user.rows[0].id, var2: transaction.rows[0].company_id, var3: planId, var4: transaction.rows[0].stripe_customer_id, var5: subscription.id, var6: card.id, var7: token.id, var8: "", var9: subscription.current_period_end, var10: userCount, var11: "",
                 var12: Math.round(totalAmount), var13: ""
             })
             let createUpgradedTransaction = await connection.query(s3)
 
-            let s4 = dbScript(db_sql['Q116'], { var1: transaction.rows[0].stripe_customer_id, var2: transaction.rows[0].stripe_subscription_id, var3: transaction.rows[0].stripe_card_id, var4: transaction.rows[0].stripe_token_id, var5: transaction.rows[0].stripe_charge_id, var6: transaction.rows[0].expiry_date, var7: _dt, var8: transaction.rows[0].id, var9: transaction.rows[0].total_amount, var10: false, var11: transaction.rows[0].payment_receipt, var12: transaction.rows[0].user_count, var13: transaction.rows[0].plan_id, var14: createUpgradedTransaction.rows[0].id })
+            let s4 = dbScript(db_sql['Q105'], { var1: transaction.rows[0].stripe_customer_id, var2: transaction.rows[0].stripe_subscription_id, var3: transaction.rows[0].stripe_card_id, var4: transaction.rows[0].stripe_token_id, var5: transaction.rows[0].stripe_charge_id, var6: transaction.rows[0].expiry_date, var7: _dt, var8: transaction.rows[0].id, var9: transaction.rows[0].total_amount, var10: false, var11: transaction.rows[0].payment_receipt, var12: transaction.rows[0].user_count, var13: transaction.rows[0].plan_id, var14: createUpgradedTransaction.rows[0].id })
             let updateTransaction = await connection.query(s4)
 
             if (createUpgradedTransaction.rowCount > 0 && updateTransaction.rowCount > 0) {
@@ -529,7 +529,7 @@ module.exports.getUserAndSubUser = async (userData) => {
     let returnData = [];
     returnData.push("'" + userData.id.toString() + "'")
     for (let id of roleIds) {
-        let s2 = dbScript(db_sql['Q287'], { var1: id })
+        let s2 = dbScript(db_sql['Q243'], { var1: id })
         let getUserData = await connection.query(s2);
         if (getUserData.rowCount > 0 && getUserData.rows[0].role_id != userData.role_id) {
             returnData.push("'" + getUserData.rows[0].id.toString() + "'")
@@ -549,7 +549,7 @@ module.exports.notificationsOperations = async (nfData, userId) => {
             let findUserName = await connection.query(s0)
             userName = findUserName.rows[0].full_name;
             //enter notifications in db
-            let s1 = dbScript(db_sql['Q289'], { var1: findUserName.rows[0].full_name + notificationEnum.notificationMsg[nfData.msg], var2: nfData.notification_typeId, var3: id, var4: notificationEnum.notificationType[nfData.type] })
+            let s1 = dbScript(db_sql['Q245'], { var1: findUserName.rows[0].full_name + notificationEnum.notificationMsg[nfData.msg], var2: nfData.notification_typeId, var3: id, var4: notificationEnum.notificationType[nfData.type] })
             let notificationsData = await connection.query(s1);
 
             //for getting captain and support user email's address
@@ -570,7 +570,7 @@ module.exports.notificationsOperations = async (nfData, userId) => {
 
 // get notifications for socket conversion
 module.exports.instantNotificationsList = async (newNotificationRecieved, socket) => {
-    let s1 = dbScript(db_sql['Q346'], { var1: newNotificationRecieved.id, var2: newNotificationRecieved.type })
+    let s1 = dbScript(db_sql['Q292'], { var1: newNotificationRecieved.id, var2: newNotificationRecieved.type })
     let notificationList = await connection.query(s1);
     if (notificationList.rowCount > 0) {
         notificationList.rows.forEach(element => {

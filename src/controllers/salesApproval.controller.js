@@ -65,12 +65,12 @@ module.exports.sendApprovalRequestForSales = async (req, res) => {
         let checkPermission = await connection.query(s1)
         // if (checkPermission.rows[0].permission_to_create) {
 
-        let s2 = dbScript(db_sql['Q347'], { var1: percentage, var2: mysql_real_escape_string(description), var3: sales_id, var4: checkPermission.rows[0].company_id, var5: userId, var6: approver_user_id, var7: 'Pending' })
+        let s2 = dbScript(db_sql['Q293'], { var1: percentage, var2: mysql_real_escape_string(description), var3: sales_id, var4: checkPermission.rows[0].company_id, var5: userId, var6: approver_user_id, var7: 'Pending' })
         let addSalesApprovalRequest = await connection.query(s2)
 
         let _dt = new Date().toISOString();
 
-        let s3 = dbScript(db_sql['Q348'], { var1: _dt, var2: 'Pending', var3: sales_id })
+        let s3 = dbScript(db_sql['Q294'], { var1: _dt, var2: 'Pending', var3: sales_id })
         let updateSalesApprovalStatus = await connection.query(s3)
 
 
@@ -116,7 +116,7 @@ module.exports.approveRequestDetails = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
 
-            let s2 = dbScript(db_sql['Q350'], { var1: approval_id, var2: sales_id })
+            let s2 = dbScript(db_sql['Q296'], { var1: approval_id, var2: sales_id })
             let getAllApproveRequestDetails = await connection.query(s2)
             if (getAllApproveRequestDetails.rowCount > 0) {
                 res.json({
@@ -162,9 +162,9 @@ module.exports.acceptOrRejectApproveRequestForSales = async (req, res) => {
         // if (checkPermission.rows[0].permission_to_create) {
         let _dt = new Date().toISOString();
 
-        let s2 = dbScript(db_sql['Q348'], { var1: _dt, var2: approval_status, var3: sales_id })
+        let s2 = dbScript(db_sql['Q294'], { var1: _dt, var2: approval_status, var3: sales_id })
         let updateSalesApprovalStatusInSales = await connection.query(s2)
-        let s3 = dbScript(db_sql['Q349'], { var1: _dt, var2: approval_status, var3: mysql_real_escape_string(reason), var4: approval_id, var5: sales_id })
+        let s3 = dbScript(db_sql['Q295'], { var1: _dt, var2: approval_status, var3: mysql_real_escape_string(reason), var4: approval_id, var5: sales_id })
         let updateSalesApprovalStatus = await connection.query(s3)
 
         if (updateSalesApprovalStatusInSales.rowCount > 0 && updateSalesApprovalStatus.rowCount > 0) {
@@ -214,7 +214,7 @@ module.exports.allApproveRequestList = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
 
-            let s2 = dbScript(db_sql['Q351'], { var1: sales_id })
+            let s2 = dbScript(db_sql['Q297'], { var1: sales_id })
             let getAllApproveRequestList = await connection.query(s2)
             if (getAllApproveRequestList.rowCount > 0) {
                 res.json({

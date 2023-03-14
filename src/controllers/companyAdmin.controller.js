@@ -31,7 +31,7 @@ let createAdmin = async (bodyData, cId, res) => {
         let s4 = dbScript(db_sql['Q11'], { var1: cId })
         let createRole = await connection.query(s4)
 
-        let s9 = dbScript(db_sql['Q112'], {})
+        let s9 = dbScript(db_sql['Q101'], {})
         let trialDays = await connection.query(s9)
         let expiryDate = '';
         if (trialDays.rowCount > 0) {
@@ -55,7 +55,7 @@ let createAdmin = async (bodyData, cId, res) => {
             }
 
             //let configId = uuid.v4()
-            let s10 = dbScript(db_sql['Q86'], { var1: "$", var2: "us", var3: "MM-DD-YYYY", var4: saveuser.rows[0].id, var5: cId ,var6: 3,var7: 2})
+            let s10 = dbScript(db_sql['Q76'], { var1: "$", var2: "us", var3: "MM-DD-YYYY", var4: saveuser.rows[0].id, var5: cId ,var6: 3,var7: 2})
             let addConfig = await connection.query(s10)
 
             let s6 = dbScript(db_sql['Q6'], {})
@@ -174,7 +174,7 @@ module.exports.signUp = async (req, res) => {
         let checkCompany = await connection.query(s2);
         if (checkCompany.rows.length == 0) {
 
-            let s9 = dbScript(db_sql['Q112'], {})
+            let s9 = dbScript(db_sql['Q101'], {})
             let trialDays = await connection.query(s9)
             let expiryDate = '';
             if (trialDays.rowCount > 0) {
@@ -334,7 +334,7 @@ module.exports.verifyUser = async (req, res) => {
 module.exports.login = async (req, res) => {
     try {
         let { emailAddress, password } = req.body;
-        let s1 = dbScript(db_sql['Q145'], { var1: emailAddress })
+        let s1 = dbScript(db_sql['Q132'], { var1: emailAddress })
         let admin = await connection.query(s1)
         if (admin.rows.length > 0) {
             if (admin.rows[0].encrypted_password == password) {
@@ -348,14 +348,14 @@ module.exports.login = async (req, res) => {
                         configuration.beforeClosingDays = (admin.rows[0].before_closing_days) ? admin.rows[0].before_closing_days : '',
                         configuration.afterClosingDays = (admin.rows[0].after_closing_days) ? admin.rows[0].after_closing_days : ''
 
-                        let s2 = dbScript(db_sql['Q138'],{var1: admin.rows[0].id, var2: admin.rows[0].company_id })
+                        let s2 = dbScript(db_sql['Q125'],{var1: admin.rows[0].id, var2: admin.rows[0].company_id })
                         let imapCreds = await connection.query(s2)
                         let isImapCred = (imapCreds.rowCount == 0) ? false : true
 
                         let moduleId = JSON.parse(admin.rows[0].module_ids)
                         let modulePemissions = []
                         for ( let data of moduleId) {
-                            let s3 = dbScript(db_sql['Q59'], { var1: data, var2: admin.rows[0].role_id })
+                            let s3 = dbScript(db_sql['Q58'], { var1: data, var2: admin.rows[0].role_id })
                             let findModulePermissions = await connection.query(s3)
                             modulePemissions.push({
                                 moduleId: data,
@@ -719,7 +719,7 @@ module.exports.countryDetails = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0) {
-            let s1 = dbScript(db_sql['Q152'], {})
+            let s1 = dbScript(db_sql['Q138'], {})
             let details = await connection.query(s1)
             if (details.rowCount > 0) {
                 let countries = []
@@ -796,7 +796,7 @@ module.exports.updateCompanyLogo = async (req, res) => {
         if (findUser.rows.length > 0) {
             await connection.query('BEGIN')
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q249'], { var1: path, var2: _dt, var3: findUser.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q214'], { var1: path, var2: _dt, var3: findUser.rows[0].company_id })
             let updateLogo = await connection.query(s2)
             await connection.query('COMMIT')
             if (updateLogo.rowCount > 0) {

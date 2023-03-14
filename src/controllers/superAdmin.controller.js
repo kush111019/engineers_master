@@ -9,7 +9,7 @@ const stripe = require('stripe')(process.env.SECRET_KEY)
 module.exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        let s1 = dbScript(db_sql['Q98'], { var1: email })
+        let s1 = dbScript(db_sql['Q88'], { var1: email })
         let admin = await connection.query(s1)
         if (admin.rows.length > 0) {
             if (admin.rows[0].encrypted_password == password) {
@@ -49,7 +49,7 @@ module.exports.login = async (req, res) => {
 module.exports.showProfile = async (req, res) => {
     try {
         let sAEmail = req.user.email
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
+        let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
             let admin = {
@@ -85,7 +85,7 @@ module.exports.forgotPassword = async (req, res) => {
         let {
             email
         } = req.body
-        let s1 = dbScript(db_sql['Q98'], { var1: email })
+        let s1 = dbScript(db_sql['Q88'], { var1: email })
         let findSuperAdmin = await connection.query(s1);
         if (findSuperAdmin.rowCount > 0) {
             const payload = {
@@ -142,11 +142,11 @@ module.exports.resetPassword = async (req, res) => {
         } = req.body
         let superAdmin = await verifyTokenFn(req)
         if (superAdmin) {
-            let s1 = dbScript(db_sql['Q98'], { var1: superAdmin.email })
+            let s1 = dbScript(db_sql['Q88'], { var1: superAdmin.email })
             let checksuperAdmin = await connection.query(s1);
             if (checksuperAdmin.rowCount > 0) {
                 await connection.query('BEGIN')
-                let s2 = dbScript(db_sql['Q100'], { var1: superAdmin.email, var2: password })
+                let s2 = dbScript(db_sql['Q90'], { var1: superAdmin.email, var2: password })
                 let updatesuperAdmin = await connection.query(s2)
                 if (updatesuperAdmin.rowCount == 1) {
                     await connection.query('COMMIT')
@@ -194,7 +194,7 @@ module.exports.resetPassword = async (req, res) => {
 
 module.exports.companiesList = async (req, res) => {
     try {
-        let s2 = dbScript(db_sql['Q99'], {})
+        let s2 = dbScript(db_sql['Q89'], {})
         let findCompanies = await connection.query(s2);
         if (findCompanies.rowCount > 0) {
             res.json({
@@ -271,7 +271,7 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
         let limit = 10;
         let offset = (page - 1) * limit
         if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
-            let s4 = dbScript(db_sql['Q90'], { var1: companyId, var2: orderBy, var3 : limit, var4 : offset, var5 : startDate, var6 : endDate })
+            let s4 = dbScript(db_sql['Q80'], { var1: companyId, var2: orderBy, var3 : limit, var4 : offset, var5 : startDate, var6 : endDate })
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
                 res.json({
@@ -312,10 +312,10 @@ module.exports.lockOrUnlockCompany = async(req, res) => {
 
         let _dt = new Date().toISOString()
 
-        let s1 = dbScript(db_sql['Q266'],{var1 : isLocked, var2 : _dt, var3 : companyId})
+        let s1 = dbScript(db_sql['Q224'],{var1 : isLocked, var2 : _dt, var3 : companyId})
         let lockUnlockCompany = await connection.query(s1)
 
-        let s2 = dbScript(db_sql['Q267'],{var1 : isLocked ,var2 : companyId, var3 : _dt})
+        let s2 = dbScript(db_sql['Q225'],{var1 : isLocked ,var2 : companyId, var3 : _dt})
         let lockUnlockUsers = await connection.query(s2)
 
         if(lockUnlockCompany.rowCount > 0 && lockUnlockUsers.rowCount > 0){
@@ -352,7 +352,7 @@ module.exports.dashboard = async (req, res) => {
         endDate = new Date(endDate)
         endDate.setHours(23, 59, 59, 999)
         let eDate = new Date(endDate).toISOString()
-        let s1 = dbScript(db_sql['Q160'], {var1: sDate, var2: eDate})
+        let s1 = dbScript(db_sql['Q145'], {var1: sDate, var2: eDate})
         let companyData = await connection.query(s1)
         if (companyData.rowCount > 0) {
             let revenueCommission = []
@@ -361,12 +361,12 @@ module.exports.dashboard = async (req, res) => {
                 let commission = 0;
                 let revenueCommissionObj = {}
 
-                let s3 = dbScript(db_sql['Q161'], { var1: comData.id })
+                let s3 = dbScript(db_sql['Q146'], { var1: comData.id })
                 let salesData = await connection.query(s3)
                 if (salesData.rowCount > 0) {
                     for (let data of salesData.rows) {
 
-                        let s2 = dbScript(db_sql['Q184'], { var1: data.slab_id })
+                        let s2 = dbScript(db_sql['Q161'], { var1: data.slab_id })
                         let slab = await connection.query(s2)
 
                         targetAmount = targetAmount + Number(data.amount)
@@ -458,7 +458,7 @@ module.exports.dashboard = async (req, res) => {
 
 module.exports.totalExpectedRevenueCounts = async (req, res) => {
     try {
-        let s1 = dbScript(db_sql['Q99'], {})
+        let s1 = dbScript(db_sql['Q89'], {})
         let companyData = await connection.query(s1)
         if (companyData.rowCount > 0) {
             let expectedRevenue = 0;
@@ -468,7 +468,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
 
             for (let comData of companyData.rows) {
 
-                let s3 = dbScript(db_sql['Q159'], { var1: comData.id })
+                let s3 = dbScript(db_sql['Q144'], { var1: comData.id })
                 let salesData = await connection.query(s3)
 
                 let totalExpectedRevenue = 0;
@@ -479,7 +479,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                 if (salesData.rowCount > 0 ) {
                     for (let data of salesData.rows) {
 
-                        let s2 = dbScript(db_sql['Q184'], { var1: data.slab_id })
+                        let s2 = dbScript(db_sql['Q161'], { var1: data.slab_id })
                         let slab = await connection.query(s2)
                         
                         if (data.closed_at == null) {
@@ -603,7 +603,7 @@ module.exports.addPlan = async (req, res) => {
         let { name, type, adminAmount, userAmount, description, currency } = req.body
         let sAEmail = req.user.email
         await connection.query('BEGIN')
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
+        let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
             const product = await stripe.products.create({
@@ -627,7 +627,7 @@ module.exports.addPlan = async (req, res) => {
                 recurring: { interval: type },
             });
 
-            let s2 = dbScript(db_sql['Q102'], {
+            let s2 = dbScript(db_sql['Q91'], {
                 var1: product.id, var2: product.name,
                 var3: product.description, var4: product.active, var5: price1.id, var6: price1.unit_amount, var7: price2.id, var8: price2.unit_amount, var9: price1.recurring.interval, var10: price1.currency
             })
@@ -670,7 +670,7 @@ module.exports.addPlan = async (req, res) => {
 
 module.exports.plansList = async (req, res) => {
     try {
-        let s2 = await dbScript(db_sql['Q109'], {})
+        let s2 = await dbScript(db_sql['Q98'], {})
         let planData = await connection.query(s2)
         if (planData.rowCount > 0) {
             res.json({
@@ -709,10 +709,10 @@ module.exports.updatePlan = async (req, res) => {
     try {
         let { planId, name, description } = req.body
         let sAEmail = req.user.email
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
+        let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
-            let s2 = dbScript(db_sql['Q104'], { var1: planId })
+            let s2 = dbScript(db_sql['Q93'], { var1: planId })
             let planData = await connection.query(s2)
             if (planData.rowCount > 0) {
                 const product = await stripe.products.update(
@@ -726,7 +726,7 @@ module.exports.updatePlan = async (req, res) => {
                 let _dt = new Date().toISOString();
 
                 await connection.query('BEGIN')
-                let s3 = dbScript(db_sql['Q105'], {
+                let s3 = dbScript(db_sql['Q94'], {
                     var1: product.name, var2: product.description,
                     var3: _dt, var4: planId
                 })
@@ -778,10 +778,10 @@ module.exports.activateOrDeactivatePlan = async (req, res) => {
     try {
         let { planId, activeStatus } = req.body
         let sAEmail = req.user.email
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
+        let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
-            let s2 = dbScript(db_sql['Q104'], { var1: planId })
+            let s2 = dbScript(db_sql['Q93'], { var1: planId })
             let planData = await connection.query(s2)
             if (planData.rowCount > 0) {
                 const product = await stripe.products.update(
@@ -793,7 +793,7 @@ module.exports.activateOrDeactivatePlan = async (req, res) => {
 
                 let _dt = new Date().toISOString();
                 await connection.query('BEGIN')
-                let s3 = dbScript(db_sql['Q106'], { var1: product.active, var2: _dt, var3: planId })
+                let s3 = dbScript(db_sql['Q95'], { var1: product.active, var2: _dt, var3: planId })
                 let updatePlan = await connection.query(s3)
                 if (updatePlan.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -848,10 +848,10 @@ module.exports.addConfig = async (req, res) => {
         let sAEmail = req.user.email
         
         await connection.query('BEGIN')
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
+        let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
-            let s2 = dbScript(db_sql['Q111'], { var1: trialDays , var2 : trialUsers})
+            let s2 = dbScript(db_sql['Q100'], { var1: trialDays , var2 : trialUsers})
             let addConfig = await connection.query(s2)
             if (addConfig.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -891,11 +891,11 @@ module.exports.addConfig = async (req, res) => {
 module.exports.configList = async (req, res) => {
     try {
         let sAEmail = req.user.email
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
+        let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
 
-            let s2 = dbScript(db_sql['Q112'], {})
+            let s2 = dbScript(db_sql['Q101'], {})
             let configList = await connection.query(s2)
 
             if (configList.rowCount > 0) {
@@ -947,21 +947,21 @@ module.exports.configList = async (req, res) => {
 
 module.exports.allTrialAndSubcribedCompaniesList = async (req, res) => {
     try {
-        let s1 = dbScript(db_sql['Q99'], {})
+        let s1 = dbScript(db_sql['Q89'], {})
         let companies = await connection.query(s1)
-        let s2 = dbScript(db_sql['Q112'], {})
+        let s2 = dbScript(db_sql['Q101'], {})
         let configList = await connection.query(s2)
         if (companies.rowCount > 0) {
             let subcribedCompanies = []
             let trialCompanies = []
             for (let companyData of companies.rows) {
-                let s3 = dbScript(db_sql['Q154'], { var1: companyData.id })
+                let s3 = dbScript(db_sql['Q140'], { var1: companyData.id })
                 let actualUserCount = await connection.query(s3)
-                let s4 = dbScript(db_sql['Q108'], { var1: companyData.id })
+                let s4 = dbScript(db_sql['Q97'], { var1: companyData.id })
                 let transactions = await connection.query(s4)
                 if (transactions.rows.length > 0) {
                     let expiryDate = new Date(transactions.rows[0].expiry_date * 1000)
-                    let s4 = dbScript(db_sql['Q104'], { var1: transactions.rows[0].plan_id })
+                    let s4 = dbScript(db_sql['Q93'], { var1: transactions.rows[0].plan_id })
                     let plan = await connection.query(s4)
                     if (plan.rowCount > 0) {
                         subcribedCompanies.push({
@@ -1042,23 +1042,17 @@ module.exports.allTrialAndSubcribedCompaniesList = async (req, res) => {
 
 module.exports.trialCompaniesList = async(req, res) => {
     try {
-        let s1 = dbScript(db_sql['Q99'], {})
+        let s1 = dbScript(db_sql['Q89'], {})
         let companies = await connection.query(s1)
-        let s2 = dbScript(db_sql['Q112'], {})
+        let s2 = dbScript(db_sql['Q101'], {})
         let configList = await connection.query(s2)
         if (companies.rowCount > 0) {
             let trialCompanies = []
             for (let companyData of companies.rows) {
 
-                let s3 = dbScript(db_sql['Q154'], { var1: companyData.id })
+                let s3 = dbScript(db_sql['Q140'], { var1: companyData.id })
                 let actualUserCount = await connection.query(s3)
-
-                // let currentDate = new Date();
-                // let expiryDate = new Date(companyData.expiry_date);
-                // let diffInMilliseconds = expiryDate.getTime() - currentDate.getTime();
-                // let diffInDays = diffInMilliseconds / (1000 * 3600 * 24);
-                // console.log(diffInDays);
-                let s4 = dbScript(db_sql['Q108'], { var1: companyData.id })
+                let s4 = dbScript(db_sql['Q97'], { var1: companyData.id })
                 let transactions = await connection.query(s4)
                 if(transactions.rowCount == 0){
                     trialCompanies.push({
@@ -1112,18 +1106,18 @@ module.exports.trialCompaniesList = async(req, res) => {
 
 module.exports.subcribedCompaniesList = async (req, res) => {
     try {
-        let s1 = dbScript(db_sql['Q99'], {})
+        let s1 = dbScript(db_sql['Q89'], {})
         let companies = await connection.query(s1)
         if (companies.rowCount > 0) {
             let subcribedCompanies = []
             for (let companyData of companies.rows) {
-                let s3 = dbScript(db_sql['Q154'], { var1: companyData.id })
+                let s3 = dbScript(db_sql['Q140'], { var1: companyData.id })
                 let actualUserCount = await connection.query(s3)
-                let s4 = dbScript(db_sql['Q108'], { var1: companyData.id })
+                let s4 = dbScript(db_sql['Q97'], { var1: companyData.id })
                 let transactions = await connection.query(s4)
                 if (transactions.rows.length > 0) {
                     let expiryDate = new Date(transactions.rows[0].expiry_date * 1000)
-                    let s4 = dbScript(db_sql['Q104'], { var1: transactions.rows[0].plan_id })
+                    let s4 = dbScript(db_sql['Q93'], { var1: transactions.rows[0].plan_id })
                     let plan = await connection.query(s4)
                     if (plan.rowCount > 0) {
                         subcribedCompanies.push({
@@ -1180,18 +1174,18 @@ module.exports.subcribedCompaniesList = async (req, res) => {
 module.exports.activeAndCanceledCompanies = async (req, res) => {
     try {
         let sAEmail = req.user.email
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
+        let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
 
-            let s2 = dbScript(db_sql['Q99'], {})
+            let s2 = dbScript(db_sql['Q89'], {})
             let companies = await connection.query(s2)
 
             if (companies.rowCount > 0) {
                 let activeCompanies = []
                 let canceledCompanies = []
                 for (let companyData of companies.rows) {
-                    let s3 = dbScript(db_sql['Q108'], { var1: companyData.id })
+                    let s3 = dbScript(db_sql['Q97'], { var1: companyData.id })
                     let transaction = await connection.query(s3);
                     if (transaction.rowCount > 0) {
                         const subscription = await stripe.subscriptions.retrieve(
@@ -1273,11 +1267,11 @@ module.exports.planwiseCompaniesList = async (req, res) => {
     try {
         let { planId } = req.params
         let sAEmail = req.user.email
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
+        let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
 
-            let s2 = dbScript(db_sql['Q115'], { var1: planId })
+            let s2 = dbScript(db_sql['Q104'], { var1: planId })
             let planDetails = await connection.query(s2);
 
             if (planDetails.rowCount > 0) {
@@ -1348,7 +1342,7 @@ module.exports.extendExpiryByCompanyId = async (req, res) => {
         let { companyId } = req.params
         let { trialDays } = req.body
         let sAEmail = req.user.email
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
+        let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
 
@@ -1363,7 +1357,7 @@ module.exports.extendExpiryByCompanyId = async (req, res) => {
                     let _dt = new Date().toISOString();
 
                     await connection.query('BEGIN')
-                    let s3 = dbScript(db_sql['Q113'], { var1: extendedExpiry, var2: compannyData.id, var3: _dt })
+                    let s3 = dbScript(db_sql['Q102'], { var1: extendedExpiry, var2: compannyData.id, var3: _dt })
                     updateExpiry = await connection.query(s3)
                 }
             }
@@ -1409,12 +1403,12 @@ module.exports.enableDisableImapService = async (req, res) => {
             companyId,
             isImapEnable
         } = req.body
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
+        let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
 
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q146'],{var1 : isImapEnable, var2 : _dt, var3 : companyId})
+            let s2 = dbScript(db_sql['Q133'],{var1 : isImapEnable, var2 : _dt, var3 : companyId})
             let updateImapService = await connection.query(s2)
 
             if(updateImapService.rowCount > 0){
@@ -1459,12 +1453,12 @@ module.exports.enableDisableMarketingService = async (req, res) => {
             companyId,
             isMarketingEnable
         } = req.body
-        let s1 = dbScript(db_sql['Q98'], { var1: sAEmail })
+        let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
 
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q230'],{var1 : isMarketingEnable, var2 : _dt, var3 : companyId})
+            let s2 = dbScript(db_sql['Q195'],{var1 : isMarketingEnable, var2 : _dt, var3 : companyId})
             let updateMarketingService = await connection.query(s2)
 
             if(updateMarketingService.rowCount > 0){
@@ -1503,7 +1497,7 @@ module.exports.enableDisableMarketingService = async (req, res) => {
 
 module.exports.contactUsQueriesList = async(req, res) => {
     try {
-        let s1 = dbScript(db_sql['Q187'], {})
+        let s1 = dbScript(db_sql['Q163'], {})
         let queries = await connection.query(s1)
         if(queries.rowCount > 0){
             res.json({

@@ -13,7 +13,7 @@ module.exports.fetchEmails = async (req, res) => {
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
             let j = 0;
-            let s1 = dbScript(db_sql['Q138'], { var1: checkAdmin.rows[0].id, var2 : checkAdmin.rows[0].company_id })
+            let s1 = dbScript(db_sql['Q125'], { var1: checkAdmin.rows[0].id, var2 : checkAdmin.rows[0].company_id })
             let findCredentials = await connection.query(s1)
             let mainArray = []
             if (findCredentials.rowCount > 0) {
@@ -66,12 +66,12 @@ module.exports.fetchEmails = async (req, res) => {
                                         messageId: parsed.messageId
                                     }
                                     arr.push(obj)
-                                    let s2 = dbScript(db_sql['Q135'], { var1: checkAdmin.rows[0].company_id, var2 : checkAdmin.rows[0].id })
+                                    let s2 = dbScript(db_sql['Q122'], { var1: checkAdmin.rows[0].company_id, var2 : checkAdmin.rows[0].id })
                                     let getEmails = await connection.query(s2)
                                     if (getEmails.rowCount > 0) {
                                         let checkMail = containsObject(parsed, getEmails.rows)
                                         if (!checkMail) {
-                                            let s3 = dbScript(db_sql['Q136'], { var1: parsed.from.value[0].address, var2: checkAdmin.rows[0].company_id })
+                                            let s3 = dbScript(db_sql['Q123'], { var1: parsed.from.value[0].address, var2: checkAdmin.rows[0].company_id })
                                             let findByFrom = await connection.query(s3)
                                             if (findByFrom.rowCount > 0) {
                                                 await connection.query('BEGIN')
@@ -81,7 +81,7 @@ module.exports.fetchEmails = async (req, res) => {
                                                 let attachments = (parsed.attachments.length > 0) ? (Buffer.from(JSON.stringify(parsed.attachments), "utf8")).toString('base64') : ""
                                                 let date = parsed.date.toISOString()
 
-                                                let s4 = dbScript(db_sql['Q137'], { var1: parsed.messageId, var2: parsed.to.value[0].address, var3: parsed.from.value[0].address, var4: parsed.from.value[0].name, var5: date, var6: parsed.subject, var7: html, var8: text, var9: textAsHtml, var10: checkAdmin.rows[0].company_id, var11: attachments, var12 : checkAdmin.rows[0].id })
+                                                let s4 = dbScript(db_sql['Q124'], { var1: parsed.messageId, var2: parsed.to.value[0].address, var3: parsed.from.value[0].address, var4: parsed.from.value[0].name, var5: date, var6: parsed.subject, var7: html, var8: text, var9: textAsHtml, var10: checkAdmin.rows[0].company_id, var11: attachments, var12 : checkAdmin.rows[0].id })
                                                 let insertEmail = await connection.query(s4)
                                                 if (insertEmail.rowCount > 0) {
                                                     mainArray.push(insertEmail);
@@ -90,7 +90,7 @@ module.exports.fetchEmails = async (req, res) => {
                                             }
                                         }
                                     } else {
-                                        let s5 = dbScript(db_sql['Q136'], { var1: parsed.from.value[0].address, var2: checkAdmin.rows[0].company_id })
+                                        let s5 = dbScript(db_sql['Q123'], { var1: parsed.from.value[0].address, var2: checkAdmin.rows[0].company_id })
                                         let findByFrom = await connection.query(s5)
                                         if (findByFrom.rowCount > 0) {
                                             await connection.query('BEGIN')
@@ -100,7 +100,7 @@ module.exports.fetchEmails = async (req, res) => {
                                             let attachments = (parsed.attachments.length > 0) ? (Buffer.from(JSON.stringify(parsed.attachments), "utf8")).toString('base64') : ""
                                             let date = parsed.date.toISOString()
 
-                                            let s6 = dbScript(db_sql['Q137'], { var1: parsed.messageId, var2: parsed.to.value[0].address, var3: parsed.from.value[0].address, var4: parsed.from.value[0].name, var5: date, var6: parsed.subject, var7: html, var8: text, var9: textAsHtml, var10: checkAdmin.rows[0].company_id, var11: attachments, var12 : checkAdmin.rows[0].id })
+                                            let s6 = dbScript(db_sql['Q124'], { var1: parsed.messageId, var2: parsed.to.value[0].address, var3: parsed.from.value[0].address, var4: parsed.from.value[0].name, var5: date, var6: parsed.subject, var7: html, var8: text, var9: textAsHtml, var10: checkAdmin.rows[0].company_id, var11: attachments, var12 : checkAdmin.rows[0].id })
                                             let insertEmail = await connection.query(s6)
                                             if (insertEmail.rowCount > 0) {
                                                 mainArray.push(insertEmail);
@@ -188,7 +188,7 @@ module.exports.inbox = async(req, res) => {
         let s0 = dbScript(db_sql['Q8'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
-            let s1 = dbScript(db_sql['Q135'], {var1 : checkAdmin.rows[0].company_id, var2 : checkAdmin.rows[0].id})
+            let s1 = dbScript(db_sql['Q122'], {var1 : checkAdmin.rows[0].company_id, var2 : checkAdmin.rows[0].id})
             let findInbox = await connection.query(s1)
             if(findInbox.rowCount > 0){
                 let inboxArr = []
@@ -301,7 +301,7 @@ module.exports.sendEmail = async (req, res) => {
         let s0 = dbScript(db_sql['Q8'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
-            let s1 = dbScript(db_sql['Q138'], { var1: checkAdmin.rows[0].id, var2: checkAdmin.rows[0].company_id  })
+            let s1 = dbScript(db_sql['Q125'], { var1: checkAdmin.rows[0].id, var2: checkAdmin.rows[0].company_id  })
             let findCredentials = await connection.query(s1)
             if (findCredentials.rowCount > 0) {
                 let dpass = decrypt(JSON.parse(findCredentials.rows[0].app_password))
@@ -314,7 +314,7 @@ module.exports.sendEmail = async (req, res) => {
                 let bufferedMessage = (Buffer.from(message, "utf8")).toString('base64')
 
                 await connection.query('BEGIN')
-                let s2 = dbScript(db_sql['Q140'], { var1:findCredentials.rows[0].email, var2: JSON.stringify(emails), var3: JSON.stringify(cc), var4: subject, var5: bufferedMessage, var6: checkAdmin.rows[0].company_id, var7: salesId, var8: JSON.stringify(attachments), var9 : checkAdmin.rows[0].id })
+                let s2 = dbScript(db_sql['Q127'], { var1:findCredentials.rows[0].email, var2: JSON.stringify(emails), var3: JSON.stringify(cc), var4: subject, var5: bufferedMessage, var6: checkAdmin.rows[0].company_id, var7: salesId, var8: JSON.stringify(attachments), var9 : checkAdmin.rows[0].id })
                 let storeSentMail = await connection.query(s2)
 
                 let attachmentsArr = [];
@@ -383,7 +383,7 @@ module.exports.SentEmailList = async (req, res) => {
         let s0 = dbScript(db_sql['Q8'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
-            let s1 = dbScript(db_sql['Q141'], { var1: checkAdmin.rows[0].company_id, var2 : salesId, var3 : checkAdmin.rows[0].id })
+            let s1 = dbScript(db_sql['Q128'], { var1: checkAdmin.rows[0].company_id, var2 : salesId, var3 : checkAdmin.rows[0].id })
             let findInbox = await connection.query(s1)
             if (findInbox.rowCount > 0) {
                 let inboxArr = []
@@ -459,7 +459,7 @@ module.exports.readEmail = async (req, res) => {
     let s0 = dbScript(db_sql['Q8'], { var1: id })
     let checkAdmin = await connection.query(s0)
     if (checkAdmin.rowCount > 0) {
-        let s1 = dbScript(db_sql['Q138'], { var1: checkAdmin.rows[0].id, var2: checkAdmin.rows[0].company_id  })
+        let s1 = dbScript(db_sql['Q125'], { var1: checkAdmin.rows[0].id, var2: checkAdmin.rows[0].company_id  })
         let findCredentials = await connection.query(s1)
         if (findCredentials.rowCount > 0) {
             let dpass = decrypt(JSON.parse(findCredentials.rows[0].app_password))

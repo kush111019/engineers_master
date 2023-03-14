@@ -20,7 +20,7 @@ module.exports.createCustomer = async (req, res) => {
         if (checkPermission.rows[0].permission_to_create) {
 
             if(industryId == ''){
-                let s3 = dbScript(db_sql['Q214'], { var1: mysql_real_escape_string(industry), var2: checkPermission.rows[0].company_id })
+                let s3 = dbScript(db_sql['Q182'], { var1: mysql_real_escape_string(industry), var2: checkPermission.rows[0].company_id })
                 let addIndustry = await connection.query(s3);
                 industryId = addIndustry.rows[0].id ;
             }
@@ -31,17 +31,17 @@ module.exports.createCustomer = async (req, res) => {
                 if (customerContact.length > 0) {
                     for (let contactData of customerContact) {
                         if (contactData.empId == '') {
-                            let s6 = dbScript(db_sql['Q70'], { var1: mysql_real_escape_string(contactData.empContactName), var2: contactData.empEmail, var3: contactData.empPhoneNumber, var4: createCustomer.rows[0].id, var5: contactData.empType, var6: userId, var7: checkPermission.rows[0].company_id })
+                            let s6 = dbScript(db_sql['Q67'], { var1: mysql_real_escape_string(contactData.empContactName), var2: contactData.empEmail, var3: contactData.empPhoneNumber, var4: createCustomer.rows[0].id, var5: contactData.empType, var6: userId, var7: checkPermission.rows[0].company_id })
                             let addCustomerContact = await connection.query(s6)
                         } else {
                             let _dt = new Date().toISOString();
-                            let s8 = dbScript(db_sql['Q72'], { var1: contactData.empId, var2: mysql_real_escape_string(contactData.empContactName), var3: contactData.empEmail, var4: contactData.empPhoneNumber, var5: _dt })
+                            let s8 = dbScript(db_sql['Q69'], { var1: contactData.empId, var2: mysql_real_escape_string(contactData.empContactName), var3: contactData.empEmail, var4: contactData.empPhoneNumber, var5: _dt })
                             let updateCustomerContact = await connection.query(s8)
                         }
                     }
                 }
                 let _dt = new Date().toISOString();
-                let s7 = dbScript(db_sql['Q333'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+                let s7 = dbScript(db_sql['Q279'], { var1:_dt, var2: checkPermission.rows[0].company_id })
                 updateStatusInCompany = await connection.query(s7)
                 await connection.query('COMMIT')
                 createCustomer.rows[0].customer_contacts = []
@@ -101,19 +101,19 @@ module.exports.createCustomerWithLead = async (req, res) => {
         if (checkPermission.rows[0].permission_to_create) {
 
             if(leadTitleId == ''){
-                let s3 = dbScript(db_sql['Q210'], { var1: mysql_real_escape_string(leadTitle), var2: checkPermission.rows[0].company_id })
+                let s3 = dbScript(db_sql['Q178'], { var1: mysql_real_escape_string(leadTitle), var2: checkPermission.rows[0].company_id })
                 let addTitle = await connection.query(s3)
                 leadTitleId = addTitle.rows[0].id;
             }
 
             if(leadSourceId == ''){
-                let s3 = dbScript(db_sql['Q218'], { var1: mysql_real_escape_string(leadSource), var2: checkPermission.rows[0].company_id})
+                let s3 = dbScript(db_sql['Q186'], { var1: mysql_real_escape_string(leadSource), var2: checkPermission.rows[0].company_id})
                 let addSource = await connection.query(s3)
                 leadSourceId = addSource.rows[0].id
             }
 
             if(industryId == ''){
-                let s3 = dbScript(db_sql['Q214'], { var1: mysql_real_escape_string(industry), var2: checkPermission.rows[0].company_id })
+                let s3 = dbScript(db_sql['Q182'], { var1: mysql_real_escape_string(industry), var2: checkPermission.rows[0].company_id })
                 let addIndustry = await connection.query(s3);
                 industryId = addIndustry.rows[0].id ;
             }
@@ -124,16 +124,16 @@ module.exports.createCustomerWithLead = async (req, res) => {
                 if (customerContact.length > 0) {
                     for (let contactData of customerContact) {
                         if (contactData.empId == '') {
-                            let s6 = dbScript(db_sql['Q70'], { var1: mysql_real_escape_string(contactData.empContactName), var2: contactData.empEmail, var3: contactData.empPhoneNumber, var4: createCustomer.rows[0].id, var5: contactData.empType, var6: userId, var7: checkPermission.rows[0].company_id })
+                            let s6 = dbScript(db_sql['Q67'], { var1: mysql_real_escape_string(contactData.empContactName), var2: contactData.empEmail, var3: contactData.empPhoneNumber, var4: createCustomer.rows[0].id, var5: contactData.empType, var6: userId, var7: checkPermission.rows[0].company_id })
                             let addCustomerContact = await connection.query(s6)
                         } else {
                             let _dt = new Date().toISOString();
-                            let s8 = dbScript(db_sql['Q72'], { var1: contactData.empId, var2: mysql_real_escape_string(contactData.empContactName), var3: contactData.empEmail, var4: contactData.empPhoneNumber, var5: _dt })
+                            let s8 = dbScript(db_sql['Q69'], { var1: contactData.empId, var2: mysql_real_escape_string(contactData.empContactName), var3: contactData.empEmail, var4: contactData.empPhoneNumber, var5: _dt })
                             let updateCustomerContact = await connection.query(s8)
                         }
                     }
                 }
-                let s10 = dbScript(db_sql['Q200'], { var1: leadName, var2: leadTitleId, var3: leadEmail, var4: leadPhoneNumber, var5: leadSourceId, var6: createCustomer.rows[0].id, var7: checkPermission.rows[0].id, var8: checkPermission.rows[0].company_id, var9: empType })
+                let s10 = dbScript(db_sql['Q168'], { var1: leadName, var2: leadTitleId, var3: leadEmail, var4: leadPhoneNumber, var5: leadSourceId, var6: createCustomer.rows[0].id, var7: checkPermission.rows[0].id, var8: checkPermission.rows[0].company_id, var9: empType })
                 let createLead = await connection.query(s10)
                 if (createLead.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -199,7 +199,7 @@ module.exports.customerList = async (req, res) => {
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            let s2 = dbScript(db_sql['Q316'], { var1: roleUsers.join(","), var2: false })
+            let s2 = dbScript(db_sql['Q271'], { var1: roleUsers.join(","), var2: false })
             let customerList = await connection.query(s2)
             if (customerList.rowCount > 0) {
                 res.json({
@@ -252,18 +252,18 @@ module.exports.editCustomer = async (req, res) => {
                 for (let contactData of customerContact) {
                     if (contactData.empId == '') {
 
-                        let s6 = dbScript(db_sql['Q70'], { var1: mysql_real_escape_string(contactData.empContactName), var2: contactData.empEmail, var3: contactData.empPhoneNumber, var4: customerId, var5: contactData.empType, var6: userId, var7: checkPermission.rows[0].company_id })
+                        let s6 = dbScript(db_sql['Q67'], { var1: mysql_real_escape_string(contactData.empContactName), var2: contactData.empEmail, var3: contactData.empPhoneNumber, var4: customerId, var5: contactData.empType, var6: userId, var7: checkPermission.rows[0].company_id })
                         let addCustomerContact = await connection.query(s6)
                     } else {
                         let _dt = new Date().toISOString();
-                        let s8 = dbScript(db_sql['Q72'], { var1: contactData.empId, var2: mysql_real_escape_string(contactData.empContactName), var3: contactData.empEmail, var4: contactData.empPhoneNumber, var5: _dt })
+                        let s8 = dbScript(db_sql['Q69'], { var1: contactData.empId, var2: mysql_real_escape_string(contactData.empContactName), var3: contactData.empEmail, var4: contactData.empPhoneNumber, var5: _dt })
                         let updateCustomerContact = await connection.query(s8)
                     }
                 }
             }
 
             if(industryId == ''){
-                let s3 = dbScript(db_sql['Q214'], { var1: mysql_real_escape_string(industry), var2: checkPermission.rows[0].company_id })
+                let s3 = dbScript(db_sql['Q182'], { var1: mysql_real_escape_string(industry), var2: checkPermission.rows[0].company_id })
                 let addIndustry = await connection.query(s3);
                 industryId = addIndustry.rows[0].id ;
             }
@@ -316,7 +316,7 @@ module.exports.deleteContactForCustomer = async (req, res) => {
         if (checkPermission.rows[0].permission_to_delete) {
             let _dt = new Date().toISOString()
             // if (type == 'business') {
-            let s2 = dbScript(db_sql['Q205'], { var1: id, var2: _dt })
+            let s2 = dbScript(db_sql['Q173'], { var1: id, var2: _dt })
             let deleteBusinessContact = await connection.query(s2)
             if (deleteBusinessContact.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -361,7 +361,7 @@ module.exports.deleteCustomer = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
-            let s2 = dbScript(db_sql['Q259'], { var1: customerId })
+            let s2 = dbScript(db_sql['Q222'], { var1: customerId })
             let checkCustomerInSales = await connection.query(s2)
             
             if (checkCustomerInSales.rowCount == 0) {
@@ -422,7 +422,7 @@ module.exports.addBusinessAndRevenueContact = async (req, res) => {
         if (checkPermission.rows[0].permission_to_create) {
             await connection.query('BEGIN')
 
-            let s6 = dbScript(db_sql['Q70'], { var1:mysql_real_escape_string(empContactName), var2: empEmail, var3: empPhoneNumber, var4: customerId, var5: empType, var6: userId, var7: checkPermission.rows[0].company_id })
+            let s6 = dbScript(db_sql['Q67'], { var1:mysql_real_escape_string(empContactName), var2: empEmail, var3: empPhoneNumber, var4: customerId, var5: empType, var6: userId, var7: checkPermission.rows[0].company_id })
             let addContact = await connection.query(s6)
 
             if (addContact.rowCount > 0) {

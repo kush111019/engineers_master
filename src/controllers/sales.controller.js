@@ -31,7 +31,7 @@ module.exports.customerListforSales = async (req, res) => {
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0])
-            let s4 = dbScript(db_sql['Q316'], { var1: roleUsers.join(",") })
+            let s4 = dbScript(db_sql['Q271'], { var1: roleUsers.join(",") })
             let customerList = await connection.query(s4)
             if (customerList.rowCount > 0) {
                 res.json({
@@ -112,7 +112,7 @@ module.exports.createSales = async (req, res) => {
             targetAmount = (targetAmount == '') ? '0' : targetAmount
 
             let totalCommission = 0;
-            let s4 = dbScript(db_sql['Q184'], { var1: slabId })
+            let s4 = dbScript(db_sql['Q161'], { var1: slabId })
             let slab = await connection.query(s4)
             let remainingAmount = Number(targetAmount);
             let commission = 0
@@ -143,7 +143,7 @@ module.exports.createSales = async (req, res) => {
             let s5 = dbScript(db_sql['Q53'], { var1: customerId, var2: commissionSplitId, var3: is_overwrite, var4: checkPermission.rows[0].company_id, var5: businessId, var6: revenueId, var7: mysql_real_escape_string(qualification), var8: is_qualified, var9: targetAmount, var10: targetClosingDate, var11: salesType, var12: subscriptionPlan, var13: recurringDate, var14: currency, var15: userId, var16: slabId, var17: leadId, var18: totalCommission })
             let createSales = await connection.query(s5)
             let salesUsersForLog = [];
-            let s7 = dbScript(db_sql['Q58'], { var1: captainId, var2: Number(captainPercentage), var3: process.env.CAPTAIN, var4: commissionSplitId, var5: createSales.rows[0].id, var6: checkPermission.rows[0].company_id })
+            let s7 = dbScript(db_sql['Q57'], { var1: captainId, var2: Number(captainPercentage), var3: process.env.CAPTAIN, var4: commissionSplitId, var5: createSales.rows[0].id, var6: checkPermission.rows[0].company_id })
             let addSalesCaptain = await connection.query(s7)
             if (addSalesCaptain.rowCount > 0) {
                 let s8 = dbScript(db_sql['Q8'], { var1: addSalesCaptain.rows[0].user_id })
@@ -154,7 +154,7 @@ module.exports.createSales = async (req, res) => {
 
             if (supporters.length > 0) {
                 for (let supporterData of supporters) {
-                    let s8 = dbScript(db_sql['Q58'], { var1: supporterData.id, var2: Number(supporterData.percentage), var3: process.env.SUPPORT, var4: commissionSplitId, var5: createSales.rows[0].id, var6: checkPermission.rows[0].company_id })
+                    let s8 = dbScript(db_sql['Q57'], { var1: supporterData.id, var2: Number(supporterData.percentage), var3: process.env.SUPPORT, var4: commissionSplitId, var5: createSales.rows[0].id, var6: checkPermission.rows[0].company_id })
                     addSalesSupporter = await connection.query(s8)
                     supporterIds.push(addSalesSupporter.rows[0].id)
                     if (addSalesCaptain.rowCount > 0) {
@@ -167,7 +167,7 @@ module.exports.createSales = async (req, res) => {
             }
             if (products.length > 0) {
                 for (let productId of products) {
-                    let s9 = dbScript(db_sql['Q155'], { var1: productId, var2: createSales.rows[0].id, var3: checkPermission.rows[0].company_id })
+                    let s9 = dbScript(db_sql['Q141'], { var1: productId, var2: createSales.rows[0].id, var3: checkPermission.rows[0].company_id })
                     let addProduct = await connection.query(s9)
                 }
             }
@@ -251,7 +251,7 @@ module.exports.allSalesList = async (req, res) => {
 
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            let s3 = dbScript(db_sql['Q178'], { var1: roleUsers.join(",") })
+            let s3 = dbScript(db_sql['Q155'], { var1: roleUsers.join(",") })
             let salesList = await connection.query(s3)
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
@@ -301,7 +301,7 @@ module.exports.activeSalesList = async (req, res) => {
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global) {
-            let s3 = dbScript(db_sql['Q179'], { var1: checkPermission.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q156'], { var1: checkPermission.rows[0].company_id })
             let salesList = await connection.query(s3)
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
@@ -332,7 +332,7 @@ module.exports.activeSalesList = async (req, res) => {
 
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            let s3 = dbScript(db_sql['Q181'], { var1: roleUsers.join(",") })
+            let s3 = dbScript(db_sql['Q158'], { var1: roleUsers.join(",") })
             let salesList = await connection.query(s3)
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
@@ -383,7 +383,7 @@ module.exports.closedSalesList = async (req, res) => {
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global) {
 
-            let s3 = dbScript(db_sql['Q180'], { var1: checkPermission.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q157'], { var1: checkPermission.rows[0].company_id })
             let salesList = await connection.query(s3)
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
@@ -414,7 +414,7 @@ module.exports.closedSalesList = async (req, res) => {
 
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            let s3 = dbScript(db_sql['Q182'], { var1: roleUsers.join(",") })
+            let s3 = dbScript(db_sql['Q159'], { var1: roleUsers.join(",") })
             let salesList = await connection.query(s3)
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
@@ -465,7 +465,7 @@ module.exports.salesDetails = async (req, res) => {
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-            let s3 = dbScript(db_sql['Q292'], { var1: checkPermission.rows[0].company_id, var2: salesId })
+            let s3 = dbScript(db_sql['Q249'], { var1: checkPermission.rows[0].company_id, var2: salesId })
             let salesList = await connection.query(s3)
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
@@ -553,7 +553,7 @@ module.exports.updateSales = async (req, res) => {
             let _dt = new Date().toISOString();
 
             let totalCommission = 0;
-            let s4 = dbScript(db_sql['Q184'], { var1: slabId })
+            let s4 = dbScript(db_sql['Q161'], { var1: slabId })
             let slab = await connection.query(s4)
             let remainingAmount = Number(targetAmount);
             let commission = 0
@@ -580,7 +580,7 @@ module.exports.updateSales = async (req, res) => {
                 }
             }
             totalCommission = totalCommission + commission
-            let s5 = dbScript(db_sql['Q63'], { var1: customerId, var2: commissionSplitId, var3: is_overwrite, var4: _dt, var5: salesId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: mysql_real_escape_string(qualification), var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17: currency, var18: slabId, var19: leadId, var20: totalCommission })
+            let s5 = dbScript(db_sql['Q62'], { var1: customerId, var2: commissionSplitId, var3: is_overwrite, var4: _dt, var5: salesId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: mysql_real_escape_string(qualification), var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17: currency, var18: slabId, var19: leadId, var20: totalCommission })
             let updateSales = await connection.query(s5)
 
 
@@ -589,7 +589,7 @@ module.exports.updateSales = async (req, res) => {
 
             // let closer_percentage = closerPercentage
             let salesUsersForLog = []
-            let s7 = dbScript(db_sql['Q64'], { var1: captainId, var2: captainPercentage, var3: commissionSplitId, var4: _dt, var5: salesId, var6: checkPermission.rows[0].company_id, var7: process.env.CAPTAIN })
+            let s7 = dbScript(db_sql['Q63'], { var1: captainId, var2: captainPercentage, var3: commissionSplitId, var4: _dt, var5: salesId, var6: checkPermission.rows[0].company_id, var7: process.env.CAPTAIN })
             let updateSalesCaptain = await connection.query(s7)
             if (updateSalesCaptain.rowCount > 0) {
                 let s8 = dbScript(db_sql['Q8'], { var1: updateSalesCaptain.rows[0].user_id })
@@ -598,11 +598,11 @@ module.exports.updateSales = async (req, res) => {
                 salesUsersForLog.push(updateSalesCaptain.rows[0])
             }
 
-            let s8 = dbScript(db_sql['Q61'], { var1: _dt, var2: salesId, var3: checkPermission.rows[0].company_id, var4: process.env.SUPPORT })
+            let s8 = dbScript(db_sql['Q60'], { var1: _dt, var2: salesId, var3: checkPermission.rows[0].company_id, var4: process.env.SUPPORT })
             let updateSupporter = await connection.query(s8)
             if (supporters.length > 0) {
                 for (let supporterData of supporters) {
-                    let s8 = dbScript(db_sql['Q58'], { var1: supporterData.id, var2: Number(supporterData.percentage), var3: process.env.SUPPORT, var4: commissionSplitId, var5: salesId, var6: checkPermission.rows[0].company_id })
+                    let s8 = dbScript(db_sql['Q57'], { var1: supporterData.id, var2: Number(supporterData.percentage), var3: process.env.SUPPORT, var4: commissionSplitId, var5: salesId, var6: checkPermission.rows[0].company_id })
                     let addSalesSupporter = await connection.query(s8)
                     supporterIds.push(addSalesSupporter.rows[0].id)
                     if (addSalesSupporter.rowCount > 0) {
@@ -613,11 +613,11 @@ module.exports.updateSales = async (req, res) => {
                     }
                 }
             }
-            let s9 = dbScript(db_sql['Q156'], { var1: _dt, var2: salesId, var3: checkPermission.rows[0].company_id })
+            let s9 = dbScript(db_sql['Q142'], { var1: _dt, var2: salesId, var3: checkPermission.rows[0].company_id })
             let updateProduct = await connection.query(s9)
             if (products.length > 0) {
                 for (let productId of products) {
-                    let s9 = dbScript(db_sql['Q155'], { var1: productId, var2: salesId, var3: checkPermission.rows[0].company_id })
+                    let s9 = dbScript(db_sql['Q141'], { var1: productId, var2: salesId, var3: checkPermission.rows[0].company_id })
                     let addProduct = await connection.query(s9)
                 }
             }
@@ -675,13 +675,13 @@ module.exports.deleteSales = async (req, res) => {
             await connection.query('BEGIN')
 
             let _dt = new Date().toISOString();
-            let s4 = dbScript(db_sql['Q60'], { var1: _dt, var2: salesId, var3: checkPermission.rows[0].company_id })
+            let s4 = dbScript(db_sql['Q59'], { var1: _dt, var2: salesId, var3: checkPermission.rows[0].company_id })
             let deleteSales = await connection.query(s4)
 
-            let s5 = dbScript(db_sql['Q62'], { var1: _dt, var2: salesId, var3: checkPermission.rows[0].company_id })
+            let s5 = dbScript(db_sql['Q61'], { var1: _dt, var2: salesId, var3: checkPermission.rows[0].company_id })
             let deleteSalesUsers = await connection.query(s5)
 
-            let s6 = dbScript(db_sql['Q156'], { var1: _dt, var2: salesId, var3: checkPermission.rows[0].company_id })
+            let s6 = dbScript(db_sql['Q142'], { var1: _dt, var2: salesId, var3: checkPermission.rows[0].company_id })
             let deleteSalesProduct = await connection.query(s6)
 
             if (deleteSales.rowCount > 0 && deleteSalesUsers.rowCount >= 0 && deleteSalesProduct.rowCount >= 0) {
@@ -741,7 +741,7 @@ module.exports.salesLogsList = async (req, res) => {
                 }
                 if (salesData.products) {
                     for (let productId of JSON.parse(salesData.products)) {
-                        let s4 = dbScript(db_sql['Q96'], { var1: productId, var2: checkPermission.rows[0].company_id })
+                        let s4 = dbScript(db_sql['Q86'], { var1: productId, var2: checkPermission.rows[0].company_id })
                         let productsList = await connection.query(s4)
                         products.push(productsList.rows[0])
                     }
@@ -870,7 +870,7 @@ module.exports.deleteNote = async (req, res) => {
             await connection.query('BEGIN')
 
             let _dt = new Date().toISOString();
-            let s4 = dbScript(db_sql['Q66'], { var1: _dt, var2: noteId })
+            let s4 = dbScript(db_sql['Q64'], { var1: _dt, var2: noteId })
             let deleteDeal = await connection.query(s4)
 
             await connection.query('COMMIT')
@@ -944,13 +944,13 @@ module.exports.closeSales = async (req, res) => {
             let s2 = dbScript(db_sql['Q40'], { var1: _dt, var2: _dt, var3: salesCommissionId, var4: contract })
             let closeSales = await connection.query(s2)
 
-            let s3 = dbScript(db_sql['Q158'], { var1: _dt, var2: _dt, var3: salesCommissionId })
+            let s3 = dbScript(db_sql['Q143'], { var1: _dt, var2: _dt, var3: salesCommissionId })
             let updateSalesLog = await connection.query(s3)
 
-            let s4 = dbScript(db_sql['Q271'], { var1: salesCommissionId })
+            let s4 = dbScript(db_sql['Q229'], { var1: salesCommissionId })
             let findSales = await connection.query(s4)
 
-            let s5 = dbScript(db_sql['Q322'], { var1: _dt, var2: findSales.rows[0].lead_id })
+            let s5 = dbScript(db_sql['Q275'], { var1: _dt, var2: findSales.rows[0].lead_id })
             let updateLead = await connection.query(s5)
 
             // add notification in notification list
@@ -1039,7 +1039,7 @@ module.exports.usersListForSales = async (req, res) => {
             }
             await getRoles(checkPermission.rows[0].role_id)
             for (let roleId of roleIds) {
-                let s3 = dbScript(db_sql['Q185'], { var1: roleId })
+                let s3 = dbScript(db_sql['Q162'], { var1: roleId })
                 let findUsers = await connection.query(s3)
                 if (findUsers.rowCount > 0) {
                     for (let user of findUsers.rows) {
@@ -1047,7 +1047,7 @@ module.exports.usersListForSales = async (req, res) => {
                     }
                 }
             }
-            let s4 = dbScript(db_sql['Q268'], { var1: checkPermission.rows[0].id })
+            let s4 = dbScript(db_sql['Q226'], { var1: checkPermission.rows[0].id })
             let addUser = await connection.query(s4)
             let s5 = dbScript(db_sql['Q12'], { var1: addUser.rows[0].role_id })
             let findRole = await connection.query(s5);
@@ -1058,7 +1058,7 @@ module.exports.usersListForSales = async (req, res) => {
             }
             userListArr.push(addUser.rows[0])
             for (let id of roleUsers) {
-                let s5 = dbScript(db_sql['Q176'], { var1: id })
+                let s5 = dbScript(db_sql['Q154'], { var1: id })
                 let findUsers = await connection.query(s5);
                 if (findUsers.rowCount > 0) {
                     for (let user of findUsers.rows) {
@@ -1110,7 +1110,7 @@ module.exports.commissionSplitListForSales = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
 
-            let s4 = dbScript(db_sql['Q162'], { var1: checkPermission.rows[0].company_id })
+            let s4 = dbScript(db_sql['Q147'], { var1: checkPermission.rows[0].company_id })
             let commissionList = await connection.query(s4)
             if (commissionList.rows.length > 0) {
                 res.json({
@@ -1155,13 +1155,13 @@ module.exports.transferBackSales = async (req, res) => {
         if (checkPermission.rows[0].permission_to_update) {
             await connection.query('BEGIN')
             let _dt = new Date().toISOString()
-            let s2 = dbScript(db_sql['Q269'], { var1: creatorId, var2: _dt, var3: salesId, var4: process.env.CAPTAIN })
+            let s2 = dbScript(db_sql['Q227'], { var1: creatorId, var2: _dt, var3: salesId, var4: process.env.CAPTAIN })
             let transferSales = await connection.query(s2)
 
-            let s3 = dbScript(db_sql['Q270'], { var1: mysql_real_escape_string(transferReason), var2: _dt, var3: salesId, var4: userId })
+            let s3 = dbScript(db_sql['Q228'], { var1: mysql_real_escape_string(transferReason), var2: _dt, var3: salesId, var4: userId })
             let updateReason = await connection.query(s3)
 
-            let s4 = dbScript(db_sql['Q284'], { var1: userId, var2: creatorId, var3: _dt, var4: salesId, var5: mysql_real_escape_string(transferReason), var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
+            let s4 = dbScript(db_sql['Q240'], { var1: userId, var2: creatorId, var3: _dt, var4: salesId, var5: mysql_real_escape_string(transferReason), var6: checkPermission.rows[0].id, var7: checkPermission.rows[0].company_id })
             let addTransferSales = await connection.query(s4)
             // add notification in notification list
             await notificationsOperations({ type: 1, msg: 1.3, notification_typeId, notification_userId }, userId);
@@ -1203,7 +1203,7 @@ module.exports.transferBackList = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-            let s1 = dbScript(db_sql['Q285'], { var1: salesId })
+            let s1 = dbScript(db_sql['Q241'], { var1: salesId })
             let transferedBackList = await connection.query(s1)
             if (transferedBackList.rowCount > 0) {
                 res.json({
@@ -1262,24 +1262,24 @@ module.exports.addRecognizedRevenue = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
 
-        let s2 = dbScript(db_sql['Q271'], { var1: salesId })
+        let s2 = dbScript(db_sql['Q229'], { var1: salesId })
         let findSales = await connection.query(s2)
 
         if (findSales.rowCount > 0) {
             let targetAmount = Number(findSales.rows[0].target_amount)
             await connection.query('BEGIN')
             //add RecognizeRevenue in db
-            let s3 = dbScript(db_sql['Q272'], { var1: date, var2: amount, var3: targetAmount, var4: mysql_real_escape_string(notes), var5: invoice, var6: salesId, var7: checkPermission.rows[0].id, var8: checkPermission.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q230'], { var1: date, var2: amount, var3: targetAmount, var4: mysql_real_escape_string(notes), var5: invoice, var6: salesId, var7: checkPermission.rows[0].id, var8: checkPermission.rows[0].company_id })
             let addRecognizeRevenue = await connection.query(s3)
             await connection.query('COMMIT')
 
             //get Recognized Revenue total that submitted
-            let s5 = dbScript(db_sql['Q300'], { var1: salesId })
+            let s5 = dbScript(db_sql['Q256'], { var1: salesId })
             let recognizeRevenue = await connection.query(s5)
 
             //get slab's list here
             let totalCommission = 0;
-            let s4 = dbScript(db_sql['Q184'], { var1: findSales.rows[0].slab_id })
+            let s4 = dbScript(db_sql['Q161'], { var1: findSales.rows[0].slab_id })
             let slab = await connection.query(s4)
 
             let remainingAmount = Number(recognizeRevenue.rows[0].amount);
@@ -1307,7 +1307,7 @@ module.exports.addRecognizedRevenue = async (req, res) => {
                 }
             }
             totalCommission = totalCommission + commission;
-            let s6 = dbScript(db_sql['Q296'], { var1: totalCommission, var2: salesId })
+            let s6 = dbScript(db_sql['Q253'], { var1: totalCommission, var2: salesId })
             let updateSalesData = await connection.query(s6)
 
 
@@ -1349,7 +1349,7 @@ module.exports.recognizedRevenueList = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-            let s2 = dbScript(db_sql['Q273'], { var1: salesId })
+            let s2 = dbScript(db_sql['Q231'], { var1: salesId })
             let recognizedList = await connection.query(s2)
             if (recognizedList.rowCount > 0) {
                 res.json({
@@ -1384,10 +1384,10 @@ module.exports.recognizedRevenueList = async (req, res) => {
 module.exports.getRemainingTargetAmount = async (req, res) => {
     try {
         let salesId = req.query.id;
-        let s1 = dbScript(db_sql['Q271'], { var1: salesId })
+        let s1 = dbScript(db_sql['Q229'], { var1: salesId })
         let getSalesData = await connection.query(s1)
 
-        let s2 = dbScript(db_sql['Q300'], { var1: salesId })
+        let s2 = dbScript(db_sql['Q256'], { var1: salesId })
         let recognizedRevenueData = await connection.query(s2)
         let remainingAmount = Number(getSalesData.rows[0].target_amount) - Number(recognizedRevenueData.rows[0].amount);
         if (getSalesData.rowCount > 0) {
@@ -1422,7 +1422,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
         if (checkPermission.rows[0].permission_to_view_global) {
             // here we are getting product, customer, user, slab,commissionSlab deatils by global permission
             let allDetails = {};
-            let s2 = dbScript(db_sql['Q94'], { var1: checkPermission.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q84'], { var1: checkPermission.rows[0].company_id })
             let productList = await connection.query(s2)
             if (productList.rowCount > 0) {
                 allDetails.productList = productList.rows
@@ -1484,7 +1484,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             let allDetails = {};
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
 
-            let s1 = dbScript(db_sql['Q315'], { var1: roleUsers.join(",") })
+            let s1 = dbScript(db_sql['Q270'], { var1: roleUsers.join(",") })
             let productList = await connection.query(s1)
             if (productList.rowCount > 0) {
                 allDetails.productList = productList.rows
@@ -1492,7 +1492,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
                 allDetails.productList = []
             }
 
-            let s2 = dbScript(db_sql['Q316'], { var1: roleUsers.join(","), var2: false })
+            let s2 = dbScript(db_sql['Q271'], { var1: roleUsers.join(","), var2: false })
             let customerList = await connection.query(s2)
             if (customerList.rowCount > 0) {
                 allDetails.customerList = customerList.rows
@@ -1500,7 +1500,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
                 allDetails.customerList = []
             }
 
-            let s3 = dbScript(db_sql['Q317'], { var1: roleUsers.join(",") })
+            let s3 = dbScript(db_sql['Q272'], { var1: roleUsers.join(",") })
             let userList = await connection.query(s3);
             if (userList.rowCount > 0) {
                 allDetails.userList = userList.rows
@@ -1574,7 +1574,7 @@ module.exports.archivedSales = async (req, res) => {
         if (checkPermission.rows[0].permission_to_update) {
 
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q74'], { var1: _dt, var2: userId, var3: mysql_real_escape_string(reason), var4: salesId, var5: checkPermission.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q71'], { var1: _dt, var2: userId, var3: mysql_real_escape_string(reason), var4: salesId, var5: checkPermission.rows[0].company_id })
             let archivedSales = await connection.query(s2)
 
             if (archivedSales.rowCount > 0) {
@@ -1618,7 +1618,7 @@ module.exports.archivedSalesList = async (req, res) => {
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global) {
-            let s3 = dbScript(db_sql['Q75'], { var1: checkPermission.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q72'], { var1: checkPermission.rows[0].company_id })
             let salesList = await connection.query(s3)
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
@@ -1649,7 +1649,7 @@ module.exports.archivedSalesList = async (req, res) => {
 
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            let s3 = dbScript(db_sql['Q76'], { var1: roleUsers.join(",") })
+            let s3 = dbScript(db_sql['Q73'], { var1: roleUsers.join(",") })
             let salesList = await connection.query(s3)
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
