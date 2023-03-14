@@ -1595,7 +1595,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
         if (checkPermissionForCustomer.rows[0].permission_to_view_global) {
             // here we are getting customer deatils by global permission
             
-            let s3 = dbScript(db_sql['Q39'], { var1: checkPermission.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q39'], { var1: checkPermissionForCustomer.rows[0].company_id })
             let customerList = await connection.query(s3)
             if (customerList.rowCount > 0) {
                 allDetails.customerList = customerList.rows
@@ -1687,7 +1687,7 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
                 data: []
             })
         }
-        
+
     } catch (error) {
         res.json({
             status: 400,
