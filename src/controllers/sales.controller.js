@@ -1413,16 +1413,161 @@ module.exports.getRemainingTargetAmount = async (req, res) => {
     }
 }
 
+// module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
+//     try {
+//         let userId = req.user.id
+//         let moduleName = process.env.PRODUCTS_MODULE;
+//         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+//         let checkPermissionForProduct = await connection.query(s1)
+//         if (checkPermissionForProduct.rows[0].permission_to_view_global) {
+//             // here we are getting product, customer, user, slab,commissionSlab deatils by global permission
+//             let allDetails = {};
+//             let s2 = dbScript(db_sql['Q84'], { var1: checkPermissionForProduct.rows[0].company_id })
+//             let productList = await connection.query(s2)
+//             if (productList.rowCount > 0) {
+//                 allDetails.productList = productList.rows
+//             } else {
+//                 allDetails.productList = []
+//             }
+
+//             let s3 = dbScript(db_sql['Q39'], { var1: checkPermission.rows[0].company_id })
+//             let customerList = await connection.query(s3)
+//             if (customerList.rowCount > 0) {
+//                 allDetails.customerList = customerList.rows
+//             } else {
+//                 allDetails.customerList = []
+//             }
+
+//             let s4 = dbScript(db_sql['Q15'], { var1: checkPermission.rows[0].company_id })
+//             let userList = await connection.query(s4);
+//             if (userList.rowCount > 0) {
+//                 allDetails.userList = userList.rows
+//             } else {
+//                 allDetails.userList = []
+//             }
+
+//             //get slab list here 
+//             let s5 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
+//             let slabList = await connection.query(s5)
+//             if (slabList.rowCount > 0) {
+//                 const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()]
+//                 allDetails.slabList = unique;
+//             } else {
+//                 allDetails.slabList = []
+//             }
+
+//             let s6 = dbScript(db_sql['Q50'], { var1: checkPermission.rows[0].company_id })
+//             let commissionList = await connection.query(s6)
+//             if (commissionList.rowCount > 0) {
+//                 allDetails.commissionList = commissionList.rows
+//             } else {
+//                 allDetails.commissionList = []
+//             }
+
+//             if (allDetails) {
+//                 res.json({
+//                     status: 200,
+//                     success: true,
+//                     message: "All details list",
+//                     data: allDetails
+//                 })
+//             } else {
+//                 res.json({
+//                     status: 200,
+//                     success: false,
+//                     message: "Empty details list",
+//                     data: []
+//                 })
+//             }
+//         } else if (checkPermission.rows[0].permission_to_view_own) {
+//             // here we are getting product, customer, user, slab,commissionSlab deatils by own permission of user and its child user
+//             let allDetails = {};
+//             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+
+//             let s1 = dbScript(db_sql['Q270'], { var1: roleUsers.join(",") })
+//             let productList = await connection.query(s1)
+//             if (productList.rowCount > 0) {
+//                 allDetails.productList = productList.rows
+//             } else {
+//                 allDetails.productList = []
+//             }
+
+//             let s2 = dbScript(db_sql['Q271'], { var1: roleUsers.join(","), var2: false })
+//             let customerList = await connection.query(s2)
+//             if (customerList.rowCount > 0) {
+//                 allDetails.customerList = customerList.rows
+//             } else {
+//                 allDetails.customerList = []
+//             }
+
+//             let s3 = dbScript(db_sql['Q272'], { var1: roleUsers.join(",") })
+//             let userList = await connection.query(s3);
+//             if (userList.rowCount > 0) {
+//                 allDetails.userList = userList.rows
+//             } else {
+//                 allDetails.userList = []
+//             }
+
+//             //get slab list here 
+//             let s4 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
+//             let slabList = await connection.query(s4)
+//             if (slabList.rowCount > 0) {
+//                 const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()]
+//                 allDetails.slabList = unique;
+//             } else {
+//                 allDetails.slabList = []
+//             }
+
+//             let s5 = dbScript(db_sql['Q50'], { var1: checkPermission.rows[0].company_id })
+//             let commissionList = await connection.query(s5)
+//             if (commissionList.rowCount > 0) {
+//                 allDetails.commissionList = commissionList.rows
+//             } else {
+//                 allDetails.commissionList = []
+//             }
+
+//             if (allDetails) {
+//                 res.json({
+//                     status: 200,
+//                     success: true,
+//                     message: "All details list",
+//                     data: allDetails
+//                 })
+//             } else {
+//                 res.json({
+//                     status: 200,
+//                     success: false,
+//                     message: "Empty details list",
+//                     data: []
+//                 })
+//             }
+//         } else {
+//             res.status(403).json({
+//                 success: false,
+//                 message: "Unathorised"
+//             })
+//         }
+//     } catch (error) {
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }
+
 module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
     try {
         let userId = req.user.id
-        let moduleName = process.env.SALES_MODULE;
-        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s1)
-        if (checkPermission.rows[0].permission_to_view_global) {
-            // here we are getting product, customer, user, slab,commissionSlab deatils by global permission
-            let allDetails = {};
-            let s2 = dbScript(db_sql['Q84'], { var1: checkPermission.rows[0].company_id })
+        let allDetails = {};
+
+        let productModule = process.env.PRODUCTS_MODULE;
+        let s1 = dbScript(db_sql['Q41'], { var1: productModule, var2: userId })
+        let checkPermissionForProduct = await connection.query(s1)
+        if (checkPermissionForProduct.rows[0].permission_to_view_global) {
+            // here we are getting product deatils by global permission
+            
+            let s2 = dbScript(db_sql['Q84'], { var1: checkPermissionForProduct.rows[0].company_id })
             let productList = await connection.query(s2)
             if (productList.rowCount > 0) {
                 allDetails.productList = productList.rows
@@ -1430,59 +1575,9 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
                 allDetails.productList = []
             }
 
-            let s3 = dbScript(db_sql['Q39'], { var1: checkPermission.rows[0].company_id })
-            let customerList = await connection.query(s3)
-            if (customerList.rowCount > 0) {
-                allDetails.customerList = customerList.rows
-            } else {
-                allDetails.customerList = []
-            }
-
-            let s4 = dbScript(db_sql['Q15'], { var1: checkPermission.rows[0].company_id })
-            let userList = await connection.query(s4);
-            if (userList.rowCount > 0) {
-                allDetails.userList = userList.rows
-            } else {
-                allDetails.userList = []
-            }
-
-            //get slab list here 
-            let s5 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
-            let slabList = await connection.query(s5)
-            if (slabList.rowCount > 0) {
-                const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()]
-                allDetails.slabList = unique;
-            } else {
-                allDetails.slabList = []
-            }
-
-            let s6 = dbScript(db_sql['Q50'], { var1: checkPermission.rows[0].company_id })
-            let commissionList = await connection.query(s6)
-            if (commissionList.rowCount > 0) {
-                allDetails.commissionList = commissionList.rows
-            } else {
-                allDetails.commissionList = []
-            }
-
-            if (allDetails) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "All details list",
-                    data: allDetails
-                })
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: "Empty details list",
-                    data: []
-                })
-            }
-        } else if (checkPermission.rows[0].permission_to_view_own) {
-            // here we are getting product, customer, user, slab,commissionSlab deatils by own permission of user and its child user
-            let allDetails = {};
-            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+        } else if (checkPermissionForProduct.rows[0].permission_to_view_own) {
+            // here we are getting product deatils by own permission of user and its child user
+            let roleUsers = await getUserAndSubUser(checkPermissionForProduct.rows[0]);
 
             let s1 = dbScript(db_sql['Q270'], { var1: roleUsers.join(",") })
             let productList = await connection.query(s1)
@@ -1492,6 +1587,26 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
                 allDetails.productList = []
             }
 
+        }
+
+        let customerModule = process.env.CUSTOMERS_MODULE;
+        let s2 = dbScript(db_sql['Q41'], { var1: customerModule, var2: userId })
+        let checkPermissionForCustomer = await connection.query(s2)
+        if (checkPermissionForCustomer.rows[0].permission_to_view_global) {
+            // here we are getting customer deatils by global permission
+            
+            let s3 = dbScript(db_sql['Q39'], { var1: checkPermission.rows[0].company_id })
+            let customerList = await connection.query(s3)
+            if (customerList.rowCount > 0) {
+                allDetails.customerList = customerList.rows
+            } else {
+                allDetails.customerList = []
+            }
+
+        } else if (checkPermissionForCustomer.rows[0].permission_to_view_own) {
+            // here we are getting customer deatils by own permission of user and its child user
+            let roleUsers = await getUserAndSubUser(checkPermissionForCustomer.rows[0]);
+
             let s2 = dbScript(db_sql['Q271'], { var1: roleUsers.join(","), var2: false })
             let customerList = await connection.query(s2)
             if (customerList.rowCount > 0) {
@@ -1499,18 +1614,16 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
             } else {
                 allDetails.customerList = []
             }
+        }
 
-            let s3 = dbScript(db_sql['Q272'], { var1: roleUsers.join(",") })
-            let userList = await connection.query(s3);
-            if (userList.rowCount > 0) {
-                allDetails.userList = userList.rows
-            } else {
-                allDetails.userList = []
-            }
-
-            //get slab list here 
-            let s4 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
-            let slabList = await connection.query(s4)
+        let slabModule = process.env.SLABS_MODULE;
+        let s3 = dbScript(db_sql['Q41'], { var1: slabModule, var2: userId })
+        let checkPermissionForslab = await connection.query(s3)
+        if (checkPermissionForslab.rows[0].permission_to_view_global) {
+            // here we are getting slab deatils by global permission
+            
+            let s5 = dbScript(db_sql['Q17'], { var1: checkPermissionForslab.rows[0].company_id })
+            let slabList = await connection.query(s5)
             if (slabList.rowCount > 0) {
                 const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()]
                 allDetails.slabList = unique;
@@ -1518,35 +1631,63 @@ module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
                 allDetails.slabList = []
             }
 
-            let s5 = dbScript(db_sql['Q50'], { var1: checkPermission.rows[0].company_id })
-            let commissionList = await connection.query(s5)
+        } else if (checkPermissionForslab.rows[0].permission_to_view_own) {
+            // here we are getting slab deatils by own permission of user and its child user
+            let roleUsers = await getUserAndSubUser(checkPermissionForslab.rows[0]);
+
+            let s4 = dbScript(db_sql['Q17'], { var1: checkPermissionForslab.rows[0].company_id })
+            let slabList = await connection.query(s4)
+            if (slabList.rowCount > 0) {
+                const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()]
+                allDetails.slabList = unique;
+            } else {
+                allDetails.slabList = []
+            }
+        }
+
+        let commissionModule = process.env.COMMISSIONS_MODULE;
+        let s4 = dbScript(db_sql['Q41'], { var1: commissionModule, var2: userId })
+        let checkPermissionForCommission = await connection.query(s4)
+        if (checkPermissionForCommission.rows[0].permission_to_view_global) {
+            // here we are getting commissionSlab deatils by global permission
+            
+            let s6 = dbScript(db_sql['Q50'], { var1: checkPermissionForCommission.rows[0].company_id })
+            let commissionList = await connection.query(s6)
             if (commissionList.rowCount > 0) {
                 allDetails.commissionList = commissionList.rows
             } else {
                 allDetails.commissionList = []
             }
 
-            if (allDetails) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "All details list",
-                    data: allDetails
-                })
+        } else if (checkPermissionForCommission.rows[0].permission_to_view_own) {
+            // here we are getting commissionSlab deatils by own permission of user and its child user
+            let roleUsers = await getUserAndSubUser(checkPermissionForCommission.rows[0]);
+
+            let s5 = dbScript(db_sql['Q50'], { var1: checkPermissionForCommission.rows[0].company_id })
+            let commissionList = await connection.query(s5)
+            if (commissionList.rowCount > 0) {
+                allDetails.commissionList = commissionList.rows
             } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: "Empty details list",
-                    data: []
-                })
+                allDetails.commissionList = []
             }
-        } else {
-            res.status(403).json({
+        }
+
+        if(allDetails){
+            res.json({
+                status : 200,
+                success : true,
+                message : "All details list",
+                data : allDetails
+            })
+        }else{
+            res.json({
+                status: 200,
                 success: false,
-                message: "Unathorised"
+                message: "Empty details list",
+                data: []
             })
         }
+        
     } catch (error) {
         res.json({
             status: 400,
