@@ -84,8 +84,8 @@ router.get('/customerListforSales',verifyTokenFn, controller.sales.customerListf
 router.post('/createSales',verifyTokenFn, controller.sales.createSales)
 
 router.get('/allSalesList',verifyTokenFn, controller.sales.allSalesList)
-router.get('/activeSalesList',verifyTokenFn, controller.sales.activeSalesList)
-router.get('/closedSalesList',verifyTokenFn, controller.sales.closedSalesList)
+// router.get('/activeSalesList',verifyTokenFn, controller.sales.activeSalesList)
+// router.get('/closedSalesList',verifyTokenFn, controller.sales.closedSalesList)
 router.get('/archivedSalesList',verifyTokenFn, controller.sales.archivedSalesList)
 router.get('/salesDetails',verifyTokenFn, controller.sales.salesDetails)
 

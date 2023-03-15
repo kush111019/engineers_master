@@ -115,6 +115,10 @@ module.exports.leadsList = async (req, res) => {
                 let s6 = dbScript(db_sql['Q238'], { var1: checkPermission.rows[0].id, var2: type })
                 leadList = await connection.query(s6)
             }
+            else if (status.toLowerCase() == 'not-converted') {
+                let s7 = dbScript(db_sql['Q298'], { var1: checkPermission.rows[0].company_id, var2: type })
+                leadList = await connection.query(s7)
+            }
             if (leadList.rowCount > 0) {
                 res.json({
                     status: 200,
@@ -153,6 +157,10 @@ module.exports.leadsList = async (req, res) => {
             else if (status.toLowerCase() == 'assigned') {
                 let s6 = dbScript(db_sql['Q239'], { var1: roleUsers.join(","), var2: type })
                 findLeadList = await connection.query(s6)
+            }
+            else if (status.toLowerCase() == 'not-converted') {
+                let s7 = dbScript(db_sql['Q299'], { var1: roleUsers.join(","), var2: type })
+                findLeadList = await connection.query(s7)
             }
             if (findLeadList.rowCount > 0) {
                 res.json({

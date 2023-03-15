@@ -63,7 +63,6 @@ module.exports.customerListforSales = async (req, res) => {
     }
 }
 
-
 module.exports.createSales = async (req, res) => {
     try {
         let userId = req.user.id
@@ -217,23 +216,49 @@ module.exports.createSales = async (req, res) => {
 module.exports.allSalesList = async (req, res) => {
     try {
         let userId = req.user.id
-        let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s2)
+        let { status } = req.query;
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        console.log(status);
         if (checkPermission.rows[0].permission_to_view_global) {
-            let s3 = dbScript(db_sql['Q54'], { var1: checkPermission.rows[0].company_id })
-            let salesList = await connection.query(s3)
-            for (let salesData of salesList.rows) {
-                if (salesData.sales_users) {
-                    salesData.sales_users.map(value => {
-                        if (value.user_type == process.env.CAPTAIN) {
-                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        } else {
-                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        }
-                    })
-                }
+            let salesList;
+            if(status.toLowerCase() == 'all'){
+                let s2 = dbScript(db_sql['Q54'], { var1: checkPermission.rows[0].company_id })
+                salesList = await connection.query(s2)
             }
+            if(status.toLowerCase() == 'active'){
+                let s3 = dbScript(db_sql['Q156'], { var1: checkPermission.rows[0].company_id })
+                salesList = await connection.query(s3)
+            }
+            if(status.toLowerCase() == 'closed'){
+                let s4 = dbScript(db_sql['Q157'], { var1: checkPermission.rows[0].company_id })
+                salesList = await connection.query(s4)
+            }
+            if(status.toLowerCase() == 'perpetual'){
+                let s4 = dbScript(db_sql['Q300'], { var1: checkPermission.rows[0].company_id, var2 : 'Perpetual' })
+                salesList = await connection.query(s4)
+            }
+            if(status.toLowerCase() == 'subscription'){
+                let s5 = dbScript(db_sql['Q300'], { var1: checkPermission.rows[0].company_id, var2 : 'Subscription' })
+                salesList = await connection.query(s5)
+            }
+            if(status.toLowerCase() == 'recognized'){
+                let s5 = dbScript(db_sql['Q302'], { var1: checkPermission.rows[0].company_id })
+                salesList = await connection.query(s5)
+            }
+            
             if (salesList.rowCount > 0) {
+                for (let salesData of salesList.rows) {
+                    if (salesData.sales_users) {
+                        salesData.sales_users.map(value => {
+                            if (value.user_type == process.env.CAPTAIN) {
+                                value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                            } else {
+                                value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                            }
+                        })
+                    }
+                }
                 res.json({
                     status: 200,
                     success: true,
@@ -251,20 +276,44 @@ module.exports.allSalesList = async (req, res) => {
 
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            let s3 = dbScript(db_sql['Q155'], { var1: roleUsers.join(",") })
-            let salesList = await connection.query(s3)
-            for (let salesData of salesList.rows) {
-                if (salesData.sales_users) {
-                    salesData.sales_users.map(value => {
-                        if (value.user_type == process.env.CAPTAIN) {
-                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        } else {
-                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        }
-                    })
-                }
+            let salesList;
+            if(status.toLowerCase() == 'all'){
+                let s1 = dbScript(db_sql['Q155'], { var1: roleUsers.join(",") })
+                salesList = await connection.query(s1)
             }
+            if(status.toLowerCase() == 'active'){
+                let s2 = dbScript(db_sql['Q158'], { var1: roleUsers.join(",") })
+                salesList = await connection.query(s2)
+            }
+            if(status.toLowerCase() == 'closed'){
+                let s3 = dbScript(db_sql['Q159'], { var1: roleUsers.join(",") })
+                salesList = await connection.query(s3)
+            }
+            if(status.toLowerCase() == 'perpetual'){
+                let s4 = dbScript(db_sql['Q301'], { var1: roleUsers.join(","), var2 : 'Perpetual' })
+                salesList = await connection.query(s4)
+            }
+            if(status.toLowerCase() == 'subscription'){
+                let s5 = dbScript(db_sql['Q301'], { var1: roleUsers.join(","), var2 : 'Subscription' })
+                salesList = await connection.query(s5)
+            }
+            if(status.toLowerCase() == 'recognized'){
+                let s5 = dbScript(db_sql['Q303'], { var1: roleUsers.join(",") })
+                salesList = await connection.query(s5)
+            }
+            
             if (salesList.rowCount > 0) {
+                for (let salesData of salesList.rows) {
+                    if (salesData.sales_users) {
+                        salesData.sales_users.map(value => {
+                            if (value.user_type == process.env.CAPTAIN) {
+                                value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                            } else {
+                                value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                            }
+                        })
+                    }
+                }
                 res.json({
                     status: 200,
                     success: true,
@@ -295,168 +344,168 @@ module.exports.allSalesList = async (req, res) => {
 
 }
 
-module.exports.activeSalesList = async (req, res) => {
-    try {
-        let userId = req.user.id
-        let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s2)
-        if (checkPermission.rows[0].permission_to_view_global) {
-            let s3 = dbScript(db_sql['Q156'], { var1: checkPermission.rows[0].company_id })
-            let salesList = await connection.query(s3)
-            for (let salesData of salesList.rows) {
-                if (salesData.sales_users) {
-                    salesData.sales_users.map(value => {
-                        if (value.user_type == process.env.CAPTAIN) {
-                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        } else {
-                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        }
-                    })
-                }
-            }
-            if (salesList.rowCount > 0) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: 'Active sales list',
-                    data: salesList.rows
-                })
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: 'Empty active sales list',
-                    data: []
-                })
-            }
+// module.exports.activeSalesList = async (req, res) => {
+//     try {
+//         let userId = req.user.id
+//         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+//         let checkPermission = await connection.query(s2)
+//         if (checkPermission.rows[0].permission_to_view_global) {
+//             let s3 = dbScript(db_sql['Q156'], { var1: checkPermission.rows[0].company_id })
+//             let salesList = await connection.query(s3)
+//             for (let salesData of salesList.rows) {
+//                 if (salesData.sales_users) {
+//                     salesData.sales_users.map(value => {
+//                         if (value.user_type == process.env.CAPTAIN) {
+//                             value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+//                         } else {
+//                             value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+//                         }
+//                     })
+//                 }
+//             }
+//             if (salesList.rowCount > 0) {
+//                 res.json({
+//                     status: 200,
+//                     success: true,
+//                     message: 'Active sales list',
+//                     data: salesList.rows
+//                 })
+//             } else {
+//                 res.json({
+//                     status: 200,
+//                     success: false,
+//                     message: 'Empty active sales list',
+//                     data: []
+//                 })
+//             }
 
-        } else if (checkPermission.rows[0].permission_to_view_own) {
-            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            let s3 = dbScript(db_sql['Q158'], { var1: roleUsers.join(",") })
-            let salesList = await connection.query(s3)
-            for (let salesData of salesList.rows) {
-                if (salesData.sales_users) {
-                    salesData.sales_users.map(value => {
-                        if (value.user_type == process.env.CAPTAIN) {
-                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        } else {
-                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        }
-                    })
-                }
-            }
-            if (salesList.rowCount > 0) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: 'Sales commission list',
-                    data: salesList.rows
-                })
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: 'Empty sales commission list',
-                    data: []
-                })
-            }
-        } else {
-            res.status(403).json({
-                success: false,
-                message: "UnAthorised"
-            })
-        }
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
+//         } else if (checkPermission.rows[0].permission_to_view_own) {
+//             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+//             let s3 = dbScript(db_sql['Q158'], { var1: roleUsers.join(",") })
+//             let salesList = await connection.query(s3)
+//             for (let salesData of salesList.rows) {
+//                 if (salesData.sales_users) {
+//                     salesData.sales_users.map(value => {
+//                         if (value.user_type == process.env.CAPTAIN) {
+//                             value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+//                         } else {
+//                             value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+//                         }
+//                     })
+//                 }
+//             }
+//             if (salesList.rowCount > 0) {
+//                 res.json({
+//                     status: 200,
+//                     success: true,
+//                     message: 'Sales commission list',
+//                     data: salesList.rows
+//                 })
+//             } else {
+//                 res.json({
+//                     status: 200,
+//                     success: false,
+//                     message: 'Empty sales commission list',
+//                     data: []
+//                 })
+//             }
+//         } else {
+//             res.status(403).json({
+//                 success: false,
+//                 message: "UnAthorised"
+//             })
+//         }
+//     } catch (error) {
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
 
-}
+// }
 
-module.exports.closedSalesList = async (req, res) => {
-    try {
-        let userId = req.user.id
-        let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s2)
-        if (checkPermission.rows[0].permission_to_view_global) {
+// module.exports.closedSalesList = async (req, res) => {
+//     try {
+//         let userId = req.user.id
+//         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+//         let checkPermission = await connection.query(s2)
+//         if (checkPermission.rows[0].permission_to_view_global) {
 
-            let s3 = dbScript(db_sql['Q157'], { var1: checkPermission.rows[0].company_id })
-            let salesList = await connection.query(s3)
-            for (let salesData of salesList.rows) {
-                if (salesData.sales_users) {
-                    salesData.sales_users.map(value => {
-                        if (value.user_type == process.env.CAPTAIN) {
-                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        } else {
-                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        }
-                    })
-                }
-            }
-            if (salesList.rowCount > 0) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: 'Closed sales list',
-                    data: salesList.rows
-                })
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: 'Empty closed sales list',
-                    data: []
-                })
-            }
+//             let s3 = dbScript(db_sql['Q157'], { var1: checkPermission.rows[0].company_id })
+//             let salesList = await connection.query(s3)
+//             for (let salesData of salesList.rows) {
+//                 if (salesData.sales_users) {
+//                     salesData.sales_users.map(value => {
+//                         if (value.user_type == process.env.CAPTAIN) {
+//                             value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+//                         } else {
+//                             value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+//                         }
+//                     })
+//                 }
+//             }
+//             if (salesList.rowCount > 0) {
+//                 res.json({
+//                     status: 200,
+//                     success: true,
+//                     message: 'Closed sales list',
+//                     data: salesList.rows
+//                 })
+//             } else {
+//                 res.json({
+//                     status: 200,
+//                     success: false,
+//                     message: 'Empty closed sales list',
+//                     data: []
+//                 })
+//             }
 
-        } else if (checkPermission.rows[0].permission_to_view_own) {
-            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            let s3 = dbScript(db_sql['Q159'], { var1: roleUsers.join(",") })
-            let salesList = await connection.query(s3)
-            for (let salesData of salesList.rows) {
-                if (salesData.sales_users) {
-                    salesData.sales_users.map(value => {
-                        if (value.user_type == process.env.CAPTAIN) {
-                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        } else {
-                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
-                        }
-                    })
-                }
-            }
-            if (salesList.rowCount > 0) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: 'Closed sales list',
-                    data: salesList.rows
-                })
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: 'Empty closed sales  list',
-                    data: []
-                })
-            }
-        } else {
-            res.status(403).json({
-                success: false,
-                message: "UnAthorised"
-            })
-        }
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
+//         } else if (checkPermission.rows[0].permission_to_view_own) {
+//             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+//             let s3 = dbScript(db_sql['Q159'], { var1: roleUsers.join(",") })
+//             let salesList = await connection.query(s3)
+//             for (let salesData of salesList.rows) {
+//                 if (salesData.sales_users) {
+//                     salesData.sales_users.map(value => {
+//                         if (value.user_type == process.env.CAPTAIN) {
+//                             value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+//                         } else {
+//                             value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+//                         }
+//                     })
+//                 }
+//             }
+//             if (salesList.rowCount > 0) {
+//                 res.json({
+//                     status: 200,
+//                     success: true,
+//                     message: 'Closed sales list',
+//                     data: salesList.rows
+//                 })
+//             } else {
+//                 res.json({
+//                     status: 200,
+//                     success: false,
+//                     message: 'Empty closed sales  list',
+//                     data: []
+//                 })
+//             }
+//         } else {
+//             res.status(403).json({
+//                 success: false,
+//                 message: "UnAthorised"
+//             })
+//         }
+//     } catch (error) {
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
 
-}
+// }
 
 module.exports.salesDetails = async (req, res) => {
     try {
@@ -1412,149 +1461,6 @@ module.exports.getRemainingTargetAmount = async (req, res) => {
         })
     }
 }
-
-// module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
-//     try {
-//         let userId = req.user.id
-//         let moduleName = process.env.PRODUCTS_MODULE;
-//         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-//         let checkPermissionForProduct = await connection.query(s1)
-//         if (checkPermissionForProduct.rows[0].permission_to_view_global) {
-//             // here we are getting product, customer, user, slab,commissionSlab deatils by global permission
-//             let allDetails = {};
-//             let s2 = dbScript(db_sql['Q84'], { var1: checkPermissionForProduct.rows[0].company_id })
-//             let productList = await connection.query(s2)
-//             if (productList.rowCount > 0) {
-//                 allDetails.productList = productList.rows
-//             } else {
-//                 allDetails.productList = []
-//             }
-
-//             let s3 = dbScript(db_sql['Q39'], { var1: checkPermission.rows[0].company_id })
-//             let customerList = await connection.query(s3)
-//             if (customerList.rowCount > 0) {
-//                 allDetails.customerList = customerList.rows
-//             } else {
-//                 allDetails.customerList = []
-//             }
-
-//             let s4 = dbScript(db_sql['Q15'], { var1: checkPermission.rows[0].company_id })
-//             let userList = await connection.query(s4);
-//             if (userList.rowCount > 0) {
-//                 allDetails.userList = userList.rows
-//             } else {
-//                 allDetails.userList = []
-//             }
-
-//             //get slab list here 
-//             let s5 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
-//             let slabList = await connection.query(s5)
-//             if (slabList.rowCount > 0) {
-//                 const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()]
-//                 allDetails.slabList = unique;
-//             } else {
-//                 allDetails.slabList = []
-//             }
-
-//             let s6 = dbScript(db_sql['Q50'], { var1: checkPermission.rows[0].company_id })
-//             let commissionList = await connection.query(s6)
-//             if (commissionList.rowCount > 0) {
-//                 allDetails.commissionList = commissionList.rows
-//             } else {
-//                 allDetails.commissionList = []
-//             }
-
-//             if (allDetails) {
-//                 res.json({
-//                     status: 200,
-//                     success: true,
-//                     message: "All details list",
-//                     data: allDetails
-//                 })
-//             } else {
-//                 res.json({
-//                     status: 200,
-//                     success: false,
-//                     message: "Empty details list",
-//                     data: []
-//                 })
-//             }
-//         } else if (checkPermission.rows[0].permission_to_view_own) {
-//             // here we are getting product, customer, user, slab,commissionSlab deatils by own permission of user and its child user
-//             let allDetails = {};
-//             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-
-//             let s1 = dbScript(db_sql['Q270'], { var1: roleUsers.join(",") })
-//             let productList = await connection.query(s1)
-//             if (productList.rowCount > 0) {
-//                 allDetails.productList = productList.rows
-//             } else {
-//                 allDetails.productList = []
-//             }
-
-//             let s2 = dbScript(db_sql['Q271'], { var1: roleUsers.join(","), var2: false })
-//             let customerList = await connection.query(s2)
-//             if (customerList.rowCount > 0) {
-//                 allDetails.customerList = customerList.rows
-//             } else {
-//                 allDetails.customerList = []
-//             }
-
-//             let s3 = dbScript(db_sql['Q272'], { var1: roleUsers.join(",") })
-//             let userList = await connection.query(s3);
-//             if (userList.rowCount > 0) {
-//                 allDetails.userList = userList.rows
-//             } else {
-//                 allDetails.userList = []
-//             }
-
-//             //get slab list here 
-//             let s4 = dbScript(db_sql['Q17'], { var1: checkPermission.rows[0].company_id })
-//             let slabList = await connection.query(s4)
-//             if (slabList.rowCount > 0) {
-//                 const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()]
-//                 allDetails.slabList = unique;
-//             } else {
-//                 allDetails.slabList = []
-//             }
-
-//             let s5 = dbScript(db_sql['Q50'], { var1: checkPermission.rows[0].company_id })
-//             let commissionList = await connection.query(s5)
-//             if (commissionList.rowCount > 0) {
-//                 allDetails.commissionList = commissionList.rows
-//             } else {
-//                 allDetails.commissionList = []
-//             }
-
-//             if (allDetails) {
-//                 res.json({
-//                     status: 200,
-//                     success: true,
-//                     message: "All details list",
-//                     data: allDetails
-//                 })
-//             } else {
-//                 res.json({
-//                     status: 200,
-//                     success: false,
-//                     message: "Empty details list",
-//                     data: []
-//                 })
-//             }
-//         } else {
-//             res.status(403).json({
-//                 success: false,
-//                 message: "Unathorised"
-//             })
-//         }
-//     } catch (error) {
-//         res.json({
-//             status: 400,
-//             success: false,
-//             message: error.message,
-//         })
-//     }
-// }
 
 module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
     try {
