@@ -2306,7 +2306,7 @@ const db_sql = {
             LEFT JOIN
               users AS u2 ON u2.id = sc.transfered_back_by
             WHERE
-              sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.sales_type = '{var2}' AND sc.archived_at IS NULL
+              sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.sales_type = '{var2}'
             ORDER BY
               sc.created_at DESC`,
 
@@ -2377,7 +2377,7 @@ const db_sql = {
                 sc.user_id IN ({var1})  
               OR
                 su.user_id IN ({var1}) 
-              ) AND sc.deleted_at is NULL AND sc.sales_type = '{var2}' AND archived_at IS NULL
+              ) AND sc.deleted_at is NULL AND sc.sales_type = '{var2}'
             GROUP BY 
               sc.id,sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite,sc.business_contact_id,
               sc.archived_at, sc.archived_by,sc.archived_reason,
