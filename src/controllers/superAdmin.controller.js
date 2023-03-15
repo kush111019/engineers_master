@@ -272,6 +272,7 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
         let offset = (page - 1) * limit
         if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
             let s4 = dbScript(db_sql['Q80'], { var1: companyId, var2: orderBy, var3 : limit, var4 : offset, var5 : startDate, var6 : endDate })
+            console.log(s4,"s4");
             let salesData = await connection.query(s4)
             if (salesData.rowCount > 0) {
                 res.json({
