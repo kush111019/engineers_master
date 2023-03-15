@@ -281,8 +281,10 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
                     let s5 = dbScript(db_sql['Q256'], { var1: sales.sales_id })
                     let recognizedRevenueData = await connection.query(s5)
 
-                    if (recognizedRevenueData.rows[0].amount) {
-                        revenuePerSales.revenue = Number(recognizedRevenueData.rows[0].amount)
+                    if (recognizedRevenueData.rowCount > 0) {
+                        revenuePerSales.revenue = (recognizedRevenueData.rows[0].amount) ? Number(recognizedRevenueData.rows[0].amount) : 0
+                    }else{
+                        revenuePerSales.revenue = 0
                     }
                     salesPerRep.push(revenuePerSales)
                 }
