@@ -290,6 +290,15 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
                 }
                 if(salesPerRep.length > 0){
                     let returnData = await reduceArrayWithName1(salesPerRep)
+                    if (orderBy.toLowerCase() == 'asc') {
+                        returnData = returnData.sort((a, b) => {
+                            return a.revenue - b.revenue
+                        })
+                    } else {
+                        returnData = returnData.sort((a, b) => {
+                            return b.revenue - a.revenue
+                        })
+                    }
                     res.json({
                         status: 200,
                         success: true,
