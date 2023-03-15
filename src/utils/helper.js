@@ -462,6 +462,26 @@ module.exports.reduceArrayWithName = async (data) => {
     return merged
 }
 
+module.exports.reduceArrayWithName1 = async (data) => {
+    const groupedData = new Map();
+
+    data.forEach(obj => {
+        const salesRep = obj.sales_rep;
+        if (groupedData.has(salesRep)) {
+            const mergedObj = {
+                sales_rep: obj.sales_rep,
+                revenue: Number(groupedData.get(salesRep).revenue) + Number(obj.revenue),
+            };
+            groupedData.set(salesRep, mergedObj);
+        } else {
+            groupedData.set(salesRep, obj);
+        }
+    });
+
+    const merged = [...groupedData.values()];
+    return merged
+}
+
 module.exports.reduceArrayWithCustomer = async (data) => {
 
     const groupedData = new Map();

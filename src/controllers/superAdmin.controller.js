@@ -3,7 +3,7 @@ const uuid = require("node-uuid")
 const { issueJWT } = require("../utils/jwt")
 const { resetPasswordMail, resetPasswordMail2 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { verifyTokenFn, paginatedResults } = require('../utils/helper')
+const { verifyTokenFn, paginatedResults, reduceArrayWithName1 } = require('../utils/helper')
 const stripe = require('stripe')(process.env.SECRET_KEY)
 
 module.exports.login = async (req, res) => {
@@ -271,16 +271,38 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
         let limit = 10;
         let offset = (page - 1) * limit
         if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
-            let s4 = dbScript(db_sql['Q80'], { var1: companyId, var2: orderBy, var3 : limit, var4 : offset, var5 : startDate, var6 : endDate })
-            console.log(s4,"s4");
+            let s4 = dbScript(db_sql['Q80'], { var1: companyId, var2: limit, var3 : offset, var4 : startDate, var5 : endDate })
             let salesData = await connection.query(s4)
+            let salesPerRep = []
             if (salesData.rowCount > 0) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "Revenue per user",
-                    data: salesData.rows
-                })
+                for(let sales of salesData.rows){
+                    let revenuePerSales = {}
+                    revenuePerSales.sales_rep = sales.sales_rep
+                    let s5 = dbScript(db_sql['Q256'], { var1: sales.sales_id })
+                    let recognizedRevenueData = await connection.query(s5)
+
+                    if (recognizedRevenueData.rows[0].amount) {
+                        revenuePerSales.revenue = Number(recognizedRevenueData.rows[0].amount)
+                    }
+                    salesPerRep.push(revenuePerSales)
+                }
+                if(salesPerRep.length > 0){
+                    let returnData = await reduceArrayWithName1(salesPerRep)
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Revenue per user",
+                        data: returnData
+                    })
+                }else{
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Empty revenue per user",
+                        data: salesPerRep
+                    })
+                }
+                
             } else {
                 res.json({
                     status: 200,

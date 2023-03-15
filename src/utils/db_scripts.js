@@ -534,7 +534,7 @@ const db_sql = {
 
   "Q80": `SELECT 
                   u.full_name AS sales_rep,
-                  SUM(sc.target_amount::DECIMAL) AS revenue
+                  sc.id as sales_id
               FROM  
                   sales AS sc 
                   LEFT JOIN sales_users AS cr ON cr.sales_id = sc.id
@@ -542,15 +542,14 @@ const db_sql = {
                   LEFT JOIN users AS u ON u.id = cr.user_id
               WHERE 
                   sc.company_id = '{var1}' 
-                  AND sc.closed_at BETWEEN '{var5}' AND '{var6}'
+                  AND sc.closed_at BETWEEN '{var4}' AND '{var5}'
                   AND sc.deleted_at IS NULL 
                   AND cr.deleted_at IS NULL 
                   AND u.deleted_at IS NULL
               GROUP BY 
-                  u.full_name 
-              ORDER BY 
-                  revenue {var2}
-              LIMIT {var3} OFFSET {var4}`,
+                  u.full_name,
+                  sc.id 
+              LIMIT {var2} OFFSET {var3}`,
 
   "Q81": `INSERT INTO contact_us(full_name, email, subject, messages, address) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
   "Q82": `INSERT INTO products(product_name,product_image,description,available_quantity,price,end_of_life,company_id, currency, user_id)VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}', '{var9}' ) RETURNING *`,
@@ -1549,15 +1548,15 @@ const db_sql = {
             sc.booking_commission,
             sc.revenue_commission,
             (
-                      SELECT json_agg(sales_users.*)
-                      FROM (
-                        SELECT 
-                        su.user_id as id ,su.user_percentage as percentage, su.user_type,u1.full_name as name,u1.email_address as email
-                        FROM sales_users as su
-                        LEFT JOIN users AS u1 ON u1.id = su.user_id
-                        WHERE su.sales_id= sc.id AND su.deleted_at IS NULL AND  u1.deleted_at IS NULL
-                      ) sales_users
-                    ) as sales_users
+              SELECT json_agg(sales_users.*)
+              FROM (
+                SELECT 
+                su.user_id as id ,su.user_percentage as percentage, su.user_type,u1.full_name as name,u1.email_address as email
+                FROM sales_users as su
+                LEFT JOIN users AS u1 ON u1.id = su.user_id
+                WHERE su.sales_id= sc.id AND su.deleted_at IS NULL AND  u1.deleted_at IS NULL
+              ) sales_users
+            ) as sales_users
                   
           FROM  
           sales AS sc 
