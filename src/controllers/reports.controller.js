@@ -646,3 +646,105 @@ module.exports.totalRevenue = async (req, res) => {
         })
     }
 }
+
+module.exports.totalLossRevenue = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { status, page } = req.query
+        let limit = (status == 'Monthly') ? 12 : (status == 'Quarterly') ? 4 : 10;
+        let offset = (page - 1) * limit
+        let format = (status == 'Monthly') ? 'month' : (status == 'Quarterly') ? 'quarter' : 'year'
+        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s3)
+        if (checkPermission.rows[0].permission_to_view_global) {
+            let s4 = dbScript(db_sql['Q304'], { var1: checkPermission.rows[0].company_id, var2: format })
+            let salesData = await connection.query(s4)
+            if (salesData.rowCount > 0) {
+                let totalRevenueArr = []
+                for (let data of salesData.rows) {
+                    totalRevenueArr.push({
+                        date: data.date,
+                        revenue: data.target_amount
+                    })
+                }
+                if (totalRevenueArr.length > 0) {
+                    let returnData = await reduceArray(totalRevenueArr)
+                    if (returnData.length > 0) {
+                        let paginatedArr = await paginatedResults1(returnData, page, limit)
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Total loss revenue",
+                            data: paginatedArr
+                        })
+                    }
+                } else {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Empty Total loss revenue",
+                        data: totalRevenueArr
+                    })
+                }
+            } else {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Empty Total loss revenue",
+                    data: salesData.rows
+                })
+            }
+        } else if (checkPermission.rows[0].permission_to_view_own) {
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            let s4 = dbScript(db_sql['Q305'], { var1: roleUsers.join(","), var2: format })
+            let salesData = await connection.query(s4)
+            if (salesData.rowCount > 0) {
+                let totalRevenueArr = []
+                for (let data of salesData.rows) {
+                        totalRevenueArr.push({
+                            date: data.date,
+                            revenue: data.target_amount
+                        })
+                }
+                if (totalRevenueArr.length > 0) {
+                    let finalArray = await reduceArray(totalRevenueArr)
+                    if (finalArray.length > 0) {
+                        let paginatedArr = await paginatedResults1(finalArray, page, limit)
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Total loss revenue",
+                            data: paginatedArr
+                        })
+                    }
+                } else {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Empty Total loss revenue",
+                        data: totalRevenueArr
+                    })
+                }
+            } else {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Empty Total loss revenue",
+                    data: salesData.rows
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}

@@ -121,6 +121,7 @@ router.get('/revenuePerCustomer',verifyTokenFn, controller.reports.revenuePerCus
 router.get('/revenuePerProduct',verifyTokenFn, controller.reports.revenuePerProduct)
 router.get('/revenuePerSalesRep',verifyTokenFn, controller.reports.revenuePerSalesRep)
 router.get('/totalRevenue',verifyTokenFn, controller.reports.totalRevenue)
+router.get('/totalLossRevenue',verifyTokenFn, controller.reports.totalLossRevenue)
 //---------------------------------------DashBoard counts -------------------------------
 
 router.get('/revenues',verifyTokenFn, controller.dashboard.revenues)

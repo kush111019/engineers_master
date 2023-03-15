@@ -2537,6 +2537,36 @@ const db_sql = {
             ORDER BY
               sc.created_at DESC`,
 
+    "Q304": `SELECT 
+              sc.id AS sales_commission_id,
+              sc.target_amount,
+              DATE_TRUNC('{var2}',sc.archived_at) AS  date,
+              sc.sales_type
+            FROM 
+              sales AS sc 
+            WHERE 
+              sc.company_id = '{var1}' AND 
+              sc.deleted_at IS NULL AND 
+              sc.archived_at IS NOT NULL 
+            ORDER BY 
+              date ASC `,
+
+    "Q305": `SELECT 
+              DISTINCT(sc.id) AS sales_commission_id,
+              sc.target_amount,
+              DATE_TRUNC('{var2}',sc.archived_at) AS  date,
+              sc.sales_type
+            FROM 
+              sales AS sc 
+            LEFT JOIN 
+              sales_users AS su ON sc.id = su.sales_id  
+            WHERE 
+            (sc.user_id IN ({var1}) OR su.user_id IN ({var1})) AND
+              sc.deleted_at IS NULL AND 
+              sc.archived_at IS NOT NULL 
+            ORDER BY 
+              date ASC `,
+
 }
 
 function dbScript(template, variables) {
