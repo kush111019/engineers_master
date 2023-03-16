@@ -650,12 +650,21 @@ module.exports.actualVsForecast = async (req, res) => {
                         data2.recognized_amount = amount
                     }
                 }
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "Forecast Data",
-                    data: forcastDataArray
-                })
+                if(forcastDataArray.length > 0){
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Actual Vs Forecast Data",
+                        data: forcastDataArray
+                    })
+                }else{
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty Actual Vs Forecast Data",
+                        data: []
+                    }) 
+                }
             }else{
                 res.json({
                     status: 200,
