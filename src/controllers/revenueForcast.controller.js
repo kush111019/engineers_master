@@ -629,7 +629,7 @@ module.exports.actualVsForecast = async (req, res) => {
             let findChildForecast = await connection.query(s2)
             if (findChildForecast.rowCount > 0) {
                 let creatorArray = []
-                let forcastDataArray = findChildForecast.rows[0].forecast_data;
+                let forcastDataArray = (findChildForecast.rows[0].forecast_data) ? findChildForecast.rows[0].forecast_data : [];
                 findChildForecast.rows.map(value => {
                     if (value.forecast_data_creator) {
                         creatorArray.push(value.forecast_data_creator[0])
