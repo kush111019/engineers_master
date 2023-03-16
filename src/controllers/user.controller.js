@@ -619,7 +619,11 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
             let s3 = dbScript(db_sql['Q310'],{var1 : userId,  var2 : newUserId})
             let updateUserInLeads = await connection.query(s3)
 
-            if(updateUserInSales.rowCount > 0 || updateUserInLeads.rowCount > 0){
+            let s4 = dbScript(db_sql['Q311'], { var1: true, var2: userId, var3: _dt })
+            let updateUser = await connection.query(s4)
+
+            if((updateUserInSales.rowCount > 0 || updateUserInLeads.rowCount > 0 ) && updateUser.rowCount > 0 ){
+                
                 await connection.query('COMMIt')
                 res.json({
                     status: 200,
