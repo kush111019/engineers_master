@@ -20,7 +20,7 @@ const db_sql = {
   "Q15": `SELECT 
                 u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
                 u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
-                u1.is_main_admin, u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName
+                u1.is_main_admin,u1.is_deactivated, u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName
               FROM 
                 users AS u1 
               INNER JOIN 
@@ -2098,7 +2098,7 @@ const db_sql = {
   "Q272": `SELECT 
               u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
               u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
-              u1.is_main_admin, u1.created_by, u2.full_name AS creator_name, r.role_name AS roleName
+              u1.is_main_admin, u1.created_by,u1.is_deactivated, u2.full_name AS creator_name, r.role_name AS roleName
             FROM
               users AS u1
             INNER JOIN
