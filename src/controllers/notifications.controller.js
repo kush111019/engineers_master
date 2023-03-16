@@ -4,7 +4,7 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 module.exports.notificationList = async (req, res) => {
     try {
         let userId = req.user.id
-        let s1 = dbScript(db_sql['Q290'], { var1: userId })
+        let s1 = dbScript(db_sql['Q246'], { var1: userId })
         let notificationList = await connection.query(s1);
         await connection.query('BEGIN')
         if (notificationList.rows.length > 0) {
@@ -37,7 +37,7 @@ module.exports.notificationList = async (req, res) => {
 module.exports.allNotificationList = async (req, res) => {
     try {
         let userId = req.user.id
-        let s1 = dbScript(db_sql['Q2901'], { var1: userId })
+        let s1 = dbScript(db_sql['Q247'], { var1: userId })
         let notificationList = await connection.query(s1);
         await connection.query('BEGIN')
         if (notificationList.rows.length > 0) {
@@ -71,7 +71,7 @@ module.exports.notificationRead = async (req, res) => {
     try {
         let userId = req.user.id;
         let notificationId = req.query.id;
-        let s1 = dbScript(db_sql['Q291'], { var1: notificationId })
+        let s1 = dbScript(db_sql['Q248'], { var1: notificationId })
         let notificationList = await connection.query(s1);
         await connection.query('BEGIN')
         if (notificationList.rows.length > 0) {

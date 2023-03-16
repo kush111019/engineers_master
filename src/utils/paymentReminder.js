@@ -5,7 +5,7 @@ const { paymentReminderMail2, paymentReminderMail } = require("../utils/sendMail
 const moment = require('moment')
 
 module.exports.paymentReminder = async () => {
-    let s1 = dbScript(db_sql['Q110'], {})
+    let s1 = dbScript(db_sql['Q99'], {})
     let admindata = await connection.query(s1)
     for (let data of admindata.rows) {
         if (data.is_main_admin && data.expiry_date != null) {
@@ -50,14 +50,14 @@ module.exports.paymentReminder = async () => {
 }
 
 module.exports.upgradeSubscriptionCronFn = async () => {
-    let s1 = dbScript(db_sql['Q114'], {})
+    let s1 = dbScript(db_sql['Q103'], {})
     let transaction = await connection.query(s1)
     if (transaction.rowCount > 0) {
         for (let transactionData of transaction.rows) {
             let currentDate = new Date().toISOString();
             let expiryDate =  new Date(Number(transactionData.expiry_date) * 1000).toISOString()
             if (transactionData.immediate_upgrade == false && currentDate == expiryDate) {
-                let s2 = dbScript(db_sql['Q150'], {var1 : transactionData.upgraded_transaction_id}) 
+                let s2 = dbScript(db_sql['Q136'], {var1 : transactionData.upgraded_transaction_id}) 
                 let upgradedTransaction = await connection.query(s2)
 
                 const subscription = await stripe.subscriptions.retrieve(
@@ -72,18 +72,18 @@ module.exports.upgradeSubscriptionCronFn = async () => {
                 if (subscription && charge) {
                     let _dt = new Date().toISOString();
                     await connection.query('BEGIN')
-                    let s3 = dbScript(db_sql['Q116'], { var1: upgradedTransaction.rows[0].stripe_customer_id, var2 : upgradedTransaction.rows[0].stripe_subscription_id, var3 : upgradedTransaction.rows[0].stripe_card_id, var4 : upgradedTransaction.rows[0].stripe_token_id, var5 : charge.id, var6 : upgradedTransaction.rows[0].expiry_date, var7 : _dt, var8 : transactionData.id, var9 : upgradedTransaction.rows[0].total_amount, var10 : true , var11 : charge.receipt_url, var12 : upgradedTransaction.rows[0].user_count, var13 : upgradedTransaction.rows[0].plan_id, var14 : ''})
+                    let s3 = dbScript(db_sql['Q105'], { var1: upgradedTransaction.rows[0].stripe_customer_id, var2 : upgradedTransaction.rows[0].stripe_subscription_id, var3 : upgradedTransaction.rows[0].stripe_card_id, var4 : upgradedTransaction.rows[0].stripe_token_id, var5 : charge.id, var6 : upgradedTransaction.rows[0].expiry_date, var7 : _dt, var8 : transactionData.id, var9 : upgradedTransaction.rows[0].total_amount, var10 : true , var11 : charge.receipt_url, var12 : upgradedTransaction.rows[0].user_count, var13 : upgradedTransaction.rows[0].plan_id, var14 : ''})
                     let updateTransaction = await connection.query(s3)
 
                     let expiryDate = new Date(Number(upgradedTransaction.rows[0].expiry_date) * 1000).toISOString()
 
-                    let s4 = dbScript(db_sql['Q113'], { var1: expiryDate, var2: upgradedTransaction.rows[0].user_id, var3: _dt })
+                    let s4 = dbScript(db_sql['Q102'], { var1: expiryDate, var2: upgradedTransaction.rows[0].user_id, var3: _dt })
                     let updateUserExpiryDate = await connection.query(s4)
 
-                    let s5 = dbScript(db_sql['Q151'], { var1 : _dt, var2 : upgradedTransaction.rows[0].id})
+                    let s5 = dbScript(db_sql['Q137'], { var1 : _dt, var2 : upgradedTransaction.rows[0].id})
                     let deleteUpgradedTransaction = await connection.query(s5)
 
-                    let s6 = dbScript(db_sql['Q231'], { var1: expiryDate, var2: upgradedTransaction.rows[0].company_id, var3: _dt })
+                    let s6 = dbScript(db_sql['Q196'], { var1: expiryDate, var2: upgradedTransaction.rows[0].company_id, var3: _dt })
                     let updateCompanyExpiryDate = await connection.query(s6)
 
                     if (updateTransaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && deleteUpgradedTransaction.rowCount > 0 && updateCompanyExpiryDate.rowCount > 0) {

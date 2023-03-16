@@ -5,10 +5,10 @@ const { tagetClosingDateReminderMail2, tagetClosingDateReminderMail,
 const moment = require('moment')
 
 module.exports.targetDateReminder = async () => {
-    let s1 = dbScript(db_sql['Q99'], {})
+    let s1 = dbScript(db_sql['Q89'], {})
     let companies = await connection.query(s1)
     for (let data of companies.rows) {
-        let s2 = dbScript(db_sql['Q84'], { var1: data.id })
+        let s2 = dbScript(db_sql['Q74'], { var1: data.id })
         let configList = await connection.query(s2)
         let beforeTargetDays = (configList.rowCount > 0) ? Number(configList.rows[0].before_closing_days) : 0
         let afterTargetDays = (configList.rowCount > 0) ? Number(configList.rows[0].after_closing_days) : 0

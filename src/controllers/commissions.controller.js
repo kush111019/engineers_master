@@ -22,7 +22,7 @@ module.exports.commissionSplit = async (req, res) => {
             var createCommission = await connection.query(s4)
 
             let _dt = new Date().toISOString();
-            let s7 = dbScript(db_sql['Q335'], { var1: _dt, var2: checkPermission.rows[0].company_id })
+            let s7 = dbScript(db_sql['Q281'], { var1: _dt, var2: checkPermission.rows[0].company_id })
             updateStatusInCompany = await connection.query(s7)
             
 
@@ -138,7 +138,7 @@ module.exports.commissionSplitList = async (req, res) => {
 
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            let s4 = dbScript(db_sql['Q318'], { var1: roleUsers.join(",") })
+            let s4 = dbScript(db_sql['Q273'], { var1: roleUsers.join(",") })
             let commissionList = await connection.query(s4)
             if (commissionList.rowCount > 0) {
                 res.json({
@@ -183,10 +183,10 @@ module.exports.deletecommissionSplit = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_delete) {
 
-            let s2 = dbScript(db_sql['Q344'],{ var1 : commissionId })
+            let s2 = dbScript(db_sql['Q290'],{ var1 : commissionId })
             let checkCommissionInSales = await connection.query(s2)
 
-            let s3 = dbScript(db_sql['Q345'],{ var1 : commissionId })
+            let s3 = dbScript(db_sql['Q291'],{ var1 : commissionId })
             let checkCommissionInSlabs = await connection.query(s3)
 
             if(checkCommissionInSales.rowCount > 0 || checkCommissionInSlabs.rowCount > 0){

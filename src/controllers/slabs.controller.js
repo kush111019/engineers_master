@@ -25,7 +25,7 @@ module.exports.createSlab = async (req, res) => {
             }
 
             let _dt = new Date().toISOString();
-            let s7 = dbScript(db_sql['Q336'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+            let s7 = dbScript(db_sql['Q282'], { var1:_dt, var2: checkPermission.rows[0].company_id })
             updateStatusInCompany = await connection.query(s7)
             if ( updateStatusInCompany.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -150,7 +150,7 @@ module.exports.slabList = async (req, res) => {
         } else if (checkPermission.rows[0].permission_to_view_own) {
             //get roles user list 
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            let s4 = dbScript(db_sql['Q165'], { var1: roleUsers.join(",") })
+            let s4 = dbScript(db_sql['Q148'], { var1: roleUsers.join(",") })
             let findSlabs = await connection.query(s4)
             if (findSlabs.rowCount > 0) {
                 const unique = [...new Map(findSlabs.rows.map(item => [item['slab_id'], item])).values()]
@@ -204,7 +204,7 @@ module.exports.deleteSlab = async (req, res) => {
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_delete) {
 
-            let s2 = dbScript(db_sql['Q342'],{ var1 : slabId })
+            let s2 = dbScript(db_sql['Q288'],{ var1 : slabId })
             let checkslabInSales = await connection.query(s2)
 
             if(checkslabInSales.rowCount > 0){
@@ -217,7 +217,7 @@ module.exports.deleteSlab = async (req, res) => {
 
             let _dt = new Date().toISOString();
             //update slab status to deleted
-            let s4 = dbScript(db_sql['Q183'], { var1: _dt, var2: slabId, var3: checkPermission.rows[0].company_id })
+            let s4 = dbScript(db_sql['Q160'], { var1: _dt, var2: slabId, var3: checkPermission.rows[0].company_id })
             var deleteSlab = await connection.query(s4)
 
             await connection.query('COMMIT')
@@ -265,7 +265,7 @@ module.exports.deleteSlabLayer = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_delete) {
            
-            let s2 = dbScript(db_sql['Q343'],{ var1 : slabLayerId })
+            let s2 = dbScript(db_sql['Q289'],{ var1 : slabLayerId })
             let checkSlabsInSales = await connection.query(s2)
 
             if(checkSlabsInSales.rowCount > 0){

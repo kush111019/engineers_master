@@ -12,7 +12,7 @@ const jwt = {
         };
         const jwtToken = await jsonwebtoken.sign(payload, 'KEy')
         let _dt = new Date().toISOString();
-        let s1 = dbScript(db_sql['Q286'],{var1 : user.id, var2 : _dt})
+        let s1 = dbScript(db_sql['Q242'],{var1 : user.id, var2 : _dt})
         let addSessionTime = await connection.query(s1)
         return jwtToken;
     },
@@ -64,7 +64,7 @@ const jwt = {
                                 });
                             }else{
                                 let _dt = new Date().toISOString()
-                                let s2 = dbScript(db_sql['Q286'],{var1 : req.user.id, var2 : _dt})
+                                let s2 = dbScript(db_sql['Q242'],{var1 : req.user.id, var2 : _dt})
                                 let updateSessionTime = await connection.query(s2)
                                 return next();
                             }

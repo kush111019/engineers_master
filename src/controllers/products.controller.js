@@ -23,15 +23,15 @@ module.exports.addProduct = async (req, res) => {
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_create) {
-            let s3 = dbScript(db_sql['Q147'], { var1: productName, var2: checkPermission.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q134'], { var1: productName, var2: checkPermission.rows[0].company_id })
             let findProduct = await connection.query(s3)
             if (findProduct.rowCount == 0) {
               
-                let s4 = dbScript(db_sql['Q92'], { var1:productName, var2: productImage, var3: mysql_real_escape_string(description), var4: availableQuantity, var5: price, var6: endOfLife, var7: checkPermission.rows[0].company_id, var8: currency, var9: userId })
+                let s4 = dbScript(db_sql['Q82'], { var1:productName, var2: productImage, var3: mysql_real_escape_string(description), var4: availableQuantity, var5: price, var6: endOfLife, var7: checkPermission.rows[0].company_id, var8: currency, var9: userId })
                 let addProduct = await connection.query(s4)
 
                 let _dt = new Date().toISOString();
-                let s7 = dbScript(db_sql['Q334'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+                let s7 = dbScript(db_sql['Q280'], { var1:_dt, var2: checkPermission.rows[0].company_id })
                 updateStatusInCompany = await connection.query(s7)
 
                 if (addProduct.rowCount > 0 && updateStatusInCompany.rowCount > 0) {
@@ -93,7 +93,7 @@ module.exports.updateProduct = async (req, res) => {
         if (checkPermission.rows[0].permission_to_update) {
             await connection.query('BEGIN')
             let _dt = new Date().toISOString();
-            let s4 = dbScript(db_sql['Q93'], { var1: productId, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: endOfLife, var8: _dt, var9: checkPermission.rows[0].company_id, var10: currency })
+            let s4 = dbScript(db_sql['Q83'], { var1: productId, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: endOfLife, var8: _dt, var9: checkPermission.rows[0].company_id, var10: currency })
             let updateProduct = await connection.query(s4)
             if (updateProduct.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -132,7 +132,7 @@ module.exports.productList = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
-            let s4 = dbScript(db_sql['Q94'], { var1: checkPermission.rows[0].company_id })
+            let s4 = dbScript(db_sql['Q84'], { var1: checkPermission.rows[0].company_id })
             let productList = await connection.query(s4)
             if (productList.rowCount > 0) {
                 res.json({
@@ -151,7 +151,7 @@ module.exports.productList = async (req, res) => {
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            let s1 = dbScript(db_sql['Q315'], { var1: roleUsers.join(",") })
+            let s1 = dbScript(db_sql['Q270'], { var1: roleUsers.join(",") })
             let productList = await connection.query(s1)
             if (productList.rowCount > 0) {
                 res.json({
@@ -190,12 +190,12 @@ module.exports.deleteProduct = async (req, res) => {
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
-            let s2 = dbScript(db_sql['Q260'], { var1: productId })
+            let s2 = dbScript(db_sql['Q223'], { var1: productId })
             let checkProductInSales = await connection.query(s2)
             if (checkProductInSales.rowCount == 0) {
                 await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
-                let s4 = dbScript(db_sql['Q95'], { var1: productId, var2: _dt, var3: checkPermission.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q85'], { var1: productId, var2: _dt, var3: checkPermission.rows[0].company_id })
                 let deleteProduct = await connection.query(s4)
                 if (deleteProduct.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -282,13 +282,13 @@ module.exports.uploadProductFile = async (req, res) => {
                     csvData.forEach(async (row) => {
                         //defualt product image 
                         if (row.length > 0) {
-                            let s3 = dbScript(db_sql['Q147'], { var1: row[0], var2: checkPermission.rows[0].company_id })
+                            let s3 = dbScript(db_sql['Q134'], { var1: row[0], var2: checkPermission.rows[0].company_id })
                             let findProduct = await connection.query(s3)
                             if (findProduct.rowCount == 0) {
                                 (row[1] == "") ? row[1] = process.env.DEFAULT_PRODUCT_IMAGE : row[1];
                                 //unique id for every row 
                                
-                                let s4 = dbScript(db_sql['Q97'], { var1: checkPermission.rows[0].company_id, var2: userId })
+                                let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: userId })
                                 connection.query(s4, row, (err, res) => {
                                     if (err) {
                                         throw err
@@ -316,7 +316,7 @@ module.exports.uploadProductFile = async (req, res) => {
             })
 
             let _dt = new Date().toISOString();
-            let s7 = dbScript(db_sql['Q334'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+            let s7 = dbScript(db_sql['Q280'], { var1:_dt, var2: checkPermission.rows[0].company_id })
             updateStatusInCompany = await connection.query(s7)
             if(updateStatusInCompany.rowCount > 0){
                 res.json({

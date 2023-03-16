@@ -18,11 +18,11 @@ module.exports.addConfigs = async (req, res) => {
             await connection.query('BEGIN')
 
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q85'], { var1: _dt, var2: findAdmin.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q75'], { var1: _dt, var2: findAdmin.rows[0].company_id })
             let config = await connection.query(s2)
 
             //let id = uuid.v4()
-            let s3 = dbScript(db_sql['Q86'], { var1:currency, var2: phoneFormat, var3: dateFormat, var4: findAdmin.rows[0].id, var5: findAdmin.rows[0].company_id, var6 : beforeClosingDays, var7 : afterClosingDays })
+            let s3 = dbScript(db_sql['Q76'], { var1:currency, var2: phoneFormat, var3: dateFormat, var4: findAdmin.rows[0].id, var5: findAdmin.rows[0].company_id, var6 : beforeClosingDays, var7 : afterClosingDays })
 
             let addConfig = await connection.query(s3)
 
@@ -66,7 +66,7 @@ module.exports.configList = async (req, res) => {
 
         if (findAdmin.rows.length > 0) {
 
-            let s2 = dbScript(db_sql['Q84'], { var1: findAdmin.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q74'], { var1: findAdmin.rows[0].company_id })
             let configList = await connection.query(s2)
 
             let configuration = {}
@@ -186,10 +186,10 @@ module.exports.addImapCredentials = async (req, res) => {
                         promise.then(async (data) => {
                             await connection.query('BEGIN')
                             let _dt = new Date().toISOString();
-                            let s2 = dbScript(db_sql['Q142'], { var1: _dt, var2: findAdmin.rows[0].id, var3: findAdmin.rows[0].company_id })
+                            let s2 = dbScript(db_sql['Q129'], { var1: _dt, var2: findAdmin.rows[0].id, var3: findAdmin.rows[0].company_id })
                             let updateCredential = await connection.query(s2)
                             let encryptedAppPassword = JSON.stringify(encrypt(appPassword))
-                            let s3 = dbScript(db_sql['Q143'], { var1:  email, var2: encryptedAppPassword, var3: findAdmin.rows[0].id, var4: imapHost, var5: imapPort, var6: smtpHost, var7: smtpPort, var8: findAdmin.rows[0].company_id })
+                            let s3 = dbScript(db_sql['Q130'], { var1:  email, var2: encryptedAppPassword, var3: findAdmin.rows[0].id, var4: imapHost, var5: imapPort, var6: smtpHost, var7: smtpPort, var8: findAdmin.rows[0].company_id })
                             let addCredentails = await connection.query(s3)
 
                             if (addCredentails.rowCount > 0) {
@@ -244,7 +244,7 @@ module.exports.imapCredentials = async (req, res) => {
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q138'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
             let credentials = await connection.query(s2)
 
             let credentialObj = {}
@@ -309,10 +309,10 @@ module.exports.addLeadTitle = async (req, res) => {
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q226'], { var1: mysql_real_escape_string(leadTitle), var2:findAdmin.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q192'], { var1: mysql_real_escape_string(leadTitle), var2:findAdmin.rows[0].company_id })
             let findTitle = await connection.query(s2)
             if (findTitle.rowCount == 0) {
-                let s3 = dbScript(db_sql['Q210'], { var1: mysql_real_escape_string(leadTitle), var2: findAdmin.rows[0].company_id })
+                let s3 = dbScript(db_sql['Q178'], { var1: mysql_real_escape_string(leadTitle), var2: findAdmin.rows[0].company_id })
                 let addTitle = await connection.query(s3)
                
                 if (addTitle.rowCount > 0) {
@@ -368,7 +368,7 @@ module.exports.updateLeadTitle = async (req, res) => {
         if (findAdmin.rows.length > 0) {
 
             let _dt = new Date().toISOString()
-            let s3 = dbScript(db_sql['Q211'], { var1: mysql_real_escape_string(leadTitle), var2: _dt, var3: titleId })
+            let s3 = dbScript(db_sql['Q179'], { var1: mysql_real_escape_string(leadTitle), var2: _dt, var3: titleId })
 
             let updateTitle = await connection.query(s3)
 
@@ -414,7 +414,7 @@ module.exports.deleteLeadTitle = async (req, res) => {
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0) {
 
-            let s2 = dbScript(db_sql['Q339'],{ var1 : titleId })
+            let s2 = dbScript(db_sql['Q285'],{ var1 : titleId })
             let checkTitleInLead = await connection.query(s2)
 
             if(checkTitleInLead.rowCount > 0){
@@ -426,7 +426,7 @@ module.exports.deleteLeadTitle = async (req, res) => {
             }
 
             let _dt = new Date().toISOString()
-            let s3 = dbScript(db_sql['Q212'], { var1: _dt, var2: titleId })
+            let s3 = dbScript(db_sql['Q180'], { var1: _dt, var2: titleId })
 
             let deleteTitle = await connection.query(s3)
 
@@ -471,7 +471,7 @@ module.exports.leadTitleList = async (req, res) => {
 
         if (findAdmin.rows.length > 0) {
 
-            let s3 = dbScript(db_sql['Q213'], { var1: findAdmin.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q181'], { var1: findAdmin.rows[0].company_id })
             let leadTitles = await connection.query(s3)
 
             if (leadTitles.rowCount > 0) {
@@ -518,10 +518,10 @@ module.exports.addLeadIndustry = async (req, res) => {
 
         if (findAdmin.rows.length > 0) {
             await connection.query('BEGIN')
-            let s2 = dbScript(db_sql['Q227'], { var1: mysql_real_escape_string(leadIndustry), var2: findAdmin.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q193'], { var1: mysql_real_escape_string(leadIndustry), var2: findAdmin.rows[0].company_id })
             let findIndustry = await connection.query(s2)
             if (findIndustry.rowCount == 0) {
-                let s3 = dbScript(db_sql['Q214'], { var1: mysql_real_escape_string(leadIndustry), var2: findAdmin.rows[0].company_id })
+                let s3 = dbScript(db_sql['Q182'], { var1: mysql_real_escape_string(leadIndustry), var2: findAdmin.rows[0].company_id })
                 let addIndustry = await connection.query(s3)
                 if (addIndustry.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -575,7 +575,7 @@ module.exports.updateLeadIndustry = async (req, res) => {
             await connection.query('BEGIN')
 
             let _dt = new Date().toISOString()
-            let s3 = dbScript(db_sql['Q215'], { var1: mysql_real_escape_string(leadIndustry), var2: _dt, var3: industryId })
+            let s3 = dbScript(db_sql['Q183'], { var1: mysql_real_escape_string(leadIndustry), var2: _dt, var3: industryId })
 
             let updateTitle = await connection.query(s3)
 
@@ -623,7 +623,7 @@ module.exports.deleteLeadIndustry = async (req, res) => {
 
         if (findAdmin.rows.length > 0) {
 
-            let s2 = dbScript(db_sql['Q341'],{ var1 : industryId })
+            let s2 = dbScript(db_sql['Q287'],{ var1 : industryId })
             let checkIndustryInCustomers = await connection.query(s2)
 
             if(checkIndustryInCustomers.rowCount > 0){
@@ -635,7 +635,7 @@ module.exports.deleteLeadIndustry = async (req, res) => {
             }
 
             let _dt = new Date().toISOString()
-            let s3 = dbScript(db_sql['Q216'], { var1: _dt, var2: industryId })
+            let s3 = dbScript(db_sql['Q184'], { var1: _dt, var2: industryId })
 
             let deleteLeadIndustry = await connection.query(s3)
 
@@ -680,7 +680,7 @@ module.exports.leadIndustryList = async (req, res) => {
 
         if (findAdmin.rows.length > 0) {
 
-            let s3 = dbScript(db_sql['Q217'], { var1: findAdmin.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q185'], { var1: findAdmin.rows[0].company_id })
             let leadIndustry = await connection.query(s3)
 
             if (leadIndustry.rowCount > 0) {
@@ -727,10 +727,10 @@ module.exports.addLeadSource = async (req, res) => {
 
         if (findAdmin.rows.length > 0) {
             await connection.query('BEGIN')
-            let s2 = dbScript(db_sql['Q225'], { var1: mysql_real_escape_string(leadSource), var2: findAdmin.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q191'], { var1: mysql_real_escape_string(leadSource), var2: findAdmin.rows[0].company_id })
             let findTitle = await connection.query(s2)
             if (findTitle.rowCount == 0) {
-                let s3 = dbScript(db_sql['Q218'], { var1: mysql_real_escape_string(leadSource), var2: findAdmin.rows[0].company_id })
+                let s3 = dbScript(db_sql['Q186'], { var1: mysql_real_escape_string(leadSource), var2: findAdmin.rows[0].company_id })
                 let addSource = await connection.query(s3)
                 if (addSource.rowCount > 0) {
                     await connection.query('COMMIT')
@@ -784,7 +784,7 @@ module.exports.updateLeadSource = async (req, res) => {
             await connection.query('BEGIN')
 
             let _dt = new Date().toISOString()
-            let s3 = dbScript(db_sql['Q219'], { var1: mysql_real_escape_string(leadSource), var2: _dt, var3: sourceId })
+            let s3 = dbScript(db_sql['Q187'], { var1: mysql_real_escape_string(leadSource), var2: _dt, var3: sourceId })
 
             let updateSource = await connection.query(s3)
 
@@ -832,7 +832,7 @@ module.exports.deleteLeadSource = async (req, res) => {
 
         if (findAdmin.rows.length > 0) {
 
-            let s2 = dbScript(db_sql['Q340'],{ var1 : sourceId })
+            let s2 = dbScript(db_sql['Q286'],{ var1 : sourceId })
             let checkSourceInLead = await connection.query(s2)
 
             if(checkSourceInLead.rowCount > 0){
@@ -844,7 +844,7 @@ module.exports.deleteLeadSource = async (req, res) => {
             }
 
             let _dt = new Date().toISOString()
-            let s3 = dbScript(db_sql['Q220'], { var1: _dt, var2: sourceId })
+            let s3 = dbScript(db_sql['Q188'], { var1: _dt, var2: sourceId })
 
             let deleteSource = await connection.query(s3)
 
@@ -889,7 +889,7 @@ module.exports.leadSourceList = async (req, res) => {
 
         if (findAdmin.rows.length > 0) {
 
-            let s3 = dbScript(db_sql['Q221'], { var1: findAdmin.rows[0].company_id })
+            let s3 = dbScript(db_sql['Q189'], { var1: findAdmin.rows[0].company_id })
             let leadSource = await connection.query(s3)
 
             if (leadSource.rowCount > 0) {
