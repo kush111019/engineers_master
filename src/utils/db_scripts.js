@@ -2032,13 +2032,13 @@ const db_sql = {
             VALUES('{var1}', '{var2}', '{var3}', '{var4}','{var5}', '{var6}') RETURNING *`,
   "Q264": `UPDATE forecast SET deleted_at = '{var1}' WHERE assigned_to = '{var2}' AND id = '{var3}' RETURNING *`,
   "Q265": `UPDATE forecast_data SET deleted_at = '{var1}' WHERE forecast_id = '{var2}' RETURNING *`,
-  "Q266": `SELECT (DISTINCT(sc.id))
+  "Q266": `SELECT DISTINCT(sc.id)
            FROM sales as sc
            LEFT JOIN sales_users AS su ON su.sales_id = sc.id
            WHERE 
             ( 
-              sc.user_id = fd.created_by 
-              OR su.user_id = fd.created_by 
+              sc.user_id = '{var1}'
+              OR su.user_id = '{var1}' 
             ) 
             AND sc.closed_at BETWEEN '{var2}'::date AND '{var3}'::date 
             AND sc.deleted_at is null`,
@@ -2565,11 +2565,11 @@ const db_sql = {
     "Q306": `SELECT id,
                 (
                   select json_agg(forecast_data.created_by) from forecast_data where forecast_data.forecast_id = forecast.id
-                    
+                  AND forecast_data.deleted_at IS NULL
                 ) as forecast_data_creator,
                 (
                   select json_agg(forecast_data.*) from forecast_data where forecast_data.forecast_id = '{var1}' 
-                    
+                  AND forecast_data.deleted_at IS NULL
                 ) as forecast_data
             FROM forecast  
             where forecast.id = '{var1}'  

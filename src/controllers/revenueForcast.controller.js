@@ -628,42 +628,34 @@ module.exports.actualVsForecast = async (req, res) => {
             let s2 = dbScript(db_sql['Q306'], { var1: forecastId })
             let findChildForecast = await connection.query(s2)
             if (findChildForecast.rowCount > 0) {
-                let actualVsForecastData = []
-                for (let data of findChildForecast.rows) {
-                    let s3 = dbScript(db_sql['Q266'], { var1: data.id })
-                    let forecastData = await connection.query(s3)
-                    if (forecastData.rowCount > 0) {
-                        for (let data of forecastData.rows) {
-                            let amount = 0
-                            if (data.sales_data) {
-                                for (let id of data.sales_data) {
-                                    let s2 = dbScript(db_sql['Q256'], { var1: id })
-                                    let recognizedRevenueData = await connection.query(s2)
-                                    amount = (recognizedRevenueData.rowCount > 0) ? amount + Number(recognizedRevenueData.rows[0].amount) : amount
-                                }
-                                data.recognized_amount = amount
-                            } else {
-                                data.recognized_amount = 0
+                let creatorArray = []
+                let forcastDataArray = findChildForecast.rows[0].forecast_data;
+                findChildForecast.rows.map(value => {
+                    if (value.forecast_data_creator) {
+                        creatorArray.push(value.forecast_data_creator[0])
+                    }
+                })
+                for (let data of creatorArray) {
+                    for (let data2 of forcastDataArray) {
+                        let amount = 0
+                        let s3 = dbScript(db_sql['Q266'], { var1: data, var2: data2.start_date, var3: data2.end_date })
+                        let findSales = await connection.query(s3)
+                        if (findSales.rowCount > 0) {
+                            for (let data of findSales.rows) {
+                                let s2 = dbScript(db_sql['Q256'], { var1: data.id })
+                                let recognizedRevenueData = await connection.query(s2)
+                                amount = (recognizedRevenueData.rowCount > 0) ? amount + Number(recognizedRevenueData.rows[0].amount) : amount
                             }
-                            actualVsForecastData.push(data)
                         }
+                        data2.recognized_amount = amount
                     }
                 }
-                if(actualVsForecastData.length > 0){
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Forecast Data",
-                        data: actualVsForecastData
-                    })
-                }else{
-                    res.json({
-                        status: 200,
-                        success: false,
-                        message: "Empty forecast Data",
-                        data: []
-                    })
-                }
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Forecast Data",
+                    data: forcastDataArray
+                })
             }else{
                 res.json({
                     status: 200,
