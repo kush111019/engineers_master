@@ -2565,6 +2565,7 @@ const db_sql = {
               sc.archived_at IS NOT NULL 
             ORDER BY 
               date ASC `,
+    "Q306": `SELECT * FROM forecast WHERE pid = '{var1}' OR id = '{var1}' AND deleted_at IS NULL`
 
 }
 
