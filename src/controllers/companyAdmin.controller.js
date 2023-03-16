@@ -340,60 +340,68 @@ module.exports.login = async (req, res) => {
             if (admin.rows[0].encrypted_password == password) {
                 if (admin.rows[0].is_verified == true) {
                     if (admin.rows[0].is_locked == false) {
-                        let configuration = {}
-                        configuration.id = admin.rows[0].config_id
-                        configuration.currency = admin.rows[0].currency,
-                        configuration.phoneFormat = admin.rows[0].phone_format,
-                        configuration.dateFormat = admin.rows[0].date_format,
-                        configuration.beforeClosingDays = (admin.rows[0].before_closing_days) ? admin.rows[0].before_closing_days : '',
-                        configuration.afterClosingDays = (admin.rows[0].after_closing_days) ? admin.rows[0].after_closing_days : ''
+                        if (admin.rows[0].is_deactivated == false) {
+                            let configuration = {}
+                            configuration.id = admin.rows[0].config_id
+                            configuration.currency = admin.rows[0].currency,
+                                configuration.phoneFormat = admin.rows[0].phone_format,
+                                configuration.dateFormat = admin.rows[0].date_format,
+                                configuration.beforeClosingDays = (admin.rows[0].before_closing_days) ? admin.rows[0].before_closing_days : '',
+                                configuration.afterClosingDays = (admin.rows[0].after_closing_days) ? admin.rows[0].after_closing_days : ''
 
-                        let s2 = dbScript(db_sql['Q125'],{var1: admin.rows[0].id, var2: admin.rows[0].company_id })
-                        let imapCreds = await connection.query(s2)
-                        let isImapCred = (imapCreds.rowCount == 0) ? false : true
+                            let s2 = dbScript(db_sql['Q125'], { var1: admin.rows[0].id, var2: admin.rows[0].company_id })
+                            let imapCreds = await connection.query(s2)
+                            let isImapCred = (imapCreds.rowCount == 0) ? false : true
 
-                        let moduleId = JSON.parse(admin.rows[0].module_ids)
-                        let modulePemissions = []
-                        for ( let data of moduleId) {
-                            let s3 = dbScript(db_sql['Q58'], { var1: data, var2: admin.rows[0].role_id })
-                            let findModulePermissions = await connection.query(s3)
-                            modulePemissions.push({
-                                moduleId: data,
-                                moduleName: findModulePermissions.rows[0].module_name,
-                                permissions: findModulePermissions.rows
+                            let moduleId = JSON.parse(admin.rows[0].module_ids)
+                            let modulePemissions = []
+                            for (let data of moduleId) {
+                                let s3 = dbScript(db_sql['Q58'], { var1: data, var2: admin.rows[0].role_id })
+                                let findModulePermissions = await connection.query(s3)
+                                modulePemissions.push({
+                                    moduleId: data,
+                                    moduleName: findModulePermissions.rows[0].module_name,
+                                    permissions: findModulePermissions.rows
+                                })
+                            }
+
+                            let payload = {
+                                id: admin.rows[0].id,
+                                email: admin.rows[0].email_address,
+                            }
+                            let jwtToken = await issueJWT(payload);
+                            let profileImage = admin.rows[0].avatar
+
+                            res.send({
+                                status: 200,
+                                success: true,
+                                message: "Login Successfull",
+                                data: {
+                                    token: jwtToken,
+                                    id: admin.rows[0].id,
+                                    name: admin.rows[0].full_name,
+                                    isAdmin: admin.rows[0].is_admin,
+                                    roleId: admin.rows[0].role_id,
+                                    role: admin.rows[0].role_name,
+                                    profileImage: profileImage,
+                                    modulePermissions: modulePemissions,
+                                    configuration: configuration,
+                                    isImapCred: isImapCred,
+                                    isImapEnable: admin.rows[0].is_imap_enable,
+                                    isMarketingEnable: admin.rows[0].is_marketing_enable,
+                                    expiryDate: (admin.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : '',
+                                    isMainAdmin: admin.rows[0].is_main_admin,
+                                    companyName: admin.rows[0].company_name,
+                                    companyLogo: admin.rows[0].company_logo
+                                }
+                            });
+                        } else {
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: "deactivated user"
                             })
                         }
-
-                        let payload = {
-                            id: admin.rows[0].id,
-                            email: admin.rows[0].email_address,
-                        }
-                        let jwtToken = await issueJWT(payload);
-                        let profileImage = admin.rows[0].avatar
-
-                        res.send({
-                            status: 200,
-                            success: true,
-                            message: "Login Successfull",
-                            data: {
-                                token: jwtToken,
-                                id: admin.rows[0].id,
-                                name: admin.rows[0].full_name,
-                                isAdmin: admin.rows[0].is_admin,
-                                roleId : admin.rows[0].role_id,
-                                role: admin.rows[0].role_name,
-                                profileImage: profileImage,
-                                modulePermissions: modulePemissions,
-                                configuration: configuration,
-                                isImapCred : isImapCred,
-                                isImapEnable : admin.rows[0].is_imap_enable,
-                                isMarketingEnable : admin.rows[0].is_marketing_enable,
-                                expiryDate: (admin.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : '',
-                                isMainAdmin : admin.rows[0].is_main_admin,
-                                companyName : admin.rows[0].company_name,
-                                companyLogo : admin.rows[0].company_logo
-                            }
-                        });
                     } else {
                         res.json({
                             status: 400,

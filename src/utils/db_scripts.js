@@ -653,7 +653,7 @@ const db_sql = {
   "Q130": `INSERT INTO imap_credentials( email, app_password, user_id, imap_host, imap_port, smtp_host, smtp_port, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}') RETURNING *`,
   "Q131": `SELECT id,full_name,avatar FROM users WHERE id IN ('{var1}','{var2}') AND deleted_at IS NULL`,
   "Q132": `SELECT u.id, u.full_name, u.company_id, u.email_address, u.encrypted_password, u.mobile_number, u.role_id, 
-              u.avatar, u.expiry_date, u.is_verified, u.is_admin, u.is_locked, u.is_main_admin, c.company_name, c.company_address, c.company_logo, c.is_imap_enable,c.is_marketing_enable,
+              u.avatar, u.expiry_date, u.is_verified, u.is_admin, u.is_locked, u.is_main_admin,u.is_deactivated, c.company_name, c.company_address, c.company_logo, c.is_imap_enable,c.is_marketing_enable,
               r.id as role_id,r.role_name, r.reporter, r.module_ids, con.id AS config_id, con.currency, con.phone_format, con.date_format, con.before_closing_days, con.after_closing_days
               FROM users AS u 
               INNER JOIN companies AS c ON c.id = u.company_id
@@ -2032,19 +2032,16 @@ const db_sql = {
             VALUES('{var1}', '{var2}', '{var3}', '{var4}','{var5}', '{var6}') RETURNING *`,
   "Q264": `UPDATE forecast SET deleted_at = '{var1}' WHERE assigned_to = '{var2}' AND id = '{var3}' RETURNING *`,
   "Q265": `UPDATE forecast_data SET deleted_at = '{var1}' WHERE forecast_id = '{var2}' RETURNING *`,
-  "Q266": `SELECT start_date, end_date, created_by,amount as forecast_amount,type,
-            (
-              SELECT json_agg(DISTINCT(sc.id))
-              FROM sales as sc
-              LEFT JOIN sales_users AS su ON su.sales_id = sc.id
-              WHERE 
-                ( sc.user_id = fd.created_by 
-                  OR su.user_id = fd.created_by 
-                  ) 
-                  AND sc.closed_at BETWEEN fd.start_date::date AND fd.end_date::date 
-                  AND sc.deleted_at is null
-            ) AS sales_data
-          FROM forecast_data AS fd WHERE fd.forecast_id = '{var1}' AND fd.deleted_at IS NULL`,
+  "Q266": `SELECT (DISTINCT(sc.id))
+           FROM sales as sc
+           LEFT JOIN sales_users AS su ON su.sales_id = sc.id
+           WHERE 
+            ( 
+              sc.user_id = fd.created_by 
+              OR su.user_id = fd.created_by 
+            ) 
+            AND sc.closed_at BETWEEN '{var2}'::date AND '{var3}'::date 
+            AND sc.deleted_at is null`,
   "Q267": `INSERT INTO marketing_budget_data(budget_id, amount, start_date, end_date, type, created_by)
            VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}' ) RETURNING *`,
   "Q268": `UPDATE marketing_budget_data SET deleted_at = '{var2}' where budget_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
@@ -2565,7 +2562,23 @@ const db_sql = {
               sc.archived_at IS NOT NULL 
             ORDER BY 
               date ASC `,
-    "Q306": `SELECT * FROM forecast WHERE pid = '{var1}' OR id = '{var1}' AND deleted_at IS NULL`
+    "Q306": `SELECT id,
+                (
+                  select json_agg(forecast_data.created_by) from forecast_data where forecast_data.forecast_id = forecast.id
+                    
+                ) as forecast_data_creator,
+                (
+                  select json_agg(forecast_data.*) from forecast_data where forecast_data.forecast_id = '{var1}' 
+                    
+                ) as forecast_data
+            FROM forecast  
+            where forecast.id = '{var1}'  
+              OR forecast.pid = '{var1}'  and forecast.deleted_at is null`,
+    "Q307": `SELECT * FROM sales_users WHERE user_id = '{var1}' AND user_type = 'captain' AND deleted_at IS NULL`,
+    "Q308": `SELECT * FROM customer_company_employees WHERE assigned_sales_lead_to = '{var1}' AND emp_type = 'lead' AND deleted_at IS NULL`,
+    "Q309": `UPDATE sales_users set user_id = '{var2}' WHERE user_id = '{var1}' AND user_type = 'captain' AND deleted_at IS NULL`,
+    "Q310": `Update customer_company_employees set assigned_sales_lead_to = '{var2}' WHERE assigned_sales_lead_to = '{var1}' AND emp_type = 'lead' AND deleted_at IS NULL`,
+    "Q311": `UPDATE users SET is_deactivated = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING * `,
 
 }
 

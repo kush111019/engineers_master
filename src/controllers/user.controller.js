@@ -138,7 +138,8 @@ module.exports.addUser = async (req, res) => {
                         res.json({
                             status: 201,
                             success: true,
-                            message: `User created successfully and link send for set password on ${emailAddress.toLowerCase()} `
+                            message: `User created successfully and link send for set password on ${emailAddress.toLowerCase()} `,
+                            data : addUser.rows[0]
                         })
                     } else {
                         let emailSent = await setPasswordMail(emailAddress, link, name);
@@ -154,7 +155,8 @@ module.exports.addUser = async (req, res) => {
                             res.json({
                                 status: 201,
                                 success: true,
-                                message: `User created successfully and link send for set password on ${emailAddress} `
+                                message: `User created successfully and link send for set password on ${emailAddress} `,
+                                data : addUser.rows[0]
                             })
                         }
                     }
@@ -449,11 +451,11 @@ module.exports.lockUserAccount = async (req, res) => {
             isLocked
         } = req.body
         //get user all permission's
-        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
-        let checkPermission = await connection.query(s3)
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
+        let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
             let _dt = new Date().toISOString();
-            await connection.query('BEGIN')
             //update user status is locked here
             let s4 = dbScript(db_sql['Q30'], { var1: isLocked, var2: userId, var3: _dt })
             let updateUser = await connection.query(s4)
@@ -534,3 +536,119 @@ module.exports.deleteUser = async (req, res) => {
         })
     }
 }
+
+module.exports.deactivateUserAccount = async (req, res) => {
+    try {
+        let id = req.user.id
+        let {
+            userId,
+            isDeactivated
+        } = req.body
+        //get user all permission's
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_update) {
+            let s2 = dbScript(db_sql['Q307'],{var1 : userId})
+            let findUserInSales = await connection.query(s2)
+            console.log(findUserInSales.rowCount);
+            let s3 = dbScript(db_sql['Q308'],{var1 : userId})
+            let findUserInLeads = await connection.query(s3)
+            console.log(findUserInLeads.rowCount);
+
+            if(findUserInSales.rowCount == 0 && findUserInLeads.rowCount == 0){
+                let _dt = new Date().toISOString();
+                //update user status is locked here
+                let s4 = dbScript(db_sql['Q311'], { var1: isDeactivated, var2: userId, var3: _dt })
+                let updateUser = await connection.query(s4)
+                
+                if (updateUser.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "user deactivated successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "something went wrong"
+                    })
+                }
+            }else{
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Can not deactivate User because user has assinged Lead/Sales"
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
+    try {
+        let id = req.user.id
+        let {
+            userId,
+            newUserId
+        } = req.body
+        //get user all permission's
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_update) {
+            let s2 = dbScript(db_sql['Q309'],{var1 : userId, var2 : newUserId})
+            let updateUserInSales = await connection.query(s2)
+
+            let s3 = dbScript(db_sql['Q310'],{var1 : userId,  var2 : newUserId})
+            let updateUserInLeads = await connection.query(s3)
+
+            if(updateUserInSales.rowCount > 0 || updateUserInLeads.rowCount > 0){
+                await connection.query('COMMIt')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "new user assigned successfully"
+                }) 
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "something went wrong"
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+
+
