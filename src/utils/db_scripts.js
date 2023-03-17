@@ -2575,91 +2575,103 @@ const db_sql = {
                   AND forecast_data.deleted_at IS NULL
                 ) as forecast_data
             FROM forecast  
-            where forecast.id = '{var1}'  
-              OR forecast.pid = '{var1}'  and forecast.deleted_at is null`,
+            where (forecast.id = '{var1}'  
+              OR forecast.pid = '{var1}')  and forecast.deleted_at is null`,
     "Q307": `SELECT 
               (
-                SELECT json_agg(roles.id) FROM roles 
+                SELECT json_agg(roles.id)
+                FROM roles 
                 WHERE user_id = '{var1}'  AND deleted_at IS NULL
               )as roles_data,
               (
-                SELECT json_agg(users.id) FROM users 
+                SELECT json_agg(users.id) 
+                FROM users 
                 WHERE created_by = '{var1}' AND deleted_at IS NULL
               )as users_data,
               (
-                SELECT json_agg(sales.id) FROM sales 
+                SELECT json_agg(sales.id) 
+                FROM sales 
                 WHERE sales.user_id = '{var1}' AND deleted_at IS NULL
+                AND closed_at IS NULL AND archived_at IS NULL
               )as sales_data,
               (
-                SELECT json_agg(sales_users.id) FROM sales_users 
+                SELECT json_agg(sales_users.id) 
+                FROM sales_users 
                 WHERE user_id = '{var1}' AND deleted_at IS NULL
               )as sales_users,
               (
-                SELECT json_agg(customer_companies.id) FROM customer_companies 
+                SELECT json_agg(customer_companies.id) 
+                FROM customer_companies 
                 WHERE user_id = '{var1}' AND deleted_at IS NULL
               )as customer_companies,
               (
-                SELECT json_agg(customer_company_employees.id) FROM customer_company_employees 
+                SELECT json_agg(customer_company_employees.id) 
+                FROM customer_company_employees 
                 WHERE (assigned_sales_lead_to = '{var1}' OR 
                 creator_id = '{var1}') AND deleted_at IS NULL
               )as customer_company_employees,
               (
-                SELECT json_agg(products.id) FROM products WHERE user_id = '{var1}' AND deleted_at IS NULL
+                SELECT json_agg(products.id) 
+                FROM products 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
               )as products_data,
               (
-                SELECT json_agg(slabs.id) FROM slabs WHERE user_id = '{var1}' AND deleted_at IS NULL
+                SELECT json_agg(slabs.id) 
+                FROM slabs 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
               )as slabs_data,
               (
-                SELECT json_agg(commission_split.id) FROM commission_split WHERE user_id = '{var1}' AND deleted_at IS NULL
+                SELECT json_agg(commission_split.id) 
+                FROM commission_split 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
               )as commission_split_data,
               (
-                SELECT json_agg(marketing_budget.id) FROM marketing_budget WHERE created_by = '{var1}' AND deleted_at IS NULL
+                SELECT json_agg(marketing_budget.id) 
+                FROM marketing_budget 
+                WHERE created_by = '{var1}' AND deleted_at IS NULL
               )as marketing_budget_data,
               (
-                SELECT json_agg(marketing_budget_data.id) FROM marketing_budget_data WHERE created_by = '{var1}' AND deleted_at IS NULL
+                SELECT json_agg(marketing_budget_data.id) 
+                FROM marketing_budget_data 
+                WHERE created_by = '{var1}' AND deleted_at IS NULL
               )as marketing_budget_data_data,
               (
-                SELECT json_agg(marketing_budget_description.id) FROM marketing_budget_description WHERE user_id = '{var1}' AND deleted_at IS NULL
+                SELECT json_agg(marketing_budget_description.id) 
+                FROM marketing_budget_description 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
               )as marketing_budget_description_data,
               (
-                SELECT json_agg(chat.id) FROM chat WHERE (group_admin = '{var1}' OR user_a = '{var1}' OR user_b = '{var1}') 
+                SELECT json_agg(chat.id) 
+                FROM chat 
+                WHERE (group_admin = '{var1}' OR user_a = '{var1}' OR user_b = '{var1}') 
                 AND deleted_at IS NULL
               )as chat_data,
               (
                 SELECT json_agg(chat_room_members.id)
-                FROM chat_room_members WHERE user_id = '{var1}' AND deleted_at IS NULL
+                FROM chat_room_members 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
               )as chat_room_members_data,
               (
-                SELECT json_agg(follow_up_notes.id)
-                FROM follow_up_notes WHERE user_id = '{var1}' AND deleted_at IS NULL
-              )as follow_up_notes_data,
-              (
                 SELECT json_agg(forecast.id)
-                FROM forecast WHERE created_by = '{var1}' OR assigned_to = '{var1}'
+                FROM forecast 
+                WHERE (created_by = '{var1}' OR assigned_to = '{var1}')
                 AND deleted_at IS NULL
               )as forecast_data,
               (
                 SELECT json_agg(forecast_audit.id)
-                FROM forecast_audit WHERE created_by = '{var1}' AND deleted_at IS NULL
+                FROM forecast_audit 
+                WHERE created_by = '{var1}' AND deleted_at IS NULL
               )as forecast_audit_data,
               (
                 SELECT json_agg(forecast_data.id)
-                FROM forecast_data WHERE created_by = '{var1}' AND deleted_at IS NULL
+                FROM forecast_data 
+                WHERE created_by = '{var1}' AND deleted_at IS NULL
               )as forecast_data_data,
               (
                 SELECT json_agg(recognized_revenue.id)
-                FROM recognized_revenue WHERE user_id = '{var1}' AND deleted_at IS NULL
-              )as recognized_revenue_data,
-              (
-                SELECT json_agg(sales_approval.id)
-                FROM sales_approval WHERE (approver_user_id = '{var1}' OR requested_user_id = '{var1}')
-                AND deleted_at IS NULL
-              )as sales_approval_data,
-              (
-                SELECT json_agg(transfered_back_sales.id)
-                FROM transfered_back_sales WHERE (transferd_back_by_id = '{var1}' OR transferd_back_to_id = '{var1}' OR user_id = '{var1}')
-                AND deleted_at IS NULL
-              )as transfered_back_sales_data
+                FROM recognized_revenue 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as recognized_revenue_data
               
             FROM users where id = '{var1}' AND deleted_at IS NULL and is_deactivated = false`,
     // "Q308": `SELECT * FROM customer_company_employees WHERE assigned_sales_lead_to = '{var1}' AND emp_type = 'lead' AND deleted_at IS NULL`,
