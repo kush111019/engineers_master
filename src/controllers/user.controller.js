@@ -103,7 +103,7 @@ module.exports.addUser = async (req, res) => {
 
         //let id = uuid.v4()
         // first check user email is exits in our data base or not
-        let s2 = dbScript(db_sql['Q4'], { var1: emailAddress })
+        let s2 = dbScript(db_sql['Q4'], { var1: mysql_real_escape_string(emailAddress) })
         let findUser = await connection.query(s2)
         if (findUser.rowCount == 0) {
             // here we are checking user permission 
@@ -117,7 +117,7 @@ module.exports.addUser = async (req, res) => {
 
                 // and user added in db and update there permission in db
                 await connection.query('BEGIN')
-                let s5 = dbScript(db_sql['Q45'], { var1: mysql_real_escape_string(name), var2: checkPermission.rows[0].company_id, var3: avatar, var4: emailAddress.toLowerCase(), var5: mobileNumber, var6: encryptedPassword, var7: roleId, var8: mysql_real_escape_string(address), var9: isAdmin, var10: userId })
+                let s5 = dbScript(db_sql['Q45'], { var1: mysql_real_escape_string(name), var2: checkPermission.rows[0].company_id, var3: avatar, var4: mysql_real_escape_string(emailAddress.toLowerCase()), var5: mobileNumber, var6: encryptedPassword, var7: roleId, var8: mysql_real_escape_string(address), var9: isAdmin, var10: userId })
                 let addUser = await connection.query(s5)
 
                 let _dt = new Date().toISOString();
@@ -414,7 +414,7 @@ module.exports.updateUser = async (req, res) => {
             await connection.query('BEGIN')
 
             //update user details
-            let s4 = dbScript(db_sql['Q22'], { var1: emailAddress, var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: checkPermission.rows[0].company_id, var10: isAdmin })
+            let s4 = dbScript(db_sql['Q22'], { var1: mysql_real_escape_string(emailAddress), var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: checkPermission.rows[0].company_id, var10: isAdmin })
             let updateUser = await connection.query(s4)
             await connection.query('COMMIT')
             if (updateUser.rowCount > 0) {

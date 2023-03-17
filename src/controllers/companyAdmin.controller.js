@@ -42,7 +42,7 @@ let createAdmin = async (bodyData, cId, res) => {
             let role_id = createRole.rows[0].id
             let s5 = dbScript(db_sql['Q3'], {
                 var1: mysql_real_escape_string(name),
-                var2: cId, var3: avatar, var4: emailAddress.toLowerCase(), var5: mobileNumber,
+                var2: cId, var3: avatar, var4: mysql_real_escape_string(emailAddress.toLowerCase()), var5: mobileNumber,
                 var6: phoneNumber, var7: encryptedPassword, var8: role_id,
                 var9: mysql_real_escape_string(companyAddress), var10: expiryDate
             })
@@ -334,7 +334,7 @@ module.exports.verifyUser = async (req, res) => {
 module.exports.login = async (req, res) => {
     try {
         let { emailAddress, password } = req.body;
-        let s1 = dbScript(db_sql['Q132'], { var1: emailAddress })
+        let s1 = dbScript(db_sql['Q132'], { var1: mysql_real_escape_string(emailAddress) })
         let admin = await connection.query(s1)
         if (admin.rows.length > 0) {
             if (admin.rows[0].encrypted_password == password) {
@@ -570,7 +570,7 @@ module.exports.updateUserProfile = async (req, res) => {
         if (findUser.rows.length > 0) {
             await connection.query('BEGIN')
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q10'], { var1: mysql_real_escape_string(name), var2: avatar, var3: emailAddress, var4: phoneNumber, var5: mobileNumber, var6: mysql_real_escape_string(address), var7: _dt, var8: userId, var9: findUser.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q10'], { var1: mysql_real_escape_string(name), var2: avatar, var3: mysql_real_escape_string(emailAddress), var4: phoneNumber, var5: mobileNumber, var6: mysql_real_escape_string(address), var7: _dt, var8: userId, var9: findUser.rows[0].company_id })
             let updateUser = await connection.query(s2)
             await connection.query('COMMIT')
             if (updateUser.rowCount > 0) {
@@ -613,7 +613,7 @@ module.exports.forgotPassword = async (req, res) => {
         let {
             emailAddress
         } = req.body
-        let s1 = dbScript(db_sql['Q4'], { var1: emailAddress })
+        let s1 = dbScript(db_sql['Q4'], { var1: mysql_real_escape_string(emailAddress) })
         let checkuser = await connection.query(s1);
         if (checkuser.rows.length > 0) {
             const payload = {
