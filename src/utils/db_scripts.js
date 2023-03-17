@@ -496,6 +496,7 @@ const db_sql = {
             sc.company_id = '{var1}' AND 
             sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
             sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
+            AND sc.archived_at IS NULL
           GROUP BY 
             sc.closed_at,
             sc.id,
@@ -757,7 +758,7 @@ const db_sql = {
             ) 
           AND 
             sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
-            sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
+            sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL AND sc.archived_at IS NULL
           GROUP BY 
             sc.closed_at,
             sc.id,
@@ -1923,7 +1924,7 @@ const db_sql = {
             WHERE
               sc.id = '{var1}' AND sc.sales_type = 'Subscription'
             AND
-              sc.deleted_at IS NULL`,
+              sc.deleted_at IS NULL AND sc.archived_at IS NULL`,
   "Q253": `UPDATE sales SET revenue_commission =  '{var1}' WHERE id = '{var2}' RETURNING *`,
   "Q254": `SELECT  SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
             FROM 
@@ -1935,7 +1936,9 @@ const db_sql = {
             AND
               closed_at BETWEEN '{var3}' AND '{var4}'
             AND 
-              deleted_at IS NULL`,
+              deleted_at IS NULL
+            AND 
+              archived_at IS NULL`,
   "Q255": `SELECT  SUM(recognized_amount::DECIMAL) as amount FROM 
                 recognized_revenue 
               WHERE 
@@ -1963,7 +1966,7 @@ const db_sql = {
           AND 
             sc.closed_at BETWEEN '{var2}' AND '{var3}'
           AND 
-            sc.deleted_at IS NULL`,
+            sc.deleted_at IS NULL AND sc.archived_at IS NULL`,
 
   "Q258": `SELECT SUM(target_amount::DECIMAL) as amount, 
             SUM(booking_commission::DECIMAL) as booking_commission, 
@@ -1972,7 +1975,7 @@ const db_sql = {
             sales 
           WHERE 
             id IN ({var1}) AND sales_type = '{var2}'
-          AND deleted_at IS NULL`,
+          AND deleted_at IS NULL AND archived_at IS NULL`,
 
   "Q259": `SELECT SUM(recognized_amount::DECIMAL) as amount
               FROM 

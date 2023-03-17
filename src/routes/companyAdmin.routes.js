@@ -126,7 +126,7 @@ router.get('/totalLossRevenue',verifyTokenFn, controller.reports.totalLossRevenu
 //---------------------------------------DashBoard counts -------------------------------
 
 router.get('/revenues',verifyTokenFn, controller.dashboard.revenues)
-router.get('/totalExpectedRevenueCounts', verifyTokenFn, controller.dashboard.totalExpectedRevenueCounts)
+// router.get('/totalExpectedRevenueCounts', verifyTokenFn, controller.dashboard.totalExpectedRevenueCounts)
 router.get('/dataCreationStatus', verifyTokenFn, controller.dashboard.dataCreationStatus)
 
 

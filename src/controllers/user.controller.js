@@ -20,7 +20,14 @@ module.exports.userCount = async (req, res) => {
 
             let s2 = dbScript(db_sql['Q15'], { var1: findAdmin.rows[0].company_id })
             let users = await connection.query(s2)
-
+            let uc = 0;
+            users.rows.map(value => {
+                console.log(value);
+                if (value.is_deactivated == false) {
+                    uc = uc + 1
+                }
+            })
+            console.log(uc, "uc");
             //here we are getting a transection details and its limit 
             let s3 = dbScript(db_sql['Q97'], { var1: findAdmin.rows[0].company_id })
             let count = await connection.query(s3)
@@ -30,7 +37,7 @@ module.exports.userCount = async (req, res) => {
             let userCount = await connection.query(s4)
 
             if (count.rows.length > 0) {
-                if (users.rowCount - 1 < count.rows[0].user_count) {
+                if (uc - 1 < count.rows[0].user_count) {
                     res.json({
                         status: 200,
                         success: true,
@@ -44,7 +51,7 @@ module.exports.userCount = async (req, res) => {
                     })
                 }
             } else if (userCount.rowCount > 0) {
-                if (users.rowCount < userCount.rows[0].user_count) {
+                if (uc < userCount.rows[0].user_count) {
                     res.json({
                         status: 200,
                         success: true,
@@ -139,7 +146,7 @@ module.exports.addUser = async (req, res) => {
                             status: 201,
                             success: true,
                             message: `User created successfully and link send for set password on ${emailAddress.toLowerCase()} `,
-                            data : addUser.rows[0]
+                            data: addUser.rows[0]
                         })
                     } else {
                         let emailSent = await setPasswordMail(emailAddress, link, name);
@@ -156,7 +163,7 @@ module.exports.addUser = async (req, res) => {
                                 status: 201,
                                 success: true,
                                 message: `User created successfully and link send for set password on ${emailAddress} `,
-                                data : addUser.rows[0]
+                                data: addUser.rows[0]
                             })
                         }
                     }
@@ -549,41 +556,104 @@ module.exports.deactivateUserAccount = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
-            let s2 = dbScript(db_sql['Q307'],{var1 : userId})
-            let findUserInSales = await connection.query(s2)
-            console.log(findUserInSales.rowCount);
-            let s3 = dbScript(db_sql['Q308'],{var1 : userId})
-            let findUserInLeads = await connection.query(s3)
-            console.log(findUserInLeads.rowCount);
+            if (isDeactivated) {
+                let s2 = dbScript(db_sql['Q307'], { var1: userId })
+                let findUserInSales = await connection.query(s2)
 
-            if(findUserInSales.rowCount == 0 && findUserInLeads.rowCount == 0){
-                let _dt = new Date().toISOString();
-                //update user status is locked here
-                let s4 = dbScript(db_sql['Q311'], { var1: isDeactivated, var2: userId, var3: _dt })
-                let updateUser = await connection.query(s4)
-                
-                if (updateUser.rowCount > 0) {
-                    await connection.query('COMMIT')
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "user deactivated successfully"
-                    })
+                let s3 = dbScript(db_sql['Q308'], { var1: userId })
+                let findUserInLeads = await connection.query(s3)
+
+                if (findUserInSales.rowCount == 0 && findUserInLeads.rowCount == 0) {
+                    let _dt = new Date().toISOString();
+                    //update user status is locked here
+                    let s4 = dbScript(db_sql['Q311'], { var1: isDeactivated, var2: userId, var3: _dt })
+                    let updateUser = await connection.query(s4)
+
+                    if (updateUser.rowCount > 0) {
+                        await connection.query('COMMIT')
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "user deactivated successfully"
+                        })
+                    } else {
+                        await connection.query('ROLLBACK')
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "something went wrong"
+                        })
+                    }
                 } else {
                     await connection.query('ROLLBACK')
                     res.json({
-                        status: 400,
+                        status: 200,
                         success: false,
-                        message: "something went wrong"
+                        message: "Can not deactivate User because user has assinged Lead/Sales"
                     })
                 }
-            }else{
-                await connection.query('ROLLBACK')
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: "Can not deactivate User because user has assinged Lead/Sales"
+            } else {
+                let s2 = dbScript(db_sql['Q15'], { var1: checkPermission.rows[0].company_id })
+                let users = await connection.query(s2)
+                let uc = 0;
+                users.rows.map(value => {
+                    console.log(value);
+                    if (value.is_deactivated == false) {
+                        uc = uc + 1
+                    }
                 })
+                //here we are getting a transection details and its limit 
+                let s3 = dbScript(db_sql['Q97'], { var1: checkPermission.rows[0].company_id })
+                let count = await connection.query(s3)
+
+                //here we are getting a company details 
+                let s4 = dbScript(db_sql['Q9'], { var1: checkPermission.rows[0].company_id })
+                let userCount = await connection.query(s4)
+
+                if (count.rows.length > 0) {
+                    if (uc - 1 < count.rows[0].user_count) {
+                        let _dt = new Date().toISOString();
+                        let s4 = dbScript(db_sql['Q311'], { var1: isDeactivated, var2: userId, var3: _dt })
+                        let updateUser = await connection.query(s4)
+
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: 'User activated successfully'
+                        })
+                    } else {
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: 'Users limit reached, cannot activate user. Please contact your admin to increase the user license count'
+                        })
+                    }
+                } else if (userCount.rowCount > 0) {
+                    if (uc < userCount.rows[0].user_count) {
+
+                        let _dt = new Date().toISOString();
+                        let s4 = dbScript(db_sql['Q311'], { var1: isDeactivated, var2: userId, var3: _dt })
+                        let updateUser = await connection.query(s4)
+
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: 'User activated successfully'
+                        })
+                    } else {
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: 'Users limit reached, cannot activate user. Please contact your admin to increase the user license count'
+                        })
+                    }
+                } else {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: 'Empty User List'
+                    })
+                }
             }
         } else {
             res.status(403).json({
@@ -613,24 +683,24 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
-            let s2 = dbScript(db_sql['Q309'],{var1 : userId, var2 : newUserId})
+            let s2 = dbScript(db_sql['Q309'], { var1: userId, var2: newUserId })
             let updateUserInSales = await connection.query(s2)
 
-            let s3 = dbScript(db_sql['Q310'],{var1 : userId,  var2 : newUserId})
+            let s3 = dbScript(db_sql['Q310'], { var1: userId, var2: newUserId })
             let updateUserInLeads = await connection.query(s3)
 
             let _dt = new Date().toISOString();
             let s4 = dbScript(db_sql['Q311'], { var1: true, var2: userId, var3: _dt })
             let updateUser = await connection.query(s4)
 
-            if((updateUserInSales.rowCount > 0 || updateUserInLeads.rowCount > 0 ) && updateUser.rowCount > 0 ){
-                
+            if ((updateUserInSales.rowCount > 0 || updateUserInLeads.rowCount > 0) && updateUser.rowCount > 0) {
+
                 await connection.query('COMMIt')
                 res.json({
                     status: 200,
                     success: true,
                     message: "new user assigned successfully"
-                }) 
+                })
             } else {
                 await connection.query('ROLLBACK')
                 res.json({
