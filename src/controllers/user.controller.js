@@ -22,12 +22,10 @@ module.exports.userCount = async (req, res) => {
             let users = await connection.query(s2)
             let uc = 0;
             users.rows.map(value => {
-                console.log(value);
                 if (value.is_deactivated == false) {
                     uc = uc + 1
                 }
             })
-            console.log(uc, "uc");
             //here we are getting a transection details and its limit 
             let s3 = dbScript(db_sql['Q97'], { var1: findAdmin.rows[0].company_id })
             let count = await connection.query(s3)
@@ -556,7 +554,7 @@ module.exports.deactivateUserAccount = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
-            if (isDeactivated) {
+            if (isDeactivated == true) {
                 let s2 = dbScript(db_sql['Q307'], { var1: userId })
                 let findUser = await connection.query(s2)
                 if (findUser.rows.length > 0 &&
@@ -575,13 +573,10 @@ module.exports.deactivateUserAccount = async (req, res) => {
                         findUser.rows[0].marketing_budget_description_data ||
                         findUser.rows[0].chat_data ||
                         findUser.rows[0].chat_room_members_data ||
-                        findUser.rows[0].follow_up_notes_data ||
                         findUser.rows[0].forecast_data ||
                         findUser.rows[0].forecast_audit_data ||
                         findUser.rows[0].forecast_data_data ||
-                        findUser.rows[0].recognized_revenue_data ||
-                        findUser.rows[0].sales_approval_data ||
-                        findUser.rows[0].transfered_back_sales_data
+                        findUser.rows[0].recognized_revenue_data
                     )
                 ) {
                     await connection.query('ROLLBACK')
@@ -618,7 +613,6 @@ module.exports.deactivateUserAccount = async (req, res) => {
                 let users = await connection.query(s2)
                 let uc = 0;
                 users.rows.map(value => {
-                    console.log(value);
                     if (value.is_deactivated == false) {
                         uc = uc + 1
                     }
@@ -824,7 +818,6 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                     chatIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q310'], { var1: 'chat', var2: 'user_a', var3: newUserId, var4: chatIds.join(","), var5: 'user_a', var6: userId })
-                console.log(s2, "chattttttttttttttttttttt");
                 let updateNewUserInChat = await connection.query(s2)
             }
             if (userData.chat_data) {
@@ -842,14 +835,6 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'chat_room_members', var2: 'user_id', var3: newUserId, var4: chatMembersIds.join(",") })
                 let updateNewUserInChatRoomMembers = await connection.query(s2)
-            }
-            if (userData.follow_up_notes_data) {
-                let followUpIds = []
-                userData.follow_up_notes_data.map(item => {
-                    followUpIds.push("'" + item.toString() + "'")
-                })
-                let s2 = dbScript(db_sql['Q309'], { var1: 'follow_up_notes', var2: 'user_id', var3: newUserId, var4: followUpIds.join(",") })
-                let updateNewUserInFollowUpNotes = await connection.query(s2)
             }
             if (userData.forecast_data) {
                 let forecastIds = []
@@ -891,49 +876,10 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let s2 = dbScript(db_sql['Q309'], { var1: 'recognized_revenue', var2: 'user_id', var3: newUserId, var4: recognizedRevenueIds.join(",") })
                 let updateNewUserInRecognizedRevenue = await connection.query(s2)
             }
-            if (userData.sales_approval_data) {
-                let salesApprovalIds = []
-                userData.sales_approval_data.map(item => {
-                    salesApprovalIds.push("'" + item.toString() + "'")
-                })
-                let s2 = dbScript(db_sql['Q310'], { var1: 'sales_approval', var2: 'approver_user_id', var3: newUserId, var4: salesApprovalIds.join(","), var5: 'approver_user_id', var6: userId })
-                let updateNewUserInSalesApproval = await connection.query(s2)
-            }
-            if (userData.sales_approval_data) {
-                let salesApprovalIds = []
-                userData.sales_approval_data.map(item => {
-                    salesApprovalIds.push("'" + item.toString() + "'")
-                })
-                let s2 = dbScript(db_sql['Q310'], { var1: 'sales_approval', var2: 'requested_user_id', var3: newUserId, var4: salesApprovalIds.join(","), var5: 'requested_user_id', var6: userId })
-                let updateNewUserInSalesApproval = await connection.query(s2)
-            }
-            if (userData.transfered_back_sales_data) {
-                let transfereBackIds = []
-                userData.transfered_back_sales_data.map(item => {
-                    transfereBackIds.push("'" + item.toString() + "'")
-                })
-                let s2 = dbScript(db_sql['Q310'], { var1: 'transfered_back_sales', var2: 'transferd_back_by_id', var3: newUserId, var4: transfereBackIds.join(","), var5: 'transferd_back_by_id', var6: userId })
-                let updateNewUserInTransferedBackSales = await connection.query(s2)
-            }
-            if (userData.transfered_back_sales_data) {
-                let transfereBackIds = []
-                userData.transfered_back_sales_data.map(item => {
-                    transfereBackIds.push("'" + item.toString() + "'")
-                })
-                let s2 = dbScript(db_sql['Q310'], { var1: 'transfered_back_sales', var2: 'transferd_back_to_id', var3: newUserId, var4: transfereBackIds.join(","), var5: 'transferd_back_to_id', var6: userId })
-                let updateNewUserInTransferedBackSales = await connection.query(s2)
-            }
-            if (userData.transfered_back_sales_data) {
-                let transfereBackIds = []
-                userData.transfered_back_sales_data.map(item => {
-                    transfereBackIds.push("'" + item.toString() + "'")
-                })
-                let s2 = dbScript(db_sql['Q310'], { var1: 'transfered_back_sales', var2: 'user_id', var3: newUserId, var4: transfereBackIds.join(","), var5: 'user_id', var6: userId })
-                let updateNewUserInTransferedBackSales = await connection.query(s2)
-            }
 
             let _dt = new Date().toISOString();
-            let s4 = dbScript(db_sql['Q311'], { var1: true, var2: userId, var3: _dt })
+            let isDeactivated = true
+            let s4 = dbScript(db_sql['Q311'], { var1: isDeactivated, var2: userId, var3: _dt })
             let updateUser = await connection.query(s4)
 
             if (updateUser.rowCount > 0) {
