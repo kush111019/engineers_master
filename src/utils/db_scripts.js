@@ -527,7 +527,7 @@ const db_sql = {
                   sales sc
                   LEFT JOIN customer_companies c ON c.id = sc.customer_id
               WHERE 
-                  sc.closed_at is not null AND 
+                  sc.closed_at IS NOT null AND 
                   sc.company_id = '{var1}' AND 
                   sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
                   c.deleted_at IS NULL AND
@@ -594,7 +594,7 @@ const db_sql = {
   "Q100": `INSERT INTO superadmin_config(trial_days, trial_users) VALUES('{var1}', '{var2}') RETURNING *`,
   "Q101": `SELECT id, trial_days,trial_users, created_at FROM superadmin_config WHERE deleted_at IS NULL ORDER BY created_at desc `,
   "Q102": `UPDATE users SET expiry_date = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
-  "Q103": `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id,total_amount, immediate_upgrade, upgraded_transaction_id FROM transactions WHERE deleted_at IS NULL AND upgraded_transaction_id is not null`,
+  "Q103": `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id,total_amount, immediate_upgrade, upgraded_transaction_id FROM transactions WHERE deleted_at IS NULL AND upgraded_transaction_id IS NOT null`,
   "Q104": `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade  FROM transactions WHERE plan_id = '{var1}' AND deleted_at IS NULL`,
   "Q105": `UPDATE transactions SET stripe_customer_id = '{var1}', stripe_subscription_id = '{var2}', 
               stripe_card_id = '{var3}', stripe_token_id = '{var4}', stripe_charge_id = '{var5}', 
@@ -778,7 +778,7 @@ const db_sql = {
               LEFT JOIN 
                 sales_users AS su ON sc.id = su.sales_id  
               WHERE 
-                  sc.closed_at is not null AND 
+                  sc.closed_at IS NOT null AND 
                   (sc.user_id IN ({var1}) OR su.user_id IN ({var1}) )
                   AND sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
                   c.deleted_at IS NULL AND
@@ -1565,7 +1565,7 @@ const db_sql = {
           sales_users AS su 
           ON su.sales_id = sc.id
           WHERE 
-          sc.closed_at is not null 
+          sc.closed_at IS NOT null 
           AND (sc.user_id IN ({var1}) OR su.user_id IN ({var1}) )
           AND sc.closed_at BETWEEN '{var3}' AND '{var4}'
           AND sc.deleted_at IS NULL
