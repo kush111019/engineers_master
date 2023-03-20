@@ -2678,6 +2678,7 @@ const db_sql = {
     "Q309": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND deleted_at IS NULL`,
     "Q310": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND {var5} = '{var6}' AND deleted_at IS NULL`,
     "Q311": `UPDATE users SET is_deactivated = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING * `,
+    "Q312": `SELECT * FROM customer_companies WHERE LOWER(customer_name) = LOWER('{var1}') AND deleted_at IS NULL`
 
 }
 
