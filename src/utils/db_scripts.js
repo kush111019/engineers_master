@@ -2592,7 +2592,6 @@ const db_sql = {
                 SELECT json_agg(sales.id) 
                 FROM sales 
                 WHERE sales.user_id = '{var1}' AND deleted_at IS NULL
-                AND closed_at IS NULL AND archived_at IS NULL
               )as sales_data,
               (
                 SELECT json_agg(sales_users.id) 
