@@ -699,12 +699,15 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
             newUserId,
             userData
         } = req.body
+        console.log(req.body);
         //get user all permission's
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
+            console.log("11111111111");
             if (userData.roles_data) {
+                console.log("222222222222");
                 let rolesIds = []
                 userData.roles_data.map(item => {
                     rolesIds.push("'" + item.toString() + "'")
@@ -712,7 +715,9 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let s2 = dbScript(db_sql['Q309'], { var1: 'roles', var2: 'user_id', var3: newUserId, var4: rolesIds.join(",") })
                 let updateNewUserInRole = await connection.query(s2)
             }
+            
             if (userData.users_data) {
+                console.log("33333333333");
                 let userIds = []
                 userData.users_data.map(item => {
                     userIds.push("'" + item.toString() + "'")
@@ -722,6 +727,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
 
             }
             if (userData.sales_data) {
+                console.log("44444444444");
                 let salesIds = []
                 userData.sales_data.map(item => {
                     salesIds.push("'" + item.toString() + "'")
@@ -730,6 +736,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInSales = await connection.query(s2)
             }
             if (userData.sales_users) {
+                console.log("555555555555");
                 let salesUsersIds = []
                 userData.sales_users.map(item => {
                     salesUsersIds.push("'" + item.toString() + "'")
@@ -738,6 +745,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInSalesUsers = await connection.query(s2)
             }
             if (userData.customer_companies) {
+                console.log("666666666666666");
                 let customerCompaniesIds = []
                 userData.customer_companies.map(item => {
                     customerCompaniesIds.push("'" + item.toString() + "'")
@@ -746,6 +754,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInCustomerCompanies = await connection.query(s2)
             }
             if (userData.customer_company_employees) {
+                console.log("777777777");
                 let customerCompaniesEmpIds = []
                 userData.customer_company_employees.map(item => {
                     customerCompaniesEmpIds.push("'" + item.toString() + "'")
@@ -754,6 +763,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInAssignedCustomerCompaniesEmployees = await connection.query(s2)
             }
             if (userData.customer_company_employees) {
+                console.log("888888888888");
                 let customerCompaniesEmpIds = []
                 userData.customer_company_employees.map(item => {
                     customerCompaniesEmpIds.push("'" + item.toString() + "'")
@@ -762,6 +772,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInCustomerCompaniesEmployees = await connection.query(s2)
             }
             if (userData.products_data) {
+                console.log("99999999999");
                 let productIds = []
                 userData.products_data.map(item => {
                     productIds.push("'" + item.toString() + "'")
@@ -770,6 +781,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInProducts = await connection.query(s2)
             }
             if (userData.slabs_data) {
+                console.log("qqqqqqqqqqqqqq");
                 let slabIds = []
                 userData.slabs_data.map(item => {
                     slabIds.push("'" + item.toString() + "'")
@@ -778,6 +790,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInSlabs = await connection.query(s2)
             }
             if (userData.commission_split_data) {
+                console.log("wwwwwwwwwwww");
                 let commissionIds = []
                 userData.commission_split_data.map(item => {
                     commissionIds.push("'" + item.toString() + "'")
@@ -786,6 +799,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInCommission = await connection.query(s2)
             }
             if (userData.marketing_budget_data) {
+                console.log("rrrrrrrrrrr");
                 let budgetIds = []
                 userData.marketing_budget_data.map(item => {
                     budgetIds.push("'" + item.toString() + "'")
@@ -794,6 +808,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInMarketingBudget = await connection.query(s2)
             }
             if (userData.marketing_budget_data_data) {
+                console.log("ttttttttttttttttttttt");
                 let budgetDataIds = []
                 userData.marketing_budget_data_data.map(item => {
                     budgetDataIds.push("'" + item.toString() + "'")
@@ -802,6 +817,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInMarketingBudgetData = await connection.query(s2)
             }
             if (userData.marketing_budget_description_data) {
+                console.log("yyyyyyyyyyyyy");
                 let budgetDescriptionIds = []
                 userData.marketing_budget_description_data.map(item => {
                     budgetDescriptionIds.push("'" + item.toString() + "'")
@@ -810,6 +826,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInMarketingDescription = await connection.query(s2)
             }
             if (userData.chat_data) {
+                console.log("uuuuuuuuuuuu");
                 let chatIds = []
                 userData.chat_data.map(item => {
                     chatIds.push("'" + item.toString() + "'")
@@ -818,6 +835,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInGroupAdminChat = await connection.query(s2)
             }
             if (userData.chat_data) {
+                console.log("iiiiiiiiiiiiii");
                 let chatIds = []
                 userData.chat_data.map(item => {
                     chatIds.push("'" + item.toString() + "'")
@@ -826,6 +844,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInUserAChat = await connection.query(s2)
             }
             if (userData.chat_data) {
+                console.log("oooooooooooooo");
                 let chatIds = []
                 userData.chat_data.map(item => {
                     chatIds.push("'" + item.toString() + "'")
@@ -834,6 +853,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInUserBChat = await connection.query(s2)
             }
             if (userData.chat_room_members_data) {
+                console.log("pppppppppppppppp");
                 let chatMembersIds = []
                 userData.chat_room_members_data.map(item => {
                     chatMembersIds.push("'" + item.toString() + "'")
@@ -842,6 +862,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInChatRoomMembers = await connection.query(s2)
             }
             if (userData.forecast_data) {
+                console.log("aaaaaaaaaaaaaa");
                 let forecastIds = []
                 userData.forecast_data.map(item => {
                     forecastIds.push("'" + item.toString() + "'")
@@ -850,6 +871,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInForecastCreator = await connection.query(s2)
             }
             if (userData.forecast_data) {
+                console.log("ssssssssssss");
                 let forecastIds = []
                 userData.forecast_data.map(item => {
                     forecastIds.push("'" + item.toString() + "'")
@@ -858,6 +880,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInForecast = await connection.query(s2)
             }
             if (userData.forecast_audit_data) {
+                console.log("dddddddddd");
                 let forecastAuditIds = []
                 userData.forecast_audit_data.map(item => {
                     forecastAuditIds.push("'" + item.toString() + "'")
@@ -866,6 +889,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInAuditForecast = await connection.query(s2)
             }
             if (userData.forecast_data_data) {
+                console.log("ffffffffff");
                 let forecastDataIds = []
                 userData.forecast_data_data.map(item => {
                     forecastDataIds.push("'" + item.toString() + "'")
@@ -874,6 +898,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInForecastData = await connection.query(s2)
             }
             if (userData.recognized_revenue_data) {
+                console.log("ggggggggggg");
                 let recognizedRevenueIds = []
                 userData.recognized_revenue_data.map(item => {
                     recognizedRevenueIds.push("'" + item.toString() + "'")
