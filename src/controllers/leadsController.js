@@ -457,13 +457,11 @@ module.exports.uploadLeadFile = async (req, res) => {
                 let csvStream = fastcsv.parse().on("data", (data) => {
                     csvData.push(data)
                 }).on("end", () => {
-                    console.log(csvData, "csvData");
                     // remove the first line: header
                     csvData.shift();
                     // connect to the PostgreSQL database
                     // insert csvData into DB 
                     csvData.forEach(async (row) => {
-                        console.log(row[8]);
                         //defualt product image 
                         if (row.length > 0) {
 
@@ -481,7 +479,6 @@ module.exports.uploadLeadFile = async (req, res) => {
                             let sourceId = '';
                             let s5 = dbScript(db_sql['Q191'], { var1: row[9], var2: checkPermission.rows[0].company_id })
                             let findSource = await connection.query(s5)
-                            console.log(findSource.rows, "findSource");
                             if (findSource.rowCount == 0) {
                                 let s6 = dbScript(db_sql['Q186'], { var1: row[9], var2: checkPermission.rows[0].company_id })
                                 let insertSource = await connection.query(s6)
@@ -493,7 +490,6 @@ module.exports.uploadLeadFile = async (req, res) => {
                             let industryId = '';
                             let s7 = dbScript(db_sql['Q191'], { var1: row[11], var2: checkPermission.rows[0].company_id })
                             let findIndustry = await connection.query(s7)
-                            console.log(findIndustry.rows, "findIndustry");
                             if (findIndustry.rowCount == 0) {
                                 let s8 = dbScript(db_sql['Q186'], { var1: row[11], var2: checkPermission.rows[0].company_id })
                                 let insertIndustry = await connection.query(s8)
@@ -505,7 +501,6 @@ module.exports.uploadLeadFile = async (req, res) => {
                             let customerId = ''
                             let s12 = dbScript(db_sql['Q312'],{var1 : mysql_real_escape_string(row[10])})
                             let findCustomer = await connection.query(s12)
-                            console.log(findCustomer.rows);
                             if(findCustomer.rowCount == 0){
                                 let s9 = dbScript(db_sql['Q36'], { var1: checkPermission.rows[0].id, var2: mysql_real_escape_string(row[10]), var3: checkPermission.rows[0].company_id, var4: mysql_real_escape_string(row[12]), var5: row[13], var6: industryId })
                                 let createCustomer = await connection.query(s9)
@@ -525,6 +520,11 @@ module.exports.uploadLeadFile = async (req, res) => {
                                 await connection.query('COMMIT')
                             }else{
                                 await connection.query('ROLLBACK')
+                                return res.json({
+                                    status: 400,
+                                    success: false,
+                                    message: "Something went wrong"
+                                })
                             }
 
                         }
