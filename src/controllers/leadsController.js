@@ -549,7 +549,7 @@ module.exports.uploadLeadFile = async (req, res) => {
                         res.json({
                             status: 201,
                             success: true,
-                            message: "Products exported to DB"
+                            message: "Leads exported to DB"
                         })
                     }
                 })
