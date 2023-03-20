@@ -906,7 +906,9 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
 
             let _dt = new Date().toISOString();
             let s4 = dbScript(db_sql['Q311'], { var1: true, var2: userId, var3: _dt })
+            console.log(s4,"s4");
             let updateUser = await connection.query(s4)
+            console.log(updateUser.rows,"update user");
             if ( updateUser.rowCount > 0 ) {
                 await connection.query('COMMIT')
                 res.json({
