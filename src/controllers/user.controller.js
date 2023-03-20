@@ -907,9 +907,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
             let _dt = new Date().toISOString();
             let s4 = dbScript(db_sql['Q311'], { var1: true, var2: userId, var3: _dt })
             let updateUser = await connection.query(s4)
-
-            if ((updateNewUserInRole || updateNewUserInUsers || updateNewUserInSales || updateNewUserInSalesUsers || updateNewUserInCustomerCompanies || updateNewUserInAssignedCustomerCompaniesEmployees || updateNewUserInCustomerCompaniesEmployees || updateNewUserInProducts || updateNewUserInSlabs || updateNewUserInCommission || updateNewUserInMarketingBudget || updateNewUserInMarketingBudgetData || updateNewUserInMarketingDescription || updateNewUserInGroupAdminChat || updateNewUserInUserAChat || updateNewUserInUserBChat || updateNewUserInChatRoomMembers || updateNewUserInForecastCreator || updateNewUserInForecast || updateNewUserInAuditForecast || updateNewUserInForecastData || updateNewUserInRecognizedRevenue)
-                && updateUser.rowCount > 0) {
+            if ( updateUser.rowCount > 0 ) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 200,
