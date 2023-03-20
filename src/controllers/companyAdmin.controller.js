@@ -20,13 +20,13 @@ let createAdmin = async (bodyData, cId, res) => {
         phoneNumber,
         encryptedPassword
     } = bodyData
-
+    await connection.query('BEGIN')
     let avatar = process.env.DEFAULT_LOGO;
 
     let s3 = dbScript(db_sql['Q4'], { var1: emailAddress })
     let findUser = await connection.query(s3)
     if (findUser.rowCount == 0) {
-        await connection.query('BEGIN')
+       
         //let roleId = uuid.v4()
         let s4 = dbScript(db_sql['Q11'], { var1: cId })
         let createRole = await connection.query(s4)
@@ -37,8 +37,6 @@ let createAdmin = async (bodyData, cId, res) => {
         if (trialDays.rowCount > 0) {
             let currentDate = new Date()
             expiryDate = new Date(currentDate.setDate(currentDate.getDate() + Number(trialDays.rows[0].trial_days))).toISOString()
-
-
             let role_id = createRole.rows[0].id
             let s5 = dbScript(db_sql['Q3'], {
                 var1: mysql_real_escape_string(name),
@@ -128,7 +126,7 @@ let createAdmin = async (bodyData, cId, res) => {
             })
         }
     } else {
-        //await connection.query('ROLLBACK')
+        await connection.query('ROLLBACK')
         return res.json({
             status: 200,
             success: false,
@@ -167,7 +165,7 @@ module.exports.signUp = async (req, res) => {
             companyLogo,
             companyAddress,
         } = req.body
-
+        await connection.query('BEGIN')
         companyLogo = companyLogo == "" ? process.env.DEFAULT_LOGO : companyLogo;
 
         let s2 = dbScript(db_sql['Q1'], { var1: companyName })
@@ -181,7 +179,7 @@ module.exports.signUp = async (req, res) => {
                 let currentDate = new Date()
                 expiryDate = new Date(currentDate.setDate(currentDate.getDate() + Number(trialDays.rows[0].trial_days))).toISOString()
                 
-                await connection.query('BEGIN')
+                
                 let s3 = dbScript(db_sql['Q2'], { var1:  mysql_real_escape_string(companyName), var2: companyLogo, var3: mysql_real_escape_string(companyAddress), var4 : expiryDate, var5 : trialDays.rows[0].trial_users })
                 let saveCompanyDetails = await connection.query(s3)
 
@@ -228,17 +226,19 @@ module.exports.setPasswordForLogin = async (req, res) => {
         let {
             password
         } = req.body
+        await connection.query('BEGIN')
         let user = await verifyTokenFn(req)
         if (user) {
             let s1 = dbScript(db_sql['Q8'], { var1: user.id })
             let checkuser = await connection.query(s1);
             if (checkuser.rows.length > 0) {
-                await connection.query('BEGIN')
+                
                 let _dt = new Date().toISOString();
                 let s2 = dbScript(db_sql['Q5'], { var1: user.id, var2: password, var3: _dt, var4: checkuser.rows[0].company_id })
                 let updateuser = await connection.query(s2)
-                await connection.query('COMMIT')
+                
                 if (updateuser.rowCount == 1) {
+                    await connection.query('COMMIT')
                     res.json({
                         status: 201,
                         success: true,
@@ -282,16 +282,17 @@ module.exports.setPasswordForLogin = async (req, res) => {
 module.exports.verifyUser = async (req, res) => {
     try {
         let user = await verifyTokenFn(req)
+        await connection.query('BEGIN')
         if (user) {
             let s1 = dbScript(db_sql['Q8'], { var1: user.id })
             let checkuser = await connection.query(s1)
             if (checkuser.rows.length > 0) {
-                await connection.query('BEGIN')
                 let _dt = new Date().toISOString();
                 let s2 = dbScript(db_sql['Q7'], { var1: user.id, var2: _dt })
                 let updateuser = await connection.query(s2)
-                await connection.query('COMMIT')
+               
                 if (updateuser.rowCount == 1) {
+                    await connection.query('COMMIT')
                     res.json({
                         status: 200,
                         success: true,
@@ -484,16 +485,18 @@ module.exports.changePassword = async (req, res) => {
     try {
         let userEmail = req.user.email
         const { oldPassword, newPassword } = req.body;
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let user = await connection.query(s1)
         if (user.rows.length > 0) {
             if (user.rows[0].encrypted_password == oldPassword) {
-                await connection.query('BEGIN')
+               
                 let _dt = new Date().toISOString();
                 let s2 = dbScript(db_sql['Q5'], { var1: user.rows[0].id, var2: newPassword, var3: _dt, var4: user.rows[0].company_id })
                 let updatePass = await connection.query(s2)
-                await connection.query('COMMIT')
+                
                 if (updatePass.rowCount > 0) {
+                    await connection.query('COMMIT')
                     res.send({
                         status: 201,
                         success: true,
@@ -509,6 +512,7 @@ module.exports.changePassword = async (req, res) => {
                 }
 
             } else {
+                await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
                     success: false,
@@ -563,17 +567,18 @@ module.exports.updateUserProfile = async (req, res) => {
             phoneNumber,
             address
         } = req.body
-
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
 
         if (findUser.rows.length > 0) {
-            await connection.query('BEGIN')
+           
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q10'], { var1: mysql_real_escape_string(name), var2: avatar, var3: mysql_real_escape_string(emailAddress), var4: phoneNumber, var5: mobileNumber, var6: mysql_real_escape_string(address), var7: _dt, var8: userId, var9: findUser.rows[0].company_id })
             let updateUser = await connection.query(s2)
-            await connection.query('COMMIT')
+            
             if (updateUser.rowCount > 0) {
+                await connection.query('COMMIT')
                 res.json({
                     success: true,
                     status: 200,
@@ -668,17 +673,19 @@ module.exports.resetPassword = async (req, res) => {
         let {
             password
         } = req.body
+        await connection.query('BEGIN')
         let user = await verifyTokenFn(req)
         if (user) {
             let s1 = dbScript(db_sql['Q8'], { var1: user.id })
             let checkuser = await connection.query(s1);
             if (checkuser.rows.length > 0) {
-                await connection.query('BEGIN')
+                
                 let _dt = new Date().toISOString();
                 let s2 = dbScript(db_sql['Q5'], { var1: user.id, var2: password, var3: _dt, var4: checkuser.rows[0].company_id })
                 let updateuser = await connection.query(s2)
-                await connection.query('COMMIT')
+               
                 if (updateuser.rowCount == 1) {
+                    await connection.query('COMMIT')
                     res.json({
                         status: 200,
                         success: true,
@@ -797,17 +804,18 @@ module.exports.updateCompanyLogo = async (req, res) => {
         let userId = req.user.id
         let file = req.file
         let path = `${process.env.COMPANY_LOGO_LINK}/${file.originalname}`;
-
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
 
         if (findUser.rows.length > 0) {
-            await connection.query('BEGIN')
+          
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q214'], { var1: path, var2: _dt, var3: findUser.rows[0].company_id })
             let updateLogo = await connection.query(s2)
-            await connection.query('COMMIT')
+            
             if (updateLogo.rowCount > 0) {
+                await connection.query('COMMIT')
                 res.json({
                     success: true,
                     status: 200,

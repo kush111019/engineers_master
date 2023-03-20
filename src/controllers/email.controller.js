@@ -8,6 +8,7 @@ const { decrypt } = require('../utils/crypto')
 
 module.exports.fetchEmails = async (req, res) => {
     try {
+        await connection.query('BEGIN')
         let id = req.user.id
         let s0 = dbScript(db_sql['Q8'], { var1: id })
         let checkAdmin = await connection.query(s0)
@@ -74,7 +75,7 @@ module.exports.fetchEmails = async (req, res) => {
                                             let s3 = dbScript(db_sql['Q123'], { var1: parsed.from.value[0].address, var2: checkAdmin.rows[0].company_id })
                                             let findByFrom = await connection.query(s3)
                                             if (findByFrom.rowCount > 0) {
-                                                await connection.query('BEGIN')
+                                               
                                                 let text = (Buffer.from(parsed.text, "utf8")).toString('base64')
                                                 let html = (Buffer.from(parsed.html, "utf8")).toString('base64')
                                                 let textAsHtml = (Buffer.from(parsed.textAsHtml, "utf8")).toString('base64')
@@ -298,6 +299,7 @@ module.exports.sendEmail = async (req, res) => {
     try {
         let { id } = req.user
         let { emails, subject, message, cc, salesId, attachments } = req.body
+        await connection.query('BEGIN')
         let s0 = dbScript(db_sql['Q8'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
@@ -312,8 +314,7 @@ module.exports.sendEmail = async (req, res) => {
                     smtpPort : findCredentials.rows[0].smtp_port
                 }
                 let bufferedMessage = (Buffer.from(message, "utf8")).toString('base64')
-
-                await connection.query('BEGIN')
+               
                 let s2 = dbScript(db_sql['Q127'], { var1:findCredentials.rows[0].email, var2: JSON.stringify(emails), var3: JSON.stringify(cc), var4: subject, var5: bufferedMessage, var6: checkAdmin.rows[0].company_id, var7: salesId, var8: JSON.stringify(attachments), var9 : checkAdmin.rows[0].id })
                 let storeSentMail = await connection.query(s2)
 

@@ -88,6 +88,7 @@ module.exports.createSales = async (req, res) => {
             recurringDate,
 
         } = req.body
+        await connection.query('BEGIN')
         //add notification deatils
         let notification_userId = [];
         let notification_typeId;
@@ -104,8 +105,7 @@ module.exports.createSales = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_create) {
             let supporterIds = []
-            await connection.query('BEGIN')
-
+           
             businessId = (businessId == '') ? '' : businessId
             revenueId = (revenueId == '') ? '' : revenueId
             targetAmount = (targetAmount == '') ? '0' : targetAmount
@@ -429,6 +429,7 @@ module.exports.updateSales = async (req, res) => {
             recurringDate,
             slabId
         } = req.body
+        await connection.query('BEGIN')
         let notification_userId = [];
         let notification_typeId = salesId;
         if (supporters.length > 0) {
@@ -443,7 +444,6 @@ module.exports.updateSales = async (req, res) => {
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_update) {
             let supporterIds = []
-            await connection.query('BEGIN')
 
             let _dt = new Date().toISOString();
 
@@ -563,11 +563,10 @@ module.exports.deleteSales = async (req, res) => {
         let {
             salesId
         } = req.body
+        await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
-
-            await connection.query('BEGIN')
 
             let _dt = new Date().toISOString();
             let s4 = dbScript(db_sql['Q59'], { var1: _dt, var2: salesId, var3: checkPermission.rows[0].company_id })
@@ -679,12 +678,14 @@ module.exports.addfollowUpNotes = async (req, res) => {
     try {
         let userId = req.user.id
         let { note, salesCommissionId } = req.body
+        await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_create) {
             let s4 = dbScript(db_sql['Q31'], { var1: salesCommissionId, var2: checkPermission.rows[0].company_id, var3: userId, var4: mysql_real_escape_string(note) })
             let addNote = await connection.query(s4)
             if (addNote.rowCount > 0) {
+                await connection.query('COMMIT')
                 res.json({
                     status: 201,
                     success: true,
@@ -692,6 +693,7 @@ module.exports.addfollowUpNotes = async (req, res) => {
                 })
 
             } else {
+                await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
                     success: false,
@@ -705,6 +707,7 @@ module.exports.addfollowUpNotes = async (req, res) => {
             })
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,
@@ -758,19 +761,17 @@ module.exports.deleteNote = async (req, res) => {
         let {
             noteId
         } = req.body
+        await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
-
-            await connection.query('BEGIN')
 
             let _dt = new Date().toISOString();
             let s4 = dbScript(db_sql['Q64'], { var1: _dt, var2: noteId })
             let deleteDeal = await connection.query(s4)
 
-            await connection.query('COMMIT')
-
             if (deleteDeal.rowCount > 0) {
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
@@ -827,6 +828,7 @@ module.exports.closeSales = async (req, res) => {
             salesCommissionId,
             contract
         } = req.body
+        await connection.query('BEGIN')
         let notification_userId = [];
         let notification_typeId = salesCommissionId;
         notification_userId.push(userId)
@@ -834,7 +836,7 @@ module.exports.closeSales = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
-            await connection.query('BEGIN')
+            
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q40'], { var1: _dt, var2: _dt, var3: salesCommissionId, var4: contract })
             let closeSales = await connection.query(s2)
@@ -1044,11 +1046,11 @@ module.exports.transferBackSales = async (req, res) => {
         let notification_userId = [];
         let notification_typeId = salesId;
         notification_userId.push(creatorId)
-
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
-            await connection.query('BEGIN')
+            
             let _dt = new Date().toISOString()
             let s2 = dbScript(db_sql['Q227'], { var1: creatorId, var2: _dt, var3: salesId, var4: process.env.CAPTAIN })
             let transferSales = await connection.query(s2)
@@ -1083,6 +1085,7 @@ module.exports.transferBackSales = async (req, res) => {
             })
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,
@@ -1153,6 +1156,7 @@ module.exports.addRecognizedRevenue = async (req, res) => {
     try {
         let userId = req.user.id
         let { salesId, date, amount, notes, invoice } = req.body
+        await connection.query('BEGIN')
 
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
@@ -1162,11 +1166,9 @@ module.exports.addRecognizedRevenue = async (req, res) => {
 
         if (findSales.rowCount > 0) {
             let targetAmount = Number(findSales.rows[0].target_amount)
-            await connection.query('BEGIN')
             //add RecognizeRevenue in db
             let s3 = dbScript(db_sql['Q230'], { var1: date, var2: amount, var3: targetAmount, var4: mysql_real_escape_string(notes), var5: invoice, var6: salesId, var7: checkPermission.rows[0].id, var8: checkPermission.rows[0].company_id })
             let addRecognizeRevenue = await connection.query(s3)
-            await connection.query('COMMIT')
 
             //get Recognized Revenue total that submitted
             let s5 = dbScript(db_sql['Q256'], { var1: salesId })

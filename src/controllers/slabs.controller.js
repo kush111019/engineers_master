@@ -208,6 +208,7 @@ module.exports.deleteSlab = async (req, res) => {
             let checkslabInSales = await connection.query(s2)
 
             if(checkslabInSales.rowCount > 0){
+                await connection.query('ROLLBACK')
                 return res.json({
                     status: 200,
                     success: false,
@@ -220,9 +221,8 @@ module.exports.deleteSlab = async (req, res) => {
             let s4 = dbScript(db_sql['Q160'], { var1: _dt, var2: slabId, var3: checkPermission.rows[0].company_id })
             var deleteSlab = await connection.query(s4)
 
-            await connection.query('COMMIT')
-
             if (deleteSlab.rowCount > 0) {
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,

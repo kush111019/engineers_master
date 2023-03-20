@@ -140,12 +140,12 @@ module.exports.resetPassword = async (req, res) => {
         let {
             password
         } = req.body
+        await connection.query('BEGIN')
         let superAdmin = await verifyTokenFn(req)
         if (superAdmin) {
             let s1 = dbScript(db_sql['Q88'], { var1: superAdmin.email })
             let checksuperAdmin = await connection.query(s1);
             if (checksuperAdmin.rowCount > 0) {
-                await connection.query('BEGIN')
                 let s2 = dbScript(db_sql['Q90'], { var1: superAdmin.email, var2: password })
                 let updatesuperAdmin = await connection.query(s2)
                 if (updatesuperAdmin.rowCount == 1) {
@@ -743,6 +743,7 @@ module.exports.updatePlan = async (req, res) => {
     try {
         let { planId, name, description } = req.body
         let sAEmail = req.user.email
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
@@ -759,7 +760,6 @@ module.exports.updatePlan = async (req, res) => {
 
                 let _dt = new Date().toISOString();
 
-                await connection.query('BEGIN')
                 let s3 = dbScript(db_sql['Q94'], {
                     var1: product.name, var2: product.description,
                     var3: _dt, var4: planId
@@ -812,6 +812,7 @@ module.exports.activateOrDeactivatePlan = async (req, res) => {
     try {
         let { planId, activeStatus } = req.body
         let sAEmail = req.user.email
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
@@ -826,7 +827,6 @@ module.exports.activateOrDeactivatePlan = async (req, res) => {
                 );
 
                 let _dt = new Date().toISOString();
-                await connection.query('BEGIN')
                 let s3 = dbScript(db_sql['Q95'], { var1: product.active, var2: _dt, var3: planId })
                 let updatePlan = await connection.query(s3)
                 if (updatePlan.rowCount > 0) {
@@ -1376,6 +1376,7 @@ module.exports.extendExpiryByCompanyId = async (req, res) => {
         let { companyId } = req.params
         let { trialDays } = req.body
         let sAEmail = req.user.email
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
@@ -1389,8 +1390,6 @@ module.exports.extendExpiryByCompanyId = async (req, res) => {
                     let extendedExpiry = new Date(expiryDate.setDate(expiryDate.getDate() + trialDays)).toISOString()
 
                     let _dt = new Date().toISOString();
-
-                    await connection.query('BEGIN')
                     let s3 = dbScript(db_sql['Q102'], { var1: extendedExpiry, var2: compannyData.id, var3: _dt })
                     updateExpiry = await connection.query(s3)
                 }
@@ -1437,6 +1436,7 @@ module.exports.enableDisableImapService = async (req, res) => {
             companyId,
             isImapEnable
         } = req.body
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
@@ -1447,6 +1447,7 @@ module.exports.enableDisableImapService = async (req, res) => {
 
             if(updateImapService.rowCount > 0){
                 let enableOrDisable = (isImapEnable == true) ? 'enabled' : 'disabled'
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
@@ -1454,6 +1455,7 @@ module.exports.enableDisableImapService = async (req, res) => {
                     data: ""
                 })
             }else{
+                await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
                     success: false,
@@ -1470,6 +1472,7 @@ module.exports.enableDisableImapService = async (req, res) => {
             })
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,
@@ -1487,6 +1490,7 @@ module.exports.enableDisableMarketingService = async (req, res) => {
             companyId,
             isMarketingEnable
         } = req.body
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
@@ -1497,6 +1501,7 @@ module.exports.enableDisableMarketingService = async (req, res) => {
 
             if(updateMarketingService.rowCount > 0){
                 let enableOrDisable = (isMarketingEnable == true) ? 'enabled' : 'disabled'
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
@@ -1504,6 +1509,7 @@ module.exports.enableDisableMarketingService = async (req, res) => {
                     data: ""
                 })
             }else{
+                await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
                     success: false,
@@ -1520,6 +1526,7 @@ module.exports.enableDisableMarketingService = async (req, res) => {
             })
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,

@@ -85,13 +85,13 @@ module.exports.updateProduct = async (req, res) => {
             endOfLife,
             currency
         } = req.body
-
+        await connection.query('BEGIN')
         productImage = (productImage == "") ? process.env.DEFAULT_PRODUCT_IMAGE : productImage;
 
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_update) {
-            await connection.query('BEGIN')
+          
             let _dt = new Date().toISOString();
             let s4 = dbScript(db_sql['Q83'], { var1: productId, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: endOfLife, var8: _dt, var9: checkPermission.rows[0].company_id, var10: currency })
             let updateProduct = await connection.query(s4)
@@ -187,13 +187,14 @@ module.exports.deleteProduct = async (req, res) => {
     try {
         let userId = req.user.id
         let { productId } = req.body
+        await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
             let s2 = dbScript(db_sql['Q223'], { var1: productId })
             let checkProductInSales = await connection.query(s2)
             if (checkProductInSales.rowCount == 0) {
-                await connection.query('BEGIN')
+                
                 let _dt = new Date().toISOString();
                 let s4 = dbScript(db_sql['Q85'], { var1: productId, var2: _dt, var3: checkPermission.rows[0].company_id })
                 let deleteProduct = await connection.query(s4)
@@ -260,6 +261,7 @@ module.exports.uploadProductFile = async (req, res) => {
     try {
         let userId = req.user.id
         let file = req.file
+        await connection.query('BEGIN')
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_create) {
@@ -289,9 +291,14 @@ module.exports.uploadProductFile = async (req, res) => {
                                 //unique id for every row 
                                
                                 let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: userId })
-                                connection.query(s4, row, (err, res) => {
+                                connection.query(s4, row, async(err, res) => {
                                     if (err) {
-                                        throw err
+                                        await connection.query('ROLLBACk')
+                                        return res.json({
+                                            status: 400,
+                                            success: false,
+                                            message: "Something went wrong"
+                                        })
                                     }
                                 });
                             }
@@ -319,12 +326,14 @@ module.exports.uploadProductFile = async (req, res) => {
             let s7 = dbScript(db_sql['Q280'], { var1:_dt, var2: checkPermission.rows[0].company_id })
             updateStatusInCompany = await connection.query(s7)
             if(updateStatusInCompany.rowCount > 0){
+                await connection.query('COMMIT')
                 res.json({
                     status: 201,
                     success: true,
                     message: "Products exported to DB"
                 })
             }else{
+                await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
                     success: false,
@@ -338,6 +347,7 @@ module.exports.uploadProductFile = async (req, res) => {
             })
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,

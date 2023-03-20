@@ -213,10 +213,11 @@ module.exports.createRole = async (req, res) => {
             reporter,
             modulePermissions
         } = req.body
+        await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_create) {
-            await connection.query('BEGIN')
+           
             //let roleId = uuid.v4()
 
             let s4 = dbScript(db_sql['Q13'], { var1: mysql_real_escape_string(roleName), var2: reporter, var3: checkPermission.rows[0].company_id, var4: userId })
@@ -286,11 +287,10 @@ module.exports.updateRole = async (req, res) => {
             reporter,
             modulePermissions
         } = req.body
+        await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_update) {
-
-            await connection.query('BEGIN')
             let _dt = new Date().toISOString();
             let s4 = dbScript(db_sql['Q25'], { var1: mysql_real_escape_string(roleName), var2: reporter, var3: roleId, var4: _dt, var5: checkPermission.rows[0].company_id })
 
@@ -301,9 +301,8 @@ module.exports.updateRole = async (req, res) => {
                 updatePermission = await connection.query(s5)
             }
 
-            await connection.query('COMMIT')
-
             if (updateRole.rowCount > 0 && updatePermission.rowCount > 0) {
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
@@ -342,6 +341,7 @@ module.exports.deleteRole = async (req, res) => {
             roleId,
             status
         } = req.body
+        await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
@@ -363,7 +363,7 @@ module.exports.deleteRole = async (req, res) => {
                 await getRoles(roleId)
                 if (roleIds.length > 0) {
                     for (let id of roleIds) {
-                        await connection.query('BEGIN')
+                        
                         let s5 = dbScript(db_sql['Q27'], { var1: id, var2: _dt })
                         updateRole = await connection.query(s5)
 
@@ -413,7 +413,6 @@ module.exports.deleteRole = async (req, res) => {
                 await getRoles(roleId)
                 if (roleIds.length > 0) {
                     for (let id of roleIds) {
-                        await connection.query('BEGIN')
                         let s5 = dbScript(db_sql['Q27'], { var1: id, var2: _dt })
                         updateRole = await connection.query(s5)
 
@@ -466,6 +465,7 @@ module.exports.moveRole = async (req, res) => {
             roleId,
             reporter
         } = req.body
+        await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_update) {
@@ -476,7 +476,6 @@ module.exports.moveRole = async (req, res) => {
             if (findRole.rowCount > 0) {
                 let _dt = new Date().toISOString();
 
-                await connection.query('BEGIN')
                 let s5 = dbScript(db_sql['Q25'], {
                     var1: findRole.rows[0].role_name, var2: reporter,
                     var3: roleId, var4: _dt, var5: checkPermission.rows[0].company_id

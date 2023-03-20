@@ -99,6 +99,7 @@ module.exports.addUser = async (req, res) => {
             encryptedPassword
         } = req.body
 
+        await connection.query('BEGIN')
         avatar = (avatar == "") ? process.env.DEFAULT_LOGO : avatar;
 
         //let id = uuid.v4()
@@ -116,7 +117,6 @@ module.exports.addUser = async (req, res) => {
                 let isAdmin = findRole.rows[0].role_name == 'Admin' ? true : false;
 
                 // and user added in db and update there permission in db
-                await connection.query('BEGIN')
                 let s5 = dbScript(db_sql['Q45'], { var1: mysql_real_escape_string(name), var2: checkPermission.rows[0].company_id, var3: avatar, var4: mysql_real_escape_string(emailAddress.toLowerCase()), var5: mobileNumber, var6: encryptedPassword, var7: roleId, var8: mysql_real_escape_string(address), var9: isAdmin, var10: userId })
                 let addUser = await connection.query(s5)
 
@@ -401,6 +401,8 @@ module.exports.updateUser = async (req, res) => {
             roleId,
             avatar
         } = req.body
+        
+        await connection.query('BEGIN')
         //get user all permission's 
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
         let checkPermission = await connection.query(s3)
@@ -411,7 +413,6 @@ module.exports.updateUser = async (req, res) => {
             let isAdmin = findRole.rows[0].role_name == 'Admin' ? true : false;
 
             let _dt = new Date().toISOString();
-            await connection.query('BEGIN')
 
             //update user details
             let s4 = dbScript(db_sql['Q22'], { var1: mysql_real_escape_string(emailAddress), var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: checkPermission.rows[0].company_id, var10: isAdmin })
@@ -502,17 +503,19 @@ module.exports.deleteUser = async (req, res) => {
         let {
             userId
         } = req.body
+        
+        await connection.query('BEGIN')
         //check user all permission's
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
             let _dt = new Date().toISOString();
-            await connection.query('BEGIN')
             //update user status to deleted
             let s4 = dbScript(db_sql['Q23'], { var1: _dt, var2: userId, var3: checkPermission.rows[0].company_id })
             let updateUser = await connection.query(s4)
-            await connection.query('COMMIT')
+           
             if (updateUser.rowCount > 0) {
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
@@ -630,13 +633,14 @@ module.exports.deactivateUserAccount = async (req, res) => {
                         let _dt = new Date().toISOString();
                         let s4 = dbScript(db_sql['Q311'], { var1: isDeactivated, var2: userId, var3: _dt })
                         let updateUser = await connection.query(s4)
-
+                        await connection.query('COMMIT')
                         res.json({
                             status: 200,
                             success: true,
                             message: 'User activated successfully'
                         })
                     } else {
+                        await connection.query('ROLLBACK')
                         res.json({
                             status: 400,
                             success: false,
@@ -649,13 +653,14 @@ module.exports.deactivateUserAccount = async (req, res) => {
                         let _dt = new Date().toISOString();
                         let s4 = dbScript(db_sql['Q311'], { var1: isDeactivated, var2: userId, var3: _dt })
                         let updateUser = await connection.query(s4)
-
+                        await connection.query('COMMIT')
                         res.json({
                             status: 200,
                             success: true,
                             message: 'User activated successfully'
                         })
                     } else {
+                        await connection.query('ROLLBACK')
                         res.json({
                             status: 400,
                             success: false,
