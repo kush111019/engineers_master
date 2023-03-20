@@ -699,182 +699,204 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
+            let updateNewUserInRole;
             if (userData.roles_data) {
                 let rolesIds = []
                 userData.roles_data.map(item => {
                     rolesIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'roles', var2: 'user_id', var3: newUserId, var4: rolesIds.join(",") })
-                let updateNewUserInRole = await connection.query(s2)
+                updateNewUserInRole = await connection.query(s2)
             }
+            let updateNewUserInUsers;
             if (userData.users_data) {
                 let userIds = []
                 userData.users_data.map(item => {
                     userIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'users', var2: 'created_by', var3: newUserId, var4: userIds.join(",") })
-                let updateNewUserInUsers = await connection.query(s2)
+                updateNewUserInUsers = await connection.query(s2)
 
             }
+            let updateNewUserInSales;
             if (userData.sales_data) {
                 let salesIds = []
                 userData.sales_data.map(item => {
                     salesIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'sales', var2: 'user_id', var3: newUserId, var4: salesIds.join(",") })
-                let updateNewUserInSales = await connection.query(s2)
+                updateNewUserInSales = await connection.query(s2)
             }
+            let updateNewUserInSalesUsers;
             if (userData.sales_users) {
                 let salesUsersIds = []
                 userData.sales_users.map(item => {
                     salesUsersIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'sales_users', var2: 'user_id', var3: newUserId, var4: salesUsersIds.join(",") })
-                let updateNewUserInSalesUsers = await connection.query(s2)
+                updateNewUserInSalesUsers = await connection.query(s2)
             }
+            let updateNewUserInCustomerCompanies;
             if (userData.customer_companies) {
                 let customerCompaniesIds = []
                 userData.customer_companies.map(item => {
                     customerCompaniesIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'customer_companies', var2: 'user_id', var3: newUserId, var4: customerCompaniesIds.join(",") })
-                let updateNewUserInCustomerCompanies = await connection.query(s2)
+                updateNewUserInCustomerCompanies = await connection.query(s2)
             }
+            let updateNewUserInAssignedCustomerCompaniesEmployees;
             if (userData.customer_company_employees) {
                 let customerCompaniesEmpIds = []
                 userData.customer_company_employees.map(item => {
                     customerCompaniesEmpIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q310'], { var1: 'customer_company_employees', var2: 'assigned_sales_lead_to', var3: newUserId, var4: customerCompaniesEmpIds.join(","), var5: 'assigned_sales_lead_to', var6: userId })
-                let updateNewUserInCustomerCompaniesEmployees = await connection.query(s2)
+                updateNewUserInAssignedCustomerCompaniesEmployees = await connection.query(s2)
             }
+            let updateNewUserInCustomerCompaniesEmployees;
             if (userData.customer_company_employees) {
                 let customerCompaniesEmpIds = []
                 userData.customer_company_employees.map(item => {
                     customerCompaniesEmpIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q310'], { var1: 'customer_company_employees', var2: 'creator_id', var3: newUserId, var4: customerCompaniesEmpIds.join(","), var5: 'creator_id', var6: userId })
-                let updateNewUserInCustomerCompaniesEmployees = await connection.query(s2)
+                updateNewUserInCustomerCompaniesEmployees = await connection.query(s2)
             }
+            let updateNewUserInProducts;
             if (userData.products_data) {
                 let productIds = []
                 userData.products_data.map(item => {
                     productIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'products', var2: 'user_id', var3: newUserId, var4: productIds.join(",") })
-                let updateNewUserInProducts = await connection.query(s2)
+                updateNewUserInProducts = await connection.query(s2)
             }
+            let updateNewUserInSlabs;
             if (userData.slabs_data) {
                 let slabIds = []
                 userData.slabs_data.map(item => {
                     slabIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'slabs', var2: 'user_id', var3: newUserId, var4: slabIds.join(",") })
-                let updateNewUserInSlabs = await connection.query(s2)
+                updateNewUserInSlabs = await connection.query(s2)
             }
+            let updateNewUserInCommission;
             if (userData.commission_split_data) {
                 let commissionIds = []
                 userData.commission_split_data.map(item => {
                     commissionIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'commission_split', var2: 'user_id', var3: newUserId, var4: commissionIds.join(",") })
-                let updateNewUserInCommission = await connection.query(s2)
+                updateNewUserInCommission = await connection.query(s2)
             }
+            let updateNewUserInMarketingBudget;
             if (userData.marketing_budget_data) {
                 let budgetIds = []
                 userData.marketing_budget_data.map(item => {
                     budgetIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'marketing_budget', var2: 'created_by', var3: newUserId, var4: budgetIds.join(",") })
-                let updateNewUserInMarketingBudget = await connection.query(s2)
+                updateNewUserInMarketingBudget = await connection.query(s2)
             }
+            let updateNewUserInMarketingBudgetData;
             if (userData.marketing_budget_data_data) {
                 let budgetDataIds = []
                 userData.marketing_budget_data_data.map(item => {
                     budgetDataIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'marketing_budget_data', var2: 'created_by', var3: newUserId, var4: budgetDataIds.join(",") })
-                let updateNewUserInMarketingBudgetData = await connection.query(s2)
+                updateNewUserInMarketingBudgetData = await connection.query(s2)
             }
+            let updateNewUserInMarketingDescription;
             if (userData.marketing_budget_description_data) {
                 let budgetDescriptionIds = []
                 userData.marketing_budget_description_data.map(item => {
                     budgetDescriptionIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'marketing_budget_description', var2: 'user_id', var3: newUserId, var4: budgetDescriptionIds.join(",") })
-                let updateNewUserInMarketingDescription = await connection.query(s2)
+                updateNewUserInMarketingDescription = await connection.query(s2)
             }
+            let updateNewUserInGroupAdminChat;
             if (userData.chat_data) {
                 let chatIds = []
                 userData.chat_data.map(item => {
                     chatIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q310'], { var1: 'chat', var2: 'group_admin', var3: newUserId, var4: chatIds.join(","), var5: 'group_admin', var6: userId })
-                let updateNewUserInChat = await connection.query(s2)
+                updateNewUserInGroupAdminChat = await connection.query(s2)
             }
+            let updateNewUserInUserAChat;
             if (userData.chat_data) {
                 let chatIds = []
                 userData.chat_data.map(item => {
                     chatIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q310'], { var1: 'chat', var2: 'user_a', var3: newUserId, var4: chatIds.join(","), var5: 'user_a', var6: userId })
-                let updateNewUserInChat = await connection.query(s2)
+                updateNewUserInUserAChat = await connection.query(s2)
             }
+            let updateNewUserInUserBChat;
             if (userData.chat_data) {
                 let chatIds = []
                 userData.chat_data.map(item => {
                     chatIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q310'], { var1: 'chat', var2: 'user_b', var3: newUserId, var4: chatIds.join(","), var5: 'user_b', var6: userId })
-                let updateNewUserInChat = await connection.query(s2)
+                updateNewUserInUserBChat = await connection.query(s2)
             }
+            let updateNewUserInChatRoomMembers;
             if (userData.chat_room_members_data) {
                 let chatMembersIds = []
                 userData.chat_room_members_data.map(item => {
                     chatMembersIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'chat_room_members', var2: 'user_id', var3: newUserId, var4: chatMembersIds.join(",") })
-                let updateNewUserInChatRoomMembers = await connection.query(s2)
+                updateNewUserInChatRoomMembers = await connection.query(s2)
             }
+            let updateNewUserInForecastCreator;
             if (userData.forecast_data) {
                 let forecastIds = []
                 userData.forecast_data.map(item => {
                     forecastIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q310'], { var1: 'forecast', var2: 'created_by', var3: newUserId, var4: forecastIds.join(","), var5: 'created_by', var6: userId })
-                let updateNewUserInForecast = await connection.query(s2)
+                updateNewUserInForecastCreator = await connection.query(s2)
             }
+            let updateNewUserInForecast;
             if (userData.forecast_data) {
                 let forecastIds = []
                 userData.forecast_data.map(item => {
                     forecastIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q310'], { var1: 'forecast', var2: 'assigned_to', var3: newUserId, var4: forecastIds.join(","), var5: 'assigned_to', var6: userId })
-                let updateNewUserInForecast = await connection.query(s2)
+                updateNewUserInForecast = await connection.query(s2)
             }
+            let updateNewUserInAuditForecast;
             if (userData.forecast_audit_data) {
                 let forecastAuditIds = []
                 userData.forecast_audit_data.map(item => {
                     forecastAuditIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'forecast_audit', var2: 'created_by', var3: newUserId, var4: forecastAuditIds.join(",") })
-                let updateNewUserInAuditForecast = await connection.query(s2)
+                updateNewUserInAuditForecast = await connection.query(s2)
             }
+            let updateNewUserInForecastData;
             if (userData.forecast_data_data) {
                 let forecastDataIds = []
                 userData.forecast_data_data.map(item => {
                     forecastDataIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'forecast_data', var2: 'created_by', var3: newUserId, var4: forecastDataIds.join(",") })
-                let updateNewUserInForecastData = await connection.query(s2)
+                updateNewUserInForecastData = await connection.query(s2)
             }
+            let updateNewUserInRecognizedRevenue;
             if (userData.recognized_revenue_data) {
                 let recognizedRevenueIds = []
                 userData.recognized_revenue_data.map(item => {
                     recognizedRevenueIds.push("'" + item.toString() + "'")
                 })
                 let s2 = dbScript(db_sql['Q309'], { var1: 'recognized_revenue', var2: 'user_id', var3: newUserId, var4: recognizedRevenueIds.join(",") })
-                let updateNewUserInRecognizedRevenue = await connection.query(s2)
+                updateNewUserInRecognizedRevenue = await connection.query(s2)
             }
 
             let _dt = new Date().toISOString();
@@ -882,7 +904,8 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
             let s4 = dbScript(db_sql['Q311'], { var1: isDeactivated, var2: userId, var3: _dt })
             let updateUser = await connection.query(s4)
 
-            if (updateUser.rowCount > 0) {
+            if ((updateNewUserInRole || updateNewUserInUsers || updateNewUserInSales || updateNewUserInSalesUsers || updateNewUserInCustomerCompanies || updateNewUserInAssignedCustomerCompaniesEmployees || updateNewUserInCustomerCompaniesEmployees || updateNewUserInProducts || updateNewUserInSlabs || updateNewUserInCommission || updateNewUserInMarketingBudget || updateNewUserInMarketingBudgetData || updateNewUserInMarketingDescription || updateNewUserInGroupAdminChat || updateNewUserInUserAChat || updateNewUserInUserBChat || updateNewUserInChatRoomMembers || updateNewUserInForecastCreator || updateNewUserInForecast || updateNewUserInAuditForecast || updateNewUserInForecastData || updateNewUserInRecognizedRevenue)
+                && updateUser.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 200,
