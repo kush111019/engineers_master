@@ -348,7 +348,6 @@ module.exports.deleteContactForCustomer = async (req, res) => {
     }
 }
 
-
 module.exports.deleteCustomer = async (req, res) => {
     try {
         let userId = req.user.id
@@ -440,6 +439,86 @@ module.exports.addBusinessAndRevenueContact = async (req, res) => {
                     success: false,
                     message: "Something went wrong"
                 })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.archiveUnarchiveCustomer = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let {
+            customerId,
+            reason,
+            status //true/false
+        } = req.body
+        
+        await connection.query('BEGIN')
+
+        let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s3)
+        if (checkPermission.rows[0].permission_to_update) {
+            if(status){
+                let s2 = dbScript(db_sql['Q222'], { var1: customerId })
+                let checkCustomerInSales = await connection.query(s2)
+                
+                if (checkCustomerInSales.rowCount == 0) {
+    
+                    let _dt = new Date().toISOString();
+                    let s4 = dbScript(db_sql['Q313'], { var1: _dt, var2: customerId, var3: checkPermission.rows[0].company_id, var4 : reason })
+                    let archiveCustomer = await connection.query(s4)
+                    if (archiveCustomer.rowCount > 0) {
+                        await connection.query('COMMIT')
+                        res.json({
+                            status: 200,
+                            success: true,
+                            message: "Customer archived successfully"
+                        })
+                    } else {
+                        await connection.query('ROLLBACK')
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "something went wrong"
+                        })
+                    }
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "This record has been used by Sales"
+                    })
+                }
+            }else{
+                let s4 = dbScript(db_sql['Q313'], { var1: 'null', var2: customerId, var3: checkPermission.rows[0].company_id })
+                let unArchiveCustomer = await connection.query(s4)
+                if (unArchiveCustomer.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Customer unarchived successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "something went wrong"
+                    })
+                }
             }
         } else {
             res.status(403).json({
