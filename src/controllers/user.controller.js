@@ -297,9 +297,9 @@ module.exports.usersList = async (req, res) => {
     try {
         let userId = req.user.id
         let status = "all"
-        
+
         if(req?.query?.status) {
-            status  = req?.query?.status;
+            status  = (req?.query?.status == 'undefined' || req?.query?.status == undefined ) ? 'all' : req?.query?.status;
         }
         // here we are getting user permission's
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
