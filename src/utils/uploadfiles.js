@@ -113,6 +113,24 @@ const uploadSalesInvoice = multer({
 })
 
 
+const storage8 = multer.diskStorage({
+    
+    destination:  'uploads',
+    filename: function (req, file, cb) {
+        let x= file.originalname.split(".")
+        let fileName = x[0]
+        let ext = path.extname(file.originalname);
+        cb(null, `${fileName}-${Date.now()}${ext}`)
+    }
+})
+const uploadLeadsFile = multer({
+    storage: storage8,
+    fileFilter: function(req,file, cb){
+        checkFileType(file, cb);
+    }
+})
+
+
 module.exports = { 
     uploadLogo, 
     uploadAvatar, 
@@ -120,5 +138,6 @@ module.exports = {
     uploadProductImage, 
     uploadMailAttechments,
     uploadSalesContract,
-    uploadSalesInvoice
+    uploadSalesInvoice,
+    uploadLeadsFile
  };

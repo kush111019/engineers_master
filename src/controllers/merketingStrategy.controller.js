@@ -368,10 +368,10 @@ module.exports.deleteBudget = async (req, res) => {
     try {
         let userId = req.user.id
         let { budgetId } = req.body
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_delete) {
-            await connection.query('BEGIN')
             let _dt = new Date().toISOString()
 
             let s2 = dbScript(db_sql['Q203'], { var1: budgetId, var2: _dt })
@@ -426,6 +426,7 @@ module.exports.updateBudget = async (req, res) => {
             budgetData,
             description
         } = req.body
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_update) {
@@ -568,11 +569,11 @@ module.exports.deleteDescription = async (req, res) => {
     try {
         let userId = req.user.id
         let { descriptionId } = req.query
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_delete) {
 
-            await connection.query('BEGIN')
             let _dt = new Date().toISOString()
             let s2 = dbScript(db_sql['Q210'], { var1: _dt, var2: descriptionId })
             let deleteDescription = await connection.query(s2)

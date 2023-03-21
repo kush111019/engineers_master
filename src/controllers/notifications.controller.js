@@ -6,9 +6,7 @@ module.exports.notificationList = async (req, res) => {
         let userId = req.user.id
         let s1 = dbScript(db_sql['Q246'], { var1: userId })
         let notificationList = await connection.query(s1);
-        await connection.query('BEGIN')
         if (notificationList.rows.length > 0) {
-            await connection.query('COMMIT')
             res.json({
                 status: 200,
                 success: true,
@@ -39,9 +37,7 @@ module.exports.allNotificationList = async (req, res) => {
         let userId = req.user.id
         let s1 = dbScript(db_sql['Q247'], { var1: userId })
         let notificationList = await connection.query(s1);
-        await connection.query('BEGIN')
         if (notificationList.rows.length > 0) {
-            await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
@@ -71,9 +67,10 @@ module.exports.notificationRead = async (req, res) => {
     try {
         let userId = req.user.id;
         let notificationId = req.query.id;
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q248'], { var1: notificationId })
         let notificationList = await connection.query(s1);
-        await connection.query('BEGIN')
+        
         if (notificationList.rows.length > 0) {
             await connection.query('COMMIT')
             res.json({

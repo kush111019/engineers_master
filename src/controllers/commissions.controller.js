@@ -66,19 +66,17 @@ module.exports.updatecommissionSplit = async (req, res) => {
             closerPercentage,
             supporterPercentage
         } = req.body
+        await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_update) {
 
-            await connection.query('BEGIN')
             let _dt = new Date().toISOString();
             let s4 = dbScript(db_sql['Q49'], { var1: closerPercentage, var2: supporterPercentage, var3: commissionId, var4: _dt, var5: checkPermission.rows[0].company_id })
 
             var updatecommission = await connection.query(s4)
-
-            await connection.query('COMMIT')
-
             if (updatecommission.rowCount > 0) {
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,

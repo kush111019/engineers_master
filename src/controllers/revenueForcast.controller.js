@@ -50,7 +50,6 @@ module.exports.createRevenueForecast = async (req, res) => {
                                     let addForecastData = await connection.query(s5)
                                 }
                             }
-
                         } else {
                             let s6 = dbScript(db_sql['Q65'], { var1: timeline, var2: data.amount, var3: startDate, var4: endDate, var5: pId, var6: data.userId, var7: req.user.id, var8: checkPermission.rows[0].company_id, var9: false })
                             createForecastForAssignedUsers = await connection.query(s6)
@@ -92,6 +91,7 @@ module.exports.createRevenueForecast = async (req, res) => {
             })
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,
@@ -371,7 +371,7 @@ module.exports.auditForecast = async (req, res) => {
     try {
         let userId = req.user.id
         let { forecastId, pid, reason, amount, forecastAmount } = req.body
-
+        await connection.query('BEGIN')
         //add notification deatils
         let notification_userId;
         let notification_typeId = forecastId;
@@ -392,12 +392,14 @@ module.exports.auditForecast = async (req, res) => {
                 // add notification in notification list
                 notification_userId = [revenueForecastList.rows[0].created_by];
                 await notificationsOperations({ type: 3, msg: 3.3, notification_typeId, notification_userId }, userId);
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
                     message: "Forecast audited successfully"
                 })
             } else {
+                await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
                     success: false,
@@ -411,6 +413,7 @@ module.exports.auditForecast = async (req, res) => {
             })
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,
@@ -423,7 +426,7 @@ module.exports.acceptForecast = async (req, res) => {
     try {
         let userId = req.user.id
         let { forecastId } = req.query
-
+        await connection.query('BEGIN')
         //add notification deatils
         let notification_userId;
         let notification_typeId = forecastId;
@@ -441,12 +444,14 @@ module.exports.acceptForecast = async (req, res) => {
                 // add notification in notification list
                 notification_userId = [revenueForecastList.rows[0].created_by];
                 await notificationsOperations({ type: 3, msg: 3.5, notification_typeId, notification_userId }, userId);
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
                     message: "Forecast accepted successfully"
                 })
             } else {
+                await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
                     success: false,
@@ -460,6 +465,7 @@ module.exports.acceptForecast = async (req, res) => {
             })
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,
@@ -492,6 +498,7 @@ module.exports.deleteRevenueForecast = async (req, res) => {
                 })
             }
             if (revenueForecastList.rows[0].is_accepted || checkUserAccepted) {
+                await connection.query('ROLLBACK')
                 return res.json({
                     status: 200,
                     success: false,
@@ -569,6 +576,7 @@ module.exports.deleteAssignedUserForecast = async (req, res) => {
                 })
             }
             if (revenueForecastList.rows[0].is_accepted || checkUserAccepted) {
+                await connection.query('ROLLBACK')
                 return res.json({
                     status: 200,
                     success: false,

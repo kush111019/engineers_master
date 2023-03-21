@@ -10,7 +10,7 @@ const db_sql = {
   "Q5": `UPDATE users SET encrypted_password = '{var2}', is_verified = true, updated_at = '{var3}' WHERE id = '{var1}' AND company_id = '{var4}' RETURNING *`,
   "Q6": `SELECT id, module_name,module_type FROM modules WHERE deleted_at IS NULL`,
   "Q7": `UPDATE users SET is_verified = true ,updated_at = '{var2}' WHERE id = '{var1}' RETURNING *`,
-  "Q8": `SELECT id, full_name,company_id, email_address,mobile_number,phone_number,address,role_id, avatar,expiry_date, is_verified, is_admin, is_locked, created_by,is_main_admin, created_at, deleted_at, session_time FROM users WHERE id = '{var1}' and deleted_at IS NULL`,
+  "Q8": `SELECT id, full_name,company_id, email_address,mobile_number,phone_number,address,role_id, avatar,expiry_date, is_verified, is_admin, is_locked,is_deactivated, created_by,is_main_admin, created_at, deleted_at, session_time FROM users WHERE id = '{var1}' and deleted_at IS NULL`,
   "Q9": `SELECT * FROM companies WHERE id = '{var1}' AND deleted_at IS NULL`,
   "Q10": `UPDATE users SET full_name='{var1}',avatar = '{var2}', email_address = '{var3}',phone_number = '{var4}',mobile_number = '{var5}',address = '{var6}' ,updated_at = '{var7}' WHERE id = '{var8}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `,
   "Q11": `INSERT INTO roles(role_name,reporter,company_id) VALUES('Admin','','{var1}') RETURNING *`,
@@ -496,6 +496,7 @@ const db_sql = {
             sc.company_id = '{var1}' AND 
             sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
             sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
+            AND sc.archived_at IS NULL
           GROUP BY 
             sc.closed_at,
             sc.id,
@@ -526,7 +527,7 @@ const db_sql = {
                   sales sc
                   LEFT JOIN customer_companies c ON c.id = sc.customer_id
               WHERE 
-                  sc.closed_at is not null AND 
+                  sc.closed_at IS NOT null AND 
                   sc.company_id = '{var1}' AND 
                   sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
                   c.deleted_at IS NULL AND
@@ -593,7 +594,7 @@ const db_sql = {
   "Q100": `INSERT INTO superadmin_config(trial_days, trial_users) VALUES('{var1}', '{var2}') RETURNING *`,
   "Q101": `SELECT id, trial_days,trial_users, created_at FROM superadmin_config WHERE deleted_at IS NULL ORDER BY created_at desc `,
   "Q102": `UPDATE users SET expiry_date = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
-  "Q103": `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id,total_amount, immediate_upgrade, upgraded_transaction_id FROM transactions WHERE deleted_at IS NULL AND upgraded_transaction_id is not null`,
+  "Q103": `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id,total_amount, immediate_upgrade, upgraded_transaction_id FROM transactions WHERE deleted_at IS NULL AND upgraded_transaction_id IS NOT null`,
   "Q104": `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade  FROM transactions WHERE plan_id = '{var1}' AND deleted_at IS NULL`,
   "Q105": `UPDATE transactions SET stripe_customer_id = '{var1}', stripe_subscription_id = '{var2}', 
               stripe_card_id = '{var3}', stripe_token_id = '{var4}', stripe_charge_id = '{var5}', 
@@ -757,7 +758,7 @@ const db_sql = {
             ) 
           AND 
             sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
-            sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
+            sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL AND sc.archived_at IS NULL
           GROUP BY 
             sc.closed_at,
             sc.id,
@@ -777,7 +778,7 @@ const db_sql = {
               LEFT JOIN 
                 sales_users AS su ON sc.id = su.sales_id  
               WHERE 
-                  sc.closed_at is not null AND 
+                  sc.closed_at IS NOT null AND 
                   (sc.user_id IN ({var1}) OR su.user_id IN ({var1}) )
                   AND sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
                   c.deleted_at IS NULL AND
@@ -1564,7 +1565,7 @@ const db_sql = {
           sales_users AS su 
           ON su.sales_id = sc.id
           WHERE 
-          sc.closed_at is not null 
+          sc.closed_at IS NOT null 
           AND (sc.user_id IN ({var1}) OR su.user_id IN ({var1}) )
           AND sc.closed_at BETWEEN '{var3}' AND '{var4}'
           AND sc.deleted_at IS NULL
@@ -1923,7 +1924,7 @@ const db_sql = {
             WHERE
               sc.id = '{var1}' AND sc.sales_type = 'Subscription'
             AND
-              sc.deleted_at IS NULL`,
+              sc.deleted_at IS NULL AND sc.archived_at IS NULL`,
   "Q253": `UPDATE sales SET revenue_commission =  '{var1}' WHERE id = '{var2}' RETURNING *`,
   "Q254": `SELECT  SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
             FROM 
@@ -1935,7 +1936,9 @@ const db_sql = {
             AND
               closed_at BETWEEN '{var3}' AND '{var4}'
             AND 
-              deleted_at IS NULL`,
+              deleted_at IS NULL
+            AND 
+              archived_at IS NULL`,
   "Q255": `SELECT  SUM(recognized_amount::DECIMAL) as amount FROM 
                 recognized_revenue 
               WHERE 
@@ -1963,7 +1966,7 @@ const db_sql = {
           AND 
             sc.closed_at BETWEEN '{var2}' AND '{var3}'
           AND 
-            sc.deleted_at IS NULL`,
+            sc.deleted_at IS NULL AND sc.archived_at IS NULL`,
 
   "Q258": `SELECT SUM(target_amount::DECIMAL) as amount, 
             SUM(booking_commission::DECIMAL) as booking_commission, 
@@ -1972,7 +1975,7 @@ const db_sql = {
             sales 
           WHERE 
             id IN ({var1}) AND sales_type = '{var2}'
-          AND deleted_at IS NULL`,
+          AND deleted_at IS NULL AND archived_at IS NULL`,
 
   "Q259": `SELECT SUM(recognized_amount::DECIMAL) as amount
               FROM 
@@ -2572,13 +2575,109 @@ const db_sql = {
                   AND forecast_data.deleted_at IS NULL
                 ) as forecast_data
             FROM forecast  
-            where forecast.id = '{var1}'  
-              OR forecast.pid = '{var1}'  and forecast.deleted_at is null`,
-    "Q307": `SELECT * FROM sales_users WHERE user_id = '{var1}' AND user_type = 'captain' AND deleted_at IS NULL`,
-    "Q308": `SELECT * FROM customer_company_employees WHERE assigned_sales_lead_to = '{var1}' AND emp_type = 'lead' AND deleted_at IS NULL`,
-    "Q309": `UPDATE sales_users set user_id = '{var2}' WHERE user_id = '{var1}' AND user_type = 'captain' AND deleted_at IS NULL`,
-    "Q310": `Update customer_company_employees set assigned_sales_lead_to = '{var2}' WHERE assigned_sales_lead_to = '{var1}' AND emp_type = 'lead' AND deleted_at IS NULL`,
+            where (forecast.id = '{var1}'  
+              OR forecast.pid = '{var1}')  and forecast.deleted_at is null`,
+    "Q307": `SELECT 
+              (
+                SELECT json_agg(roles.id)
+                FROM roles 
+                WHERE user_id = '{var1}'  AND deleted_at IS NULL
+              )as roles_data,
+              (
+                SELECT json_agg(users.id) 
+                FROM users 
+                WHERE created_by = '{var1}' AND deleted_at IS NULL
+              )as users_data,
+              (
+                SELECT json_agg(sales.id) 
+                FROM sales 
+                WHERE sales.user_id = '{var1}' AND deleted_at IS NULL
+              )as sales_data,
+              (
+                SELECT json_agg(sales_users.id) 
+                FROM sales_users 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as sales_users,
+              (
+                SELECT json_agg(customer_companies.id) 
+                FROM customer_companies 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as customer_companies,
+              (
+                SELECT json_agg(customer_company_employees.id) 
+                FROM customer_company_employees 
+                WHERE (assigned_sales_lead_to = '{var1}' OR 
+                creator_id = '{var1}') AND deleted_at IS NULL
+              )as customer_company_employees,
+              (
+                SELECT json_agg(products.id) 
+                FROM products 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as products_data,
+              (
+                SELECT json_agg(slabs.id) 
+                FROM slabs 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as slabs_data,
+              (
+                SELECT json_agg(commission_split.id) 
+                FROM commission_split 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as commission_split_data,
+              (
+                SELECT json_agg(marketing_budget.id) 
+                FROM marketing_budget 
+                WHERE created_by = '{var1}' AND deleted_at IS NULL
+              )as marketing_budget_data,
+              (
+                SELECT json_agg(marketing_budget_data.id) 
+                FROM marketing_budget_data 
+                WHERE created_by = '{var1}' AND deleted_at IS NULL
+              )as marketing_budget_data_data,
+              (
+                SELECT json_agg(marketing_budget_description.id) 
+                FROM marketing_budget_description 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as marketing_budget_description_data,
+              (
+                SELECT json_agg(chat.id) 
+                FROM chat 
+                WHERE (group_admin = '{var1}' OR user_a = '{var1}' OR user_b = '{var1}') 
+                AND deleted_at IS NULL
+              )as chat_data,
+              (
+                SELECT json_agg(chat_room_members.id)
+                FROM chat_room_members 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as chat_room_members_data,
+              (
+                SELECT json_agg(forecast.id)
+                FROM forecast 
+                WHERE (created_by = '{var1}' OR assigned_to = '{var1}')
+                AND deleted_at IS NULL
+              )as forecast_data,
+              (
+                SELECT json_agg(forecast_audit.id)
+                FROM forecast_audit 
+                WHERE created_by = '{var1}' AND deleted_at IS NULL
+              )as forecast_audit_data,
+              (
+                SELECT json_agg(forecast_data.id)
+                FROM forecast_data 
+                WHERE created_by = '{var1}' AND deleted_at IS NULL
+              )as forecast_data_data,
+              (
+                SELECT json_agg(recognized_revenue.id)
+                FROM recognized_revenue 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as recognized_revenue_data
+              
+            FROM users where id = '{var1}' AND deleted_at IS NULL and is_deactivated = false`,
+    // "Q308": `SELECT * FROM customer_company_employees WHERE assigned_sales_lead_to = '{var1}' AND emp_type = 'lead' AND deleted_at IS NULL`,
+    "Q309": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND deleted_at IS NULL`,
+    "Q310": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND {var5} = '{var6}' AND deleted_at IS NULL`,
     "Q311": `UPDATE users SET is_deactivated = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING * `,
+    "Q312": `SELECT * FROM customer_companies WHERE LOWER(customer_name) = LOWER('{var1}') AND deleted_at IS NULL`
 
 }
 

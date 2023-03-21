@@ -132,7 +132,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
         expYear,
         cvc
     } = req.body
-
+    await connection.query('BEGIN')
     let s2 = dbScript(db_sql['Q93'], { var1: planId })
     let planData = await connection.query(s2)
     if (planData.rowCount > 0) {
@@ -210,6 +210,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
                 })
             }
         } else {
+            await connection.query('ROLLBACK')
             res.json({
                 status: 400,
                 success: false,
@@ -217,6 +218,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
             })
         }
     } else {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,
@@ -234,7 +236,7 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
         expYear,
         cvc
     } = req.body
-
+    await connection.query('BEGIN')
     let s2 = dbScript(db_sql['Q93'], { var1: planId })
     let planData = await connection.query(s2)
     if (planData.rowCount > 0) {
@@ -282,12 +284,14 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
             let updateTransaction = await connection.query(s4)
 
             if (createUpgradedTransaction.rowCount > 0 && updateTransaction.rowCount > 0) {
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Subscription will be upgrade on end of current subscription'
                 })
             } else {
+                await connection.query('ROLLBACk')
                 res.json({
                     status: 400,
                     success: false,
@@ -296,6 +300,7 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
             }
 
         } else {
+            await connection.query('ROLLBACk')
             res.json({
                 status: 400,
                 success: false,

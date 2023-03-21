@@ -10,13 +10,12 @@ module.exports.addConfigs = async (req, res) => {
     try {
         let userId = req.user.id
         let { currency, phoneFormat, dateFormat, beforeClosingDays, afterClosingDays } = req.body
-
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            await connection.query('BEGIN')
-
+           
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q75'], { var1: _dt, var2: findAdmin.rows[0].company_id })
             let config = await connection.query(s2)
@@ -119,7 +118,7 @@ module.exports.addImapCredentials = async (req, res) => {
     try {
         let userId = req.user.id
         let { email, appPassword, imapHost, imapPort, smtpHost, smtpPort } = req.body
-
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0) {
@@ -184,7 +183,7 @@ module.exports.addImapCredentials = async (req, res) => {
                             }
                         })
                         promise.then(async (data) => {
-                            await connection.query('BEGIN')
+                           
                             let _dt = new Date().toISOString();
                             let s2 = dbScript(db_sql['Q129'], { var1: _dt, var2: findAdmin.rows[0].id, var3: findAdmin.rows[0].company_id })
                             let updateCredential = await connection.query(s2)
@@ -512,12 +511,12 @@ module.exports.addLeadIndustry = async (req, res) => {
     try {
         let userId = req.user.id
         let { leadIndustry } = req.body
-
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            await connection.query('BEGIN')
+            
             let s2 = dbScript(db_sql['Q193'], { var1: mysql_real_escape_string(leadIndustry), var2: findAdmin.rows[0].company_id })
             let findIndustry = await connection.query(s2)
             if (findIndustry.rowCount == 0) {
@@ -567,13 +566,12 @@ module.exports.updateLeadIndustry = async (req, res) => {
     try {
         let userId = req.user.id
         let { industryId, leadIndustry } = req.body
-
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            await connection.query('BEGIN')
-
+            
             let _dt = new Date().toISOString()
             let s3 = dbScript(db_sql['Q183'], { var1: mysql_real_escape_string(leadIndustry), var2: _dt, var3: industryId })
 
@@ -721,12 +719,12 @@ module.exports.addLeadSource = async (req, res) => {
     try {
         let userId = req.user.id
         let { leadSource } = req.body
-
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            await connection.query('BEGIN')
+            
             let s2 = dbScript(db_sql['Q191'], { var1: mysql_real_escape_string(leadSource), var2: findAdmin.rows[0].company_id })
             let findTitle = await connection.query(s2)
             if (findTitle.rowCount == 0) {
@@ -776,13 +774,12 @@ module.exports.updateLeadSource = async (req, res) => {
     try {
         let userId = req.user.id
         let { sourceId, leadSource } = req.body
-
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            await connection.query('BEGIN')
-
+            
             let _dt = new Date().toISOString()
             let s3 = dbScript(db_sql['Q187'], { var1: mysql_real_escape_string(leadSource), var2: _dt, var3: sourceId })
 

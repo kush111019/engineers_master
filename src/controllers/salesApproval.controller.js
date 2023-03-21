@@ -190,12 +190,6 @@ module.exports.acceptOrRejectApproveRequestForSales = async (req, res) => {
                 message: "Something went wrong"
             })
         }
-        // } else {
-        //     res.status(403).json({
-        //         success: false,
-        //         message: "UnAthorised"
-        //     })
-        // }
     } catch (error) {
         await connection.query('ROLLBACK')
         res.json({

@@ -36,7 +36,17 @@ const jwt = {
                         let findUser = await connection.query(s1);
                         let s2 = dbScript(db_sql['Q9'], { var1: findUser.rows[0].company_id });
                         let checkCompany = await connection.query(s2);
-                        return !checkCompany.rows[0].is_locked;
+                        return checkCompany.rows[0].is_locked;
+                    } catch (error) {
+                        console.error(error);
+                        return false;
+                    }
+                };
+                const checkDeactivated = async (id) => {
+                    try {
+                        let s1 = dbScript(db_sql['Q8'], { var1: id });
+                        let findUser = await connection.query(s1);
+                        return findUser.rows[0].is_deactivated;
                     } catch (error) {
                         console.error(error);
                         return false;
@@ -44,12 +54,19 @@ const jwt = {
                 };
                 (async () => {
                     let check = await checkLocked(req.user.id);
-                    if (!check) {
+                    if (check) {
                         return res.status(401).json({
                             success: false,
                             message: "Session timed out. Please sign in again",
                         });
-                    } else {
+                    } 
+                    let deactivated = await checkDeactivated(req.user.id)
+                    if(deactivated){
+                        return res.status(401).json({
+                            success: false,
+                            message: "Session timed out. Please sign in again",
+                        });
+                    }else {
                         let s1 = dbScript(db_sql['Q8'],{var1 : req.user.id})
                         let findSessionTime = await connection.query(s1)
                         if(findSessionTime.rowCount > 0){

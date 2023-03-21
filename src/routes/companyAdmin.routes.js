@@ -9,7 +9,8 @@ const {
     uploadMailAttechments, 
     uploadLogo, 
     uploadSalesContract,
-    uploadSalesInvoice
+    uploadSalesInvoice,
+    uploadLeadsFile
  } = require('../utils/uploadfiles')
 
 router.post('/upload',verifyTokenFn, uploadAvatar.single('image'),controller.companyAdmin.upload);
@@ -126,7 +127,7 @@ router.get('/totalLossRevenue',verifyTokenFn, controller.reports.totalLossRevenu
 //---------------------------------------DashBoard counts -------------------------------
 
 router.get('/revenues',verifyTokenFn, controller.dashboard.revenues)
-router.get('/totalExpectedRevenueCounts', verifyTokenFn, controller.dashboard.totalExpectedRevenueCounts)
+// router.get('/totalExpectedRevenueCounts', verifyTokenFn, controller.dashboard.totalExpectedRevenueCounts)
 router.get('/dataCreationStatus', verifyTokenFn, controller.dashboard.dataCreationStatus)
 
 
@@ -184,6 +185,7 @@ router.get('/leadsDetails',verifyTokenFn, controller.leads.leadsDetails)
 router.put('/updateLead',verifyTokenFn, controller.leads.updateLead)
 router.put('/deleteLead',verifyTokenFn, controller.leads.deleteLead)
 router.put('/rejectLead',verifyTokenFn, controller.leads.rejectLead)
+router.post('/uploadLeadsFile',verifyTokenFn,uploadLeadsFile.single('file'), controller.leads.uploadLeadFile)
 
 //-------------------------------Marketing strategy-----------------------------------------
 router.get('/marketingDashboard',verifyTokenFn, controller.marketingStrategy.marketingDashboard)

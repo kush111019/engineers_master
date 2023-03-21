@@ -50,6 +50,7 @@ module.exports.createPayment = async (req, res) => {
             expYear,
             cvc
         } = req.body
+        await connection.query('BEGIN')
         let user = await verifyTokenFn(req)
         if (user) {
             let s1 = dbScript(db_sql['Q8'], { var1: user.id })
@@ -102,7 +103,7 @@ module.exports.createPayment = async (req, res) => {
                         source: card.id
                     });
                     if (charge && customer && subscription && token && card) {
-                        await connection.query('BEGIN')
+                        
                         let s4 = dbScript(db_sql['Q96'], {
                             var1: user.id, var2: checkuser.rows[0].company_id,
                             var3: planId, var4: customer.id, var5: subscription.id, var6: card.id,
@@ -132,6 +133,7 @@ module.exports.createPayment = async (req, res) => {
                                 data: charge.receipt_url
                             })
                         } else {
+                            await connection.query('ROLLBACK')
                             res.json({
                                 status: 400,
                                 success: false,
@@ -139,6 +141,7 @@ module.exports.createPayment = async (req, res) => {
                             })
                         }
                     } else {
+                        await connection.query('ROLLBACK')
                         res.json({
                             status: 400,
                             success: false,
@@ -147,6 +150,7 @@ module.exports.createPayment = async (req, res) => {
                     }
 
                 } else {
+                    await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
                         success: false,
@@ -155,6 +159,7 @@ module.exports.createPayment = async (req, res) => {
                     })
                 }
             } else {
+                await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
                     success: false,
@@ -163,6 +168,7 @@ module.exports.createPayment = async (req, res) => {
                 })
             }
         } else {
+            await connection.query('ROLLBACK')
             res.json({
                 status: 400,
                 success: false,
@@ -308,6 +314,7 @@ module.exports.subscriptionDetails = async (req, res) => {
 module.exports.cancelSubscription = async (req, res) => {
     try {
         let userId = req.user.id
+        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let user = await connection.query(s1)
         if (user.rows.length > 0) {
@@ -322,7 +329,7 @@ module.exports.cancelSubscription = async (req, res) => {
                     );
                     if (cancelSubscription) {
                         let _dt = new Date().toISOString();
-                        await connection.query('BEGIN')
+                        
                         let s2 = dbScript(db_sql['Q106'], { var1: true, var2: _dt, var3: transaction.rows[0].id })
                         let updateTransaction = await connection.query(s2)
                         if (updateTransaction.rowCount > 0) {
@@ -342,6 +349,7 @@ module.exports.cancelSubscription = async (req, res) => {
                         }
 
                     } else {
+                        await connection.query('ROLLBACK')
                         res.json({
                             status: 400,
                             success: false,
@@ -433,7 +441,6 @@ module.exports.upgradeSubscription = async (req, res) => {
             })
         }
     } catch (error) {
-        await connection.query('ROLLBACK')
         res.json({
             status: 500,
             success: false,
