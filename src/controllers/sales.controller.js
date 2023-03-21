@@ -147,7 +147,7 @@ module.exports.createSales = async (req, res) => {
             if (addSalesCaptain.rowCount > 0) {
                 let s8 = dbScript(db_sql['Q8'], { var1: addSalesCaptain.rows[0].user_id })
                 let userName = await connection.query(s8)
-                addSalesCaptain.rows[0].user_name = (userName.rows[0].full_name) ? userName.rows[0].full_name : "";
+                addSalesCaptain.rows[0].user_name = (userName.rows[0].full_name) ? mysql_real_escape_string(userName.rows[0].full_name) : "";
                 salesUsersForLog.push(addSalesCaptain.rows[0])
             }
 
@@ -159,7 +159,7 @@ module.exports.createSales = async (req, res) => {
                     if (addSalesCaptain.rowCount > 0) {
                         let s8 = dbScript(db_sql['Q8'], { var1: addSalesSupporter.rows[0].user_id })
                         let userName = await connection.query(s8)
-                        addSalesSupporter.rows[0].user_name = (userName.rows[0].full_name) ? userName.rows[0].full_name : "";
+                        addSalesSupporter.rows[0].user_name = (userName.rows[0].full_name) ? mysql_real_escape_string(userName.rows[0].full_name) : "";
                         salesUsersForLog.push(addSalesSupporter.rows[0])
                     }
                 }
@@ -489,7 +489,7 @@ module.exports.updateSales = async (req, res) => {
             if (updateSalesCaptain.rowCount > 0) {
                 let s8 = dbScript(db_sql['Q8'], { var1: updateSalesCaptain.rows[0].user_id })
                 let userName = await connection.query(s8)
-                updateSalesCaptain.rows[0].user_name = (userName.rows[0].full_name) ? userName.rows[0].full_name : "";
+                updateSalesCaptain.rows[0].user_name = (userName.rows[0].full_name) ? mysql_real_escape_string(userName.rows[0].full_name) : "";
                 salesUsersForLog.push(updateSalesCaptain.rows[0])
             }
 
@@ -503,7 +503,7 @@ module.exports.updateSales = async (req, res) => {
                     if (addSalesSupporter.rowCount > 0) {
                         let s8 = dbScript(db_sql['Q8'], { var1: addSalesSupporter.rows[0].user_id })
                         let userName = await connection.query(s8)
-                        addSalesSupporter.rows[0].user_name = (userName.rows[0].full_name) ? userName.rows[0].full_name : "";
+                        addSalesSupporter.rows[0].user_name = (userName.rows[0].full_name) ? mysql_real_escape_string(userName.rows[0].full_name) : "";
                         salesUsersForLog.push(addSalesSupporter.rows[0])
                     }
                 }
