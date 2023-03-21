@@ -461,6 +461,7 @@ module.exports.archiveUnarchiveCustomer = async (req, res) => {
         let userId = req.user.id
         let {
             customerId,
+            reason,
             status //true/false
         } = req.body
         
@@ -476,7 +477,7 @@ module.exports.archiveUnarchiveCustomer = async (req, res) => {
                 if (checkCustomerInSales.rowCount == 0) {
     
                     let _dt = new Date().toISOString();
-                    let s4 = dbScript(db_sql['Q313'], { var1: _dt, var2: customerId, var3: checkPermission.rows[0].company_id })
+                    let s4 = dbScript(db_sql['Q313'], { var1: _dt, var2: customerId, var3: checkPermission.rows[0].company_id, var4 : reason })
                     let archiveCustomer = await connection.query(s4)
                     if (archiveCustomer.rowCount > 0) {
                         await connection.query('COMMIT')

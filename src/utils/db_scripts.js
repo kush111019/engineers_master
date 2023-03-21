@@ -87,7 +87,7 @@ const db_sql = {
                 cus.id, cus.customer_name, 
                 cus.user_id, cus.industry as industry_id,
                 cus.created_at, cus.address, cus.currency,cus.archived_at,
-                u.full_name AS created_by,
+                u.full_name AS created_by,cus.reason,
                 li.industry,
                 (
                   SELECT json_agg(customer_company_employees.*)
@@ -525,7 +525,7 @@ const db_sql = {
   "Q79": `SELECT            
                   c.customer_name,
                   sc.id AS sales_commission_id,
-                  sc.sales_type
+                  sc.sales_type, sc.archived_at,sc.target_amount
               FROM 
                   sales sc
                   LEFT JOIN customer_companies c ON c.id = sc.customer_id
@@ -2067,7 +2067,7 @@ const db_sql = {
   "Q271": `SELECT cus.id, cus.customer_name,
               cus.user_id,cus.industry as industry_id,
               cus.created_at, cus.address, cus.currency,cus.archived_at,
-              u.full_name AS created_by,
+              u.full_name AS created_by,cus.reason,
               li.industry,
               (
                 SELECT json_agg(customer_company_employees.*)
@@ -2671,7 +2671,7 @@ const db_sql = {
     "Q310": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND {var5} = '{var6}' AND deleted_at IS NULL`,
     "Q311": `UPDATE users SET is_deactivated = '{var1}', updated_at = '{var3}', assigned_to = '{var4}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING * `,
     "Q312": `SELECT * FROM customer_companies WHERE LOWER(customer_name) = LOWER('{var1}') AND deleted_at IS NULL`,
-    "Q313": `UPDATE customer_companies SET archived_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING *`,
+    "Q313": `UPDATE customer_companies SET archived_at = '{var1}', reason = '{var4}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING *`,
     "Q314": `SELECT 
               u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
               u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
