@@ -296,13 +296,26 @@ module.exports.showUserById = async (req, res) => {
 module.exports.usersList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { status } = req.query //All/Active/Deactive
         // here we are getting user permission's
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_view_global) {
             //check user's on the basis of company id
-            let s4 = dbScript(db_sql['Q15'], { var1: checkPermission.rows[0].company_id })
-            let findUsers = await connection.query(s4);
+            let findUsers;
+            if(status.toLowerCase() == 'all'){
+                let s4 = dbScript(db_sql['Q15'], { var1: checkPermission.rows[0].company_id })
+                findUsers = await connection.query(s4);
+            }
+            if(status.toLowerCase() == 'active'){
+                let s4 = dbScript(db_sql['Q314'], { var1: checkPermission.rows[0].company_id , var2 : false})
+                findUsers = await connection.query(s4);
+            }
+            if(status.toLowerCase() == 'deactive'){
+                let s4 = dbScript(db_sql['Q314'], { var1: checkPermission.rows[0].company_id, var2 : true })
+                findUsers = await connection.query(s4);
+            }
+            
             if (findUsers.rows.length > 0) {
                 res.json({
                     status: 200,
@@ -320,8 +333,20 @@ module.exports.usersList = async (req, res) => {
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            let s3 = dbScript(db_sql['Q272'], { var1: roleUsers.join(",") })
-            let userList = await connection.query(s3);
+            let userList;
+            if(status.toLowerCase() == 'all'){
+                let s3 = dbScript(db_sql['Q272'], { var1: roleUsers.join(",") })
+                userList = await connection.query(s3);
+            }
+            if(status.toLowerCase() == 'active'){
+                let s4 = dbScript(db_sql['Q315'], { var1: roleUsers.join(",") , var2 : false})
+                console.log(s4,"s4");
+                userList = await connection.query(s4);
+            }
+            if(status.toLowerCase() == 'deactive'){
+                let s4 = dbScript(db_sql['Q315'], { var1: roleUsers.join(","), var2 : true })
+                userList = await connection.query(s4);
+            }
             if (userList.rowCount > 0) {
                 res.json({
                     status: 200,
@@ -571,9 +596,9 @@ module.exports.deactivateUserAccount = async (req, res) => {
                         findUser.rows[0].products_data ||
                         findUser.rows[0].slabs_data ||
                         findUser.rows[0].commission_split_data ||
-                        findUser.rows[0].marketing_budget_data ||
-                        findUser.rows[0].marketing_budget_data_data ||
-                        findUser.rows[0].marketing_budget_description_data ||
+                        // findUser.rows[0].marketing_budget_data ||
+                        // findUser.rows[0].marketing_budget_data_data ||
+                        // findUser.rows[0].marketing_budget_description_data ||
                         findUser.rows[0].chat_data ||
                         findUser.rows[0].chat_room_members_data ||
                         findUser.rows[0].forecast_data ||
@@ -586,13 +611,13 @@ module.exports.deactivateUserAccount = async (req, res) => {
                     res.json({
                         status: 200,
                         success: false,
-                        message: "Can not deactivate User because user is assinged",
+                        message: "Assigned to another user because current user has existing tasks",
                         data: findUser.rows[0]
                     })
                 } else {
                     let _dt = new Date().toISOString();
                     //update user status is locked here
-                    let s4 = dbScript(db_sql['Q311'], { var1: isDeactivated, var2: userId, var3: _dt })
+                    let s4 = dbScript(db_sql['Q311'], { var1: isDeactivated, var2: userId, var3: _dt, var4 : 'null' })
                     let updateUser = await connection.query(s4)
 
                     if (updateUser.rowCount > 0) {
@@ -787,30 +812,30 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let s2 = dbScript(db_sql['Q309'], { var1: 'commission_split', var2: 'user_id', var3: newUserId, var4: commissionIds.join(",") })
                 let updateNewUserInCommission = await connection.query(s2)
             }
-            if (userData.marketing_budget_data) {
-                let budgetIds = []
-                userData.marketing_budget_data.map(item => {
-                    budgetIds.push("'" + item.toString() + "'")
-                })
-                let s2 = dbScript(db_sql['Q309'], { var1: 'marketing_budget', var2: 'created_by', var3: newUserId, var4: budgetIds.join(",") })
-                let updateNewUserInMarketingBudget = await connection.query(s2)
-            }
-            if (userData.marketing_budget_data_data) {
-                let budgetDataIds = []
-                userData.marketing_budget_data_data.map(item => {
-                    budgetDataIds.push("'" + item.toString() + "'")
-                })
-                let s2 = dbScript(db_sql['Q309'], { var1: 'marketing_budget_data', var2: 'created_by', var3: newUserId, var4: budgetDataIds.join(",") })
-                let updateNewUserInMarketingBudgetData = await connection.query(s2)
-            }
-            if (userData.marketing_budget_description_data) {
-                let budgetDescriptionIds = []
-                userData.marketing_budget_description_data.map(item => {
-                    budgetDescriptionIds.push("'" + item.toString() + "'")
-                })
-                let s2 = dbScript(db_sql['Q309'], { var1: 'marketing_budget_description', var2: 'user_id', var3: newUserId, var4: budgetDescriptionIds.join(",") })
-                let updateNewUserInMarketingDescription = await connection.query(s2)
-            }
+            // if (userData.marketing_budget_data) {
+            //     let budgetIds = []
+            //     userData.marketing_budget_data.map(item => {
+            //         budgetIds.push("'" + item.toString() + "'")
+            //     })
+            //     let s2 = dbScript(db_sql['Q309'], { var1: 'marketing_budget', var2: 'created_by', var3: newUserId, var4: budgetIds.join(",") })
+            //     let updateNewUserInMarketingBudget = await connection.query(s2)
+            // }
+            // if (userData.marketing_budget_data_data) {
+            //     let budgetDataIds = []
+            //     userData.marketing_budget_data_data.map(item => {
+            //         budgetDataIds.push("'" + item.toString() + "'")
+            //     })
+            //     let s2 = dbScript(db_sql['Q309'], { var1: 'marketing_budget_data', var2: 'created_by', var3: newUserId, var4: budgetDataIds.join(",") })
+            //     let updateNewUserInMarketingBudgetData = await connection.query(s2)
+            // }
+            // if (userData.marketing_budget_description_data) {
+            //     let budgetDescriptionIds = []
+            //     userData.marketing_budget_description_data.map(item => {
+            //         budgetDescriptionIds.push("'" + item.toString() + "'")
+            //     })
+            //     let s2 = dbScript(db_sql['Q309'], { var1: 'marketing_budget_description', var2: 'user_id', var3: newUserId, var4: budgetDescriptionIds.join(",") })
+            //     let updateNewUserInMarketingDescription = await connection.query(s2)
+            // }
             if (userData.chat_data) {
                 let chatIds = []
                 userData.chat_data.map(item => {
@@ -885,7 +910,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
             }
 
             let _dt = new Date().toISOString();
-            let s4 = dbScript(db_sql['Q311'], { var1: true, var2: userId, var3: _dt })
+            let s4 = dbScript(db_sql['Q311'], { var1: true, var2: userId, var3: _dt, var4 : newUserId })
             let updateUser = await connection.query(s4)
             if ( updateUser.rowCount > 0 ) {
                 await connection.query('COMMIT')

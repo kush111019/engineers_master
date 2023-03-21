@@ -20,12 +20,15 @@ const db_sql = {
   "Q15": `SELECT 
                 u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
                 u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
-                u1.is_main_admin,u1.is_deactivated, u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName
+                u1.is_main_admin,u1.is_deactivated,u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName,
+                u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at
               FROM 
                 users AS u1 
-              INNER JOIN 
-                users AS u2 ON u2.id = u1.created_by  
-              INNER JOIN 
+              LEFT JOIN 
+                users AS u2 ON u2.id = u1.created_by
+			        LEFT JOIN 
+                users AS u3 ON u3.id = u1.assigned_to
+              LEFT JOIN 
                 roles as r on r.id = u1.role_id
               WHERE 
                 u1.company_id = '{var1}' AND u1.deleted_at IS NULL 
@@ -83,7 +86,7 @@ const db_sql = {
   "Q39": `SELECT 
                 cus.id, cus.customer_name, 
                 cus.user_id, cus.industry as industry_id,
-                cus.created_at, cus.address, cus.currency,
+                cus.created_at, cus.address, cus.currency,cus.archived_at,
                 u.full_name AS created_by,
                 li.industry,
                 (
@@ -115,8 +118,8 @@ const db_sql = {
               LEFT JOIN 
 			  	      lead_industries AS li ON li.id = cus.industry
               WHERE 
-                cus.company_id = '{var1}' AND cus.deleted_at IS NULL AND 
-                u.deleted_at IS NULL 
+                cus.company_id = '{var1}' AND cus.deleted_at IS NULL
+                AND u.deleted_at IS NULL 
               ORDER BY 
                 created_at desc`,
   "Q40": `UPDATE sales SET closed_at = '{var1}', updated_at = '{var2}', contract = '{var4}' WHERE id = '{var3}' RETURNING *`,
@@ -2063,7 +2066,7 @@ const db_sql = {
               created_at DESC`,
   "Q271": `SELECT cus.id, cus.customer_name,
               cus.user_id,cus.industry as industry_id,
-              cus.created_at, cus.address, cus.currency,
+              cus.created_at, cus.address, cus.currency,cus.archived_at,
               u.full_name AS created_by,
               li.industry,
               (
@@ -2095,19 +2098,23 @@ const db_sql = {
               LEFT JOIN 
 			  	      lead_industries AS li ON li.id = cus.industry
               WHERE 
-                cus.user_id IN ({var1}) AND cus.deleted_at IS NULL
+                cus.user_id IN ({var1}) 
+                AND cus.deleted_at IS NULL
               ORDER BY 
                 created_at desc`,
   "Q272": `SELECT 
               u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
               u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
-              u1.is_main_admin, u1.created_by,u1.is_deactivated, u2.full_name AS creator_name, r.role_name AS roleName
-            FROM
-              users AS u1
-            INNER JOIN
-              users AS u2 ON u2.id = u1.created_by  
-            INNER JOIN 
-              roles as r on r.id = u1.role_id
+              u1.is_main_admin, u1.created_by,u1.is_deactivated, u2.full_name AS creator_name, r.role_name AS roleName,
+              u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at
+              FROM 
+                users AS u1 
+              LEFT JOIN 
+                users AS u2 ON u2.id = u1.created_by
+			        LEFT JOIN 
+                users AS u3 ON u3.id = u1.assigned_to
+              LEFT JOIN 
+                roles as r on r.id = u1.role_id
             WHERE 
               u1.id IN ({var1}) AND u1.deleted_at IS NULL 
             ORDER BY 
@@ -2592,6 +2599,7 @@ const db_sql = {
                 SELECT json_agg(sales.id) 
                 FROM sales 
                 WHERE sales.user_id = '{var1}' AND deleted_at IS NULL
+                AND closed_at IS NULL
               )as sales_data,
               (
                 SELECT json_agg(sales_users.id) 
@@ -2624,21 +2632,6 @@ const db_sql = {
                 FROM commission_split 
                 WHERE user_id = '{var1}' AND deleted_at IS NULL
               )as commission_split_data,
-              (
-                SELECT json_agg(marketing_budget.id) 
-                FROM marketing_budget 
-                WHERE created_by = '{var1}' AND deleted_at IS NULL
-              )as marketing_budget_data,
-              (
-                SELECT json_agg(marketing_budget_data.id) 
-                FROM marketing_budget_data 
-                WHERE created_by = '{var1}' AND deleted_at IS NULL
-              )as marketing_budget_data_data,
-              (
-                SELECT json_agg(marketing_budget_description.id) 
-                FROM marketing_budget_description 
-                WHERE user_id = '{var1}' AND deleted_at IS NULL
-              )as marketing_budget_description_data,
               (
                 SELECT json_agg(chat.id) 
                 FROM chat 
@@ -2676,8 +2669,47 @@ const db_sql = {
     // "Q308": `SELECT * FROM customer_company_employees WHERE assigned_sales_lead_to = '{var1}' AND emp_type = 'lead' AND deleted_at IS NULL`,
     "Q309": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND deleted_at IS NULL`,
     "Q310": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND {var5} = '{var6}' AND deleted_at IS NULL`,
-    "Q311": `UPDATE users SET is_deactivated = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING * `,
-    "Q312": `SELECT * FROM customer_companies WHERE LOWER(customer_name) = LOWER('{var1}') AND deleted_at IS NULL`
+    "Q311": `UPDATE users SET is_deactivated = '{var1}', updated_at = '{var3}', assigned_to = '{var4}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING * `,
+    "Q312": `SELECT * FROM customer_companies WHERE LOWER(customer_name) = LOWER('{var1}') AND deleted_at IS NULL`,
+    "Q313": `UPDATE customer_companies SET archived_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING *`,
+    "Q314": `SELECT 
+              u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
+              u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
+              u1.is_main_admin,u1.is_deactivated,u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName,
+              u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at
+            FROM 
+              users AS u1 
+            LEFT JOIN 
+              users AS u2 ON u2.id = u1.created_by
+            LEFT JOIN 
+              users AS u3 ON u3.id = u1.assigned_to
+            LEFT JOIN 
+              roles as r on r.id = u1.role_id
+            WHERE 
+              u1.company_id = '{var1}' 
+              AND u1.deleted_at IS NULL
+              AND u1.is_deactivated = '{var2}' 
+            ORDER BY 
+              created_at DESC`,
+    "Q315": `SELECT 
+              u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
+              u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
+              u1.is_main_admin, u1.created_by,u1.is_deactivated, u2.full_name AS creator_name, r.role_name AS roleName,
+              u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at
+              FROM 
+                users AS u1 
+              LEFT JOIN 
+                users AS u2 ON u2.id = u1.created_by
+              LEFT JOIN 
+                users AS u3 ON u3.id = u1.assigned_to
+              LEFT JOIN 
+                roles as r on r.id = u1.role_id
+            WHERE 
+              u1.id IN ({var1}) AND u1.deleted_at IS NULL 
+              AND u1.is_deactivated = '{var2}'
+            ORDER BY 
+              created_at DESC`
+
 
 }
 

@@ -64,6 +64,7 @@ router.get('/customerList',verifyTokenFn, controller.customers.customerList)
 router.put('/editCustomer',verifyTokenFn, controller.customers.editCustomer)
 router.put('/deleteContactForCustomer',verifyTokenFn, controller.customers.deleteContactForCustomer)
 router.put('/deleteCustomer',verifyTokenFn, controller.customers.deleteCustomer)
+router.put('/archiveUnarchiveCustomer',verifyTokenFn, controller.customers.archiveUnarchiveCustomer)
 
 //------------------------------------Commisions-----------------------------------------
 router.post('/commissionSplit',verifyTokenFn, controller.commissions.commissionSplit)
