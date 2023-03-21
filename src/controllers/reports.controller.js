@@ -28,9 +28,14 @@ module.exports.revenuePerCustomer = async (req, res) => {
                         let recognizedRevenueData = await connection.query(s5)
                         if (recognizedRevenueData.rowCount > 0) {
                             if (data.archived_at) {
+                                let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
+                                if(revenue == 0){
+                                    revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }
                                 revenuePerCustomerArr.push({
                                     customer_name: data.customer_name,
-                                    revenue: recognizedRevenueData.rows[0].amount ? Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount) : 0
+                                    revenue: revenue
+                                    
                                 })
                             }else{
                                 revenuePerCustomerArr.push({
@@ -95,9 +100,13 @@ module.exports.revenuePerCustomer = async (req, res) => {
                         let recognizedRevenueData = await connection.query(s5)
                         if (recognizedRevenueData.rowCount > 0) {
                             if (data.archived_at) {
+                                let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
+                                if(revenue == 0){
+                                    revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }
                                 revenuePerCustomerArr.push({
                                     customer_name: data.customer_name,
-                                    revenue: recognizedRevenueData.rows[0].amount ? Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount) : 0
+                                    revenue: revenue
                                 })
                             }else{
                                 revenuePerCustomerArr.push({
@@ -190,9 +199,13 @@ module.exports.revenuePerProduct = async (req, res) => {
                         let recognizedRevenueData = await connection.query(s5)
                         if (recognizedRevenueData.rowCount > 0) {
                             if (data.archived_at) {
+                                let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
+                                if(revenue == 0){
+                                    revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }
                                 revenuePerProductArr.push({
                                     product_name: data.product_name,
-                                    revenue: recognizedRevenueData.rows[0].amount ? Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount) : 0
+                                    revenue: revenue
                                 })
                             }else{
                                 revenuePerProductArr.push({
@@ -256,9 +269,13 @@ module.exports.revenuePerProduct = async (req, res) => {
                         let recognizedRevenueData = await connection.query(s5)
                         if (recognizedRevenueData.rowCount > 0) {
                             if (product.archived_at) {
+                                let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
+                                if(revenue == 0){
+                                    revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }
                                 revenuePerProductArr.push({
                                     product_name: product.product_name,
-                                    revenue: recognizedRevenueData.rows[0].amount ? Number(product.target_amount) - Number(recognizedRevenueData.rows[0].amount) : 0
+                                    revenue: revenue
                                 })
                             }else{
                                 revenuePerProductArr.push({
@@ -374,9 +391,13 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         let recognizedRevenueData = await connection.query(s5)
                         if (recognizedRevenueData.rows[0].amount) {
                             if (salesData.archived_at) {
-                                revenueCommissionByDateObj.revenue = Number(salesData.target_amount) - Number(recognizedRevenueData.rows[0].amount)
+                                let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
+                                if(revenue == 0){
+                                    revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }
+                                revenueCommissionByDateObj.revenue = revenue
                             } else {
-                                revenueCommissionByDateObj.revenue = Number(recognizedRevenueData.rows[0].amount)
+                                revenueCommissionByDateObj.revenue = (recognizedRevenueData.rows[0].amount) ? Number(recognizedRevenueData.rows[0].amount) : 0
                             }
                             revenueCommissionByDateObj.sales_rep = saleData.sales_rep;
                             if (saleData.sales_users) {
@@ -486,9 +507,13 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         let recognizedRevenueData = await connection.query(s5)
                         if (recognizedRevenueData.rows[0].amount) {
                             if (salesData.archived_at) {
-                                revenueCommissionByDateObj.revenue = Number(salesData.target_amount) - Number(recognizedRevenueData.rows[0].amount)
+                                let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
+                                if(revenue == 0){
+                                    revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }
+                                revenueCommissionByDateObj.revenue = revenue
                             } else {
-                                revenueCommissionByDateObj.revenue = Number(recognizedRevenueData.rows[0].amount)
+                                revenueCommissionByDateObj.revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                             }
 
                             revenueCommissionByDateObj.sales_rep = saleData.sales_rep;
@@ -591,9 +616,13 @@ module.exports.totalRevenue = async (req, res) => {
                     let recognizedRevenueData = await connection.query(s5)
                     if (recognizedRevenueData.rowCount > 0) {
                         if (data.archived_at) {
+                            let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
+                                if(revenue == 0){
+                                    revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }
                             totalRevenueArr.push({
                                 date: data.date,
-                                revenue: recognizedRevenueData.rows[0].amount ? Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount) : 0
+                                revenue: revenue
                             })
                         }else{
                             totalRevenueArr.push({
@@ -641,9 +670,13 @@ module.exports.totalRevenue = async (req, res) => {
                     let recognizedRevenueData = await connection.query(s5)
                     if (recognizedRevenueData.rowCount > 0) {
                         if (data.archived_at) {
+                            let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
+                                if(revenue == 0){
+                                    revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }
                             totalRevenueArr.push({
                                 date: data.date,
-                                revenue: recognizedRevenueData.rows[0].amount ? Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount) : 0
+                                revenue: revenue
                             })
                         }else{
                             totalRevenueArr.push({
