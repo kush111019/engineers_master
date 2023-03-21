@@ -391,12 +391,17 @@ module.exports.revenuePerSalesRep = async (req, res) => {
                         let recognizedRevenueData = await connection.query(s5)
                         if (recognizedRevenueData.rows[0].amount) {
                             if (salesData.archived_at) {
+                                console.log('11111111');
                                 let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
+                                console.log(revenue,"revenue");
                                 if(revenue == 0){
+                                    console.log("111aaaaaa");
                                     revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                    console.log(revenue,"revenue22222");
                                 }
                                 revenueCommissionByDateObj.revenue = revenue
                             } else {
+                                console.log("222222222");
                                 revenueCommissionByDateObj.revenue = (recognizedRevenueData.rows[0].amount) ? Number(recognizedRevenueData.rows[0].amount) : 0
                             }
                             revenueCommissionByDateObj.sales_rep = saleData.sales_rep;
