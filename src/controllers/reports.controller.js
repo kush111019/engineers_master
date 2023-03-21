@@ -26,7 +26,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                     for (let data of customerCompanies.rows) {
                         let s5 = dbScript(db_sql['Q256'], { var1: data.sales_commission_id })
                         let recognizedRevenueData = await connection.query(s5)
-                        if (recognizedRevenueData.rowCount > 0) {
+                        if (recognizedRevenueData.rows[0].amount) {
                             if (data.archived_at) {
                                 let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                                 if (revenue == 0) {
@@ -98,7 +98,7 @@ module.exports.revenuePerCustomer = async (req, res) => {
                     for (let data of customerCompanies.rows) {
                         let s5 = dbScript(db_sql['Q256'], { var1: data.sales_commission_id })
                         let recognizedRevenueData = await connection.query(s5)
-                        if (recognizedRevenueData.rowCount > 0) {
+                        if (recognizedRevenueData.rows[0].amount) {
                             if (data.archived_at) {
                                 let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                                 if (revenue == 0) {
@@ -192,17 +192,13 @@ module.exports.revenuePerProduct = async (req, res) => {
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
                 let s4 = dbScript(db_sql['Q139'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate })
                 let revenuePerProduct = await connection.query(s4)
-                if (revenuePerProduct.rowCount > 0) {
+                if (recognizedRevenueData.rows[0].amount) {
                     let revenuePerProductArr = []
                     for (let data of revenuePerProduct.rows) {
-                        console.log(data,"data");
                         let s5 = dbScript(db_sql['Q256'], { var1: data.sales_commission_id })
                         let recognizedRevenueData = await connection.query(s5)
-                        console.log(recognizedRevenueData.rows,"recognizedRevenueData");
-                        if (recognizedRevenueData.rowCount > 0) {
-                            console.log("00000000000");
+                        if (recognizedRevenueData.rows[0].amount) {
                             if (data.archived_at) {
-                                console.log("111111111111");
                                 let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                                 if (revenue == 0) {
                                     revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
@@ -212,7 +208,6 @@ module.exports.revenuePerProduct = async (req, res) => {
                                     revenue: revenue
                                 })
                             } else {
-                                console.log("222222222222");
                                 revenuePerProductArr.push({
                                     product_name: data.product_name,
                                     revenue: recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0
@@ -268,16 +263,12 @@ module.exports.revenuePerProduct = async (req, res) => {
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
                 let s4 = dbScript(db_sql['Q151'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
                 let revenuePerProduct = await connection.query(s4)
-                if (revenuePerProduct.rowCount > 0) {
+                if (recognizedRevenueData.rows[0].amount) {
                     for (let product of revenuePerProduct.rows) {
-                        console.log(product,"product");
                         let s5 = dbScript(db_sql['Q256'], { var1: data.sales_commission_id })
                         let recognizedRevenueData = await connection.query(s5)
-                        console.log(recognizedRevenueData.rows,"recognizedRevenueData");
-                        if (recognizedRevenueData.rowCount > 0) {
-                            console.log("00000000");
+                        if (recognizedRevenueData.rows[0].amount) {
                             if (product.archived_at) {
-                                console.log("1111111111");
                                 let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                                 if (revenue == 0) {
                                     revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
@@ -287,7 +278,6 @@ module.exports.revenuePerProduct = async (req, res) => {
                                     revenue: revenue
                                 })
                             } else {
-                                console.log("222222222");
                                 revenuePerProductArr.push({
                                     product_name: product.product_name,
                                     revenue: recognizedRevenueData.rows[0].amount ? recognizedRevenueData.rows[0].amount : 0
@@ -624,7 +614,7 @@ module.exports.totalRevenue = async (req, res) => {
                 for (let data of salesData.rows) {
                     let s5 = dbScript(db_sql['Q256'], { var1: data.sales_commission_id })
                     let recognizedRevenueData = await connection.query(s5)
-                    if (recognizedRevenueData.rowCount > 0) {
+                    if (recognizedRevenueData.rows[0].amount) {
                         if (data.archived_at) {
                             let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                             if (revenue == 0) {
@@ -678,7 +668,7 @@ module.exports.totalRevenue = async (req, res) => {
                 for (let data of salesData.rows) {
                     let s5 = dbScript(db_sql['Q256'], { var1: data.sales_commission_id })
                     let recognizedRevenueData = await connection.query(s5)
-                    if (recognizedRevenueData.rowCount > 0) {
+                    if (recognizedRevenueData.rows[0].amount) {
                         if (data.archived_at) {
                             let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                             if (revenue == 0) {
@@ -756,7 +746,7 @@ module.exports.totalLossRevenue = async (req, res) => {
                 for (let data of salesData.rows) {
                     let s5 = dbScript(db_sql['Q256'], { var1: data.sales_commission_id })
                     let recognizedRevenueData = await connection.query(s5)
-                    if (recognizedRevenueData.rowCount > 0) {
+                    if (recognizedRevenueData.rows[0].amount) {
                         totalRevenueArr.push({
                             date: data.date,
                             revenue: recognizedRevenueData.rows[0].amount ? Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount) : Number(data.target_amount)
@@ -804,7 +794,7 @@ module.exports.totalLossRevenue = async (req, res) => {
                 for (let data of salesData.rows) {
                     let s5 = dbScript(db_sql['Q256'], { var1: data.sales_commission_id })
                     let recognizedRevenueData = await connection.query(s5)
-                    if (recognizedRevenueData.rowCount > 0) {
+                    if (recognizedRevenueData.rows[0].amount) {
                         totalRevenueArr.push({
                             date: data.date,
                             revenue: recognizedRevenueData.rows[0].amount ? Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount) : Number(data.target_amount)
