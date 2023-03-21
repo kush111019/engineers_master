@@ -192,7 +192,7 @@ module.exports.revenuePerProduct = async (req, res) => {
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
                 let s4 = dbScript(db_sql['Q139'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate })
                 let revenuePerProduct = await connection.query(s4)
-                if (recognizedRevenueData.rows[0].amount) {
+                if (revenuePerProduct.rowCount > 0) {
                     let revenuePerProductArr = []
                     for (let data of revenuePerProduct.rows) {
                         let s5 = dbScript(db_sql['Q256'], { var1: data.sales_commission_id })
@@ -263,7 +263,7 @@ module.exports.revenuePerProduct = async (req, res) => {
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
                 let s4 = dbScript(db_sql['Q151'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
                 let revenuePerProduct = await connection.query(s4)
-                if (recognizedRevenueData.rows[0].amount) {
+                if (revenuePerProduct.rowCount > 0) {
                     for (let product of revenuePerProduct.rows) {
                         let s5 = dbScript(db_sql['Q256'], { var1: data.sales_commission_id })
                         let recognizedRevenueData = await connection.query(s5)
