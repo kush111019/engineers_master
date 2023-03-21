@@ -512,7 +512,7 @@ const db_sql = {
   "Q78": `SELECT 
                 sc.id AS sales_commission_id,
                 DATE_TRUNC('{var2}',sc.closed_at) AS  date,
-                sc.sales_type
+                sc.sales_type, sc.target_amount, sc.archived_at
               FROM 
                 sales AS sc 
               WHERE 
@@ -678,7 +678,7 @@ const db_sql = {
   "Q138": `SELECT id,country_name,country_value,currency_name,currency_symbol,date_format,created_at FROM country_details WHERE deleted_at IS NULL`,
   "Q139": `SELECT 
                   DISTINCT(sc.id) AS sales_commission_id,
-                  sc.sales_type, 
+                  sc.sales_type, sc.target_amount, sc.archived_at, 
                   p.product_name
               FROM 
                   sales AS sc 
@@ -774,7 +774,7 @@ const db_sql = {
   "Q150": `SELECT            
                   DISTINCT(sc.id) AS sales_commission_id,
                   c.customer_name,
-                  sc.sales_type
+                  sc.sales_type, sc.archived_at, sc.target_amount
               FROM 
                   sales sc
               LEFT JOIN customer_companies c ON c.id = sc.customer_id
@@ -789,7 +789,7 @@ const db_sql = {
   "Q151": `SELECT 
                   DISTINCT(sc.id) AS sales_commission_id, 
                   p.product_name,
-                  sc.sales_type
+                  sc.sales_type, sc.target_amount, sc.archived_at
               FROM 
                   sales AS sc 
               LEFT JOIN 
@@ -806,7 +806,7 @@ const db_sql = {
    "Q152": `SELECT 
                 DISTINCT(sc.id) AS sales_commission_id,
                 DATE_TRUNC('{var2}',sc.closed_at) AS  date,
-                sc.sales_type
+                sc.sales_type, sc.target_amount, sc.archived_at
               FROM 
                 sales AS sc 
               LEFT JOIN 
@@ -1548,7 +1548,9 @@ const db_sql = {
               LIMIT {var2} OFFSET {var3}`,
   "Q221": `SELECT 
             sc.id as sales_commission_id,
-            sc.closed_at,
+            sc.closed_at, 
+            sc.archived_at, 
+            sc.target_amount,
             sc.booking_commission,
             sc.revenue_commission,
             (
