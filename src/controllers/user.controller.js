@@ -297,7 +297,7 @@ module.exports.usersList = async (req, res) => {
     try {
         let userId = req.user.id
         let { status } = req.query //All/Active/Deactive
-        status = status ? status : 'all'
+        status = (!status || status == 'undefined' || status == 'null' || status == '' || status == undefined || status == null) ? 'all' : status
         // here we are getting user permission's
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
@@ -612,7 +612,7 @@ module.exports.deactivateUserAccount = async (req, res) => {
                     res.json({
                         status: 200,
                         success: false,
-                        message: "Assigned to another user because current user has existing tasks",
+                        message: "Assigned to another user because current user has existing tasks.",
                         data: findUser.rows[0]
                     })
                 } else {
