@@ -94,14 +94,13 @@ module.exports.revenues = async (req, res) => {
             let salesData = await connection.query(s5)
             if (salesData.rowCount > 0) {
                 for (let saleData of salesData.rows) {
-                    console.log(saleData,"saleData");
                     let revenueCommissionByDateObj = {}
+
+                    let s5 = dbScript(db_sql['Q256'], { var1: saleData.sales_commission_id })
+                    let recognizedRevenueData = await connection.query(s5)
+
                     if (saleData.sales_type == 'Perpetual') {
                         let pBooking = 0;
-                        let s5 = dbScript(db_sql['Q256'], { var1: saleData.sales_commission_id })
-                        let recognizedRevenueData = await connection.query(s5)
-                        console.log(recognizedRevenueData.rows,"recognizedRevenueData.rows");
-                        console.log(recognizedRevenueData.rows[0].amount,"recognizedRevenueData.rows[0].amount");
                         if (saleData.archived_at) {
                             if (recognizedRevenueData.rows[0].amount) {
                                 let revenue = (Number(saleData.target_amount) - Number(recognizedRevenueData.rows[0].amount));
@@ -111,78 +110,66 @@ module.exports.revenues = async (req, res) => {
                                 pBooking = revenue
                             }
                             revenueCommissionByDateObj.booking = pBooking
-                        }else{
+                        } else {
                             revenueCommissionByDateObj.booking = Number(saleData.target_amount)
                         }
                         revenueCommissionByDateObj.subscription_booking = 0;
-                    } else {
-                        let s4 = dbScript(db_sql['Q252'], { var1: saleData.sales_commission_id })
-                        let salesSubscriptionData = await connection.query(s4)
+                    }else if(saleData.sales_type == 'Subscription'){
                         let subscriptionBooking1 = 0;
-                        if (salesSubscriptionData.rowCount > 0) {
-                            let s5 = dbScript(db_sql['Q256'], { var1: saleData.sales_commission_id })
-                            let recognizedRevenueData = await connection.query(s5)
-                            console.log(recognizedRevenueData.rows,"recognizedRevenueData.rows");
-                            console.log(recognizedRevenueData.rows[0].amount,"recognizedRevenueData.rows[0].amount");
-                            if (recognizedRevenueData.row[0].amount) {
-                                if (salesSubscriptionData.rows[0].archived_at) {
-                                    let subs = (Number(salesSubscriptionData.rows[0].subscription_amount) - Number(recognizedRevenueData.rows[0].amount));
-                                    if (subs == 0) {
-                                        subs = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
-                                    }
-                                    subscriptionBooking1 = subs
-                                } else {
-                                    subscriptionBooking1 = Number(recognizedRevenueData.rows[0].amount)
+                        if (recognizedRevenueData.row[0].amount) {
+                            if (salesData.archived_at) {
+                                let subs = (Number(salesData.target_amount) - Number(recognizedRevenueData.rows[0].amount));
+                                if (subs == 0) {
+                                    subs = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                                 }
+                                subscriptionBooking1 = subs
+                            } else {
+                                subscriptionBooking1 = Number(recognizedRevenueData.rows[0].amount)
                             }
                         }
                         revenueCommissionByDateObj.booking = 0;
                         revenueCommissionByDateObj.subscription_booking = Number(subscriptionBooking1);
-                        
+                    }
+                    if (recognizedRevenueData.rows[0].amount) {
+                        revenueCommissionByDateObj.revenue = Number(recognizedRevenueData.rows[0].amount)
+                        revenueCommissionByDateObj.date = moment(saleData.closed_at).format('MM/DD/YYYY')
+                        let commission = saleData.revenue_commission ? Number(saleData.revenue_commission) : 0;
 
-                        let s5 = dbScript(db_sql['Q256'], { var1: saleData.sales_commission_id })
-                        let recognizedRevenueData = await connection.query(s5)
-                        if (recognizedRevenueData.rows[0].amount) {
-                            revenueCommissionByDateObj.revenue = Number(recognizedRevenueData.rows[0].amount)
-                            revenueCommissionByDateObj.date = moment(saleData.closed_at).format('MM/DD/YYYY')
-                            let commission = saleData.revenue_commission ? Number(saleData.revenue_commission) : 0;
-
-                            if (filterBy.toLowerCase() == 'all') {
-                                revenueCommissionByDateObj.booking_commission = Number(saleData.booking_commission);
-                                revenueCommissionByDateObj.commission = Number(commission);
-                                revenueCommissionBydate.push(revenueCommissionByDateObj)
-                            } else if (filterBy.toLowerCase() == 'lead') {
-                                if (saleData.sales_users.length > 0) {
-                                    saleData.sales_users.map(value => {
-                                        if (value.user_type == process.env.CAPTAIN) {
-                                            revenueCommissionByDateObj.booking_commission = ((Number(value.percentage) / 100) * Number(saleData.booking_commission));
-                                            revenueCommissionByDateObj.commission = ((Number(value.percentage) / 100) * Number(commission))
-                                            revenueCommissionBydate.push(revenueCommissionByDateObj)
-                                        }
-                                    })
-                                }
-                            } else {
-                                let booking_commission1 = 0;
-                                let commission1 = 0;
-                                if (saleData.sales_users.length > 0) {
-                                    saleData.sales_users.map(value => {
-                                        if (value.user_type == process.env.SUPPORT) {
-                                            booking_commission1 = booking_commission1 + ((Number(value.percentage) / 100) * Number(saleData.booking_commission));
-                                            commission1 = commission1 + ((Number(value.percentage) / 100) * Number(commission))
-                                        }
-                                    })
-                                }
-                                revenueCommissionByDateObj.booking_commission = booking_commission1
-                                revenueCommissionByDateObj.commission = commission1
-                                revenueCommissionBydate.push(revenueCommissionByDateObj)
+                        if (filterBy.toLowerCase() == 'all') {
+                            revenueCommissionByDateObj.booking_commission = Number(saleData.booking_commission);
+                            revenueCommissionByDateObj.commission = Number(commission);
+                            revenueCommissionBydate.push(revenueCommissionByDateObj)
+                        } else if (filterBy.toLowerCase() == 'lead') {
+                            if (saleData.sales_users.length > 0) {
+                                saleData.sales_users.map(value => {
+                                    if (value.user_type == process.env.CAPTAIN) {
+                                        revenueCommissionByDateObj.booking_commission = ((Number(value.percentage) / 100) * Number(saleData.booking_commission));
+                                        revenueCommissionByDateObj.commission = ((Number(value.percentage) / 100) * Number(commission))
+                                        revenueCommissionBydate.push(revenueCommissionByDateObj)
+                                    }
+                                })
                             }
                         } else {
-                            revenueCommissionByDateObj.booking_commission = 0;
-                            revenueCommissionByDateObj.commission = 0;
-                            revenueCommissionByDateObj.revenue = 0;
-                            revenueCommissionByDateObj.date = moment(saleData.closed_at).format('MM/DD/YYYY')
+                            let booking_commission1 = 0;
+                            let commission1 = 0;
+                            if (saleData.sales_users.length > 0) {
+                                saleData.sales_users.map(value => {
+                                    if (value.user_type == process.env.SUPPORT) {
+                                        booking_commission1 = booking_commission1 + ((Number(value.percentage) / 100) * Number(saleData.booking_commission));
+                                        commission1 = commission1 + ((Number(value.percentage) / 100) * Number(commission))
+                                    }
+                                })
+                            }
+                            revenueCommissionByDateObj.booking_commission = booking_commission1
+                            revenueCommissionByDateObj.commission = commission1
                             revenueCommissionBydate.push(revenueCommissionByDateObj)
                         }
+                    } else {
+                        revenueCommissionByDateObj.booking_commission = 0;
+                        revenueCommissionByDateObj.commission = 0;
+                        revenueCommissionByDateObj.revenue = 0;
+                        revenueCommissionByDateObj.date = moment(saleData.closed_at).format('MM/DD/YYYY')
+                        revenueCommissionBydate.push(revenueCommissionByDateObj)
                     }
                 }
                 if (revenueCommissionBydate.length > 0) {
