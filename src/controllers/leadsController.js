@@ -491,7 +491,7 @@ module.exports.uploadLeadFile = async (req, res) => {
                             let s7 = dbScript(db_sql['Q191'], { var1: row[11], var2: checkPermission.rows[0].company_id })
                             let findIndustry = await connection.query(s7)
                             if (findIndustry.rowCount == 0) {
-                                let s8 = dbScript(db_sql['Q186'], { var1: row[11], var2: checkPermission.rows[0].company_id })
+                                let s8 = dbScript(db_sql['Q182'], { var1: row[11], var2: checkPermission.rows[0].company_id })
                                 let insertIndustry = await connection.query(s8)
                                 industryId = insertIndustry.rows[0].id
                             } else {
