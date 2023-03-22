@@ -94,6 +94,7 @@ module.exports.revenues = async (req, res) => {
             let salesData = await connection.query(s5)
             if (salesData.rowCount > 0) {
                 for (let saleData of salesData.rows) {
+                    console.log(saleData,"saleData");
                     let revenueCommissionByDateObj = {}
                     if (saleData.sales_type == 'Perpetual') {
                         let pBooking = 0;
