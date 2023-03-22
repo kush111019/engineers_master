@@ -47,10 +47,8 @@ module.exports.revenues = async (req, res) => {
                 }
             }
 
-
             let s3 = dbScript(db_sql['Q254'], { var1: checkPermission.rows[0].company_id, var2: 'Subscription', var3: sDate, var4: eDate })
             let salesSubscriptionData = await connection.query(s3)
-
             if (salesSubscriptionData.rowCount > 0) {
                 for (let data of salesSubscriptionData.rows) {
                     subscriptionCommission = subscriptionCommission + Number(data.revenue_commission)
@@ -88,7 +86,6 @@ module.exports.revenues = async (req, res) => {
 
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s5 = dbScript(db_sql['Q77'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate, var5: roleUsers.join(',') })
-            console.log(s5,"s5");
             let salesData = await connection.query(s5)
             if (salesData.rowCount > 0) {
                 for (let saleData of salesData.rows) {
@@ -213,28 +210,72 @@ module.exports.revenues = async (req, res) => {
                 salesId.push("'" + saleId.id.toString() + "'")
             }
             if (salesId.length > 0) {
+                let perpetualBooking = 0;
+                let bookingCommission = 0;
+                let revenueCommission = 0;
+                let subscriptionBooking = 0;
+                let subscriptionCommission = 0;
                 //get sum of all totalBooking , bookingCommission, revenueBooking , revenueBooking 
                 let s3 = dbScript(db_sql['Q258'], { var1: salesId.join(","), var2: 'Perpetual' })
                 let salesPerpetualData = await connection.query(s3)
+                if (salesPerpetualData.rowCount > 0) {
+                    for (let data of salesPerpetualData.rows) {
+                        bookingCommission = bookingCommission + Number(data.booking_commission)
+                        revenueCommission = revenueCommission + Number(data.revenue_commission)
+                        let s5 = dbScript(db_sql['Q256'], { var1: data.sales_id })
+                        let recognizedRevenueData = await connection.query(s5)
+                        if (data.archived_at) {
+                            if (recognizedRevenueData.rows[0].amount) {
+                                let subtractAmount = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount))
+                                if (subtractAmount == 0) {
+                                    perpetualBooking = perpetualBooking + Number(recognizedRevenueData.rows[0].amount)
+                                } else {
+                                    perpetualBooking = perpetualBooking + subtractAmount
+                                }
+                            }
+                        } else {
+                            perpetualBooking = perpetualBooking + Number(data.target_amount)
+                        }
+                    }
+                }
 
                 let s4 = dbScript(db_sql['Q258'], { var1: salesId.join(","), var2: 'Subscription' })
                 let salesSubscriptionData = await connection.query(s4)
+                if (salesSubscriptionData.rowCount > 0) {
+                    for (let data of salesSubscriptionData.rows) {
+                        subscriptionCommission = subscriptionCommission + Number(data.revenue_commission)
+                        let s5 = dbScript(db_sql['Q256'], { var1: data.sales_id })
+                        let recognizedRevenueData = await connection.query(s5)
+                        if (data.archived_at) {
+                            if (recognizedRevenueData.rows[0].amount) {
+                                let subtractAmount = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount))
+                                if (subtractAmount == 0) {
+                                    subscriptionBooking = subscriptionBooking + recognizedRevenueData.rows[0].amount
+                                } else {
+                                    subscriptionBooking = subscriptionBooking + subtractAmount
+                                }
+                            } else {
+                                subscriptionBooking = subscriptionBooking + Number(data.target_amount)
+                            }
+                        } else {
+                            subscriptionBooking = subscriptionBooking + Number(data.target_amount)
+                        }
+                    }
+                }
 
                 let s5 = dbScript(db_sql['Q259'], { var1: salesId.join(",") })
                 let recognizedRevenueData = await connection.query(s5)
 
-                if (salesPerpetualData.rowCount > 0 || salesSubscriptionData.rowCount > 0) {
-                    totalRevenueAndCommission.totalPerpetualBooking = salesPerpetualData.rows[0].amount ? Number(salesPerpetualData.rows[0].amount) : 0;
+                totalRevenueAndCommission.totalPerpetualBooking = Number(perpetualBooking);
 
-                    totalRevenueAndCommission.totalSubscriptionBooking = salesSubscriptionData.rows[0].amount ? Number(salesSubscriptionData.rows[0].amount) : 0;
-                    let subscriptionCommission = salesSubscriptionData.rows[0].revenue_commission ? Number(salesSubscriptionData.rows[0].revenue_commission) : 0;
+                totalRevenueAndCommission.totalSubscriptionBooking = Number(subscriptionBooking);
+    
+                totalRevenueAndCommission.totalBookingCommission = Number(bookingCommission)
 
-                    totalRevenueAndCommission.totalBookingCommission = salesPerpetualData.rows[0].booking_commission ? Number(salesPerpetualData.rows[0].booking_commission) : 0;
+                totalRevenueAndCommission.totalRevenueBooking = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0;
 
-                    totalRevenueAndCommission.totalRevenueBooking = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0;
+                totalRevenueAndCommission.totalRevenueCommission =Number(subscriptionCommission) + Number(revenueCommission);
 
-                    totalRevenueAndCommission.totalRevenueCommission = Number(subscriptionCommission) + Number(salesPerpetualData.rows[0].revenue_commission);
-                }
             }
             let s6 = dbScript(db_sql['Q149'], { var1: roleUsers.join(','), var2: orderBy, var3: sDate, var4: eDate })
             let salesData = await connection.query(s6)
@@ -242,24 +283,41 @@ module.exports.revenues = async (req, res) => {
                 for (let saleData of salesData.rows) {
                     let revenueCommissionByDateObj = {}
 
+                    let s6 = dbScript(db_sql['Q256'], { var1: saleData.sales_commission_id })
+                    let recognizedRevenueData = await connection.query(s6)
+
                     if (saleData.sales_type == 'Perpetual') {
-                        revenueCommissionByDateObj.booking = Number(saleData.target_amount);
+                        let pBooking = 0;
+                        if (saleData.archived_at) {
+                            if (recognizedRevenueData.rows[0].amount) {
+                                let revenue = (Number(saleData.target_amount) - Number(recognizedRevenueData.rows[0].amount));
+                                if (revenue == 0) {
+                                    revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }
+                                pBooking = revenue
+                            }
+                            revenueCommissionByDateObj.booking = Number(pBooking)
+                        } else {
+                            revenueCommissionByDateObj.booking = Number(saleData.target_amount)
+                        }
                         revenueCommissionByDateObj.subscription_booking = 0;
-                    } else {
-                        let s4 = dbScript(db_sql['Q252'], { var1: saleData.sales_commission_id })
-                        let salesSubscriptionData = await connection.query(s4)
-                        let subscriptionBooking = 0;
-                        if (salesSubscriptionData.rowCount > 0) {
-                            salesSubscriptionData.rows.map(value => {
-                                subscriptionBooking = subscriptionBooking + Number(value.subscription_amount)
-                            })
+                    }
+                    if(saleData.sales_type == 'Subscription'){
+                        let subscriptionBooking1 = 0;
+                        if (recognizedRevenueData.rows[0].amount) {
+                            if (saleData.archived_at) {
+                                let subs = (Number(saleData.target_amount) - Number(recognizedRevenueData.rows[0].amount));
+                                if (subs == 0) {
+                                    subs = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }
+                                subscriptionBooking1 = subs
+                            } else {
+                                subscriptionBooking1 = Number(recognizedRevenueData.rows[0].amount)
+                            }
                         }
                         revenueCommissionByDateObj.booking = 0;
-                        revenueCommissionByDateObj.subscription_booking = Number(subscriptionBooking);
+                        revenueCommissionByDateObj.subscription_booking = Number(subscriptionBooking1);
                     }
-
-                    let s5 = dbScript(db_sql['Q256'], { var1: saleData.sales_commission_id })
-                    let recognizedRevenueData = await connection.query(s5)
 
                     if (recognizedRevenueData.rows[0].amount) {
                         revenueCommissionByDateObj.revenue = Number(recognizedRevenueData.rows[0].amount)
@@ -341,143 +399,6 @@ module.exports.revenues = async (req, res) => {
         })
     }
 }
-
-// module.exports.totalExpectedRevenueCounts = async (req, res) => {
-//     try {
-//         let userId = req.user.id
-//         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-//         let checkPermission = await connection.query(s3)
-//         if (checkPermission.rows[0].permission_to_view_global) {
-//             let s3 = dbScript(db_sql['Q254'], { var1: checkPermission.rows[0].company_id, var2: 'Perpetual' })
-//             console.log(s3,"s3");
-//             let salesPerpetualData = await connection.query(s3)
-//             console.log(salesPerpetualData.rows,"salesPerpetualData");
-
-//             let s4 = dbScript(db_sql['Q254'], { var1: checkPermission.rows[0].company_id, var2: 'Subscription' })
-//             console.log(s4,"s4");
-//             let salesSubscriptionData = await connection.query(s4)
-//             console.log(salesSubscriptionData.rows,"salesSubscriptionData");
-//             let s5 = dbScript(db_sql['Q255'], { var1: checkPermission.rows[0].company_id })
-//             console.log(s5,"s5");
-//             let recognizedRevenueData = await connection.query(s5)
-// console.log(recognizedRevenueData.rows,"recognizedRevenueData");
-//             if (salesPerpetualData.rowCount > 0 || salesSubscriptionData.rowCount > 0) {
-//                 let totalBooking = salesPerpetualData.rows[0].amount ? Number(salesPerpetualData.rows[0].amount) : 0;
-
-//                 let subscriptionBooking = salesSubscriptionData.rows[0].amount ? Number(salesSubscriptionData.rows[0].amount) : 0;
-//                 let subscriptionCommission = salesSubscriptionData.rows[0].revenue_commission ? Number(salesSubscriptionData.rows[0].revenue_commission) : 0;
-
-//                 let bookingCommission = salesPerpetualData.rows[0].booking_commission ? Number(salesPerpetualData.rows[0].booking_commission) : 0;
-
-//                 let revenueBooking = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0;
-
-//                 let revenueCommission = Number(subscriptionCommission) + Number(salesPerpetualData.rows[0].revenue_commission);
-//                 res.json({
-//                     status: 200,
-//                     success: true,
-//                     message: "Revenues and commissions details",
-//                     data: {
-//                         totalBooking,
-//                         subscriptionBooking,
-//                         bookingCommission,
-//                         revenueBooking,
-//                         revenueCommission
-//                     }
-//                 })
-//             } else {
-//                 res.json({
-//                     status: 200,
-//                     success: false,
-//                     message: "Revenues and commissions are empty",
-//                     data: {
-//                         totalBooking: 0,
-//                         bookingCommission: 0,
-//                         revenueBooking: 0,
-//                         revenueCommission: 0
-//                     }
-//                 })
-//             }
-//         } else if (checkPermission.rows[0].permission_to_view_own) {
-//             //get roles user list 
-//             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-
-//             //get sales id on behalf of user list
-//             let s1 = dbScript(db_sql['Q257'], { var1: roleUsers.join(",") })
-//             let salesIdData = await connection.query(s1)
-//             let salesId = [];
-//             for (let saleId of salesIdData.rows) {
-//                 salesId.push("'" + saleId.id.toString() + "'")
-//             }
-//             if (salesId.length > 0) {
-//                 //get sum of all totalBooking , bookingCommission, revenueBooking , revenueBooking 
-//                 let s3 = dbScript(db_sql['Q258'], { var1: salesId.join(","), var2: 'Perpetual' })
-//                 let salesPerpetualData = await connection.query(s3)
-
-//                 let s4 = dbScript(db_sql['Q258'], { var1: salesId.join(","), var2: 'Subscription' })
-//                 let salesSubscriptionData = await connection.query(s4)
-
-//                 let s5 = dbScript(db_sql['Q259'], { var1: salesId.join(",") })
-//                 let recognizedRevenueData = await connection.query(s5)
-
-//                 if (salesPerpetualData.rowCount > 0 || salesSubscriptionData.rowCount > 0) {
-//                     let totalBooking = salesPerpetualData.rows[0].amount ? Number(salesPerpetualData.rows[0].amount) : 0;
-//                     let subscriptionBooking = salesSubscriptionData.rows[0].amount ? Number(salesSubscriptionData.rows[0].amount) : 0;
-//                     let subscriptionCommission = salesSubscriptionData.rows[0].revenue_commission ? Number(salesSubscriptionData.rows[0].revenue_commission) : 0;
-
-
-//                     let bookingCommission = salesPerpetualData.rows[0].booking_commission ? Number(salesPerpetualData.rows[0].booking_commission) : 0;
-
-//                     let revenueBooking = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0;
-//                     let revenueCommission = Number(subscriptionCommission) + Number(salesPerpetualData.rows[0].revenue_commission);
-//                     res.json({
-//                         status: 200,
-//                         success: true,
-//                         message: "Revenues and commissions details",
-//                         data: {
-//                             totalBooking,
-//                             subscriptionBooking,
-//                             bookingCommission,
-//                             revenueBooking,
-//                             revenueCommission
-//                         }
-//                     })
-//                 } else {
-//                     res.json({
-//                         status: 200,
-//                         success: false,
-//                         message: "Revenues and commissions are empty",
-//                         data: {
-//                             totalBooking: 0,
-//                             bookingCommission: 0,
-//                             revenueBooking: 0,
-//                             revenueCommission: 0
-//                         }
-//                     })
-//                 }
-
-//             } else {
-//                 res.json({
-//                     status: 200,
-//                     success: false,
-//                     message: "Empty sales list",
-//                     data: []
-//                 })
-
-//             }
-//         } else {
-//             res.status(403).json({
-//                 success: false,
-//                 message: "Unathorised"
-//             })
-//         }
-//     } catch (error) {
-//         res.json({
-//             status: 400,
-//             success: false,
-//             message: error.message,
-//         })
-//     }
-// }
 
 module.exports.dataCreationStatus = async (req, res) => {
     try {

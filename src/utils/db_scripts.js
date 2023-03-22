@@ -741,6 +741,7 @@ const db_sql = {
             sc.revenue_commission,
             sc.target_amount,
             sc.sales_type,
+            sc.archived_at,
             (
               SELECT json_agg(sales_users.*)
               FROM (
@@ -1973,11 +1974,11 @@ const db_sql = {
           AND 
             sc.deleted_at IS NULL AND sc.archived_at IS NULL`,
 
-  "Q258": `SELECT SUM(target_amount::DECIMAL) as amount, 
-            SUM(booking_commission::DECIMAL) as booking_commission, 
-            SUM(revenue_commission::DECIMAL) as revenue_commission
+  "Q258": `SELECT 
+             id as sales_id, target_amount, booking_commission, 
+             revenue_commission, archived_at
           FROM 
-            sales 
+             sales
           WHERE 
             id IN ({var1}) AND sales_type = '{var2}'
           AND deleted_at IS NULL AND archived_at IS NULL`,
