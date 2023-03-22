@@ -206,6 +206,11 @@ module.exports.leadsDetails = async (req, res) => {
             let s2 = dbScript(db_sql['Q176'], { var1: id, var2: type })
             leadList = await connection.query(s2)
             if (leadList.rowCount > 0) {
+                if(leadList.rows[0].sales_id){
+                    leadList.rows[0].is_assigned_in_sales = true
+                }else {
+                    leadList.rows[0].is_assigned_in_sales = false
+                }
                 res.json({
                     status: 200,
                     success: true,
