@@ -762,7 +762,7 @@ const db_sql = {
             ) 
           AND 
             sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
-            sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL AND sc.archived_at IS NULL
+            sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
           GROUP BY 
             sc.closed_at,
             sc.id,
@@ -1972,7 +1972,7 @@ const db_sql = {
           AND 
             sc.closed_at BETWEEN '{var2}' AND '{var3}'
           AND 
-            sc.deleted_at IS NULL AND sc.archived_at IS NULL`,
+            sc.deleted_at IS NULL`,
 
   "Q258": `SELECT 
              id as sales_id, target_amount, booking_commission, 
@@ -1981,7 +1981,7 @@ const db_sql = {
              sales
           WHERE 
             id IN ({var1}) AND sales_type = '{var2}'
-          AND deleted_at IS NULL AND archived_at IS NULL`,
+          AND deleted_at IS NULL`,
 
   "Q259": `SELECT SUM(recognized_amount::DECIMAL) as amount
               FROM 
