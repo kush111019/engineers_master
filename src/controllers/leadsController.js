@@ -499,7 +499,7 @@ module.exports.uploadLeadFile = async (req, res) => {
                             }
 
                             let customerId = ''
-                            let s12 = dbScript(db_sql['Q312'],{var1 : mysql_real_escape_string(row[10])})
+                            let s12 = dbScript(db_sql['Q312'],{var1 : mysql_real_escape_string(row[10]), var2 : checkPermission.rows[0].company_id })
                             let findCustomer = await connection.query(s12)
                             if(findCustomer.rowCount == 0){
                                 let s9 = dbScript(db_sql['Q36'], { var1: checkPermission.rows[0].id, var2: mysql_real_escape_string(row[10]), var3: checkPermission.rows[0].company_id, var4: mysql_real_escape_string(row[12]), var5: row[13], var6: industryId })
