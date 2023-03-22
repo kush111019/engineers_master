@@ -593,7 +593,7 @@ module.exports.deactivateUserAccount = async (req, res) => {
                     (
                         findUser.rows[0].role_data ||
                         findUser.rows[0].users_data ||
-                        findUser.rows[0].sales_data ||
+                        // findUser.rows[0].sales_data ||
                         findUser.rows[0].sales_users ||
                         findUser.rows[0].customer_companies ||
                         findUser.rows[0].customer_company_employees ||
@@ -752,14 +752,14 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let updateNewUserInUsers = await connection.query(s2)
 
             }
-            if (userData.sales_data) {
-                let salesIds = []
-                userData.sales_data.map(item => {
-                    salesIds.push("'" + item.toString() + "'")
-                })
-                let s2 = dbScript(db_sql['Q309'], { var1: 'sales', var2: 'user_id', var3: newUserId, var4: salesIds.join(",") })
-                let updateNewUserInSales = await connection.query(s2)
-            }
+            // if (userData.sales_data) {
+            //     let salesIds = []
+            //     userData.sales_data.map(item => {
+            //         salesIds.push("'" + item.toString() + "'")
+            //     })
+            //     let s2 = dbScript(db_sql['Q309'], { var1: 'sales', var2: 'user_id', var3: newUserId, var4: salesIds.join(",") })
+            //     let updateNewUserInSales = await connection.query(s2)
+            // }
             if (userData.sales_users) {
                 let salesUsersIds = []
                 userData.sales_users.map(item => {
