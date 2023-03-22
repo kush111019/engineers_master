@@ -109,7 +109,7 @@ module.exports.revenues = async (req, res) => {
                                 }
                                 pBooking = revenue
                             }
-                            revenueCommissionByDateObj.booking = pBooking
+                            revenueCommissionByDateObj.booking = Number(pBooking)
                         } else {
                             revenueCommissionByDateObj.booking = Number(saleData.target_amount)
                         }
