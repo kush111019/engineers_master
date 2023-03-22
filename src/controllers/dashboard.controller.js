@@ -36,7 +36,7 @@ module.exports.revenues = async (req, res) => {
                         if (recognizedRevenueData.rows[0].amount) {
                             let subtractAmount = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount))
                             if (subtractAmount == 0) {
-                                perpetualBooking = perpetualBooking + recognizedRevenueData.rows[0].amount
+                                perpetualBooking = perpetualBooking + Number(recognizedRevenueData.rows[0].amount)
                             } else {
                                 perpetualBooking = perpetualBooking + subtractAmount
                             }
@@ -78,15 +78,15 @@ module.exports.revenues = async (req, res) => {
             let s4 = dbScript(db_sql['Q255'], { var1: checkPermission.rows[0].company_id, var3: sDate, var4: eDate })
             let recognizedRevenueData = await connection.query(s4)
 
-            totalRevenueAndCommission.totalPerpetualBooking = perpetualBooking;
+            totalRevenueAndCommission.totalPerpetualBooking = Number(perpetualBooking);
 
-            totalRevenueAndCommission.totalSubscriptionBooking = subscriptionBooking;
+            totalRevenueAndCommission.totalSubscriptionBooking = Number(subscriptionBooking);
 
-            totalRevenueAndCommission.totalBookingCommission = bookingCommission
+            totalRevenueAndCommission.totalBookingCommission = Number(bookingCommission)
 
             totalRevenueAndCommission.totalRevenueBooking = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0;
 
-            totalRevenueAndCommission.totalRevenueCommission = subscriptionCommission + revenueCommission;
+            totalRevenueAndCommission.totalRevenueCommission = Number(subscriptionCommission) + Number(revenueCommission);
 
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s5 = dbScript(db_sql['Q77'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate, var5: roleUsers.join(',') })
