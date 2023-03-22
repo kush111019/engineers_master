@@ -40,8 +40,6 @@ module.exports.revenues = async (req, res) => {
                             } else {
                                 perpetualBooking = perpetualBooking + subtractAmount
                             }
-                        } else {
-                            perpetualBooking = perpetualBooking + Number(data.target_amount)
                         }
                     } else {
                         perpetualBooking = perpetualBooking + Number(data.target_amount)
