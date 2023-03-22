@@ -481,6 +481,7 @@ const db_sql = {
             sc.revenue_commission,
             sc.target_amount,
             sc.sales_type,
+            sc.archived_at,
             (
               SELECT json_agg(sales_users.*)
               FROM (
@@ -499,7 +500,6 @@ const db_sql = {
             sc.company_id = '{var1}' AND 
             sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
             sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
-            AND sc.archived_at IS NULL
           GROUP BY 
             sc.closed_at,
             sc.id,
@@ -1923,15 +1923,17 @@ const db_sql = {
                 VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') RETURNING *`,
   "Q252": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
               sc.booking_commission::DECIMAL as subscription_booking_commission,
-              sc.revenue_commission::DECIMAL as subscription_revenue_commission
+              sc.revenue_commission::DECIMAL as subscription_revenue_commission,
+              sc.archived_at
             FROM
               sales AS sc
             WHERE
               sc.id = '{var1}' AND sc.sales_type = 'Subscription'
             AND
-              sc.deleted_at IS NULL AND sc.archived_at IS NULL`,
+              sc.deleted_at IS NULL `,
   "Q253": `UPDATE sales SET revenue_commission =  '{var1}' WHERE id = '{var2}' RETURNING *`,
-  "Q254": `SELECT  SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
+  "Q254": ` SELECT 
+              id as sales_id, target_amount, booking_commission, revenue_commission, archived_at
             FROM 
               sales 
             WHERE 
@@ -1941,9 +1943,7 @@ const db_sql = {
             AND
               closed_at BETWEEN '{var3}' AND '{var4}'
             AND 
-              deleted_at IS NULL
-            AND 
-              archived_at IS NULL`,
+              deleted_at IS NULL`,
   "Q255": `SELECT  SUM(recognized_amount::DECIMAL) as amount FROM 
                 recognized_revenue 
               WHERE 
