@@ -99,6 +99,8 @@ module.exports.revenues = async (req, res) => {
                         let pBooking = 0;
                         let s5 = dbScript(db_sql['Q256'], { var1: saleData.sales_commission_id })
                         let recognizedRevenueData = await connection.query(s5)
+                        console.log(recognizedRevenueData.rows,"recognizedRevenueData.rows");
+                        console.log(recognizedRevenueData.rows[0].amount,"recognizedRevenueData.rows[0].amount");
                         if (saleData.archived_at) {
                             if (recognizedRevenueData.rows[0].amount) {
                                 let revenue = (Number(saleData.target_amount) - Number(recognizedRevenueData.rows[0].amount));
@@ -115,14 +117,12 @@ module.exports.revenues = async (req, res) => {
                     } else {
                         let s4 = dbScript(db_sql['Q252'], { var1: saleData.sales_commission_id })
                         let salesSubscriptionData = await connection.query(s4)
-                        console.log(salesSubscriptionData.rows,"salesSubscriptionData1111");
                         let subscriptionBooking1 = 0;
                         if (salesSubscriptionData.rowCount > 0) {
-                            console.log(salesSubscriptionData.rows[0],"salesSubscriptionData.rows[0]22222");
-                            console.log(salesSubscriptionData.rows[0].archived_at,"salesSubscriptionData.rows[0].archived_at");
-                            console.log(salesSubscriptionData.rows[0].subscription_amount,"salesSubscriptionData.rows[0].subscription_amount");
                             let s5 = dbScript(db_sql['Q256'], { var1: saleData.sales_commission_id })
                             let recognizedRevenueData = await connection.query(s5)
+                            console.log(recognizedRevenueData.rows,"recognizedRevenueData.rows");
+                            console.log(recognizedRevenueData.rows[0].amount,"recognizedRevenueData.rows[0].amount");
                             if (recognizedRevenueData.row[0].amount) {
                                 if (salesSubscriptionData.rows[0].archived_at) {
                                     let subs = (Number(salesSubscriptionData.rows[0].subscription_amount) - Number(recognizedRevenueData.rows[0].amount));
