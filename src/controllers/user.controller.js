@@ -600,9 +600,9 @@ module.exports.deactivateUserAccount = async (req, res) => {
                         findUser.rows[0].products_data ||
                         findUser.rows[0].slabs_data ||
                         findUser.rows[0].commission_split_data ||
-                        // findUser.rows[0].marketing_budget_data ||
-                        // findUser.rows[0].marketing_budget_data_data ||
-                        // findUser.rows[0].marketing_budget_description_data ||
+                        findUser.rows[0].marketing_budget_data ||
+                        findUser.rows[0].marketing_budget_data_data ||
+                        findUser.rows[0].marketing_budget_description_data ||
                         findUser.rows[0].chat_data ||
                         findUser.rows[0].chat_room_members_data ||
                         findUser.rows[0].forecast_data ||
@@ -816,30 +816,30 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let s2 = dbScript(db_sql['Q309'], { var1: 'commission_split', var2: 'user_id', var3: newUserId, var4: commissionIds.join(",") })
                 let updateNewUserInCommission = await connection.query(s2)
             }
-            // if (userData.marketing_budget_data) {
-            //     let budgetIds = []
-            //     userData.marketing_budget_data.map(item => {
-            //         budgetIds.push("'" + item.toString() + "'")
-            //     })
-            //     let s2 = dbScript(db_sql['Q309'], { var1: 'marketing_budget', var2: 'created_by', var3: newUserId, var4: budgetIds.join(",") })
-            //     let updateNewUserInMarketingBudget = await connection.query(s2)
-            // }
-            // if (userData.marketing_budget_data_data) {
-            //     let budgetDataIds = []
-            //     userData.marketing_budget_data_data.map(item => {
-            //         budgetDataIds.push("'" + item.toString() + "'")
-            //     })
-            //     let s2 = dbScript(db_sql['Q309'], { var1: 'marketing_budget_data', var2: 'created_by', var3: newUserId, var4: budgetDataIds.join(",") })
-            //     let updateNewUserInMarketingBudgetData = await connection.query(s2)
-            // }
-            // if (userData.marketing_budget_description_data) {
-            //     let budgetDescriptionIds = []
-            //     userData.marketing_budget_description_data.map(item => {
-            //         budgetDescriptionIds.push("'" + item.toString() + "'")
-            //     })
-            //     let s2 = dbScript(db_sql['Q309'], { var1: 'marketing_budget_description', var2: 'user_id', var3: newUserId, var4: budgetDescriptionIds.join(",") })
-            //     let updateNewUserInMarketingDescription = await connection.query(s2)
-            // }
+            if (userData.marketing_budget_data) {
+                let budgetIds = []
+                userData.marketing_budget_data.map(item => {
+                    budgetIds.push("'" + item.toString() + "'")
+                })
+                let s2 = dbScript(db_sql['Q309'], { var1: 'marketing_budget', var2: 'created_by', var3: newUserId, var4: budgetIds.join(",") })
+                let updateNewUserInMarketingBudget = await connection.query(s2)
+            }
+            if (userData.marketing_budget_data_data) {
+                let budgetDataIds = []
+                userData.marketing_budget_data_data.map(item => {
+                    budgetDataIds.push("'" + item.toString() + "'")
+                })
+                let s2 = dbScript(db_sql['Q309'], { var1: 'marketing_budget_data', var2: 'created_by', var3: newUserId, var4: budgetDataIds.join(",") })
+                let updateNewUserInMarketingBudgetData = await connection.query(s2)
+            }
+            if (userData.marketing_budget_description_data) {
+                let budgetDescriptionIds = []
+                userData.marketing_budget_description_data.map(item => {
+                    budgetDescriptionIds.push("'" + item.toString() + "'")
+                })
+                let s2 = dbScript(db_sql['Q309'], { var1: 'marketing_budget_description', var2: 'user_id', var3: newUserId, var4: budgetDescriptionIds.join(",") })
+                let updateNewUserInMarketingDescription = await connection.query(s2)
+            }
             if (userData.chat_data) {
                 let chatIds = []
                 userData.chat_data.map(item => {

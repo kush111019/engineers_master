@@ -2647,6 +2647,21 @@ const db_sql = {
                 WHERE user_id = '{var1}' AND deleted_at IS NULL
               )as chat_room_members_data,
               (
+                SELECT json_agg(marketing_budget.id) 
+                FROM marketing_budget 
+                WHERE created_by = '{var1}' AND deleted_at IS NULL
+              )as marketing_budget_data,
+              (
+                SELECT json_agg(marketing_budget_data.id) 
+                FROM marketing_budget_data 
+                WHERE created_by = '{var1}' AND deleted_at IS NULL
+              )as marketing_budget_data_data,
+              (
+                SELECT json_agg(marketing_budget_description.id) 
+                FROM marketing_budget_description 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as marketing_budget_description_data,
+              (
                 SELECT json_agg(forecast.id)
                 FROM forecast 
                 WHERE (created_by = '{var1}' OR assigned_to = '{var1}')
