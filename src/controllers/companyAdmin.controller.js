@@ -168,7 +168,7 @@ module.exports.signUp = async (req, res) => {
         await connection.query('BEGIN')
         companyLogo = companyLogo == "" ? process.env.DEFAULT_LOGO : companyLogo;
 
-        let s2 = dbScript(db_sql['Q1'], { var1: companyName })
+        let s2 = dbScript(db_sql['Q1'], { var1: mysql_real_escape_string(companyName) })
         let checkCompany = await connection.query(s2);
         if (checkCompany.rows.length == 0) {
 
