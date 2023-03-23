@@ -194,7 +194,7 @@ const db_sql = {
             sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id , 
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -332,7 +332,7 @@ const db_sql = {
             sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -396,7 +396,7 @@ const db_sql = {
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -860,7 +860,7 @@ const db_sql = {
             sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -941,7 +941,7 @@ const db_sql = {
              sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -1005,7 +1005,7 @@ const db_sql = {
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -1069,7 +1069,7 @@ const db_sql = {
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -1149,7 +1149,7 @@ const db_sql = {
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -2263,7 +2263,7 @@ const db_sql = {
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
               cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
               sc.transfered_back_by as transfered_back_by_id ,
-              slab.slab_name,
+              slab.slab_name,sc.approval_status,
               u2.full_name as tranfer_back_by_name,
               (
                 SELECT json_agg(customer_company_employees.*)
@@ -2328,7 +2328,7 @@ const db_sql = {
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
               cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
               sc.transfered_back_by as transfered_back_by_id ,
-              slab.slab_name,
+              slab.slab_name,sc.approval_status,
               u2.full_name as tranfer_back_by_name,
               (
                 SELECT json_agg(customer_company_employees.*)
@@ -2409,7 +2409,7 @@ const db_sql = {
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
               cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
               sc.transfered_back_by as transfered_back_by_id ,
-              slab.slab_name,
+              slab.slab_name,sc.approval_status,
               u2.full_name as tranfer_back_by_name,
               (
                 SELECT json_agg(customer_company_employees.*)
@@ -2474,7 +2474,7 @@ const db_sql = {
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
               cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
               sc.transfered_back_by as transfered_back_by_id ,
-              slab.slab_name,
+              slab.slab_name,sc.approval_status,
               u2.full_name as tranfer_back_by_name,
               (
                 SELECT json_agg(customer_company_employees.*)
