@@ -660,9 +660,9 @@ const db_sql = {
               u.avatar, u.expiry_date, u.is_verified, u.is_admin, u.is_locked, u.is_main_admin,u.is_deactivated, c.company_name, c.company_address, c.company_logo, c.is_imap_enable,c.is_marketing_enable,
               r.id as role_id,r.role_name, r.reporter, r.module_ids, con.id AS config_id, con.currency, con.phone_format, con.date_format, con.before_closing_days, con.after_closing_days
               FROM users AS u 
-              INNER JOIN companies AS c ON c.id = u.company_id
-              INNER JOIN roles AS r ON r.id = u.role_id 
-              INNER JOIN configurations AS con ON con.company_id = u.company_id
+              LEFT JOIN companies AS c ON c.id = u.company_id
+              LEFT JOIN roles AS r ON r.id = u.role_id 
+              LEFT JOIN configurations AS con ON con.company_id = u.company_id
               WHERE LOWER(email_address) = LOWER('{var1}') AND u.deleted_at IS NULL 
               AND c.deleted_at IS NULL AND r.deleted_at IS NULL AND con.deleted_at IS NULL`,
   "Q133": `UPDATE companies SET is_imap_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
