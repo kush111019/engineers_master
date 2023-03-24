@@ -125,7 +125,7 @@ module.exports.callback = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
-            if (provider == 'linkeIn') {
+            if (provider == 'linkedIn') {
                 LinkedIn.auth.getAccessToken(code, state, async (err, results) => {
                     if (err) {
                         return res.json({
