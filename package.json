@@ -28,6 +28,7 @@
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.2",
     "node-imap": "^0.9.6",
+    "node-linkedin": "^0.5.6",
     "node-uuid": "^1.4.8",
     "nodemailer": "^6.7.5",
     "nodemon": "^2.0.16",
