@@ -19,6 +19,7 @@ const email = require('./email.controller')
 const leads = require('./leadsController')
 const marketingStrategy = require('./merketingStrategy.controller')
 const notifications = require('./notifications.controller')
+const connectors = require('./connectors.controller')
 
 
 const controller = { 
@@ -42,7 +43,8 @@ const controller = {
     email,
     leads,
     marketingStrategy,
-    notifications
+    notifications,
+    connectors
 }
 
 module.exports = controller

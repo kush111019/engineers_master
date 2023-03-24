@@ -2725,7 +2725,33 @@ const db_sql = {
               u1.id IN ({var1}) AND u1.deleted_at IS NULL 
               AND u1.is_deactivated = '{var2}'
             ORDER BY 
-              created_at DESC`
+              created_at DESC`,
+    "Q316":`INSERT INTO connectors
+              (user_id,company_id,linked_in_token,linked_in_status)
+            VALUES
+               ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
+
+    "Q317":`SELECT * 
+            FROM 
+              connectors 
+            WHERE 
+              company_id = '{var2}' 
+              AND user_id = '{var1}' 
+              AND deleted_at IS NULL`,
+
+    "Q318":`SELECT com.id as company_id, c.user_id, c.linked_in_token,
+                   c.last_sync_at FROM companies AS com
+            LEFT JOIN connectors AS c ON c.company_id = com.id
+            WHERE com.deleted_at IS NULL AND c.linked_in_status = true`,
+
+    "Q319":`UPDATE connectors SET linked_in_token = '{var1}',linked_in_status = '{var2}',
+                   updated_at = '{var5}'
+            WHERE user_id = '{var3}' AND company_id = '{var4}' AND deleted_at IS NULL RETURNING * `,
+
+    "Q320":`INSERT INTO connectors
+             (user_id,company_id,hubspot_token,hubspot_status)
+            VALUES
+             ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
 
 
 }
