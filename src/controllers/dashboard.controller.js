@@ -115,6 +115,8 @@ module.exports.revenues = async (req, res) => {
                                 let subs = (Number(saleData.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                                 if (subs == 0) {
                                     subs = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }else{
+                                    subs = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                                 }
                                 subscriptionBooking1 = subs
                             } else {
@@ -306,6 +308,8 @@ module.exports.revenues = async (req, res) => {
                             if (saleData.archived_at) {
                                 let subs = (Number(saleData.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                                 if (subs == 0) {
+                                    subs = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }else{
                                     subs = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                                 }
                                 subscriptionBooking1 = subs
