@@ -60,7 +60,7 @@ module.exports.revenues = async (req, res) => {
                             if (subtractAmount == 0) {
                                 subscriptionBooking = subscriptionBooking + Number(recognizedRevenueData.rows[0].amount)
                             } else {
-                                subscriptionBooking = subscriptionBooking + Number(subtractAmount)
+                                subscriptionBooking = subscriptionBooking + Number(recognizedRevenueData.rows[0].amount)
                             }
                         } else {
                             subscriptionBooking = subscriptionBooking + Number(data.target_amount)
@@ -252,7 +252,7 @@ module.exports.revenues = async (req, res) => {
                                 if (subtractAmount == 0) {
                                     subscriptionBooking = subscriptionBooking + Number(recognizedRevenueData.rows[0].amount)
                                 } else {
-                                    subscriptionBooking = subscriptionBooking + Number(subtractAmount)
+                                    subscriptionBooking = subscriptionBooking + Number(recognizedRevenueData.rows[0].amount)
                                 }
                             } else {
                                 subscriptionBooking = subscriptionBooking + Number(data.target_amount)

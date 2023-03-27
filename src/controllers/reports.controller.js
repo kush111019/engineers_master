@@ -31,6 +31,8 @@ module.exports.revenuePerCustomer = async (req, res) => {
                                 let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                                 if (revenue == 0) {
                                     revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }else{
+                                    revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                                 }
                                 revenuePerCustomerArr.push({
                                     customer_name: data.customer_name,
@@ -102,6 +104,8 @@ module.exports.revenuePerCustomer = async (req, res) => {
                             if (data.archived_at) {
                                 let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                                 if (revenue == 0) {
+                                    revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }else{
                                     revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                                 }
                                 revenuePerCustomerArr.push({
@@ -202,6 +206,8 @@ module.exports.revenuePerProduct = async (req, res) => {
                                 let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                                 if (revenue == 0) {
                                     revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }else{
+                                    revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                                 }
                                 revenuePerProductArr.push({
                                     product_name: data.product_name,
@@ -271,6 +277,8 @@ module.exports.revenuePerProduct = async (req, res) => {
                             if (product.archived_at) {
                                 let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                                 if (revenue == 0) {
+                                    revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }else{
                                     revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                                 }
                                 revenuePerProductArr.push({
@@ -619,6 +627,8 @@ module.exports.totalRevenue = async (req, res) => {
                             let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                             if (revenue == 0) {
                                 revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                            }else{
+                                revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                             }
                             totalRevenueArr.push({
                                 date: data.date,
@@ -672,6 +682,8 @@ module.exports.totalRevenue = async (req, res) => {
                         if (data.archived_at) {
                             let revenue = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                             if (revenue == 0) {
+                                revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                            }else{
                                 revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                             }
                             totalRevenueArr.push({
