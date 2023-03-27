@@ -194,7 +194,7 @@ const db_sql = {
             sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id , 
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -332,7 +332,7 @@ const db_sql = {
             sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -396,7 +396,7 @@ const db_sql = {
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -481,6 +481,7 @@ const db_sql = {
             sc.revenue_commission,
             sc.target_amount,
             sc.sales_type,
+            sc.archived_at,
             (
               SELECT json_agg(sales_users.*)
               FROM (
@@ -499,7 +500,6 @@ const db_sql = {
             sc.company_id = '{var1}' AND 
             sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
             sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
-            AND sc.archived_at IS NULL
           GROUP BY 
             sc.closed_at,
             sc.id,
@@ -660,9 +660,9 @@ const db_sql = {
               u.avatar, u.expiry_date, u.is_verified, u.is_admin, u.is_locked, u.is_main_admin,u.is_deactivated, c.company_name, c.company_address, c.company_logo, c.is_imap_enable,c.is_marketing_enable,
               r.id as role_id,r.role_name, r.reporter, r.module_ids, con.id AS config_id, con.currency, con.phone_format, con.date_format, con.before_closing_days, con.after_closing_days
               FROM users AS u 
-              INNER JOIN companies AS c ON c.id = u.company_id
-              INNER JOIN roles AS r ON r.id = u.role_id 
-              INNER JOIN configurations AS con ON con.company_id = u.company_id
+              LEFT JOIN companies AS c ON c.id = u.company_id
+              LEFT JOIN roles AS r ON r.id = u.role_id 
+              LEFT JOIN configurations AS con ON con.company_id = u.company_id
               WHERE LOWER(email_address) = LOWER('{var1}') AND u.deleted_at IS NULL 
               AND c.deleted_at IS NULL AND r.deleted_at IS NULL AND con.deleted_at IS NULL`,
   "Q133": `UPDATE companies SET is_imap_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
@@ -741,6 +741,7 @@ const db_sql = {
             sc.revenue_commission,
             sc.target_amount,
             sc.sales_type,
+            sc.archived_at,
             (
               SELECT json_agg(sales_users.*)
               FROM (
@@ -761,7 +762,7 @@ const db_sql = {
             ) 
           AND 
             sc.closed_at BETWEEN '{var3}' AND '{var4}' AND
-            sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL AND sc.archived_at IS NULL
+            sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
           GROUP BY 
             sc.closed_at,
             sc.id,
@@ -859,7 +860,7 @@ const db_sql = {
             sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -940,7 +941,7 @@ const db_sql = {
              sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -1004,7 +1005,7 @@ const db_sql = {
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -1068,7 +1069,7 @@ const db_sql = {
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -1148,7 +1149,7 @@ const db_sql = {
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
             sc.transfered_back_by as transfered_back_by_id ,
-            slab.slab_name,
+            slab.slab_name,sc.approval_status,
             u2.full_name as tranfer_back_by_name,
             (
               SELECT json_agg(customer_company_employees.*)
@@ -1324,7 +1325,7 @@ const db_sql = {
               l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
               l.website,l.targeted_value,l.marketing_qualified_lead,
               l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-              u1.full_name AS creator_name, c.customer_name , u2.full_name as assigned_sales_lead_name
+              u1.full_name AS creator_name, c.customer_name , u2.full_name as assigned_sales_lead_name, sc.id AS sales_id
             FROM 
               customer_company_employees AS l
             LEFt JOIN 
@@ -1337,6 +1338,8 @@ const db_sql = {
               lead_titles AS t ON t.id = l.title
             LEFT JOIN 
               customer_companies AS c ON c.id = l.customer_company_id
+            LEFT JOIN 
+              sales AS sc ON sc.lead_id = l.id
             WHERE 
               l.id = '{var1}' AND emp_type = '{var2}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
             ORDER BY 
@@ -1923,15 +1926,17 @@ const db_sql = {
                 VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') RETURNING *`,
   "Q252": `SELECT  sc.target_amount::DECIMAL as subscription_amount,
               sc.booking_commission::DECIMAL as subscription_booking_commission,
-              sc.revenue_commission::DECIMAL as subscription_revenue_commission
+              sc.revenue_commission::DECIMAL as subscription_revenue_commission,
+              sc.archived_at
             FROM
               sales AS sc
             WHERE
               sc.id = '{var1}' AND sc.sales_type = 'Subscription'
             AND
-              sc.deleted_at IS NULL AND sc.archived_at IS NULL`,
+              sc.deleted_at IS NULL `,
   "Q253": `UPDATE sales SET revenue_commission =  '{var1}' WHERE id = '{var2}' RETURNING *`,
-  "Q254": `SELECT  SUM(target_amount::DECIMAL) as amount, SUM(booking_commission::DECIMAL) as booking_commission, SUM(revenue_commission::DECIMAL) as revenue_commission
+  "Q254": ` SELECT 
+              id as sales_id, target_amount, booking_commission, revenue_commission, archived_at
             FROM 
               sales 
             WHERE 
@@ -1941,9 +1946,7 @@ const db_sql = {
             AND
               closed_at BETWEEN '{var3}' AND '{var4}'
             AND 
-              deleted_at IS NULL
-            AND 
-              archived_at IS NULL`,
+              deleted_at IS NULL`,
   "Q255": `SELECT  SUM(recognized_amount::DECIMAL) as amount FROM 
                 recognized_revenue 
               WHERE 
@@ -1971,16 +1974,16 @@ const db_sql = {
           AND 
             sc.closed_at BETWEEN '{var2}' AND '{var3}'
           AND 
-            sc.deleted_at IS NULL AND sc.archived_at IS NULL`,
+            sc.deleted_at IS NULL`,
 
-  "Q258": `SELECT SUM(target_amount::DECIMAL) as amount, 
-            SUM(booking_commission::DECIMAL) as booking_commission, 
-            SUM(revenue_commission::DECIMAL) as revenue_commission
+  "Q258": `SELECT 
+             id as sales_id, target_amount, booking_commission, 
+             revenue_commission, archived_at
           FROM 
-            sales 
+             sales
           WHERE 
             id IN ({var1}) AND sales_type = '{var2}'
-          AND deleted_at IS NULL AND archived_at IS NULL`,
+          AND deleted_at IS NULL`,
 
   "Q259": `SELECT SUM(recognized_amount::DECIMAL) as amount
               FROM 
@@ -2260,7 +2263,7 @@ const db_sql = {
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
               cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
               sc.transfered_back_by as transfered_back_by_id ,
-              slab.slab_name,
+              slab.slab_name,sc.approval_status,
               u2.full_name as tranfer_back_by_name,
               (
                 SELECT json_agg(customer_company_employees.*)
@@ -2325,7 +2328,7 @@ const db_sql = {
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
               cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
               sc.transfered_back_by as transfered_back_by_id ,
-              slab.slab_name,
+              slab.slab_name,sc.approval_status,
               u2.full_name as tranfer_back_by_name,
               (
                 SELECT json_agg(customer_company_employees.*)
@@ -2406,7 +2409,7 @@ const db_sql = {
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
               cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
               sc.transfered_back_by as transfered_back_by_id ,
-              slab.slab_name,
+              slab.slab_name,sc.approval_status,
               u2.full_name as tranfer_back_by_name,
               (
                 SELECT json_agg(customer_company_employees.*)
@@ -2471,7 +2474,7 @@ const db_sql = {
               sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
               cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
               sc.transfered_back_by as transfered_back_by_id ,
-              slab.slab_name,
+              slab.slab_name,sc.approval_status,
               u2.full_name as tranfer_back_by_name,
               (
                 SELECT json_agg(customer_company_employees.*)
@@ -2598,12 +2601,6 @@ const db_sql = {
                 WHERE created_by = '{var1}' AND deleted_at IS NULL
               )as users_data,
               (
-                SELECT json_agg(sales.id) 
-                FROM sales 
-                WHERE sales.user_id = '{var1}' AND deleted_at IS NULL
-                AND closed_at IS NULL
-              )as sales_data,
-              (
                 SELECT json_agg(sales_users.id) 
                 FROM sales_users 
                 WHERE user_id = '{var1}' AND deleted_at IS NULL
@@ -2646,6 +2643,21 @@ const db_sql = {
                 WHERE user_id = '{var1}' AND deleted_at IS NULL
               )as chat_room_members_data,
               (
+                SELECT json_agg(marketing_budget.id) 
+                FROM marketing_budget 
+                WHERE created_by = '{var1}' AND deleted_at IS NULL
+              )as marketing_budget_data,
+              (
+                SELECT json_agg(marketing_budget_data.id) 
+                FROM marketing_budget_data 
+                WHERE created_by = '{var1}' AND deleted_at IS NULL
+              )as marketing_budget_data_data,
+              (
+                SELECT json_agg(marketing_budget_description.id) 
+                FROM marketing_budget_description 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as marketing_budget_description_data,
+              (
                 SELECT json_agg(forecast.id)
                 FROM forecast 
                 WHERE (created_by = '{var1}' OR assigned_to = '{var1}')
@@ -2672,7 +2684,10 @@ const db_sql = {
     "Q309": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND deleted_at IS NULL`,
     "Q310": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND {var5} = '{var6}' AND deleted_at IS NULL`,
     "Q311": `UPDATE users SET is_deactivated = '{var1}', updated_at = '{var3}', assigned_to = '{var4}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING * `,
-    "Q312": `SELECT * FROM customer_companies WHERE LOWER(customer_name) = LOWER('{var1}') AND deleted_at IS NULL`,
+    "Q312": `SELECT * FROM customer_companies 
+             WHERE LOWER(customer_name) = LOWER('{var1}') 
+                AND company_id = '{var2}'
+                AND deleted_at IS NULL`,
     "Q313": `UPDATE customer_companies SET archived_at = '{var1}', reason = '{var4}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING *`,
     "Q314": `SELECT 
               u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
@@ -2710,7 +2725,33 @@ const db_sql = {
               u1.id IN ({var1}) AND u1.deleted_at IS NULL 
               AND u1.is_deactivated = '{var2}'
             ORDER BY 
-              created_at DESC`
+              created_at DESC`,
+    "Q316":`INSERT INTO connectors
+              (user_id,company_id,linked_in_token,linked_in_status)
+            VALUES
+               ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
+
+    "Q317":`SELECT * 
+            FROM 
+              connectors 
+            WHERE 
+              company_id = '{var2}' 
+              AND user_id = '{var1}' 
+              AND deleted_at IS NULL`,
+
+    "Q318":`SELECT com.id as company_id, c.user_id, c.linked_in_token,
+                   c.last_sync_at FROM companies AS com
+            LEFT JOIN connectors AS c ON c.company_id = com.id
+            WHERE com.deleted_at IS NULL AND c.linked_in_status = true`,
+
+    "Q319":`UPDATE connectors SET linked_in_token = '{var1}',linked_in_status = '{var2}',
+                   updated_at = '{var5}'
+            WHERE user_id = '{var3}' AND company_id = '{var4}' AND deleted_at IS NULL RETURNING * `,
+
+    "Q320":`INSERT INTO connectors
+             (user_id,company_id,hubspot_token,hubspot_status)
+            VALUES
+             ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
 
 
 }

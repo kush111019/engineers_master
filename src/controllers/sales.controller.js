@@ -219,7 +219,6 @@ module.exports.allSalesList = async (req, res) => {
         let { status } = req.query;
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
-        console.log(status);
         if (checkPermission.rows[0].permission_to_view_global) {
             let salesList;
             if(status.toLowerCase() == 'all'){

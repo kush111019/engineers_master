@@ -22,8 +22,8 @@ module.exports.welcomeEmail = async (email , link, userName) => {
     let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     //Define the campaign settings\
     sendSmtpEmail.name = "Email sent via the API";
-    sendSmtpEmail.subject = "Welcome to hirise";
-    sendSmtpEmail.sender = { "name": "Hirise Tech", "email": process.env.SMTP_EMAIL };
+    sendSmtpEmail.subject = "Welcome to Revenue Captain";
+    sendSmtpEmail.sender = { "name": "Revenue Captain", "email": process.env.SMTP_EMAIL };
     sendSmtpEmail.type = "classic";
     //Content that will be sent
     sendSmtpEmail.htmlContent = welcomeTemplate.welcome(link, userName)
@@ -50,7 +50,7 @@ module.exports.resetPasswordMail = async (email , link , userName) => {
     //Define the campaign settings\
     sendSmtpEmail.name = "Email sent via the API";
     sendSmtpEmail.subject = "Reset Password";
-    sendSmtpEmail.sender = { "name": "Hirise Tech", "email": process.env.SMTP_EMAIL };
+    sendSmtpEmail.sender = { "name": "Revenue Captain", "email": process.env.SMTP_EMAIL };
     sendSmtpEmail.type = "classic";
     //Content that will be sent
     sendSmtpEmail.htmlContent = resetPassTemplate.resetPassword(link, email, userName)
@@ -77,7 +77,7 @@ module.exports.setPasswordMail = async (email , link, userName) => {
     //Define the campaign settings\
     sendSmtpEmail.name = "Email sent via the API";
     sendSmtpEmail.subject = "Set password mail";
-    sendSmtpEmail.sender = { "name": "Hirise Tech", "email": process.env.SMTP_EMAIL };
+    sendSmtpEmail.sender = { "name": "Revenue Captain", "email": process.env.SMTP_EMAIL };
     sendSmtpEmail.type = "classic";
     //Content that will be sent
     sendSmtpEmail.htmlContent = setPassTemp.setPassword(link, userName)
@@ -103,7 +103,7 @@ module.exports.paymentReminderMail = async (email,customerName,endDate) => {
     //Define the campaign settings\
     sendSmtpEmail.name = "Email sent via the API";
     sendSmtpEmail.subject = "Payment reminder mail";
-    sendSmtpEmail.sender = { "name": "Hirise Tech", "email": process.env.SMTP_EMAIL };
+    sendSmtpEmail.sender = { "name": "Revenue Captain", "email": process.env.SMTP_EMAIL };
     sendSmtpEmail.type = "classic";
     //Content that will be sent
     sendSmtpEmail.htmlContent = paymentReminderTemplate.paymentReminder(customerName,endDate)
@@ -131,7 +131,7 @@ module.exports.contactUsMail = async (email,fullName,subject1,message,address) =
     //Define the campaign settings\
     sendSmtpEmail.name = "Email sent via the API";
     sendSmtpEmail.subject = subject1;
-    sendSmtpEmail.sender = { "name": "Hirise Tech", "email": process.env.SMTP_EMAIL };
+    sendSmtpEmail.sender = { "name": "Revenue Captain", "email": process.env.SMTP_EMAIL };
     sendSmtpEmail.type = "classic";
     //Content that will be sent
     sendSmtpEmail.htmlContent = contactUsTemplate.contactUs(email,fullName,subject1,message,address)
@@ -158,7 +158,7 @@ module.exports.resetPasswordMail = async (email , link , userName) => {
     //Define the campaign settings\
     sendSmtpEmail.name = "Email sent via the API";
     sendSmtpEmail.subject = "Reset Password";
-    sendSmtpEmail.sender = { "name": "Hirise Tech", "email": process.env.SMTP_EMAIL };
+    sendSmtpEmail.sender = { "name": "Revenue Captain", "email": process.env.SMTP_EMAIL };
     sendSmtpEmail.type = "classic";
     //Content that will be sent
     sendSmtpEmail.htmlContent = emailToContactTemplate.emailToContact(message)
@@ -184,7 +184,7 @@ module.exports.tagetClosingDateReminderMail = async (email,customerName,targetCl
     //Define the campaign settings\
     sendSmtpEmail.name = "Email sent via the API";
     sendSmtpEmail.subject = "Target closing date reminder";
-    sendSmtpEmail.sender = { "name": "Hirise Tech", "email": process.env.SMTP_EMAIL };
+    sendSmtpEmail.sender = { "name": "Revenue Captain", "email": process.env.SMTP_EMAIL };
     sendSmtpEmail.type = "classic";
     //Content that will be sent
     sendSmtpEmail.htmlContent = tagetClosingDateRemindertemplate.tagetClosingDateReminder(customerName,targetClosingDate)
@@ -217,7 +217,7 @@ module.exports.recurringSalesReminderMail = async (email,customerName,recurringD
     //Define the campaign settings\
     sendSmtpEmail.name = "Email sent via the API";
     sendSmtpEmail.subject = "Recurring sales reminder";
-    sendSmtpEmail.sender = { "name": "Hirise Tech", "email": process.env.SMTP_EMAIL };
+    sendSmtpEmail.sender = { "name": "Revenue Captain", "email": process.env.SMTP_EMAIL };
     sendSmtpEmail.type = "classic";
     //Content that will be sent
     sendSmtpEmail.htmlContent = recurringSaleRemindertemplate.recurringSalesReminder(customerName,recurringDate)
@@ -250,7 +250,7 @@ module.exports.notificationMail = async (email,msg) => {
     //Define the campaign settings\
     sendSmtpEmail.name = "Email sent via the API";
     sendSmtpEmail.subject = "Notification Mail";
-    sendSmtpEmail.sender = { "name": "Hirise Tech", "email": process.env.SMTP_EMAIL };
+    sendSmtpEmail.sender = { "name": "Revenue Captain", "email": process.env.SMTP_EMAIL };
     sendSmtpEmail.type = "classic";
     //Content that will be sent
     sendSmtpEmail.htmlContent = notificationTemplate.notifications(msg)

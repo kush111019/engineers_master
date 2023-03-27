@@ -8,6 +8,9 @@ module.exports.plansList = async (req, res) => {
         let s2 = await dbScript(db_sql['Q92'], {})
         let planData = await connection.query(s2)
         if (planData.rowCount > 0) {
+            planData.rows.map(plan => {
+                plan.discount_percentage = (plan.interval == 'year') ? Number(process.env.DISCOUNT_PERCENTAGE) : 0
+            })
             res.json({
                 status: 200,
                 success: true,

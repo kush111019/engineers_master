@@ -59,7 +59,6 @@ let modules = [
         moduleType : 'Slabs Module', 
         module_ctr : 9
     },
-    
     {
         moduleName : 'Commission',
         moduleType : 'Commission Module',

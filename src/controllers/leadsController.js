@@ -206,6 +206,11 @@ module.exports.leadsDetails = async (req, res) => {
             let s2 = dbScript(db_sql['Q176'], { var1: id, var2: type })
             leadList = await connection.query(s2)
             if (leadList.rowCount > 0) {
+                if(leadList.rows[0].sales_id){
+                    leadList.rows[0].is_assigned_in_sales = true
+                }else {
+                    leadList.rows[0].is_assigned_in_sales = false
+                }
                 res.json({
                     status: 200,
                     success: true,
@@ -488,10 +493,10 @@ module.exports.uploadLeadFile = async (req, res) => {
                             }
 
                             let industryId = '';
-                            let s7 = dbScript(db_sql['Q191'], { var1: row[11], var2: checkPermission.rows[0].company_id })
+                            let s7 = dbScript(db_sql['Q193'], { var1: row[11], var2: checkPermission.rows[0].company_id })
                             let findIndustry = await connection.query(s7)
                             if (findIndustry.rowCount == 0) {
-                                let s8 = dbScript(db_sql['Q186'], { var1: row[11], var2: checkPermission.rows[0].company_id })
+                                let s8 = dbScript(db_sql['Q182'], { var1: row[11], var2: checkPermission.rows[0].company_id })
                                 let insertIndustry = await connection.query(s8)
                                 industryId = insertIndustry.rows[0].id
                             } else {
@@ -499,7 +504,7 @@ module.exports.uploadLeadFile = async (req, res) => {
                             }
 
                             let customerId = ''
-                            let s12 = dbScript(db_sql['Q312'],{var1 : mysql_real_escape_string(row[10])})
+                            let s12 = dbScript(db_sql['Q312'],{var1 : mysql_real_escape_string(row[10]), var2 : checkPermission.rows[0].company_id })
                             let findCustomer = await connection.query(s12)
                             if(findCustomer.rowCount == 0){
                                 let s9 = dbScript(db_sql['Q36'], { var1: checkPermission.rows[0].id, var2: mysql_real_escape_string(row[10]), var3: checkPermission.rows[0].company_id, var4: mysql_real_escape_string(row[12]), var5: row[13], var6: industryId })
