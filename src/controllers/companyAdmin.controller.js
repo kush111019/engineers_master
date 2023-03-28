@@ -140,7 +140,7 @@ let createAdmin = async (bodyData, cId, res) => {
 module.exports.uploadLogo = async (req, res) => {
     try {
         let file = req.file
-        let path = `${process.env.COMPANY_LOGO_LINK}/${file.originalname}`;
+        let path = `${process.env.COMPANY_LOGO_LINK}/${file.filename}`;
         res.json({
             status: 201,
             success: true,
@@ -540,7 +540,7 @@ module.exports.changePassword = async (req, res) => {
 module.exports.upload = async (req, res) => {
     try {
         let file = req.file
-        let path = `${process.env.AVATAR_LOGO_LINK}/${file.originalname}`;
+        let path = `${process.env.AVATAR_LOGO_LINK}/${file.filename}`;
         res.json({
             success: true,
             status: 201,
@@ -803,7 +803,7 @@ module.exports.updateCompanyLogo = async (req, res) => {
     try {
         let userId = req.user.id
         let file = req.file
-        let path = `${process.env.COMPANY_LOGO_LINK}/${file.originalname}`;
+        let path = `${process.env.COMPANY_LOGO_LINK}/${file.filename}`;
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)

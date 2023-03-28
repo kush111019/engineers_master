@@ -2739,19 +2739,24 @@ const db_sql = {
               AND user_id = '{var1}' 
               AND deleted_at IS NULL`,
 
-    "Q318":`SELECT com.id as company_id, c.user_id, c.linked_in_token,
-                   c.last_sync_at FROM companies AS com
+    "Q318":`SELECT com.id as company_id, c.user_id, c.salesforce_token,c.salesforce_status,
+               c.linked_in_token,c.linked_in_status, c.hubspot_token,c.hubspot_status, c.last_sync_at FROM companies AS com
             LEFT JOIN connectors AS c ON c.company_id = com.id
-            WHERE com.deleted_at IS NULL AND c.linked_in_status = true`,
+            WHERE com.deleted_at IS NULL `,
 
-    "Q319":`UPDATE connectors SET linked_in_token = '{var1}',linked_in_status = '{var2}',
+    "Q319":`UPDATE connectors SET {var1} = '{var2}',{var3} = '{var4}',
                    updated_at = '{var5}'
-            WHERE user_id = '{var3}' AND company_id = '{var4}' AND deleted_at IS NULL RETURNING * `,
+            WHERE user_id = '{var6}' AND company_id = '{var7}' AND deleted_at IS NULL RETURNING * `,
 
     "Q320":`INSERT INTO connectors
              (user_id,company_id,hubspot_token,hubspot_status)
             VALUES
              ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
+    "Q321":`INSERT INTO connectors
+              (user_id,company_id,salesforce_token,salesforce_status)
+            VALUES
+              ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
+    "Q322": `SELECT * FROM customer_company_employees WHERE LOWER(email_address) = LOWER('{var1}') AND LOWER(full_name) = LOWER('{var2}') AND deleted_at IS NULL`,
 
 
 }
