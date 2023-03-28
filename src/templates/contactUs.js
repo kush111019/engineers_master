@@ -19,7 +19,7 @@ module.exports.contactUs = function (email, fullName, subject, message, address)
               align="center" cellpadding="0" cellspacing="0">
             <tr>
               <td>
-                <a href="http://143.198.102.134:8080/" title="logo" target="_blank">
+                <a href="https://app1.hirisetech.com/" title="logo" target="_blank">
                   <img src=${process.env.TEMPLATE_LOGO} alt="logo" 
                   style=" width: 120px;margin-left: -10px;">
                 </a>
