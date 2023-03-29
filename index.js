@@ -5,7 +5,7 @@ const app = express();
 const cors = require('cors');
 const helmet = require('helmet')
 const cron = require('node-cron');
-const { readFileSync } = require("fs");
+// const { readFileSync } = require("fs");
 require('dotenv').config()
 const logger = require('./middleware/logger');
 const { paymentReminder, upgradeSubscriptionCronFn } = require('./src/utils/paymentReminder')
@@ -41,12 +41,12 @@ let options = {
   num: os.cpus().length
 }
 
-const socketOptions = {
-  key: readFileSync("/etc/ssl/private/hirisetech.com.key"),
-  cert: readFileSync("/etc/ssl/private/hirisetech.com.crt")
-}
+// const socketOptions = {
+//   key: readFileSync("/etc/ssl/private/hirisetech.com.key"),
+//   cert: readFileSync("/etc/ssl/private/hirisetech.com.crt")
+// }
 
-const http = require('http').createServer(socketOptions, app)
+const http = require('http').createServer(app)
 
 let server = sticky(options, () => {
   let server = http.listen();
@@ -61,7 +61,8 @@ let server = sticky(options, () => {
         "Origin, X-Requested-With, Content-Type, Accept, Authorization",
       ],
       credentials: true
-    }
+    },
+    secure: true
   });
 
   io.on("connection", (socket) => {
