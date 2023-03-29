@@ -51,18 +51,13 @@ const http = require('http').createServer(app)
 let server = sticky(options, () => {
   let server = http.listen();
   let io = require("socket.io")(server, {
-    path : "/socket.io/",
+    path: "/socket.io/",
     cors: {
       origin: "*",
-      methods: ["GET", "POST"],
+      methods: ["*"],
       allowedHeaders: [
-        "Access-Control-Allow-Origin",
-        "*",
-        "Access-Control-Allow-Headers",
-        "Origin, X-Requested-With, Content-Type, Accept, Authorization",
-      ],
-      credentials: true,
-      transports : ['websocket','polling']
+        "*"
+      ]
     }
   });
 
