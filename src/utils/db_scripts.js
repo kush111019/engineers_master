@@ -626,7 +626,7 @@ const db_sql = {
               WHERE m.id = '{var1}' AND m.deleted_at IS NULL`,
   "Q118": `SELECT m.id AS messageId, m.content, m.sender AS senderId, m.chat_id, m.read_by, m.created_at,
               u.full_name, u.avatar, c.id, c.chat_name, c.is_group_chat,
-              c.group_admin, c.user_a, c.user_b, c.created_at FROM message AS m 
+              c.group_admin, c.user_a, c.user_b, c.created_at as user_created_at FROM message AS m 
               INNER JOIN users AS u ON m.sender = u.id
               INNER JOIN chat AS c ON m.chat_id = c.id  WHERE chat_id = '{var1}' AND m.deleted_at IS NULL ORDER BY m.created_at DESC LIMIT 1`,
   "Q119": `SELECT m.id AS messageId,m.content,m.sender AS senderId, m.created_at,
