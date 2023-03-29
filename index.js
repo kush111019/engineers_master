@@ -54,11 +54,12 @@ let server = sticky(options, () => {
     path: "/socket.io/",
     cors: {
       origin: "*",
-      methods: ["*"],
+      methods: ["GET", "POST"],
       allowedHeaders: [
         "*"
       ]
     },
+    transports: ['websocket','polling'],
     allowEIO3: true
   });
 
