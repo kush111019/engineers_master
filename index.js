@@ -41,13 +41,12 @@ let options = {
   num: os.cpus().length
 }
 
-const socketKeys = {
+const socketOptions = {
   key: readFileSync("/etc/ssl/private/hirisetech.com.key"),
   cert: readFileSync("/etc/ssl/private/hirisetech.com.crt")
 }
 
-const https = require('https').createServer(socketKeys,app)
-
+const https = require('https').createServer(socketOptions,app)
 
 let server = sticky(options, () => {
   let server = https.listen();
