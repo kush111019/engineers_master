@@ -60,7 +60,8 @@ let server = sticky(options, () => {
         "Access-Control-Allow-Headers",
         "Origin, X-Requested-With, Content-Type, Accept, Authorization",
       ],
-      credentials: true
+      credentials: true,
+      transports : ['websocket','polling']
     },
     secure: true
   });
