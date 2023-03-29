@@ -58,7 +58,8 @@ let server = sticky(options, () => {
       allowedHeaders: [
         "*"
       ]
-    }
+    },
+    allowEIO3: true
   });
 
   io.on("connection", (socket) => {
