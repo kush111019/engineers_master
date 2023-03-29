@@ -46,10 +46,10 @@ const socketOptions = {
   cert: readFileSync("/etc/ssl/private/hirisetech.com.crt")
 }
 
-const https = require('https').createServer(socketOptions,app)
+const http = require('http').createServer(socketOptions, app)
 
 let server = sticky(options, () => {
-  let server = https.listen();
+  let server = http.listen();
   let io = require("socket.io")(server, {
     cors: {
       origin: "*",
