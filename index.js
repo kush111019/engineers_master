@@ -5,13 +5,13 @@ const app = express();
 const cors = require('cors');
 const helmet = require('helmet')
 const cron = require('node-cron');
+// const { readFileSync } = require("fs");
 require('dotenv').config()
 const logger = require('./middleware/logger');
 const { paymentReminder, upgradeSubscriptionCronFn } = require('./src/utils/paymentReminder')
 const { targetDateReminder } = require('./src/utils/salesTargetDateReminder')
 require('./src/database/connection')
 const Router = require('./src/routes/index');
-const http = require('http').createServer(app)
 const sticky = require('socketio-sticky-session')
 const { instantNotificationsList } = require('./src/utils/helper')
 
@@ -41,20 +41,26 @@ let options = {
   num: os.cpus().length
 }
 
+// const socketOptions = {
+//   key: readFileSync("/etc/ssl/private/hirisetech.com.key"),
+//   cert: readFileSync("/etc/ssl/private/hirisetech.com.crt")
+// }
+
+const http = require('http').createServer(app)
+
 let server = sticky(options, () => {
   let server = http.listen();
   let io = require("socket.io")(server, {
+    path: "/socket.io/",
     cors: {
       origin: "*",
       methods: ["GET", "POST"],
       allowedHeaders: [
-        "Access-Control-Allow-Origin",
-        "*",
-        "Access-Control-Allow-Headers",
-        "Origin, X-Requested-With, Content-Type, Accept, Authorization",
-      ],
-      credentials: true
-    }
+        "*"
+      ]
+    },
+    transports: ['websocket','polling'],
+    allowEIO3: true
   });
 
   io.on("connection", (socket) => {
@@ -80,10 +86,8 @@ let server = sticky(options, () => {
 
     // socket for notification
     socket.on("newNotification", (newNotificationRecieved) => {
-      console.log(newNotificationRecieved, 'newNotificationRecieved111111111111')
       if (!newNotificationRecieved.id) return console.log("notification not defined");
       let checkNotification = instantNotificationsList(newNotificationRecieved, socket)
-      
     });
 
     socket.off("setup", () => {

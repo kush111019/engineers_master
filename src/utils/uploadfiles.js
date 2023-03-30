@@ -6,8 +6,10 @@ const storage1 = multer.diskStorage({
         cb(null, 'uploads/companyLogo')
     },
     filename: function (req, file, cb) {
+        const ext = file.mimetype.split('/')[1];
         //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        cb(null, file.originalname)
+        const fileName = `${Date.now()}.${ext}`
+        cb(null, fileName)
     }
 })
 const uploadLogo = multer({
@@ -20,8 +22,10 @@ const storage2 = multer.diskStorage({
         cb(null, 'uploads/avatar')
     },
     filename: function (req, file, cb) {
+        const ext = file.mimetype.split('/')[1];
         //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        cb(null, file.originalname)
+        const fileName = `${Date.now()}.${ext}`
+        cb(null, fileName)
     }
 })
 const uploadAvatar = multer({
@@ -33,8 +37,10 @@ const storage4 = multer.diskStorage({
         cb(null, 'uploads/productImages')
     },
     filename: function (req, file, cb) {
+        const ext = file.mimetype.split('/')[1];
         //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        cb(null, file.originalname)
+        const fileName = `${Date.now()}.${ext}`
+        cb(null, fileName)
     }
 })
 const uploadProductImage = multer({
@@ -78,8 +84,10 @@ const storage5 = multer.diskStorage({
         cb(null, 'uploads/mailAttachments')
     },
     filename: function (req, file, cb) {
+        const ext = file.mimetype.split('/')[1];
         //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        cb(null, file.originalname)
+        const fileName = `${Date.now()}.${ext}`
+        cb(null, fileName)
     }
 })
 const uploadMailAttechments = multer({
@@ -91,8 +99,10 @@ const storage6 = multer.diskStorage({
         cb(null, 'uploads/salesContract')
     },
     filename: function (req, file, cb) {
+        const ext = file.mimetype.split('/')[1];
         //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        cb(null, file.originalname)
+        const fileName = `${Date.now()}.${ext}`
+        cb(null, fileName)
     }
 })
 const uploadSalesContract = multer({
@@ -104,8 +114,10 @@ const storage7 = multer.diskStorage({
         cb(null, 'uploads/salesInvoice')
     },
     filename: function (req, file, cb) {
+        const ext = file.mimetype.split('/')[1];
         //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        cb(null, file.originalname)
+        const fileName = `${Date.now()}.${ext}`
+        cb(null, fileName)
     }
 })
 const uploadSalesInvoice = multer({

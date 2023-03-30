@@ -54,19 +54,17 @@ module.exports.revenues = async (req, res) => {
                     subscriptionCommission = subscriptionCommission + Number(data.revenue_commission)
                     let s5 = dbScript(db_sql['Q256'], { var1: data.sales_id })
                     let recognizedRevenueData = await connection.query(s5)
-                    if (data.archived_at) {
-                        if (recognizedRevenueData.rows[0].amount) {
+                    if (recognizedRevenueData.rows[0].amount) {
+                        if (data.archived_at) {
                             let subtractAmount = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount))
                             if (subtractAmount == 0) {
                                 subscriptionBooking = subscriptionBooking + Number(recognizedRevenueData.rows[0].amount)
                             } else {
-                                subscriptionBooking = subscriptionBooking + Number(subtractAmount)
+                                subscriptionBooking = subscriptionBooking + Number(recognizedRevenueData.rows[0].amount)
                             }
                         } else {
                             subscriptionBooking = subscriptionBooking + Number(data.target_amount)
                         }
-                    } else {
-                        subscriptionBooking = subscriptionBooking + Number(data.target_amount)
                     }
                 }
             }
@@ -110,12 +108,14 @@ module.exports.revenues = async (req, res) => {
                         }
                         revenueCommissionByDateObj.subscription_booking = 0;
                     }
-                    if(saleData.sales_type == 'Subscription'){
+                    if (saleData.sales_type == 'Subscription') {
                         let subscriptionBooking1 = 0;
                         if (recognizedRevenueData.rows[0].amount) {
                             if (saleData.archived_at) {
                                 let subs = (Number(saleData.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                                 if (subs == 0) {
+                                    subs = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }else{
                                     subs = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                                 }
                                 subscriptionBooking1 = subs
@@ -252,7 +252,7 @@ module.exports.revenues = async (req, res) => {
                                 if (subtractAmount == 0) {
                                     subscriptionBooking = subscriptionBooking + Number(recognizedRevenueData.rows[0].amount)
                                 } else {
-                                    subscriptionBooking = subscriptionBooking + Number(subtractAmount)
+                                    subscriptionBooking = subscriptionBooking + Number(recognizedRevenueData.rows[0].amount)
                                 }
                             } else {
                                 subscriptionBooking = subscriptionBooking + Number(data.target_amount)
@@ -269,12 +269,12 @@ module.exports.revenues = async (req, res) => {
                 totalRevenueAndCommission.totalPerpetualBooking = Number(perpetualBooking);
 
                 totalRevenueAndCommission.totalSubscriptionBooking = Number(subscriptionBooking);
-    
+
                 totalRevenueAndCommission.totalBookingCommission = Number(bookingCommission)
 
                 totalRevenueAndCommission.totalRevenueBooking = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0;
 
-                totalRevenueAndCommission.totalRevenueCommission =Number(subscriptionCommission) + Number(revenueCommission);
+                totalRevenueAndCommission.totalRevenueCommission = Number(subscriptionCommission) + Number(revenueCommission);
 
             }
             let s6 = dbScript(db_sql['Q149'], { var1: roleUsers.join(','), var2: orderBy, var3: sDate, var4: eDate })
@@ -302,12 +302,14 @@ module.exports.revenues = async (req, res) => {
                         }
                         revenueCommissionByDateObj.subscription_booking = 0;
                     }
-                    if(saleData.sales_type == 'Subscription'){
+                    if (saleData.sales_type == 'Subscription') {
                         let subscriptionBooking1 = 0;
                         if (recognizedRevenueData.rows[0].amount) {
                             if (saleData.archived_at) {
                                 let subs = (Number(saleData.target_amount) - Number(recognizedRevenueData.rows[0].amount));
                                 if (subs == 0) {
+                                    subs = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
+                                }else{
                                     subs = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                                 }
                                 subscriptionBooking1 = subs
