@@ -100,7 +100,7 @@ module.exports.revenues = async (req, res) => {
                             if (saleData.archived_at) {
                                 subscriptionBooking1 = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                             } else {
-                                subscriptionBooking1 = Number(recognizedRevenueData.rows[0].amount)
+                                subscriptionBooking1 = Number(saleData.target_amount)
                             }
                         }
                         revenueCommissionByDateObj.booking = 0;
