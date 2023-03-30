@@ -2757,6 +2757,10 @@ const db_sql = {
             VALUES
               ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
     "Q322": `SELECT * FROM customer_company_employees WHERE LOWER(email_address) = LOWER('{var1}') AND LOWER(full_name) = LOWER('{var2}') AND deleted_at IS NULL`,
+    "Q323":`INSERT INTO connectors
+              (user_id,company_id,hubspot_token,hubspot_status)
+            VALUES
+              ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
 
 
 }
