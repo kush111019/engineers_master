@@ -1,11 +1,11 @@
 const LinkedIn = require('node-linkedin')(process.env.LINKEDIN_CLIENT_ID, process.env.LINKEDIN_CLIENT_SECRET, process.env.REDIRECT_URL)
 const hubspot = require('@hubspot/api-client')
+const { Connection, OAuth2 } = require('jsforce');
+const axios = require('axios');
 const connection = require('../database/connection');
 const { dbScript, db_sql } = require('../utils/db_scripts');
 const moduleName = process.env.DASHBOARD_MODULE
-const { Connection, OAuth2 } = require('jsforce');
 const { mysql_real_escape_string } = require('../utils/helper')
-const axios = require('axios');
 
 //Sales Force auth client
 const oauth2Client = new OAuth2({
@@ -52,7 +52,6 @@ module.exports.connectorsList = async (req, res) => {
                         status: item.salesforce_status
                     }
                     connectorsArr.push(connectoresObj)
-
                 })
                 if (connectorsArr) {
                     res.json({
@@ -209,10 +208,13 @@ module.exports.callback = async (req, res) => {
                     process.env.HUBSPOT_CLIENT_SECRET,
                 )
                 console.log(token);
+                const currentTimeStamp = new Date().getTime(); // current timestamp in milliseconds
+                const newTimeStamp = currentTimeStamp + token.expiresIn;
+                let expiry = new Date(newTimeStamp).toISOString()
                 let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
                 let getConnectors = await connection.query(s2)
                 if (getConnectors.rowCount == 0) {
-                    let s3 = dbScript(db_sql['Q323'], { var1: userId, var2: findUser.rows[0].company_id, var3: token.accessToken, var4: true })
+                    let s3 = dbScript(db_sql['Q323'], { var1: userId, var2: findUser.rows[0].company_id, var3: token.accessToken, var4: true, var5: token.refreshToken, var6: expiry })
                     let storeAccessToken = await connection.query(s3)
                     if (storeAccessToken.rowCount > 0) {
                         await connection.query('COMMIT')
@@ -231,7 +233,7 @@ module.exports.callback = async (req, res) => {
                     }
                 } else {
                     let _dt = new Date().toISOString()
-                    let s4 = dbScript(db_sql['Q319'], { var1: 'hubspot_token', var2: token.accessToken, var3: 'hubspot_status', var4: true, var5: _dt, var6: userId, var7: findUser.rows[0].company_id })
+                    let s4 = dbScript(db_sql['Q320'], { var1: token.accessToken, var2: true, var3: token.refreshToken, var4: expiry, var5: userId, var6: findUser.rows[0].company_id })
                     let storeAccessToken = await connection.query(s4)
                     if (storeAccessToken.rowCount > 0) {
                         await connection.query('COMMIT')
@@ -477,7 +479,33 @@ module.exports.searchLead = async (req, res) => {
             if (accessData.hubspot_status) {
                 await connection.query('BEGIN')
                 try {
-                    const hubspotClient = new hubspot.Client({ "accessToken": accessData.hubspot_token });
+                    let curDate = new Date();
+                    let expiryDate = new Date(accessData.hubspot_expiry)
+                    let accessToken = ''
+                    if (expiryDate < curDate) {
+                        const hubspotClient = new hubspot.Client({ developerApiKey: process.env.HUBSPOT_API_KEY })
+                        let token = await hubspotClient.oauth.tokensApi.createToken(
+                            'refresh_token',
+                            undefined,
+                            undefined,
+                            process.env.HUBSPOT_CLIENT_ID,
+                            process.env.HUBSPOT_CLIENT_SECRET,
+                            accessData.hubspot_refresh_token
+                        )
+                        console.log(token);
+                        accessToken = token.accessToken
+                        const currentTimeStamp = new Date().getTime();
+                        const newTimeStamp = currentTimeStamp + token.expiresIn*1000;
+                        let expiry = new Date(newTimeStamp).toISOString()
+                        console.log(new Date().toISOString());
+
+                        let s4 = dbScript(db_sql['Q320'], { var1: token.accessToken, var2: true, var3: token.refreshToken, var4: expiry, var5: accessData.user_id, var6: accessData.company_id })
+                        let storeAccessToken = await connection.query(s4)
+
+                    } else {
+                        accessToken = accessData.hubspot_token
+                    }
+                    const hubspotClient = new hubspot.Client({ "accessToken": accessToken });
 
                     const limit = 10;
                     const after = undefined;
