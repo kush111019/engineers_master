@@ -5,7 +5,7 @@
 -- Dumped from database version 14.2
 -- Dumped by pg_dump version 14.2
 
--- Started on 2023-03-22 12:49:41
+-- Started on 2023-03-31 18:02:45
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -27,7 +27,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
 
 
 --
--- TOC entry 3787 (class 0 OID 0)
+-- TOC entry 3800 (class 0 OID 0)
 -- Dependencies: 2
 -- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: 
 --
@@ -150,6 +150,32 @@ CREATE TABLE public.configurations (
 
 
 ALTER TABLE public.configurations OWNER TO postgres;
+
+--
+-- TOC entry 254 (class 1259 OID 590033)
+-- Name: connectors; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.connectors (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    user_id uuid,
+    company_id uuid,
+    linked_in_token character varying,
+    hubspot_token character varying,
+    salesforce_token character varying,
+    linked_in_status boolean DEFAULT false,
+    hubspot_status boolean DEFAULT false,
+    salesforce_status boolean DEFAULT false,
+    last_sync_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    hubspot_refresh_token character varying,
+    hubspot_expiry timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+);
+
+
+ALTER TABLE public.connectors OWNER TO postgres;
 
 --
 -- TOC entry 215 (class 1259 OID 557331)
@@ -1060,7 +1086,7 @@ CREATE TABLE public.users (
 ALTER TABLE public.users OWNER TO postgres;
 
 --
--- TOC entry 3560 (class 2606 OID 557692)
+-- TOC entry 3573 (class 2606 OID 557692)
 -- Name: chat chat_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1069,7 +1095,7 @@ ALTER TABLE ONLY public.chat
 
 
 --
--- TOC entry 3562 (class 2606 OID 557694)
+-- TOC entry 3575 (class 2606 OID 557694)
 -- Name: chat_room_members chat_room_members_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1078,7 +1104,7 @@ ALTER TABLE ONLY public.chat_room_members
 
 
 --
--- TOC entry 3564 (class 2606 OID 557696)
+-- TOC entry 3577 (class 2606 OID 557696)
 -- Name: commission_split commission_split_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1087,7 +1113,7 @@ ALTER TABLE ONLY public.commission_split
 
 
 --
--- TOC entry 3566 (class 2606 OID 557698)
+-- TOC entry 3579 (class 2606 OID 557698)
 -- Name: companies companies_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1096,7 +1122,7 @@ ALTER TABLE ONLY public.companies
 
 
 --
--- TOC entry 3568 (class 2606 OID 557700)
+-- TOC entry 3581 (class 2606 OID 557700)
 -- Name: configurations configurations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1105,7 +1131,7 @@ ALTER TABLE ONLY public.configurations
 
 
 --
--- TOC entry 3570 (class 2606 OID 557702)
+-- TOC entry 3583 (class 2606 OID 557702)
 -- Name: contact_us contact_us_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1114,7 +1140,7 @@ ALTER TABLE ONLY public.contact_us
 
 
 --
--- TOC entry 3572 (class 2606 OID 557704)
+-- TOC entry 3585 (class 2606 OID 557704)
 -- Name: country_details country_details_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1123,7 +1149,7 @@ ALTER TABLE ONLY public.country_details
 
 
 --
--- TOC entry 3574 (class 2606 OID 557706)
+-- TOC entry 3587 (class 2606 OID 557706)
 -- Name: customer_companies customer_companies_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1132,7 +1158,7 @@ ALTER TABLE ONLY public.customer_companies
 
 
 --
--- TOC entry 3576 (class 2606 OID 557708)
+-- TOC entry 3589 (class 2606 OID 557708)
 -- Name: customer_company_employees customer_company_employees_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1141,7 +1167,7 @@ ALTER TABLE ONLY public.customer_company_employees
 
 
 --
--- TOC entry 3578 (class 2606 OID 557710)
+-- TOC entry 3591 (class 2606 OID 557710)
 -- Name: emails emails_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1150,7 +1176,7 @@ ALTER TABLE ONLY public.emails
 
 
 --
--- TOC entry 3580 (class 2606 OID 557712)
+-- TOC entry 3593 (class 2606 OID 557712)
 -- Name: follow_up_notes follow_up_notes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1159,7 +1185,7 @@ ALTER TABLE ONLY public.follow_up_notes
 
 
 --
--- TOC entry 3582 (class 2606 OID 557714)
+-- TOC entry 3595 (class 2606 OID 557714)
 -- Name: forecast forecast_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1168,7 +1194,7 @@ ALTER TABLE ONLY public.forecast
 
 
 --
--- TOC entry 3584 (class 2606 OID 557716)
+-- TOC entry 3597 (class 2606 OID 557716)
 -- Name: imap_credentials imap_credentials_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1177,7 +1203,7 @@ ALTER TABLE ONLY public.imap_credentials
 
 
 --
--- TOC entry 3586 (class 2606 OID 557718)
+-- TOC entry 3599 (class 2606 OID 557718)
 -- Name: lead_industries lead_industries_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1186,7 +1212,7 @@ ALTER TABLE ONLY public.lead_industries
 
 
 --
--- TOC entry 3588 (class 2606 OID 557720)
+-- TOC entry 3601 (class 2606 OID 557720)
 -- Name: lead_sources lead_sources_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1195,7 +1221,7 @@ ALTER TABLE ONLY public.lead_sources
 
 
 --
--- TOC entry 3590 (class 2606 OID 557722)
+-- TOC entry 3603 (class 2606 OID 557722)
 -- Name: lead_titles lead_titles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1204,7 +1230,7 @@ ALTER TABLE ONLY public.lead_titles
 
 
 --
--- TOC entry 3594 (class 2606 OID 557724)
+-- TOC entry 3607 (class 2606 OID 557724)
 -- Name: marketing_budget_data marketing_budget_data_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1213,7 +1239,7 @@ ALTER TABLE ONLY public.marketing_budget_data
 
 
 --
--- TOC entry 3598 (class 2606 OID 557726)
+-- TOC entry 3611 (class 2606 OID 557726)
 -- Name: marketing_budget_description_logs marketing_budget_description_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1222,7 +1248,7 @@ ALTER TABLE ONLY public.marketing_budget_description_logs
 
 
 --
--- TOC entry 3596 (class 2606 OID 557728)
+-- TOC entry 3609 (class 2606 OID 557728)
 -- Name: marketing_budget_description marketing_budget_description_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1231,7 +1257,7 @@ ALTER TABLE ONLY public.marketing_budget_description
 
 
 --
--- TOC entry 3600 (class 2606 OID 557730)
+-- TOC entry 3613 (class 2606 OID 557730)
 -- Name: marketing_budget_logs marketing_budget_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1240,7 +1266,7 @@ ALTER TABLE ONLY public.marketing_budget_logs
 
 
 --
--- TOC entry 3592 (class 2606 OID 557732)
+-- TOC entry 3605 (class 2606 OID 557732)
 -- Name: marketing_budget marketing_budget_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1249,7 +1275,7 @@ ALTER TABLE ONLY public.marketing_budget
 
 
 --
--- TOC entry 3602 (class 2606 OID 557734)
+-- TOC entry 3615 (class 2606 OID 557734)
 -- Name: message message_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1258,7 +1284,7 @@ ALTER TABLE ONLY public.message
 
 
 --
--- TOC entry 3604 (class 2606 OID 557736)
+-- TOC entry 3617 (class 2606 OID 557736)
 -- Name: modules modules_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1267,7 +1293,7 @@ ALTER TABLE ONLY public.modules
 
 
 --
--- TOC entry 3606 (class 2606 OID 557738)
+-- TOC entry 3619 (class 2606 OID 557738)
 -- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1276,7 +1302,7 @@ ALTER TABLE ONLY public.notifications
 
 
 --
--- TOC entry 3608 (class 2606 OID 557740)
+-- TOC entry 3621 (class 2606 OID 557740)
 -- Name: payment_plans payment_plans_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1285,7 +1311,7 @@ ALTER TABLE ONLY public.payment_plans
 
 
 --
--- TOC entry 3610 (class 2606 OID 557742)
+-- TOC entry 3623 (class 2606 OID 557742)
 -- Name: permissions permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1294,7 +1320,7 @@ ALTER TABLE ONLY public.permissions
 
 
 --
--- TOC entry 3612 (class 2606 OID 557744)
+-- TOC entry 3625 (class 2606 OID 557744)
 -- Name: product_in_sales product_in_sales_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1303,7 +1329,7 @@ ALTER TABLE ONLY public.product_in_sales
 
 
 --
--- TOC entry 3614 (class 2606 OID 557746)
+-- TOC entry 3627 (class 2606 OID 557746)
 -- Name: products products_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1312,7 +1338,7 @@ ALTER TABLE ONLY public.products
 
 
 --
--- TOC entry 3616 (class 2606 OID 557748)
+-- TOC entry 3629 (class 2606 OID 557748)
 -- Name: recognized_revenue recognized_revenue_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1321,7 +1347,7 @@ ALTER TABLE ONLY public.recognized_revenue
 
 
 --
--- TOC entry 3618 (class 2606 OID 557750)
+-- TOC entry 3631 (class 2606 OID 557750)
 -- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1330,7 +1356,7 @@ ALTER TABLE ONLY public.roles
 
 
 --
--- TOC entry 3642 (class 2606 OID 565468)
+-- TOC entry 3655 (class 2606 OID 565468)
 -- Name: sales_approval sales_approval_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1339,7 +1365,7 @@ ALTER TABLE ONLY public.sales_approval
 
 
 --
--- TOC entry 3622 (class 2606 OID 557752)
+-- TOC entry 3635 (class 2606 OID 557752)
 -- Name: sales_logs sales_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1348,7 +1374,7 @@ ALTER TABLE ONLY public.sales_logs
 
 
 --
--- TOC entry 3620 (class 2606 OID 557754)
+-- TOC entry 3633 (class 2606 OID 557754)
 -- Name: sales sales_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1357,7 +1383,7 @@ ALTER TABLE ONLY public.sales
 
 
 --
--- TOC entry 3624 (class 2606 OID 557756)
+-- TOC entry 3637 (class 2606 OID 557756)
 -- Name: sales_users sales_users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1366,7 +1392,7 @@ ALTER TABLE ONLY public.sales_users
 
 
 --
--- TOC entry 3626 (class 2606 OID 557758)
+-- TOC entry 3639 (class 2606 OID 557758)
 -- Name: sent_email sent_email_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1375,7 +1401,7 @@ ALTER TABLE ONLY public.sent_email
 
 
 --
--- TOC entry 3628 (class 2606 OID 557760)
+-- TOC entry 3641 (class 2606 OID 557760)
 -- Name: slabs slabs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1384,7 +1410,7 @@ ALTER TABLE ONLY public.slabs
 
 
 --
--- TOC entry 3630 (class 2606 OID 557762)
+-- TOC entry 3643 (class 2606 OID 557762)
 -- Name: super_admin super_admin_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1393,7 +1419,7 @@ ALTER TABLE ONLY public.super_admin
 
 
 --
--- TOC entry 3632 (class 2606 OID 557764)
+-- TOC entry 3645 (class 2606 OID 557764)
 -- Name: superadmin_config superadmin_config_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1402,7 +1428,7 @@ ALTER TABLE ONLY public.superadmin_config
 
 
 --
--- TOC entry 3634 (class 2606 OID 557766)
+-- TOC entry 3647 (class 2606 OID 557766)
 -- Name: transactions transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1411,7 +1437,7 @@ ALTER TABLE ONLY public.transactions
 
 
 --
--- TOC entry 3636 (class 2606 OID 557768)
+-- TOC entry 3649 (class 2606 OID 557768)
 -- Name: transfered_back_sales transfered_back_sales_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1420,7 +1446,7 @@ ALTER TABLE ONLY public.transfered_back_sales
 
 
 --
--- TOC entry 3638 (class 2606 OID 557770)
+-- TOC entry 3651 (class 2606 OID 557770)
 -- Name: upgraded_transactions upgraded_transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1429,7 +1455,7 @@ ALTER TABLE ONLY public.upgraded_transactions
 
 
 --
--- TOC entry 3640 (class 2606 OID 557772)
+-- TOC entry 3653 (class 2606 OID 557772)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1437,8 +1463,9 @@ ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
 
 
--- Completed on 2023-03-22 12:49:43
+-- Completed on 2023-03-31 18:02:46
 
 --
 -- PostgreSQL database dump complete
 --
+
