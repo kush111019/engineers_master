@@ -409,6 +409,11 @@ module.exports.searchLead = async (req, res) => {
                                                 address = address.concat(data.Country)
                                             }
 
+                                            // Remove the trailing comma, if any
+                                            if (address.slice(-1) === ',') {
+                                                address = address.slice(0, -1);
+                                            }
+
                                             let customerId = ''
                                             let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.Company), var2: accessData.company_id })
                                             let findCustomer = await connection.query(s12)
@@ -433,6 +438,11 @@ module.exports.searchLead = async (req, res) => {
                                             if (data.Address.country) {
                                                 leadAddress = leadAddress.concat(data.Address.country)
                                             }
+                                            // Remove the trailing comma, if any
+                                            if (leadAddress.slice(-1) === ',') {
+                                                leadAddress = leadAddress.slice(0, -1);
+                                            }
+
                                             let s10 = dbScript(db_sql['Q322'], { var1: mysql_real_escape_string(data.Email), var2: mysql_real_escape_string(data.Name) })
                                             let checkLead = await connection.query(s10)
                                             if (checkLead.rowCount == 0) {
@@ -495,7 +505,7 @@ module.exports.searchLead = async (req, res) => {
                         console.log(token);
                         accessToken = token.accessToken
                         const currentTimeStamp = new Date().getTime();
-                        const newTimeStamp = currentTimeStamp + token.expiresIn*1000;
+                        const newTimeStamp = currentTimeStamp + token.expiresIn * 1000;
                         let expiry = new Date(newTimeStamp).toISOString()
                         console.log(new Date().toISOString());
 
