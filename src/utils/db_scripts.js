@@ -2761,6 +2761,9 @@ const db_sql = {
               (user_id,company_id,hubspot_token,hubspot_status)
             VALUES
               ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
+    "Q324":`UPDATE connectors SET last_sync_at = '{var1}',
+                updated_at = '{var2}'
+            WHERE user_id = '{var3}' AND company_id = '{var4}' AND deleted_at IS NULL RETURNING *`
 
 
 }

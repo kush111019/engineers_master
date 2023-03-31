@@ -7,14 +7,16 @@ const { Connection, OAuth2 } = require('jsforce');
 const { mysql_real_escape_string } = require('../utils/helper')
 const axios = require('axios');
 
-//for salesforce
+//Sales Force auth client
 const oauth2Client = new OAuth2({
     clientId: process.env.SALESFORCE_CONSUMER_KEY,
     clientSecret: process.env.SALESFORCE_CONSUMER_SECRET,
     redirectUri: process.env.REDIRECT_URL, // Your redirect URL
 });
 
+//Hubspot auth client
 const hubspotClient = new hubspot.Client({ developerApiKey: process.env.HUBSPOT_API_KEY })
+
 
 module.exports.connectorsList = async (req, res) => {
     try {
@@ -103,12 +105,6 @@ module.exports.authUrl = async (req, res) => {
             })
         }
         if (provider == 'hubspot') {
-            // let scop = ['content','social','automation','actions','timeline','forms','files','tickets']
-            // const authUrl =
-            //     'https://app.hubspot.com/oauth/authorize' +
-            //     `?client_id=${process.env.HUBSPOT_CLIENT_ID}` +
-            //     `&redirect_uri=${process.env.REDIRECT_URL}` +
-            //     `&scope=${encodeURIComponent(scop.join(' '))}`
             const scope = ['content']
             const authUrl = hubspotClient.oauth.getAuthorizationUrl(process.env.HUBSPOT_CLIENT_ID, process.env.REDIRECT_URL, scope)
             res.json({
@@ -145,6 +141,7 @@ module.exports.authUrl = async (req, res) => {
 
 module.exports.callback = async (req, res) => {
     try {
+        await connection.query('BEGIN')
         let userId = req.user.id
         const { code, state, provider } = req.query;
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
@@ -166,12 +163,14 @@ module.exports.callback = async (req, res) => {
                         let s3 = dbScript(db_sql['Q316'], { var1: userId, var2: findUser.rows[0].company_id, var3: accessToken, var4: true })
                         let storeAccessToken = await connection.query(s3)
                         if (storeAccessToken.rowCount > 0) {
+                            await connection.query('COMMIT')
                             res.json({
                                 status: 200,
                                 success: true,
                                 message: "Token stored successfully"
                             })
                         } else {
+                            await connection.query('ROLLBACK')
                             res.json({
                                 status: 400,
                                 success: false,
@@ -183,12 +182,14 @@ module.exports.callback = async (req, res) => {
                         let s4 = dbScript(db_sql['Q319'], { var1: 'linked_in_token', var2: accessToken, var3: 'linked_in_status', var4: true, var5: _dt, var6: userId, var7: findUser.rows[0].company_id })
                         let storeAccessToken = await connection.query(s4)
                         if (storeAccessToken.rowCount > 0) {
+                            await connection.query('COMMIT')
                             res.json({
                                 status: 200,
                                 success: true,
                                 message: "Token updated successfully"
                             })
                         } else {
+                            await connection.query('ROLLBACK')
                             res.json({
                                 status: 400,
                                 success: false,
@@ -196,7 +197,6 @@ module.exports.callback = async (req, res) => {
                             })
                         }
                     }
-
                 });
             }
             if (provider == 'hubspot') {
@@ -215,12 +215,14 @@ module.exports.callback = async (req, res) => {
                     let s3 = dbScript(db_sql['Q323'], { var1: userId, var2: findUser.rows[0].company_id, var3: token.accessToken, var4: true })
                     let storeAccessToken = await connection.query(s3)
                     if (storeAccessToken.rowCount > 0) {
+                        await connection.query('COMMIT')
                         res.json({
                             status: 200,
                             success: true,
                             message: "Token stored successfully"
                         })
                     } else {
+                        await connection.query('ROLLBACK')
                         res.json({
                             status: 400,
                             success: false,
@@ -232,12 +234,14 @@ module.exports.callback = async (req, res) => {
                     let s4 = dbScript(db_sql['Q319'], { var1: 'hubspot_token', var2: token.accessToken, var3: 'hubspot_status', var4: true, var5: _dt, var6: userId, var7: findUser.rows[0].company_id })
                     let storeAccessToken = await connection.query(s4)
                     if (storeAccessToken.rowCount > 0) {
+                        await connection.query('COMMIT')
                         res.json({
                             status: 200,
                             success: true,
                             message: "Token updated successfully"
                         })
                     } else {
+                        await connection.query('ROLLBACK')
                         res.json({
                             status: 400,
                             success: false,
@@ -269,12 +273,14 @@ module.exports.callback = async (req, res) => {
                         let s3 = dbScript(db_sql['Q321'], { var1: userId, var2: findUser.rows[0].company_id, var3: accessToken, var4: true })
                         let storeAccessToken = await connection.query(s3)
                         if (storeAccessToken.rowCount > 0) {
+                            await connection.query('COMMIT')
                             res.json({
                                 status: 200,
                                 success: true,
                                 message: "Token stored successfully"
                             })
                         } else {
+                            await connection.query('ROLLABCK')
                             res.json({
                                 status: 400,
                                 success: false,
@@ -286,12 +292,14 @@ module.exports.callback = async (req, res) => {
                         let s4 = dbScript(db_sql['Q319'], { var1: 'salesforce_token', var2: accessToken, var3: 'salesforce_status', var4: true, var5: _dt, var6: userId, var7: findUser.rows[0].company_id })
                         let storeAccessToken = await connection.query(s4)
                         if (storeAccessToken.rowCount > 0) {
+                            await connection.query('COMMIT')
                             res.json({
                                 status: 200,
                                 success: true,
                                 message: "Token updated successfully"
                             })
                         } else {
+                            await connection.query('ROLLBACK')
                             res.json({
                                 status: 400,
                                 success: false,
@@ -302,6 +310,7 @@ module.exports.callback = async (req, res) => {
                 });
             }
         } else {
+            await connection.query('ROLLBACK')
             res.json({
                 status: 400,
                 success: false,
@@ -309,6 +318,7 @@ module.exports.callback = async (req, res) => {
             })
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,
@@ -318,13 +328,13 @@ module.exports.callback = async (req, res) => {
 };
 
 module.exports.searchLead = async (req, res) => {
-    try {
-        await connection.query('BEGIN')
-        let s1 = dbScript(db_sql['Q318'], {})
-        let findAccessToken = await connection.query(s1)
-        if (findAccessToken.rowCount > 0) {
-            for (let accessData of findAccessToken.rows) {
-                if (accessData.salesforce_status) {
+    let s1 = dbScript(db_sql['Q318'], {})
+    let findAccessToken = await connection.query(s1)
+    if (findAccessToken.rowCount > 0) {
+        for (let accessData of findAccessToken.rows) {
+            if (accessData.salesforce_status) {
+                await connection.query('BEGIN')
+                try {
                     const accessToken = accessData.salesforce_token;
 
                     axios.get('https://login.salesforce.com/services/oauth2/userinfo', {
@@ -344,6 +354,7 @@ module.exports.searchLead = async (req, res) => {
                                 },
                             })
                                 .then(async (response) => {
+                                    console.log(response.data.records, "salesforce leads");
                                     if (response.data.records.length > 0) {
                                         for (let data of response.data.records) {
                                             let titleId = '';
@@ -429,18 +440,42 @@ module.exports.searchLead = async (req, res) => {
                                         let _dt = new Date().toISOString();
                                         let s12 = dbScript(db_sql['Q278'], { var1: _dt, var2: accessData.company_id })
                                         let updateStatusInCompany = await connection.query(s12)
-                                    }
 
+                                        if (updateStatusInCompany.rowCount > 0) {
+                                            await connection.query('COMMIT')
+                                        } else {
+                                            await connection.query('ROLLBACK')
+                                        }
+                                    }
                                 })
                                 .catch(async (error) => {
                                     console.log(error)
+                                    res.json({
+                                        status: 400,
+                                        success: false,
+                                        message: error
+                                    })
                                 });
                         })
                         .catch(async (error) => {
-                            console.log(error)
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: error
+                            })
                         });
+                } catch (error) {
+                    console.log(error)
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: error
+                    })
                 }
-                if (accessData.hubspot_status) {
+            }
+            if (accessData.hubspot_status) {
+                await connection.query('BEGIN')
+                try {
                     const hubspotClient = new hubspot.Client({ "accessToken": accessData.hubspot_token });
 
                     const limit = 10;
@@ -454,6 +489,7 @@ module.exports.searchLead = async (req, res) => {
                     const apiResponse = await hubspotClient.crm.contacts.basicApi.getPage(limit, after, properties, propertiesWithHistory, associations, archived);
                     let leadsData = apiResponse.results
                     if (leadsData.length > 0) {
+                        console.log(leadsData, "hubspot leads");
                         for (let data of leadsData) {
                             let titleId = '';
                             let s3 = dbScript(db_sql['Q192'], { var1: data.properties.jobtitle, var2: accessData.company_id })
@@ -467,6 +503,15 @@ module.exports.searchLead = async (req, res) => {
                             }
 
                             let sourceId = '';
+                            let s5 = dbScript(db_sql['Q191'], { var1: 'hubspot', var2: accessData.company_id })
+                            let findSource = await connection.query(s5)
+                            if (findSource.rowCount == 0) {
+                                let s6 = dbScript(db_sql['Q186'], { var1: 'hubspot', var2: accessData.company_id })
+                                let insertSource = await connection.query(s6)
+                                sourceId = insertSource.rows[0].id
+                            } else {
+                                sourceId = findSource.rows[0].id
+                            }
 
                             let industryId = '';
                             if (data.properties.industry) {
@@ -492,24 +537,43 @@ module.exports.searchLead = async (req, res) => {
                                 customerId = findCustomer.rows[0].id
                             }
 
-                            let leadName = data.properties.firstname+' '+data.properties.lastname 
+                            let leadName = data.properties.firstname + ' ' + data.properties.lastname
 
                             let s10 = dbScript(db_sql['Q322'], { var1: mysql_real_escape_string(data.properties.email), var2: mysql_real_escape_string(leadName) })
 
                             let checkLead = await connection.query(s10)
                             if (checkLead.rowCount == 0) {
-                                let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12:  '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead' })
+                                let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead' })
                                 let createLead = await connection.query(s11)
                             }
                         }
                         let _dt = new Date().toISOString();
                         let s12 = dbScript(db_sql['Q278'], { var1: _dt, var2: accessData.company_id })
                         let updateStatusInCompany = await connection.query(s12)
-                    } 
+
+                        if (updateStatusInCompany.rowCount > 0) {
+                            await connection.query('COMMIT')
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "Leads added successfully"
+                            })
+                        } else {
+                            await connection.query('ROLLBACK')
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: "Something went wrong"
+                            })
+                        }
+                    }
+                } catch (error) {
+                    console.log(error)
                 }
             }
-        } 
-    } catch (error) {
-        console.log(error)
+            let _dt = new Date().toISOString()
+            let s11 = dbScript(db_sql['Q324'], { var1: _dt, var2: _dt, var3: accessData.user_id, var4: accessData.company_id })
+            let updateLastSyncDate = await connection.query(s11)
+        }
     }
 }
