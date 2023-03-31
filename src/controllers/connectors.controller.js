@@ -141,13 +141,13 @@ module.exports.authUrl = async (req, res) => {
 
 module.exports.callback = async (req, res) => {
     try {
-        await connection.query('BEGIN')
         let userId = req.user.id
         const { code, state, provider } = req.query;
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
             if (provider == 'linkedIn') {
+                await connection.query('BEGIN')
                 LinkedIn.auth.getAccessToken(code, state, async (err, results) => {
                     if (err) {
                         return res.json({
@@ -200,7 +200,7 @@ module.exports.callback = async (req, res) => {
                 });
             }
             if (provider == 'hubspot') {
-
+                await connection.query('BEGIN')
                 let token = await hubspotClient.oauth.tokensApi.createToken(
                     'authorization_code',
                     code, // the code you received from the oauth flow
@@ -256,6 +256,7 @@ module.exports.callback = async (req, res) => {
                 })
             }
             if (provider == 'salesforce') {
+                await connection.query('BEGIN')
                 const authorizationCode = code; // The code received from the redirect URL
                 oauth2Client.requestToken(authorizationCode, async (err, result) => {
                     if (err) {
