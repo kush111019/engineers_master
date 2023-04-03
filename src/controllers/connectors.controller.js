@@ -221,6 +221,7 @@ module.exports.callback = async (req, res) => {
                 let getConnectors = await connection.query(s2)
                 if (getConnectors.rowCount == 0) {
                     let s3 = dbScript(db_sql['Q323'], { var1: userId, var2: findUser.rows[0].company_id, var3: token.accessToken, var4: true, var5: token.refreshToken, var6: expiry })
+                    console.log(s3,"s3");
                     let storeAccessToken = await connection.query(s3)
                     if (storeAccessToken.rowCount > 0) {
                         await connection.query('COMMIT')
