@@ -120,8 +120,6 @@ module.exports.authUrl = async (req, res) => {
             const authUrl = oauth2Client.getAuthorizationUrl({
                 scope: 'api', // The Salesforce API scope you want to access
             });
-
-            console.log('Visit this URL to authenticate with Salesforce:', authUrl);
             res.json({
                 status: 200,
                 success: true,
@@ -144,9 +142,7 @@ module.exports.callback = async (req, res) => {
         const { code, state, provider } = req.query;
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        console.log(findUser.rows, "finduser");
         if (findUser.rowCount > 0) {
-            console.log(provider,"provider");
             if (provider.toLowerCase() == 'linkedin') {
                 await connection.query('BEGIN')
                 LinkedIn.auth.getAccessToken(code, state, async (err, results) => {
@@ -209,19 +205,13 @@ module.exports.callback = async (req, res) => {
                     process.env.HUBSPOT_CLIENT_ID,
                     process.env.HUBSPOT_CLIENT_SECRET,
                 )
-                console.log(token);
                 const currentTimeStamp = new Date().getTime(); // current timestamp in milliseconds
-                console.log(currentTimeStamp,"currentTimeStamp");
                 const newTimeStamp = currentTimeStamp + token.expiresIn;
-                console.log(newTimeStamp,"newTimeStamp");
                 let expiry = new Date(newTimeStamp).toISOString()
-                console.log(expiry,"expiry");
                 let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
-                console.log(s2,"s2");
                 let getConnectors = await connection.query(s2)
                 if (getConnectors.rowCount == 0) {
                     let s3 = dbScript(db_sql['Q323'], { var1: userId, var2: findUser.rows[0].company_id, var3: token.accessToken, var4: true, var5: token.refreshToken, var6: expiry })
-                    console.log(s3,"s3");
                     let storeAccessToken = await connection.query(s3)
                     if (storeAccessToken.rowCount > 0) {
                         await connection.query('COMMIT')
@@ -265,7 +255,6 @@ module.exports.callback = async (req, res) => {
                 })
             }
             if (provider.toLowerCase() == 'salesforce') {
-                console.log("salesforce111111");
                 await connection.query('BEGIN')
                 const authorizationCode = code; // The code received from the redirect URL
                 oauth2Client.requestToken(authorizationCode, async (err, result) => {
@@ -365,7 +354,6 @@ module.exports.searchLead = async (req, res) => {
                                 },
                             })
                                 .then(async (response) => {
-                                    console.log(response.data.records, "salesforce leads");
                                     if (response.data.records.length > 0) {
                                         for (let data of response.data.records) {
                                             let titleId = '';
@@ -510,12 +498,10 @@ module.exports.searchLead = async (req, res) => {
                             process.env.HUBSPOT_CLIENT_SECRET,
                             accessData.hubspot_refresh_token
                         )
-                        console.log(token);
                         accessToken = token.accessToken
                         const currentTimeStamp = new Date().getTime();
                         const newTimeStamp = currentTimeStamp + token.expiresIn * 1000;
                         let expiry = new Date(newTimeStamp).toISOString()
-                        console.log(new Date().toISOString());
 
                         let s4 = dbScript(db_sql['Q320'], { var1: token.accessToken, var2: true, var3: token.refreshToken, var4: expiry, var5: accessData.user_id, var6: accessData.company_id })
                         let storeAccessToken = await connection.query(s4)
@@ -536,7 +522,6 @@ module.exports.searchLead = async (req, res) => {
                     const apiResponse = await hubspotClient.crm.contacts.basicApi.getPage(limit, after, properties, propertiesWithHistory, associations, archived);
                     let leadsData = apiResponse.results
                     if (leadsData.length > 0) {
-                        console.log(leadsData, "hubspot leads");
                         for (let data of leadsData) {
                             let titleId = '';
                             let s3 = dbScript(db_sql['Q192'], { var1: data.properties.jobtitle, var2: accessData.company_id })
