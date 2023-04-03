@@ -31,7 +31,7 @@ module.exports.connectorsList = async (req, res) => {
             if (getConnectors.rowCount > 0) {
                 getConnectors.rows.map(item => {
                     let connectoresObj = {}
-                    connectoresObj.linkedIn = {
+                    connectoresObj.linkedin = {
                         user_id: item.user_id,
                         company_id: item.company_id,
                         token: item.linked_in_token,
@@ -94,7 +94,7 @@ module.exports.connectorsList = async (req, res) => {
 module.exports.authUrl = async (req, res) => {
     try {
         let { provider } = req.query
-        if (provider == 'linkedIn') {
+        if (provider.toLowerCase() == 'linkedin') {
             let scope = ['r_liteprofile', 'r_emailaddress'];
             const authUrl = LinkedIn.auth.authorize(scope, 'state');
             res.json({
@@ -103,7 +103,7 @@ module.exports.authUrl = async (req, res) => {
                 data: authUrl,
             })
         }
-        if (provider == 'hubspot') {
+        if (provider.toLowerCase() == 'hubspot') {
             const scope = ['content']
             const authUrl = hubspotClient.oauth.getAuthorizationUrl(process.env.HUBSPOT_CLIENT_ID, process.env.REDIRECT_URL, scope)
             res.json({
@@ -112,7 +112,7 @@ module.exports.authUrl = async (req, res) => {
                 data: authUrl,
             })
         }
-        if (provider == 'salesforce') {
+        if (provider.toLowerCase() == 'salesforce') {
             const conn = new Connection({
                 loginUrl: 'https://login.salesforce.com',
             });
@@ -145,7 +145,7 @@ module.exports.callback = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
-            if (provider == 'linkedIn') {
+            if (provider.toLowerCase() == 'linkedin') {
                 await connection.query('BEGIN')
                 LinkedIn.auth.getAccessToken(code, state, async (err, results) => {
                     if (err) {
@@ -198,7 +198,7 @@ module.exports.callback = async (req, res) => {
                     }
                 });
             }
-            if (provider == 'hubspot') {
+            if (provider.toLowerCase() == 'hubspot') {
                 await connection.query('BEGIN')
                 let token = await hubspotClient.oauth.tokensApi.createToken(
                     'authorization_code',
@@ -257,7 +257,7 @@ module.exports.callback = async (req, res) => {
                     message: "Something went wrong"
                 })
             }
-            if (provider == 'salesforce') {
+            if (provider.toLowerCase() == 'salesforce') {
                 await connection.query('BEGIN')
                 const authorizationCode = code; // The code received from the redirect URL
                 oauth2Client.requestToken(authorizationCode, async (err, result) => {
