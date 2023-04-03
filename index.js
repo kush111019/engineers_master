@@ -14,6 +14,7 @@ require('./src/database/connection')
 const Router = require('./src/routes/index');
 const sticky = require('socketio-sticky-session')
 const { instantNotificationsList } = require('./src/utils/helper')
+const { searchLead } = require('./src/controllers/connectors.controller')
 
 app.use(cors());
 app.use(
@@ -32,6 +33,7 @@ let cronJob = cron.schedule('59 59 23 * * *', async () => {
     await paymentReminder();
     await upgradeSubscriptionCronFn()
     await targetDateReminder()
+    await searchLead()
   }
 });
 cronJob.start();

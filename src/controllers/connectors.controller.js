@@ -327,7 +327,7 @@ module.exports.callback = async (req, res) => {
     }
 };
 
-module.exports.searchLead = async (req, res) => {
+module.exports.searchLead = async() => {
     let s1 = dbScript(db_sql['Q318'], {})
     let findAccessToken = await connection.query(s1)
     if (findAccessToken.rowCount > 0) {
@@ -459,27 +459,13 @@ module.exports.searchLead = async (req, res) => {
                                 })
                                 .catch(async (error) => {
                                     console.log(error)
-                                    res.json({
-                                        status: 400,
-                                        success: false,
-                                        message: error
-                                    })
                                 });
                         })
                         .catch(async (error) => {
-                            res.json({
-                                status: 400,
-                                success: false,
-                                message: error
-                            })
+                            console.log(error)
                         });
                 } catch (error) {
                     console.log(error)
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: error
-                    })
                 }
             }
             if (accessData.hubspot_status) {
@@ -585,18 +571,8 @@ module.exports.searchLead = async (req, res) => {
 
                         if (updateStatusInCompany.rowCount > 0) {
                             await connection.query('COMMIT')
-                            res.json({
-                                status: 200,
-                                success: true,
-                                message: "Leads added successfully"
-                            })
                         } else {
                             await connection.query('ROLLBACK')
-                            res.json({
-                                status: 400,
-                                success: false,
-                                message: "Something went wrong"
-                            })
                         }
                     }
                 } catch (error) {
