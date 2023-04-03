@@ -144,7 +144,9 @@ module.exports.callback = async (req, res) => {
         const { code, state, provider } = req.query;
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
+        console.log(findUser.rows, "finduser");
         if (findUser.rowCount > 0) {
+            console.log(provider,"provider");
             if (provider.toLowerCase() == 'linkedin') {
                 await connection.query('BEGIN')
                 LinkedIn.auth.getAccessToken(code, state, async (err, results) => {
@@ -258,6 +260,7 @@ module.exports.callback = async (req, res) => {
                 })
             }
             if (provider.toLowerCase() == 'salesforce') {
+                console.log("salesforce111111");
                 await connection.query('BEGIN')
                 const authorizationCode = code; // The code received from the redirect URL
                 oauth2Client.requestToken(authorizationCode, async (err, result) => {
