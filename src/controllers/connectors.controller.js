@@ -211,9 +211,13 @@ module.exports.callback = async (req, res) => {
                 )
                 console.log(token);
                 const currentTimeStamp = new Date().getTime(); // current timestamp in milliseconds
+                console.log(currentTimeStamp,"currentTimeStamp");
                 const newTimeStamp = currentTimeStamp + token.expiresIn;
+                console.log(newTimeStamp,"newTimeStamp");
                 let expiry = new Date(newTimeStamp).toISOString()
+                console.log(expiry,"expiry");
                 let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
+                console.log(s2,"s2");
                 let getConnectors = await connection.query(s2)
                 if (getConnectors.rowCount == 0) {
                     let s3 = dbScript(db_sql['Q323'], { var1: userId, var2: findUser.rows[0].company_id, var3: token.accessToken, var4: true, var5: token.refreshToken, var6: expiry })
