@@ -248,11 +248,6 @@ module.exports.callback = async (req, res) => {
                         })
                     }
                 }
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Something went wrong"
-                })
             }
             if (provider.toLowerCase() == 'salesforce') {
                 await connection.query('BEGIN')
