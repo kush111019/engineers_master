@@ -1244,9 +1244,9 @@ const db_sql = {
             ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') RETURNING *`,
   "Q169": `INSERT INTO customer_company_employees (full_name,title,email_address,phone_number,
               address,source,linkedin_url,website,targeted_value,marketing_qualified_lead,
-              assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type)
+              assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type, sync_id, sync_source,pid)
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
-              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}') RETURNING *`,
+              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}', '{var18}','{var19}') RETURNING *`,
 
   "Q170": `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
@@ -2680,7 +2680,7 @@ const db_sql = {
               )as recognized_revenue_data
               
             FROM users where id = '{var1}' AND deleted_at IS NULL and is_deactivated = false`,
-    // "Q308": `SELECT * FROM customer_company_employees WHERE assigned_sales_lead_to = '{var1}' AND emp_type = 'lead' AND deleted_at IS NULL`,
+    "Q308": `SELECT * FROM customer_company_employees WHERE company_id = '{var1}' AND sync_id IS NOT NULL AND emp_type = 'lead' AND deleted_at IS NULL`,
     "Q309": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND deleted_at IS NULL`,
     "Q310": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND {var5} = '{var6}' AND deleted_at IS NULL`,
     "Q311": `UPDATE users SET is_deactivated = '{var1}', updated_at = '{var3}', assigned_to = '{var4}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING * `,
@@ -2759,7 +2759,7 @@ const db_sql = {
               (user_id,company_id,salesforce_token,salesforce_status, salesforce_refresh_token, salesforce_expiry)
             VALUES
               ('{var1}','{var2}','{var3}','{var4}', '{var5}', '{var6}') RETURNING *`,
-    "Q322": `SELECT * FROM customer_company_employees WHERE LOWER(email_address) = LOWER('{var1}') AND LOWER(full_name) = LOWER('{var2}') AND deleted_at IS NULL`,
+    "Q322": `SELECT * FROM customer_company_employees WHERE sync_id = '{var1}' AND deleted_at IS NULL`,
     "Q323":`INSERT INTO connectors
               (user_id,company_id,hubspot_token,hubspot_status,hubspot_refresh_token,hubspot_expiry)
             VALUES
