@@ -3,6 +3,7 @@ const hubspot = require('@hubspot/api-client')
 const { Connection, OAuth2 } = require('jsforce');
 const axios = require('axios');
 const FormData = require('form-data');
+const qs = require('qs');
 const connection = require('../database/connection');
 const { dbScript, db_sql } = require('../utils/db_scripts');
 const moduleName = process.env.DASHBOARD_MODULE
@@ -319,10 +320,6 @@ module.exports.callback = async (req, res) => {
                     .catch((error) => {
                         console.error(error.response.data);
                     });
-
-                // const accessToken = result.access_token;
-
-
             }
         } else {
             await connection.query('ROLLBACK')
@@ -393,7 +390,7 @@ module.exports.searchLead = async () => {
                     })
                         .then(response => {
                             const apiUrl = `${response.data.urls.custom_domain}` + `${process.env.SALESFORCE_API_VERSION}`;
-                            const query = 'SELECT Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry FROM Lead';
+                            const query = 'SELECT uniqueId__c,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
                             axios({
                                 method: 'get',
                                 url: `${apiUrl}query/?q=${query}`,
@@ -403,95 +400,286 @@ module.exports.searchLead = async () => {
                             })
                                 .then(async (response) => {
                                     if (response.data.records.length > 0) {
-                                        for (let data of response.data.records) {
-                                            let titleId = '';
-                                            let s3 = dbScript(db_sql['Q192'], { var1: data.Title, var2: accessData.company_id })
-                                            let findTitle = await connection.query(s3)
-                                            if (findTitle.rowCount == 0) {
-                                                let s4 = dbScript(db_sql['Q178'], { var1: data.Title, var2: accessData.company_id })
-                                                let insertTitle = await connection.query(s4)
-                                                titleId = insertTitle.rows[0].id
-                                            } else {
-                                                titleId = findTitle.rows[0].id
-                                            }
-
-                                            let sourceId = '';
-                                            let s5 = dbScript(db_sql['Q191'], { var1: data.LeadSource, var2: accessData.company_id })
-                                            let findSource = await connection.query(s5)
-                                            if (findSource.rowCount == 0) {
-                                                let s6 = dbScript(db_sql['Q186'], { var1: data.LeadSource, var2: accessData.company_id })
-                                                let insertSource = await connection.query(s6)
-                                                sourceId = insertSource.rows[0].id
-                                            } else {
-                                                sourceId = findSource.rows[0].id
-                                            }
-
-                                            let industryId = '';
-                                            if (data.Industry) {
-                                                let s7 = dbScript(db_sql['Q193'], { var1: data.Industry, var2: accessData.company_id })
-                                                let findIndustry = await connection.query(s7)
-                                                if (findIndustry.rowCount == 0) {
-                                                    let s8 = dbScript(db_sql['Q182'], { var1: data.Industry, var2: accessData.company_id })
-                                                    let insertIndustry = await connection.query(s8)
-                                                    industryId = insertIndustry.rows[0].id
+                                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
+                                        let findSyncLead = await connection.query(s1)
+                                        //Initial insertion
+                                        if (findSyncLead.rowCount == 0) {
+                                            for (let data of response.data.records) {
+                                                let titleId = '';
+                                                let s3 = dbScript(db_sql['Q192'], { var1: data.Title, var2: accessData.company_id })
+                                                let findTitle = await connection.query(s3)
+                                                if (findTitle.rowCount == 0) {
+                                                    let s4 = dbScript(db_sql['Q178'], { var1: data.Title, var2: accessData.company_id })
+                                                    let insertTitle = await connection.query(s4)
+                                                    titleId = insertTitle.rows[0].id
                                                 } else {
-                                                    industryId = findIndustry.rows[0].id
+                                                    titleId = findTitle.rows[0].id
+                                                }
+
+                                                let sourceId = '';
+                                                let s5 = dbScript(db_sql['Q191'], { var1: data.LeadSource, var2: accessData.company_id })
+                                                let findSource = await connection.query(s5)
+                                                if (findSource.rowCount == 0) {
+                                                    let s6 = dbScript(db_sql['Q186'], { var1: data.LeadSource, var2: accessData.company_id })
+                                                    let insertSource = await connection.query(s6)
+                                                    sourceId = insertSource.rows[0].id
+                                                } else {
+                                                    sourceId = findSource.rows[0].id
+                                                }
+
+                                                let industryId = '';
+                                                if (data.Industry) {
+                                                    let s7 = dbScript(db_sql['Q193'], { var1: data.Industry, var2: accessData.company_id })
+                                                    let findIndustry = await connection.query(s7)
+                                                    if (findIndustry.rowCount == 0) {
+                                                        let s8 = dbScript(db_sql['Q182'], { var1: data.Industry, var2: accessData.company_id })
+                                                        let insertIndustry = await connection.query(s8)
+                                                        industryId = insertIndustry.rows[0].id
+                                                    } else {
+                                                        industryId = findIndustry.rows[0].id
+                                                    }
+                                                }
+
+                                                let address = ''
+                                                if (data.Street) {
+                                                    address = address.concat(data.Street + ',')
+                                                }
+                                                if (data.City) {
+                                                    address = address.concat(data.City + ',')
+                                                }
+                                                if (data.State) {
+                                                    address = address.concat(data.State + ',')
+                                                }
+                                                if (data.Country) {
+                                                    address = address.concat(data.Country)
+                                                }
+
+                                                // Remove the trailing comma, if any
+                                                if (address.slice(-1) === ',') {
+                                                    address = address.slice(0, -1);
+                                                }
+
+                                                let customerId = ''
+                                                let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.Company), var2: accessData.company_id })
+                                                let findCustomer = await connection.query(s12)
+                                                if (findCustomer.rowCount == 0) {
+                                                    let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.Company), var3: accessData.company_id, var4: mysql_real_escape_string(address), var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
+                                                    let createCustomer = await connection.query(s9)
+                                                    customerId = createCustomer.rows[0].id
+                                                } else {
+                                                    customerId = findCustomer.rows[0].id
+                                                }
+
+                                                let leadAddress = ''
+                                                if (data.Address.street) {
+                                                    leadAddress = leadAddress.concat(data.Address.street + ',')
+                                                }
+                                                if (data.Address.city) {
+                                                    leadAddress = leadAddress.concat(data.Address.city + ',')
+                                                }
+                                                if (data.Address.state) {
+                                                    leadAddress = leadAddress.concat(data.Address.state + ',')
+                                                }
+                                                if (data.Address.country) {
+                                                    leadAddress = leadAddress.concat(data.Address.country)
+                                                }
+                                                // Remove the trailing comma, if any
+                                                if (leadAddress.slice(-1) === ',') {
+                                                    leadAddress = leadAddress.slice(0, -1);
+                                                }
+                                                if (checkLead.rowCount == 0) {
+                                                    let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(data.Name), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.Email), var4: data.Phone, var5: mysql_real_escape_string(leadAddress), var6: sourceId ? sourceId : 'null', var7: '', var8: data.Website ? data.Website : 'null', var9: '', var10: false, var11: 'null', var12: data.Description ? mysql_real_escape_string(data.Description) : '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.uniqueId__c, var18: 'salesforce', var19: 'null' })
+                                                    let createLead = await connection.query(s11)
                                                 }
                                             }
+                                        } else {
+                                            for (let data of response.data.records) {
+                                                if (new Date(accessData.salesforce_last_sync) < new Date(data.LastModifiedDate)) {
+                                                    console.log(data,"data");
+                                                    let titleId = '';
+                                                    let s3 = dbScript(db_sql['Q192'], { var1: data.Title, var2: accessData.company_id })
+                                                    let findTitle = await connection.query(s3)
+                                                    if (findTitle.rowCount == 0) {
+                                                        let s4 = dbScript(db_sql['Q178'], { var1: data.Title, var2: accessData.company_id })
+                                                        let insertTitle = await connection.query(s4)
+                                                        titleId = insertTitle.rows[0].id
+                                                    } else {
+                                                        titleId = findTitle.rows[0].id
+                                                    }
 
-                                            let address = ''
-                                            if (data.Street) {
-                                                address = address.concat(data.Street + ',')
-                                            }
-                                            if (data.City) {
-                                                address = address.concat(data.City + ',')
-                                            }
-                                            if (data.State) {
-                                                address = address.concat(data.State + ',')
-                                            }
-                                            if (data.Country) {
-                                                address = address.concat(data.Country)
-                                            }
+                                                    let sourceId = '';
+                                                    let s5 = dbScript(db_sql['Q191'], { var1: data.LeadSource, var2: accessData.company_id })
+                                                    let findSource = await connection.query(s5)
+                                                    if (findSource.rowCount == 0) {
+                                                        let s6 = dbScript(db_sql['Q186'], { var1: data.LeadSource, var2: accessData.company_id })
+                                                        let insertSource = await connection.query(s6)
+                                                        sourceId = insertSource.rows[0].id
+                                                    } else {
+                                                        sourceId = findSource.rows[0].id
+                                                    }
 
-                                            // Remove the trailing comma, if any
-                                            if (address.slice(-1) === ',') {
-                                                address = address.slice(0, -1);
-                                            }
+                                                    let industryId = '';
+                                                    if (data.Industry) {
+                                                        let s7 = dbScript(db_sql['Q193'], { var1: data.Industry, var2: accessData.company_id })
+                                                        let findIndustry = await connection.query(s7)
+                                                        if (findIndustry.rowCount == 0) {
+                                                            let s8 = dbScript(db_sql['Q182'], { var1: data.Industry, var2: accessData.company_id })
+                                                            let insertIndustry = await connection.query(s8)
+                                                            industryId = insertIndustry.rows[0].id
+                                                        } else {
+                                                            industryId = findIndustry.rows[0].id
+                                                        }
+                                                    }
 
-                                            let customerId = ''
-                                            let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.Company), var2: accessData.company_id })
-                                            let findCustomer = await connection.query(s12)
-                                            if (findCustomer.rowCount == 0) {
-                                                let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.Company), var3: accessData.company_id, var4: mysql_real_escape_string(address), var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
-                                                let createCustomer = await connection.query(s9)
-                                                customerId = createCustomer.rows[0].id
-                                            } else {
-                                                customerId = findCustomer.rows[0].id
-                                            }
+                                                    let address = ''
+                                                    if (data.Street) {
+                                                        address = address.concat(data.Street + ',')
+                                                    }
+                                                    if (data.City) {
+                                                        address = address.concat(data.City + ',')
+                                                    }
+                                                    if (data.State) {
+                                                        address = address.concat(data.State + ',')
+                                                    }
+                                                    if (data.Country) {
+                                                        address = address.concat(data.Country)
+                                                    }
 
-                                            let leadAddress = ''
-                                            if (data.Address.street) {
-                                                leadAddress = leadAddress.concat(data.Address.street + ',')
-                                            }
-                                            if (data.Address.city) {
-                                                leadAddress = leadAddress.concat(data.Address.city + ',')
-                                            }
-                                            if (data.Address.state) {
-                                                leadAddress = leadAddress.concat(data.Address.state + ',')
-                                            }
-                                            if (data.Address.country) {
-                                                leadAddress = leadAddress.concat(data.Address.country)
-                                            }
-                                            // Remove the trailing comma, if any
-                                            if (leadAddress.slice(-1) === ',') {
-                                                leadAddress = leadAddress.slice(0, -1);
-                                            }
+                                                    // Remove the trailing comma, if any
+                                                    if (address.slice(-1) === ',') {
+                                                        address = address.slice(0, -1);
+                                                    }
 
-                                            let s10 = dbScript(db_sql['Q322'], { var1: mysql_real_escape_string(data.Email), var2: mysql_real_escape_string(data.Name) })
-                                            let checkLead = await connection.query(s10)
-                                            if (checkLead.rowCount == 0) {
-                                                let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(data.Name), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.Email), var4: data.Phone, var5: mysql_real_escape_string(leadAddress), var6: sourceId ? sourceId : 'null', var7: '', var8: data.Website ? data.Website : 'null', var9: '', var10: false, var11: 'null', var12: data.Description ? mysql_real_escape_string(data.Description) : '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead' })
-                                                let createLead = await connection.query(s11)
+                                                    let customerId = ''
+                                                    let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.Company), var2: accessData.company_id })
+                                                    let findCustomer = await connection.query(s12)
+                                                    if (findCustomer.rowCount == 0) {
+                                                        let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.Company), var3: accessData.company_id, var4: mysql_real_escape_string(address), var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
+                                                        let createCustomer = await connection.query(s9)
+                                                        customerId = createCustomer.rows[0].id
+                                                    } else {
+                                                        customerId = findCustomer.rows[0].id
+                                                    }
+
+                                                    let leadAddress = ''
+                                                    if (data.Address.street) {
+                                                        leadAddress = leadAddress.concat(data.Address.street + ',')
+                                                    }
+                                                    if (data.Address.city) {
+                                                        leadAddress = leadAddress.concat(data.Address.city + ',')
+                                                    }
+                                                    if (data.Address.state) {
+                                                        leadAddress = leadAddress.concat(data.Address.state + ',')
+                                                    }
+                                                    if (data.Address.country) {
+                                                        leadAddress = leadAddress.concat(data.Address.country)
+                                                    }
+                                                    // Remove the trailing comma, if any
+                                                    if (leadAddress.slice(-1) === ',') {
+                                                        leadAddress = leadAddress.slice(0, -1);
+                                                    }
+
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c })
+                                                    let checkLead = await connection.query(s10)
+                                                    if (checkLead.rowCount > 0) {
+                                                        let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(data.Name), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.Email), var4: data.Phone, var5: mysql_real_escape_string(leadAddress), var6: sourceId ? sourceId : 'null', var7: '', var8: data.Website ? data.Website : 'null', var9: '', var10: false, var11: 'null', var12: data.Description ? mysql_real_escape_string(data.Description) : '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.uniqueId__c, var18: 'salesforce', var19: checkLead.rows[0].id })
+                                                        let createLead = await connection.query(s11)
+                                                    }
+                                                } else {
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c })
+                                                    let checkLead = await connection.query(s10)
+                                                    if (checkLead.rowCount == 0) {
+                                                        let titleId = '';
+                                                        let s3 = dbScript(db_sql['Q192'], { var1: data.Title, var2: accessData.company_id })
+                                                        let findTitle = await connection.query(s3)
+                                                        if (findTitle.rowCount == 0) {
+                                                            let s4 = dbScript(db_sql['Q178'], { var1: data.Title, var2: accessData.company_id })
+                                                            let insertTitle = await connection.query(s4)
+                                                            titleId = insertTitle.rows[0].id
+                                                        } else {
+                                                            titleId = findTitle.rows[0].id
+                                                        }
+
+                                                        let sourceId = '';
+                                                        let s5 = dbScript(db_sql['Q191'], { var1: data.LeadSource, var2: accessData.company_id })
+                                                        let findSource = await connection.query(s5)
+                                                        if (findSource.rowCount == 0) {
+                                                            let s6 = dbScript(db_sql['Q186'], { var1: data.LeadSource, var2: accessData.company_id })
+                                                            let insertSource = await connection.query(s6)
+                                                            sourceId = insertSource.rows[0].id
+                                                        } else {
+                                                            sourceId = findSource.rows[0].id
+                                                        }
+
+                                                        let industryId = '';
+                                                        if (data.Industry) {
+                                                            let s7 = dbScript(db_sql['Q193'], { var1: data.Industry, var2: accessData.company_id })
+                                                            let findIndustry = await connection.query(s7)
+                                                            if (findIndustry.rowCount == 0) {
+                                                                let s8 = dbScript(db_sql['Q182'], { var1: data.Industry, var2: accessData.company_id })
+                                                                let insertIndustry = await connection.query(s8)
+                                                                industryId = insertIndustry.rows[0].id
+                                                            } else {
+                                                                industryId = findIndustry.rows[0].id
+                                                            }
+                                                        }
+
+                                                        let address = ''
+                                                        if (data.Street) {
+                                                            address = address.concat(data.Street + ',')
+                                                        }
+                                                        if (data.City) {
+                                                            address = address.concat(data.City + ',')
+                                                        }
+                                                        if (data.State) {
+                                                            address = address.concat(data.State + ',')
+                                                        }
+                                                        if (data.Country) {
+                                                            address = address.concat(data.Country)
+                                                        }
+
+                                                        // Remove the trailing comma, if any
+                                                        if (address.slice(-1) === ',') {
+                                                            address = address.slice(0, -1);
+                                                        }
+
+                                                        let customerId = ''
+                                                        let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.Company), var2: accessData.company_id })
+                                                        let findCustomer = await connection.query(s12)
+                                                        if (findCustomer.rowCount == 0) {
+                                                            let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.Company), var3: accessData.company_id, var4: mysql_real_escape_string(address), var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
+                                                            let createCustomer = await connection.query(s9)
+                                                            customerId = createCustomer.rows[0].id
+                                                        } else {
+                                                            customerId = findCustomer.rows[0].id
+                                                        }
+
+                                                        let leadAddress = ''
+                                                        if (data.Address.street) {
+                                                            leadAddress = leadAddress.concat(data.Address.street + ',')
+                                                        }
+                                                        if (data.Address.city) {
+                                                            leadAddress = leadAddress.concat(data.Address.city + ',')
+                                                        }
+                                                        if (data.Address.state) {
+                                                            leadAddress = leadAddress.concat(data.Address.state + ',')
+                                                        }
+                                                        if (data.Address.country) {
+                                                            leadAddress = leadAddress.concat(data.Address.country)
+                                                        }
+                                                        // Remove the trailing comma, if any
+                                                        if (leadAddress.slice(-1) === ',') {
+                                                            leadAddress = leadAddress.slice(0, -1);
+                                                        }
+
+                                                        let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c })
+                                                        let checkLead = await connection.query(s10)
+                                                        if (checkLead.rowCount > 0) {
+                                                            let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(data.Name), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.Email), var4: data.Phone, var5: mysql_real_escape_string(leadAddress), var6: sourceId ? sourceId : 'null', var7: '', var8: data.Website ? data.Website : 'null', var9: '', var10: false, var11: 'null', var12: data.Description ? mysql_real_escape_string(data.Description) : '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.uniqueId__c, var18: 'salesforce', var19: 'null' })
+                                                            let createLead = await connection.query(s11)
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                         let _dt = new Date().toISOString();
@@ -612,7 +800,7 @@ module.exports.searchLead = async () => {
 
                             let checkLead = await connection.query(s10)
                             if (checkLead.rowCount == 0) {
-                                let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead' })
+                                let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17 : data.id, var18 : 'hubspot', var19 : 'null' })
                                 let createLead = await connection.query(s11)
                             }
                         }
@@ -653,13 +841,14 @@ module.exports.leadReSync = async (req, res) => {
                     let expiryDate = new Date(accessData.salesforce_expiry)
                     let accessToken = ''
                     if (expiryDate < curDate) {
-                        const data = new FormData();
-                        data.append('grant_type', 'refresh_token');
-                        data.append('client_id', process.env.SALESFORCE_CONSUMER_KEY);
-                        data.append('client_secret', process.env.SALESFORCE_CONSUMER_SECRET);
-                        data.append('redirect_uri', process.env.REDIRECT_URL);
-                        data.append('refresh_token', accessData.salesforce_refresh_token);
 
+                        const data = qs.stringify({
+                            'grant_type': 'refresh_token',
+                            'client_id': process.env.SALESFORCE_CONSUMER_KEY,
+                            'client_secret': process.env.SALESFORCE_CONSUMER_SECRET,
+                            'redirect_uri': process.env.REDIRECT_URL,
+                            'refresh_token': accessData.salesforce_refresh_token
+                        });
                         const config = {
                             headers: {
                                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -668,7 +857,6 @@ module.exports.leadReSync = async (req, res) => {
 
                         axios.post('https://login.salesforce.com/services/oauth2/token', data, config)
                             .then(async (res) => {
-                                console.log(res);
                                 const expiresIn = 7200; // Default expiration time for Salesforce access tokens
                                 const issuedAt = new Date(parseInt(res.data.issued_at));
                                 const expirationTime = new Date(issuedAt.getTime() + expiresIn * 1000).toISOString();
@@ -691,7 +879,7 @@ module.exports.leadReSync = async (req, res) => {
                     })
                         .then(response => {
                             const apiUrl = `${response.data.urls.custom_domain}` + `${process.env.SALESFORCE_API_VERSION}`;
-                            const query = 'SELECT Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry FROM Lead';
+                            const query = 'SELECT uniqueId__c,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
                             axios({
                                 method: 'get',
                                 url: `${apiUrl}query/?q=${query}`,
@@ -701,95 +889,285 @@ module.exports.leadReSync = async (req, res) => {
                             })
                                 .then(async (response) => {
                                     if (response.data.records.length > 0) {
-                                        for (let data of response.data.records) {
-                                            let titleId = '';
-                                            let s3 = dbScript(db_sql['Q192'], { var1: data.Title, var2: accessData.company_id })
-                                            let findTitle = await connection.query(s3)
-                                            if (findTitle.rowCount == 0) {
-                                                let s4 = dbScript(db_sql['Q178'], { var1: data.Title, var2: accessData.company_id })
-                                                let insertTitle = await connection.query(s4)
-                                                titleId = insertTitle.rows[0].id
-                                            } else {
-                                                titleId = findTitle.rows[0].id
-                                            }
-
-                                            let sourceId = '';
-                                            let s5 = dbScript(db_sql['Q191'], { var1: data.LeadSource, var2: accessData.company_id })
-                                            let findSource = await connection.query(s5)
-                                            if (findSource.rowCount == 0) {
-                                                let s6 = dbScript(db_sql['Q186'], { var1: data.LeadSource, var2: accessData.company_id })
-                                                let insertSource = await connection.query(s6)
-                                                sourceId = insertSource.rows[0].id
-                                            } else {
-                                                sourceId = findSource.rows[0].id
-                                            }
-
-                                            let industryId = '';
-                                            if (data.Industry) {
-                                                let s7 = dbScript(db_sql['Q193'], { var1: data.Industry, var2: accessData.company_id })
-                                                let findIndustry = await connection.query(s7)
-                                                if (findIndustry.rowCount == 0) {
-                                                    let s8 = dbScript(db_sql['Q182'], { var1: data.Industry, var2: accessData.company_id })
-                                                    let insertIndustry = await connection.query(s8)
-                                                    industryId = insertIndustry.rows[0].id
+                                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
+                                        let findSyncLead = await connection.query(s1)
+                                        //Initial insertion
+                                        if (findSyncLead.rowCount == 0) {
+                                            for (let data of response.data.records) {
+                                                let titleId = '';
+                                                let s3 = dbScript(db_sql['Q192'], { var1: data.Title, var2: accessData.company_id })
+                                                let findTitle = await connection.query(s3)
+                                                if (findTitle.rowCount == 0) {
+                                                    let s4 = dbScript(db_sql['Q178'], { var1: data.Title, var2: accessData.company_id })
+                                                    let insertTitle = await connection.query(s4)
+                                                    titleId = insertTitle.rows[0].id
                                                 } else {
-                                                    industryId = findIndustry.rows[0].id
+                                                    titleId = findTitle.rows[0].id
+                                                }
+
+                                                let sourceId = '';
+                                                let s5 = dbScript(db_sql['Q191'], { var1: data.LeadSource, var2: accessData.company_id })
+                                                let findSource = await connection.query(s5)
+                                                if (findSource.rowCount == 0) {
+                                                    let s6 = dbScript(db_sql['Q186'], { var1: data.LeadSource, var2: accessData.company_id })
+                                                    let insertSource = await connection.query(s6)
+                                                    sourceId = insertSource.rows[0].id
+                                                } else {
+                                                    sourceId = findSource.rows[0].id
+                                                }
+
+                                                let industryId = '';
+                                                if (data.Industry) {
+                                                    let s7 = dbScript(db_sql['Q193'], { var1: data.Industry, var2: accessData.company_id })
+                                                    let findIndustry = await connection.query(s7)
+                                                    if (findIndustry.rowCount == 0) {
+                                                        let s8 = dbScript(db_sql['Q182'], { var1: data.Industry, var2: accessData.company_id })
+                                                        let insertIndustry = await connection.query(s8)
+                                                        industryId = insertIndustry.rows[0].id
+                                                    } else {
+                                                        industryId = findIndustry.rows[0].id
+                                                    }
+                                                }
+
+                                                let address = ''
+                                                if (data.Street) {
+                                                    address = address.concat(data.Street + ',')
+                                                }
+                                                if (data.City) {
+                                                    address = address.concat(data.City + ',')
+                                                }
+                                                if (data.State) {
+                                                    address = address.concat(data.State + ',')
+                                                }
+                                                if (data.Country) {
+                                                    address = address.concat(data.Country)
+                                                }
+
+                                                // Remove the trailing comma, if any
+                                                if (address.slice(-1) === ',') {
+                                                    address = address.slice(0, -1);
+                                                }
+
+                                                let customerId = ''
+                                                let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.Company), var2: accessData.company_id })
+                                                let findCustomer = await connection.query(s12)
+                                                if (findCustomer.rowCount == 0) {
+                                                    let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.Company), var3: accessData.company_id, var4: mysql_real_escape_string(address), var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
+                                                    let createCustomer = await connection.query(s9)
+                                                    customerId = createCustomer.rows[0].id
+                                                } else {
+                                                    customerId = findCustomer.rows[0].id
+                                                }
+
+                                                let leadAddress = ''
+                                                if (data.Address.street) {
+                                                    leadAddress = leadAddress.concat(data.Address.street + ',')
+                                                }
+                                                if (data.Address.city) {
+                                                    leadAddress = leadAddress.concat(data.Address.city + ',')
+                                                }
+                                                if (data.Address.state) {
+                                                    leadAddress = leadAddress.concat(data.Address.state + ',')
+                                                }
+                                                if (data.Address.country) {
+                                                    leadAddress = leadAddress.concat(data.Address.country)
+                                                }
+                                                // Remove the trailing comma, if any
+                                                if (leadAddress.slice(-1) === ',') {
+                                                    leadAddress = leadAddress.slice(0, -1);
+                                                }
+                                                if (checkLead.rowCount == 0) {
+                                                    let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(data.Name), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.Email), var4: data.Phone, var5: mysql_real_escape_string(leadAddress), var6: sourceId ? sourceId : 'null', var7: '', var8: data.Website ? data.Website : 'null', var9: '', var10: false, var11: 'null', var12: data.Description ? mysql_real_escape_string(data.Description) : '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.uniqueId__c, var18: 'salesforce', var19: 'null' })
+                                                    let createLead = await connection.query(s11)
                                                 }
                                             }
+                                        } else {
+                                            for (let data of response.data.records) {
+                                                if (new Date(accessData.salesforce_last_sync) < new Date(data.LastModifiedDate)) {
+                                                    let titleId = '';
+                                                    let s3 = dbScript(db_sql['Q192'], { var1: data.Title, var2: accessData.company_id })
+                                                    let findTitle = await connection.query(s3)
+                                                    if (findTitle.rowCount == 0) {
+                                                        let s4 = dbScript(db_sql['Q178'], { var1: data.Title, var2: accessData.company_id })
+                                                        let insertTitle = await connection.query(s4)
+                                                        titleId = insertTitle.rows[0].id
+                                                    } else {
+                                                        titleId = findTitle.rows[0].id
+                                                    }
 
-                                            let address = ''
-                                            if (data.Street) {
-                                                address = address.concat(data.Street + ',')
-                                            }
-                                            if (data.City) {
-                                                address = address.concat(data.City + ',')
-                                            }
-                                            if (data.State) {
-                                                address = address.concat(data.State + ',')
-                                            }
-                                            if (data.Country) {
-                                                address = address.concat(data.Country)
-                                            }
+                                                    let sourceId = '';
+                                                    let s5 = dbScript(db_sql['Q191'], { var1: data.LeadSource, var2: accessData.company_id })
+                                                    let findSource = await connection.query(s5)
+                                                    if (findSource.rowCount == 0) {
+                                                        let s6 = dbScript(db_sql['Q186'], { var1: data.LeadSource, var2: accessData.company_id })
+                                                        let insertSource = await connection.query(s6)
+                                                        sourceId = insertSource.rows[0].id
+                                                    } else {
+                                                        sourceId = findSource.rows[0].id
+                                                    }
 
-                                            // Remove the trailing comma, if any
-                                            if (address.slice(-1) === ',') {
-                                                address = address.slice(0, -1);
-                                            }
+                                                    let industryId = '';
+                                                    if (data.Industry) {
+                                                        let s7 = dbScript(db_sql['Q193'], { var1: data.Industry, var2: accessData.company_id })
+                                                        let findIndustry = await connection.query(s7)
+                                                        if (findIndustry.rowCount == 0) {
+                                                            let s8 = dbScript(db_sql['Q182'], { var1: data.Industry, var2: accessData.company_id })
+                                                            let insertIndustry = await connection.query(s8)
+                                                            industryId = insertIndustry.rows[0].id
+                                                        } else {
+                                                            industryId = findIndustry.rows[0].id
+                                                        }
+                                                    }
 
-                                            let customerId = ''
-                                            let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.Company), var2: accessData.company_id })
-                                            let findCustomer = await connection.query(s12)
-                                            if (findCustomer.rowCount == 0) {
-                                                let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.Company), var3: accessData.company_id, var4: mysql_real_escape_string(address), var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
-                                                let createCustomer = await connection.query(s9)
-                                                customerId = createCustomer.rows[0].id
-                                            } else {
-                                                customerId = findCustomer.rows[0].id
-                                            }
+                                                    let address = ''
+                                                    if (data.Street) {
+                                                        address = address.concat(data.Street + ',')
+                                                    }
+                                                    if (data.City) {
+                                                        address = address.concat(data.City + ',')
+                                                    }
+                                                    if (data.State) {
+                                                        address = address.concat(data.State + ',')
+                                                    }
+                                                    if (data.Country) {
+                                                        address = address.concat(data.Country)
+                                                    }
 
-                                            let leadAddress = ''
-                                            if (data.Address.street) {
-                                                leadAddress = leadAddress.concat(data.Address.street + ',')
-                                            }
-                                            if (data.Address.city) {
-                                                leadAddress = leadAddress.concat(data.Address.city + ',')
-                                            }
-                                            if (data.Address.state) {
-                                                leadAddress = leadAddress.concat(data.Address.state + ',')
-                                            }
-                                            if (data.Address.country) {
-                                                leadAddress = leadAddress.concat(data.Address.country)
-                                            }
-                                            // Remove the trailing comma, if any
-                                            if (leadAddress.slice(-1) === ',') {
-                                                leadAddress = leadAddress.slice(0, -1);
-                                            }
+                                                    // Remove the trailing comma, if any
+                                                    if (address.slice(-1) === ',') {
+                                                        address = address.slice(0, -1);
+                                                    }
 
-                                            let s10 = dbScript(db_sql['Q322'], { var1: mysql_real_escape_string(data.Email), var2: mysql_real_escape_string(data.Name) })
-                                            let checkLead = await connection.query(s10)
-                                            if (checkLead.rowCount == 0) {
-                                                let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(data.Name), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.Email), var4: data.Phone, var5: mysql_real_escape_string(leadAddress), var6: sourceId ? sourceId : 'null', var7: '', var8: data.Website ? data.Website : 'null', var9: '', var10: false, var11: 'null', var12: data.Description ? mysql_real_escape_string(data.Description) : '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead' })
-                                                let createLead = await connection.query(s11)
+                                                    let customerId = ''
+                                                    let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.Company), var2: accessData.company_id })
+                                                    let findCustomer = await connection.query(s12)
+                                                    if (findCustomer.rowCount == 0) {
+                                                        let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.Company), var3: accessData.company_id, var4: mysql_real_escape_string(address), var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
+                                                        let createCustomer = await connection.query(s9)
+                                                        customerId = createCustomer.rows[0].id
+                                                    } else {
+                                                        customerId = findCustomer.rows[0].id
+                                                    }
+
+                                                    let leadAddress = ''
+                                                    if (data.Address.street) {
+                                                        leadAddress = leadAddress.concat(data.Address.street + ',')
+                                                    }
+                                                    if (data.Address.city) {
+                                                        leadAddress = leadAddress.concat(data.Address.city + ',')
+                                                    }
+                                                    if (data.Address.state) {
+                                                        leadAddress = leadAddress.concat(data.Address.state + ',')
+                                                    }
+                                                    if (data.Address.country) {
+                                                        leadAddress = leadAddress.concat(data.Address.country)
+                                                    }
+                                                    // Remove the trailing comma, if any
+                                                    if (leadAddress.slice(-1) === ',') {
+                                                        leadAddress = leadAddress.slice(0, -1);
+                                                    }
+
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c })
+                                                    let checkLead = await connection.query(s10)
+                                                    if (checkLead.rowCount > 0) {
+                                                        let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(data.Name), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.Email), var4: data.Phone, var5: mysql_real_escape_string(leadAddress), var6: sourceId ? sourceId : 'null', var7: '', var8: data.Website ? data.Website : 'null', var9: '', var10: false, var11: 'null', var12: data.Description ? mysql_real_escape_string(data.Description) : '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.uniqueId__c, var18: 'salesforce', var19: checkLead.rows[0].id })
+                                                        let createLead = await connection.query(s11)
+                                                    }
+                                                } else {
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c })
+                                                    let checkLead = await connection.query(s10)
+                                                    if (checkLead.rowCount == 0) {
+                                                        let titleId = '';
+                                                        let s3 = dbScript(db_sql['Q192'], { var1: data.Title, var2: accessData.company_id })
+                                                        let findTitle = await connection.query(s3)
+                                                        if (findTitle.rowCount == 0) {
+                                                            let s4 = dbScript(db_sql['Q178'], { var1: data.Title, var2: accessData.company_id })
+                                                            let insertTitle = await connection.query(s4)
+                                                            titleId = insertTitle.rows[0].id
+                                                        } else {
+                                                            titleId = findTitle.rows[0].id
+                                                        }
+
+                                                        let sourceId = '';
+                                                        let s5 = dbScript(db_sql['Q191'], { var1: data.LeadSource, var2: accessData.company_id })
+                                                        let findSource = await connection.query(s5)
+                                                        if (findSource.rowCount == 0) {
+                                                            let s6 = dbScript(db_sql['Q186'], { var1: data.LeadSource, var2: accessData.company_id })
+                                                            let insertSource = await connection.query(s6)
+                                                            sourceId = insertSource.rows[0].id
+                                                        } else {
+                                                            sourceId = findSource.rows[0].id
+                                                        }
+
+                                                        let industryId = '';
+                                                        if (data.Industry) {
+                                                            let s7 = dbScript(db_sql['Q193'], { var1: data.Industry, var2: accessData.company_id })
+                                                            let findIndustry = await connection.query(s7)
+                                                            if (findIndustry.rowCount == 0) {
+                                                                let s8 = dbScript(db_sql['Q182'], { var1: data.Industry, var2: accessData.company_id })
+                                                                let insertIndustry = await connection.query(s8)
+                                                                industryId = insertIndustry.rows[0].id
+                                                            } else {
+                                                                industryId = findIndustry.rows[0].id
+                                                            }
+                                                        }
+
+                                                        let address = ''
+                                                        if (data.Street) {
+                                                            address = address.concat(data.Street + ',')
+                                                        }
+                                                        if (data.City) {
+                                                            address = address.concat(data.City + ',')
+                                                        }
+                                                        if (data.State) {
+                                                            address = address.concat(data.State + ',')
+                                                        }
+                                                        if (data.Country) {
+                                                            address = address.concat(data.Country)
+                                                        }
+
+                                                        // Remove the trailing comma, if any
+                                                        if (address.slice(-1) === ',') {
+                                                            address = address.slice(0, -1);
+                                                        }
+
+                                                        let customerId = ''
+                                                        let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.Company), var2: accessData.company_id })
+                                                        let findCustomer = await connection.query(s12)
+                                                        if (findCustomer.rowCount == 0) {
+                                                            let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.Company), var3: accessData.company_id, var4: mysql_real_escape_string(address), var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
+                                                            let createCustomer = await connection.query(s9)
+                                                            customerId = createCustomer.rows[0].id
+                                                        } else {
+                                                            customerId = findCustomer.rows[0].id
+                                                        }
+
+                                                        let leadAddress = ''
+                                                        if (data.Address.street) {
+                                                            leadAddress = leadAddress.concat(data.Address.street + ',')
+                                                        }
+                                                        if (data.Address.city) {
+                                                            leadAddress = leadAddress.concat(data.Address.city + ',')
+                                                        }
+                                                        if (data.Address.state) {
+                                                            leadAddress = leadAddress.concat(data.Address.state + ',')
+                                                        }
+                                                        if (data.Address.country) {
+                                                            leadAddress = leadAddress.concat(data.Address.country)
+                                                        }
+                                                        // Remove the trailing comma, if any
+                                                        if (leadAddress.slice(-1) === ',') {
+                                                            leadAddress = leadAddress.slice(0, -1);
+                                                        }
+
+                                                        let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c })
+                                                        let checkLead = await connection.query(s10)
+                                                        if (checkLead.rowCount > 0) {
+                                                            let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(data.Name), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.Email), var4: data.Phone, var5: mysql_real_escape_string(leadAddress), var6: sourceId ? sourceId : 'null', var7: '', var8: data.Website ? data.Website : 'null', var9: '', var10: false, var11: 'null', var12: data.Description ? mysql_real_escape_string(data.Description) : '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.uniqueId__c, var18: 'salesforce', var19: 'null' })
+                                                            let createLead = await connection.query(s11)
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                         let _dt = new Date().toISOString();
@@ -874,13 +1252,14 @@ module.exports.leadReSync = async (req, res) => {
                     const limit = 10;
                     const after = undefined;
                     const properties = [
-                        "email,firstname,lastname,phone,company,jobtitle,industry,address,revenue,website,originalsource"
+                        "email,firstname,lastname,phone,company,jobtitle,industry,address,revenue,website,originalsource,createdate,lastmodifieddate"
                     ];
                     const propertiesWithHistory = undefined;
                     const associations = undefined;
                     const archived = false;
                     const apiResponse = await hubspotClient.crm.contacts.basicApi.getPage(limit, after, properties, propertiesWithHistory, associations, archived);
                     let leadsData = apiResponse.results
+                    console.log(leadsData, "leadsData");
                     if (leadsData.length > 0) {
                         for (let data of leadsData) {
                             let titleId = '';
@@ -935,7 +1314,7 @@ module.exports.leadReSync = async (req, res) => {
 
                             let checkLead = await connection.query(s10)
                             if (checkLead.rowCount == 0) {
-                                let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead' })
+                                let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead',var17 : data.id, var18 : 'hubspot', var19 : 'null' })
                                 let createLead = await connection.query(s11)
                             }
                         }
@@ -970,6 +1349,13 @@ module.exports.leadReSync = async (req, res) => {
                         message: error.message
                     })
                 }
+            }
+            if(provider.toLowerCase() == 'linkedin' && accessData.linked_in_status){
+                res.json({
+                    status : 200,
+                    success : false,
+                    message : "Lead sync api permission not confirmed by Linked In"
+                })
             }
         }
     } else {
