@@ -2740,9 +2740,13 @@ const db_sql = {
               AND deleted_at IS NULL`,
 
     "Q318":`SELECT com.id as company_id, c.user_id, c.salesforce_token,c.salesforce_status,
-               c.linked_in_token,c.linked_in_status, c.hubspot_token,c.hubspot_status,c.hubspot_refresh_token,c.hubspot_expiry, c.last_sync_at FROM companies AS com
+               c.linked_in_token,c.linked_in_status, c.hubspot_token,c.hubspot_status,
+               c.hubspot_refresh_token,c.hubspot_expiry,
+               c.linked_in_last_sync, c.salesforce_last_sync, c.hubspot_last_sync,
+               c.salesforce_refresh_token, c.salesforce_expiry 
+            FROM companies AS com
             LEFT JOIN connectors AS c ON c.company_id = com.id
-            WHERE com.deleted_at IS NULL `,
+            WHERE com.deleted_at IS NULL`,
 
     "Q319":`UPDATE connectors SET {var1} = '{var2}',{var3} = '{var4}',
                    updated_at = '{var5}'
@@ -2752,17 +2756,20 @@ const db_sql = {
               hubspot_refresh_token = '{var3}',hubspot_expiry = '{var4}' 
             WHERE user_id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *  `,
     "Q321":`INSERT INTO connectors
-              (user_id,company_id,salesforce_token,salesforce_status)
+              (user_id,company_id,salesforce_token,salesforce_status, salesforce_refresh_token, salesforce_expiry)
             VALUES
-              ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
+              ('{var1}','{var2}','{var3}','{var4}', '{var5}', '{var6}') RETURNING *`,
     "Q322": `SELECT * FROM customer_company_employees WHERE LOWER(email_address) = LOWER('{var1}') AND LOWER(full_name) = LOWER('{var2}') AND deleted_at IS NULL`,
     "Q323":`INSERT INTO connectors
               (user_id,company_id,hubspot_token,hubspot_status,hubspot_refresh_token,hubspot_expiry)
             VALUES
               ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
-    "Q324":`UPDATE connectors SET last_sync_at = '{var1}',
+    "Q324":`UPDATE connectors SET {var0} = '{var1}',
                 updated_at = '{var2}'
             WHERE user_id = '{var3}' AND company_id = '{var4}' AND deleted_at IS NULL RETURNING *`,
+    "Q325":`UPDATE connectors SET salesforce_token = '{var1}', salesforce_status = '{var2}',
+                salesforce_refresh_token = '{var3}',salesforce_expiry = '{var4}' 
+            WHERE user_id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *  `,
     
           
 
