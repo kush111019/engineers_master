@@ -992,7 +992,6 @@ module.exports.leadReSync = async (req, res) => {
                                 const expirationTime = new Date(issuedAt.getTime() + expiresIn * 1000).toISOString();
 
                                 accessToken = res.data.access_token
-                                console.log("accessToken", accessToken);
 
                                 let s4 = dbScript(db_sql['Q325'], { var1: res.data.access_token, var2: true, var3: accessData.salesforce_refresh_token, var4: expirationTime, var5: accessData.user_id, var6: accessData.company_id })
                                 let storeAccessToken = await connection.query(s4)
@@ -1625,19 +1624,11 @@ module.exports.proLeadsList = async (req, res) => {
             if (provider.toLowerCase() == 'all') {
                 let s2 = dbScript(db_sql['Q326'], { var1: findUser.rows[0].company_id, var2: type })
                 leadList = await connection.query(s2)
-            }
-            if (provider.toLowerCase() == 'salesforce') {
-                let s3 = dbScript(db_sql['Q327'], { var1: findUser.rows[0].company_id, var2: type, var3 : 'salesforce' })
+            } else {
+                let s3 = dbScript(db_sql['Q327'], { var1: findUser.rows[0].company_id, var2: type, var3 : provider.toLowerCase() })
                 leadList = await connection.query(s3)
             }
-            if (provider.toLowerCase() == 'hubspot') {
-                let s4 = dbScript(db_sql['Q327'], { var1: findUser.rows[0].company_id, var2: type, var3 : 'hubspot' })
-                leadList = await connection.query(s4)
-            }
-            if (provider.toLowerCase() == 'linkedin') {
-                let s5 = dbScript(db_sql['Q327'], { var1: findUser.rows[0].company_id, var2: type, var3 : 'linkedin' })
-                leadList = await connection.query(s5)
-            }
+            
             if (leadList.rowCount > 0) {
                 res.json({
                     status: 200,
