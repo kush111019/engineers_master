@@ -818,11 +818,13 @@ module.exports.leadReSync = async (req, res) => {
                     const archived = false;
                     const apiResponse = await hubspotClient.crm.contacts.basicApi.getPage(limit, after, properties, propertiesWithHistory, associations, archived);
                     let leadsData = apiResponse.results
+                    console.log(leadsData,"leadsData");
                     if (leadsData.length > 0) {
                         let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
                         let findSyncLead = await connection.query(s1)
 
                         if (findSyncLead.rowCount == 0) {
+                            console.log('findSyncLead.rowCount == 0');
                             //Initial insertion
                             for (let data of leadsData) {
 
@@ -840,8 +842,13 @@ module.exports.leadReSync = async (req, res) => {
                                 let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, '')
                             }
                         } else {
+                            console.log('findSyncLead.rowCount != 0');
                             for (let data of leadsData) {
+                                console.log(new Date(data.updatedAt),"new Date(data.updatedAt)");
+                                console.log(new Date(accessData.hubspot_last_sync),"new Date(accessData.hubspot_last_sync)");
+                                console.log(new Date(accessData.hubspot_last_sync) < new Date(data.updatedAt));
                                 if (new Date(accessData.hubspot_last_sync) < new Date(data.updatedAt)) {
+                                    console.log("matched updated at");
 
                                     let titleId = await titleFn(data.properties.jobtitle, accessData.company_id)
 
@@ -857,15 +864,19 @@ module.exports.leadReSync = async (req, res) => {
                                     let s10 = dbScript(db_sql['Q322'], { var1: data.id })
                                     let checkLead = await connection.query(s10)
                                     if (checkLead.rowCount > 0) {
+                                        console.log("inserted with Pid");
                                         let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
                                     }
                                     else {
+                                        console.log("inserted without..PId");
                                         let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, '')
                                     }
                                 } else {
+                                    console.log("not matched updated at");
                                     let s10 = dbScript(db_sql['Q322'], { var1: data.id })
                                     let checkLead = await connection.query(s10)
                                     if (checkLead.rowCount == 0) {
+                                        console.log("inserted new lead");
 
                                         let titleId = await titleFn(data.properties.jobtitle, accessData.company_id)
 
