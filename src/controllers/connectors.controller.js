@@ -402,7 +402,7 @@ module.exports.searchLead = async () => {
                             })
                                 .then(async (response) => {
                                     if (response.data.records.length > 0) {
-                                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
+                                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id, var2 : accessData.user_id })
                                         let findSyncLead = await connection.query(s1)
                                         //Initial insertion
                                         if (findSyncLead.rowCount == 0) {
@@ -429,7 +429,7 @@ module.exports.searchLead = async () => {
 
                                                     let customerId = await customerFnForsalesforce(data, accessData, industryId)
 
-                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c })
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c,var2: accessData.company_id, var3 : accessData.user_id })
                                                     let checkLead = await connection.query(s10)
                                                     if (checkLead.rowCount > 0) {
                                                         let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
@@ -437,7 +437,7 @@ module.exports.searchLead = async () => {
                                                         let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
                                                     }
                                                 } else {
-                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c })
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c,var2: accessData.company_id, var3 : accessData.user_id })
                                                     let checkLead = await connection.query(s10)
                                                     if (checkLead.rowCount == 0) {
                                                         let titleId = await titleFn(data.Title, accessData.company_id)
@@ -679,7 +679,7 @@ module.exports.leadReSync = async (req, res) => {
                             })
                                 .then(async (response) => {
                                     if (response.data.records.length > 0) {
-                                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
+                                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id, var2 : accessData.user_id })
                                         let findSyncLead = await connection.query(s1)
                                         //Initial insertion
                                         if (findSyncLead.rowCount == 0) {
@@ -706,7 +706,7 @@ module.exports.leadReSync = async (req, res) => {
 
                                                     let customerId = await customerFnForsalesforce(data, accessData, industryId)
 
-                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c })
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id, var3 : accessData.user_id })
                                                     let checkLead = await connection.query(s10)
                                                     if (checkLead.rowCount > 0) {
                                                         let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
@@ -714,7 +714,7 @@ module.exports.leadReSync = async (req, res) => {
                                                         let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
                                                     }
                                                 } else {
-                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c })
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id, var3 : accessData.user_id })
                                                     let checkLead = await connection.query(s10)
                                                     if (checkLead.rowCount == 0) {
                                                         let titleId = await titleFn(data.Title, accessData.company_id)
@@ -818,13 +818,11 @@ module.exports.leadReSync = async (req, res) => {
                     const archived = false;
                     const apiResponse = await hubspotClient.crm.contacts.basicApi.getPage(limit, after, properties, propertiesWithHistory, associations, archived);
                     let leadsData = apiResponse.results
-                    console.log(leadsData,"leadsData");
                     if (leadsData.length > 0) {
-                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
+                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id, var2 : accessData.user_id })
                         let findSyncLead = await connection.query(s1)
 
                         if (findSyncLead.rowCount == 0) {
-                            console.log('findSyncLead.rowCount == 0');
                             //Initial insertion
                             for (let data of leadsData) {
 
@@ -842,13 +840,8 @@ module.exports.leadReSync = async (req, res) => {
                                 let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, '')
                             }
                         } else {
-                            console.log('findSyncLead.rowCount != 0');
                             for (let data of leadsData) {
-                                console.log(new Date(data.updatedAt),"new Date(data.updatedAt)");
-                                console.log(new Date(accessData.hubspot_last_sync),"new Date(accessData.hubspot_last_sync)");
-                                console.log(new Date(accessData.hubspot_last_sync) < new Date(data.updatedAt));
                                 if (new Date(accessData.hubspot_last_sync) < new Date(data.updatedAt)) {
-                                    console.log("matched updated at");
 
                                     let titleId = await titleFn(data.properties.jobtitle, accessData.company_id)
 
@@ -861,22 +854,18 @@ module.exports.leadReSync = async (req, res) => {
 
                                     let leadName = data.properties.firstname + ' ' + data.properties.lastname
 
-                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id })
+                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id, var2 : accessData.company_id, var3 : accessData.user_id })
                                     let checkLead = await connection.query(s10)
                                     if (checkLead.rowCount > 0) {
-                                        console.log("inserted with Pid");
                                         let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
                                     }
                                     else {
-                                        console.log("inserted without..PId");
                                         let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, '')
                                     }
                                 } else {
-                                    console.log("not matched updated at");
-                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id })
+                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id, var2 : accessData.company_id, var3 : accessData.user_id  })
                                     let checkLead = await connection.query(s10)
                                     if (checkLead.rowCount == 0) {
-                                        console.log("inserted new lead");
 
                                         let titleId = await titleFn(data.properties.jobtitle, accessData.company_id)
 
@@ -955,10 +944,10 @@ module.exports.proLeadsList = async (req, res) => {
             let type = 'lead'
             let leadList
             if (provider.toLowerCase() == 'all') {
-                let s2 = dbScript(db_sql['Q326'], { var1: findUser.rows[0].company_id, var2: type })
+                let s2 = dbScript(db_sql['Q326'], { var1: findUser.rows[0].company_id, var2 : userId ,var3: type })
                 leadList = await connection.query(s2)
             } else {
-                let s3 = dbScript(db_sql['Q327'], { var1: findUser.rows[0].company_id, var2: type, var3: provider.toLowerCase() })
+                let s3 = dbScript(db_sql['Q327'], { var1: findUser.rows[0].company_id, var2 : userId, var3: type, var4: provider.toLowerCase() })
                 leadList = await connection.query(s3)
             }
 
