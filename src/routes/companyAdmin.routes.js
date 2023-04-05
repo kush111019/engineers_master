@@ -230,4 +230,5 @@ router.get('/connectorList',verifyTokenFn,controller.connectors.connectorsList)
 router.get('/auth/authUrl',controller.connectors.authUrl);
 router.post('/auth/callback',verifyTokenFn,controller.connectors.callback)
 router.get('/leadReSync',verifyTokenFn,controller.connectors.leadReSync)
+router.get('/proLeadsList',verifyTokenFn,controller.connectors.proLeadsList)
 module.exports = router;

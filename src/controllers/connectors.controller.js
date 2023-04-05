@@ -351,12 +351,13 @@ module.exports.searchLead = async () => {
                     let expiryDate = new Date(accessData.salesforce_expiry)
                     let accessToken = ''
                     if (expiryDate < curDate) {
-                        const data = new FormData();
-                        data.append('grant_type', 'refresh_token');
-                        data.append('client_id', process.env.SALESFORCE_CONSUMER_KEY);
-                        data.append('client_secret', process.env.SALESFORCE_CONSUMER_SECRET);
-                        data.append('redirect_uri', process.env.REDIRECT_URL);
-                        data.append('refresh_token', accessData.salesforce_refresh_token);
+                        const data = qs.stringify({
+                            'grant_type': 'refresh_token',
+                            'client_id': process.env.SALESFORCE_CONSUMER_KEY,
+                            'client_secret': process.env.SALESFORCE_CONSUMER_SECRET,
+                            'redirect_uri': process.env.REDIRECT_URL,
+                            'refresh_token': accessData.salesforce_refresh_token
+                        });
 
                         const config = {
                             headers: {
@@ -366,7 +367,6 @@ module.exports.searchLead = async () => {
 
                         axios.post('https://login.salesforce.com/services/oauth2/token', data, config)
                             .then(async (res) => {
-                                console.log(res);
                                 const expiresIn = 7200; // Default expiration time for Salesforce access tokens
                                 const issuedAt = new Date(parseInt(res.data.issued_at));
                                 const expirationTime = new Date(issuedAt.getTime() + expiresIn * 1000).toISOString();
@@ -487,15 +487,12 @@ module.exports.searchLead = async () => {
                                                 if (leadAddress.slice(-1) === ',') {
                                                     leadAddress = leadAddress.slice(0, -1);
                                                 }
-                                                if (checkLead.rowCount == 0) {
-                                                    let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(data.Name), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.Email), var4: data.Phone, var5: mysql_real_escape_string(leadAddress), var6: sourceId ? sourceId : 'null', var7: '', var8: data.Website ? data.Website : 'null', var9: '', var10: false, var11: 'null', var12: data.Description ? mysql_real_escape_string(data.Description) : '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.uniqueId__c, var18: 'salesforce', var19: 'null' })
-                                                    let createLead = await connection.query(s11)
-                                                }
+                                                let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(data.Name), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.Email), var4: data.Phone, var5: mysql_real_escape_string(leadAddress), var6: sourceId ? sourceId : 'null', var7: '', var8: data.Website ? data.Website : 'null', var9: '', var10: false, var11: 'null', var12: data.Description ? mysql_real_escape_string(data.Description) : '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.uniqueId__c, var18: 'salesforce', var19: 'null' })
+                                                let createLead = await connection.query(s11)
                                             }
                                         } else {
                                             for (let data of response.data.records) {
                                                 if (new Date(accessData.salesforce_last_sync) < new Date(data.LastModifiedDate)) {
-                                                    console.log(data,"data");
                                                     let titleId = '';
                                                     let s3 = dbScript(db_sql['Q192'], { var1: data.Title, var2: accessData.company_id })
                                                     let findTitle = await connection.query(s3)
@@ -747,63 +744,179 @@ module.exports.searchLead = async () => {
                     const apiResponse = await hubspotClient.crm.contacts.basicApi.getPage(limit, after, properties, propertiesWithHistory, associations, archived);
                     let leadsData = apiResponse.results
                     if (leadsData.length > 0) {
-                        for (let data of leadsData) {
-                            let titleId = '';
-                            let s3 = dbScript(db_sql['Q192'], { var1: data.properties.jobtitle, var2: accessData.company_id })
-                            let findTitle = await connection.query(s3)
-                            if (findTitle.rowCount == 0) {
-                                let s4 = dbScript(db_sql['Q178'], { var1: data.properties.jobtitle, var2: accessData.company_id })
-                                let insertTitle = await connection.query(s4)
-                                titleId = insertTitle.rows[0].id
-                            } else {
-                                titleId = findTitle.rows[0].id
-                            }
+                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
+                        let findSyncLead = await connection.query(s1)
 
-                            let sourceId = '';
-                            let s5 = dbScript(db_sql['Q191'], { var1: 'hubspot', var2: accessData.company_id })
-                            let findSource = await connection.query(s5)
-                            if (findSource.rowCount == 0) {
-                                let s6 = dbScript(db_sql['Q186'], { var1: 'hubspot', var2: accessData.company_id })
-                                let insertSource = await connection.query(s6)
-                                sourceId = insertSource.rows[0].id
-                            } else {
-                                sourceId = findSource.rows[0].id
-                            }
-
-                            let industryId = '';
-                            if (data.properties.industry) {
-                                let s7 = dbScript(db_sql['Q193'], { var1: data.properties.industry, var2: accessData.company_id })
-                                let findIndustry = await connection.query(s7)
-                                if (findIndustry.rowCount == 0) {
-                                    let s8 = dbScript(db_sql['Q182'], { var1: data.properties.industry, var2: accessData.company_id })
-                                    let insertIndustry = await connection.query(s8)
-                                    industryId = insertIndustry.rows[0].id
+                        if (findSyncLead.rowCount == 0) {
+                            //Initial insertion
+                            for (let data of leadsData) {
+                                let titleId = '';
+                                let s3 = dbScript(db_sql['Q192'], { var1: data.properties.jobtitle, var2: accessData.company_id })
+                                let findTitle = await connection.query(s3)
+                                if (findTitle.rowCount == 0) {
+                                    let s4 = dbScript(db_sql['Q178'], { var1: data.properties.jobtitle, var2: accessData.company_id })
+                                    let insertTitle = await connection.query(s4)
+                                    titleId = insertTitle.rows[0].id
                                 } else {
-                                    industryId = findIndustry.rows[0].id
+                                    titleId = findTitle.rows[0].id
                                 }
-                            }
 
-                            let customerId = ''
-                            let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.properties.company), var2: accessData.company_id })
-                            let findCustomer = await connection.query(s12)
-                            if (findCustomer.rowCount == 0) {
-                                let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.properties.company), var3: accessData.company_id, var4: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
-                                let createCustomer = await connection.query(s9)
-                                customerId = createCustomer.rows[0].id
-                            } else {
-                                customerId = findCustomer.rows[0].id
-                            }
+                                let sourceId = '';
+                                let s5 = dbScript(db_sql['Q191'], { var1: 'hubspot', var2: accessData.company_id })
+                                let findSource = await connection.query(s5)
+                                if (findSource.rowCount == 0) {
+                                    let s6 = dbScript(db_sql['Q186'], { var1: 'hubspot', var2: accessData.company_id })
+                                    let insertSource = await connection.query(s6)
+                                    sourceId = insertSource.rows[0].id
+                                } else {
+                                    sourceId = findSource.rows[0].id
+                                }
 
-                            let leadName = data.properties.firstname + ' ' + data.properties.lastname
+                                let industryId = '';
+                                if (data.properties.industry) {
+                                    let s7 = dbScript(db_sql['Q193'], { var1: data.properties.industry, var2: accessData.company_id })
+                                    let findIndustry = await connection.query(s7)
+                                    if (findIndustry.rowCount == 0) {
+                                        let s8 = dbScript(db_sql['Q182'], { var1: data.properties.industry, var2: accessData.company_id })
+                                        let insertIndustry = await connection.query(s8)
+                                        industryId = insertIndustry.rows[0].id
+                                    } else {
+                                        industryId = findIndustry.rows[0].id
+                                    }
+                                }
 
-                            let s10 = dbScript(db_sql['Q322'], { var1: mysql_real_escape_string(data.properties.email), var2: mysql_real_escape_string(leadName) })
+                                let customerId = ''
+                                let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.properties.company), var2: accessData.company_id })
+                                let findCustomer = await connection.query(s12)
+                                if (findCustomer.rowCount == 0) {
+                                    let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.properties.company), var3: accessData.company_id, var4: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
+                                    let createCustomer = await connection.query(s9)
+                                    customerId = createCustomer.rows[0].id
+                                } else {
+                                    customerId = findCustomer.rows[0].id
+                                }
 
-                            let checkLead = await connection.query(s10)
-                            if (checkLead.rowCount == 0) {
-                                let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17 : data.id, var18 : 'hubspot', var19 : 'null' })
+                                let leadName = data.properties.firstname + ' ' + data.properties.lastname
+
+                                let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.id, var18: 'hubspot', var19: 'null' })
                                 let createLead = await connection.query(s11)
                             }
+                        } else {
+                            for (let data of leadsData) {
+                                if (new Date(accessData.hubspot_last_sync) < new Date(data.updatedAt)) {
+                                    let titleId = '';
+                                    let s3 = dbScript(db_sql['Q192'], { var1: data.properties.jobtitle, var2: accessData.company_id })
+                                    let findTitle = await connection.query(s3)
+                                    if (findTitle.rowCount == 0) {
+                                        let s4 = dbScript(db_sql['Q178'], { var1: data.properties.jobtitle, var2: accessData.company_id })
+                                        let insertTitle = await connection.query(s4)
+                                        titleId = insertTitle.rows[0].id
+                                    } else {
+                                        titleId = findTitle.rows[0].id
+                                    }
+
+                                    let sourceId = '';
+                                    let s5 = dbScript(db_sql['Q191'], { var1: 'hubspot', var2: accessData.company_id })
+                                    let findSource = await connection.query(s5)
+                                    if (findSource.rowCount == 0) {
+                                        let s6 = dbScript(db_sql['Q186'], { var1: 'hubspot', var2: accessData.company_id })
+                                        let insertSource = await connection.query(s6)
+                                        sourceId = insertSource.rows[0].id
+                                    } else {
+                                        sourceId = findSource.rows[0].id
+                                    }
+
+                                    let industryId = '';
+                                    if (data.properties.industry) {
+                                        let s7 = dbScript(db_sql['Q193'], { var1: data.properties.industry, var2: accessData.company_id })
+                                        let findIndustry = await connection.query(s7)
+                                        if (findIndustry.rowCount == 0) {
+                                            let s8 = dbScript(db_sql['Q182'], { var1: data.properties.industry, var2: accessData.company_id })
+                                            let insertIndustry = await connection.query(s8)
+                                            industryId = insertIndustry.rows[0].id
+                                        } else {
+                                            industryId = findIndustry.rows[0].id
+                                        }
+                                    }
+
+                                    let customerId = ''
+                                    let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.properties.company), var2: accessData.company_id })
+                                    let findCustomer = await connection.query(s12)
+                                    if (findCustomer.rowCount == 0) {
+                                        let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.properties.company), var3: accessData.company_id, var4: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
+                                        let createCustomer = await connection.query(s9)
+                                        customerId = createCustomer.rows[0].id
+                                    } else {
+                                        customerId = findCustomer.rows[0].id
+                                    }
+
+                                    let leadName = data.properties.firstname + ' ' + data.properties.lastname
+
+                                    let s10 = dbScript(db_sql['Q322'], { var1: data.Id })
+                                    let checkLead = await connection.query(s10)
+                                    if (checkLead.rowCount > 0) {
+                                        let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.id, var18: 'hubspot', var19: checkLead.rows[0].id })
+                                        let createLead = await connection.query(s11)
+                                    }
+                                } else {
+                                    let s10 = dbScript(db_sql['Q322'], { var1: data.Id })
+                                    let checkLead = await connection.query(s10)
+                                    if (checkLead.rowCount == 0) {
+                                        let titleId = '';
+                                        let s3 = dbScript(db_sql['Q192'], { var1: data.properties.jobtitle, var2: accessData.company_id })
+                                        let findTitle = await connection.query(s3)
+                                        if (findTitle.rowCount == 0) {
+                                            let s4 = dbScript(db_sql['Q178'], { var1: data.properties.jobtitle, var2: accessData.company_id })
+                                            let insertTitle = await connection.query(s4)
+                                            titleId = insertTitle.rows[0].id
+                                        } else {
+                                            titleId = findTitle.rows[0].id
+                                        }
+
+                                        let sourceId = '';
+                                        let s5 = dbScript(db_sql['Q191'], { var1: 'hubspot', var2: accessData.company_id })
+                                        let findSource = await connection.query(s5)
+                                        if (findSource.rowCount == 0) {
+                                            let s6 = dbScript(db_sql['Q186'], { var1: 'hubspot', var2: accessData.company_id })
+                                            let insertSource = await connection.query(s6)
+                                            sourceId = insertSource.rows[0].id
+                                        } else {
+                                            sourceId = findSource.rows[0].id
+                                        }
+
+                                        let industryId = '';
+                                        if (data.properties.industry) {
+                                            let s7 = dbScript(db_sql['Q193'], { var1: data.properties.industry, var2: accessData.company_id })
+                                            let findIndustry = await connection.query(s7)
+                                            if (findIndustry.rowCount == 0) {
+                                                let s8 = dbScript(db_sql['Q182'], { var1: data.properties.industry, var2: accessData.company_id })
+                                                let insertIndustry = await connection.query(s8)
+                                                industryId = insertIndustry.rows[0].id
+                                            } else {
+                                                industryId = findIndustry.rows[0].id
+                                            }
+                                        }
+
+                                        let customerId = ''
+                                        let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.properties.company), var2: accessData.company_id })
+                                        let findCustomer = await connection.query(s12)
+                                        if (findCustomer.rowCount == 0) {
+                                            let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.properties.company), var3: accessData.company_id, var4: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
+                                            let createCustomer = await connection.query(s9)
+                                            customerId = createCustomer.rows[0].id
+                                        } else {
+                                            customerId = findCustomer.rows[0].id
+                                        }
+
+                                        let leadName = data.properties.firstname + ' ' + data.properties.lastname
+
+                                        let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.id, var18: 'hubspot', var19: 'null' })
+                                        let createLead = await connection.query(s11)
+                                    }
+                                }
+                            }
                         }
+
                         let _dt = new Date().toISOString();
                         let s12 = dbScript(db_sql['Q278'], { var1: _dt, var2: accessData.company_id })
                         let updateStatusInCompany = await connection.query(s12)
@@ -813,8 +926,18 @@ module.exports.searchLead = async () => {
 
                         if (updateStatusInCompany.rowCount > 0) {
                             await connection.query('COMMIT')
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "hubspot leads synced successfully"
+                            })
                         } else {
                             await connection.query('ROLLBACK')
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: "Something went wrong"
+                            })
                         }
                     }
                 } catch (error) {
@@ -857,11 +980,13 @@ module.exports.leadReSync = async (req, res) => {
 
                         axios.post('https://login.salesforce.com/services/oauth2/token', data, config)
                             .then(async (res) => {
+                                console.log(res.data, "res data");
                                 const expiresIn = 7200; // Default expiration time for Salesforce access tokens
                                 const issuedAt = new Date(parseInt(res.data.issued_at));
                                 const expirationTime = new Date(issuedAt.getTime() + expiresIn * 1000).toISOString();
 
                                 accessToken = res.data.access_token
+                                console.log("accessToken", accessToken);
 
                                 let s4 = dbScript(db_sql['Q325'], { var1: res.data.access_token, var2: true, var3: accessData.salesforce_refresh_token, var4: expirationTime, var5: accessData.user_id, var6: accessData.company_id })
                                 let storeAccessToken = await connection.query(s4)
@@ -870,7 +995,9 @@ module.exports.leadReSync = async (req, res) => {
                                 console.error('Authorization error:', err.message);
                             });
                     } else {
+
                         accessToken = accessData.salesforce_token
+                        console.log("accessToken in else part", accessToken);
                     }
                     axios.get('https://login.salesforce.com/services/oauth2/userinfo', {
                         headers: {
@@ -878,6 +1005,7 @@ module.exports.leadReSync = async (req, res) => {
                         }
                     })
                         .then(response => {
+                            // console.log("in response part",response.data.urls);
                             const apiUrl = `${response.data.urls.custom_domain}` + `${process.env.SALESFORCE_API_VERSION}`;
                             const query = 'SELECT uniqueId__c,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
                             axios({
@@ -888,11 +1016,13 @@ module.exports.leadReSync = async (req, res) => {
                                 },
                             })
                                 .then(async (response) => {
+                                    // console.log("response in another then",response.data.records);
                                     if (response.data.records.length > 0) {
                                         let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
                                         let findSyncLead = await connection.query(s1)
                                         //Initial insertion
                                         if (findSyncLead.rowCount == 0) {
+                                            console.log(findSyncLead.rowCount, "findSyncLead.rowCount");
                                             for (let data of response.data.records) {
                                                 let titleId = '';
                                                 let s3 = dbScript(db_sql['Q192'], { var1: data.Title, var2: accessData.company_id })
@@ -976,12 +1106,11 @@ module.exports.leadReSync = async (req, res) => {
                                                 if (leadAddress.slice(-1) === ',') {
                                                     leadAddress = leadAddress.slice(0, -1);
                                                 }
-                                                if (checkLead.rowCount == 0) {
-                                                    let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(data.Name), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.Email), var4: data.Phone, var5: mysql_real_escape_string(leadAddress), var6: sourceId ? sourceId : 'null', var7: '', var8: data.Website ? data.Website : 'null', var9: '', var10: false, var11: 'null', var12: data.Description ? mysql_real_escape_string(data.Description) : '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.uniqueId__c, var18: 'salesforce', var19: 'null' })
-                                                    let createLead = await connection.query(s11)
-                                                }
+                                                let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(data.Name), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.Email), var4: data.Phone, var5: mysql_real_escape_string(leadAddress), var6: sourceId ? sourceId : 'null', var7: '', var8: data.Website ? data.Website : 'null', var9: '', var10: false, var11: 'null', var12: data.Description ? mysql_real_escape_string(data.Description) : '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.uniqueId__c, var18: 'salesforce', var19: 'null' })
+                                                let createLead = await connection.query(s11)
                                             }
                                         } else {
+                                            console.log("else part in initial state");
                                             for (let data of response.data.records) {
                                                 if (new Date(accessData.salesforce_last_sync) < new Date(data.LastModifiedDate)) {
                                                     let titleId = '';
@@ -1160,12 +1289,8 @@ module.exports.leadReSync = async (req, res) => {
                                                             leadAddress = leadAddress.slice(0, -1);
                                                         }
 
-                                                        let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c })
-                                                        let checkLead = await connection.query(s10)
-                                                        if (checkLead.rowCount > 0) {
-                                                            let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(data.Name), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.Email), var4: data.Phone, var5: mysql_real_escape_string(leadAddress), var6: sourceId ? sourceId : 'null', var7: '', var8: data.Website ? data.Website : 'null', var9: '', var10: false, var11: 'null', var12: data.Description ? mysql_real_escape_string(data.Description) : '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.uniqueId__c, var18: 'salesforce', var19: 'null' })
-                                                            let createLead = await connection.query(s11)
-                                                        }
+                                                        let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(data.Name), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.Email), var4: data.Phone, var5: mysql_real_escape_string(leadAddress), var6: sourceId ? sourceId : 'null', var7: '', var8: data.Website ? data.Website : 'null', var9: '', var10: false, var11: 'null', var12: data.Description ? mysql_real_escape_string(data.Description) : '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.uniqueId__c, var18: 'salesforce', var19: 'null' })
+                                                        let createLead = await connection.query(s11)
                                                     }
                                                 }
                                             }
@@ -1243,7 +1368,6 @@ module.exports.leadReSync = async (req, res) => {
 
                         let s4 = dbScript(db_sql['Q320'], { var1: token.accessToken, var2: true, var3: token.refreshToken, var4: expiry, var5: accessData.user_id, var6: accessData.company_id })
                         let storeAccessToken = await connection.query(s4)
-
                     } else {
                         accessToken = accessData.hubspot_token
                     }
@@ -1259,65 +1383,180 @@ module.exports.leadReSync = async (req, res) => {
                     const archived = false;
                     const apiResponse = await hubspotClient.crm.contacts.basicApi.getPage(limit, after, properties, propertiesWithHistory, associations, archived);
                     let leadsData = apiResponse.results
-                    console.log(leadsData, "leadsData");
                     if (leadsData.length > 0) {
-                        for (let data of leadsData) {
-                            let titleId = '';
-                            let s3 = dbScript(db_sql['Q192'], { var1: data.properties.jobtitle, var2: accessData.company_id })
-                            let findTitle = await connection.query(s3)
-                            if (findTitle.rowCount == 0) {
-                                let s4 = dbScript(db_sql['Q178'], { var1: data.properties.jobtitle, var2: accessData.company_id })
-                                let insertTitle = await connection.query(s4)
-                                titleId = insertTitle.rows[0].id
-                            } else {
-                                titleId = findTitle.rows[0].id
-                            }
+                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
+                        let findSyncLead = await connection.query(s1)
 
-                            let sourceId = '';
-                            let s5 = dbScript(db_sql['Q191'], { var1: 'hubspot', var2: accessData.company_id })
-                            let findSource = await connection.query(s5)
-                            if (findSource.rowCount == 0) {
-                                let s6 = dbScript(db_sql['Q186'], { var1: 'hubspot', var2: accessData.company_id })
-                                let insertSource = await connection.query(s6)
-                                sourceId = insertSource.rows[0].id
-                            } else {
-                                sourceId = findSource.rows[0].id
-                            }
-
-                            let industryId = '';
-                            if (data.properties.industry) {
-                                let s7 = dbScript(db_sql['Q193'], { var1: data.properties.industry, var2: accessData.company_id })
-                                let findIndustry = await connection.query(s7)
-                                if (findIndustry.rowCount == 0) {
-                                    let s8 = dbScript(db_sql['Q182'], { var1: data.properties.industry, var2: accessData.company_id })
-                                    let insertIndustry = await connection.query(s8)
-                                    industryId = insertIndustry.rows[0].id
+                        if (findSyncLead.rowCount == 0) {
+                            //Initial insertion
+                            for (let data of leadsData) {
+                                let titleId = '';
+                                let s3 = dbScript(db_sql['Q192'], { var1: data.properties.jobtitle, var2: accessData.company_id })
+                                let findTitle = await connection.query(s3)
+                                if (findTitle.rowCount == 0) {
+                                    let s4 = dbScript(db_sql['Q178'], { var1: data.properties.jobtitle, var2: accessData.company_id })
+                                    let insertTitle = await connection.query(s4)
+                                    titleId = insertTitle.rows[0].id
                                 } else {
-                                    industryId = findIndustry.rows[0].id
+                                    titleId = findTitle.rows[0].id
                                 }
-                            }
 
-                            let customerId = ''
-                            let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.properties.company), var2: accessData.company_id })
-                            let findCustomer = await connection.query(s12)
-                            if (findCustomer.rowCount == 0) {
-                                let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.properties.company), var3: accessData.company_id, var4: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
-                                let createCustomer = await connection.query(s9)
-                                customerId = createCustomer.rows[0].id
-                            } else {
-                                customerId = findCustomer.rows[0].id
-                            }
+                                let sourceId = '';
+                                let s5 = dbScript(db_sql['Q191'], { var1: 'hubspot', var2: accessData.company_id })
+                                let findSource = await connection.query(s5)
+                                if (findSource.rowCount == 0) {
+                                    let s6 = dbScript(db_sql['Q186'], { var1: 'hubspot', var2: accessData.company_id })
+                                    let insertSource = await connection.query(s6)
+                                    sourceId = insertSource.rows[0].id
+                                } else {
+                                    sourceId = findSource.rows[0].id
+                                }
 
-                            let leadName = data.properties.firstname + ' ' + data.properties.lastname
+                                let industryId = '';
+                                if (data.properties.industry) {
+                                    let s7 = dbScript(db_sql['Q193'], { var1: data.properties.industry, var2: accessData.company_id })
+                                    let findIndustry = await connection.query(s7)
+                                    if (findIndustry.rowCount == 0) {
+                                        let s8 = dbScript(db_sql['Q182'], { var1: data.properties.industry, var2: accessData.company_id })
+                                        let insertIndustry = await connection.query(s8)
+                                        industryId = insertIndustry.rows[0].id
+                                    } else {
+                                        industryId = findIndustry.rows[0].id
+                                    }
+                                }
 
-                            let s10 = dbScript(db_sql['Q322'], { var1: mysql_real_escape_string(data.properties.email), var2: mysql_real_escape_string(leadName) })
+                                let customerId = ''
+                                let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.properties.company), var2: accessData.company_id })
+                                let findCustomer = await connection.query(s12)
+                                if (findCustomer.rowCount == 0) {
+                                    let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.properties.company), var3: accessData.company_id, var4: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
+                                    let createCustomer = await connection.query(s9)
+                                    customerId = createCustomer.rows[0].id
+                                } else {
+                                    customerId = findCustomer.rows[0].id
+                                }
 
-                            let checkLead = await connection.query(s10)
-                            if (checkLead.rowCount == 0) {
-                                let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead',var17 : data.id, var18 : 'hubspot', var19 : 'null' })
+                                let leadName = data.properties.firstname + ' ' + data.properties.lastname
+
+                                let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.id, var18: 'hubspot', var19: 'null' })
                                 let createLead = await connection.query(s11)
                             }
+                        } else {
+                            for (let data of leadsData) {
+                                if (new Date(accessData.hubspot_last_sync) < new Date(data.updatedAt)) {
+                                    let titleId = '';
+                                    let s3 = dbScript(db_sql['Q192'], { var1: data.properties.jobtitle, var2: accessData.company_id })
+                                    let findTitle = await connection.query(s3)
+                                    if (findTitle.rowCount == 0) {
+                                        let s4 = dbScript(db_sql['Q178'], { var1: data.properties.jobtitle, var2: accessData.company_id })
+                                        let insertTitle = await connection.query(s4)
+                                        titleId = insertTitle.rows[0].id
+                                    } else {
+                                        titleId = findTitle.rows[0].id
+                                    }
+
+                                    let sourceId = '';
+                                    let s5 = dbScript(db_sql['Q191'], { var1: 'hubspot', var2: accessData.company_id })
+                                    let findSource = await connection.query(s5)
+                                    if (findSource.rowCount == 0) {
+                                        let s6 = dbScript(db_sql['Q186'], { var1: 'hubspot', var2: accessData.company_id })
+                                        let insertSource = await connection.query(s6)
+                                        sourceId = insertSource.rows[0].id
+                                    } else {
+                                        sourceId = findSource.rows[0].id
+                                    }
+
+                                    let industryId = '';
+                                    if (data.properties.industry) {
+                                        let s7 = dbScript(db_sql['Q193'], { var1: data.properties.industry, var2: accessData.company_id })
+                                        let findIndustry = await connection.query(s7)
+                                        if (findIndustry.rowCount == 0) {
+                                            let s8 = dbScript(db_sql['Q182'], { var1: data.properties.industry, var2: accessData.company_id })
+                                            let insertIndustry = await connection.query(s8)
+                                            industryId = insertIndustry.rows[0].id
+                                        } else {
+                                            industryId = findIndustry.rows[0].id
+                                        }
+                                    }
+
+                                    let customerId = ''
+                                    let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.properties.company), var2: accessData.company_id })
+                                    let findCustomer = await connection.query(s12)
+                                    if (findCustomer.rowCount == 0) {
+                                        let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.properties.company), var3: accessData.company_id, var4: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
+                                        let createCustomer = await connection.query(s9)
+                                        customerId = createCustomer.rows[0].id
+                                    } else {
+                                        customerId = findCustomer.rows[0].id
+                                    }
+
+                                    let leadName = data.properties.firstname + ' ' + data.properties.lastname
+
+                                    let s10 = dbScript(db_sql['Q322'], { var1: data.Id })
+                                    let checkLead = await connection.query(s10)
+                                    if (checkLead.rowCount > 0) {
+                                        let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.id, var18: 'hubspot', var19: checkLead.rows[0].id })
+                                        let createLead = await connection.query(s11)
+                                    }
+                                } else {
+                                    let s10 = dbScript(db_sql['Q322'], { var1: data.Id })
+                                    let checkLead = await connection.query(s10)
+                                    if (checkLead.rowCount == 0) {
+                                        let titleId = '';
+                                        let s3 = dbScript(db_sql['Q192'], { var1: data.properties.jobtitle, var2: accessData.company_id })
+                                        let findTitle = await connection.query(s3)
+                                        if (findTitle.rowCount == 0) {
+                                            let s4 = dbScript(db_sql['Q178'], { var1: data.properties.jobtitle, var2: accessData.company_id })
+                                            let insertTitle = await connection.query(s4)
+                                            titleId = insertTitle.rows[0].id
+                                        } else {
+                                            titleId = findTitle.rows[0].id
+                                        }
+
+                                        let sourceId = '';
+                                        let s5 = dbScript(db_sql['Q191'], { var1: 'hubspot', var2: accessData.company_id })
+                                        let findSource = await connection.query(s5)
+                                        if (findSource.rowCount == 0) {
+                                            let s6 = dbScript(db_sql['Q186'], { var1: 'hubspot', var2: accessData.company_id })
+                                            let insertSource = await connection.query(s6)
+                                            sourceId = insertSource.rows[0].id
+                                        } else {
+                                            sourceId = findSource.rows[0].id
+                                        }
+
+                                        let industryId = '';
+                                        if (data.properties.industry) {
+                                            let s7 = dbScript(db_sql['Q193'], { var1: data.properties.industry, var2: accessData.company_id })
+                                            let findIndustry = await connection.query(s7)
+                                            if (findIndustry.rowCount == 0) {
+                                                let s8 = dbScript(db_sql['Q182'], { var1: data.properties.industry, var2: accessData.company_id })
+                                                let insertIndustry = await connection.query(s8)
+                                                industryId = insertIndustry.rows[0].id
+                                            } else {
+                                                industryId = findIndustry.rows[0].id
+                                            }
+                                        }
+
+                                        let customerId = ''
+                                        let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.properties.company), var2: accessData.company_id })
+                                        let findCustomer = await connection.query(s12)
+                                        if (findCustomer.rowCount == 0) {
+                                            let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.properties.company), var3: accessData.company_id, var4: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
+                                            let createCustomer = await connection.query(s9)
+                                            customerId = createCustomer.rows[0].id
+                                        } else {
+                                            customerId = findCustomer.rows[0].id
+                                        }
+
+                                        let leadName = data.properties.firstname + ' ' + data.properties.lastname
+
+                                        let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.id, var18: 'hubspot', var19: 'null' })
+                                        let createLead = await connection.query(s11)
+                                    }
+                                }
+                            }
                         }
+
                         let _dt = new Date().toISOString();
                         let s12 = dbScript(db_sql['Q278'], { var1: _dt, var2: accessData.company_id })
                         let updateStatusInCompany = await connection.query(s12)
@@ -1350,11 +1589,11 @@ module.exports.leadReSync = async (req, res) => {
                     })
                 }
             }
-            if(provider.toLowerCase() == 'linkedin' && accessData.linked_in_status){
+            if (provider.toLowerCase() == 'linkedin' && accessData.linked_in_status) {
                 res.json({
-                    status : 200,
-                    success : false,
-                    message : "Lead sync api permission not confirmed by Linked In"
+                    status: 200,
+                    success: false,
+                    message: "Lead sync api permission not confirmed by Linked In"
                 })
             }
         }
@@ -1364,6 +1603,63 @@ module.exports.leadReSync = async (req, res) => {
             status: 400,
             success: false,
             message: "Invalid user",
+        })
+    }
+}
+
+module.exports.proLeadsList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { provider } = req.query
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findUser = await connection.query(s1)
+        if (findUser.rowCount > 0) {
+            let type = 'lead'
+            let leadList
+            if (provider.toLowerCase() == 'all') {
+                let s2 = dbScript(db_sql['Q326'], { var1: findUser.rows[0].company_id, var2: type })
+                console.log(s2,"s2");
+                leadList = await connection.query(s2)
+            }
+            if (provider.toLowerCase() == 'salesforce') {
+                let s3 = dbScript(db_sql['Q327'], { var1: findUser.rows[0].company_id, var2: type, var3 : 'salesforce' })
+                leadList = await connection.query(s3)
+            }
+            if (provider.toLowerCase() == 'hubspot') {
+                let s4 = dbScript(db_sql['Q327'], { var1: findUser.rows[0].company_id, var2: type, var3 : 'hubspot' })
+                leadList = await connection.query(s4)
+            }
+            if (provider.toLowerCase() == 'linkedin') {
+                let s5 = dbScript(db_sql['Q327'], { var1: findUser.rows[0].company_id, var2: type, var3 : 'linkedin' })
+                leadList = await connection.query(s5)
+            }
+            if (leadList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Leads list',
+                    data: leadList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty leads list',
+                    data: leadList.rows
+                })
+            }
+        }
+        else {
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
         })
     }
 }
