@@ -995,9 +995,7 @@ module.exports.leadReSync = async (req, res) => {
                                 console.error('Authorization error:', err.message);
                             });
                     } else {
-
                         accessToken = accessData.salesforce_token
-                        console.log("accessToken in else part", accessToken);
                     }
                     axios.get('https://login.salesforce.com/services/oauth2/userinfo', {
                         headers: {
@@ -1005,7 +1003,6 @@ module.exports.leadReSync = async (req, res) => {
                         }
                     })
                         .then(response => {
-                            // console.log("in response part",response.data.urls);
                             const apiUrl = `${response.data.urls.custom_domain}` + `${process.env.SALESFORCE_API_VERSION}`;
                             const query = 'SELECT uniqueId__c,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
                             axios({
@@ -1016,7 +1013,6 @@ module.exports.leadReSync = async (req, res) => {
                                 },
                             })
                                 .then(async (response) => {
-                                    // console.log("response in another then",response.data.records);
                                     if (response.data.records.length > 0) {
                                         let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
                                         let findSyncLead = await connection.query(s1)
@@ -1110,7 +1106,6 @@ module.exports.leadReSync = async (req, res) => {
                                                 let createLead = await connection.query(s11)
                                             }
                                         } else {
-                                            console.log("else part in initial state");
                                             for (let data of response.data.records) {
                                                 if (new Date(accessData.salesforce_last_sync) < new Date(data.LastModifiedDate)) {
                                                     let titleId = '';
