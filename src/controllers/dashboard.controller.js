@@ -34,12 +34,7 @@ module.exports.revenues = async (req, res) => {
                     let recognizedRevenueData = await connection.query(s5)
                     if (data.archived_at) {
                         if (recognizedRevenueData.rows[0].amount) {
-                            let subtractAmount = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount))
-                            if (subtractAmount == 0) {
-                                perpetualBooking = perpetualBooking + Number(recognizedRevenueData.rows[0].amount)
-                            } else {
-                                perpetualBooking = perpetualBooking + subtractAmount
-                            }
+                            perpetualBooking = perpetualBooking + Number(recognizedRevenueData.rows[0].amount)
                         }
                     } else {
                         perpetualBooking = perpetualBooking + Number(data.target_amount)
@@ -56,12 +51,7 @@ module.exports.revenues = async (req, res) => {
                     let recognizedRevenueData = await connection.query(s5)
                     if (recognizedRevenueData.rows[0].amount) {
                         if (data.archived_at) {
-                            let subtractAmount = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount))
-                            if (subtractAmount == 0) {
-                                subscriptionBooking = subscriptionBooking + Number(recognizedRevenueData.rows[0].amount)
-                            } else {
-                                subscriptionBooking = subscriptionBooking + Number(recognizedRevenueData.rows[0].amount)
-                            }
+                            subscriptionBooking = subscriptionBooking + Number(recognizedRevenueData.rows[0].amount)
                         } else {
                             subscriptionBooking = subscriptionBooking + Number(data.target_amount)
                         }
@@ -96,11 +86,7 @@ module.exports.revenues = async (req, res) => {
                         let pBooking = 0;
                         if (saleData.archived_at) {
                             if (recognizedRevenueData.rows[0].amount) {
-                                let revenue = (Number(saleData.target_amount) - Number(recognizedRevenueData.rows[0].amount));
-                                if (revenue == 0) {
-                                    revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
-                                }
-                                pBooking = revenue
+                                pBooking = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                             }
                             revenueCommissionByDateObj.booking = Number(pBooking)
                         } else {
@@ -112,15 +98,9 @@ module.exports.revenues = async (req, res) => {
                         let subscriptionBooking1 = 0;
                         if (recognizedRevenueData.rows[0].amount) {
                             if (saleData.archived_at) {
-                                let subs = (Number(saleData.target_amount) - Number(recognizedRevenueData.rows[0].amount));
-                                if (subs == 0) {
-                                    subs = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
-                                }else{
-                                    subs = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
-                                }
-                                subscriptionBooking1 = subs
+                                subscriptionBooking1 = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                             } else {
-                                subscriptionBooking1 = Number(recognizedRevenueData.rows[0].amount)
+                                subscriptionBooking1 = Number(saleData.target_amount)
                             }
                         }
                         revenueCommissionByDateObj.booking = 0;
@@ -226,12 +206,7 @@ module.exports.revenues = async (req, res) => {
                         let recognizedRevenueData = await connection.query(s5)
                         if (data.archived_at) {
                             if (recognizedRevenueData.rows[0].amount) {
-                                let subtractAmount = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount))
-                                if (subtractAmount == 0) {
-                                    perpetualBooking = perpetualBooking + Number(recognizedRevenueData.rows[0].amount)
-                                } else {
-                                    perpetualBooking = perpetualBooking + subtractAmount
-                                }
+                                perpetualBooking = perpetualBooking + Number(recognizedRevenueData.rows[0].amount)
                             }
                         } else {
                             perpetualBooking = perpetualBooking + Number(data.target_amount)
@@ -248,14 +223,7 @@ module.exports.revenues = async (req, res) => {
                         let recognizedRevenueData = await connection.query(s5)
                         if (data.archived_at) {
                             if (recognizedRevenueData.rows[0].amount) {
-                                let subtractAmount = (Number(data.target_amount) - Number(recognizedRevenueData.rows[0].amount))
-                                if (subtractAmount == 0) {
-                                    subscriptionBooking = subscriptionBooking + Number(recognizedRevenueData.rows[0].amount)
-                                } else {
-                                    subscriptionBooking = subscriptionBooking + Number(recognizedRevenueData.rows[0].amount)
-                                }
-                            } else {
-                                subscriptionBooking = subscriptionBooking + Number(data.target_amount)
+                                subscriptionBooking = subscriptionBooking + Number(recognizedRevenueData.rows[0].amount)
                             }
                         } else {
                             subscriptionBooking = subscriptionBooking + Number(data.target_amount)
@@ -290,11 +258,8 @@ module.exports.revenues = async (req, res) => {
                         let pBooking = 0;
                         if (saleData.archived_at) {
                             if (recognizedRevenueData.rows[0].amount) {
-                                let revenue = (Number(saleData.target_amount) - Number(recognizedRevenueData.rows[0].amount));
-                                if (revenue == 0) {
-                                    revenue = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
-                                }
-                                pBooking = revenue
+
+                                pBooking = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                             }
                             revenueCommissionByDateObj.booking = Number(pBooking)
                         } else {
@@ -306,15 +271,9 @@ module.exports.revenues = async (req, res) => {
                         let subscriptionBooking1 = 0;
                         if (recognizedRevenueData.rows[0].amount) {
                             if (saleData.archived_at) {
-                                let subs = (Number(saleData.target_amount) - Number(recognizedRevenueData.rows[0].amount));
-                                if (subs == 0) {
-                                    subs = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
-                                }else{
-                                    subs = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
-                                }
-                                subscriptionBooking1 = subs
+                                subscriptionBooking1 = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0
                             } else {
-                                subscriptionBooking1 = Number(recognizedRevenueData.rows[0].amount)
+                                subscriptionBooking1 = Number(saleData.target_amount)
                             }
                         }
                         revenueCommissionByDateObj.booking = 0;

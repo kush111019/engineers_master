@@ -1244,9 +1244,9 @@ const db_sql = {
             ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') RETURNING *`,
   "Q169": `INSERT INTO customer_company_employees (full_name,title,email_address,phone_number,
               address,source,linkedin_url,website,targeted_value,marketing_qualified_lead,
-              assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type)
+              assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type, sync_id, sync_source,pid)
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
-              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}') RETURNING *`,
+              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}', '{var18}','{var19}') RETURNING *`,
 
   "Q170": `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
@@ -2680,7 +2680,8 @@ const db_sql = {
               )as recognized_revenue_data
               
             FROM users where id = '{var1}' AND deleted_at IS NULL and is_deactivated = false`,
-    // "Q308": `SELECT * FROM customer_company_employees WHERE assigned_sales_lead_to = '{var1}' AND emp_type = 'lead' AND deleted_at IS NULL`,
+    "Q308": `SELECT * FROM customer_company_employees 
+             WHERE company_id = '{var1}' AND creator_id = '{var2}' AND sync_id IS NOT NULL AND emp_type = 'lead' AND deleted_at IS NULL`,
     "Q309": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND deleted_at IS NULL`,
     "Q310": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND {var5} = '{var6}' AND deleted_at IS NULL`,
     "Q311": `UPDATE users SET is_deactivated = '{var1}', updated_at = '{var3}', assigned_to = '{var4}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING * `,
@@ -2740,25 +2741,126 @@ const db_sql = {
               AND deleted_at IS NULL`,
 
     "Q318":`SELECT com.id as company_id, c.user_id, c.salesforce_token,c.salesforce_status,
-               c.linked_in_token,c.linked_in_status, c.hubspot_token,c.hubspot_status, c.last_sync_at FROM companies AS com
+               c.linked_in_token,c.linked_in_status, c.hubspot_token,c.hubspot_status,
+               c.hubspot_refresh_token,c.hubspot_expiry,
+               c.linked_in_last_sync, c.salesforce_last_sync, c.hubspot_last_sync,
+               c.salesforce_refresh_token, c.salesforce_expiry 
+            FROM companies AS com
             LEFT JOIN connectors AS c ON c.company_id = com.id
-            WHERE com.deleted_at IS NULL `,
+            WHERE com.deleted_at IS NULL`,
 
     "Q319":`UPDATE connectors SET {var1} = '{var2}',{var3} = '{var4}',
                    updated_at = '{var5}'
             WHERE user_id = '{var6}' AND company_id = '{var7}' AND deleted_at IS NULL RETURNING * `,
 
-    "Q320":`INSERT INTO connectors
-             (user_id,company_id,hubspot_token,hubspot_status)
-            VALUES
-             ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
+    "Q320":`UPDATE connectors SET hubspot_token = '{var1}', hubspot_status = '{var2}',
+              hubspot_refresh_token = '{var3}',hubspot_expiry = '{var4}' 
+            WHERE user_id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *  `,
     "Q321":`INSERT INTO connectors
-              (user_id,company_id,salesforce_token,salesforce_status)
+              (user_id,company_id,salesforce_token,salesforce_status, salesforce_refresh_token, salesforce_expiry)
             VALUES
-              ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
-    "Q322": `SELECT * FROM customer_company_employees WHERE LOWER(email_address) = LOWER('{var1}') AND LOWER(full_name) = LOWER('{var2}') AND deleted_at IS NULL`,
+              ('{var1}','{var2}','{var3}','{var4}', '{var5}', '{var6}') RETURNING *`,
+    "Q322": `SELECT * FROM customer_company_employees WHERE sync_id = '{var1}' AND company_id = '{var2}' AND creator_id = '{var3}' AND deleted_at IS NULL`,
+    "Q323":`INSERT INTO connectors
+              (user_id,company_id,hubspot_token,hubspot_status,hubspot_refresh_token,hubspot_expiry)
+            VALUES
+              ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+    "Q324":`UPDATE connectors SET {var0} = '{var1}',
+                updated_at = '{var2}'
+            WHERE user_id = '{var3}' AND company_id = '{var4}' AND deleted_at IS NULL RETURNING *`,
+    "Q325":`UPDATE connectors SET salesforce_token = '{var1}', salesforce_status = '{var2}',
+                salesforce_refresh_token = '{var3}',salesforce_expiry = '{var4}' 
+            WHERE user_id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *  `,
+    
+    "Q326": `SELECT
+              l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+              l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+              l.website,l.targeted_value,l.marketing_qualified_lead,
+              l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,
+              l.created_at,l.is_converted,l.is_rejected,l.reason,l.sync_source,
+              u1.full_name AS creator_name , c.customer_name ,u2.full_name as assigned_sales_lead_name,
+              ( 
+              SELECT  json_agg(customer_company_employees.*)
+                  FROM (
+                  SELECT 
+                    customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+                    customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
+                    customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
+                    customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
+                    customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
+                    customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                    u1.full_name as created_by,s.source,t.title,c.customer_name,u2.full_name as assigned_sales_lead_name, customer_company_employees.sync_source
+                  FROM customer_company_employees 
+                  LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                  LEFT JOIN users AS u2 ON u2.id = customer_company_employees.assigned_sales_lead_to
+                  LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                  LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                  LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+                  WHERE l.id = customer_company_employees.pid AND emp_type = 'lead' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL
+                ) customer_company_employees 
+              ) as child_lead
+            FROM
+              customer_company_employees AS l
+            LEFT JOIN
+              users AS u1 ON u1.id = l.creator_id
+            LEFT JOIN
+              users AS u2 ON u2.id = l.assigned_sales_lead_to
+            LEFT JOIN
+              lead_sources AS s ON s.id = l.source
+            LEFT JOIN
+              lead_titles AS t ON t.id = l.title
+            LEFT JOIN
+              customer_companies AS c ON c.id = l.customer_company_id
+            WHERE
+              l.company_id = '{var1}' AND l.creator_id = '{var2}' AND l.pid IS NULL  AND emp_type = '{var3}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL
+              AND l.sync_id IS NOT NULL AND l.sync_source IS NOT NULL
+            ORDER BY
+              l.created_at DESC`,
 
-
+    "Q327": `SELECT 
+              l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+              l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+              l.website,l.targeted_value,l.marketing_qualified_lead,
+              l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,
+              l.created_at,l.is_converted,l.is_rejected,l.reason,l.sync_source,
+              u1.full_name AS creator_name , c.customer_name ,u2.full_name as assigned_sales_lead_name,
+              ( 
+                SELECT  json_agg(customer_company_employees.*)
+                    FROM (
+                    SELECT 
+                    customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+                    customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
+                    customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
+                    customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
+                    customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
+                    customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,customer_company_employees.sync_source,
+                    u1.full_name as created_by,s.source,t.title,c.customer_name,u2.full_name as assigned_sales_lead_name
+                    FROM customer_company_employees 
+                    LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                    LEFT JOIN users AS u2 ON u2.id = customer_company_employees.assigned_sales_lead_to
+                    LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                    LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                    LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+                    WHERE l.id = customer_company_employees.pid AND emp_type = 'lead' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL
+                  ) customer_company_employees 
+                ) as child_lead
+            FROM 
+              customer_company_employees AS l
+            LEFT JOIN 
+              users AS u1 ON u1.id = l.creator_id
+            LEFT JOIN 
+              users AS u2 ON u2.id = l.assigned_sales_lead_to
+            LEFT JOIN
+              lead_sources AS s ON s.id = l.source
+            LEFT JOIN
+              lead_titles AS t ON t.id = l.title
+            LEFT JOIN 
+              customer_companies AS c ON c.id = l.customer_company_id
+            WHERE 
+              l.company_id = '{var1}' AND l.creator_id = '{var2}' AND emp_type = '{var3}' AND l.sync_source = '{var4}' AND l.pid IS NULL AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+              AND l.sync_id IS NOT NULL AND l.sync_source IS NOT NULL 
+            ORDER BY 
+              l.created_at DESC`,
 }
 
 function dbScript(template, variables) {

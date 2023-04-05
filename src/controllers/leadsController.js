@@ -46,7 +46,7 @@ module.exports.createLead = async (req, res) => {
                 sourceId = addSource.rows[0].id
             }
 
-            let s2 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(fullName), var2: titleId, var3: mysql_real_escape_string(emailAddress), var4: phoneNumber, var5: mysql_real_escape_string(address), var6: sourceId, var7: linkedinUrl, var8: website, var9: targetedValue, var10: marketingQualifiedLead, var11: assignedSalesLeadTo ? assignedSalesLeadTo : 'null', var12: mysql_real_escape_string(additionalMarketingNotes), var13: userId, var14: checkPermission.rows[0].company_id, var15: customerId, var16: empType })
+            let s2 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(fullName), var2: titleId, var3: mysql_real_escape_string(emailAddress), var4: phoneNumber, var5: mysql_real_escape_string(address), var6: sourceId, var7: linkedinUrl, var8: website, var9: targetedValue, var10: marketingQualifiedLead, var11: assignedSalesLeadTo ? assignedSalesLeadTo : 'null', var12: mysql_real_escape_string(additionalMarketingNotes), var13: userId, var14: checkPermission.rows[0].company_id, var15: customerId, var16: empType, var17 : 'null', var18 : '', var19 : 'null' })
             let createLead = await connection.query(s2)
             // add notification in notification list
             notification_typeId = createLead.rows[0].id;
@@ -514,7 +514,7 @@ module.exports.uploadLeadFile = async (req, res) => {
                                 customerId = findCustomer.rows[0].id
                             }
 
-                            let s10 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(row[0]), var2: titleId, var3: mysql_real_escape_string(row[1]), var4: row[2], var5: mysql_real_escape_string(row[3]), var6: sourceId, var7: row[4], var8: row[5], var9: row[6], var10: false, var11: 'null', var12: mysql_real_escape_string(row[7]), var13: userId, var14: checkPermission.rows[0].company_id, var15: customerId, var16: 'lead' })
+                            let s10 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(row[0]), var2: titleId, var3: mysql_real_escape_string(row[1]), var4: row[2], var5: mysql_real_escape_string(row[3]), var6: sourceId, var7: row[4], var8: row[5], var9: row[6], var10: false, var11: 'null', var12: mysql_real_escape_string(row[7]), var13: userId, var14: checkPermission.rows[0].company_id, var15: customerId, var16: 'lead', var17 : 'null', var18 : '', var19 : 'null' })
                             let createLead = await connection.query(s10)
 
                             let _dt = new Date().toISOString();

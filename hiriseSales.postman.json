@@ -1107,11 +1107,16 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/showProfile",
+                    "raw": "http://localhost:3003/api/v1/companyAdmin/showProfile",
+                    "protocol": "http",
                     "host": [
-                      "{{companyAdmin}}"
+                      "localhost"
                     ],
+                    "port": "3003",
                     "path": [
+                      "api",
+                      "v1",
+                      "companyAdmin",
                       "showProfile"
                     ]
                   }
@@ -1334,7 +1339,7 @@
                       {
                         "key": "file",
                         "type": "file",
-                        "src": "/C:/Users/DELL 7480/Downloads/download.png"
+                        "src": "/C:/Users/kkard/Downloads/istockphoto-1322277517-612x612.jpg"
                       }
                     ]
                   },
@@ -2259,7 +2264,7 @@
                     ]
                   },
                   "url": {
-                    "raw": "{{companyAdmin}}/usersList?status=deactive",
+                    "raw": "{{companyAdmin}}/usersList?status=undefined",
                     "host": [
                       "{{companyAdmin}}"
                     ],
@@ -2269,8 +2274,7 @@
                     "query": [
                       {
                         "key": "status",
-                        "value": "deactive",
-                        "type": "text"
+                        "value": "undefined"
                       }
                     ]
                   }
@@ -3045,7 +3049,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"productName\" : \"mic\",\r\n    \"productImage\" : \"\",\r\n    \"description\" : \"this is a test product\",\r\n    \"availableQuantity\" : \"10\",\r\n    \"price\" : \"1000\",\r\n    \"currency\" : \"$$\",\r\n    \"endOfLife\" : \"31/12/2023\"\r\n}",
+                    "raw": "{\r\n    \"productName\" : \"mic112\",\r\n    \"productImage\" : \"http://143.198.102.134:3003/productImages/1680002914829.jpeg\",\r\n    \"description\" : \"this is a test product\",\r\n    \"availableQuantity\" : \"10\",\r\n    \"price\" : \"1000\",\r\n    \"currency\" : \"$$\",\r\n    \"endOfLife\" : \"31/12/2023\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -3163,7 +3167,7 @@
                       {
                         "key": "image",
                         "type": "file",
-                        "src": "/C:/Users/DELL 7480/Downloads/download.png"
+                        "src": "/C:/Users/kkard/Downloads/istockphoto-1322277517-612x612.jpg"
                       }
                     ]
                   },
@@ -3629,7 +3633,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"customerId\" : \"f83af58c-9212-45ae-90cf-6d2f3d690ccc\",\r\n    \"status\" : true\r\n}",
+                    "raw": "{\r\n    \"customerId\" : \"f83af58c-9212-45ae-90cf-6d2f3d690ccc\",\r\n    \"status\" : false\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -3710,7 +3714,7 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/leadsList?status=not-converted",
+                    "raw": "{{companyAdmin}}/leadsList?status=all",
                     "host": [
                       "{{companyAdmin}}"
                     ],
@@ -3720,7 +3724,7 @@
                     "query": [
                       {
                         "key": "status",
-                        "value": "not-converted"
+                        "value": "all"
                       }
                     ]
                   }
@@ -3745,7 +3749,7 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/leadsDetails?id=dd76668a-cc88-4717-8877-c1f20a8ca53f",
+                    "raw": "{{companyAdmin}}/leadsDetails?id=a31a16e0-25ab-4057-9365-6049903246d4",
                     "host": [
                       "{{companyAdmin}}"
                     ],
@@ -3755,7 +3759,7 @@
                     "query": [
                       {
                         "key": "id",
-                        "value": "dd76668a-cc88-4717-8877-c1f20a8ca53f"
+                        "value": "a31a16e0-25ab-4057-9365-6049903246d4"
                       }
                     ]
                   }
@@ -3957,13 +3961,23 @@
                       "type": "text"
                     }
                   ],
+                  "body": {
+                    "mode": "formdata",
+                    "formdata": [
+                      {
+                        "key": "file",
+                        "type": "file",
+                        "src": "/C:/Users/kkard/Downloads/leadFile.csv"
+                      }
+                    ]
+                  },
                   "url": {
-                    "raw": "{{companyAdmin}}/uploadLeadFile",
+                    "raw": "{{companyAdmin}}/uploadLeadsFile",
                     "host": [
                       "{{companyAdmin}}"
                     ],
                     "path": [
-                      "uploadLeadFile"
+                      "uploadLeadsFile"
                     ]
                   }
                 },
@@ -4114,7 +4128,7 @@
                       {
                         "key": "status",
                         "value": "all",
-                        "description": "all/active/closed"
+                        "description": "all/active/closed/archived"
                       }
                     ]
                   }
@@ -4594,7 +4608,7 @@
                   ],
                   "body": {
                     "mode": "raw",
-                    "raw": "{\r\n    \"salesId\" : \"ba3e85fc-3d59-4cb0-87af-9fd6e12711f8\",\r\n    \"date\" : \"02-09-2023\",\r\n    \"amount\" : \"50000\",\r\n    \"notes\" : \"test\",\r\n    \"invoice\" : \"\"\r\n}",
+                    "raw": "{\r\n    \"salesId\" : \"dea813de-0824-47e1-9b39-0a2d757fa894\",\r\n    \"date\" : \"03-21-2023\",\r\n    \"amount\" : \"25000\",\r\n    \"notes\" : \"test\",\r\n    \"invoice\" : \"\"\r\n}",
                     "options": {
                       "raw": {
                         "language": "json"
@@ -4952,7 +4966,7 @@
                     }
                   ],
                   "url": {
-                    "raw": "{{companyAdmin}}/revenuePerCustomer?page=1&orderBy=asc&startDate=10/01/2021&endDate=10/01/2023",
+                    "raw": "{{companyAdmin}}/revenuePerCustomer?page=1&orderBy=asc&startDate=10/01/2020&endDate=10/01/2023",
                     "host": [
                       "{{companyAdmin}}"
                     ],
@@ -4970,7 +4984,7 @@
                       },
                       {
                         "key": "startDate",
-                        "value": "10/01/2021"
+                        "value": "10/01/2020"
                       },
                       {
                         "key": "endDate",
@@ -6512,6 +6526,143 @@
               }
             ],
             "id": "e6e9fed4-51c1-4b9c-8335-a05c73462ca7"
+          },
+          {
+            "name": "connectores",
+            "item": [
+              {
+                "name": "connectorList",
+                "id": "ba51745c-50d9-48e0-9c31-9a68bc39660f",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/connectorList",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "connectorList"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "auth Url",
+                "id": "55786ed1-3f07-46f4-9b6a-a575f8850921",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "GET",
+                  "header": [
+                    
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/auth/authUrl?provider=hubspot",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "auth",
+                      "authUrl"
+                    ],
+                    "query": [
+                      {
+                        "key": "provider",
+                        "value": "hubspot",
+                        "description": "linkedIn/salesforce/hubspot"
+                      }
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "callback",
+                "id": "b11d8414-fb4b-4438-8e9c-71eeb8dcb8e1",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "method": "POST",
+                  "header": [
+                    {
+                      "key": "Authorization",
+                      "value": "{{token}}",
+                      "type": "text"
+                    }
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/auth/callback?code=04abc9e8-6fc8-46ac-a494-79698f1b84c0&provider=hubspot",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "auth",
+                      "callback"
+                    ],
+                    "query": [
+                      {
+                        "key": "code",
+                        "value": "04abc9e8-6fc8-46ac-a494-79698f1b84c0"
+                      },
+                      {
+                        "key": "provider",
+                        "value": "hubspot",
+                        "description": "linkedIn/salesforce/hubspot"
+                      }
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              },
+              {
+                "name": "search lead",
+                "id": "89453145-c18e-4e61-83a6-3b1ca7b131ad",
+                "protocolProfileBehavior": {
+                  "disableBodyPruning": true
+                },
+                "request": {
+                  "auth": {
+                    "type": "noauth"
+                  },
+                  "method": "GET",
+                  "header": [
+                    
+                  ],
+                  "url": {
+                    "raw": "{{companyAdmin}}/searchLead",
+                    "host": [
+                      "{{companyAdmin}}"
+                    ],
+                    "path": [
+                      "searchLead"
+                    ]
+                  }
+                },
+                "response": [
+                  
+                ]
+              }
+            ],
+            "id": "67f2b436-17d7-4ac3-86e3-e1d21f8ef830"
           }
         ],
         "id": "f4c8bd2e-9400-4a37-ad12-8e62303a98cc"
