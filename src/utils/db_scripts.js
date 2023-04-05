@@ -2771,6 +2771,56 @@ const db_sql = {
                 salesforce_refresh_token = '{var3}',salesforce_expiry = '{var4}' 
             WHERE user_id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *  `,
     
+    "Q326": `SELECT 
+              l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+              l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+              l.website,l.targeted_value,l.marketing_qualified_lead,
+              l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,
+              l.created_at,l.is_converted,l.is_rejected,l.reason,
+              u1.full_name AS creator_name , c.customer_name ,u2.full_name as assigned_sales_lead_name
+            FROM 
+              customer_company_employees AS l
+            LEFT JOIN 
+              users AS u1 ON u1.id = l.creator_id
+            LEFT JOIN 
+              users AS u2 ON u2.id = l.assigned_sales_lead_to
+            LEFT JOIN
+              lead_sources AS s ON s.id = l.source
+            LEFT JOIN
+              lead_titles AS t ON t.id = l.title
+            LEFT JOIN 
+              customer_companies AS c ON c.id = l.customer_company_id
+            WHERE 
+              l.company_id = '{var1}'  AND emp_type = '{var2}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+              AND l.sync_id IS NOT NULL AND l.sync_source IS NOT NULL 
+            ORDER BY 
+              l.created_at DESC`,
+
+  "Q327": `SELECT 
+            l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+            l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+            l.website,l.targeted_value,l.marketing_qualified_lead,
+            l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,
+            l.created_at,l.is_converted,l.is_rejected,l.reason,
+            u1.full_name AS creator_name , c.customer_name ,u2.full_name as assigned_sales_lead_name
+          FROM 
+            customer_company_employees AS l
+          LEFT JOIN 
+            users AS u1 ON u1.id = l.creator_id
+          LEFT JOIN 
+            users AS u2 ON u2.id = l.assigned_sales_lead_to
+          LEFT JOIN
+            lead_sources AS s ON s.id = l.source
+          LEFT JOIN
+            lead_titles AS t ON t.id = l.title
+          LEFT JOIN 
+            customer_companies AS c ON c.id = l.customer_company_id
+          WHERE 
+            l.company_id = '{var1}'  AND emp_type = '{var2}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+            AND l.sync_id IS NOT NULL AND l.sync_source IS NOT NULL AND l.sync_source = '{var3}'
+          ORDER BY 
+            l.created_at DESC`,
+    
           
 
 
