@@ -2680,7 +2680,8 @@ const db_sql = {
               )as recognized_revenue_data
               
             FROM users where id = '{var1}' AND deleted_at IS NULL and is_deactivated = false`,
-    "Q308": `SELECT * FROM customer_company_employees WHERE company_id = '{var1}' AND sync_id IS NOT NULL AND emp_type = 'lead' AND deleted_at IS NULL`,
+    "Q308": `SELECT * FROM customer_company_employees 
+             WHERE company_id = '{var1}' AND creator_id = '{var2}' AND sync_id IS NOT NULL AND emp_type = 'lead' AND deleted_at IS NULL`,
     "Q309": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND deleted_at IS NULL`,
     "Q310": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND {var5} = '{var6}' AND deleted_at IS NULL`,
     "Q311": `UPDATE users SET is_deactivated = '{var1}', updated_at = '{var3}', assigned_to = '{var4}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING * `,
@@ -2759,7 +2760,7 @@ const db_sql = {
               (user_id,company_id,salesforce_token,salesforce_status, salesforce_refresh_token, salesforce_expiry)
             VALUES
               ('{var1}','{var2}','{var3}','{var4}', '{var5}', '{var6}') RETURNING *`,
-    "Q322": `SELECT * FROM customer_company_employees WHERE sync_id = '{var1}' AND deleted_at IS NULL`,
+    "Q322": `SELECT * FROM customer_company_employees WHERE sync_id = '{var1}' AND company_id = '{var2}' AND creator_id = '{var3}' AND deleted_at IS NULL`,
     "Q323":`INSERT INTO connectors
               (user_id,company_id,hubspot_token,hubspot_status,hubspot_refresh_token,hubspot_expiry)
             VALUES
@@ -2811,7 +2812,7 @@ const db_sql = {
             LEFT JOIN
               customer_companies AS c ON c.id = l.customer_company_id
             WHERE
-              l.company_id = '{var1}' AND l.pid IS NULL  AND emp_type = '{var2}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL
+              l.company_id = '{var1}' AND l.creator_id = '{var2}' AND l.pid IS NULL  AND emp_type = '{var3}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL
               AND l.sync_id IS NOT NULL AND l.sync_source IS NOT NULL
             ORDER BY
               l.created_at DESC`,
@@ -2856,7 +2857,7 @@ const db_sql = {
             LEFT JOIN 
               customer_companies AS c ON c.id = l.customer_company_id
             WHERE 
-              l.company_id = '{var1}'  AND emp_type = '{var2}' AND l.sync_source = '{var3}' AND l.pid IS NULL AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+              l.company_id = '{var1}' AND l.creator_id = '{var2}' AND emp_type = '{var3}' AND l.sync_source = '{var4}' AND l.pid IS NULL AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               AND l.sync_id IS NOT NULL AND l.sync_source IS NOT NULL 
             ORDER BY 
               l.created_at DESC`,
