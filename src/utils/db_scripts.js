@@ -2856,8 +2856,8 @@ const db_sql = {
             LEFT JOIN 
               customer_companies AS c ON c.id = l.customer_company_id
             WHERE 
-              l.company_id = '{var1}'  AND emp_type = '{var2}' AND l.pid IS NULL AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
-              AND l.sync_id IS NOT NULL AND l.sync_source IS NOT NULL AND l.sync_source = '{var3}'
+              l.company_id = '{var1}'  AND emp_type = '{var2}' AND l.sync_source = '{var3}' AND l.pid IS NULL AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+              AND l.sync_id IS NOT NULL AND l.sync_source IS NOT NULL 
             ORDER BY 
               l.created_at DESC`,
 }

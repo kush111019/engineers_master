@@ -855,7 +855,7 @@ module.exports.searchLead = async () => {
 
                                     let leadName = data.properties.firstname + ' ' + data.properties.lastname
 
-                                    let s10 = dbScript(db_sql['Q322'], { var1: data.Id })
+                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id })
                                     let checkLead = await connection.query(s10)
                                     if (checkLead.rowCount > 0) {
                                         let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.id, var18: 'hubspot', var19: checkLead.rows[0].id })
@@ -865,7 +865,7 @@ module.exports.searchLead = async () => {
                                         let createLead = await connection.query(s11)
                                     }
                                 } else {
-                                    let s10 = dbScript(db_sql['Q322'], { var1: data.Id })
+                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id })
                                     let checkLead = await connection.query(s10)
                                     if (checkLead.rowCount == 0) {
                                         let titleId = '';
@@ -1445,6 +1445,7 @@ module.exports.leadReSync = async (req, res) => {
                             }
                         } else {
                             for (let data of leadsData) {
+                                console.log(data);
                                 if (new Date(accessData.hubspot_last_sync) < new Date(data.updatedAt)) {
                                     let titleId = '';
                                     let s3 = dbScript(db_sql['Q192'], { var1: data.properties.jobtitle, var2: accessData.company_id })
@@ -1494,17 +1495,18 @@ module.exports.leadReSync = async (req, res) => {
 
                                     let leadName = data.properties.firstname + ' ' + data.properties.lastname
 
-                                    let s10 = dbScript(db_sql['Q322'], { var1: data.Id })
+                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id })
                                     let checkLead = await connection.query(s10)
                                     if (checkLead.rowCount > 0) {
                                         let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.id, var18: 'hubspot', var19: checkLead.rows[0].id })
                                         let createLead = await connection.query(s11)
-                                    }else{
+                                    }
+                                    else{
                                         let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.id, var18: 'hubspot', var19: 'null' })
                                         let createLead = await connection.query(s11) 
                                     }
                                 } else {
-                                    let s10 = dbScript(db_sql['Q322'], { var1: data.Id })
+                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id })
                                     let checkLead = await connection.query(s10)
                                     if (checkLead.rowCount == 0) {
                                         let titleId = '';
