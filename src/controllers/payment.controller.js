@@ -1,7 +1,7 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const stripe = require('stripe')(process.env.SECRET_KEY)
-const {verifyTokenFn, immediateUpgradeSubFn, laterUpgradeSubFn} = require('../utils/helper')
+const { verifyTokenFn, immediateUpgradeSubFn, laterUpgradeSubFn } = require('../utils/helper')
 
 module.exports.plansList = async (req, res) => {
     try {
@@ -48,6 +48,7 @@ module.exports.createPayment = async (req, res) => {
         let {
             planId,
             userCount,
+            proUserCount,
             cardNumber,
             expMonth,
             expYear,
@@ -85,6 +86,7 @@ module.exports.createPayment = async (req, res) => {
                         items: [
                             { price: planData.rows[0].admin_price_id },
                             { price: planData.rows[0].user_price_id, quantity: userCount },
+                            { price: planData.rows[0].pro_user_price_id, quantity: proUserCount }
                         ],
                         payment_settings: {
                             payment_method_types: ['card'],
@@ -96,8 +98,8 @@ module.exports.createPayment = async (req, res) => {
                         let totalPrice = data.price.unit_amount * data.quantity
                         totalAmount = totalAmount + totalPrice;
                     }
-                    if(planData.rows[0].interval == 'year'){
-                        totalAmount = totalAmount - ((Number(process.env.DISCOUNT_PERCENTAGE)/100) * totalAmount)   
+                    if (planData.rows[0].interval == 'year') {
+                        totalAmount = totalAmount - ((Number(process.env.DISCOUNT_PERCENTAGE) / 100) * totalAmount)
                     }
                     const charge = await stripe.charges.create({
                         amount: Math.round(totalAmount),
@@ -106,12 +108,12 @@ module.exports.createPayment = async (req, res) => {
                         source: card.id
                     });
                     if (charge && customer && subscription && token && card) {
-                        
+
                         let s4 = dbScript(db_sql['Q96'], {
                             var1: user.id, var2: checkuser.rows[0].company_id,
                             var3: planId, var4: customer.id, var5: subscription.id, var6: card.id,
                             var7: token.id, var8: charge.id, var9: subscription.current_period_end,
-                            var10: userCount, var11: charge.status, var12: Math.round(totalAmount), var13: charge.receipt_url
+                            var10: userCount, var11: charge.status, var12: Math.round(totalAmount), var13: charge.receipt_url, var14: proUserCount
                         })
                         let saveTrasaction = await connection.query(s4)
 
@@ -121,13 +123,16 @@ module.exports.createPayment = async (req, res) => {
                         let s5 = dbScript(db_sql['Q102'], { var1: expiryDate, var2: checkuser.rows[0].id, var3: _dt })
                         let updateUserExpiryDate = await connection.query(s5)
 
-                        let s7 = dbScript(db_sql['Q197'], { var1: expiryDate, var2: (Number(userCount) + 1), var3: _dt, var4: checkuser.rows[0].company_id })
+                        let s7 = dbScript(db_sql['Q197'], { var1: expiryDate, var2: (Number(userCount) + 1), var3: proUserCount, var4: _dt, var5: checkuser.rows[0].company_id })
                         let updateCompanyExpiryDate = await connection.query(s7)
+
+                        let s8 = dbScript(db_sql['Q328'], { var1: checkuser.rows[0].company_id })
+                        let updateAdminToPro = await connection.query(s8)
 
                         let s6 = dbScript(db_sql['Q30'], { var1: false, var2: checkuser.rows[0].company_id, var3: _dt })
                         let unlockUsers = await connection.query(s6)
 
-                        if (saveTrasaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && unlockUsers.rowCount > 0 && updateCompanyExpiryDate.rowCount > 0) {
+                        if (saveTrasaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && unlockUsers.rowCount > 0 && updateCompanyExpiryDate.rowCount > 0 && updateAdminToPro.rowCount > 0) {
                             await connection.query('COMMIT')
                             res.json({
                                 status: 201,
@@ -200,7 +205,6 @@ module.exports.subscriptionDetails = async (req, res) => {
             if (transaction.rowCount > 0) {
                 let s3 = dbScript(db_sql['Q93'], { var1: transaction.rows[0].plan_id })
                 let planData = await connection.query(s3)
-
                 if (planData.rowCount > 0) {
                     const product = await stripe.products.retrieve(
                         planData.rows[0].product_id
@@ -209,7 +213,6 @@ module.exports.subscriptionDetails = async (req, res) => {
                     const subscription = await stripe.subscriptions.retrieve(
                         transaction.rows[0].stripe_subscription_id
                     );
-
                     let endDate = new Date(subscription.current_period_end * 1000)
                     let timeDifference = endDate.getTime() - new Date().getTime();
                     //calculate days difference by dividing total milliseconds in a day  
@@ -225,11 +228,14 @@ module.exports.subscriptionDetails = async (req, res) => {
                             adminPrice: subscription.items.data[0].price.unit_amount,
                             userPrice: subscription.items.data[1].price.unit_amount,
                             userCount: subscription.items.data[1].quantity,
+                            proUserPrice: subscription.items.data[2].price.unit_amount,
+                            proUserCount: subscription.items.data[2].quantity,
                             endsIn: Number(days[0]),
                             planType: (subscription.trial_end != null) ? "Trial Plan" : "Paid Plan",
-                            isCanceled : transaction.rows[0].is_canceled,
-                            paymentReceipt : transaction.rows[0].payment_receipt
+                            isCanceled: transaction.rows[0].is_canceled,
+                            paymentReceipt: transaction.rows[0].payment_receipt
                         }
+                        console.log(details);
                         res.json({
                             status: 200,
                             success: true,
@@ -245,10 +251,12 @@ module.exports.subscriptionDetails = async (req, res) => {
                             adminPrice: "",
                             userPrice: "",
                             userCount: "",
+                            proUserPrice: "",
+                            proUserCount: "",
                             endsIn: "",
                             planType: "",
-                            isCanceled : "",
-                            paymentReceipt : ""
+                            isCanceled: "",
+                            paymentReceipt: ""
                         }
                         res.json({
                             status: 200,
@@ -266,7 +274,7 @@ module.exports.subscriptionDetails = async (req, res) => {
                     })
                 }
             } else {
-                let s4 = dbScript(db_sql['Q9'], {var1 : user.rows[0].company_id})
+                let s4 = dbScript(db_sql['Q9'], { var1: user.rows[0].company_id })
                 let companyDetails = await connection.query(s4)
 
                 let endDate = new Date(companyDetails.rows[0].expiry_date)
@@ -282,11 +290,13 @@ module.exports.subscriptionDetails = async (req, res) => {
                     description: "",
                     adminPrice: "",
                     userPrice: "",
+                    proUserPrice: "",
+                    proUserCount: "",
                     userCount: Number(companyDetails.rows[0].user_count),
                     endsIn: Number(days[0]),
                     planType: "",
-                    isCanceled : "",
-                    paymentReceipt : ""
+                    isCanceled: "",
+                    paymentReceipt: ""
                 }
                 res.json({
                     status: 200,
@@ -332,7 +342,7 @@ module.exports.cancelSubscription = async (req, res) => {
                     );
                     if (cancelSubscription) {
                         let _dt = new Date().toISOString();
-                        
+
                         let s2 = dbScript(db_sql['Q106'], { var1: true, var2: _dt, var3: transaction.rows[0].id })
                         let updateTransaction = await connection.query(s2)
                         if (updateTransaction.rowCount > 0) {
@@ -417,7 +427,7 @@ module.exports.upgradeSubscription = async (req, res) => {
                     const deleted = await stripe.subscriptions.del(
                         subscriptionId
                     );
-                    if(deleted){
+                    if (deleted) {
                         await immediateUpgradeSubFn(req, res, user, transaction)
                     }
                 } else if (immediateUpgrade == false) {
@@ -425,7 +435,7 @@ module.exports.upgradeSubscription = async (req, res) => {
                         subscriptionId,
                         { cancel_at_period_end: true }
                     );
-                    if(cancelSubscription){
+                    if (cancelSubscription) {
                         await laterUpgradeSubFn(req, res, user, transaction)
                     }
                 }

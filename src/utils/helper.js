@@ -127,6 +127,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
     let {
         planId,
         userCount,
+        proUserCount,
         cardNumber,
         expMonth,
         expYear,
@@ -153,6 +154,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
             items: [
                 { price: planData.rows[0].admin_price_id },
                 { price: planData.rows[0].user_price_id, quantity: userCount },
+                { price: planData.rows[0].pro_user_price_id, quantity: proUserCount }
             ],
             payment_settings: {
                 payment_method_types: ['card'],
@@ -180,7 +182,8 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
                 var1: transaction.rows[0].stripe_customer_id, var2: subscription.id,
                 var3: card.id, var4: token.id, var5: charge.id, var6: subscription.current_period_end,
                 var7: _dt, var8: transaction.rows[0].id, var9: Math.round(totalAmount), var10: true,
-                var11: charge.receipt_url, var12: userCount, var13: planId, var14: ""
+                var11: charge.receipt_url, var12: userCount, var13: planId, var14: "",
+                var15 : proUserCount
             })
             let updateTransaction = await connection.query(s3)
 
@@ -189,7 +192,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
             let s5 = dbScript(db_sql['Q102'], { var1: expiryDate, var2: user.rows[0].id, var3: _dt })
             let updateUserExpiryDate = await connection.query(s5)
 
-            let s6 = dbScript(db_sql['Q197'], { var1: expiryDate, var2: userCount, var3: _dt, var4: user.rows[0].company_id })
+            let s6 = dbScript(db_sql['Q197'], { var1: expiryDate, var2: userCount,var3 : proUserCount, var4: _dt, var5: user.rows[0].company_id })
             let updateCompanyExpiryDate = await connection.query(s6)
 
 
@@ -231,6 +234,7 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
     let {
         planId,
         userCount,
+        proUserCount,
         cardNumber,
         expMonth,
         expYear,
@@ -257,6 +261,7 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
             items: [
                 { price: planData.rows[0].admin_price_id },
                 { price: planData.rows[0].user_price_id, quantity: userCount },
+                { price: planData.rows[0].pro_user_price_id, quantity: proUserCount },
             ],
             payment_settings: {
                 payment_method_types: ['card'],
@@ -276,11 +281,11 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
 
             let s3 = dbScript(db_sql['Q135'], {
                 var1: user.rows[0].id, var2: transaction.rows[0].company_id, var3: planId, var4: transaction.rows[0].stripe_customer_id, var5: subscription.id, var6: card.id, var7: token.id, var8: "", var9: subscription.current_period_end, var10: userCount, var11: "",
-                var12: Math.round(totalAmount), var13: ""
+                var12: Math.round(totalAmount), var13: "", var14 : proUserCount
             })
             let createUpgradedTransaction = await connection.query(s3)
 
-            let s4 = dbScript(db_sql['Q105'], { var1: transaction.rows[0].stripe_customer_id, var2: transaction.rows[0].stripe_subscription_id, var3: transaction.rows[0].stripe_card_id, var4: transaction.rows[0].stripe_token_id, var5: transaction.rows[0].stripe_charge_id, var6: transaction.rows[0].expiry_date, var7: _dt, var8: transaction.rows[0].id, var9: transaction.rows[0].total_amount, var10: false, var11: transaction.rows[0].payment_receipt, var12: transaction.rows[0].user_count, var13: transaction.rows[0].plan_id, var14: createUpgradedTransaction.rows[0].id })
+            let s4 = dbScript(db_sql['Q105'], { var1: transaction.rows[0].stripe_customer_id, var2: transaction.rows[0].stripe_subscription_id, var3: transaction.rows[0].stripe_card_id, var4: transaction.rows[0].stripe_token_id, var5: transaction.rows[0].stripe_charge_id, var6: transaction.rows[0].expiry_date, var7: _dt, var8: transaction.rows[0].id, var9: transaction.rows[0].total_amount, var10: false, var11: transaction.rows[0].payment_receipt, var12: transaction.rows[0].user_count, var13: transaction.rows[0].plan_id, var14: createUpgradedTransaction.rows[0].id, var15 : proUserCount })
             let updateTransaction = await connection.query(s4)
 
             if (createUpgradedTransaction.rowCount > 0 && updateTransaction.rowCount > 0) {
