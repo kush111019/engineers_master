@@ -577,22 +577,22 @@ const db_sql = {
   "Q89": `SELECT id, company_name, company_logo, company_address, is_imap_enable,is_locked, is_marketing_enable, created_at, expiry_date, user_count FROM companies WHERE deleted_at IS NULL`,
   "Q90": `UPDATE super_admin SET encrypted_password = '{var2}' WHERE email = '{var1}'`,
   "Q91": `INSERT INTO payment_plans(product_id, name, description, active_status,
-              admin_price_id, admin_amount,user_price_id, user_amount, interval, currency) 
+              admin_price_id, admin_amount,user_price_id, user_amount,pro_user_price_id, pro_user_amount, interval, currency) 
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', 
-              '{var9}','{var10}') RETURNING *`,
+              '{var9}','{var10}','{var11}','{var12}') RETURNING *`,
   "Q92": `SELECT id,  name, description, active_status,
-              interval, admin_amount,user_amount, currency FROM payment_plans WHERE active_status = 'true' AND  deleted_at IS NULL`,
+              interval, admin_amount,user_amount,pro_user_amount, currency FROM payment_plans WHERE active_status = 'true' AND  deleted_at IS NULL`,
   "Q93": `SELECT id, product_id, name, description, active_status,
-              admin_price_id,user_price_id, interval, admin_amount,user_amount, currency FROM payment_plans WHERE id = '{var1}' AND deleted_at IS NULL ORDER BY name asc`,
+              admin_price_id,user_price_id,pro_user_price_id, interval, admin_amount,user_amount,pro_user_amount, currency FROM payment_plans WHERE id = '{var1}' AND deleted_at IS NULL ORDER BY name asc`,
   "Q94": `UPDATE payment_plans SET name = '{var1}', description = '{var2}', 
                updated_at = '{var3}' WHERE id = '{var4}' AND deleted_at IS NULL RETURNING *` ,
   "Q95": `UPDATE payment_plans SET active_status = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
   "Q96": `INSERT INTO transactions(user_id, company_id, plan_id, stripe_customer_id,
               stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, expiry_date,
-              user_count, payment_status,total_amount, payment_receipt) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', 
-              '{var6}', '{var7}','{var8}', '{var9}', '{var10}','{var11}','{var12}','{var13}') RETURNING *` ,
-  "Q97": `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade, is_canceled, payment_receipt  FROM transactions WHERE company_id = '{var1}' AND deleted_at IS NULL`,
-  "Q98": `SELECT id, name, description, active_status, interval, admin_amount,user_amount, currency FROM payment_plans WHERE deleted_at IS NULL`,
+              user_count, payment_status,total_amount, payment_receipt,pro_user_count) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', 
+              '{var6}', '{var7}','{var8}', '{var9}', '{var10}','{var11}','{var12}','{var13}', '{var14}') RETURNING *` ,
+  "Q97": `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,pro_user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade, is_canceled, payment_receipt  FROM transactions WHERE company_id = '{var1}' AND deleted_at IS NULL`,
+  "Q98": `SELECT id, name, description, active_status, interval, admin_amount,user_amount,pro_user_amount, currency FROM payment_plans WHERE deleted_at IS NULL`,
   "Q99": `SELECT id, full_name,company_id, email_address,encrypted_password,mobile_number,role_id, avatar, is_verified, is_main_admin, expiry_date FROM users WHERE deleted_at IS NULL`,
   "Q100": `INSERT INTO superadmin_config(trial_days, trial_users) VALUES('{var1}', '{var2}') RETURNING *`,
   "Q101": `SELECT id, trial_days,trial_users, created_at FROM superadmin_config WHERE deleted_at IS NULL ORDER BY created_at desc `,
@@ -601,7 +601,7 @@ const db_sql = {
   "Q104": `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade  FROM transactions WHERE plan_id = '{var1}' AND deleted_at IS NULL`,
   "Q105": `UPDATE transactions SET stripe_customer_id = '{var1}', stripe_subscription_id = '{var2}', 
               stripe_card_id = '{var3}', stripe_token_id = '{var4}', stripe_charge_id = '{var5}', 
-              expiry_date = '{var6}', updated_at = '{var7}', total_amount = '{var9}', immediate_upgrade = '{var10}', payment_receipt = '{var11}', user_count = '{var12}', plan_id = '{var13}', upgraded_transaction_id = '{var14}'  WHERE id = '{var8}' AND deleted_at IS NULL RETURNING *`,
+              expiry_date = '{var6}', updated_at = '{var7}', total_amount = '{var9}', immediate_upgrade = '{var10}', payment_receipt = '{var11}', user_count = '{var12}', plan_id = '{var13}', upgraded_transaction_id = '{var14}', pro_user_count = '{var15}'  WHERE id = '{var8}' AND deleted_at IS NULL RETURNING *`,
   "Q106": `UPDATE transactions SET is_canceled = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
   "Q107": `SELECT id, chat_name, is_group_chat, last_message, group_admin,user_a, user_b, created_at FROM chat WHERE is_group_chat = 'false' AND ((user_a = '{var1}' AND user_b = '{var2}') or (user_a = '{var2}' AND user_b = '{var1}')) AND deleted_at IS NULL`,
   "Q108": `INSERT INTO message( chat_id, sender, content) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
@@ -667,9 +667,9 @@ const db_sql = {
               AND c.deleted_at IS NULL AND r.deleted_at IS NULL AND con.deleted_at IS NULL`,
   "Q133": `UPDATE companies SET is_imap_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q134": `SELECT id, product_name, product_image, description, available_quantity, price, end_of_life, currency, company_id, created_at, updated_at FROM products WHERE product_name = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL ORDER BY created_at desc `,
-  "Q135": `INSERT INTO upgraded_transactions(id, user_id, company_id, plan_id, stripe_customer_id,
+  "Q135": `INSERT INTO upgraded_transactions(user_id, company_id, plan_id, stripe_customer_id,
               stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, expiry_date,
-              user_count, payment_status,total_amount, payment_receipt) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', 
+              user_count, payment_status,total_amount, payment_receipt, pro_user_count) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', 
               '{var6}', '{var7}','{var8}', '{var9}', '{var10}','{var11}','{var12}','{var13}','{var14}') RETURNING *`,
   "Q136": `SELECT id, user_id, company_id, plan_id, stripe_customer_id,
               stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, expiry_date,
@@ -1392,7 +1392,7 @@ const db_sql = {
   "Q194": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND emp_type = 'lead' AND marketing_qualified_lead = true AND deleted_at IS NULL`,
   "Q195": `UPDATE companies SET is_marketing_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q196": `UPDATE companies SET expiry_date = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
-  "Q197": `UPDATE companies SET expiry_date = '{var1}', user_count = '{var2}', updated_at = '{var3}' WHERE id = '{var4}' AND deleted_at IS NULL RETURNING *`,
+  "Q197": `UPDATE companies SET expiry_date = '{var1}', user_count = '{var2}',pro_user_count = '{var3}', updated_at = '{var4}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *`,
 
   "Q198": `INSERT INTO marketing_budget(timeline,amount,start_date,end_date,created_by, company_id)
              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') RETURNING *`,
@@ -2861,6 +2861,8 @@ const db_sql = {
               AND l.sync_id IS NOT NULL AND l.sync_source IS NOT NULL 
             ORDER BY 
               l.created_at DESC`,
+
+    "Q328":`UPDATE users SET is_pro_user = true WHERE company_id = '{var1}' AND is_main_admin = true AND deleted_at IS NULL`
 }
 
 function dbScript(template, variables) {

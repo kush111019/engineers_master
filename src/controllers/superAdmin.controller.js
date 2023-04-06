@@ -634,7 +634,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
 
 module.exports.addPlan = async (req, res) => {
     try {
-        let { name, type, adminAmount, userAmount, description, currency } = req.body
+        let { name, type, adminAmount, userAmount, proUserAmount, description, currency } = req.body
         let sAEmail = req.user.email
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
@@ -661,9 +661,17 @@ module.exports.addPlan = async (req, res) => {
                 recurring: { interval: type },
             });
 
+            const price3 = await stripe.prices.create({
+                nickname: 'For Pro Users',
+                product: product.id,
+                unit_amount: proUserAmount * 100,
+                currency: currency,
+                recurring: { interval: type },
+            })
+
             let s2 = dbScript(db_sql['Q91'], {
                 var1: product.id, var2: product.name,
-                var3: product.description, var4: product.active, var5: price1.id, var6: price1.unit_amount, var7: price2.id, var8: price2.unit_amount, var9: price1.recurring.interval, var10: price1.currency
+                var3: product.description, var4: product.active, var5: price1.id, var6: price1.unit_amount, var7: price2.id, var8: price2.unit_amount,var9 : price3.id,var10 : price3.unit_amount,var11: price1.recurring.interval, var12: price1.currency
             })
             let addPlan = await connection.query(s2)
             if (addPlan.rowCount > 0) {
