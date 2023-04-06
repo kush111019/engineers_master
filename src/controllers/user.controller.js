@@ -172,7 +172,8 @@ module.exports.addUser = async (req, res) => {
             address,
             roleId,
             avatar,
-            encryptedPassword
+            encryptedPassword,
+            isProUser
         } = req.body
 
         await connection.query('BEGIN')
@@ -193,7 +194,7 @@ module.exports.addUser = async (req, res) => {
                 let isAdmin = findRole.rows[0].role_name == 'Admin' ? true : false;
 
                 // and user added in db and update there permission in db
-                let s5 = dbScript(db_sql['Q45'], { var1: mysql_real_escape_string(name), var2: checkPermission.rows[0].company_id, var3: avatar, var4: mysql_real_escape_string(emailAddress.toLowerCase()), var5: mobileNumber, var6: encryptedPassword, var7: roleId, var8: mysql_real_escape_string(address), var9: isAdmin, var10: userId })
+                let s5 = dbScript(db_sql['Q45'], { var1: mysql_real_escape_string(name), var2: checkPermission.rows[0].company_id, var3: avatar, var4: mysql_real_escape_string(emailAddress.toLowerCase()), var5: mobileNumber, var6: encryptedPassword, var7: roleId, var8: mysql_real_escape_string(address), var9: isAdmin, var10: userId, var11 : isProUser })
                 let addUser = await connection.query(s5)
 
                 let _dt = new Date().toISOString();
@@ -504,7 +505,8 @@ module.exports.updateUser = async (req, res) => {
             mobileNumber,
             address,
             roleId,
-            avatar
+            avatar,
+            isProUser
         } = req.body
         
         await connection.query('BEGIN')
@@ -520,7 +522,7 @@ module.exports.updateUser = async (req, res) => {
             let _dt = new Date().toISOString();
 
             //update user details
-            let s4 = dbScript(db_sql['Q22'], { var1: mysql_real_escape_string(emailAddress), var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: checkPermission.rows[0].company_id, var10: isAdmin })
+            let s4 = dbScript(db_sql['Q22'], { var1: mysql_real_escape_string(emailAddress), var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: checkPermission.rows[0].company_id, var10: isAdmin, var11 : isProUser })
             let updateUser = await connection.query(s4)
             await connection.query('COMMIT')
             if (updateUser.rowCount > 0) {
