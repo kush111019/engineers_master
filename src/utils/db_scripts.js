@@ -1912,7 +1912,7 @@ const db_sql = {
   "Q250": `SELECT
             u.id, u.email_address, u.full_name, u.company_id, u.avatar, u.mobile_number,
             u.phone_number, u.address, u.role_id, u.is_admin, u.expiry_date, u.created_at,u.is_verified,
-            u.is_main_admin, u.created_by,
+            u.is_main_admin, u.created_by,u.is_pro_user,
             r.role_name
           FROM
             users as u
@@ -2862,7 +2862,7 @@ const db_sql = {
             ORDER BY 
               l.created_at DESC`,
 
-    "Q328":`UPDATE users SET is_pro_user = true WHERE company_id = '{var1}' AND is_main_admin = true AND deleted_at IS NULL`,
+    "Q328":`UPDATE users SET is_pro_user = true WHERE company_id = '{var1}' AND is_main_admin = '{var2}' AND deleted_at IS NULL`,
     "Q329": `SELECT u.id, u.full_name, u.company_id, u.email_address, u.encrypted_password, u.mobile_number, u.role_id, 
               u.avatar, u.expiry_date, u.is_verified, u.is_admin, u.is_locked, u.is_main_admin,u.is_deactivated, c.company_name, c.company_address, c.company_logo, c.is_imap_enable,c.is_marketing_enable,
               r.id as role_id,r.role_name, r.reporter, r.module_ids, con.id AS config_id, con.currency, con.phone_format, con.date_format, con.before_closing_days, con.after_closing_days

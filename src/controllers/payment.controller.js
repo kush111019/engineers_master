@@ -128,7 +128,7 @@ module.exports.createPayment = async (req, res) => {
 
                         let s8 = dbScript(db_sql['Q328'], { var1: checkuser.rows[0].company_id, var2 : true })
                         let updateAdminToPro = await connection.query(s8)
-console.log(updateAdminToPro.rows,"updateAdminToPro");
+                        
                         let s6 = dbScript(db_sql['Q30'], { var1: false, var2: checkuser.rows[0].company_id, var3: _dt })
                         let unlockUsers = await connection.query(s6)
 
