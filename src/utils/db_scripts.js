@@ -21,7 +21,7 @@ const db_sql = {
                 u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
                 u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
                 u1.is_main_admin,u1.is_deactivated,u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName,
-                u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at
+                u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at,u1.is_pro_user
               FROM 
                 users AS u1 
               LEFT JOIN 
@@ -2694,7 +2694,7 @@ const db_sql = {
               u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
               u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
               u1.is_main_admin,u1.is_deactivated,u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName,
-              u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at
+              u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at, u1.is_pro_user
             FROM 
               users AS u1 
             LEFT JOIN 
@@ -2862,7 +2862,16 @@ const db_sql = {
             ORDER BY 
               l.created_at DESC`,
 
-    "Q328":`UPDATE users SET is_pro_user = true WHERE company_id = '{var1}' AND is_main_admin = true AND deleted_at IS NULL`
+    "Q328":`UPDATE users SET is_pro_user = true WHERE company_id = '{var1}' AND is_main_admin = true AND deleted_at IS NULL`,
+    "Q329": `SELECT u.id, u.full_name, u.company_id, u.email_address, u.encrypted_password, u.mobile_number, u.role_id, 
+              u.avatar, u.expiry_date, u.is_verified, u.is_admin, u.is_locked, u.is_main_admin,u.is_deactivated, c.company_name, c.company_address, c.company_logo, c.is_imap_enable,c.is_marketing_enable,
+              r.id as role_id,r.role_name, r.reporter, r.module_ids, con.id AS config_id, con.currency, con.phone_format, con.date_format, con.before_closing_days, con.after_closing_days
+            FROM users AS u 
+              LEFT JOIN companies AS c ON c.id = u.company_id
+              LEFT JOIN roles AS r ON r.id = u.role_id 
+              LEFT JOIN configurations AS con ON con.company_id = u.company_id
+            WHERE LOWER(email_address) = LOWER('{var1}') AND u.is_pro_user = true AND u.deleted_at IS NULL 
+              AND c.deleted_at IS NULL AND r.deleted_at IS NULL AND con.deleted_at IS NULL`,
 }
 
 function dbScript(template, variables) {
