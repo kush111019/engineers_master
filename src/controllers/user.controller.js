@@ -85,6 +85,82 @@ module.exports.userCount = async (req, res) => {
     }
 }
 
+module.exports.proUserCount = async (req, res) => {
+    try {
+        let userId = req.user.id
+        // here we are getting user deatils 
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+
+            let s2 = dbScript(db_sql['Q15'], { var1: findAdmin.rows[0].company_id })
+            let users = await connection.query(s2)
+            let puc = 0;
+            users.rows.map(value => {
+                if (value.is_deactivated == false && value.is_pro_user) {
+                    puc = puc + 1
+                }
+            })
+            //here we are getting a transection details and its limit 
+            let s3 = dbScript(db_sql['Q97'], { var1: findAdmin.rows[0].company_id })
+            let count = await connection.query(s3)
+
+            //here we are getting a company details 
+            let s4 = dbScript(db_sql['Q9'], { var1: findAdmin.rows[0].company_id })
+            let userCount = await connection.query(s4)
+
+            if (count.rows.length > 0) {
+                if (puc - 1 < count.rows[0].pro_user_count) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: 'Can add pro users'
+                    })
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: 'Users limit reached, cannot add new pro users. Please contact your admin to increase the user license count'
+                    })
+                }
+            } else if (userCount.rowCount > 0) {
+                if (puc < userCount.rows[0].pro_user_count) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: 'Can add users'
+                    })
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: 'Users limit reached, cannot add pro users. Please contact your admin to increase the user license count'
+                    })
+                }
+            } else {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Empty User List'
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 //this function is use for add new user in company 
 module.exports.addUser = async (req, res) => {
     try {
