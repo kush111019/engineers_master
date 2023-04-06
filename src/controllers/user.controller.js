@@ -111,7 +111,7 @@ module.exports.proUserCount = async (req, res) => {
             let userCount = await connection.query(s4)
 
             if (count.rows.length > 0) {
-                if (puc - 1 < count.rows[0].pro_user_count) {
+                if (puc < count.rows[0].pro_user_count) {
                     res.json({
                         status: 200,
                         success: true,
@@ -125,7 +125,7 @@ module.exports.proUserCount = async (req, res) => {
                     })
                 }
             } else if (userCount.rowCount > 0) {
-                if (puc - 1 < userCount.rows[0].pro_user_count) {
+                if (puc < userCount.rows[0].pro_user_count) {
                     res.json({
                         status: 200,
                         success: true,
