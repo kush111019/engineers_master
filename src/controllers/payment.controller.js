@@ -62,7 +62,6 @@ module.exports.createPayment = async (req, res) => {
             if (checkuser.rows.length > 0) {
                 let s2 = dbScript(db_sql['Q93'], { var1: planId })
                 let planData = await connection.query(s2)
-                console.log(planData.rows,"planData");
                 if (planData.rowCount > 0) {
                     const customer = await stripe.customers.create({
                         name: checkuser.rows[0].full_name,
@@ -70,7 +69,6 @@ module.exports.createPayment = async (req, res) => {
                         phone: checkuser.rows[0].mobile_number,
                         description: "Hirise-sales subscription",
                     });
-                    console.log(customer,"customer");
                     const token = await stripe.tokens.create({
                         card: {
                             number: cardNumber,
@@ -79,12 +77,10 @@ module.exports.createPayment = async (req, res) => {
                             cvc: cvc,
                         },
                     });
-                    console.log(token,"token");
                     const card = await stripe.customers.createSource(
                         customer.id,
                         { source: token.id }
                     );
-                    console.log(card,"card");
                     const subscription = await stripe.subscriptions.create({
                         customer: customer.id,
                         items: [
@@ -97,7 +93,6 @@ module.exports.createPayment = async (req, res) => {
                             save_default_payment_method: "on_subscription"
                         }
                     });
-                    console.log(subscription,"subscription");
                     let totalAmount = 0
                     for (let data of subscription.items.data) {
                         let totalPrice = data.price.unit_amount * data.quantity
@@ -112,7 +107,6 @@ module.exports.createPayment = async (req, res) => {
                         customer: customer.id,
                         source: card.id
                     });
-                    console.log(charge,"charge");
                     if (charge && customer && subscription && token && card) {
 
                         let s4 = dbScript(db_sql['Q96'], {
@@ -122,24 +116,23 @@ module.exports.createPayment = async (req, res) => {
                             var10: userCount, var11: charge.status, var12: Math.round(totalAmount), var13: charge.receipt_url, var14: proUserCount
                         })
                         let saveTrasaction = await connection.query(s4)
-                        console.log(saveTrasaction.rows,"savetransaction");
 
                         let expiryDate = new Date(Number(subscription.current_period_end) * 1000).toISOString()
                         let _dt = new Date().toISOString();
 
                         let s5 = dbScript(db_sql['Q102'], { var1: expiryDate, var2: checkuser.rows[0].id, var3: _dt })
                         let updateUserExpiryDate = await connection.query(s5)
-console.log(updateUserExpiryDate.rows,"updateUserExpiryDate");
+
                         let s7 = dbScript(db_sql['Q197'], { var1: expiryDate, var2: (Number(userCount) + 1), var3: proUserCount, var4: _dt, var5: checkuser.rows[0].company_id })
                         let updateCompanyExpiryDate = await connection.query(s7)
-                        console.log(updateCompanyExpiryDate.rows,"updateUserExpiryDate");
-                        let s8 = dbScript(db_sql['Q328'], { var1: checkuser.rows[0].company_id })
+
+                        let s8 = dbScript(db_sql['Q328'], { var1: checkuser.rows[0].company_id, var2 : true })
                         let updateAdminToPro = await connection.query(s8)
 console.log(updateAdminToPro.rows,"updateAdminToPro");
                         let s6 = dbScript(db_sql['Q30'], { var1: false, var2: checkuser.rows[0].company_id, var3: _dt })
                         let unlockUsers = await connection.query(s6)
-console.log(unlockUsers.rows,"unlockUsers");
-                        if (saveTrasaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && unlockUsers.rowCount > 0 && updateCompanyExpiryDate.rowCount > 0 && updateAdminToPro.rowCount > 0) {
+
+                        if (saveTrasaction.rowCount > 0 && updateUserExpiryDate.rowCount > 0 && updateCompanyExpiryDate.rowCount > 0 && updateAdminToPro.rowCount>0 ) {
                             await connection.query('COMMIT')
                             res.json({
                                 status: 201,
