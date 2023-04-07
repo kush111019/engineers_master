@@ -1880,9 +1880,10 @@ const db_sql = {
                   customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
                   customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type, 
                   customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,c.customer_name
+                  u1.full_name as created_by,s.source,t.title,c.customer_name, u2.full_name as lead_assigned_to
                 FROM customer_company_employees 
                 LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                LEFT JOIN users AS u2 ON u2.id = customer_company_employees.assigned_sales_lead_to
                 LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                 LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
                 LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
