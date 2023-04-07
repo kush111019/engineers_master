@@ -185,13 +185,23 @@ const db_sql = {
                 customer_companies AS c 
               INNER JOIN users AS u ON u.id = c.user_id
               WHERE c.company_id = '{var1}' AND c.is_rejected = '{var2}'`,
-  "Q53": `INSERT INTO sales (customer_id, customer_commission_split_id, is_overwrite, company_id, business_contact_id, revenue_contact_id, qualification, is_qualified, target_amount, target_closing_date, sales_type, subscription_plan, recurring_date, currency, user_id, slab_id, lead_id ,booking_commission) VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}', '{var16}', '{var17}', '{var18}') RETURNING *`,
+  "Q53": `INSERT INTO 
+            sales (customer_id, customer_commission_split_id, is_overwrite, company_id, 
+            business_contact_id, revenue_contact_id, qualification, is_qualified, 
+            target_amount, target_closing_date, sales_type, subscription_plan, 
+            recurring_date, currency, user_id, slab_id, lead_id ,booking_commission,
+            committed_at, is_service_performed, service_perform_note, service_performed_at) 
+          VALUES ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', 
+            '{var8}','{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', 
+            '{var15}', '{var16}', '{var17}', '{var18}', '{var19}', '{var20}', '{var21}', '{var22}') 
+          RETURNING *`,
   "Q54": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
             sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
             sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,
-            sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,
+            sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, 
+            sc.slab_id,sc.is_service_performed, sc.committed_at,sc.service_performed_at, sc.service_perform_note,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id , 
             slab.slab_name,sc.approval_status,
@@ -272,7 +282,19 @@ const db_sql = {
               deleted_at = '{var1}'
             WHERE 
               sales_id = '{var2}' AND company_id = '{var3}' RETURNING *  `,
-  "Q62": `UPDATE sales SET customer_id = '{var1}', customer_commission_split_id = '{var2}', is_overwrite = '{var3}', updated_at = '{var4}',business_contact_id = '{var7}', revenue_contact_id = '{var8}', qualification = '{var9}', is_qualified = '{var10}', target_amount = '{var11}', target_closing_date = '{var12}', sales_type = '{var14}', subscription_plan = '{var15}', recurring_date = '{var16}', currency = '{var17}', slab_id = '{var18}', lead_id = '{var19}', booking_commission= '{var20}'  WHERE id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
+  "Q62": `UPDATE sales 
+          SET 
+            customer_id = '{var1}', customer_commission_split_id = '{var2}', 
+            is_overwrite = '{var3}', updated_at = '{var4}',business_contact_id = '{var7}', 
+            revenue_contact_id = '{var8}', qualification = '{var9}', is_qualified = '{var10}', 
+            target_amount = '{var11}', target_closing_date = '{var12}', sales_type = '{var14}', 
+            subscription_plan = '{var15}', recurring_date = '{var16}', currency = '{var17}', 
+            slab_id = '{var18}', lead_id = '{var19}', booking_commission= '{var20}',
+            committed_at = '{var21}', is_service_performed = '{var22}', service_perform_note = '{var23}',
+            service_performed_at = '{var24}'   
+          WHERE 
+            id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL 
+          RETURNING *`,
   "Q63": `UPDATE sales_users 
           SET 
             user_id = '{var1}', user_percentage = '{var2}', commission_split_id = '{var3}', updated_at = '{var4}'
@@ -330,6 +352,7 @@ const db_sql = {
             sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason,
             sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
+            sc.is_service_performed, sc.committed_at,sc.service_performed_at, sc.service_perform_note,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
             slab.slab_name,sc.approval_status,
@@ -939,6 +962,7 @@ const db_sql = {
             sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
             sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason,
              sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
+             sc.is_service_performed, sc.committed_at,sc.service_performed_at, sc.service_perform_note,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
             slab.slab_name,sc.approval_status,
@@ -1002,7 +1026,9 @@ const db_sql = {
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
             sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
              sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
-            sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
+            sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, 
+            sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
+            sc.is_service_performed, sc.committed_at,sc.service_performed_at, sc.service_perform_note,
             cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
             sc.transfered_back_by as transfered_back_by_id ,
             slab.slab_name,sc.approval_status,
@@ -2260,7 +2286,9 @@ const db_sql = {
               sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
               sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
                 sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
-              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
+              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason,
+               sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
+               sc.is_service_performed, sc.committed_at,sc.service_performed_at, sc.service_perform_note,
               cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
               sc.transfered_back_by as transfered_back_by_id ,
               slab.slab_name,sc.approval_status,
@@ -2406,7 +2434,9 @@ const db_sql = {
               sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
               sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
                 sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
-              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
+              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, 
+              sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
+              sc.is_service_performed, sc.committed_at,sc.service_performed_at, sc.service_perform_note,
               cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
               sc.transfered_back_by as transfered_back_by_id ,
               slab.slab_name,sc.approval_status,
