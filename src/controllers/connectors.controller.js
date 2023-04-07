@@ -29,8 +29,8 @@ module.exports.connectorsList = async (req, res) => {
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let findUser = await connection.query(s1)
-        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-            let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: checkPermission.rows[0].company_id })
+        if (findUser.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
             let getConnectors = await connection.query(s2)
             let connectorsArr = []
             if (getConnectors.rowCount > 0) {
@@ -1150,7 +1150,87 @@ module.exports.recognizationDetailsPro = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
-            
+            let s3 = dbScript(db_sql['Q249'], { var1: findUser.rows[0].company_id, var2: salesId })
+            let salesList = await connection.query(s3)
+            let salesObj = {}
+            for (let salesData of salesList.rows) {
+                if (salesData.lead_data) {
+                    for (let leadData of salesData.lead_data) {
+                        if (leadData.emp_type == 'lead') {
+                            salesObj.customerContractDetails = {
+                                lead_name: leadData.full_name,
+                                customer_name: leadData.customer_name,
+                                lead_title: leadData.title,
+                                lead_source: leadData.source,
+                                lead_created_at: leadData.created_at,
+                                lead_targeted_value: leadData.targeted_value,
+                                lead_notes: leadData.additional_marketing_notes,
+                                lead_address: leadData.address
+                            }
+                        }
+                    }
+                } else {
+                    salesObj.customerContractDetails = {}
+                }
+
+                salesObj.performanceObligation = {
+                    sales_created_at: salesData.created_at,
+                    sales_created_by: salesData.created_by,
+                    sales_users: salesData.sales_users
+                }
+
+                salesObj.determineTransaction = {
+                    sales_committed_at: salesData.committed_at,
+                    sales_products: salesData.products,
+                    sales_commitment_note: salesData.qualification
+                }
+
+                if (salesData.is_service_performed) {
+                    salesObj.allocatedTransaction = {
+                        sales_target_amount: salesData.target_amount,
+                        sales_target_closing_date: salesData.target_closing_date,
+                        sales_service_performed_at: salesData.service_performed_at,
+                        sales_service_perform_note: salesData.service_perform_note
+                    }
+                } else {
+                    salesObj.allocatedTransaction = {}
+                }
+
+                let s5 = dbScript(db_sql['Q231'], { var1: salesData.id })
+                let recognizedRevenue = await connection.query(s5)
+                if (recognizedRevenue.rowCount > 0) {
+                    let recArr = []
+                    for (let recData of recognizedRevenue.rows) {
+                        let obj = {
+                            sales_recognized_amount: recData.recognized_amount,
+                            sales_recognized_date: recData.recognized_date,
+                            sales_recognized_notes: recData.notes,
+                            sales_recognized_invoice: recData.invoice
+                        }
+                        recArr.push(obj)
+                    }
+                    salesObj.recognizedRevenue = {
+                        sales_recognized_data: recArr
+                    }
+                } else {
+                    salesObj.recognizedRevenue = {}
+                }
+            }
+            if (salesList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Sales details',
+                    data: salesObj
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty sales commission list',
+                    data: {}
+                })
+            }
         } else {
             res.status(403).json({
                 success: false,
@@ -1158,6 +1238,10 @@ module.exports.recognizationDetailsPro = async (req, res) => {
             })
         }
     } catch (error) {
-
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
     }
 }

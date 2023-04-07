@@ -233,4 +233,5 @@ router.post('/auth/callback',verifyTokenFn,controller.connectors.callback)
 router.get('/leadReSync',verifyTokenFn,controller.connectors.leadReSync)
 router.get('/proLeadsList',verifyTokenFn,controller.connectors.proLeadsList)
 router.get('/salesListForPro',verifyTokenFn,controller.connectors.salesListForPro)
+router.get('/recognizationDetailsPro',verifyTokenFn,controller.connectors.recognizationDetailsPro)
 module.exports = router;
