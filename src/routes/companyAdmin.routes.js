@@ -20,6 +20,8 @@ router.put('/changePassword', verifyTokenFn, controller.companyAdmin.changePassw
 router.put('/updateCompanyLogo', verifyTokenFn, uploadLogo.single('file'), controller.companyAdmin.updateCompanyLogo)
 
 //-------------------------------------Users-------------------------------------------------
+router.get('/userCount', verifyTokenFn, controller.users.userCount)
+router.get('/proUserCount', verifyTokenFn, controller.users.proUserCount)
 router.post('/addUser', verifyTokenFn, controller.users.addUser)
 router.get('/usersList', verifyTokenFn, controller.users.usersList)
 router.get('/usersDetails', verifyTokenFn, controller.users.usersDetails)
@@ -157,7 +159,6 @@ router.get('/imapCredentialsList', verifyTokenFn, controller.configuration.imapC
 
 //------------------------------------Payment----------------------------------------
 router.post('/createPayment', controller.payment.createPayment)
-router.get('/userCount', verifyTokenFn, controller.users.userCount)
 router.get('/subscriptionDetails', verifyTokenFn, controller.payment.subscriptionDetails)
 router.put('/cancelSubscription', verifyTokenFn, controller.payment.cancelSubscription)
 router.post('/upgradeSubscription', verifyTokenFn, controller.payment.upgradeSubscription)
@@ -231,4 +232,6 @@ router.get('/auth/authUrl',controller.connectors.authUrl);
 router.post('/auth/callback',verifyTokenFn,controller.connectors.callback)
 router.get('/leadReSync',verifyTokenFn,controller.connectors.leadReSync)
 router.get('/proLeadsList',verifyTokenFn,controller.connectors.proLeadsList)
+router.get('/salesListForPro',verifyTokenFn,controller.connectors.salesListForPro)
+router.get('/recognizationDetailsPro',verifyTokenFn,controller.connectors.recognizationDetailsPro)
 module.exports = router;

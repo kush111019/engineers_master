@@ -85,6 +85,82 @@ module.exports.userCount = async (req, res) => {
     }
 }
 
+module.exports.proUserCount = async (req, res) => {
+    try {
+        let userId = req.user.id
+        // here we are getting user deatils 
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+
+            let s2 = dbScript(db_sql['Q15'], { var1: findAdmin.rows[0].company_id })
+            let users = await connection.query(s2)
+            let puc = 0;
+            users.rows.map(value => {
+                if (value.is_deactivated == false && value.is_pro_user) {
+                    puc = puc + 1
+                }
+            })
+            //here we are getting a transection details and its limit 
+            let s3 = dbScript(db_sql['Q97'], { var1: findAdmin.rows[0].company_id })
+            let count = await connection.query(s3)
+
+            //here we are getting a company details 
+            let s4 = dbScript(db_sql['Q9'], { var1: findAdmin.rows[0].company_id })
+            let userCount = await connection.query(s4)
+
+            if (count.rows.length > 0) {
+                if (puc < count.rows[0].pro_user_count) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: 'Can add pro users'
+                    })
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: 'Users limit reached, cannot add new pro users. Please contact your admin to increase the user license count'
+                    })
+                }
+            } else if (userCount.rowCount > 0) {
+                if (puc < userCount.rows[0].pro_user_count) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: 'Can add users'
+                    })
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: 'Users limit reached, cannot add pro users. Please contact your admin to increase the user license count'
+                    })
+                }
+            } else {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Empty User List'
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Admin not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 //this function is use for add new user in company 
 module.exports.addUser = async (req, res) => {
     try {
@@ -96,7 +172,8 @@ module.exports.addUser = async (req, res) => {
             address,
             roleId,
             avatar,
-            encryptedPassword
+            encryptedPassword,
+            isProUser
         } = req.body
 
         await connection.query('BEGIN')
@@ -117,7 +194,7 @@ module.exports.addUser = async (req, res) => {
                 let isAdmin = findRole.rows[0].role_name == 'Admin' ? true : false;
 
                 // and user added in db and update there permission in db
-                let s5 = dbScript(db_sql['Q45'], { var1: mysql_real_escape_string(name), var2: checkPermission.rows[0].company_id, var3: avatar, var4: mysql_real_escape_string(emailAddress.toLowerCase()), var5: mobileNumber, var6: encryptedPassword, var7: roleId, var8: mysql_real_escape_string(address), var9: isAdmin, var10: userId })
+                let s5 = dbScript(db_sql['Q45'], { var1: mysql_real_escape_string(name), var2: checkPermission.rows[0].company_id, var3: avatar, var4: mysql_real_escape_string(emailAddress.toLowerCase()), var5: mobileNumber, var6: encryptedPassword, var7: roleId, var8: mysql_real_escape_string(address), var9: isAdmin, var10: userId, var11: isProUser })
                 let addUser = await connection.query(s5)
 
                 let _dt = new Date().toISOString();
@@ -298,8 +375,8 @@ module.exports.usersList = async (req, res) => {
         let userId = req.user.id
         let status = "all"
 
-        if(req?.query?.status) {
-            status  = (req?.query?.status == 'undefined' || req?.query?.status == undefined ) ? 'all' : req?.query?.status;
+        if (req?.query?.status) {
+            status = (req?.query?.status == 'undefined' || req?.query?.status == undefined) ? 'all' : req?.query?.status;
         }
         // here we are getting user permission's
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
@@ -307,19 +384,19 @@ module.exports.usersList = async (req, res) => {
         if (checkPermission.rows[0].permission_to_view_global) {
             //check user's on the basis of company id
             let findUsers;
-            if(status.toLowerCase() == 'all'){
+            if (status.toLowerCase() == 'all') {
                 let s4 = dbScript(db_sql['Q15'], { var1: checkPermission.rows[0].company_id })
                 findUsers = await connection.query(s4);
             }
-            if(status.toLowerCase() == 'active'){
-                let s4 = dbScript(db_sql['Q314'], { var1: checkPermission.rows[0].company_id , var2 : false})
+            if (status.toLowerCase() == 'active') {
+                let s4 = dbScript(db_sql['Q314'], { var1: checkPermission.rows[0].company_id, var2: false })
                 findUsers = await connection.query(s4);
             }
-            if(status.toLowerCase() == 'deactive'){
-                let s4 = dbScript(db_sql['Q314'], { var1: checkPermission.rows[0].company_id, var2 : true })
+            if (status.toLowerCase() == 'deactive') {
+                let s4 = dbScript(db_sql['Q314'], { var1: checkPermission.rows[0].company_id, var2: true })
                 findUsers = await connection.query(s4);
             }
-            
+
             if (findUsers.rows.length > 0) {
                 res.json({
                     status: 200,
@@ -338,17 +415,17 @@ module.exports.usersList = async (req, res) => {
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let userList;
-            if(status.toLowerCase() == 'all'){
+            if (status.toLowerCase() == 'all') {
                 let s3 = dbScript(db_sql['Q272'], { var1: roleUsers.join(",") })
                 userList = await connection.query(s3);
             }
-            if(status.toLowerCase() == 'active'){
-                let s4 = dbScript(db_sql['Q315'], { var1: roleUsers.join(",") , var2 : false})
-                console.log(s4,"s4");
+            if (status.toLowerCase() == 'active') {
+                let s4 = dbScript(db_sql['Q315'], { var1: roleUsers.join(","), var2: false })
+                console.log(s4, "s4");
                 userList = await connection.query(s4);
             }
-            if(status.toLowerCase() == 'deactive'){
-                let s4 = dbScript(db_sql['Q315'], { var1: roleUsers.join(","), var2 : true })
+            if (status.toLowerCase() == 'deactive') {
+                let s4 = dbScript(db_sql['Q315'], { var1: roleUsers.join(","), var2: true })
                 userList = await connection.query(s4);
             }
             if (userList.rowCount > 0) {
@@ -428,9 +505,10 @@ module.exports.updateUser = async (req, res) => {
             mobileNumber,
             address,
             roleId,
-            avatar
+            avatar,
+            isProUser
         } = req.body
-        
+
         await connection.query('BEGIN')
         //get user all permission's 
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
@@ -444,7 +522,7 @@ module.exports.updateUser = async (req, res) => {
             let _dt = new Date().toISOString();
 
             //update user details
-            let s4 = dbScript(db_sql['Q22'], { var1: mysql_real_escape_string(emailAddress), var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: checkPermission.rows[0].company_id, var10: isAdmin })
+            let s4 = dbScript(db_sql['Q22'], { var1: mysql_real_escape_string(emailAddress), var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: checkPermission.rows[0].company_id, var10: isAdmin, var11: isProUser })
             let updateUser = await connection.query(s4)
             await connection.query('COMMIT')
             if (updateUser.rowCount > 0) {
@@ -532,7 +610,7 @@ module.exports.deleteUser = async (req, res) => {
         let {
             userId
         } = req.body
-        
+
         await connection.query('BEGIN')
         //check user all permission's
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
@@ -542,7 +620,7 @@ module.exports.deleteUser = async (req, res) => {
             //update user status to deleted
             let s4 = dbScript(db_sql['Q23'], { var1: _dt, var2: userId, var3: checkPermission.rows[0].company_id })
             let updateUser = await connection.query(s4)
-           
+
             if (updateUser.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
@@ -621,7 +699,7 @@ module.exports.deactivateUserAccount = async (req, res) => {
                 } else {
                     let _dt = new Date().toISOString();
                     //update user status is locked here
-                    let s4 = dbScript(db_sql['Q311'], { var1: isDeactivated, var2: userId, var3: _dt, var4 : 'null' })
+                    let s4 = dbScript(db_sql['Q311'], { var1: isDeactivated, var2: userId, var3: _dt, var4: 'null' })
                     let updateUser = await connection.query(s4)
 
                     if (updateUser.rowCount > 0) {
@@ -742,7 +820,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let s2 = dbScript(db_sql['Q309'], { var1: 'roles', var2: 'user_id', var3: newUserId, var4: rolesIds.join(",") })
                 let updateNewUserInRole = await connection.query(s2)
             }
-            
+
             if (userData.users_data) {
                 let userIds = []
                 userData.users_data.map(item => {
@@ -914,9 +992,9 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
             }
 
             let _dt = new Date().toISOString();
-            let s4 = dbScript(db_sql['Q311'], { var1: true, var2: userId, var3: _dt, var4 : newUserId })
+            let s4 = dbScript(db_sql['Q311'], { var1: true, var2: userId, var3: _dt, var4: newUserId })
             let updateUser = await connection.query(s4)
-            if ( updateUser.rowCount > 0 ) {
+            if (updateUser.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 200,
