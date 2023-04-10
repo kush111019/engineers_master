@@ -2793,7 +2793,7 @@ const db_sql = {
               (user_id,company_id,salesforce_token,salesforce_status, salesforce_refresh_token, salesforce_expiry)
             VALUES
               ('{var1}','{var2}','{var3}','{var4}', '{var5}', '{var6}') RETURNING *`,
-    "Q322": `SELECT * FROM customer_company_employees WHERE sync_id = '{var1}' AND company_id = '{var2}' AND creator_id = '{var3}' AND deleted_at IS NULL`,
+    "Q322": `SELECT * FROM customer_company_employees WHERE sync_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
     "Q323":`INSERT INTO connectors
               (user_id,company_id,hubspot_token,hubspot_status,hubspot_refresh_token,hubspot_expiry)
             VALUES
