@@ -48,14 +48,18 @@ module.exports.industryFn = async (industry, company_id) => {
 
 module.exports.customerFnForHubspot = async (data, accessData, industryId) => {
     let customerId = ''
-    let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.properties.company), var2: accessData.company_id })
-    let findCustomer = await connection.query(s12)
-    if (findCustomer.rowCount == 0) {
-        let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.properties.company), var3: accessData.company_id, var4: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId == '') ? 'null' : industryId })
-        let createCustomer = await connection.query(s9)
-        return customerId = createCustomer.rows[0].id
-    } else {
-        return customerId = findCustomer.rows[0].id
+    if(data.properties.company){
+        let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(data.properties.company), var2: accessData.company_id })
+        let findCustomer = await connection.query(s12)
+        if (findCustomer.rowCount == 0) {
+            let s9 = dbScript(db_sql['Q36'], { var1: accessData.user_id, var2: mysql_real_escape_string(data.properties.company), var3: accessData.company_id, var4: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var5: 'UNITED STATE DOLLAR (USD)', var6: (industryId != '') ? industryId : 'null' })
+            let createCustomer = await connection.query(s9)
+            return customerId = createCustomer.rows[0].id
+        } else {
+            return customerId = findCustomer.rows[0].id
+        }
+    }else{
+        return customerId
     }
 }
 
