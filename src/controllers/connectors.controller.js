@@ -826,13 +826,11 @@ module.exports.leadReSync = async (req, res) => {
                         if (findSyncLead.rowCount == 0) {
                             //Initial insertion
                             for (let data of leadsData) {
-
                                 let titleId = await titleFn(data.properties.jobtitle, accessData.company_id)
 
                                 let sourceId = await sourceFn('', accessData.company_id)
 
                                 let industryId = await industryFn(data.properties.industry, accessData.company_id)
-
                                 let customerId = await customerFnForHubspot(data, accessData, industryId)
 
 
@@ -849,9 +847,9 @@ module.exports.leadReSync = async (req, res) => {
                                     let sourceId = await sourceFn('', accessData.company_id)
 
                                     let industryId = await industryFn(data.properties.industry, accessData.company_id)
+                                    console.log(industryId,"industryId");
 
                                     let customerId = await customerFnForHubspot(data, accessData, industryId)
-
 
                                     let leadName = data.properties.firstname + ' ' + data.properties.lastname
 
