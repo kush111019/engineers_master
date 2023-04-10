@@ -486,10 +486,11 @@ module.exports.updateSales = async (req, res) => {
             // let committedDate = (!is_qualified) ? 'null' :
             //     (findSales.rows[0].committed_at && is_qualified) ? findSales.rows[0].committed_at :
             //     (!findSales.rows[0].committed_at && is_qualified) ? _dt : 'null';
-            
+            console.log(is_qualified,"is_qualified");
+            console.log(findSales.rows[0].committed_at,"findSales.rows[0].committed_at");
             let committedDate = (!is_qualified) ? 'null' :
                 (findSales.rows[0].committed_at !== null && is_qualified) ? findSales.rows[0].committed_at : (_dt);
-
+console.log(committedDate,"committedDate");
             // let performedDate = (!is_service_performed) ? 'null' :
             //     (findSales.rows[0].service_performed_at && is_service_performed) ? findSales.rows[0].service_performed_at :
             //         (!findSales.rows[0].service_performed_at && is_service_performed) ? _dt : 'null';
@@ -499,7 +500,9 @@ module.exports.updateSales = async (req, res) => {
 
             totalCommission = totalCommission + commission
             let s5 = dbScript(db_sql['Q62'], { var1: customerId, var2: commissionSplitId, var3: is_overwrite, var4: _dt, var5: salesId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: mysql_real_escape_string(qualification), var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17: currency, var18: slabId, var19: leadId, var20: totalCommission, var21: committedDate, var22: is_service_performed, var23: mysql_real_escape_string(service_perform_note), var24: performedDate })
+            console.log(s5,"s5.........");
             let updateSales = await connection.query(s5)
+            console.log(updateSales,"updateSales");
 
             let salesUsersForLog = []
             let s7 = dbScript(db_sql['Q63'], { var1: captainId, var2: captainPercentage, var3: commissionSplitId, var4: _dt, var5: salesId, var6: checkPermission.rows[0].company_id, var7: process.env.CAPTAIN })
