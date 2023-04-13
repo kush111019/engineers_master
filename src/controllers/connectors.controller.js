@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string,mysql_real_escape_string2 } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2 } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { query } = require('express');
 
@@ -1289,21 +1289,21 @@ module.exports.createProEmailTemplate = async (req, res) => {
     }
 }
 
-module.exports.emailTemplateList = async(req,res) => {
+module.exports.emailTemplateList = async (req, res) => {
     try {
         let userId = req.user.id
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
-            let s2 = dbScript(db_sql['Q331'],{var1: userId, var2: findUser.rows[0].company_id})
+            let s2 = dbScript(db_sql['Q331'], { var1: userId, var2: findUser.rows[0].company_id })
             let templateList = await connection.query(s2)
-            if(templateList.rowCount>0){
+            if (templateList.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     data: templateList.rows
                 })
-            }else{
+            } else {
                 res.json({
                     status: 200,
                     success: false,
@@ -1311,7 +1311,7 @@ module.exports.emailTemplateList = async(req,res) => {
                     data: []
                 })
             }
-        }else {
+        } else {
             res.json({
                 status: 400,
                 success: false,
@@ -1323,29 +1323,29 @@ module.exports.emailTemplateList = async(req,res) => {
             status: 400,
             success: false,
             message: error.message
-        }) 
+        })
     }
 }
 
-module.exports.updateEmailTemplate = async(req,res) =>{
-   try {
-    let userId = req.user.id
-    let { templateId, templateName, emailTemplate } = req.body
-    await connection.query('BEGIN')
-    let s1 = dbScript(db_sql['Q8'], { var1: userId })
+module.exports.updateEmailTemplate = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { templateId, templateName, emailTemplate } = req.body
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q332'],{var1: templateId, var2: _dt, var3: templateName, var4: emailTemplate })
+            let s2 = dbScript(db_sql['Q332'], { var1: templateId, var2: _dt, var3: templateName, var4: mysql_real_escape_string2(emailTemplate) })
             updateTemplate = await connection.query(s2)
-            if(updateTemplate.rowCount>0){
+            if (updateTemplate.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
                     message: "Template Updated Successfully"
                 })
-            }else{
+            } else {
                 await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
@@ -1353,7 +1353,7 @@ module.exports.updateEmailTemplate = async(req,res) =>{
                     message: "Something went wrong"
                 })
             }
-        }else{
+        } else {
             await connection.query('ROLLBACK')
             res.json({
                 status: 400,
@@ -1361,36 +1361,36 @@ module.exports.updateEmailTemplate = async(req,res) =>{
                 message: "Invalid user",
             })
         }
-   } catch (error) {
-    await connection.query('ROLLBACK')
-    res.json({
-        status: 400,
-        success: false,
-        message: error.message
-    }) 
-   }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message
+        })
+    }
 
 }
 
-module.exports.deleteEmailTemplate = async(req,res) =>{
-  try {
-    userId = req.user.id
-    let { templateId } = req.query
-    await connection.query('BEGIN')
-    let s1 = dbScript(db_sql['Q8'], { var1: userId })
+module.exports.deleteEmailTemplate = async (req, res) => {
+    try {
+        userId = req.user.id
+        let { templateId } = req.query
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q333'],{ var1: templateId, var2: _dt})
+            let s2 = dbScript(db_sql['Q333'], { var1: templateId, var2: _dt })
             let deleteTemplate = await connection.query(s2)
-            if(deleteTemplate.rowCount>0){
+            if (deleteTemplate.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
                     message: "Template Deleted Successfully"
                 })
-            }else{
+            } else {
                 await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
@@ -1398,7 +1398,7 @@ module.exports.deleteEmailTemplate = async(req,res) =>{
                     message: "Something went wrong"
                 })
             }
-        }else{
+        } else {
             await connection.query('ROLLBACK')
             res.json({
                 status: 400,
@@ -1406,18 +1406,52 @@ module.exports.deleteEmailTemplate = async(req,res) =>{
                 message: "Invalid user",
             })
         }
-  } catch (error) {
-    await connection.query('ROLLBACK')
-    res.json({
-        status: 400,
-        success: false,
-        message: error.message
-    }) 
-  }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message
+        })
+    }
 
 }
 
-module.exports.calendlyAccessToken
+module.exports.calendlyAccessToken = async (req, res) => {
+    // Set your Calendly API credentials
+    const CLIENT_ID = 'SkoTA2IQIBgJ524cSPcx5mbPD26bv1nTuyEjgmW93wM';
+    const CLIENT_SECRET = 'QIVDqHJQlmG4_2BRAooVq2MNbtUunSsOjO7zkzjrkE4';
+    const BASE_URL = 'https://api.calendly.com/oauth';
+
+    try {
+
+
+        let authUrl = `https://auth.calendly.com/oauth/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${process.env.REDIRECT_URL}`
+
+        console.log(authUrl);
+
+        const response = await axios.post('https://auth.calendly.com/oauth/token', qs.stringify({
+            client_id: CLIENT_ID,
+            client_secret: CLIENT_SECRET,
+            code: 'fB_WgQh-NMoHAyq1K48cro8gGukm-yB-dei6rpNSRMU',
+            redirect_uri: process.env.REDIRECT_URL,
+            grant_type: 'authorization_code'
+        }), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+
+        // Access token and refresh token received in the response
+        const accessToken = response.data.access_token;
+        const refreshToken = response.data.refresh_token;
+
+        console.log('Access Token:', accessToken);
+        console.log('Refresh Token:', refreshToken);
+    } catch (error) {
+        console.error(error);
+    }
+}
 
 
 
