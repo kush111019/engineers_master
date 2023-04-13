@@ -1248,12 +1248,12 @@ module.exports.recognizationDetailsPro = async (req, res) => {
 module.exports.createProEmailTemplate = async (req, res) => {
     try {
         let userId = req.user.id
-        let { emailTemplate, templateName } = req.body
+        let { emailTemplate, templateName, jsonTemplate } = req.body
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
-            let s2 = dbScript(db_sql['Q330'], { var1: userId, var2: findUser.rows[0].company_id, var3: mysql_real_escape_string2(emailTemplate), var4: templateName })
+            let s2 = dbScript(db_sql['Q330'], { var1: userId, var2: findUser.rows[0].company_id, var3: mysql_real_escape_string2(emailTemplate), var4: templateName, var5: jsonTemplate })
             let createTemplate = await connection.query(s2)
             if (createTemplate.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -1330,13 +1330,13 @@ module.exports.emailTemplateList = async (req, res) => {
 module.exports.updateEmailTemplate = async (req, res) => {
     try {
         let userId = req.user.id
-        let { templateId, templateName, emailTemplate } = req.body
+        let { templateId, templateName, emailTemplate, jsonTemplate } = req.body
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q332'], { var1: templateId, var2: _dt, var3: templateName, var4: mysql_real_escape_string2(emailTemplate) })
+            let s2 = dbScript(db_sql['Q332'], { var1: templateId, var2: _dt, var3: templateName, var4: mysql_real_escape_string2(emailTemplate), var5: jsonTemplate })
             updateTemplate = await connection.query(s2)
             if (updateTemplate.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -1426,14 +1426,14 @@ module.exports.calendlyAccessToken = async (req, res) => {
     try {
 
 
-        let authUrl = `https://auth.calendly.com/oauth/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${process.env.REDIRECT_URL}`
+        // let authUrl = `https://auth.calendly.com/oauth/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${process.env.REDIRECT_URL}`
 
-        console.log(authUrl);
+        // console.log(authUrl);
 
         const response = await axios.post('https://auth.calendly.com/oauth/token', qs.stringify({
             client_id: CLIENT_ID,
             client_secret: CLIENT_SECRET,
-            code: 'fB_WgQh-NMoHAyq1K48cro8gGukm-yB-dei6rpNSRMU',
+            code: 'nxV420m_p3atD5lsBfYr0WR8C5E-791wu0VH2VyjCmw',
             redirect_uri: process.env.REDIRECT_URL,
             grant_type: 'authorization_code'
         }), {
@@ -1452,6 +1452,29 @@ module.exports.calendlyAccessToken = async (req, res) => {
         console.error(error);
     }
 }
+
+module.exports.calendlyEvents = async (req, res) => {
+
+    // Fetch the user's upcoming events
+
+    const ACCESS_TOKEN = 'eyJraWQiOiIxY2UxZTEzNjE3ZGNmNzY2YjNjZWJjY2Y4ZGM1YmFmYThhNjVlNjg0MDIzZjdjMzJiZTgzNDliMjM4MDEzNWI0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJodHRwczovL2F1dGguY2FsZW5kbHkuY29tIiwiaWF0IjoxNjgxMzg2NTYwLCJqdGkiOiJiMjFkNWJjYi1lNzdhLTQyODEtOWVhNS00YTdhMWRkODIxNjkiLCJ1c2VyX3V1aWQiOiIzYjFjNTIwZC1iNDQ3LTRhODktOTQ1Ny03NTdiOGUwZjg0Y2EiLCJhcHBfdWlkIjoiU2tvVEEySVFJQmdKNTI0Y1NQY3g1bWJQRDI2YnYxblR1eUVqZ21XOTN3TSIsImV4cCI6MTY4MTM5Mzc2MH0.WclVVXkQxyVmsYn3Si8JnC3jrYhepUCQcUFKSqwncJ4fnV0LAfHaQlMDQ8EUe4htZ3SOKjZDvDLXI_FCEz5GkA'
+
+    const BASE_URL = 'https://api.calendly.com/oauth';
+    try {
+        const response = await axios.get(`${BASE_URL}/users/me/upcoming_events`, {
+            headers: {
+                'Authorization': `Bearer ${ACCESS_TOKEN}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        console.log(response.data);
+    } catch (error) {
+        console.log("error", error.message);
+    }
+
+}
+
+
 
 
 
