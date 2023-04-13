@@ -1258,7 +1258,7 @@ module.exports.createProEmailTemplate = async (req, res) => {
             if (createTemplate.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
-                    status: 200,
+                    status: 201,
                     success: true,
                     message: "Template created successfully"
                 })
@@ -1291,7 +1291,6 @@ module.exports.createProEmailTemplate = async (req, res) => {
 
 module.exports.emailTemplateList = async(req,res) => {
     try {
-        console.log("working....");
         let userId = req.user.id
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
@@ -1304,14 +1303,15 @@ module.exports.emailTemplateList = async(req,res) => {
                     success: true,
                     data: templateList.rows
                 })
-            } res.json({
-                status: 400,
-                success: false,
-                message: "Empty template list",
-                data: []
-            })
+            }else{
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty template list",
+                    data: []
+                })
+            }
         }else {
-            await connection.query('ROLLBACK')
             res.json({
                 status: 400,
                 success: false,
@@ -1416,4 +1416,6 @@ module.exports.deleteEmailTemplate = async(req,res) =>{
   }
 
 }
+
+
 
