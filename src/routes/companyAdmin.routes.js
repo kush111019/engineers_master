@@ -234,4 +234,12 @@ router.get('/leadReSync',verifyTokenFn,controller.connectors.leadReSync)
 router.get('/proLeadsList',verifyTokenFn,controller.connectors.proLeadsList)
 router.get('/salesListForPro',verifyTokenFn,controller.connectors.salesListForPro)
 router.get('/recognizationDetailsPro',verifyTokenFn,controller.connectors.recognizationDetailsPro)
+
+//pro email 
+router.post('/createProEmailTemplate',verifyTokenFn,controller.connectors.createProEmailTemplate)
+router.get('/emailTemplateList',verifyTokenFn,controller.connectors.emailTemplateList)
+router.put('/updateEmailTemplate',verifyTokenFn,controller.connectors.updateEmailTemplate)
+router.put('/deleteEmailTemplate',verifyTokenFn,controller.connectors.deleteEmailTemplate)
+
+
 module.exports = router;
