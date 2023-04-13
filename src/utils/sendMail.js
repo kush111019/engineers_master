@@ -737,3 +737,54 @@ module.exports.notificationMail2 = async (email,msg) => {
     console.log("Message sent! Message ID: ", info.messageId);
 
 }
+
+module.exports.leadEmail2 = async (email , template, subject) => {
+    const smtpEndpoint = "smtp.gmail.com";
+    const port = 587;
+    const senderAddress = process.env.SMTP_USERNAME;
+    var toAddresses = email;
+
+    let Temp = template 
+
+    var ccAddresses = "";
+    var bccAddresses = "";
+
+    const smtpUsername = process.env.SMTP_USERNAME;
+    const smtpPassword = process.env.SMTP_PASSWORD;
+
+    // The subject line of the email
+    var subject = subject;
+    // The email body for recipients with non-HTML email clients.
+    var body_text = ``;
+    
+    // The body of the email for recipients whose email clients support HTML contenty.
+    //var body_html= emailTem;
+
+    let transporter = nodemailer.createTransport({
+        host: smtpEndpoint,
+        port: port,
+        secure: false, // true for 465, false for other ports
+        auth: {
+            user: smtpUsername,
+            pass: smtpPassword
+        }
+    });
+
+    // Specify the fields in the email.
+    let mailOptions = {
+        from: senderAddress,
+        to: toAddresses,
+        subject: subject,
+        cc: ccAddresses,
+        bcc: bccAddresses,
+        text: body_text,
+        html: Temp,
+        // Custom headers for configuration set and message tags.
+        headers: {}
+    };
+
+    // Send the email.
+    let info = await transporter.sendMail(mailOptions)
+    console.log("Message sent! Message ID: ", info.messageId);
+
+}

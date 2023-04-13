@@ -11,7 +11,7 @@ const { titleFn, sourceFn, industryFn, customerFnForHubspot,
 const moduleName = process.env.DASHBOARD_MODULE
 const { mysql_real_escape_string, mysql_real_escape_string2 } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
-const { query } = require('express');
+const { leadEmail2 } = require("../utils/sendMail")
 
 //Sales Force auth client
 const oauth2Client = new OAuth2({
@@ -1417,61 +1417,113 @@ module.exports.deleteEmailTemplate = async (req, res) => {
 
 }
 
-module.exports.calendlyAccessToken = async (req, res) => {
-    // Set your Calendly API credentials
-    const CLIENT_ID = 'SkoTA2IQIBgJ524cSPcx5mbPD26bv1nTuyEjgmW93wM';
-    const CLIENT_SECRET = 'QIVDqHJQlmG4_2BRAooVq2MNbtUunSsOjO7zkzjrkE4';
-    const BASE_URL = 'https://api.calendly.com/oauth';
+// module.exports.calendlyAccessToken = async (req, res) => {
+//     // Set your Calendly API credentials
+//     const CLIENT_ID = 'SkoTA2IQIBgJ524cSPcx5mbPD26bv1nTuyEjgmW93wM';
+//     const CLIENT_SECRET = 'QIVDqHJQlmG4_2BRAooVq2MNbtUunSsOjO7zkzjrkE4';
+//     const BASE_URL = 'https://api.calendly.com/oauth';
 
+//     try {
+
+
+//         let authUrl = `https://auth.calendly.com/oauth/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${process.env.REDIRECT_URL}`
+
+//         console.log(authUrl);
+
+//         const response = await axios.post('https://auth.calendly.com/oauth/token', qs.stringify({
+//             client_id: CLIENT_ID,
+//             client_secret: CLIENT_SECRET,
+//             code: 'nxV420m_p3atD5lsBfYr0WR8C5E-791wu0VH2VyjCmw',
+//             redirect_uri: process.env.REDIRECT_URL,
+//             grant_type: 'authorization_code'
+//         }), {
+//             headers: {
+//                 'Content-Type': 'application/x-www-form-urlencoded'
+//             }
+//         });
+
+//         // Access token and refresh token received in the response
+//         const accessToken = response.data.access_token;
+//         const refreshToken = response.data.refresh_token;
+
+//         console.log('Access Token:', accessToken);
+//         console.log('Refresh Token:', refreshToken);
+//     } catch (error) {
+//         console.error(error);
+//     }
+// }
+
+// module.exports.calendlyEvents = async (req, res) => {
+
+//     // Fetch the user's upcoming events
+
+//     const { accessToken } = req.body
+//     console.log("accessToken",accessToken);
+//     const BASE_URL = 'https://api.calendly.com/oauth';
+//     try {
+//         const response = await axios.get(`${BASE_URL}/users/me/upcoming_events`, {
+//             headers: {
+//                 'Authorization': `Bearer ${accessToken}`,
+//                 'Content-Type': 'application/json'
+//             }
+//         });
+//         console.log(response.data);
+//     } catch (error) {
+//         console.log("error", error.message);
+//     }
+
+// }
+
+module.exports.sendEmailToLead = async (req, res) => {
     try {
-
-
-        // let authUrl = `https://auth.calendly.com/oauth/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${process.env.REDIRECT_URL}`
-
-        // console.log(authUrl);
-
-        const response = await axios.post('https://auth.calendly.com/oauth/token', qs.stringify({
-            client_id: CLIENT_ID,
-            client_secret: CLIENT_SECRET,
-            code: 'nxV420m_p3atD5lsBfYr0WR8C5E-791wu0VH2VyjCmw',
-            redirect_uri: process.env.REDIRECT_URL,
-            grant_type: 'authorization_code'
-        }), {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+        let userId = req.user.id
+        let { template, leadEmail, templateName } = req.body
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findUser = await connection.query(s1)
+        if (findUser.rowCount > 0) {
+            console.log(template,"template");
+            // let emailTemplate = JSON.parse(template)
+            // console.log(emailTemplate,"sendEmailToLead");
+            if (process.env.isLocalEmail == 'true') {
+                await leadEmail2(leadEmail, template, templateName);
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Email sent to Lead",
+                })
+            } else {
+                let emailSend = await leadEmail2(leadEmail, emailTemplate, templateName);
+                if (emailSend.status == 400) {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong",
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Email sent to Lead",
+                    })
+                }
             }
-        });
-
-        // Access token and refresh token received in the response
-        const accessToken = response.data.access_token;
-        const refreshToken = response.data.refresh_token;
-
-        console.log('Access Token:', accessToken);
-        console.log('Refresh Token:', refreshToken);
+        } else {
+            await connection.query('ROLLBACK')
+            res.json({
+                status: 400,
+                success: false,
+                message: "Invalid user",
+            })
+        }
     } catch (error) {
-        console.error(error);
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message
+        })
     }
-}
-
-module.exports.calendlyEvents = async (req, res) => {
-
-    // Fetch the user's upcoming events
-
-    const ACCESS_TOKEN = 'eyJraWQiOiIxY2UxZTEzNjE3ZGNmNzY2YjNjZWJjY2Y4ZGM1YmFmYThhNjVlNjg0MDIzZjdjMzJiZTgzNDliMjM4MDEzNWI0IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJodHRwczovL2F1dGguY2FsZW5kbHkuY29tIiwiaWF0IjoxNjgxMzg2NTYwLCJqdGkiOiJiMjFkNWJjYi1lNzdhLTQyODEtOWVhNS00YTdhMWRkODIxNjkiLCJ1c2VyX3V1aWQiOiIzYjFjNTIwZC1iNDQ3LTRhODktOTQ1Ny03NTdiOGUwZjg0Y2EiLCJhcHBfdWlkIjoiU2tvVEEySVFJQmdKNTI0Y1NQY3g1bWJQRDI2YnYxblR1eUVqZ21XOTN3TSIsImV4cCI6MTY4MTM5Mzc2MH0.WclVVXkQxyVmsYn3Si8JnC3jrYhepUCQcUFKSqwncJ4fnV0LAfHaQlMDQ8EUe4htZ3SOKjZDvDLXI_FCEz5GkA'
-
-    const BASE_URL = 'https://api.calendly.com/oauth';
-    try {
-        const response = await axios.get(`${BASE_URL}/users/me/upcoming_events`, {
-            headers: {
-                'Authorization': `Bearer ${ACCESS_TOKEN}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        console.log(response.data);
-    } catch (error) {
-        console.log("error", error.message);
-    }
-
 }
 
 
