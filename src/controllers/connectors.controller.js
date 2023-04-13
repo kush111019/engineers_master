@@ -10,7 +10,8 @@ const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
 const { mysql_real_escape_string } = require('../utils/helper')
-const { issueJWT } = require("../utils/jwt")
+const { issueJWT } = require("../utils/jwt");
+const { query } = require('express');
 
 //Sales Force auth client
 const oauth2Client = new OAuth2({
@@ -554,7 +555,7 @@ module.exports.searchLead = async () => {
 
                                     let leadName = data.properties.firstname + ' ' + data.properties.lastname
 
-                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id, var2 : accessData.company_id})
+                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id, var2: accessData.company_id })
                                     let checkLead = await connection.query(s10)
                                     if (checkLead.rowCount > 0) {
                                         let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
@@ -563,7 +564,7 @@ module.exports.searchLead = async () => {
                                         let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, '')
                                     }
                                 } else {
-                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id, var2 : accessData.company_id })
+                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id, var2: accessData.company_id })
                                     let checkLead = await connection.query(s10)
                                     if (checkLead.rowCount == 0) {
 
@@ -707,7 +708,7 @@ module.exports.leadReSync = async (req, res) => {
 
                                                     let customerId = await customerFnForsalesforce(data, accessData, industryId)
 
-                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id})
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
                                                     let checkLead = await connection.query(s10)
                                                     if (checkLead.rowCount > 0) {
                                                         let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
@@ -715,7 +716,7 @@ module.exports.leadReSync = async (req, res) => {
                                                         let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
                                                     }
                                                 } else {
-                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id})
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
                                                     let checkLead = await connection.query(s10)
                                                     if (checkLead.rowCount == 0) {
                                                         let titleId = await titleFn(data.Title, accessData.company_id)
@@ -847,7 +848,7 @@ module.exports.leadReSync = async (req, res) => {
                                     let sourceId = await sourceFn('', accessData.company_id)
 
                                     let industryId = await industryFn(data.properties.industry, accessData.company_id)
-                                    console.log(industryId,"industryId");
+                                    console.log(industryId, "industryId");
 
                                     let customerId = await customerFnForHubspot(data, accessData, industryId)
 
@@ -1243,3 +1244,176 @@ module.exports.recognizationDetailsPro = async (req, res) => {
         })
     }
 }
+
+module.exports.createProEmailTemplate = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { emailTemplate, templateName } = req.body
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findUser = await connection.query(s1)
+        if (findUser.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q330'], { var1: userId, var2: findUser.rows[0].company_id, var3: emailTemplate, var4: templateName })
+            let createTemplate = await connection.query(s2)
+            if (createTemplate.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Template created successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+
+        } else {
+            await connection.query('ROLLBACK')
+            res.json({
+                status: 400,
+                success: false,
+                message: "Invalid user",
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+module.exports.emailTemplateList = async(req,res) => {
+    try {
+        console.log("working....");
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findUser = await connection.query(s1)
+        if (findUser.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q331'],{var1: userId, var2: findUser.rows[0].company_id})
+            let templateList = await connection.query(s2)
+            if(templateList.rowCount>0){
+                res.json({
+                    status: 200,
+                    success: true,
+                    data: templateList.rows
+                })
+            } res.json({
+                status: 400,
+                success: false,
+                message: "Empty template list",
+                data: []
+            })
+        }else {
+            await connection.query('ROLLBACK')
+            res.json({
+                status: 400,
+                success: false,
+                message: "Invalid user",
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message
+        }) 
+    }
+}
+
+module.exports.updateEmailTemplate = async(req,res) =>{
+   try {
+    let userId = req.user.id
+    let { templateId, templateName, emailTemplate } = req.body
+    await connection.query('BEGIN')
+    let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findUser = await connection.query(s1)
+        if (findUser.rowCount > 0) {
+            let _dt = new Date().toISOString();
+            let s2 = dbScript(db_sql['Q332'],{var1: templateId, var2: _dt, var3: templateName, var4: emailTemplate })
+            updateTemplate = await connection.query(s2)
+            if(updateTemplate.rowCount>0){
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Template Updated Successfully"
+                })
+            }else{
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        }else{
+            await connection.query('ROLLBACK')
+            res.json({
+                status: 400,
+                success: false,
+                message: "Invalid user",
+            })
+        }
+   } catch (error) {
+    await connection.query('ROLLBACK')
+    res.json({
+        status: 400,
+        success: false,
+        message: error.message
+    }) 
+   }
+
+}
+
+module.exports.deleteEmailTemplate = async(req,res) =>{
+  try {
+    userId = req.user.id
+    let { templateId } = req.query
+    await connection.query('BEGIN')
+    let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findUser = await connection.query(s1)
+        if (findUser.rowCount > 0) {
+            let _dt = new Date().toISOString();
+            let s2 = dbScript(db_sql['Q333'],{ var1: templateId, var2: _dt})
+            let deleteTemplate = await connection.query(s2)
+            if(deleteTemplate.rowCount>0){
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Template Deleted Successfully"
+                })
+            }else{
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        }else{
+            await connection.query('ROLLBACK')
+            res.json({
+                status: 400,
+                success: false,
+                message: "Invalid user",
+            })
+        }
+  } catch (error) {
+    await connection.query('ROLLBACK')
+    res.json({
+        status: 400,
+        success: false,
+        message: error.message
+    }) 
+  }
+
+}
+

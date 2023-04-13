@@ -2905,6 +2905,13 @@ const db_sql = {
               LEFT JOIN configurations AS con ON con.company_id = u.company_id
             WHERE LOWER(email_address) = LOWER('{var1}') AND u.is_pro_user = true AND u.deleted_at IS NULL 
               AND c.deleted_at IS NULL AND r.deleted_at IS NULL AND con.deleted_at IS NULL`,
+    "Q330": `INSERT INTO email_templates(user_id, company_id, template, template_name)
+             VALUES('{var1}','{var2}','{var3}', '{var4}') RETURNING *`,
+    "Q331": `SELECT * FROM email_templates
+             WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
+    "Q332": `UPDATE email_templates SET template = '{var4}', template_name = '{var3}', updated_at = '{var2}' WHERE id = '{var1}' AND deleted_at IS NULL`,
+    "Q333": `UPDATE email_templates SET deleted_at = '{var2}' WHERE id = '{var1}'`            
+
 }
 
 function dbScript(template, variables) {
