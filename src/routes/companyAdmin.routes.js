@@ -242,4 +242,11 @@ router.put('/updateEmailTemplate',verifyTokenFn,controller.connectors.updateEmai
 router.put('/deleteEmailTemplate',verifyTokenFn,controller.connectors.deleteEmailTemplate)
 
 
+router.post('/sendEmailToLead', verifyTokenFn,controller.connectors.sendEmailToLead)
+//calendly
+
+// router.get('/calendlyAccessToken',verifyTokenFn,controller.connectors.calendlyAccessToken)
+// router.post('/calendlyEvents',verifyTokenFn,controller.connectors.calendlyEvents)
+
+
 module.exports = router;
