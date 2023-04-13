@@ -1253,7 +1253,7 @@ module.exports.createProEmailTemplate = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
-            let s2 = dbScript(db_sql['Q330'], { var1: userId, var2: findUser.rows[0].company_id, var3: mysql_real_escape_string2(emailTemplate), var4: templateName, var5: jsonTemplate })
+            let s2 = dbScript(db_sql['Q330'], { var1: userId, var2: findUser.rows[0].company_id, var3: mysql_real_escape_string2(emailTemplate), var4: templateName, var5: mysql_real_escape_string2(jsonTemplate) })
             let createTemplate = await connection.query(s2)
             if (createTemplate.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -1336,7 +1336,7 @@ module.exports.updateEmailTemplate = async (req, res) => {
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q332'], { var1: templateId, var2: _dt, var3: templateName, var4: mysql_real_escape_string2(emailTemplate), var5: jsonTemplate })
+            let s2 = dbScript(db_sql['Q332'], { var1: templateId, var2: _dt, var3: templateName, var4: mysql_real_escape_string2(emailTemplate), var5: mysql_real_escape_string2(jsonTemplate) })
             updateTemplate = await connection.query(s2)
             if (updateTemplate.rowCount > 0) {
                 await connection.query('COMMIT')
