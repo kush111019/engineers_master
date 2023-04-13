@@ -35,6 +35,9 @@ module.exports.mysql_real_escape_string = (str) => {
     })
 }
 
+module.exports.mysql_real_escape_string2 = (str) => {
+    return str.replace(/'/g, "''");
+}
 module.exports.containsObject = (obj, list) => {
     for (let i = 0; i < list.length; i++) {
         if (list[i].message_id === obj.messageId) {

@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string } = require('../utils/helper')
+const { mysql_real_escape_string,mysql_real_escape_string2 } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { query } = require('express');
 
@@ -1253,7 +1253,7 @@ module.exports.createProEmailTemplate = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
-            let s2 = dbScript(db_sql['Q330'], { var1: userId, var2: findUser.rows[0].company_id, var3: emailTemplate, var4: templateName })
+            let s2 = dbScript(db_sql['Q330'], { var1: userId, var2: findUser.rows[0].company_id, var3: mysql_real_escape_string2(emailTemplate), var4: templateName })
             let createTemplate = await connection.query(s2)
             if (createTemplate.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -1416,6 +1416,8 @@ module.exports.deleteEmailTemplate = async(req,res) =>{
   }
 
 }
+
+module.exports.calendlyAccessToken
 
 
 
