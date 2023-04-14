@@ -2916,7 +2916,7 @@ const db_sql = {
              VALUES ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
     "Q335": `SELECT 
                 DISTINCT(uc.id), uc.user_id,u.full_name,su.user_type, uc.total_commission_amount, 
-                uc.paid_commission_amount, uc.notes,
+                uc.bonus_amount, uc.notes,
                 uc.sales_id,cus.customer_name AS sales_name       
              FROM user_commissions AS uc
              LEFT JOIN users AS u ON u.id = uc.user_id
@@ -2926,7 +2926,7 @@ const db_sql = {
              WHERE uc.user_id IN ({var1}) AND uc.company_id = '{var2}' AND uc.deleted_at IS NULL
              AND su.deleted_at IS NULL AND sc.deleted_at IS NULL`,
     "Q336": `SELECT 
-                DISTINCT(uc.id), uc.user_id, u.full_name,su.user_type, uc.total_commission_amount, uc.paid_commission_amount, uc.notes,
+                DISTINCT(uc.id), uc.user_id, u.full_name,su.user_type, uc.total_commission_amount, uc.bonus_amount, uc.notes,
                 uc.sales_id,cus.customer_name AS sales_name       
             FROM user_commissions AS uc
             LEFT JOIN users AS u ON u.id = uc.user_id
@@ -2937,7 +2937,7 @@ const db_sql = {
             AND su.deleted_at IS NULL AND sc.deleted_at IS NULL`,
     "Q337": `UPDATE user_commissions SET total_commission_amount = '{var1}' 
              WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
-    "Q338": `UPDATE user_commissions SET paid_commission_amount = '{var2}',
+    "Q338": `UPDATE user_commissions SET bonus_amount = '{var2}',
              notes = '{var3}', updated_at = '{var4}' 
             WHERE id = '{var1}' AND deleted_at IS NULL RETURNING * `                        
 
