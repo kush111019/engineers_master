@@ -1218,15 +1218,26 @@ module.exports.addRecognizedRevenue = async (req, res) => {
             for (let comData of findSales.rows) {
                 let userCommission = Number(totalCommission * Number(comData.user_percentage / 100))
 
-                let s8 = dbScript(db_sql[''],{var1 : comData.user_id, var2 : comData.id})
+                let notification_userId = [];
+                notification_userId.push(comData.created_by)
+
+                let s8 = dbScript(db_sql['Q339'],{var1 : comData.user_id, var2 : comData.id})
                 let findCommission = await connection.query(s8)
 
                 if(findCommission.rowCount == 0){
                     let s7 = dbScript(db_sql['Q334'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: userCommission })
                     let addUserCommission = await connection.query(s7);
+
+                    let notification_typeId = addUserCommission.rows[0].id;
+                    await notificationsOperations({ type: 6, msg: 6.1, notification_typeId, notification_userId }, userId);
+
                 }else{
                     let s9 = dbScript(db_sql['Q337'], { var1: userCommission , var2: findCommission.rows[0].id})
-                    let addUserCommission = await connection.query(s9);
+                    let updateUserCommission = await connection.query(s9);
+
+                    let notification_typeId = updateUserCommission.rows[0].id;
+                    await notificationsOperations({ type: 6, msg: 6.1, notification_typeId, notification_userId }, userId);
+
                 } 
             }
 
@@ -1680,6 +1691,37 @@ module.exports.updateUserCommission = async (req, res) => {
         }
     } catch (error) {
         await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.commissionDetails = async(req, res) => {
+    try {
+        let { commissionId } = req.query;
+
+        let s1 = dbScript(db_sql['Q340'],{var1 : commissionId})
+        let commission = await connection.query(s1)
+
+        if(commission.rowCount > 0){
+            res.json({
+                status: 200,
+                success: true,
+                message: "User commission details",
+                data : commission.rows
+            })
+        }else{
+            res.json({
+                status: 200,
+                success: false,
+                message: "Empty User commission details",
+                data : []
+            })
+        }
+    } catch (error) {
         res.json({
             status: 400,
             success: false,

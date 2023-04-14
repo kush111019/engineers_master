@@ -113,6 +113,7 @@ router.get('/getAllApiDeatilsRelatedSales', verifyTokenFn, controller.sales.getA
 router.get('/userCommissionList', verifyTokenFn, controller.sales.userCommissionList)
 router.get('/salesWiseCommissionList', verifyTokenFn, controller.sales.salesWiseCommissionList)
 router.put('/updateUserCommission', verifyTokenFn, controller.sales.updateUserCommission)
+router.get('/commissionDetails', verifyTokenFn, controller.sales.commissionDetails)
 
 
 //----------------------------------------Sales Approval --------------------------------
