@@ -1218,8 +1218,16 @@ module.exports.addRecognizedRevenue = async (req, res) => {
             for (let comData of findSales.rows) {
                 let userCommission = Number(totalCommission * Number(comData.user_percentage / 100))
 
-                let s7 = dbScript(db_sql['Q334'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: userCommission })
-                let addUserCommission = await connection.query(s7);
+                let s8 = dbScript(db_sql[''],{var1 : comData.user_id, var2 : comData.id})
+                let findCommission = await connection.query(s8)
+
+                if(findCommission.rowCount == 0){
+                    let s7 = dbScript(db_sql['Q334'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: userCommission })
+                    let addUserCommission = await connection.query(s7);
+                }else{
+                    let s9 = dbScript(db_sql['Q337'], { var1: userCommission , var2: findCommission.rows[0].id})
+                    let addUserCommission = await connection.query(s9);
+                } 
             }
 
             let s6 = dbScript(db_sql['Q253'], { var1: totalCommission, var2: salesId })
@@ -1560,9 +1568,7 @@ module.exports.userCommissionList = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            console.log(roleUsers,"roleUsers");
             let s1 = dbScript(db_sql['Q335'], { var1: roleUsers.join(","), var2 : checkPermission.rows[0].company_id })
-            console.log(s1, "s1");
             let commissionList = await connection.query(s1)
 
             if (commissionList.rowCount > 0) {
