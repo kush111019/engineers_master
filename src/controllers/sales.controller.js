@@ -1641,3 +1641,50 @@ module.exports.salesWiseCommissionList = async (req, res)=> {
     }
 }
 
+module.exports.updateUserCommission = async (req, res) => {
+    try {
+        let userId = req.user.id;
+        let {id, paidCommissionAmount, notes} = req.body 
+
+        await connection.query('BEGIN')
+
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_update) {
+
+            let _dt = new Date().toISOString()
+            
+            let s2 = dbScript(db_sql['Q338'],{var1 : id, var2 : paidCommissionAmount, var3 : mysql_real_escape_string(notes), var4 : _dt})
+            let updateUserCommission = await connection.query(s2)
+
+            if(updateUserCommission.rowCount > 0){
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'User commission updated successfully'
+                })
+            }else{
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: 'Something went wrong'
+                })
+            }
+        }else{
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
