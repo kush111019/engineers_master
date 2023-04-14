@@ -112,6 +112,7 @@ router.get('/getRemainingTargetAmount', verifyTokenFn, controller.sales.getRemai
 router.get('/getAllApiDeatilsRelatedSales', verifyTokenFn, controller.sales.getAllApiDeatilsRelatedSales)
 router.get('/userCommissionList', verifyTokenFn, controller.sales.userCommissionList)
 router.get('/salesWiseCommissionList', verifyTokenFn, controller.sales.salesWiseCommissionList)
+router.put('/updateUserCommission', verifyTokenFn, controller.sales.updateUserCommission)
 
 
 //----------------------------------------Sales Approval --------------------------------
