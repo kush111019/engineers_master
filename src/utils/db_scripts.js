@@ -2936,7 +2936,10 @@ const db_sql = {
             WHERE uc.sales_id = '{var1}' AND uc.company_id = '{var2}' AND uc.deleted_at IS NULL
             AND su.deleted_at IS NULL AND sc.deleted_at IS NULL`,
     "Q337": `UPDATE user_commissions SET total_commission_amount = '{var1}' 
-             WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`                        
+             WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
+    "Q338": `UPDATE user_commissions SET paid_commission_amount = '{var2}',
+             notes = '{var3}', updated_at = '{var4}' 
+            WHERE id = '{var1}' AND deleted_at IS NULL RETURNING * `                        
 
 }
 
