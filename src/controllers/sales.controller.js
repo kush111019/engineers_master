@@ -1644,7 +1644,7 @@ module.exports.salesWiseCommissionList = async (req, res)=> {
 module.exports.updateUserCommission = async (req, res) => {
     try {
         let userId = req.user.id;
-        let {id, paidCommissionAmount, notes} = req.body 
+        let {id, bonusAmount, notes} = req.body 
 
         await connection.query('BEGIN')
 
@@ -1654,7 +1654,7 @@ module.exports.updateUserCommission = async (req, res) => {
 
             let _dt = new Date().toISOString()
             
-            let s2 = dbScript(db_sql['Q338'],{var1 : id, var2 : paidCommissionAmount, var3 : mysql_real_escape_string(notes), var4 : _dt})
+            let s2 = dbScript(db_sql['Q338'],{var1 : id, var2 : bonusAmount, var3 : mysql_real_escape_string(notes), var4 : _dt})
             let updateUserCommission = await connection.query(s2)
 
             if(updateUserCommission.rowCount > 0){
