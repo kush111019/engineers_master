@@ -636,7 +636,7 @@ const db_sql = {
               INNER JOIN users AS u ON u.id = cm.user_id
               WHERE room_id = '{var1}' AND cm.deleted_at IS NULL AND u.deleted_at IS NULL`,
   "Q114": `SELECT 
-              sc.id,su.user_id,su.user_percentage,sc.customer_id,sc.target_amount,sc.slab_id,
+              sc.id,su.user_id,su.user_percentage,su.user_type,sc.customer_id,sc.target_amount,sc.slab_id,
               u.full_name, u.created_by
            FROM sales AS sc 
            INNER JOIN sales_users AS su ON sc.id = su.sales_id 
@@ -2912,36 +2912,45 @@ const db_sql = {
              WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
     "Q332": `UPDATE email_templates SET template = '{var4}', template_name = '{var3}', json_template = '{var5}', updated_at = '{var2}' WHERE id = '{var1}' AND deleted_at IS NULL`,
     "Q333": `UPDATE email_templates SET deleted_at = '{var2}' WHERE id = '{var1}'`,
-    "Q334": `INSERT INTO user_commissions(user_id, sales_id, company_id, total_commission_amount)
-             VALUES ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
+    "Q334": `INSERT INTO user_commissions(user_id, sales_id, company_id, total_commission_amount,user_type)
+             VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
     "Q335": `SELECT 
-                DISTINCT(uc.id), uc.user_id,u.full_name,su.user_type, uc.total_commission_amount, 
+                DISTINCT(uc.id), uc.user_id,u.full_name,uc.user_type, uc.total_commission_amount, 
                 uc.bonus_amount, uc.notes,
                 uc.sales_id,cus.customer_name AS sales_name       
              FROM user_commissions AS uc
              LEFT JOIN users AS u ON u.id = uc.user_id
-             LEFT JOIN sales_users AS su ON su.user_id = uc.user_id 
              LEFT JOIN sales AS sc ON sc.id = uc.sales_id
              LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
              WHERE uc.user_id IN ({var1}) AND uc.company_id = '{var2}' AND uc.deleted_at IS NULL
-             AND su.deleted_at IS NULL AND sc.deleted_at IS NULL`,
+              AND sc.deleted_at IS NULL`,
     "Q336": `SELECT 
-                DISTINCT(uc.id), uc.user_id, u.full_name,su.user_type, uc.total_commission_amount, uc.bonus_amount, uc.notes,
+                DISTINCT(uc.id), uc.user_id, u.full_name,uc.user_type, uc.total_commission_amount, uc.bonus_amount, uc.notes,
                 uc.sales_id,cus.customer_name AS sales_name       
             FROM user_commissions AS uc
             LEFT JOIN users AS u ON u.id = uc.user_id
-            LEFT JOIN sales_users AS su ON su.user_id = uc.user_id
             LEFT JOIN sales AS sc ON sc.id = uc.sales_id
             LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
             WHERE uc.sales_id = '{var1}' AND uc.company_id = '{var2}' AND uc.deleted_at IS NULL
-            AND su.deleted_at IS NULL AND sc.deleted_at IS NULL`,
+             AND sc.deleted_at IS NULL`,
     "Q337": `UPDATE user_commissions SET total_commission_amount = '{var1}' 
              WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
     "Q338": `UPDATE user_commissions SET bonus_amount = '{var2}',
              notes = '{var3}', updated_at = '{var4}' 
             WHERE id = '{var1}' AND deleted_at IS NULL RETURNING * `,
-    "Q339":`SELECT * FROM user_commissions WHERE user_id = '{var1}' AND sales_id = '{var2}' AND deleted_at IS NULL`,
-    "Q340": `SELECT * FROM user_commissions WHERE  id = '{var1}' AND deleted_at IS NULL`                        
+    "Q339":`SELECT * FROM user_commissions WHERE user_id = '{var1}' AND sales_id = '{var2}' AND user_type = '{var3}' AND deleted_at IS NULL`,
+    // "Q340": `SELECT * FROM user_commissions WHERE  id = '{var1}' AND deleted_at IS NULL`  
+
+            
+    "Q340":`SELECT 
+            DISTINCT(uc.id), uc.user_id, u.full_name, uc.total_commission_amount, uc.bonus_amount, uc.notes,
+            uc.sales_id,uc.user_type,cus.customer_name AS sales_name       
+            FROM user_commissions AS uc
+            LEFT JOIN users AS u ON u.id = uc.user_id
+            LEFT JOIN sales AS sc ON sc.id = uc.sales_id
+            LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
+            WHERE uc.id = '{var1}' AND uc.deleted_at IS NULL
+              AND sc.deleted_at IS NULL`
 
 }
 
