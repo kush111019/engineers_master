@@ -2915,14 +2915,16 @@ const db_sql = {
     "Q334": `INSERT INTO user_commissions(user_id, sales_id, company_id, total_commission_amount)
              VALUES ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
     "Q335": `SELECT 
-                DISTINCT(uc.id), uc.user_id,u.full_name,su.user_type, uc.total_commission_amount, uc.paid_commission_amount, uc.notes,
+                DISTINCT(uc.id), uc.user_id,u.full_name,su.user_type, uc.total_commission_amount, 
+                uc.paid_commission_amount, uc.notes,
                 uc.sales_id,cus.customer_name AS sales_name       
              FROM user_commissions AS uc
              LEFT JOIN users AS u ON u.id = uc.user_id
-             LEFT JOIN sales_users AS su ON su.user_id = uc.user_id
+             LEFT JOIN sales_users AS su ON su.user_id = uc.user_id 
              LEFT JOIN sales AS sc ON sc.id = uc.sales_id
              LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
-             WHERE uc.user_id IN ({var1}) AND uc.company_id = '{var2}' AND uc.deleted_at IS NULL`,
+             WHERE uc.user_id IN ({var1}) AND uc.company_id = '{var2}' AND uc.deleted_at IS NULL
+             AND su.deleted_at IS NULL AND sc.deleted_at IS NULL`,
     "Q336": `SELECT 
                 DISTINCT(uc.id), uc.user_id, u.full_name,su.user_type, uc.total_commission_amount, uc.paid_commission_amount, uc.notes,
                 uc.sales_id,cus.customer_name AS sales_name       
@@ -2931,7 +2933,8 @@ const db_sql = {
             LEFT JOIN sales_users AS su ON su.user_id = uc.user_id
             LEFT JOIN sales AS sc ON sc.id = uc.sales_id
             LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
-            WHERE uc.sales_id = '{var1}' AND uc.company_id = '{var2}' AND uc.deleted_at IS NULL`                        
+            WHERE uc.sales_id = '{var1}' AND uc.company_id = '{var2}' AND uc.deleted_at IS NULL
+            AND su.deleted_at IS NULL AND sc.deleted_at IS NULL`                        
 
 }
 
