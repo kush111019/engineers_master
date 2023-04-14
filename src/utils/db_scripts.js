@@ -2934,7 +2934,9 @@ const db_sql = {
             LEFT JOIN sales AS sc ON sc.id = uc.sales_id
             LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
             WHERE uc.sales_id = '{var1}' AND uc.company_id = '{var2}' AND uc.deleted_at IS NULL
-            AND su.deleted_at IS NULL AND sc.deleted_at IS NULL`                        
+            AND su.deleted_at IS NULL AND sc.deleted_at IS NULL`,
+    "Q337": `UPDATE user_commissions SET total_commission_amount = '{var1}' 
+             WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`                        
 
 }
 
