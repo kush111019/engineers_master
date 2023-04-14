@@ -637,7 +637,7 @@ const db_sql = {
               WHERE room_id = '{var1}' AND cm.deleted_at IS NULL AND u.deleted_at IS NULL`,
   "Q114": `SELECT 
               sc.id,su.user_id,su.user_percentage,sc.customer_id,sc.target_amount,sc.slab_id,
-              u.full_name
+              u.full_name, u.created_by
            FROM sales AS sc 
            INNER JOIN sales_users AS su ON sc.id = su.sales_id 
            INNER JOIN users AS u ON su.user_id = u.id 
@@ -2939,7 +2939,9 @@ const db_sql = {
              WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
     "Q338": `UPDATE user_commissions SET bonus_amount = '{var2}',
              notes = '{var3}', updated_at = '{var4}' 
-            WHERE id = '{var1}' AND deleted_at IS NULL RETURNING * `                        
+            WHERE id = '{var1}' AND deleted_at IS NULL RETURNING * `,
+    "Q339":`SELECT * FROM user_commissions WHERE user_id = '{var1}' AND sales_id = '{var2}' AND deleted_at IS NULL`,
+    "Q340": `SELECT * FROM user_commissions WHERE  id = '{var1}' AND deleted_at IS NULL`                        
 
 }
 
