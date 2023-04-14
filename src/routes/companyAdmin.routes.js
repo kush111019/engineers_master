@@ -110,7 +110,8 @@ router.post('/addRecognizedRevenue', verifyTokenFn, controller.sales.addRecogniz
 router.get('/recognizedRevenueList', verifyTokenFn, controller.sales.recognizedRevenueList)
 router.get('/getRemainingTargetAmount', verifyTokenFn, controller.sales.getRemainingTargetAmount)
 router.get('/getAllApiDeatilsRelatedSales', verifyTokenFn, controller.sales.getAllApiDeatilsRelatedSales)
-
+router.get('/userCommissionList', verifyTokenFn, controller.sales.userCommissionList)
+router.get('/salesWiseCommissionList', verifyTokenFn, controller.sales.salesWiseCommissionList)
 
 
 //----------------------------------------Sales Approval --------------------------------
