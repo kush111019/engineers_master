@@ -407,7 +407,7 @@ module.exports.searchLead = async () => {
                             })
                                 .then(async (response) => {
                                     if (response.data.records.length > 0) {
-                                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id, var2: accessData.user_id })
+                                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
                                         let findSyncLead = await connection.query(s1)
                                         //Initial insertion
                                         if (findSyncLead.rowCount == 0) {
@@ -684,7 +684,7 @@ module.exports.leadReSync = async (req, res) => {
                             })
                                 .then(async (response) => {
                                     if (response.data.records.length > 0) {
-                                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id, var2: accessData.user_id })
+                                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
                                         let findSyncLead = await connection.query(s1)
                                         //Initial insertion
                                         if (findSyncLead.rowCount == 0) {
@@ -824,7 +824,7 @@ module.exports.leadReSync = async (req, res) => {
                     const apiResponse = await hubspotClient.crm.contacts.basicApi.getPage(limit, after, properties, propertiesWithHistory, associations, archived);
                     let leadsData = apiResponse.results
                     if (leadsData.length > 0) {
-                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id, var2: accessData.user_id })
+                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
                         let findSyncLead = await connection.query(s1)
 
                         if (findSyncLead.rowCount == 0) {
