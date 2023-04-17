@@ -1217,6 +1217,8 @@ module.exports.addRecognizedRevenue = async (req, res) => {
             for (let comData of findSales.rows) {
                 let userCommission = Number(totalCommission * Number(comData.user_percentage / 100))
 
+                userCommission = userCommission.toFixed(2)
+
                 let notification_userId = [];
                 notification_userId.push(comData.created_by)
 
@@ -1224,10 +1226,10 @@ module.exports.addRecognizedRevenue = async (req, res) => {
                 let findCommission = await connection.query(s8)
 
                 if (findCommission.rowCount == 0) {
-                    let s7 = dbScript(db_sql['Q334'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: userCommission, var5: comData.user_type })
+                    let s7 = dbScript(db_sql['Q334'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: Number(userCommission), var5: comData.user_type })
                     let addUserCommission = await connection.query(s7);
                 } else {
-                    let s9 = dbScript(db_sql['Q337'], { var1: userCommission, var2: findCommission.rows[0].id })
+                    let s9 = dbScript(db_sql['Q337'], { var1: Number(userCommission), var2: findCommission.rows[0].id })
                     let updateUserCommission = await connection.query(s9);
                 }
 
@@ -1659,7 +1661,7 @@ module.exports.updateUserCommission = async (req, res) => {
 
             let _dt = new Date().toISOString()
 
-            let s2 = dbScript(db_sql['Q338'], { var1: id, var2: bonusAmount, var3: mysql_real_escape_string(notes), var4: _dt })
+            let s2 = dbScript(db_sql['Q338'], { var1: id, var2: Number(bonusAmount), var3: mysql_real_escape_string(notes), var4: _dt })
             let updateUserCommission = await connection.query(s2)
 
             if (updateUserCommission.rowCount > 0) {
