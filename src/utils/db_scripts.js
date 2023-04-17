@@ -2948,7 +2948,8 @@ const db_sql = {
             LEFT JOIN sales AS sc ON sc.id = uc.sales_id
             LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
             WHERE uc.id = '{var1}' AND uc.deleted_at IS NULL
-              AND sc.deleted_at IS NULL`
+              AND sc.deleted_at IS NULL`,
+    "Q341":`INSERT INTO imap_credentials( email, app_password, user_id, smtp_host, smtp_port, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
 
 }
 

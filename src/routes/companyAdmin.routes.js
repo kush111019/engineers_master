@@ -243,7 +243,8 @@ router.post('/createProEmailTemplate',verifyTokenFn,controller.connectors.create
 router.get('/emailTemplateList',verifyTokenFn,controller.connectors.emailTemplateList)
 router.put('/updateEmailTemplate',verifyTokenFn,controller.connectors.updateEmailTemplate)
 router.put('/deleteEmailTemplate',verifyTokenFn,controller.connectors.deleteEmailTemplate)
-
+router.post('/addSmtpCreds',verifyTokenFn, controller.connectors.addSmtpCreds)
+router.get('/credentialList', verifyTokenFn, controller.connectors.credentialList)
 
 router.post('/sendEmailToLead', verifyTokenFn,controller.connectors.sendEmailToLead)
 //calendly
