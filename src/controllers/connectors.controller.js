@@ -12,6 +12,8 @@ const moduleName = process.env.DASHBOARD_MODULE
 const { mysql_real_escape_string, mysql_real_escape_string2 } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { leadEmail2 } = require("../utils/sendMail")
+const nodemailer = require("nodemailer");
+const { encrypt, decrypt } = require('../utils/crypto');
 
 //Sales Force auth client
 const oauth2Client = new OAuth2({
@@ -1478,42 +1480,122 @@ module.exports.sendEmailToLead = async (req, res) => {
     try {
         let userId = req.user.id
         let { template, leadEmail, templateName } = req.body
-        await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
-            console.log(template,"template");
-            // let emailTemplate = JSON.parse(template)
-            // console.log(emailTemplate,"sendEmailToLead");
-            if (process.env.isLocalEmail == 'true') {
-                await leadEmail2(leadEmail, template, templateName);
+            let s2 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
+            let findCreds = await connection.query(s2)
+            if (findCreds.rowCount > 0) {
+                let credentialObj = {}
+                let dpass = decrypt(JSON.parse(findCreds.rows[0].app_password))
+                credentialObj.id = findCreds.rows[0].id
+                credentialObj.email = findCreds.rows[0].email
+                credentialObj.appPassword = dpass
+                credentialObj.smtpHost = findCreds.rows[0].smtp_host
+                credentialObj.smtpPort = findCreds.rows[0].smtp_port
+
+                await leadEmail2(leadEmail, template, templateName,credentialObj);
                 res.json({
                     status: 200,
                     success: true,
                     message: "Email sent to Lead",
                 })
-            } else {
-                let emailSend = await leadEmail2(leadEmail, emailTemplate, templateName);
-                if (emailSend.status == 400) {
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong",
-                    })
-                } else {
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Email sent to Lead",
-                    })
-                }
+
+            }else{
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "SMTP credentials not available. Please add SMTP credentials first.",
+                }) 
             }
+           
         } else {
-            await connection.query('ROLLBACK')
             res.json({
                 status: 400,
                 success: false,
                 message: "Invalid user",
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+module.exports.addSmtpCreds = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { email, appPassword, smtpHost, smtpPort } = req.body
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let transporter = nodemailer.createTransport({
+                host: smtpHost,
+                port: Number(smtpPort),
+                secure: (Number(smtpPort) == 465) ? true : false, // true for 465, false for other ports
+                auth: {
+                    user: email,
+                    pass: appPassword
+                }
+            });
+
+            // Specify the fields in the email.
+            let mailOptions = {
+                from: email,
+                to: "test@yopmail.com",
+                subject: "test Mail",
+                text: "This is a test mail to check smtp and port are correct"
+            };
+
+            // Send the email.
+            // let info = await transporter.sendMail(mailOptions)
+            let promise = new Promise((resolve, reject) => {
+                let info = transporter.sendMail(mailOptions)
+                if (info) {
+                    resolve(info)
+                } else {
+                    reject("error")
+                }
+            })
+            promise.then(async (data) => {
+
+                let encryptedAppPassword = JSON.stringify(encrypt(appPassword))
+                let s3 = dbScript(db_sql['Q341'], { var1: email, var2: encryptedAppPassword, var3: findAdmin.rows[0].id, var4: smtpHost, var5: smtpPort, var6: findAdmin.rows[0].company_id })
+                let addCredentails = await connection.query(s3)
+
+                if (addCredentails.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Credentials added successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+
+            })
+                .catch((err) =>
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: `SMTP Error : ${err.message}`
+                    })
+                )
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
             })
         }
     } catch (error) {
@@ -1522,6 +1604,62 @@ module.exports.sendEmailToLead = async (req, res) => {
             status: 400,
             success: false,
             message: error.message
+        })
+    }
+}
+
+module.exports.credentialList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
+            let credentials = await connection.query(s2)
+
+            let credentialObj = {}
+
+            if (credentials.rowCount > 0) {
+                let dpass = decrypt(JSON.parse(credentials.rows[0].app_password))
+                credentialObj.id = credentials.rows[0].id
+                credentialObj.email = credentials.rows[0].email
+                credentialObj.appPassword = dpass
+                credentialObj.smtpHost = credentials.rows[0].smtp_host
+                credentialObj.smtpPort = credentials.rows[0].smtp_port
+
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "credential List",
+                    data: credentialObj
+                })
+            } else {
+                credentialObj.id = "",
+                credentialObj.email = "",
+                credentialObj.appPassword = "",
+                credentialObj.smtpHost = ""
+                credentialObj.smtpPort = ""
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty credential List",
+                    data: credentialObj
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
         })
     }
 }

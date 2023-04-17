@@ -738,10 +738,10 @@ module.exports.notificationMail2 = async (email,msg) => {
 
 }
 
-module.exports.leadEmail2 = async (email , template, subject) => {
-    const smtpEndpoint = "smtp.gmail.com";
-    const port = 587;
-    const senderAddress = process.env.SMTP_USERNAME;
+module.exports.leadEmail2 = async (email , template, subject, credentialObj) => {
+    const smtpEndpoint = credentialObj.smtpHost;
+    const port = credentialObj.smtpPort;
+    const senderAddress = credentialObj.email;
     var toAddresses = email;
 
     let Temp = template 
@@ -749,8 +749,8 @@ module.exports.leadEmail2 = async (email , template, subject) => {
     var ccAddresses = "";
     var bccAddresses = "";
 
-    const smtpUsername = process.env.SMTP_USERNAME;
-    const smtpPassword = process.env.SMTP_PASSWORD;
+    const smtpUsername = credentialObj.email;
+    const smtpPassword = credentialObj.appPassword;
 
     // The subject line of the email
     var subject = subject;
