@@ -637,6 +637,51 @@ module.exports.actualVsForecast = async (req, res) => {
             let findChildForecast = await connection.query(s2)
             console.log(findChildForecast.rows,"findChildForecast");
             if (findChildForecast.rowCount > 0) {
+                for(let fd of findChildForecast.rows){
+                    if(fd.pid == '0'){
+                        let childArray = []
+                        findChildForecast.rows.map(value => {
+                            if(childArray.includes(value.assigned_to) === false){
+                                childArray.push(value.assigned_to)
+                            }
+                        })
+                        let forcastDataArray1 = (findChildForecast.rows[0].forecast_data) ? findChildForecast.rows[0].forecast_data : [];
+
+                        for (let data of childArray) {
+                            for (let data2 of forcastDataArray1) {
+                                let amount = 0
+                                let s3 = dbScript(db_sql['Q266'], { var1: data, var2: data2.start_date, var3: data2.end_date })
+                                let findSales = await connection.query(s3)
+                                if (findSales.rowCount > 0) {
+                                    for (let data of findSales.rows) {
+                                        let s2 = dbScript(db_sql['Q256'], { var1: data.id })
+                                        let recognizedRevenueData = await connection.query(s2)
+                                        amount = (recognizedRevenueData.rowCount > 0) ? amount + Number(recognizedRevenueData.rows[0].amount) : amount
+                                    }
+                                }
+                                data2.recognized_amount = amount
+                            }
+                        }
+
+                        if(forcastDataArray1.length > 0){
+                            return res.json({
+                                status: 200,
+                                success: true,
+                                message: "Actual Vs Forecast Data",
+                                data: forcastDataArray1
+                            })
+                        }else{
+                            return res.json({
+                                status: 200,
+                                success: false,
+                                message: "Empty Actual Vs Forecast Data",
+                                data: []
+                            }) 
+                        }
+                        
+                    }
+                }
+
                 let creatorArray = []
                 let forcastDataArray = (findChildForecast.rows[0].forecast_data) ? findChildForecast.rows[0].forecast_data : [];
                 findChildForecast.rows.map(value => {
