@@ -2951,7 +2951,17 @@ const db_sql = {
               AND sc.deleted_at IS NULL`,
     "Q341":`INSERT INTO imap_credentials( email, app_password, user_id, smtp_host, smtp_port, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
     "Q342":`INSERT INTO user_availability(schedule_name, event_type_id, timezone, user_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
-    "Q343":`INSERT INTO user_time_slot(days,dates,start_time, end_time, availability_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`
+    "Q343":`INSERT INTO user_time_slot(days,dates,start_time, end_time, availability_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+    "Q344":`SELECT ua.id, ua.schedule_name, ua.timezone, ua.event_type_id, ua.created_at,
+              ua.user_id, u.full_name,
+              (
+                SELECT json_agg(user_time_slot.*)
+                FROM user_time_slot
+                WHERE ua.id = user_time_slot.availability_id AND deleted_at IS NULL
+              )as time_slots
+            FROM user_availability as ua
+            LEFT JOIN users as u ON u.id = ua.user_id
+            WHERE ua.user_id = '{var1}' AND ua.company_id = '{var2}' AND ua.deleted_at IS NULL`
 
 }
 

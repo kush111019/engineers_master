@@ -14,6 +14,7 @@ const { issueJWT } = require("../utils/jwt");
 const { leadEmail2 } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
 const { encrypt, decrypt } = require('../utils/crypto');
+const { daysEnum } = require('../utils/notificationEnum')
 
 //Sales Force auth client
 const oauth2Client = new OAuth2({
@@ -1655,6 +1656,59 @@ module.exports.credentialList = async (req, res) => {
             })
         }
     } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.addAvailability = async(req, res) => {
+    try {
+        let {
+            scheduleName,
+            eventTypeId,
+            timezone,
+            timeSlot
+          } = req.body;
+          eventTypeId = (!eventTypeId) ? 'null' : eventTypeId
+        await connection.query('BEGIN')
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q342'],{var1 : scheduleName, var2 : eventTypeId, var3 : timezone, var4 : userId, var5: findAdmin.rows[0].company_id})
+            let createAvailability = await connection.query(s2)
+            for(let ts of timeSlot){
+                let dayName = daysEnum[ts.days]
+                let date = new Date(ts.date).toISOString()
+                let s3 = dbScript(db_sql['Q343'],{var1 : dayName,var2 : date, var3 : ts.startTime, var4 : ts.endTime, var5 : createAvailability.rows[0].id, var6 : findAdmin.rows[0].company_id })
+                let addTimeSlot = await connection.query(s3)
+            }
+            if(createAvailability.rowCount > 0){
+                await connection.query('COMMIT')
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Availability scheduled successfully"
+                })
+            }else{
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        }else{
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
         await connection.query('ROLLBACK')
         res.json({
             status: 400,
@@ -1664,7 +1718,41 @@ module.exports.credentialList = async (req, res) => {
     }
 }
 
-
-
-
-
+module.exports.availableTimeList = async(req,res) =>{
+       try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q344'],{var1 : userId, var2 : findAdmin.rows[0].company_id})
+            let availability = await connection.query(s2)
+            if(availability.rowCount > 0){
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Availability List",
+                    data : availability.rows
+                })
+            }else{
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Availability List",
+                    data : []
+                }) 
+            }
+        }else{
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+       } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+       }
+}

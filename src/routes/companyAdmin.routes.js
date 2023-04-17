@@ -237,6 +237,8 @@ router.get('/leadReSync',verifyTokenFn,controller.proUser.leadReSync)
 router.get('/proLeadsList',verifyTokenFn,controller.proUser.proLeadsList)
 router.get('/salesListForPro',verifyTokenFn,controller.proUser.salesListForPro)
 router.get('/recognizationDetailsPro',verifyTokenFn,controller.proUser.recognizationDetailsPro)
+router.post('/addAvailability',verifyTokenFn,controller.proUser.addAvailability)
+router.get('/availabilityList',verifyTokenFn, controller.proUser.availableTimeList)
 
 //pro email 
 router.post('/createProEmailTemplate',verifyTokenFn,controller.proUser.createProEmailTemplate)
