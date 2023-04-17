@@ -639,6 +639,7 @@ module.exports.actualVsForecast = async (req, res) => {
             if (findChildForecast.rowCount > 0) {
                 for(let fd of findChildForecast.rows){
                     if(fd.pid == '0'){
+                        console.log("111111111");
                         let childArray = []
                         findChildForecast.rows.map(value => {
                             if(childArray.includes(value.assigned_to) === false){

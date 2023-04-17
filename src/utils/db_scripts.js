@@ -2611,7 +2611,7 @@ const db_sql = {
               sc.archived_at IS NOT NULL 
             ORDER BY 
               date ASC `,
-    "Q306": `SELECT id,assigned_to,
+    "Q306": `SELECT id,assigned_to,pid,
                 (
                   select json_agg(forecast_data.created_by) from forecast_data where forecast_data.forecast_id = forecast.id
                   AND forecast_data.deleted_at IS NULL
