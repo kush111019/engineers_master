@@ -650,6 +650,7 @@ module.exports.actualVsForecast = async (req, res) => {
                         let forcastDataArray1 = (findChildForecast.rows[0].forecast_data) ? findChildForecast.rows[0].forecast_data : [];
                         console.log(childArray,"childArray");
                         for (let data of childArray) {
+                            console.log(data,"data");
                             for (let data2 of forcastDataArray1) {
                                 let amount = 0
                                 let s3 = dbScript(db_sql['Q266'], { var1: data, var2: data2.start_date, var3: data2.end_date })
@@ -661,6 +662,7 @@ module.exports.actualVsForecast = async (req, res) => {
                                         amount = (recognizedRevenueData.rowCount > 0) ? amount + Number(recognizedRevenueData.rows[0].amount) : amount
                                     }
                                 }
+                                console.log(amount,"amount");
                                 data2.recognized_amount = amount
                             }
                         }
