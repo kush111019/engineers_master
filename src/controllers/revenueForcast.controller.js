@@ -635,14 +635,17 @@ module.exports.actualVsForecast = async (req, res) => {
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
             let s2 = dbScript(db_sql['Q306'], { var1: forecastId })
             let findChildForecast = await connection.query(s2)
+            console.log(findChildForecast.rows,"findChildForecast");
             if (findChildForecast.rowCount > 0) {
                 let creatorArray = []
                 let forcastDataArray = (findChildForecast.rows[0].forecast_data) ? findChildForecast.rows[0].forecast_data : [];
                 findChildForecast.rows.map(value => {
+                    console.log(value,"value");
                     if (value.forecast_data_creator) {
                         creatorArray.push(value.forecast_data_creator[0])
                     }
                 })
+                console.log(creatorArray,"creatorArray");
                 for (let data of creatorArray) {
                     for (let data2 of forcastDataArray) {
                         let amount = 0
