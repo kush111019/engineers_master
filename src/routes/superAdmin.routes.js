@@ -2,7 +2,6 @@ const express = require('express')
 var router = express.Router()
 var controller = require('../controllers/index')
 const { verifyTokenFn1 } = require('../utils/jwt')
-const {uploadLogo} = require('../utils/uploadfiles')
 
 router.post('/login',controller.superAdmin.login)
 router.post('/forgetPassword', controller.superAdmin.forgotPassword)
