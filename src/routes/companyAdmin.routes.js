@@ -230,27 +230,27 @@ router.put('/notificationRead', verifyTokenFn, controller.notifications.notifica
 
 
 //-----------------------------------------Connectors------------------------------
-router.get('/connectorList',verifyTokenFn,controller.connectors.connectorsList)
-router.get('/auth/authUrl',controller.connectors.authUrl);
-router.post('/auth/callback',verifyTokenFn,controller.connectors.callback)
-router.get('/leadReSync',verifyTokenFn,controller.connectors.leadReSync)
-router.get('/proLeadsList',verifyTokenFn,controller.connectors.proLeadsList)
-router.get('/salesListForPro',verifyTokenFn,controller.connectors.salesListForPro)
-router.get('/recognizationDetailsPro',verifyTokenFn,controller.connectors.recognizationDetailsPro)
+router.get('/connectorList',verifyTokenFn,controller.proUser.connectorsList)
+router.get('/auth/authUrl',controller.proUser.authUrl);
+router.post('/auth/callback',verifyTokenFn,controller.proUser.callback)
+router.get('/leadReSync',verifyTokenFn,controller.proUser.leadReSync)
+router.get('/proLeadsList',verifyTokenFn,controller.proUser.proLeadsList)
+router.get('/salesListForPro',verifyTokenFn,controller.proUser.salesListForPro)
+router.get('/recognizationDetailsPro',verifyTokenFn,controller.proUser.recognizationDetailsPro)
 
 //pro email 
-router.post('/createProEmailTemplate',verifyTokenFn,controller.connectors.createProEmailTemplate)
-router.get('/emailTemplateList',verifyTokenFn,controller.connectors.emailTemplateList)
-router.put('/updateEmailTemplate',verifyTokenFn,controller.connectors.updateEmailTemplate)
-router.put('/deleteEmailTemplate',verifyTokenFn,controller.connectors.deleteEmailTemplate)
-router.post('/addSmtpCreds',verifyTokenFn, controller.connectors.addSmtpCreds)
-router.get('/credentialList', verifyTokenFn, controller.connectors.credentialList)
+router.post('/createProEmailTemplate',verifyTokenFn,controller.proUser.createProEmailTemplate)
+router.get('/emailTemplateList',verifyTokenFn,controller.proUser.emailTemplateList)
+router.put('/updateEmailTemplate',verifyTokenFn,controller.proUser.updateEmailTemplate)
+router.put('/deleteEmailTemplate',verifyTokenFn,controller.proUser.deleteEmailTemplate)
+router.post('/addSmtpCreds',verifyTokenFn, controller.proUser.addSmtpCreds)
+router.get('/credentialList', verifyTokenFn, controller.proUser.credentialList)
 
-router.post('/sendEmailToLead', verifyTokenFn,controller.connectors.sendEmailToLead)
+router.post('/sendEmailToLead', verifyTokenFn,controller.proUser.sendEmailToLead)
 //calendly
 
-// router.get('/calendlyAccessToken',verifyTokenFn,controller.connectors.calendlyAccessToken)
-// router.post('/calendlyEvents',verifyTokenFn,controller.connectors.calendlyEvents)
+// router.get('/calendlyAccessToken',verifyTokenFn,controller.proUser.calendlyAccessToken)
+// router.post('/calendlyEvents',verifyTokenFn,controller.proUser.calendlyEvents)
 
 
 module.exports = router;

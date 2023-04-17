@@ -14,7 +14,7 @@ require('./src/database/connection')
 const Router = require('./src/routes/index');
 const sticky = require('socketio-sticky-session')
 const { instantNotificationsList } = require('./src/utils/helper')
-const { searchLead } = require('./src/controllers/connectors.controller')
+const { searchLead } = require('./src/controllers/proUsers.controller')
 
 app.use(cors());
 app.use(

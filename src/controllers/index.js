@@ -19,7 +19,7 @@ const email = require('./email.controller')
 const leads = require('./leadsController')
 const marketingStrategy = require('./merketingStrategy.controller')
 const notifications = require('./notifications.controller')
-const connectors = require('./connectors.controller')
+const proUser = require('./proUsers.controller')
 
 
 const controller = { 
@@ -44,7 +44,7 @@ const controller = {
     leads,
     marketingStrategy,
     notifications,
-    connectors
+    proUser
 }
 
 module.exports = controller
