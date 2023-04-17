@@ -642,12 +642,13 @@ module.exports.actualVsForecast = async (req, res) => {
                         console.log("111111111");
                         let childArray = []
                         findChildForecast.rows.map(value => {
-                            if(childArray.includes(value.assigned_to) === false){
+                            console.log(value,"value");
+                            if(childArray.includes(value.assigned_to) == false){
                                 childArray.push(value.assigned_to)
                             }
                         })
                         let forcastDataArray1 = (findChildForecast.rows[0].forecast_data) ? findChildForecast.rows[0].forecast_data : [];
-
+                        console.log(childArray,"childArray");
                         for (let data of childArray) {
                             for (let data2 of forcastDataArray1) {
                                 let amount = 0
@@ -663,6 +664,7 @@ module.exports.actualVsForecast = async (req, res) => {
                                 data2.recognized_amount = amount
                             }
                         }
+                        console.log(forcastDataArray1,"forcastDataArray1");
 
                         if(forcastDataArray1.length > 0){
                             return res.json({
