@@ -635,22 +635,17 @@ module.exports.actualVsForecast = async (req, res) => {
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
             let s2 = dbScript(db_sql['Q306'], { var1: forecastId })
             let findChildForecast = await connection.query(s2)
-            console.log(findChildForecast.rows,"findChildForecast");
             if (findChildForecast.rowCount > 0) {
                 for(let fd of findChildForecast.rows){
                     if(fd.pid == '0'){
-                        console.log("111111111");
                         let childArray = []
                         findChildForecast.rows.map(value => {
-                            console.log(value,"value");
                             if(childArray.includes(value.assigned_to) == false){
                                 childArray.push(value.assigned_to)
                             }
                         })
                         let forcastDataArray1 = (findChildForecast.rows[0].forecast_data) ? findChildForecast.rows[0].forecast_data : [];
-                        console.log(childArray,"childArray");
                         for (let data of childArray) {
-                            console.log(data,"data");
                             for (let data2 of forcastDataArray1) {
                                 let amount = 0
                                 let s3 = dbScript(db_sql['Q266'], { var1: data, var2: data2.start_date, var3: data2.end_date })
@@ -662,12 +657,9 @@ module.exports.actualVsForecast = async (req, res) => {
                                         amount = (recognizedRevenueData.rowCount > 0) ? amount + Number(recognizedRevenueData.rows[0].amount) : amount
                                     }
                                 }
-                                console.log(amount,"amount");
                                 data2.recognized_amount = amount
                             }
                         }
-                        console.log(forcastDataArray1,"forcastDataArray1");
-
                         if(forcastDataArray1.length > 0){
                             return res.json({
                                 status: 200,
@@ -686,16 +678,13 @@ module.exports.actualVsForecast = async (req, res) => {
                         
                     }
                 }
-
                 let creatorArray = []
                 let forcastDataArray = (findChildForecast.rows[0].forecast_data) ? findChildForecast.rows[0].forecast_data : [];
                 findChildForecast.rows.map(value => {
-                    console.log(value,"value");
                     if (value.forecast_data_creator) {
                         creatorArray.push(value.forecast_data_creator[0])
                     }
                 })
-                console.log(creatorArray,"creatorArray");
                 for (let data of creatorArray) {
                     for (let data2 of forcastDataArray) {
                         let amount = 0
