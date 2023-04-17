@@ -41,3 +41,14 @@ module.exports.notificationMsg = {
 
     6.1: ' has recognized the sales'
 }
+
+
+module.exports.daysEnum = {
+    0 : 'Monday',
+    1 : 'Tuesday',
+    2 : 'Wednesday',
+    3 : 'Thursday',
+    4 : 'Friday',
+    5 : 'Saturday',
+    6 : 'Sunday'
+}
