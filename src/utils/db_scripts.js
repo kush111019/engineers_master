@@ -2938,12 +2938,10 @@ const db_sql = {
     "Q338": `UPDATE user_commissions SET bonus_amount = '{var2}',
              notes = '{var3}', updated_at = '{var4}' 
             WHERE id = '{var1}' AND deleted_at IS NULL RETURNING * `,
-    "Q339":`SELECT * FROM user_commissions WHERE user_id = '{var1}' AND sales_id = '{var2}' AND user_type = '{var3}' AND deleted_at IS NULL`,
-    // "Q340": `SELECT * FROM user_commissions WHERE  id = '{var1}' AND deleted_at IS NULL`  
-
-            
+    "Q339":`SELECT * FROM user_commissions WHERE user_id = '{var1}' AND sales_id = '{var2}' AND user_type = '{var3}' AND deleted_at IS NULL`,         
     "Q340":`SELECT 
-            DISTINCT(uc.id), uc.user_id, u.full_name, uc.total_commission_amount, uc.bonus_amount, uc.notes,
+            DISTINCT(uc.id), uc.user_id, u.full_name, uc.total_commission_amount, 
+            uc.bonus_amount, uc.notes,
             uc.sales_id,uc.user_type,cus.customer_name AS sales_name       
             FROM user_commissions AS uc
             LEFT JOIN users AS u ON u.id = uc.user_id

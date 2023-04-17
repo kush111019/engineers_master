@@ -1226,17 +1226,13 @@ module.exports.addRecognizedRevenue = async (req, res) => {
                 if (findCommission.rowCount == 0) {
                     let s7 = dbScript(db_sql['Q334'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: userCommission, var5: comData.user_type })
                     let addUserCommission = await connection.query(s7);
-                    let notification_typeId = addUserCommission.rows[0].id;
-                    await notificationsOperations({ type: 6, msg: 6.1, notification_typeId, notification_userId }, userId);
-
                 } else {
                     let s9 = dbScript(db_sql['Q337'], { var1: userCommission, var2: findCommission.rows[0].id })
                     let updateUserCommission = await connection.query(s9);
-
-                    let notification_typeId = updateUserCommission.rows[0].id;
-                    await notificationsOperations({ type: 6, msg: 6.1, notification_typeId, notification_userId }, userId);
-
                 }
+
+                let notification_typeId = findSales.rows[0].id;
+                await notificationsOperations({ type: 6, msg: 6.1, notification_typeId, notification_userId }, userId);
             }
 
             let s6 = dbScript(db_sql['Q253'], { var1: totalCommission, var2: salesId })
