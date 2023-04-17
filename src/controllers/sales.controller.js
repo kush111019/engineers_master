@@ -1575,7 +1575,9 @@ module.exports.userCommissionList = async (req, res) => {
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            console.log(roleUsers,"roleUsers");
             let s1 = dbScript(db_sql['Q335'], { var1: roleUsers.join(","), var2: checkPermission.rows[0].company_id })
+            console.log(s1,"s1");
             let commissionList = await connection.query(s1)
 
             if (commissionList.rowCount > 0) {
