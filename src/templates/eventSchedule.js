@@ -15,6 +15,7 @@ module.exports.eventSchedule = function(creatorName, eventName, meetLink, leadNa
 </head>
 
 <body>
+    <div style = width : "100%", text-align : "center">
     <table cellspacing="0" border="0" cellpadding="0" bgcolor="#ededed"
         style="@import url(https://fonts.googleapis.com/css?family=Rubik:300,400,500,700|Open+Sans:300,400,600,700); font-family: 'Open Sans', sans-serif; width: 100%;">
         <tr>
@@ -37,9 +38,9 @@ module.exports.eventSchedule = function(creatorName, eventName, meetLink, leadNa
                             <p style="margin-bottom: 10px;"><strong>Invitee:</strong> ${leadName}</p>
                             <p style="margin-bottom: 10px;"><strong>Invitee Email:</strong> ${leadEmail}</p>
                             <p style="margin-bottom: 10px;"><strong>Event Date/Time:</strong> ${dateTime}</p>
-                            <p style="margin-bottom: 10px;"><strong>Location:</strong>. 
+                            <p style="margin-bottom: 10px;"><strong>Meeting Link:</strong>. 
                             <a
-                                    href="${meetLink} style="color: #007bff; text-decoration: none;">Join
+                                    href="${meetLink}", style="color: #007bff; text-decoration: none;">Join
                                     now</a></p>
                             <p style="margin-bottom: 10px;"><strong>Invitee Time Zone:</strong> ${timezone}</p>
 
@@ -50,6 +51,7 @@ module.exports.eventSchedule = function(creatorName, eventName, meetLink, leadNa
             </td>
         </tr>
     </table>
+    </div>
 </body>
 
 </html>` 
