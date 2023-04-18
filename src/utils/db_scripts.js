@@ -2950,9 +2950,9 @@ const db_sql = {
             WHERE uc.id = '{var1}' AND uc.deleted_at IS NULL
               AND sc.deleted_at IS NULL`,
     "Q341":`INSERT INTO imap_credentials( email, app_password, user_id, smtp_host, smtp_port, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
-    "Q342":`INSERT INTO pro_user_availability(schedule_name, event_type_id, timezone, user_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
+    "Q342":`INSERT INTO pro_user_availability(schedule_name, timezone, user_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
     "Q343":`INSERT INTO pro_user_time_slot(days,dates,start_time, end_time, availability_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
-    "Q344":`SELECT ua.id, ua.schedule_name, ua.timezone, ua.event_type_id, ua.created_at,
+    "Q344":`SELECT ua.id, ua.schedule_name, ua.timezone, ua.created_at,
               ua.user_id, u.full_name,
               (
                 SELECT json_agg(pro_user_time_slot.*)
@@ -2977,7 +2977,9 @@ const db_sql = {
             FROM pro_user_events AS e 
             LEFT JOIN pro_user_availability AS a ON a.id = e.availability_id
             LEFT JOIN users AS u ON u.id = e.user_id 
-            WHERE e.id = '{var1}' AND e.deleted_at IS NULL`        
+            WHERE e.id = '{var1}' AND e.deleted_at IS NULL`,
+    "Q349":`INSERT INTO pro_schedule_events(event_id, date, start_time, end_time, lead_name, lead_email, description, user_id, company_id )
+            VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') RETURNING *`        
 
 }
 

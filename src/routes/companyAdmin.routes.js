@@ -253,6 +253,7 @@ router.post('/sendEmailToLead', verifyTokenFn,controller.proUser.sendEmailToLead
 router.post('/createEvent',verifyTokenFn,controller.proUser.createEvent)
 router.get('/eventsList',verifyTokenFn,controller.proUser.eventsList)
 router.get('/eventDetails', controller.proUser.eventDetails)
+router.post('/scheduleEvent',controller.proUser.scheduleEvent)
 
 
 module.exports = router;
