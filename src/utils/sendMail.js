@@ -10,6 +10,7 @@ const tagetClosingDateRemindertemplate = require('../templates/targetClosingDate
 const recurringSaleRemindertemplate = require('../templates/recurringSalesReminder')
 const notificationTemplate = require('../templates/notifications')
 require('dotenv').config()
+const eventScheduleTemplate = require('../templates/eventSchedule')
 
 let defaultClient = SibApiV3Sdk.ApiClient.instance;
 //Instantiate the client\
@@ -779,6 +780,57 @@ module.exports.leadEmail2 = async (email , template, subject, credentialObj) => 
         bcc: bccAddresses,
         text: body_text,
         html: Temp,
+        // Custom headers for configuration set and message tags.
+        headers: {}
+    };
+
+    // Send the email.
+    let info = await transporter.sendMail(mailOptions)
+    console.log("Message sent! Message ID: ", info.messageId);
+
+}
+
+module.exports.eventScheduleMail = async (creatorName,creatorEmail, eventName, meetLink, leadName, leadEmail, description, dateTime, timezone) => {
+    const smtpEndpoint = "smtp.gmail.com";
+    const port = 587;
+    const senderAddress = process.env.SMTP_USERNAME;
+    var toAddresses = creatorEmail;
+
+    let notification = eventScheduleTemplate.eventSchedule(creatorName, eventName, meetLink, leadName, leadEmail, description, dateTime, timezone)
+
+    var ccAddresses = "";
+    var bccAddresses = "";
+
+    const smtpUsername = process.env.SMTP_USERNAME;
+    const smtpPassword = process.env.SMTP_PASSWORD;
+
+    // The subject line of the email
+    var subject = `New Event:- ${leadName} - ${dateTime} - ${eventName}`;
+    // The email body for recipients with non-HTML email clients.
+    var body_text = ``;
+    
+    // The body of the email for recipients whose email clients support HTML contenty.
+    //var body_html= emailTem;
+
+    let transporter = nodemailer.createTransport({
+        host: smtpEndpoint,
+        port: port,
+        secure: false, // true for 465, false for other ports
+        auth: {
+            user: smtpUsername,
+            pass: smtpPassword
+        }
+    });
+
+    // Specify the fields in the email.
+    let mailOptions = {
+        from: senderAddress,
+        to: toAddresses,
+        subject: subject,
+        cc: ccAddresses,
+        bcc: bccAddresses,
+        text: body_text,
+        html: notification,
         // Custom headers for configuration set and message tags.
         headers: {}
     };

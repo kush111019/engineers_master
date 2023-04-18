@@ -186,7 +186,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
                 var3: card.id, var4: token.id, var5: charge.id, var6: subscription.current_period_end,
                 var7: _dt, var8: transaction.rows[0].id, var9: Math.round(totalAmount), var10: true,
                 var11: charge.receipt_url, var12: userCount, var13: planId, var14: "",
-                var15 : proUserCount
+                var15: proUserCount
             })
             let updateTransaction = await connection.query(s3)
 
@@ -195,7 +195,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
             let s5 = dbScript(db_sql['Q102'], { var1: expiryDate, var2: user.rows[0].id, var3: _dt })
             let updateUserExpiryDate = await connection.query(s5)
 
-            let s6 = dbScript(db_sql['Q197'], { var1: expiryDate, var2: userCount,var3 : proUserCount, var4: _dt, var5: user.rows[0].company_id })
+            let s6 = dbScript(db_sql['Q197'], { var1: expiryDate, var2: userCount, var3: proUserCount, var4: _dt, var5: user.rows[0].company_id })
             let updateCompanyExpiryDate = await connection.query(s6)
 
 
@@ -284,11 +284,11 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
 
             let s3 = dbScript(db_sql['Q135'], {
                 var1: user.rows[0].id, var2: transaction.rows[0].company_id, var3: planId, var4: transaction.rows[0].stripe_customer_id, var5: subscription.id, var6: card.id, var7: token.id, var8: "", var9: subscription.current_period_end, var10: userCount, var11: "",
-                var12: Math.round(totalAmount), var13: "", var14 : proUserCount
+                var12: Math.round(totalAmount), var13: "", var14: proUserCount
             })
             let createUpgradedTransaction = await connection.query(s3)
 
-            let s4 = dbScript(db_sql['Q105'], { var1: transaction.rows[0].stripe_customer_id, var2: transaction.rows[0].stripe_subscription_id, var3: transaction.rows[0].stripe_card_id, var4: transaction.rows[0].stripe_token_id, var5: transaction.rows[0].stripe_charge_id, var6: transaction.rows[0].expiry_date, var7: _dt, var8: transaction.rows[0].id, var9: transaction.rows[0].total_amount, var10: false, var11: transaction.rows[0].payment_receipt, var12: transaction.rows[0].user_count, var13: transaction.rows[0].plan_id, var14: createUpgradedTransaction.rows[0].id, var15 : proUserCount })
+            let s4 = dbScript(db_sql['Q105'], { var1: transaction.rows[0].stripe_customer_id, var2: transaction.rows[0].stripe_subscription_id, var3: transaction.rows[0].stripe_card_id, var4: transaction.rows[0].stripe_token_id, var5: transaction.rows[0].stripe_charge_id, var6: transaction.rows[0].expiry_date, var7: _dt, var8: transaction.rows[0].id, var9: transaction.rows[0].total_amount, var10: false, var11: transaction.rows[0].payment_receipt, var12: transaction.rows[0].user_count, var13: transaction.rows[0].plan_id, var14: createUpgradedTransaction.rows[0].id, var15: proUserCount })
             let updateTransaction = await connection.query(s4)
 
             if (createUpgradedTransaction.rowCount > 0 && updateTransaction.rowCount > 0) {
@@ -635,9 +635,42 @@ module.exports.getParentUserList = async (userData, company_id) => {
     for (let id of roleIds) {
         let s2 = dbScript(db_sql['Q21'], { var1: id, var2: company_id })
         let getUserData = await connection.query(s2);
-        if (getUserData.rowCount > 0 ) {
-            returnData.push( getUserData.rows[0])
+        if (getUserData.rowCount > 0) {
+            returnData.push(getUserData.rows[0])
         }
     }
     return returnData
+}
+
+module.exports.dateFormattor = async (date, startTime, endTime ) => {
+    // Assuming the date and time values are already available as variables
+    // var date = "2023-04-16T11:30:00-07:00";
+    // var startTime = "11:00:00";
+    // var endTime = "12:00:00";
+
+    // Convert date string to JavaScript Date object
+    let eventDate = new Date(date);
+
+    // Get day, month, and year components from the event date
+    let day = eventDate.toLocaleString('en-US', { day: 'numeric' });
+    let month = eventDate.toLocaleString('en-US', { month: 'long' });
+    let year = eventDate.toLocaleString('en-US', { year: 'numeric' });
+
+    // Get formatted time from the start and end time values
+    let startTimeFormatted = new Date("1970-01-01T" + startTime + "Z").toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+    let endTimeFormatted = new Date("1970-01-01T" + endTime + "Z").toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+
+    // Get the day of the week from the event date
+    let daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    let dayOfWeek = daysOfWeek[eventDate.getUTCDay()];
+
+    // Get the time zone offset from the event date
+    let timeZoneOffset = eventDate.toLocaleString('en-US', { timeZoneName: 'short' }).split(' ')[2];
+
+    // Create the final formatted date string
+    let formattedDate = startTimeFormatted + ' - ' + dayOfWeek + ', ' + day + ' ' + month + ' ' + year + ' (' + timeZoneOffset + ')';
+
+    console.log(formattedDate);
+    return formattedDate
+
 }
