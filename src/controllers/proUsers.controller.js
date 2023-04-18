@@ -1797,8 +1797,8 @@ module.exports.eventsList = async (req, res) => {
 
 module.exports.eventDetails = async(req,res) => {
     try {
-        let { eventId } = req.params
-        let s1 = dbScript(db_sql['Q348'],{var1: eventId})
+        let { eventId } = req.query
+        let s1 = dbScript(db_sql['Q348'],{ var1: eventId})
         let showEventDetails = await connection.query(s1)
         if(showEventDetails.rowCount > 0){
             res.json({
