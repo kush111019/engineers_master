@@ -254,6 +254,7 @@ router.post('/createEvent',verifyTokenFn,controller.proUser.createEvent)
 router.get('/eventsList',verifyTokenFn,controller.proUser.eventsList)
 router.get('/eventDetails', controller.proUser.eventDetails)
 router.post('/scheduleEvent',controller.proUser.scheduleEvent)
+router.get('/scheduledEventsList', verifyTokenFn, controller.proUser.scheduledEventsList)
 
 
 module.exports = router;

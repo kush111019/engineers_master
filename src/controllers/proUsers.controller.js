@@ -1708,16 +1708,12 @@ module.exports.createEvent = async (req, res) => {
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0) {
             let s2 = dbScript(db_sql['Q345'], { var1: eventName, var2: meetLink, var3: description, var4: userId, var5: findAdmin.rows[0].company_id, var6: duration, var7: availabilityId })
-            console.log(s2,"s2");
             let addEvent = await connection.query(s2)
-            console.log(addEvent.rows,"addEvent");
             if (addEvent.rowCount > 0) {
 
                 let eventUrl = `${process.env.PRO_EVENT_URL}/${addEvent.rows[0].id}`
                 let s3 = dbScript(db_sql['Q347'], { var1: eventUrl, var2: addEvent.rows[0].id })
-                console.log(s3, "s3");
                 let updateEventUrl = await connection.query(s3)
-                console.log(updateEventUrl.rows,"updateEventUrl");
                 if (updateEventUrl.rowCount > 0) {
                     await connection.query('COMMIT')
                     res.json({
@@ -1827,12 +1823,13 @@ module.exports.eventDetails = async(req,res) => {
 module.exports.scheduleEvent = async(req, res) => {
     try {
         let { eventId,eventName, meetLink, date, startTime, endTime, leadName, leadEmail, description, userId,creatorName,creatorEmail, companyId, timezone  } = req.body
-
         await connection.query('BEGIN')
 
         let s1 = dbScript(db_sql['Q349'],{var1 : eventId, var2:date, var3 : startTime, var4 : endTime, var5 : leadName, var6 : leadEmail, var7 : description, var8 : userId, var9 : companyId})
         let createSchedule = await connection.query(s1)
+
         let dateTime = await dateFormattor(date,startTime, endTime )
+
         await eventScheduleMail(creatorName,creatorEmail, eventName, meetLink, leadName, leadEmail, description, dateTime, timezone)
 
         await eventScheduleMail(leadName,leadEmail, eventName, meetLink, leadName, leadEmail, description, dateTime, timezone)
@@ -1851,6 +1848,47 @@ module.exports.scheduleEvent = async(req, res) => {
                 success: false,
                 message: "Something went wrong"
             }) 
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.scheduledEventsList = async(req, res) => {
+    try {
+        let userId = req.user.id 
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+
+            let s2 = dbScript(db_sql['Q350'],{var1 : userId, var2 : findAdmin.rows[0].company_id})
+            let scheduleEvents = await connection.query(s2)
+
+            if(scheduleEvents.rowCount > 0){
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Scheduled events list",
+                    data : scheduleEvents.rows
+                })
+            }else{
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Scheduled events list",
+                    data : []
+                }) 
+            }
+        }else{
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
         }
     } catch (error) {
         res.json({

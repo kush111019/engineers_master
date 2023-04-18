@@ -805,7 +805,7 @@ module.exports.eventScheduleMail = async (creatorName,creatorEmail, eventName, m
     const smtpPassword = process.env.SMTP_PASSWORD;
 
     // The subject line of the email
-    var subject = `New Event:- ${leadName} - ${dateTime} - ${eventName}`;
+    var subject = `New Event:- ${leadName} - ${dateTime} -  ${eventName}`;
     // The email body for recipients with non-HTML email clients.
     var body_text = ``;
     
