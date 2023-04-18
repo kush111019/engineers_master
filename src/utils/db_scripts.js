@@ -2950,18 +2950,34 @@ const db_sql = {
             WHERE uc.id = '{var1}' AND uc.deleted_at IS NULL
               AND sc.deleted_at IS NULL`,
     "Q341":`INSERT INTO imap_credentials( email, app_password, user_id, smtp_host, smtp_port, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
-    "Q342":`INSERT INTO user_availability(schedule_name, event_type_id, timezone, user_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
-    "Q343":`INSERT INTO user_time_slot(days,dates,start_time, end_time, availability_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+    "Q342":`INSERT INTO pro_user_availability(schedule_name, event_type_id, timezone, user_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
+    "Q343":`INSERT INTO pro_user_time_slot(days,dates,start_time, end_time, availability_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
     "Q344":`SELECT ua.id, ua.schedule_name, ua.timezone, ua.event_type_id, ua.created_at,
               ua.user_id, u.full_name,
               (
-                SELECT json_agg(user_time_slot.*)
-                FROM user_time_slot
-                WHERE ua.id = user_time_slot.availability_id AND deleted_at IS NULL
+                SELECT json_agg(pro_user_time_slot.*)
+                FROM pro_user_time_slot
+                WHERE ua.id = pro_user_time_slot.availability_id AND deleted_at IS NULL
               )as time_slots
-            FROM user_availability as ua
+            FROM pro_user_availability as ua
             LEFT JOIN users as u ON u.id = ua.user_id
-            WHERE ua.user_id = '{var1}' AND ua.company_id = '{var2}' AND ua.deleted_at IS NULL`
+            WHERE ua.user_id = '{var1}' AND ua.company_id = '{var2}' AND ua.deleted_at IS NULL`,
+    "Q345":`INSERT INTO pro_user_events(event_name, meet_link, description, user_id, company_id, duration, availability_id) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}') RETURNING *`,
+    "Q346":`SELECT * FROM pro_user_events WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
+    "Q347":`UPDATE pro_user_events SET event_url = '{var1}' WHERE id = '{var2}' RETURNING *`,
+    "Q348":`SELECT e.id AS event_id, e.event_name, e.meet_link, e.description, e.event_url,
+                   e.duration, e.availability_id, 
+                   e.user_id AS creator_id, u.full_name AS creator_name, u.email_address AS creator_email,
+                   a.schedule_name, a.timezone,
+                   (
+                    SELECT json_agg(pro_user_time_slot.*)
+                    FROM pro_user_time_slot
+                    WHERE e.availability_id = pro_user_time_slot.availability_id AND deleted_at IS NULL
+                   ) AS availability_time_slots
+            FROM pro_user_events AS e 
+            LEFT JOIN pro_user_availability AS a ON a.id = e.availability_id
+            LEFT JOIN users AS u ON u.id = e.user_id 
+            WHERE e.id = '{var1}' AND e.deleted_at IS NULL`        
 
 }
 
