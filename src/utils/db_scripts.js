@@ -2951,7 +2951,7 @@ const db_sql = {
               AND sc.deleted_at IS NULL`,
     "Q341":`INSERT INTO imap_credentials( email, app_password, user_id, smtp_host, smtp_port, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
     "Q342":`INSERT INTO pro_user_availability(schedule_name, timezone, user_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
-    "Q343":`INSERT INTO pro_user_time_slot(days,dates,start_time, end_time, availability_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+    "Q343":`INSERT INTO pro_user_time_slot(days,start_time, end_time, availability_id, company_id, checked) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
     "Q344":`SELECT ua.id, ua.schedule_name, ua.timezone, ua.created_at,
               ua.user_id, u.full_name,
               (
