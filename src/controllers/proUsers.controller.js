@@ -1420,63 +1420,6 @@ module.exports.deleteEmailTemplate = async (req, res) => {
 
 }
 
-// module.exports.calendlyAccessToken = async (req, res) => {
-//     // Set your Calendly API credentials
-//     const CLIENT_ID = 'SkoTA2IQIBgJ524cSPcx5mbPD26bv1nTuyEjgmW93wM';
-//     const CLIENT_SECRET = 'QIVDqHJQlmG4_2BRAooVq2MNbtUunSsOjO7zkzjrkE4';
-//     const BASE_URL = 'https://api.calendly.com/oauth';
-
-//     try {
-
-
-//         let authUrl = `https://auth.calendly.com/oauth/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${process.env.REDIRECT_URL}`
-
-//         console.log(authUrl);
-
-//         const response = await axios.post('https://auth.calendly.com/oauth/token', qs.stringify({
-//             client_id: CLIENT_ID,
-//             client_secret: CLIENT_SECRET,
-//             code: 'nxV420m_p3atD5lsBfYr0WR8C5E-791wu0VH2VyjCmw',
-//             redirect_uri: process.env.REDIRECT_URL,
-//             grant_type: 'authorization_code'
-//         }), {
-//             headers: {
-//                 'Content-Type': 'application/x-www-form-urlencoded'
-//             }
-//         });
-
-//         // Access token and refresh token received in the response
-//         const accessToken = response.data.access_token;
-//         const refreshToken = response.data.refresh_token;
-
-//         console.log('Access Token:', accessToken);
-//         console.log('Refresh Token:', refreshToken);
-//     } catch (error) {
-//         console.error(error);
-//     }
-// }
-
-// module.exports.calendlyEvents = async (req, res) => {
-
-//     // Fetch the user's upcoming events
-
-//     const { accessToken } = req.body
-//     console.log("accessToken",accessToken);
-//     const BASE_URL = 'https://api.calendly.com/oauth';
-//     try {
-//         const response = await axios.get(`${BASE_URL}/users/me/upcoming_events`, {
-//             headers: {
-//                 'Authorization': `Bearer ${accessToken}`,
-//                 'Content-Type': 'application/json'
-//             }
-//         });
-//         console.log(response.data);
-//     } catch (error) {
-//         console.log("error", error.message);
-//     }
-
-// }
-
 module.exports.sendEmailToLead = async (req, res) => {
     try {
         let userId = req.user.id
@@ -1495,21 +1438,21 @@ module.exports.sendEmailToLead = async (req, res) => {
                 credentialObj.smtpHost = findCreds.rows[0].smtp_host
                 credentialObj.smtpPort = findCreds.rows[0].smtp_port
 
-                await leadEmail2(leadEmail, template, templateName,credentialObj);
+                await leadEmail2(leadEmail, template, templateName, credentialObj);
                 res.json({
                     status: 200,
                     success: true,
                     message: "Email sent to Lead",
                 })
 
-            }else{
+            } else {
                 res.json({
                     status: 400,
                     success: false,
                     message: "SMTP credentials not available. Please add SMTP credentials first.",
-                }) 
+                })
             }
-           
+
         } else {
             res.json({
                 status: 400,
@@ -1637,9 +1580,9 @@ module.exports.credentialList = async (req, res) => {
                 })
             } else {
                 credentialObj.id = "",
-                credentialObj.email = "",
-                credentialObj.appPassword = "",
-                credentialObj.smtpHost = ""
+                    credentialObj.email = "",
+                    credentialObj.appPassword = "",
+                    credentialObj.smtpHost = ""
                 credentialObj.smtpPort = ""
                 res.json({
                     status: 200,
@@ -1664,36 +1607,36 @@ module.exports.credentialList = async (req, res) => {
     }
 }
 
-module.exports.addAvailability = async(req, res) => {
+module.exports.addAvailability = async (req, res) => {
     try {
         let {
             scheduleName,
             eventTypeId,
             timezone,
             timeSlot
-          } = req.body;
-          eventTypeId = (!eventTypeId) ? 'null' : eventTypeId
+        } = req.body;
+        eventTypeId = (!eventTypeId) ? 'null' : eventTypeId
         await connection.query('BEGIN')
         let userId = req.user.id
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q342'],{var1 : scheduleName, var2 : eventTypeId, var3 : timezone, var4 : userId, var5: findAdmin.rows[0].company_id})
+            let s2 = dbScript(db_sql['Q342'], { var1: scheduleName, var2: eventTypeId, var3: timezone, var4: userId, var5: findAdmin.rows[0].company_id })
             let createAvailability = await connection.query(s2)
-            for(let ts of timeSlot){
+            for (let ts of timeSlot) {
                 let dayName = daysEnum[ts.days]
                 let date = new Date(ts.date).toISOString()
-                let s3 = dbScript(db_sql['Q343'],{var1 : dayName,var2 : date, var3 : ts.startTime, var4 : ts.endTime, var5 : createAvailability.rows[0].id, var6 : findAdmin.rows[0].company_id })
+                let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: date, var3: ts.startTime, var4: ts.endTime, var5: createAvailability.rows[0].id, var6: findAdmin.rows[0].company_id })
                 let addTimeSlot = await connection.query(s3)
             }
-            if(createAvailability.rowCount > 0){
+            if (createAvailability.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,
                     success: true,
                     message: "Availability scheduled successfully"
                 })
-            }else{
+            } else {
                 await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
@@ -1701,7 +1644,7 @@ module.exports.addAvailability = async(req, res) => {
                     message: "Something went wrong"
                 })
             }
-        }else{
+        } else {
             res.json({
                 status: 400,
                 success: false,
@@ -1718,41 +1661,164 @@ module.exports.addAvailability = async(req, res) => {
     }
 }
 
-module.exports.availableTimeList = async(req,res) =>{
-       try {
+module.exports.availableTimeList = async (req, res) => {
+    try {
         let userId = req.user.id
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q344'],{var1 : userId, var2 : findAdmin.rows[0].company_id})
+            let s2 = dbScript(db_sql['Q344'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let availability = await connection.query(s2)
-            if(availability.rowCount > 0){
+            if (availability.rowCount > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: "Availability List",
-                    data : availability.rows
+                    data: availability.rows
                 })
-            }else{
+            } else {
                 res.json({
                     status: 200,
                     success: false,
                     message: "Empty Availability List",
-                    data : []
-                }) 
+                    data: []
+                })
             }
-        }else{
+        } else {
             res.json({
                 status: 400,
                 success: false,
                 message: "User not found"
             })
         }
-       } catch (error) {
+    } catch (error) {
         res.json({
             status: 400,
             success: false,
             message: error.message,
         })
-       }
+    }
+}
+
+module.exports.createEvent = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { eventName, meetLink, description, duration, availabilityId } = req.body
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q345'], { var1: eventName, var2: meetLink, var3: description, var4: userId, var5: findAdmin.rows[0].company_id, var6: duration, var7: availabilityId })
+            let addEvent = await connection.query(s2)
+            if (addEvent.rowCount > 0) {
+
+                let eventUrl = `${process.env.PRO_EVENT_URL}/${addEvent.rows[0].id}`
+                console.log("eventurl", eventUrl);
+                let s3 = dbScript(db_sql['Q347'], { var1: eventUrl, var2: addEvent.rows[0].id })
+                console.log(s3, "s3");
+                let updateEventUrl = await connection.query(s3)
+                if (updateEventUrl.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Event created successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.eventsList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q346'], { var1: userId, var2: findAdmin.rows[0].company_id })
+            let eventList = await connection.query(s2)
+            if (eventList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    data: eventList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty event list",
+                    data: []
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.eventDetails = async(req,res) => {
+    try {
+        let { eventId } = req.params
+        let s1 = dbScript(db_sql['Q348'],{var1: eventId})
+        let showEventDetails = await connection.query(s1)
+        if(showEventDetails.rowCount > 0){
+            res.json({
+                status: 200,
+                success: true,
+                message: "Event Details",
+                data: showEventDetails.rows
+            })
+        }else{
+            res.json({
+                status: 200,
+                success: false,
+                message: "No event found on this Id"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
 }

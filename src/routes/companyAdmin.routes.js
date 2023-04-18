@@ -247,12 +247,12 @@ router.put('/updateEmailTemplate',verifyTokenFn,controller.proUser.updateEmailTe
 router.put('/deleteEmailTemplate',verifyTokenFn,controller.proUser.deleteEmailTemplate)
 router.post('/addSmtpCreds',verifyTokenFn, controller.proUser.addSmtpCreds)
 router.get('/credentialList', verifyTokenFn, controller.proUser.credentialList)
-
 router.post('/sendEmailToLead', verifyTokenFn,controller.proUser.sendEmailToLead)
-//calendly
 
-// router.get('/calendlyAccessToken',verifyTokenFn,controller.proUser.calendlyAccessToken)
-// router.post('/calendlyEvents',verifyTokenFn,controller.proUser.calendlyEvents)
+//event and calendar for pro
+router.post('/createEvent',verifyTokenFn,controller.proUser.createEvent)
+router.get('/eventsList',verifyTokenFn,controller.proUser.eventsList)
+router.get('/eventDetails', controller.proUser.eventDetails)
 
 
 module.exports = router;
