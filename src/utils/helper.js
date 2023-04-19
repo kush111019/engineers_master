@@ -642,36 +642,27 @@ module.exports.getParentUserList = async (userData, company_id) => {
     return returnData
 }
 
-module.exports.dateFormattor = async (date, startTime, endTime) => {
+module.exports.dateFormattor = async (date1, startTime, endTime) => {
     // Assuming the date and time values are already available as variables
-    // var date = "2023-04-16T11:30:00-07:00";
-    // var startTime = "11:00:00";
-    // var endTime = "12:00:00";
+    let date = new Date(date1);
+    // let startTime = "11:00:00 AM";
+    // let endTime = "12:00:00 PM";
 
-    // Convert date string to JavaScript Date object
-    let eventDate = new Date(date);
+    // Convert start and end time strings to Date objects
+    let startDate = new Date(date.toISOString().split('T')[0] + 'T' + startTime);
+    let endDate = new Date(date.toISOString().split('T')[0] + 'T' + endTime);
 
-    // Get day, month, and year components from the event date
-    let day = eventDate.toLocaleString('en-US', { day: 'numeric' });
-    let month = eventDate.toLocaleString('en-US', { month: 'long' });
-    let year = eventDate.toLocaleString('en-US', { year: 'numeric' });
+    // Format the date and time strings
+    let dateString = date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    let startTimeString = startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+    let endTimeString = endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
 
-    // Get formatted time from the start and end time values
-    let startTimeFormatted = new Date("1970-01-01T" + startTime + "Z").toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-    let endTimeFormatted = new Date("1970-01-01T" + endTime + "Z").toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+    // Combine the formatted strings
+    let formattedString = startTimeString + ' - ' + endTimeString + ' - ' + dateString;
 
-    // Get the day of the week from the event date
-    let daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    let dayOfWeek = daysOfWeek[eventDate.getUTCDay()];
+    // console.log(formattedString); // Output: "11:00 AM - 12:00 PM - Sunday, April 17, 2023"
 
-    // Get the time zone offset from the event date
-    let timeZoneOffset = eventDate.toLocaleString('en-US', { timeZoneName: 'short' }).split(' ')[2];
-
-    // Create the final formatted date string
-    let formattedDate = startTimeFormatted + ' - ' + dayOfWeek + ', ' + day + ' ' + month + ' ' + year + ' (' + timeZoneOffset + ')';
-
-    console.log(formattedDate);
-    return formattedDate
+    return formattedString;
 
 }
 
