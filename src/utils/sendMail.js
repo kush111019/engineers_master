@@ -741,7 +741,7 @@ module.exports.notificationMail2 = async (email,msg) => {
 
 module.exports.leadEmail2 = async (email , template, subject, credentialObj) => {
     const smtpEndpoint = credentialObj.smtpHost;
-    const port = credentialObj.smtpPort;
+    const port = Number(credentialObj.smtpPort);
     const senderAddress = credentialObj.email;
     var toAddresses = email;
 
@@ -764,7 +764,7 @@ module.exports.leadEmail2 = async (email , template, subject, credentialObj) => 
     let transporter = nodemailer.createTransport({
         host: smtpEndpoint,
         port: port,
-        secure: false, // true for 465, false for other ports
+        secure: (port == 465) ? true : false, // true for 465, false for other ports
         auth: {
             user: smtpUsername,
             pass: smtpPassword
