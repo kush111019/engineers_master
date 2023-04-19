@@ -1759,17 +1759,13 @@ module.exports.updateAvailability = async (req, res) => {
             let s2 = dbScript(db_sql['Q352'], { var1: scheduleName, var2: timezone, var3: availabilityId, var4: _dt })
             let updateAvailability = await connection.query(s2)
             if (updateAvailability.rowCount > 0) {
+                let s3 = dbScript(db_sql['Q355'], { var1: _dt, var2: availabilityId })
+                let deleteTimeSlots = await connection.query(s3)
                 for (let ts of timeSlots) {
                     for (let subTs of ts.timeSlot) {
-                        if (subTs.id != '') {
-                            let _dt = new Date().toISOString()
-                            let s3 = dbScript(db_sql['Q353'], { var1: ts.checked, var2: subTs.startTime, var3: subTs.endTime, var4: subTs.id, var5: _dt })
-                            let updatetimeSlot = await connection.query(s3)
-                        } else {
-                            // let dayName = daysEnum[ts.days]
-                            let s3 = dbScript(db_sql['Q343'], { var1: ts.days, var2: subTs.startTime, var3: subTs.endTime, var4: availabilityId, var5: findAdmin.rows[0].company_id, var6: ts.checked })
-                            let addTimeSlot = await connection.query(s3)
-                        }
+                        // let dayName = daysEnum[ts.days]
+                        let s3 = dbScript(db_sql['Q343'], { var1: ts.days, var2: subTs.startTime, var3: subTs.endTime, var4: availabilityId, var5: findAdmin.rows[0].company_id, var6: ts.checked })
+                        let addTimeSlot = await connection.query(s3)
                     }
                 }
                 await connection.query('COMMIT')
@@ -1857,7 +1853,7 @@ module.exports.deleteAvalability = async (req, res) => {
     }
 }
 
-module.exports.deleteTimeSlot = async (req,res) =>{
+module.exports.deleteTimeSlot = async (req, res) => {
     try {
         let { slotId } = req.query
         await connection.query('BEGIN')
@@ -1869,12 +1865,12 @@ module.exports.deleteTimeSlot = async (req,res) =>{
             let s2 = dbScript(db_sql['Q356'], { var1: _dt, var2: slotId })
             let deleteTimeSlot = await connection.query(s2)
             if (deleteTimeSlot.rowCount > 0) {
-                    await connection.query('COMMIT')
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Time slot Deleted successfully"
-                    })
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Time slot Deleted successfully"
+                })
             } else {
                 await connection.query('ROLLBACK')
                 res.json({
