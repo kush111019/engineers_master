@@ -635,39 +635,30 @@ module.exports.actualVsForecast = async (req, res) => {
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
             let s2 = dbScript(db_sql['Q306'], { var1: forecastId })
             let findChildForecast = await connection.query(s2)
-            console.log(findChildForecast.rows, "findChildForecast");
             if (findChildForecast.rowCount > 0) {
                 let creatorArray = []
                 let forcastDataArray = (findChildForecast.rows[0].forecast_data) ? findChildForecast.rows[0].forecast_data : [];
-                console.log(forcastDataArray, "forcastDataArray");
-                if (isMaster) {
-                    console.log("is master");
+                if (isMaster == 'true') {
                     let s3 = dbScript(db_sql['Q359'], { var1: forecastId })
                     let findAssignedTo = await connection.query(s3)
-                    console.log(findAssignedTo.rows, "findAssignedTo.rows");
                     findAssignedTo.rows.map(value => {
                         if (value.assigned_to) {
                             if (creatorArray.includes(value.assigned_to) == false) {
                                 creatorArray.push("'" + value.assigned_to.toString() + "'")
                             }
                         }
-                        console.log(creatorArray, "creatorArray");
                     })
                 } else {
-                    console.log("not master");
                     findChildForecast.rows.map(value => {
                         if (value.forecast_data_creator) {
                             creatorArray.push("'" + value.forecast_data_creator[0].toString() + "'")
                         }
                     })
-                    console.log(creatorArray, "creatorArray22222");
                 }
                 for (let data2 of forcastDataArray) {
                     let amount = 0
-                    console.log(amount, "amount111111");
                     let s3 = dbScript(db_sql['Q266'], { var1: creatorArray.join(","), var2: data2.start_date, var3: data2.end_date })
                     let findSales = await connection.query(s3)
-                    console.log(findSales.rows, "findSales");
                     if (findSales.rowCount > 0) {
                         for (let data of findSales.rows) {
                             let s2 = dbScript(db_sql['Q256'], { var1: data.id })
@@ -675,7 +666,6 @@ module.exports.actualVsForecast = async (req, res) => {
                             amount = (recognizedRevenueData.rowCount > 0) ? amount + Number(recognizedRevenueData.rows[0].amount) : amount
                         }
                     }
-                    console.log(amount, "amount222222");
                     data2.recognized_amount = amount
                 }
                 if (forcastDataArray.length > 0) {
