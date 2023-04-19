@@ -628,7 +628,7 @@ module.exports.deleteAssignedUserForecast = async (req, res) => {
 module.exports.actualVsForecast = async (req, res) => {
     try {
         let userId = req.user.id
-        let { forecastId } = req.query
+        let { forecastId,isMaster } = req.query
         await connection.query('BEGIN')
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
@@ -636,55 +636,25 @@ module.exports.actualVsForecast = async (req, res) => {
             let s2 = dbScript(db_sql['Q306'], { var1: forecastId })
             let findChildForecast = await connection.query(s2)
             if (findChildForecast.rowCount > 0) {
-                for(let fd of findChildForecast.rows){
-                    if(fd.pid == '0'){
-                        let childArray = []
-                        findChildForecast.rows.map(value => {
-                            if(childArray.includes(value.assigned_to) == false){
-                                childArray.push(value.assigned_to)
-                            }
-                        })
-                        let forcastDataArray1 = (findChildForecast.rows[0].forecast_data) ? findChildForecast.rows[0].forecast_data : [];
-                        for (let data of childArray) {
-                            for (let data2 of forcastDataArray1) {
-                                let amount = 0
-                                let s3 = dbScript(db_sql['Q266'], { var1: data, var2: data2.start_date, var3: data2.end_date })
-                                let findSales = await connection.query(s3)
-                                if (findSales.rowCount > 0) {
-                                    for (let data of findSales.rows) {
-                                        let s2 = dbScript(db_sql['Q256'], { var1: data.id })
-                                        let recognizedRevenueData = await connection.query(s2)
-                                        amount = (recognizedRevenueData.rowCount > 0) ? amount + Number(recognizedRevenueData.rows[0].amount) : amount
-                                    }
-                                }
-                                data2.recognized_amount = amount
-                            }
-                        }
-                        if(forcastDataArray1.length > 0){
-                            return res.json({
-                                status: 200,
-                                success: true,
-                                message: "Actual Vs Forecast Data",
-                                data: forcastDataArray1
-                            })
-                        }else{
-                            return res.json({
-                                status: 200,
-                                success: false,
-                                message: "Empty Actual Vs Forecast Data",
-                                data: []
-                            }) 
-                        }
-                        
-                    }
-                }
                 let creatorArray = []
                 let forcastDataArray = (findChildForecast.rows[0].forecast_data) ? findChildForecast.rows[0].forecast_data : [];
-                findChildForecast.rows.map(value => {
-                    if (value.forecast_data_creator) {
-                        creatorArray.push(value.forecast_data_creator[0])
-                    }
-                })
+                if(isMaster){
+                    let s3 = dbScript(db_sql['Q359'],{var1 : forecastId})
+                    let findAssignedTo = await connection.query(s3)
+                    findAssignedTo.rows.map(value => {
+                        if (value.assigned_to) {
+                            if(creatorArray.includes(value.assigned_to) == false){
+                                creatorArray.push(value.assigned_to)
+                            } 
+                        }
+                    })
+                }else{
+                    findChildForecast.rows.map(value => {
+                        if (value.forecast_data_creator) {
+                            creatorArray.push(value.forecast_data_creator[0])
+                        }
+                    })
+                }
                 for (let data of creatorArray) {
                     for (let data2 of forcastDataArray) {
                         let amount = 0

@@ -3004,7 +3004,8 @@ const db_sql = {
     "Q355":`UPDATE pro_user_time_slot SET deleted_at = '{var1}' WHERE availability_id = '{var2}' RETURNING *`, 
     "Q356":`UPDATE pro_user_time_slot SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,    
     "Q357":`UPDATE pro_user_events SET event_name = '{var1}', meet_link = '{var2}', description = '{var3}', duration = '{var4}', availability_id = '{var5}', updated_at = '{var7}' WHERE id = '{var6}' RETURNING *` ,
-    "Q358":`UPDATE pro_user_events SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`           
+    "Q358":`UPDATE pro_user_events SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
+    "Q359":`SELECT assigned_to FROM forecast WHERE (id = '{var1}' OR pid = '{var1}') AND deleted_at IS NULL`           
 
 
 }
