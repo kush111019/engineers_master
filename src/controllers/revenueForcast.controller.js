@@ -635,25 +635,32 @@ module.exports.actualVsForecast = async (req, res) => {
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
             let s2 = dbScript(db_sql['Q306'], { var1: forecastId })
             let findChildForecast = await connection.query(s2)
+            console.log(findChildForecast.rows,"findChildForecast");
             if (findChildForecast.rowCount > 0) {
                 let creatorArray = []
                 let forcastDataArray = (findChildForecast.rows[0].forecast_data) ? findChildForecast.rows[0].forecast_data : [];
+                console.log(forcastDataArray,"forcastDataArray");
                 if(isMaster){
+                    console.log("is master");
                     let s3 = dbScript(db_sql['Q359'],{var1 : forecastId})
                     let findAssignedTo = await connection.query(s3)
+                    console.log(findAssignedTo.rows,"findAssignedTo.rows");
                     findAssignedTo.rows.map(value => {
                         if (value.assigned_to) {
                             if(creatorArray.includes(value.assigned_to) == false){
                                 creatorArray.push(value.assigned_to)
                             } 
                         }
+                        console.log(creatorArray,"creatorArray");
                     })
                 }else{
+                    console.log("not master");
                     findChildForecast.rows.map(value => {
                         if (value.forecast_data_creator) {
                             creatorArray.push(value.forecast_data_creator[0])
                         }
                     })
+                    console.log(creatorArray,"creatorArray22222");
                 }
                 for (let data of creatorArray) {
                     for (let data2 of forcastDataArray) {
