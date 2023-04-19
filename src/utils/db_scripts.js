@@ -3002,7 +3002,9 @@ const db_sql = {
     "Q353":`UPDATE pro_user_time_slot SET checked = '{var1}', start_time = '{var2}', end_time = '{var3}', updated_at = '{var5}' WHERE id = '{var4}' RETURNING *`,
     "Q354":`UPDATE pro_user_availability SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
     "Q355":`UPDATE pro_user_time_slot SET deleted_at = '{var1}' WHERE availability_id = '{var2}' RETURNING *`, 
-    "Q356":`UPDATE pro_user_time_slot SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,                
+    "Q356":`UPDATE pro_user_time_slot SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,    
+    "Q357":`UPDATE pro_user_events SET event_name = '{var1}', meet_link = '{var2}', description = '{var3}', duration = '{var4}', availability_id = '{var5}', updated_at = '{var7}' WHERE id = '{var6}' RETURNING *` ,
+    "Q358":`UPDATE pro_user_events SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`           
 
 
 }
