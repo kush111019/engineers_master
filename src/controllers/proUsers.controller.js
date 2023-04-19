@@ -1508,7 +1508,7 @@ module.exports.addSmtpCreds = async (req, res) => {
             })
             promise.then(async (data) => {
                 let encryptedAppPassword = JSON.stringify(encrypt(appPassword))
-                let s4 = dbScript(db_sql['Q360'],{var1 : findAdmin.rows[0].id, var2 : findAdmin.rows[0].company_id})
+                let s4 = dbScript(db_sql['Q125'],{var1 : findAdmin.rows[0].id, var2 : findAdmin.rows[0].company_id})
                 let findSmtpcreds = await connection.query(s4)
                 if(findSmtpcreds.rowCount == 0){
                     let s3 = dbScript(db_sql['Q341'], { var1: email, var2: encryptedAppPassword, var3: findAdmin.rows[0].id, var4: smtpHost, var5: smtpPort, var6: findAdmin.rows[0].company_id })
@@ -1529,7 +1529,8 @@ module.exports.addSmtpCreds = async (req, res) => {
                         })
                     }
                 }else{
-                    let s5 = dbScript(db_sql['Q361'],{var1: email, var2: encryptedAppPassword,var3: smtpHost, var4: smtpPort, var5 : findSmtpcreds.rows[0].id })
+                    let _dt = new Date().toISOString()
+                    let s5 = dbScript(db_sql['Q361'],{var1: email, var2: encryptedAppPassword,var3: smtpHost, var4: smtpPort, var5 : findSmtpcreds.rows[0].id, var6 : _dt })
                     let updateCreds = await connection.query(s5)
                     if (updateCreds.rowCount > 0) {
                         await connection.query('COMMIT')
