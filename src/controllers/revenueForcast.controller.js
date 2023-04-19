@@ -665,8 +665,10 @@ module.exports.actualVsForecast = async (req, res) => {
                 for (let data of creatorArray) {
                     for (let data2 of forcastDataArray) {
                         let amount = 0
+                        console.log(amount,"amount111111");
                         let s3 = dbScript(db_sql['Q266'], { var1: data, var2: data2.start_date, var3: data2.end_date })
                         let findSales = await connection.query(s3)
+                        console.log(findSales.rows,"findSales");
                         if (findSales.rowCount > 0) {
                             for (let data of findSales.rows) {
                                 let s2 = dbScript(db_sql['Q256'], { var1: data.id })
@@ -674,6 +676,7 @@ module.exports.actualVsForecast = async (req, res) => {
                                 amount = (recognizedRevenueData.rowCount > 0) ? amount + Number(recognizedRevenueData.rows[0].amount) : amount
                             }
                         }
+                        console.log(amount,"amount222222");
                         data2.recognized_amount = amount
                     }
                 }
