@@ -1507,27 +1507,46 @@ module.exports.addSmtpCreds = async (req, res) => {
                 }
             })
             promise.then(async (data) => {
-
                 let encryptedAppPassword = JSON.stringify(encrypt(appPassword))
-                let s3 = dbScript(db_sql['Q341'], { var1: email, var2: encryptedAppPassword, var3: findAdmin.rows[0].id, var4: smtpHost, var5: smtpPort, var6: findAdmin.rows[0].company_id })
-                let addCredentails = await connection.query(s3)
-
-                if (addCredentails.rowCount > 0) {
-                    await connection.query('COMMIT')
-                    res.json({
-                        status: 201,
-                        success: true,
-                        message: "Credentials added successfully"
-                    })
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Something went wrong"
-                    })
+                let s4 = dbScript(db_sql['Q360'],{var1 : findAdmin.rows[0].id, var2 : findAdmin.rows[0].company_id})
+                let findSmtpcreds = await connection.query(s4)
+                if(findSmtpcreds.rowCount == 0){
+                    let s3 = dbScript(db_sql['Q341'], { var1: email, var2: encryptedAppPassword, var3: findAdmin.rows[0].id, var4: smtpHost, var5: smtpPort, var6: findAdmin.rows[0].company_id })
+                    let addCredentails = await connection.query(s3)
+                    if (addCredentails.rowCount > 0) {
+                        await connection.query('COMMIT')
+                        res.json({
+                            status: 201,
+                            success: true,
+                            message: "Credentials added successfully"
+                        })
+                    } else {
+                        await connection.query('ROLLBACK')
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Something went wrong"
+                        })
+                    }
+                }else{
+                    let s5 = dbScript(db_sql['Q361'],{var1: email, var2: encryptedAppPassword,var3: smtpHost, var4: smtpPort, var5 : findSmtpcreds.rows[0].id })
+                    let updateCreds = await connection.query(s5)
+                    if (updateCreds.rowCount > 0) {
+                        await connection.query('COMMIT')
+                        res.json({
+                            status: 201,
+                            success: true,
+                            message: "Credentials added successfully"
+                        })
+                    } else {
+                        await connection.query('ROLLBACK')
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Something went wrong"
+                        })
+                    }
                 }
-
             })
                 .catch((err) =>
                     res.json({
