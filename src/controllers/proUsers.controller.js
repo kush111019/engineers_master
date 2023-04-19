@@ -1763,8 +1763,8 @@ module.exports.updateAvailability = async (req, res) => {
                 let deleteTimeSlots = await connection.query(s3)
                 for (let ts of timeSlots) {
                     for (let subTs of ts.timeSlot) {
-                        // let dayName = daysEnum[ts.days]
-                        let s3 = dbScript(db_sql['Q343'], { var1: ts.days, var2: subTs.startTime, var3: subTs.endTime, var4: availabilityId, var5: findAdmin.rows[0].company_id, var6: ts.checked })
+                        let dayName = daysEnum[ts.day]
+                        let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: subTs.startTime, var3: subTs.endTime, var4: availabilityId, var5: findAdmin.rows[0].company_id, var6: ts.checked })
                         let addTimeSlot = await connection.query(s3)
                     }
                 }
