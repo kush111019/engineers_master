@@ -2078,8 +2078,8 @@ const db_sql = {
            LEFT JOIN sales_users AS su ON su.sales_id = sc.id
            WHERE 
             ( 
-              sc.user_id = '{var1}'
-              OR su.user_id = '{var1}' 
+              sc.user_id IN ({var1})
+              OR su.user_id IN ({var1})
             ) 
             AND sc.closed_at BETWEEN '{var2}'::date AND '{var3}'::date 
             AND sc.deleted_at is null`,
