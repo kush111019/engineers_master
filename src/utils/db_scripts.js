@@ -2966,7 +2966,7 @@ const db_sql = {
     "Q346":`SELECT * FROM pro_user_events WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
     "Q347":`UPDATE pro_user_events SET event_url = '{var1}' WHERE id = '{var2}' RETURNING *`,
     "Q348":`SELECT e.id AS event_id, e.event_name, e.meet_link, e.description, e.event_url,
-                   e.duration, e.availability_id,e.comapny_id, 
+                   e.duration, e.availability_id,e.company_id, 
                    e.user_id AS creator_id, u.full_name AS creator_name, u.email_address AS creator_email,
                    a.schedule_name, a.timezone,
                    (
