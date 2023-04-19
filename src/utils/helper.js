@@ -642,7 +642,7 @@ module.exports.getParentUserList = async (userData, company_id) => {
     return returnData
 }
 
-module.exports.dateFormattor = async (date, startTime, endTime ) => {
+module.exports.dateFormattor = async (date, startTime, endTime) => {
     // Assuming the date and time values are already available as variables
     // var date = "2023-04-16T11:30:00-07:00";
     // var startTime = "11:00:00";
@@ -673,5 +673,42 @@ module.exports.dateFormattor = async (date, startTime, endTime ) => {
     console.log(formattedDate);
     return formattedDate
 
+}
+
+module.exports.tranformAvailabilityArray = async (arr) => {
+    const outputArray = arr.map(obj => {
+        const newTimeSlots = obj.time_slots.reduce((acc, curr) => {
+            const existingSlot = acc.find(slot => slot.days === curr.days);
+            if (existingSlot) {
+                existingSlot.time_slot.push({
+                    id: curr.id,
+                    start_time: curr.start_time,
+                    end_time: curr.end_time
+                });
+            } else {
+                acc.push({
+                    days: curr.days,
+                    availability_id: curr.availability_id,
+                    company_id: curr.company_id,
+                    created_at: curr.created_at,
+                    updated_at: curr.updated_at,
+                    deleted_at: curr.deleted_at,
+                    checked: curr.checked,
+                    time_slot: [{
+                        id: curr.id,
+                        start_time: curr.start_time,
+                        end_time: curr.end_time
+                    }]
+                });
+            }
+            return acc;
+        }, []);
+        return {
+            ...obj,
+            time_slots: newTimeSlots
+        };
+    });
+
+    return outputArray;
 }
 
