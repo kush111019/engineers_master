@@ -255,6 +255,9 @@ router.get('/eventsList',verifyTokenFn,controller.proUser.eventsList)
 router.get('/eventDetails', controller.proUser.eventDetails)
 router.post('/scheduleEvent',controller.proUser.scheduleEvent)
 router.get('/scheduledEventsList', verifyTokenFn, controller.proUser.scheduledEventsList)
-
+router.get('/availabilityDetails',verifyTokenFn,controller.proUser.availabilityDetails)
+router.put('/updateAvailability',verifyTokenFn,controller.proUser.updateAvailability)
+router.put('/deleteAvalability',verifyTokenFn,controller.proUser.deleteAvalability)
+router.put('/deleteTimeSlot',verifyTokenFn,controller.proUser.deleteTimeSlot)
 
 module.exports = router;
