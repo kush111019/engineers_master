@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, dateFormattor } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, dateFormattor, tranformAvailabilityArray } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
@@ -1625,7 +1625,7 @@ module.exports.addAvailability = async (req, res) => {
             for (let ts of timeSlot) {
 
                 let dayName = daysEnum[ts.day]
-                for(let subTs of ts.timeSlots){
+                for (let subTs of ts.timeSlots) {
                     let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: subTs.startTime, var3: subTs.endTime, var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked })
                     let addTimeSlot = await connection.query(s3)
                 }
@@ -1671,30 +1671,13 @@ module.exports.availableTimeList = async (req, res) => {
             let s2 = dbScript(db_sql['Q344'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let availability = await connection.query(s2)
             if (availability.rowCount > 0) {
-                console.log(availability.rows);
-
-                let array = availability.rows.map(value => {
-                    console.log(value);
-                    let obj = {
-                        id: value.id,
-                        schedule_name: value.schedule_name,
-                        timezone: value.timezone,
-                        created_at: value.created_at,
-                        user_id: value.user_id,
-                        full_name: value.full_name,
-                    }
-
-                    value.time_slots.map
-                   
-                })
-
+                let finalArray = await tranformAvailabilityArray(availability.rows)
                 res.json({
                     status: 200,
                     success: true,
                     message: "Availability List",
-                    data: availability.rows
+                    data: finalArray
                 })
-
             } else {
                 res.json({
                     status: 200,
