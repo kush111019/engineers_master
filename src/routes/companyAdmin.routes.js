@@ -259,5 +259,7 @@ router.get('/availabilityDetails',verifyTokenFn,controller.proUser.availabilityD
 router.put('/updateAvailability',verifyTokenFn,controller.proUser.updateAvailability)
 router.put('/deleteAvalability',verifyTokenFn,controller.proUser.deleteAvalability)
 router.put('/deleteTimeSlot',verifyTokenFn,controller.proUser.deleteTimeSlot)
+router.put('/updateEvent',verifyTokenFn,controller.proUser.updateEvent)
+router.put('/deleteEvent',verifyTokenFn,controller.proUser.deleteEvent)
 
 module.exports = router;

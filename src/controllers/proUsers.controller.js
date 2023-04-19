@@ -2017,6 +2017,92 @@ module.exports.eventDetails = async (req, res) => {
     }
 }
 
+module.exports.deleteEvent = async (req, res) => {
+    try {
+        let { eventId } = req.query
+        await connection.query('BEGIN')
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let _dt = new Date().toISOString()
+            let s2 = dbScript(db_sql['Q358'], { var1: _dt, var2: eventId })
+            let updateEvent = await connection.query(s2)
+            if (updateEvent.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Event Deleted successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.updateEvent = async (req, res) => {
+    try {
+        let { eventId, eventName, meetLink, description, duration, availabilityId } = req.body
+        await connection.query('BEGIN')
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let _dt = new Date().toISOString()
+            let s2 = dbScript(db_sql['Q357'], { var1: eventName, var2: meetLink, var3: description, var4: duration, var5: availabilityId, var6: eventId, var7: _dt })
+            let updateEvent = await connection.query(s2)
+            if (updateEvent.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Event Updated successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 module.exports.scheduleEvent = async (req, res) => {
     try {
         let { eventId, eventName, meetLink, date, startTime, endTime, leadName, leadEmail, description, userId, creatorName, creatorEmail, companyId, timezone } = req.body
