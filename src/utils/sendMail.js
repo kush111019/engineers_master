@@ -17,7 +17,7 @@ let defaultClient = SibApiV3Sdk.ApiClient.instance;
 let apiKey = defaultClient.authentications['api-key'];
 apiKey.apiKey = process.env.API_KEY;
 
-module.exports.welcomeEmail = async (email , link, userName) => {
+module.exports.welcomeEmail = async (email, link, userName) => {
 
     let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
@@ -29,22 +29,22 @@ module.exports.welcomeEmail = async (email , link, userName) => {
     //Content that will be sent
     sendSmtpEmail.htmlContent = welcomeTemplate.welcome(link, userName)
     //Select the recipients
-    sendSmtpEmail.to = [{ "email" : email }]
+    sendSmtpEmail.to = [{ "email": email }]
     //Schedule the sending in one hour
     //scheduledAt = '2018-01-01 00:00:01'
 
     //Make the call to the client
-    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data)=> {
+    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data) => {
         console.log('API called successfully. Returned data: ' + JSON.stringify(data));
         return JSON.stringify(data)
-      }).catch((error)=> {
+    }).catch((error) => {
         console.error(error);
         return error
-      });
+    });
     return sentdata
 }
 
-module.exports.resetPasswordMail = async (email , link , userName) => {
+module.exports.resetPasswordMail = async (email, link, userName) => {
 
     let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
@@ -56,22 +56,22 @@ module.exports.resetPasswordMail = async (email , link , userName) => {
     //Content that will be sent
     sendSmtpEmail.htmlContent = resetPassTemplate.resetPassword(link, email, userName)
     //Select the recipients
-    sendSmtpEmail.to = [{ "email" : email }]
+    sendSmtpEmail.to = [{ "email": email }]
     //Schedule the sending in one hour
     //scheduledAt = '2018-01-01 00:00:01'
 
     //Make the call to the client
-    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data)=> {
+    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data) => {
         console.log('API called successfully. Returned data: ' + JSON.stringify(data));
         return JSON.stringify(data)
-      }).catch((error)=> {
+    }).catch((error) => {
         console.error(error);
         return error
-      });
+    });
     return sentdata
 }
 
-module.exports.setPasswordMail = async (email , link, userName) => {
+module.exports.setPasswordMail = async (email, link, userName) => {
 
     let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
@@ -83,22 +83,22 @@ module.exports.setPasswordMail = async (email , link, userName) => {
     //Content that will be sent
     sendSmtpEmail.htmlContent = setPassTemp.setPassword(link, userName)
     //Select the recipients
-    sendSmtpEmail.to = [{ "email" : email }]
+    sendSmtpEmail.to = [{ "email": email }]
     //Schedule the sending in one hour
     //scheduledAt = '2018-01-01 00:00:01'
 
     //Make the call to the client
-    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data)=> {
+    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data) => {
         console.log('API called successfully. Returned data: ' + JSON.stringify(data));
         return JSON.stringify(data)
-      }).catch((error)=> {
+    }).catch((error) => {
         console.error(error);
         return error
-      });
+    });
     return sentdata
 }
 
-module.exports.paymentReminderMail = async (email,customerName,endDate) => {
+module.exports.paymentReminderMail = async (email, customerName, endDate) => {
     let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     //Define the campaign settings\
@@ -107,25 +107,25 @@ module.exports.paymentReminderMail = async (email,customerName,endDate) => {
     sendSmtpEmail.sender = { "name": "Revenue Captain", "email": process.env.SMTP_EMAIL };
     sendSmtpEmail.type = "classic";
     //Content that will be sent
-    sendSmtpEmail.htmlContent = paymentReminderTemplate.paymentReminder(customerName,endDate)
+    sendSmtpEmail.htmlContent = paymentReminderTemplate.paymentReminder(customerName, endDate)
     //Select the recipients
-    sendSmtpEmail.to = [{ "email" : email }]
+    sendSmtpEmail.to = [{ "email": email }]
     //Schedule the sending in one hour
     //scheduledAt = '2018-01-01 00:00:01'
 
     //Make the call to the client
-    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data)=> {
+    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data) => {
         console.log('API called successfully. Returned data: ' + JSON.stringify(data));
         return JSON.stringify(data)
-      }).catch((error)=> {
+    }).catch((error) => {
         console.error(error);
         return error
-      });
+    });
     return sentdata
 
 }
 
-module.exports.contactUsMail = async (email,fullName,subject1,message,address) => {
+module.exports.contactUsMail = async (email, fullName, subject1, message, address) => {
 
     let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
@@ -135,24 +135,24 @@ module.exports.contactUsMail = async (email,fullName,subject1,message,address) =
     sendSmtpEmail.sender = { "name": "Revenue Captain", "email": process.env.SMTP_EMAIL };
     sendSmtpEmail.type = "classic";
     //Content that will be sent
-    sendSmtpEmail.htmlContent = contactUsTemplate.contactUs(email,fullName,subject1,message,address)
+    sendSmtpEmail.htmlContent = contactUsTemplate.contactUs(email, fullName, subject1, message, address)
     //Select the recipients
-    sendSmtpEmail.to = [{ "email" : process.env.SMTP_EMAIL }]
+    sendSmtpEmail.to = [{ "email": process.env.SMTP_EMAIL }]
     //Schedule the sending in one hour
     //scheduledAt = '2018-01-01 00:00:01'
 
     //Make the call to the client
-    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data)=> {
+    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data) => {
         console.log('API called successfully. Returned data: ' + JSON.stringify(data));
         return JSON.stringify(data)
-      }).catch((error)=> {
+    }).catch((error) => {
         console.error(error);
         return error
-      });
+    });
     return sentdata
 }
 
-module.exports.resetPasswordMail = async (email , link , userName) => {
+module.exports.resetPasswordMail = async (email, link, userName) => {
 
     let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
@@ -164,22 +164,22 @@ module.exports.resetPasswordMail = async (email , link , userName) => {
     //Content that will be sent
     sendSmtpEmail.htmlContent = emailToContactTemplate.emailToContact(message)
     //Select the recipients
-    sendSmtpEmail.to = [{ "email" : email }]
+    sendSmtpEmail.to = [{ "email": email }]
     //Schedule the sending in one hour
     //scheduledAt = '2018-01-01 00:00:01'
 
     //Make the call to the client
-    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data)=> {
+    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data) => {
         console.log('API called successfully. Returned data: ' + JSON.stringify(data));
         return JSON.stringify(data)
-      }).catch((error)=> {
+    }).catch((error) => {
         console.error(error);
         return error
-      });
+    });
     return sentdata
 }
 
-module.exports.tagetClosingDateReminderMail = async (email,customerName,targetClosingDate) => {
+module.exports.tagetClosingDateReminderMail = async (email, customerName, targetClosingDate) => {
     let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     //Define the campaign settings\
@@ -188,12 +188,12 @@ module.exports.tagetClosingDateReminderMail = async (email,customerName,targetCl
     sendSmtpEmail.sender = { "name": "Revenue Captain", "email": process.env.SMTP_EMAIL };
     sendSmtpEmail.type = "classic";
     //Content that will be sent
-    sendSmtpEmail.htmlContent = tagetClosingDateRemindertemplate.tagetClosingDateReminder(customerName,targetClosingDate)
+    sendSmtpEmail.htmlContent = tagetClosingDateRemindertemplate.tagetClosingDateReminder(customerName, targetClosingDate)
     //Select the recipients
     let emailArr = []
-    for(let i = 0 ; i<email.length; i++){
+    for (let i = 0; i < email.length; i++) {
         emailArr.push({
-            "email" : email[i]
+            "email": email[i]
         })
     }
     sendSmtpEmail.to = emailArr
@@ -201,18 +201,18 @@ module.exports.tagetClosingDateReminderMail = async (email,customerName,targetCl
     //scheduledAt = '2018-01-01 00:00:01'
 
     //Make the call to the client
-    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data)=> {
+    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data) => {
         console.log('API called successfully. Returned data: ' + JSON.stringify(data));
         return JSON.stringify(data)
-      }).catch((error)=> {
+    }).catch((error) => {
         console.error(error);
         return error
-      });
+    });
     return sentdata
 
 }
 
-module.exports.recurringSalesReminderMail = async (email,customerName,recurringDate) => {
+module.exports.recurringSalesReminderMail = async (email, customerName, recurringDate) => {
     let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     //Define the campaign settings\
@@ -221,12 +221,12 @@ module.exports.recurringSalesReminderMail = async (email,customerName,recurringD
     sendSmtpEmail.sender = { "name": "Revenue Captain", "email": process.env.SMTP_EMAIL };
     sendSmtpEmail.type = "classic";
     //Content that will be sent
-    sendSmtpEmail.htmlContent = recurringSaleRemindertemplate.recurringSalesReminder(customerName,recurringDate)
+    sendSmtpEmail.htmlContent = recurringSaleRemindertemplate.recurringSalesReminder(customerName, recurringDate)
     //Select the recipients
     let emailArr = []
-    for(let i = 0 ; i<email.length; i++){
+    for (let i = 0; i < email.length; i++) {
         emailArr.push({
-            "email" : email[i]
+            "email": email[i]
         })
     }
     sendSmtpEmail.to = emailArr
@@ -234,18 +234,18 @@ module.exports.recurringSalesReminderMail = async (email,customerName,recurringD
     //scheduledAt = '2018-01-01 00:00:01'
 
     //Make the call to the client
-    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data)=> {
+    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data) => {
         console.log('API called successfully. Returned data: ' + JSON.stringify(data));
         return JSON.stringify(data)
-      }).catch((error)=> {
+    }).catch((error) => {
         console.error(error);
         return error
-      });
+    });
     return sentdata
 
 }
 
-module.exports.notificationMail = async (email,msg) => {
+module.exports.notificationMail = async (email, msg) => {
     let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
     //Define the campaign settings\
@@ -257,9 +257,9 @@ module.exports.notificationMail = async (email,msg) => {
     sendSmtpEmail.htmlContent = notificationTemplate.notifications(msg)
     //Select the recipients
     let emailArr = []
-    for(let i = 0 ; i<email.length; i++){
+    for (let i = 0; i < email.length; i++) {
         emailArr.push({
-            "email" : email[i]
+            "email": email[i]
         })
     }
     sendSmtpEmail.to = emailArr
@@ -267,13 +267,13 @@ module.exports.notificationMail = async (email,msg) => {
     //scheduledAt = '2018-01-01 00:00:01'
 
     //Make the call to the client
-    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data)=> {
+    let sentdata = apiInstance.sendTransacEmail(sendSmtpEmail).then((data) => {
         console.log('API called successfully. Returned data: ' + JSON.stringify(data));
         return JSON.stringify(data)
-      }).catch((error)=> {
+    }).catch((error) => {
         console.error(error);
         return error
-      });
+    });
     return sentdata
 
 }
@@ -281,7 +281,7 @@ module.exports.notificationMail = async (email,msg) => {
 //-----------------------------------------Local Email-------------------------------------
 
 
-module.exports.welcomeEmail2 = async (email , link, userName) => {
+module.exports.welcomeEmail2 = async (email, link, userName) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
@@ -299,7 +299,7 @@ module.exports.welcomeEmail2 = async (email , link, userName) => {
     var subject = "Welcome to HiRise";
     // The email body for recipients with non-HTML email clients.
     var body_text = `Please use the below link to activate your account and reset your password`;
-    
+
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
 
@@ -332,7 +332,7 @@ module.exports.welcomeEmail2 = async (email , link, userName) => {
 
 }
 
-module.exports.resetPasswordMail2 = async (email , link , userName) => {
+module.exports.resetPasswordMail2 = async (email, link, userName) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
@@ -350,7 +350,7 @@ module.exports.resetPasswordMail2 = async (email , link , userName) => {
     var subject = "Reset password";
     // The email body for recipients with non-HTML email clients.
     var body_text = `Please use the below link to reset your password`;
-    
+
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
 
@@ -383,7 +383,7 @@ module.exports.resetPasswordMail2 = async (email , link , userName) => {
 
 }
 
-module.exports.setPasswordMail2 = async (email , link, userName) => {
+module.exports.setPasswordMail2 = async (email, link, userName) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
@@ -401,7 +401,7 @@ module.exports.setPasswordMail2 = async (email , link, userName) => {
     var subject = "Verification Mail";
     // The email body for recipients with non-HTML email clients.
     var body_text = `Please use the below link for verification`;
-    
+
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
 
@@ -434,13 +434,13 @@ module.exports.setPasswordMail2 = async (email , link, userName) => {
 
 }
 
-module.exports.paymentReminderMail2 = async (email,customerName,endDate) => {
+module.exports.paymentReminderMail2 = async (email, customerName, endDate) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
     var toAddresses = email;
 
-    let payment = paymentReminderTemplate.paymentReminder(customerName,endDate)
+    let payment = paymentReminderTemplate.paymentReminder(customerName, endDate)
 
     var ccAddresses = "";
     var bccAddresses = "";
@@ -452,7 +452,7 @@ module.exports.paymentReminderMail2 = async (email,customerName,endDate) => {
     var subject = "Plan expiry reminder";
     // The email body for recipients with non-HTML email clients.
     var body_text = ``;
-    
+
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
 
@@ -485,13 +485,13 @@ module.exports.paymentReminderMail2 = async (email,customerName,endDate) => {
 
 }
 
-module.exports.contactUsMail2 = async (email,fullName,subject,message,address) => {
+module.exports.contactUsMail2 = async (email, fullName, subject, message, address) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
     var toAddresses = process.env.SMTP_USERNAME;
 
-    let contact = contactUsTemplate.contactUs(email,fullName,subject,message,address)
+    let contact = contactUsTemplate.contactUs(email, fullName, subject, message, address)
 
     var ccAddresses = "";
     var bccAddresses = "";
@@ -503,7 +503,7 @@ module.exports.contactUsMail2 = async (email,fullName,subject,message,address) =
     //let subject = subject;
     // The email body for recipients with non-HTML email clients.
     var body_text = `Contact us Mail`;
-    
+
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
 
@@ -536,8 +536,8 @@ module.exports.contactUsMail2 = async (email,fullName,subject,message,address) =
 
 }
 
-module.exports.sendEmailToContact2 = async(emails, subject, message, cc, senderEmail, attechments) => {
-   
+module.exports.sendEmailToContact2 = async (emails, subject, message, cc, senderEmail, attechments) => {
+
     const senderAddress = senderEmail.email;
     let toAddresses = emails;
 
@@ -553,7 +553,7 @@ module.exports.sendEmailToContact2 = async(emails, subject, message, cc, senderE
     //let subject = subject;
     // The email body for recipients with non-HTML email clients.
     var body_text = ``;
-    
+
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
     let transporter = nodemailer.createTransport({
@@ -575,7 +575,7 @@ module.exports.sendEmailToContact2 = async(emails, subject, message, cc, senderE
         bcc: bccAddresses,
         text: body_text,
         html: sendEmail,
-        attachments : attechments,
+        attachments: attechments,
         // Custom headers for configuration set and message tags.
         headers: {}
     };
@@ -586,13 +586,13 @@ module.exports.sendEmailToContact2 = async(emails, subject, message, cc, senderE
 
 }
 
-module.exports.tagetClosingDateReminderMail2 = async (email,customerName,targetClosingDate) => {
+module.exports.tagetClosingDateReminderMail2 = async (email, customerName, targetClosingDate) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
     var toAddresses = email;
 
-    let payment = tagetClosingDateRemindertemplate.tagetClosingDateReminder(customerName,targetClosingDate)
+    let payment = tagetClosingDateRemindertemplate.tagetClosingDateReminder(customerName, targetClosingDate)
 
     var ccAddresses = "";
     var bccAddresses = "";
@@ -604,7 +604,7 @@ module.exports.tagetClosingDateReminderMail2 = async (email,customerName,targetC
     var subject = "Target closing date reminder";
     // The email body for recipients with non-HTML email clients.
     var body_text = ``;
-    
+
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
 
@@ -637,13 +637,13 @@ module.exports.tagetClosingDateReminderMail2 = async (email,customerName,targetC
 
 }
 
-module.exports.recurringSalesReminderMail2 = async (email,customerName,recurringDate) => {
+module.exports.recurringSalesReminderMail2 = async (email, customerName, recurringDate) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
     var toAddresses = email;
 
-    let payment = recurringSaleRemindertemplate.recurringSalesReminder(customerName,recurringDate)
+    let payment = recurringSaleRemindertemplate.recurringSalesReminder(customerName, recurringDate)
 
     var ccAddresses = "";
     var bccAddresses = "";
@@ -655,7 +655,7 @@ module.exports.recurringSalesReminderMail2 = async (email,customerName,recurring
     var subject = "Recurring sales reminder";
     // The email body for recipients with non-HTML email clients.
     var body_text = ``;
-    
+
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
 
@@ -688,7 +688,7 @@ module.exports.recurringSalesReminderMail2 = async (email,customerName,recurring
 
 }
 
-module.exports.notificationMail2 = async (email,msg) => {
+module.exports.notificationMail2 = async (email, msg) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
@@ -706,7 +706,7 @@ module.exports.notificationMail2 = async (email,msg) => {
     var subject = "Notification Mail";
     // The email body for recipients with non-HTML email clients.
     var body_text = ``;
-    
+
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
 
@@ -739,13 +739,13 @@ module.exports.notificationMail2 = async (email,msg) => {
 
 }
 
-module.exports.leadEmail2 = async (email , template, subject, credentialObj) => {
+module.exports.leadEmail2 = async (email, template, subject, credentialObj) => {
     const smtpEndpoint = credentialObj.smtpHost;
     const port = Number(credentialObj.smtpPort);
     const senderAddress = credentialObj.email;
     var toAddresses = email;
 
-    let Temp = template 
+    let Temp = template
 
     var ccAddresses = "";
     var bccAddresses = "";
@@ -757,7 +757,7 @@ module.exports.leadEmail2 = async (email , template, subject, credentialObj) => 
     var subject = subject;
     // The email body for recipients with non-HTML email clients.
     var body_text = ``;
-    
+
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
 
@@ -790,7 +790,7 @@ module.exports.leadEmail2 = async (email , template, subject, credentialObj) => 
 
 }
 
-module.exports.eventScheduleMail = async (creatorName,creatorEmail, eventName, meetLink, leadName, leadEmail, description, dateTime, timezone) => {
+module.exports.eventScheduleMail = async (creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, dateTime, timezone, calendarObj) => {
     const smtpEndpoint = "smtp.gmail.com";
     const port = 587;
     const senderAddress = process.env.SMTP_USERNAME;
@@ -808,7 +808,7 @@ module.exports.eventScheduleMail = async (creatorName,creatorEmail, eventName, m
     var subject = `New Event:- ${leadName} - ${dateTime} -  ${eventName}`;
     // The email body for recipients with non-HTML email clients.
     var body_text = ``;
-    
+
     // The body of the email for recipients whose email clients support HTML contenty.
     //var body_html= emailTem;
 
@@ -834,6 +834,21 @@ module.exports.eventScheduleMail = async (creatorName,creatorEmail, eventName, m
         // Custom headers for configuration set and message tags.
         headers: {}
     };
+
+    if (calendarObj) {
+        let alternatives = {
+            "Content-Type": "text/calendar",
+            "method": "REQUEST",
+            "content": Buffer.from(calendarObj.toString()) ,//new Buffer(calendarObj.toString()),  
+            "component": "VEVENT",
+            "Content-Class": "urn:content-classes:calendarmessage"
+        }
+        mailOptions['alternatives'] = alternatives;
+        mailOptions['alternatives']['contentType'] = 'text/calendar'
+        mailOptions['alternatives']['content']
+            = Buffer.from(calendarObj.toString())
+    }
+
 
     // Send the email.
     let info = await transporter.sendMail(mailOptions)

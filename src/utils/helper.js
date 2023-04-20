@@ -6,6 +6,7 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid")
 const notificationEnum = require('../utils/notificationEnum')
 const { notificationMail, notificationMail2 } = require('../utils/sendMail')
+const { default: ical } = require('ical-generator');
 
 module.exports.mysql_real_escape_string = (str) => {
     return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
@@ -642,29 +643,42 @@ module.exports.getParentUserList = async (userData, company_id) => {
     return returnData
 }
 
-module.exports.dateFormattor = async (date1, startTime, endTime) => {
-    // Assuming the date and time values are already available as variables
-    let date = new Date(date1);
-    // let startTime = "11:00:00 AM";
-    // let endTime = "12:00:00 PM";
+module.exports.dateFormattor = async (dateStr, startTime, endTime) => {
+    // Parse the input date and extract the year, month, and day
+    const year = parseInt(dateStr.slice(0, 4));
+    const month = parseInt(dateStr.slice(5, 7)) - 1;
+    const day = parseInt(dateStr.slice(8, 10));
 
-    // Convert start and end time strings to Date objects
-    let startDate = new Date(date.toISOString().split('T')[0] + 'T' + startTime);
-    let endDate = new Date(date.toISOString().split('T')[0] + 'T' + endTime);
+    // Parse the start and end times and extract the hours, minutes, and seconds
+    const startHours = parseInt(startTime.slice(0, 2));
+    const startMinutes = parseInt(startTime.slice(3, 5));
+    const startSeconds = parseInt(startTime.slice(6, 8));
+
+    const endHours = parseInt(endTime.slice(0, 2));
+    const endMinutes = parseInt(endTime.slice(3, 5));
+    const endSeconds = parseInt(endTime.slice(6, 8));
+
+    // Create a new Date object with the year, month, day, hours, minutes, and seconds
+    const startDate = new Date(year, month, day, startHours, startMinutes, startSeconds);
+
+    // Calculate the duration between the start and end times in milliseconds
+    const duration = (endHours - startHours) * 60 * 60 * 1000 + (endMinutes - startMinutes) * 60 * 1000 + (endSeconds - startSeconds) * 1000;
+
+    // Add the duration to the start date to get the end date
+    const endDate = new Date(startDate.getTime() + duration);
 
     // Format the date and time strings
-    let dateString = date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    let startTimeString = startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-    let endTimeString = endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+    const dateString = startDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    const startTimeString = startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    const endTimeString = endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
     // Combine the formatted strings
-    let formattedString = startTimeString + ' - ' + endTimeString + ' - ' + dateString;
-
-    // console.log(formattedString); // Output: "11:00 AM - 12:00 PM - Sunday, April 17, 2023"
+    const formattedString = `${startTimeString} - ${endTimeString} - ${dateString}`;
 
     return formattedString;
-
 }
+
+
 
 module.exports.tranformAvailabilityArray = async (arr) => {
     const outputArray = arr.map(obj => {
@@ -701,5 +715,59 @@ module.exports.tranformAvailabilityArray = async (arr) => {
     });
 
     return outputArray;
+}
+
+module.exports.getIcalObjectInstance = async (startTime, endTime, eventName, description, location, meetLink, leadName, leadEmail) => {
+
+    const cal = ical({
+        domain: 'hirisetech.com',
+        name: eventName,
+    });
+
+    cal.createEvent({
+        start: startTime,
+        end: endTime,
+        summary: eventName,
+        description: description,
+        location: location,
+        url: meetLink,
+        organizer: {
+            name: leadName,
+            email: leadEmail,
+        },
+    });
+
+    return cal;
+}
+
+module.exports.getStartAndEndDate = async (inputDate, startTime, endTime) => {
+    // Parse the input date and extract the year, month, and day
+    const year = parseInt(inputDate.slice(0, 4));
+    const month = parseInt(inputDate.slice(5, 7)) - 1;
+    const day = parseInt(inputDate.slice(8, 10));
+
+    // Parse the start and end times and extract the hours, minutes, and seconds
+    const startHours = parseInt(startTime.slice(0, 2));
+    const startMinutes = parseInt(startTime.slice(3, 5));
+    const startSeconds = parseInt(startTime.slice(6, 8));
+
+    const endHours = parseInt(endTime.slice(0, 2));
+    const endMinutes = parseInt(endTime.slice(3, 5));
+    const endSeconds = parseInt(endTime.slice(6, 8));
+
+    // Create a new Date object with the year, month, day, hours, minutes, and seconds
+    const startDate = new Date(year, month, day, startHours, startMinutes, startSeconds);
+
+    // Calculate the duration between the start and end times in milliseconds
+    const duration = (endHours - startHours) * 60 * 60 * 1000 + (endMinutes - startMinutes) * 60 * 1000 + (endSeconds - startSeconds) * 1000;
+
+    // Add the duration to the start date to get the end date
+    const endDate = new Date(startDate.getTime() + duration);
+
+    // Return an object with the start and end dates in ISO format
+    return {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+    };
 }
 
