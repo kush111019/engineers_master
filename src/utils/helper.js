@@ -662,11 +662,11 @@ module.exports.tranformAvailabilityArray = async (arr) => {
                     updated_at: curr.updated_at,
                     deleted_at: curr.deleted_at,
                     checked: curr.checked,
-                    time_slot: [{
+                    time_slot: curr.checked ? [{
                         id: curr.id,
                         start_time: curr.start_time,
                         end_time: curr.end_time
-                    }]
+                    }] : []
                 });
             }
             return acc;
@@ -729,8 +729,14 @@ module.exports.dateFormattor = async (dateStr, startTime, endTime) => {
 
     // Format the date and time strings
     const dateString = startDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+    console.log(dateString,"dateString");
+
     const startTimeString = startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    console.log(startTimeString,"startTimeString");
+
     const endTimeString = endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    console.log(endTimeString,"endTimeString");
 
     // Combine the formatted strings
     const formattedString = `${startTimeString} - ${endTimeString} - ${dateString}`;
