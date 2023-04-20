@@ -267,7 +267,7 @@ const db_sql = {
             sales_users( user_id, user_percentage,user_type, commission_split_id, sales_id, company_id) 
           VALUES
             ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') RETURNING *`,
-  "Q58":`SELECT m.id, m.module_name, p.permission_to_view_global,p.permission_to_view_own, p.permission_to_create, 
+  "Q58": `SELECT m.id, m.module_name, p.permission_to_view_global,p.permission_to_view_own, p.permission_to_create, 
           p.permission_to_update, p.permission_to_delete FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
           INNER JOIN roles AS r ON r.id = p.role_id WHERE m.id = '{var1}' AND r.id = '{var2}' 
           AND m.deleted_at IS NULL AND p.deleted_at IS NULL`,
@@ -828,7 +828,7 @@ const db_sql = {
                   AND sc.closed_at BETWEEN '{var3}' AND '{var4}'
                   AND sc.deleted_at IS NULL 
                   AND sc.closed_at IS NOT NULL`,
-   "Q152": `SELECT 
+  "Q152": `SELECT 
                 DISTINCT(sc.id) AS sales_commission_id,
                 DATE_TRUNC('{var2}',sc.closed_at) AS  date,
                 sc.sales_type, sc.target_amount, sc.archived_at
@@ -876,7 +876,7 @@ const db_sql = {
                 u1.created_by = '{var1}' AND u1.deleted_at IS NULL 
               ORDER BY 
                 created_at DESC`,
-   "Q155": `SELECT
+  "Q155": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
             sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
             sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
@@ -1347,7 +1347,7 @@ const db_sql = {
               ORDER BY 
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
-  "Q176"  :`SELECT 
+  "Q176": `SELECT 
               l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
               l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
               l.website,l.targeted_value,l.marketing_qualified_lead,
@@ -2087,7 +2087,7 @@ const db_sql = {
            VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}' ) RETURNING *`,
   "Q268": `UPDATE marketing_budget_data SET deleted_at = '{var2}' where budget_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   "Q269": `UPDATE marketing_budget_data SET deleted_at = '{var1}'
-            WHERE budget_id = '{var2}' AND deleted_at IS NULL RETURNING *`,       
+            WHERE budget_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   "Q270": `SELECT 
               p.id, p.product_name, p.product_image, p.description, p.available_quantity, p.price, 
               p.end_of_life, p.currency, p.company_id, p.created_at, p.updated_at, p.user_id, u.full_name as created_by 
@@ -2159,7 +2159,7 @@ const db_sql = {
               commission_split
             WHERE 
               user_id IN ({var1}) AND deleted_at IS NULL`,
-   "Q274": `SELECT 
+  "Q274": `SELECT 
               b.id, b.timeline, b.amount, b.start_date,
               b.end_date, b.created_by,b.created_at,b.is_finalize,
               u1.full_name as creator_name,
@@ -2182,61 +2182,61 @@ const db_sql = {
               (b.id = '{var1}') AND b.deleted_at IS NULL 
             ORDER BY 
               timeline ASC`,
-   "Q275": `UPDATE customer_company_employees SET updated_at = '{var1}', is_converted = true WHERE id = '{var2}' RETURNING *`,
-   "Q276": `UPDATE companies SET updated_at = '{var1}', is_roles_created = true WHERE id = '{var2}' RETURNING *`,
-   "Q277": `UPDATE companies SET updated_at = '{var1}', is_users_created = true WHERE id = '{var2}' RETURNING *`,
-   "Q278": `UPDATE companies SET updated_at = '{var1}', is_leads_created = true WHERE id = '{var2}' RETURNING *`,
-   "Q279": `UPDATE companies SET updated_at = '{var1}', is_customers_created = true WHERE id = '{var2}' RETURNING *`,
-   "Q280": `UPDATE companies SET updated_at = '{var1}', is_products_created = true WHERE id = '{var2}' RETURNING *`,
-   "Q281": `UPDATE companies SET updated_at = '{var1}', is_commissions_created = true WHERE id = '{var2}' RETURNING *`,
-   "Q282": `UPDATE companies SET updated_at = '{var1}', is_slabs_created = true WHERE id = '{var2}' RETURNING *`,
+  "Q275": `UPDATE customer_company_employees SET updated_at = '{var1}', is_converted = true WHERE id = '{var2}' RETURNING *`,
+  "Q276": `UPDATE companies SET updated_at = '{var1}', is_roles_created = true WHERE id = '{var2}' RETURNING *`,
+  "Q277": `UPDATE companies SET updated_at = '{var1}', is_users_created = true WHERE id = '{var2}' RETURNING *`,
+  "Q278": `UPDATE companies SET updated_at = '{var1}', is_leads_created = true WHERE id = '{var2}' RETURNING *`,
+  "Q279": `UPDATE companies SET updated_at = '{var1}', is_customers_created = true WHERE id = '{var2}' RETURNING *`,
+  "Q280": `UPDATE companies SET updated_at = '{var1}', is_products_created = true WHERE id = '{var2}' RETURNING *`,
+  "Q281": `UPDATE companies SET updated_at = '{var1}', is_commissions_created = true WHERE id = '{var2}' RETURNING *`,
+  "Q282": `UPDATE companies SET updated_at = '{var1}', is_slabs_created = true WHERE id = '{var2}' RETURNING *`,
 
-   "Q283": `UPDATE forecast SET updated_at = '{var1}', is_accepted = true WHERE id = '{var2}' RETURNING *`,
-   "Q284": `SELECT 
+  "Q283": `UPDATE forecast SET updated_at = '{var1}', is_accepted = true WHERE id = '{var2}' RETURNING *`,
+  "Q284": `SELECT 
               is_roles_created, is_users_created, is_leads_created, is_customers_created,
               is_products_created, is_commissions_created, is_slabs_created 
             FROM companies WHERE id = '{var1}' AND deleted_at IS NULL`,
-    "Q285": `SELECT id FROM customer_company_employees WHERE title = '{var1}' AND deleted_at IS NULL`,
-    "Q286": `SELECT id FROM customer_company_employees WHERE source = '{var1}' AND deleted_at IS NULL`,
-    "Q287": `SELECT id FROM customer_companies WHERE industry = '{var1}' AND deleted_at IS NULL`,
-    "Q288": `SELECT id FROM sales WHERE slab_id = '{var1}' AND deleted_at IS NULL`,
-    "Q289": `SELECT s.slab_id FROM slabs AS s
+  "Q285": `SELECT id FROM customer_company_employees WHERE title = '{var1}' AND deleted_at IS NULL`,
+  "Q286": `SELECT id FROM customer_company_employees WHERE source = '{var1}' AND deleted_at IS NULL`,
+  "Q287": `SELECT id FROM customer_companies WHERE industry = '{var1}' AND deleted_at IS NULL`,
+  "Q288": `SELECT id FROM sales WHERE slab_id = '{var1}' AND deleted_at IS NULL`,
+  "Q289": `SELECT s.slab_id FROM slabs AS s
              LEFT JOIN 
               sales AS sc ON sc.slab_id = s.slab_id
              WHERE s.id = '{var1}' 
              AND s.deleted_at is null AND sc.deleted_at is null`,
-    "Q290": `SELECT sc.id FROM sales AS sc
+  "Q290": `SELECT sc.id FROM sales AS sc
              LEFT JOIN 
               commission_split AS c ON sc.customer_commission_split_id = c.id
              WHERE sc.customer_commission_split_id = '{var1}' 
              AND c.deleted_at is null AND sc.deleted_at is null`,
-    "Q291":`SELECT s.id FROM slabs AS s
+  "Q291": `SELECT s.id FROM slabs AS s
             LEFT JOIN 
             commission_split AS c ON s.commission_split_id = c.id
             WHERE s.commission_split_id = '{var1}' 
             AND c.deleted_at is null AND s.deleted_at is null`,
-    "Q292": `SELECT * FROM  notifications 
+  "Q292": `SELECT * FROM  notifications 
              WHERE type_id= '{var1}' AND type = '{var2}' AND is_read= false AND deleted_at IS NULL 
              ORDER BY created_at DESC`,
-    "Q293": `INSERT INTO sales_approval 
+  "Q293": `INSERT INTO sales_approval 
               ( percentage, description, sales_id,company_id, requested_user_id, approver_user_id,status)
             VALUES
               ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}') RETURNING *`,
-    "Q294": `UPDATE sales 
+  "Q294": `UPDATE sales 
             SET updated_at = '{var1}', approval_status = '{var2}' 
             WHERE id = '{var3}' RETURNING *`,
-    "Q295": `UPDATE sales_approval 
+  "Q295": `UPDATE sales_approval 
             SET updated_at = '{var1}', status = '{var2}' ,reason ='{var3}'
             WHERE id = '{var4}'  AND sales_id = '{var5}' RETURNING *`,
-    "Q296": `SELECT * FROM sales_approval WHERE id = '{var1}' AND sales_id = '{var2}' AND deleted_at IS NULL `,
-    "Q297": `SELECT sap.id,sap.percentage,sap.description,sap.sales_id,sap.company_id,sap.approver_user_id,
+  "Q296": `SELECT * FROM sales_approval WHERE id = '{var1}' AND sales_id = '{var2}' AND deleted_at IS NULL `,
+  "Q297": `SELECT sap.id,sap.percentage,sap.description,sap.sales_id,sap.company_id,sap.approver_user_id,
               sap.requested_user_id,sap.created_at,sap.updated_at,sap.deleted_at,sap.status,sap.reason,
               u1.full_name AS approver_user_name,u2.full_name AS requested_user_name
             FROM sales_approval as sap
             LEFT JOIN users as u1 ON u1.id = sap.approver_user_id
             LEFT JOIN users as u2 ON u2.id = sap.requested_user_id
             WHERE sap.sales_id = '{var1}' AND sap.deleted_at IS NULL ORDER BY sap.created_at DESC`,
-    "Q298": `SELECT 
+  "Q298": `SELECT 
               l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
               l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
               l.website,l.targeted_value,l.marketing_qualified_lead,
@@ -2260,7 +2260,7 @@ const db_sql = {
             ORDER BY 
               l.created_at DESC`,
 
-    "Q299": `SELECT 
+  "Q299": `SELECT 
                 DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
@@ -2286,7 +2286,7 @@ const db_sql = {
                 AND l.is_converted = FALSE
             ORDER BY 
               l.created_at DESC`,
-    "Q300": `SELECT
+  "Q300": `SELECT
               sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
               sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
                 sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
@@ -2353,7 +2353,7 @@ const db_sql = {
             ORDER BY
               sc.created_at DESC`,
 
-    "Q301": `SELECT
+  "Q301": `SELECT
               sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
               sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
               sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
@@ -2434,7 +2434,7 @@ const db_sql = {
             ORDER BY
               sc.created_at DESC`,
 
-    "Q302" :`SELECT
+  "Q302": `SELECT
               sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
               sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
                 sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
@@ -2582,7 +2582,7 @@ const db_sql = {
             ORDER BY
               sc.created_at DESC`,
 
-    "Q304": `SELECT 
+  "Q304": `SELECT 
               sc.id AS sales_commission_id,
               sc.target_amount,
               DATE_TRUNC('{var2}',sc.archived_at) AS  date,
@@ -2596,7 +2596,7 @@ const db_sql = {
             ORDER BY 
               date ASC `,
 
-    "Q305": `SELECT 
+  "Q305": `SELECT 
               DISTINCT(sc.id) AS sales_commission_id,
               sc.target_amount,
               DATE_TRUNC('{var2}',sc.archived_at) AS  date,
@@ -2611,7 +2611,7 @@ const db_sql = {
               sc.archived_at IS NOT NULL 
             ORDER BY 
               date ASC `,
-    "Q306": `SELECT id,assigned_to,pid,
+  "Q306": `SELECT id,assigned_to,pid,
                 (
                   select json_agg(forecast_data.created_by) from forecast_data where forecast_data.forecast_id = forecast.id
                   AND forecast_data.deleted_at IS NULL
@@ -2623,7 +2623,7 @@ const db_sql = {
             FROM forecast  
             where (forecast.id = '{var1}'  
               OR forecast.pid = '{var1}')  and forecast.deleted_at is null`,
-    "Q307": `SELECT 
+  "Q307": `SELECT 
               (
                 SELECT json_agg(roles.id)
                 FROM roles 
@@ -2714,17 +2714,17 @@ const db_sql = {
               )as recognized_revenue_data
               
             FROM users where id = '{var1}' AND deleted_at IS NULL and is_deactivated = false`,
-    "Q308": `SELECT * FROM customer_company_employees 
+  "Q308": `SELECT * FROM customer_company_employees 
              WHERE company_id = '{var1}' AND sync_id IS NOT NULL AND emp_type = 'lead' AND deleted_at IS NULL`,
-    "Q309": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND deleted_at IS NULL`,
-    "Q310": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND {var5} = '{var6}' AND deleted_at IS NULL`,
-    "Q311": `UPDATE users SET is_deactivated = '{var1}', updated_at = '{var3}', assigned_to = '{var4}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING * `,
-    "Q312": `SELECT * FROM customer_companies 
+  "Q309": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND deleted_at IS NULL`,
+  "Q310": `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND {var5} = '{var6}' AND deleted_at IS NULL`,
+  "Q311": `UPDATE users SET is_deactivated = '{var1}', updated_at = '{var3}', assigned_to = '{var4}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING * `,
+  "Q312": `SELECT * FROM customer_companies 
              WHERE LOWER(customer_name) = LOWER('{var1}') 
                 AND company_id = '{var2}'
                 AND deleted_at IS NULL`,
-    "Q313": `UPDATE customer_companies SET archived_at = '{var1}', reason = '{var4}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING *`,
-    "Q314": `SELECT 
+  "Q313": `UPDATE customer_companies SET archived_at = '{var1}', reason = '{var4}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING *`,
+  "Q314": `SELECT 
               u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
               u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
               u1.is_main_admin,u1.is_deactivated,u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName,
@@ -2743,7 +2743,7 @@ const db_sql = {
               AND u1.is_deactivated = '{var2}' 
             ORDER BY 
               created_at DESC`,
-    "Q315": `SELECT 
+  "Q315": `SELECT 
               u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
               u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
               u1.is_main_admin, u1.created_by,u1.is_deactivated, u2.full_name AS creator_name, r.role_name AS roleName,
@@ -2761,12 +2761,12 @@ const db_sql = {
               AND u1.is_deactivated = '{var2}'
             ORDER BY 
               created_at DESC`,
-    "Q316":`INSERT INTO connectors
+  "Q316": `INSERT INTO connectors
               (user_id,company_id,linked_in_token,linked_in_status)
             VALUES
                ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
 
-    "Q317":`SELECT * 
+  "Q317": `SELECT * 
             FROM 
               connectors 
             WHERE 
@@ -2774,7 +2774,7 @@ const db_sql = {
               AND user_id = '{var1}' 
               AND deleted_at IS NULL`,
 
-    "Q318":`SELECT com.id as company_id, c.user_id, c.salesforce_token,c.salesforce_status,
+  "Q318": `SELECT com.id as company_id, c.user_id, c.salesforce_token,c.salesforce_status,
                c.linked_in_token,c.linked_in_status, c.hubspot_token,c.hubspot_status,
                c.hubspot_refresh_token,c.hubspot_expiry,
                c.linked_in_last_sync, c.salesforce_last_sync, c.hubspot_last_sync,
@@ -2783,30 +2783,30 @@ const db_sql = {
             LEFT JOIN connectors AS c ON c.company_id = com.id
             WHERE com.deleted_at IS NULL`,
 
-    "Q319":`UPDATE connectors SET {var1} = '{var2}',{var3} = '{var4}',
+  "Q319": `UPDATE connectors SET {var1} = '{var2}',{var3} = '{var4}',
                    updated_at = '{var5}'
             WHERE user_id = '{var6}' AND company_id = '{var7}' AND deleted_at IS NULL RETURNING * `,
 
-    "Q320":`UPDATE connectors SET hubspot_token = '{var1}', hubspot_status = '{var2}',
+  "Q320": `UPDATE connectors SET hubspot_token = '{var1}', hubspot_status = '{var2}',
               hubspot_refresh_token = '{var3}',hubspot_expiry = '{var4}' 
             WHERE user_id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *  `,
-    "Q321":`INSERT INTO connectors
+  "Q321": `INSERT INTO connectors
               (user_id,company_id,salesforce_token,salesforce_status, salesforce_refresh_token, salesforce_expiry)
             VALUES
               ('{var1}','{var2}','{var3}','{var4}', '{var5}', '{var6}') RETURNING *`,
-    "Q322": `SELECT * FROM customer_company_employees WHERE sync_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
-    "Q323":`INSERT INTO connectors
+  "Q322": `SELECT * FROM customer_company_employees WHERE sync_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
+  "Q323": `INSERT INTO connectors
               (user_id,company_id,hubspot_token,hubspot_status,hubspot_refresh_token,hubspot_expiry)
             VALUES
               ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
-    "Q324":`UPDATE connectors SET {var0} = '{var1}',
+  "Q324": `UPDATE connectors SET {var0} = '{var1}',
                 updated_at = '{var2}'
             WHERE user_id = '{var3}' AND company_id = '{var4}' AND deleted_at IS NULL RETURNING *`,
-    "Q325":`UPDATE connectors SET salesforce_token = '{var1}', salesforce_status = '{var2}',
+  "Q325": `UPDATE connectors SET salesforce_token = '{var1}', salesforce_status = '{var2}',
                 salesforce_refresh_token = '{var3}',salesforce_expiry = '{var4}' 
             WHERE user_id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *  `,
-    
-    "Q326": `SELECT
+
+  "Q326": `SELECT
               l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
               l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
               l.website,l.targeted_value,l.marketing_qualified_lead,
@@ -2851,7 +2851,7 @@ const db_sql = {
             ORDER BY
               l.created_at DESC`,
 
-    "Q327": `SELECT 
+  "Q327": `SELECT 
               l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
               l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
               l.website,l.targeted_value,l.marketing_qualified_lead,
@@ -2896,8 +2896,8 @@ const db_sql = {
             ORDER BY 
               l.created_at DESC`,
 
-    "Q328":`UPDATE users SET is_pro_user = true WHERE company_id = '{var1}' AND is_main_admin = '{var2}' AND deleted_at IS NULL`,
-    "Q329": `SELECT u.id, u.full_name, u.company_id, u.email_address, u.encrypted_password, u.mobile_number, u.role_id, 
+  "Q328": `UPDATE users SET is_pro_user = true WHERE company_id = '{var1}' AND is_main_admin = '{var2}' AND deleted_at IS NULL`,
+  "Q329": `SELECT u.id, u.full_name, u.company_id, u.email_address, u.encrypted_password, u.mobile_number, u.role_id, 
               u.avatar, u.expiry_date, u.is_verified, u.is_admin, u.is_locked, u.is_main_admin,u.is_deactivated, c.company_name, c.company_address, c.company_logo, c.is_imap_enable,c.is_marketing_enable,
               r.id as role_id,r.role_name, r.reporter, r.module_ids, con.id AS config_id, con.currency, con.phone_format, con.date_format, con.before_closing_days, con.after_closing_days
             FROM users AS u 
@@ -2906,15 +2906,15 @@ const db_sql = {
               LEFT JOIN configurations AS con ON con.company_id = u.company_id
             WHERE LOWER(email_address) = LOWER('{var1}') AND u.is_pro_user = true AND u.deleted_at IS NULL 
               AND c.deleted_at IS NULL AND r.deleted_at IS NULL AND con.deleted_at IS NULL`,
-    "Q330": `INSERT INTO email_templates(user_id, company_id, template, template_name, json_template)
+  "Q330": `INSERT INTO email_templates(user_id, company_id, template, template_name, json_template)
              VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
-    "Q331": `SELECT * FROM email_templates
+  "Q331": `SELECT * FROM email_templates
              WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
-    "Q332": `UPDATE email_templates SET template = '{var4}', template_name = '{var3}', json_template = '{var5}', updated_at = '{var2}' WHERE id = '{var1}' AND deleted_at IS NULL`,
-    "Q333": `UPDATE email_templates SET deleted_at = '{var2}' WHERE id = '{var1}'`,
-    "Q334": `INSERT INTO user_commissions(user_id, sales_id, company_id, total_commission_amount,user_type)
+  "Q332": `UPDATE email_templates SET template = '{var4}', template_name = '{var3}', json_template = '{var5}', updated_at = '{var2}' WHERE id = '{var1}' AND deleted_at IS NULL`,
+  "Q333": `UPDATE email_templates SET deleted_at = '{var2}' WHERE id = '{var1}'`,
+  "Q334": `INSERT INTO user_commissions(user_id, sales_id, company_id, total_commission_amount,user_type)
              VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
-    "Q335": `SELECT 
+  "Q335": `SELECT 
                 DISTINCT(uc.id), uc.user_id,u.full_name,uc.user_type, uc.total_commission_amount, 
                 uc.bonus_amount, uc.notes,
                 uc.sales_id,cus.customer_name AS sales_name       
@@ -2924,7 +2924,7 @@ const db_sql = {
              LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
              WHERE uc.user_id IN ({var1}) AND uc.company_id = '{var2}' AND uc.deleted_at IS NULL
               AND sc.deleted_at IS NULL`,
-    "Q336": `SELECT 
+  "Q336": `SELECT 
                 DISTINCT(uc.id), uc.user_id, u.full_name,uc.user_type, uc.total_commission_amount, uc.bonus_amount, uc.notes,
                 uc.sales_id,cus.customer_name AS sales_name       
             FROM user_commissions AS uc
@@ -2933,13 +2933,13 @@ const db_sql = {
             LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
             WHERE uc.sales_id = '{var1}' AND uc.company_id = '{var2}' AND uc.deleted_at IS NULL
              AND sc.deleted_at IS NULL`,
-    "Q337": `UPDATE user_commissions SET total_commission_amount = '{var1}' 
+  "Q337": `UPDATE user_commissions SET total_commission_amount = '{var1}' 
              WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
-    "Q338": `UPDATE user_commissions SET bonus_amount = '{var2}',
+  "Q338": `UPDATE user_commissions SET bonus_amount = '{var2}',
              notes = '{var3}', updated_at = '{var4}' 
             WHERE id = '{var1}' AND deleted_at IS NULL RETURNING * `,
-    "Q339":`SELECT * FROM user_commissions WHERE user_id = '{var1}' AND sales_id = '{var2}' AND user_type = '{var3}' AND deleted_at IS NULL`,         
-    "Q340":`SELECT 
+  "Q339": `SELECT * FROM user_commissions WHERE user_id = '{var1}' AND sales_id = '{var2}' AND user_type = '{var3}' AND deleted_at IS NULL`,
+  "Q340": `SELECT 
             DISTINCT(uc.id), uc.user_id, u.full_name, uc.total_commission_amount, 
             uc.bonus_amount, uc.notes,
             uc.sales_id,uc.user_type,cus.customer_name AS sales_name       
@@ -2949,10 +2949,10 @@ const db_sql = {
             LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
             WHERE uc.id = '{var1}' AND uc.deleted_at IS NULL
               AND sc.deleted_at IS NULL`,
-    "Q341":`INSERT INTO imap_credentials( email, app_password, user_id, smtp_host, smtp_port, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
-    "Q342":`INSERT INTO pro_user_availability(schedule_name, timezone, user_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
-    "Q343":`INSERT INTO pro_user_time_slot(days,start_time, end_time, availability_id, company_id, checked) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
-    "Q344":`SELECT ua.id, ua.schedule_name, ua.timezone, ua.created_at,
+  "Q341": `INSERT INTO imap_credentials( email, app_password, user_id, smtp_host, smtp_port, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+  "Q342": `INSERT INTO pro_user_availability(schedule_name, timezone, user_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
+  "Q343": `INSERT INTO pro_user_time_slot(days,start_time, end_time, availability_id, company_id, checked) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+  "Q344": `SELECT ua.id, ua.schedule_name, ua.timezone, ua.created_at,
               ua.user_id, u.full_name,
               (
                 SELECT json_agg(pro_user_time_slot.*)
@@ -2962,25 +2962,35 @@ const db_sql = {
             FROM pro_user_availability as ua
             LEFT JOIN users as u ON u.id = ua.user_id
             WHERE ua.user_id = '{var1}' AND ua.company_id = '{var2}' AND ua.deleted_at IS NULL`,
-    "Q345":`INSERT INTO pro_user_events(event_name, meet_link, description, user_id, company_id, duration, availability_id) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}') RETURNING *`,
-    "Q346":`SELECT * FROM pro_user_events WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
-    "Q347":`UPDATE pro_user_events SET event_url = '{var1}' WHERE id = '{var2}' RETURNING *`,
-    "Q348":`SELECT e.id AS event_id, e.event_name, e.meet_link, e.description, e.event_url,
-                   e.duration, e.availability_id,e.company_id, 
-                   e.user_id AS creator_id, u.full_name AS creator_name, u.email_address AS creator_email,
-                   a.schedule_name, a.timezone,
-                   (
-                    SELECT json_agg(pro_user_time_slot.*)
-                    FROM pro_user_time_slot
-                    WHERE e.availability_id = pro_user_time_slot.availability_id AND deleted_at IS NULL
-                   ) AS availability_time_slots
+  "Q345": `INSERT INTO pro_user_events(event_name, meet_link, description, user_id, company_id, duration, availability_id) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}') RETURNING *`,
+  "Q346": `SELECT * FROM pro_user_events WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
+  "Q347": `UPDATE pro_user_events SET event_url = '{var1}' WHERE id = '{var2}' RETURNING *`,
+  "Q348": `SELECT e.id AS event_id, e.event_name, e.meet_link, e.description, e.event_url,
+                e.duration, e.availability_id, e.company_id, 
+                e.user_id AS creator_id, u.full_name AS creator_name, u.email_address AS creator_email,
+                a.schedule_name, a.timezone,
+                (
+                SELECT json_agg(availability)
+                FROM (
+                    SELECT ua.id, ua.schedule_name, ua.timezone, ua.created_at,
+                            ua.user_id, u.full_name,
+                          (
+                            SELECT json_agg(pro_user_time_slot.*)
+                            FROM pro_user_time_slot
+                            WHERE ua.id = pro_user_time_slot.availability_id AND deleted_at IS NULL
+                          ) AS time_slots
+                    FROM pro_user_availability AS ua
+                    LEFT JOIN users AS u ON u.id = ua.user_id
+                    WHERE ua.id = e.availability_id AND ua.deleted_at IS NULL
+                ) AS availability
+                ) AS availability_time_slots
             FROM pro_user_events AS e 
             LEFT JOIN pro_user_availability AS a ON a.id = e.availability_id
             LEFT JOIN users AS u ON u.id = e.user_id 
             WHERE e.id = '{var1}' AND e.deleted_at IS NULL`,
-    "Q349":`INSERT INTO pro_scheduled_events(event_id, date, start_time, end_time, lead_name, lead_email, description, user_id, company_id )
+  "Q349": `INSERT INTO pro_scheduled_events(event_id, date, start_time, end_time, lead_name, lead_email, description, user_id, company_id )
             VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') RETURNING *`,
-    "Q350":`SELECT se.event_id,ue.event_name, se.date, se.start_time, se.end_time, se.lead_name, 
+  "Q350": `SELECT se.event_id,ue.event_name, se.date, se.start_time, se.end_time, se.lead_name, 
             se.lead_email, se.description as lead_description, 
             se.user_id, u.full_name AS creator_name, u.email_address AS creator_email,
             ue.meet_link, ue.description as creator_description, ue.duration
@@ -2988,7 +2998,7 @@ const db_sql = {
             LEFT JOIN users AS u ON u.id = se.user_id
             LEFT JOIN pro_user_events AS ue ON ue.id = se.event_id
             WHERE se.user_id = '{var1}' AND se.company_id = '{var2}' AND se.deleted_at IS NULL`,
-    "Q351":`SELECT ua.id, ua.schedule_name, ua.timezone, ua.created_at,
+  "Q351": `SELECT ua.id, ua.schedule_name, ua.timezone, ua.created_at,
               ua.user_id, u.full_name,
               (
                 SELECT json_agg(pro_user_time_slot.*)
@@ -2998,17 +3008,24 @@ const db_sql = {
             FROM pro_user_availability as ua
             LEFT JOIN users as u ON u.id = ua.user_id
             WHERE ua.id = '{var1}' AND ua.deleted_at IS NULL`,
-    "Q352":`UPDATE pro_user_availability SET schedule_name = '{var1}', timezone = '{var2}', updated_at = '{var4}' WHERE id = '{var3}' RETURNING *`,
-    "Q353":`UPDATE pro_user_time_slot SET checked = '{var1}', start_time = '{var2}', end_time = '{var3}', updated_at = '{var5}' WHERE id = '{var4}' RETURNING *`,
-    "Q354":`UPDATE pro_user_availability SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
-    "Q355":`UPDATE pro_user_time_slot SET deleted_at = '{var1}' WHERE availability_id = '{var2}' RETURNING *`, 
-    "Q356":`UPDATE pro_user_time_slot SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,    
-    "Q357":`UPDATE pro_user_events SET event_name = '{var1}', meet_link = '{var2}', description = '{var3}', duration = '{var4}', availability_id = '{var5}', updated_at = '{var7}' WHERE id = '{var6}' RETURNING *` ,
-    "Q358":`UPDATE pro_user_events SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
-    "Q359":`SELECT assigned_to FROM forecast WHERE (id = '{var1}' OR pid = '{var1}') AND deleted_at IS NULL`,
-    // "Q360":`SELECT * from imap_credentials WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
-    "Q361":`UPDATE imap_credentials SET email = '{var1}', app_password = '{var2}', smtp_host = '{var3}', smtp_port = '{var4}', updated_at = '{var6}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *`,
-
+  "Q352": `UPDATE pro_user_availability SET schedule_name = '{var1}', timezone = '{var2}', updated_at = '{var4}' WHERE id = '{var3}' RETURNING *`,
+  "Q353": `UPDATE pro_user_time_slot SET checked = '{var1}', start_time = '{var2}', end_time = '{var3}', updated_at = '{var5}' WHERE id = '{var4}' RETURNING *`,
+  "Q354": `UPDATE pro_user_availability SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
+  "Q355": `UPDATE pro_user_time_slot SET deleted_at = '{var1}' WHERE availability_id = '{var2}' RETURNING *`,
+  "Q356": `UPDATE pro_user_time_slot SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
+  "Q357": `UPDATE pro_user_events SET event_name = '{var1}', meet_link = '{var2}', description = '{var3}', duration = '{var4}', availability_id = '{var5}', updated_at = '{var7}' WHERE id = '{var6}' RETURNING *`,
+  "Q358": `UPDATE pro_user_events SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
+  "Q359": `SELECT assigned_to FROM forecast WHERE (id = '{var1}' OR pid = '{var1}') AND deleted_at IS NULL`,
+  // "Q360":`SELECT * from imap_credentials WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
+  "Q361": `UPDATE imap_credentials SET email = '{var1}', app_password = '{var2}', smtp_host = '{var3}', smtp_port = '{var4}', updated_at = '{var6}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *`,
+  "Q362":`SELECT se.event_id,ue.event_name, se.date, se.start_time, se.end_time, se.lead_name, 
+              se.lead_email, se.description as lead_description, 
+              se.user_id, u.full_name AS creator_name, u.email_address AS creator_email,
+              ue.meet_link, ue.description as creator_description, ue.duration
+          FROM pro_scheduled_events AS se
+          LEFT JOIN users AS u ON u.id = se.user_id
+          LEFT JOIN pro_user_events AS ue ON ue.id = se.event_id
+          WHERE se.event_id = '{var1}' AND se.deleted_at IS NULL`
 
 
 }
