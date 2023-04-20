@@ -662,7 +662,7 @@ module.exports.tranformAvailabilityArray = async (arr) => {
                     updated_at: curr.updated_at,
                     deleted_at: curr.deleted_at,
                     checked: curr.checked,
-                    time_slot: curr.checked ? [{
+                    time_slot: (curr.checked == 'true') ? [{
                         id: curr.id,
                         start_time: curr.start_time,
                         end_time: curr.end_time
