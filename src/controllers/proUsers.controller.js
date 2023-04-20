@@ -9,12 +9,13 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, dateFormattor, tranformAvailabilityArray } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, dateFormattor, tranformAvailabilityArray, getIcalObjectInstance,getStartAndEndDate } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
 const { encrypt, decrypt } = require('../utils/crypto');
 const { daysEnum } = require('../utils/notificationEnum')
+const ical = require('ical-generator');
 
 
 //Sales Force auth client
@@ -1508,9 +1509,9 @@ module.exports.addSmtpCreds = async (req, res) => {
             })
             promise.then(async (data) => {
                 let encryptedAppPassword = JSON.stringify(encrypt(appPassword))
-                let s4 = dbScript(db_sql['Q125'],{var1 : findAdmin.rows[0].id, var2 : findAdmin.rows[0].company_id})
+                let s4 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
                 let findSmtpcreds = await connection.query(s4)
-                if(findSmtpcreds.rowCount == 0){
+                if (findSmtpcreds.rowCount == 0) {
                     let s3 = dbScript(db_sql['Q341'], { var1: email, var2: encryptedAppPassword, var3: findAdmin.rows[0].id, var4: smtpHost, var5: smtpPort, var6: findAdmin.rows[0].company_id })
                     let addCredentails = await connection.query(s3)
                     if (addCredentails.rowCount > 0) {
@@ -1528,9 +1529,9 @@ module.exports.addSmtpCreds = async (req, res) => {
                             message: "Something went wrong"
                         })
                     }
-                }else{
+                } else {
                     let _dt = new Date().toISOString()
-                    let s5 = dbScript(db_sql['Q361'],{var1: email, var2: encryptedAppPassword,var3: smtpHost, var4: smtpPort, var5 : findSmtpcreds.rows[0].id, var6 : _dt })
+                    let s5 = dbScript(db_sql['Q361'], { var1: email, var2: encryptedAppPassword, var3: smtpHost, var4: smtpPort, var5: findSmtpcreds.rows[0].id, var6: _dt })
                     let updateCreds = await connection.query(s5)
                     if (updateCreds.rowCount > 0) {
                         await connection.query('COMMIT')
@@ -2132,10 +2133,14 @@ module.exports.scheduleEvent = async (req, res) => {
         let createSchedule = await connection.query(s1)
 
         let dateTime = await dateFormattor(date, startTime, endTime)
+        const { startDate, endDate } = await getStartAndEndDate(date, startTime, endTime);
+        
+        let location = ''
+        let calObj = await getIcalObjectInstance(startDate.toLocaleString(), endDate.toLocaleString(), eventName, description, location, meetLink, leadName, leadEmail)
 
-        await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, dateTime, timezone)
+        await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, dateTime, timezone, calObj)
 
-        await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, dateTime, timezone)
+        await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, dateTime, timezone, calObj)
 
         if (createSchedule.rowCount > 0) {
             await connection.query('COMMIT')
@@ -2201,3 +2206,4 @@ module.exports.scheduledEventsList = async (req, res) => {
         })
     }
 }
+
