@@ -3003,7 +3003,7 @@ const db_sql = {
               (
                 SELECT json_agg(pro_user_time_slot.*)
                 FROM pro_user_time_slot
-                WHERE ua.id = pro_user_time_slot.availability_id AND deleted_at IS NULL
+                WHERE ua.id = pro_user_time_slot.availability_id AND pro_user_time_slot.deleted_at IS NULL AND pro_user_time_slot.checked = 'true'
               )as time_slots
             FROM pro_user_availability as ua
             LEFT JOIN users as u ON u.id = ua.user_id
