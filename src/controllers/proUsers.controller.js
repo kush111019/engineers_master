@@ -1643,7 +1643,7 @@ module.exports.addAvailability = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q342'], { var1: scheduleName, var2: timezone, var3: userId, var4: findAdmin.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q342'], { var1: mysql_real_escape_string(scheduleName), var2: timezone, var3: userId, var4: findAdmin.rows[0].company_id })
             let createAvailability = await connection.query(s2)
             for (let ts of timeSlot) {
                 let dayName = daysEnum[ts.day]
@@ -1783,7 +1783,7 @@ module.exports.updateAvailability = async (req, res) => {
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0) {
             let _dt = new Date().toISOString()
-            let s2 = dbScript(db_sql['Q352'], { var1: scheduleName, var2: timezone, var3: availabilityId, var4: _dt })
+            let s2 = dbScript(db_sql['Q352'], { var1: mysql_real_escape_string(scheduleName), var2: timezone, var3: availabilityId, var4: _dt })
             let updateAvailability = await connection.query(s2)
             if (updateAvailability.rowCount > 0) {
                 let s3 = dbScript(db_sql['Q355'], { var1: _dt, var2: availabilityId })
@@ -1931,7 +1931,7 @@ module.exports.createEvent = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q345'], { var1: eventName, var2: meetLink, var3: description, var4: userId, var5: findAdmin.rows[0].company_id, var6: duration, var7: availabilityId })
+            let s2 = dbScript(db_sql['Q345'], { var1: mysql_real_escape_string(eventName), var2: meetLink, var3: mysql_real_escape_string(description), var4: userId, var5: findAdmin.rows[0].company_id, var6: duration, var7: availabilityId })
             let addEvent = await connection.query(s2)
             if (addEvent.rowCount > 0) {
 
@@ -2109,7 +2109,7 @@ module.exports.updateEvent = async (req, res) => {
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0) {
             let _dt = new Date().toISOString()
-            let s2 = dbScript(db_sql['Q357'], { var1: eventName, var2: meetLink, var3: description, var4: duration, var5: availabilityId, var6: eventId, var7: _dt })
+            let s2 = dbScript(db_sql['Q357'], { var1: mysql_real_escape_string(eventName), var2: meetLink, var3: mysql_real_escape_string(description), var4: duration, var5: availabilityId, var6: eventId, var7: _dt })
             let updateEvent = await connection.query(s2)
             if (updateEvent.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -2148,7 +2148,7 @@ module.exports.scheduleEvent = async (req, res) => {
         let { eventId, eventName, meetLink, date, startTime, endTime, leadName, leadEmail, description, userId, creatorName, creatorEmail, companyId, timezone } = req.body
         await connection.query('BEGIN')
 
-        let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: date, var3: startTime, var4: endTime, var5: leadName, var6: leadEmail, var7: description, var8: userId, var9: companyId })
+        let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: date, var3: startTime, var4: endTime, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId })
         let createSchedule = await connection.query(s1)
 
         let dateTime = await dateFormattor(date, startTime, endTime)
@@ -2158,11 +2158,11 @@ module.exports.scheduleEvent = async (req, res) => {
         console.log(startDate, endDate);
 
         let location = ''
-        let calObj = await getIcalObjectInstance(new Date(startDate).toISOString(), new Date(endDate).toISOString(), eventName, description, location, meetLink, leadName, leadEmail)
+        let calObj = await getIcalObjectInstance(new Date(startDate).toISOString(), new Date(endDate).toISOString(), mysql_real_escape_string(eventName), mysql_real_escape_string(description), location, meetLink, mysql_real_escape_string(leadName), leadEmail)
 
-        await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, dateTime, timezone, calObj)
+        await eventScheduleMail(creatorName, creatorEmail, mysql_real_escape_string(eventName), meetLink, mysql_real_escape_string(leadName), leadEmail, mysql_real_escape_string(description), dateTime, timezone, calObj)
 
-        await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, dateTime, timezone, calObj)
+        await eventScheduleMail(mysql_real_escape_string(leadName), leadEmail, mysql_real_escape_string(eventName), meetLink, mysql_real_escape_string(leadName), leadEmail, mysql_real_escape_string(description), dateTime, timezone, calObj)
 
         if (createSchedule.rowCount > 0) {
             await connection.query('COMMIT')
