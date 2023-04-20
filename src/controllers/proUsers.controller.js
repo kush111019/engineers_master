@@ -1194,7 +1194,7 @@ module.exports.recognizationDetailsPro = async (req, res) => {
                         sales_type: salesData.sales_type,
                         sales_target_amount: salesData.target_amount,
                         sales_target_closing_date: salesData.target_closing_date,
-                        sales_recurring_date : salesData.recurring_date,
+                        sales_recurring_date: salesData.recurring_date,
                         sales_service_performed_at: salesData.service_performed_at,
                         sales_service_perform_note: salesData.service_perform_note
                     }
@@ -2027,11 +2027,17 @@ module.exports.eventDetails = async (req, res) => {
             let booked_slots = [];
             let s2 = dbScript(db_sql['Q362'], { var1: eventId })
             let scheduledEvents = await connection.query(s2)
-            for(let data of scheduledEvents.rows){
-                const { startDate, endDate } = await getStartAndEndDate(data.date, data.start_time, data.end_time);
+            for (let data of scheduledEvents.rows) {
+                const date = new Date(data.date);
+                // set hours, minutes, and seconds to 00:00:00
+                date.setHours(0, 0, 0, 0);
+                // set the timezone to the local timezone
+                const localDate = new Date(date.toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
+
+                const { startDate, endDate } = await getStartAndEndDate(localDate.toISOString(), data.start_time, data.end_time);
                 booked_slots.push({
-                    startTime : startDate,
-                    endTime : endDate
+                    startTime: startDate,
+                    endTime: endDate
                 })
             }
             showEventDetails.rows[0].booked_slots = booked_slots
@@ -2152,17 +2158,22 @@ module.exports.scheduleEvent = async (req, res) => {
         let createSchedule = await connection.query(s1)
 
         let dateTime = await dateFormattor(date, startTime, endTime)
-        console.log(dateTime);
+        console.log(dateTime,"dateTime");
+        date = new Date(date);
+        // set hours, minutes, and seconds to 00:00:00
+        date.setHours(0, 0, 0, 0);
+        // set the timezone to the local timezone
+        const localDate = new Date(date.toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
 
-        const { startDate, endDate } = await getStartAndEndDate(date, startTime, endTime);
+        const { startDate, endDate } = await getStartAndEndDate(localDate.toISOString(), startTime, endTime);
         console.log(startDate, endDate);
 
         let location = ''
-        let calObj = await getIcalObjectInstance(new Date(startDate).toISOString(), new Date(endDate).toISOString(), mysql_real_escape_string(eventName), mysql_real_escape_string(description), location, meetLink, mysql_real_escape_string(leadName), leadEmail)
+        let calObj = await getIcalObjectInstance(new Date(startDate).toISOString(), new Date(endDate).toISOString(), eventName, description, location, meetLink, leadName, leadEmail)
 
-        await eventScheduleMail(creatorName, creatorEmail, mysql_real_escape_string(eventName), meetLink, mysql_real_escape_string(leadName), leadEmail, mysql_real_escape_string(description), dateTime, timezone, calObj)
+        await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, dateTime, timezone, calObj)
 
-        await eventScheduleMail(mysql_real_escape_string(leadName), leadEmail, mysql_real_escape_string(eventName), meetLink, mysql_real_escape_string(leadName), leadEmail, mysql_real_escape_string(description), dateTime, timezone, calObj)
+        await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, dateTime, timezone, calObj)
 
         if (createSchedule.rowCount > 0) {
             await connection.query('COMMIT')
