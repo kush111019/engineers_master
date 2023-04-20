@@ -3003,7 +3003,7 @@ const db_sql = {
               (
                 SELECT json_agg(pro_user_time_slot.*)
                 FROM pro_user_time_slot
-                WHERE ua.id = pro_user_time_slot.availability_id AND pro_user_time_slot.deleted_at IS NULL AND pro_user_time_slot.checked = 'true'
+                WHERE ua.id = pro_user_time_slot.availability_id AND pro_user_time_slot.deleted_at IS NULL 
               )as time_slots
             FROM pro_user_availability as ua
             LEFT JOIN users as u ON u.id = ua.user_id
@@ -3026,30 +3026,6 @@ const db_sql = {
           LEFT JOIN users AS u ON u.id = se.user_id
           LEFT JOIN pro_user_events AS ue ON ue.id = se.event_id
           WHERE se.event_id = '{var1}' AND se.deleted_at IS NULL`,
-  "Q363":`SELECT e.id AS event_id, e.event_name, e.meet_link, e.description, e.event_url,
-            e.duration, e.availability_id, e.company_id, 
-            e.user_id AS creator_id, u.full_name AS creator_name, u.email_address AS creator_email,
-            a.schedule_name, a.timezone,
-            (
-            SELECT json_agg(availability)
-            FROM (
-                SELECT ua.id, ua.schedule_name, ua.timezone, ua.created_at,
-                        ua.user_id, u.full_name,
-                      (
-                        SELECT json_agg(pro_user_time_slot.*)
-                        FROM pro_user_time_slot
-                        WHERE ua.id = pro_user_time_slot.availability_id AND pro_user_time_slot.deleted_at IS NULL
-                      ) AS time_slots
-                FROM pro_user_availability AS ua
-                LEFT JOIN users AS u ON u.id = ua.user_id
-                WHERE ua.id = e.availability_id AND ua.deleted_at IS NULL
-            ) AS availability
-            ) AS availability_time_slots
-          FROM pro_user_events AS e 
-          LEFT JOIN pro_user_availability AS a ON a.id = e.availability_id
-          LEFT JOIN users AS u ON u.id = e.user_id 
-          WHERE e.id = '{var1}' AND e.deleted_at IS NULL`
-
 
 }
 
