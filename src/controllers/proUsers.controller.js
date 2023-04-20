@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, dateFormattor, tranformAvailabilityArray, getIcalObjectInstance,getStartAndEndDate } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, dateFormattor, tranformAvailabilityArray, getIcalObjectInstance, getStartAndEndDate } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
@@ -1191,8 +1191,10 @@ module.exports.recognizationDetailsPro = async (req, res) => {
 
                 if (salesData.is_service_performed) {
                     salesObj.allocatedTransaction = {
+                        sales_type: salesData.sales_type,
                         sales_target_amount: salesData.target_amount,
                         sales_target_closing_date: salesData.target_closing_date,
+                        sales_recurring_date : salesData.recurring_date,
                         sales_service_performed_at: salesData.service_performed_at,
                         sales_service_perform_note: salesData.service_perform_note
                     }
@@ -1644,10 +1646,14 @@ module.exports.addAvailability = async (req, res) => {
             let s2 = dbScript(db_sql['Q342'], { var1: scheduleName, var2: timezone, var3: userId, var4: findAdmin.rows[0].company_id })
             let createAvailability = await connection.query(s2)
             for (let ts of timeSlot) {
-
                 let dayName = daysEnum[ts.day]
-                for (let subTs of ts.timeSlots) {
-                    let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: subTs.startTime, var3: subTs.endTime, var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked })
+                if (ts.checked) {
+                    for (let subTs of ts.timeSlots) {
+                        let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: subTs.startTime, var3: subTs.endTime, var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked })
+                        let addTimeSlot = await connection.query(s3)
+                    }
+                } else {
+                    let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: '', var3: '', var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked })
                     let addTimeSlot = await connection.query(s3)
                 }
             }
@@ -2016,6 +2022,19 @@ module.exports.eventDetails = async (req, res) => {
         let s1 = dbScript(db_sql['Q348'], { var1: eventId })
         let showEventDetails = await connection.query(s1)
         if (showEventDetails.rowCount > 0) {
+            let finalArray = await tranformAvailabilityArray(showEventDetails.rows[0].availability_time_slots)
+            showEventDetails.rows[0].availability_time_slots = finalArray[0]
+            let booked_slots = [];
+            let s2 = dbScript(db_sql['Q362'], { var1: eventId })
+            let scheduledEvents = await connection.query(s2)
+            for(let data of scheduledEvents.rows){
+                const { startDate, endDate } = await getStartAndEndDate(data.date, data.start_time, data.end_time);
+                booked_slots.push({
+                    startTime : startDate,
+                    endTime : endDate
+                })
+            }
+            showEventDetails.rows[0].booked_slots = booked_slots
             res.json({
                 status: 200,
                 success: true,
@@ -2133,10 +2152,13 @@ module.exports.scheduleEvent = async (req, res) => {
         let createSchedule = await connection.query(s1)
 
         let dateTime = await dateFormattor(date, startTime, endTime)
+        console.log(dateTime);
+
         const { startDate, endDate } = await getStartAndEndDate(date, startTime, endTime);
-        
+        console.log(startDate, endDate);
+
         let location = ''
-        let calObj = await getIcalObjectInstance(startDate.toLocaleString(), endDate.toLocaleString(), eventName, description, location, meetLink, leadName, leadEmail)
+        let calObj = await getIcalObjectInstance(new Date(startDate).toISOString(), new Date(endDate).toISOString(), eventName, description, location, meetLink, leadName, leadEmail)
 
         await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, dateTime, timezone, calObj)
 
