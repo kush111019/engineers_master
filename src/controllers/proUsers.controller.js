@@ -2158,7 +2158,7 @@ module.exports.scheduleEvent = async (req, res) => {
         let createSchedule = await connection.query(s1)
 
         let dateTime = await dateFormattor(date, startTime, endTime)
-        console.log(dateTime,"dateTime");
+        console.log(dateTime, "dateTime");
         date = new Date(date);
         // set hours, minutes, and seconds to 00:00:00
         date.setHours(0, 0, 0, 0);
@@ -2222,6 +2222,49 @@ module.exports.scheduledEventsList = async (req, res) => {
                     success: false,
                     message: "Empty Scheduled events list",
                     data: []
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.eventDetailsForPro = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { eventId } = req.query
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q363'], { var1: eventId })
+            console.log(s2);
+            let showEventDetails = await connection.query(s2)
+            if (showEventDetails.rowCount > 0) {
+                let finalArray = await tranformAvailabilityArray(showEventDetails.rows[0].availability_time_slots)
+                showEventDetails.rows[0].availability_time_slots = finalArray[0]
+               
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Event Details",
+                    data: showEventDetails.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "No event found on this Id"
                 })
             }
         } else {
