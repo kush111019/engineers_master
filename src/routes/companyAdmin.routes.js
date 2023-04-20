@@ -261,5 +261,4 @@ router.put('/deleteAvalability',verifyTokenFn,controller.proUser.deleteAvalabili
 router.put('/deleteTimeSlot',verifyTokenFn,controller.proUser.deleteTimeSlot)
 router.put('/updateEvent',verifyTokenFn,controller.proUser.updateEvent)
 router.put('/deleteEvent',verifyTokenFn,controller.proUser.deleteEvent)
-router.get('/eventDetailsForPro',verifyTokenFn,controller.proUser.eventDetailsForPro)
 module.exports = router;
