@@ -2181,8 +2181,7 @@ module.exports.scheduleEvent = async (req, res) => {
 
         await connection.query('BEGIN')
 
-        let { formattedString,
-            startDate, endDate } = await dateFormattor(date, startTime, endTime, timezone)
+        let { formattedString, startDate, endDate } = await dateFormattor(date, startTime, endTime, timezone)
 
         let location = ''
         let calObj = await getIcalObjectInstance(startDate, endDate, eventName, description, location, meetLink, leadName, leadEmail, timezone)
