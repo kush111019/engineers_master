@@ -683,6 +683,7 @@ module.exports.tranformAvailabilityArray = async (arr) => {
 }
 
 module.exports.getIcalObjectInstance = async (startTime, endTime, eventName, description, location, meetLink, leadName, leadEmail, timezone) => {
+    console.log(startTime,endTime);
     const cal = ical({
         domain: 'hirisetech.com',
         name: eventName,
