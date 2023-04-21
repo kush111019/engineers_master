@@ -2182,11 +2182,12 @@ module.exports.scheduleEvent = async (req, res) => {
         await connection.query('BEGIN')
 
         let { formattedString,
-            startDate, endDate } = await dateFormattor(date, startTime, endTime)
-
+            startDate, endDate } = await dateFormattor(date, startTime, endTime, timezone)
+            console.log(formattedString,
+                startDate, endDate);
 
         let location = ''
-        let calObj = await getIcalObjectInstance(new Date(startDate).toString(), new Date(endDate).toString(), eventName, description, location, meetLink, leadName, leadEmail, timezone)
+        let calObj = await getIcalObjectInstance(new Date(startDate).toISOString(), new Date(endDate).toISOString(), eventName, description, location, meetLink, leadName, leadEmail, timezone)
 
         await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, formattedString, timezone, calObj)
 
