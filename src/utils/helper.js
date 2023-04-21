@@ -763,16 +763,16 @@ module.exports.convertToLocal = async (starttime, endtime, timezone) => {
 }
 
 module.exports.convertToTimezone = async (utcStart, utcEnd, targetTimezone) => {
-    const options = { timeZone: targetTimezone, hour12: true, hour: 'numeric', minute: 'numeric' };
-    const dateStart = new Date(utcStart);
-    const dateEnd = new Date(utcEnd);
-    const localStart = dateStart.toLocaleString('en-US', options); // format start time in target timezone
-    const localEnd = dateEnd.toLocaleString('en-US', options); // format end time in target timezone
+    const dtStart = DateTime.fromISO(utcStart, { zone: 'utc' }).setZone(targetTimezone);
+    const dtEnd = DateTime.fromISO(utcEnd, { zone: 'utc' }).setZone(targetTimezone);
+    const options = { hour: '2-digit', minute: '2-digit', hour12: true };
+    const localStart = dtStart.toLocaleString(options);
+    const localEnd = dtEnd.toLocaleString(options);
     return { localStart, localEnd };
 }
 
 
-  
+
 
 
 
