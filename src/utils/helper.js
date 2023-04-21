@@ -680,16 +680,35 @@ module.exports.tranformAvailabilityArray = async (arr) => {
     return outputArray;
 }
 
-module.exports.getIcalObjectInstance = async (startTime, endTime, eventName, description, location, meetLink, leadName, leadEmail) => {
-
+module.exports.getIcalObjectInstance = async (startTime, endTime, eventName, description, location, meetLink, leadName, leadEmail, timezone) => {
     const cal = ical({
         domain: 'hirisetech.com',
         name: eventName,
     });
 
+    // cal.createEvent({
+    //     start: {
+    //       tzid: timezone,//'America/Los_Angeles', // Specify the timezone ID here
+    //       value: startTime,
+    //     },
+    //     end: {
+    //       tzid: timezone,//'America/Los_Angeles', // Specify the timezone ID here
+    //       value: endTime,
+    //     },
+    //     summary: eventName,
+    //     description: description,
+    //     location: location,
+    //     url: meetLink,
+    //     organizer: {
+    //       name: leadName,
+    //       email: leadEmail,
+    //     },
+    //   });
+
     cal.createEvent({
         start: startTime,
         end: endTime,
+        timezone: timezone,
         summary: eventName,
         description: description,
         location: location,
@@ -721,79 +740,32 @@ module.exports.dateFormattor = async (dateStr, startTime, endTime) => {
     // Create a new Date object with the year, month, day, hours, minutes, and seconds
     const startDate = new Date(year, month, day, startHours, startMinutes, startSeconds);
 
+    
+    // const startDate1 = await convertDateToISOWithTimezone(startDate)
+
     // Calculate the duration between the start and end times in milliseconds
     const duration = (endHours - startHours) * 60 * 60 * 1000 + (endMinutes - startMinutes) * 60 * 1000 + (endSeconds - startSeconds) * 1000;
 
     // Add the duration to the start date to get the end date
     const endDate = new Date(startDate.getTime() + duration);
+    // const endDate1 = await convertDateToISOWithTimezone(endDate);
 
     // Format the date and time strings
     const dateString = startDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-    console.log(dateString,"dateString");
+    console.log(dateString, "dateString");
 
     const startTimeString = startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-    console.log(startTimeString,"startTimeString");
 
     const endTimeString = endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-    console.log(endTimeString,"endTimeString");
 
     // Combine the formatted strings
     const formattedString = `${startTimeString} - ${endTimeString} - ${dateString}`;
 
-    return formattedString;
+    return {formattedString,
+            startDate, endDate};
 }
 
-module.exports.getStartAndEndDate = async (inputDate, startTime, endTime) => {
-    // Parse the input date and extract the year, month, and day
-    const year = parseInt(inputDate.slice(0, 4));
-    const month = parseInt(inputDate.slice(5, 7)) - 1;
-    const day = parseInt(inputDate.slice(8, 10));
 
-    // Parse the start and end times and extract the hours, minutes, and seconds
-    const startHours = parseInt(startTime.slice(0, 2));
-    const startMinutes = parseInt(startTime.slice(3, 5));
-    const startSeconds = parseInt(startTime.slice(6, 8));
 
-    const endHours = parseInt(endTime.slice(0, 2));
-    const endMinutes = parseInt(endTime.slice(3, 5));
-    const endSeconds = parseInt(endTime.slice(6, 8));
-
-    // Create a new Date object with the year, month, day, hours, minutes, and seconds
-    const startDate = new Date(year, month, day, startHours, startMinutes, startSeconds);
-    
-    const startDate1 = await convertDateToISOWithTimezone(startDate)
-    // Calculate the duration between the start and end times in milliseconds
-    const duration = (endHours - startHours) * 60 * 60 * 1000 + (endMinutes - startMinutes) * 60 * 1000 + (endSeconds - startSeconds) * 1000;
-
-    // Add the duration to the start date to get the end date
-    const endDate = new Date(startDate.getTime() + duration);
-    const endDate1 = await convertDateToISOWithTimezone(endDate)
-
-    // Return an object with the start and end dates in ISO format
-    return {
-        startDate: startDate1,
-        endDate: endDate1,
-    };
-}
-
-async function convertDateToISOWithTimezone(dateStr) {
-    const date = new Date(dateStr);
-    const isoDateStr = date.toISOString();
-    
-    const timezoneOffset = new Date().getTimezoneOffset();
-    const timezoneOffsetAbs = Math.abs(timezoneOffset);
-    const timezoneOffsetSign = timezoneOffset >= 0 ? '-' : '+';
-    const timezoneOffsetHours = Math.floor(timezoneOffsetAbs / 60);
-    const timezoneOffsetMinutes = timezoneOffsetAbs % 60;
-    const timezoneOffsetStr = timezoneOffsetSign + 
-                               timezoneOffsetHours.toString().padStart(2, '0') + 
-                               ':' + 
-                               timezoneOffsetMinutes.toString().padStart(2, '0');
-    
-    const timezoneDateStr = isoDateStr.slice(0, -1) + timezoneOffsetStr;
-    
-    return timezoneDateStr;
-  }
-  
 
