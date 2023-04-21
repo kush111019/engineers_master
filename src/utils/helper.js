@@ -765,11 +765,11 @@ module.exports.convertToLocal = async (starttime, endtime, timezone) => {
 module.exports.convertToTimezone = async (utcStart, utcEnd, targetTimezone) => {
     const dtStart = DateTime.fromISO(utcStart, { zone: 'utc' }).setZone(targetTimezone);
     const dtEnd = DateTime.fromISO(utcEnd, { zone: 'utc' }).setZone(targetTimezone);
-    const options = { hour: '2-digit', minute: '2-digit', hour12: true };
-    const localStart = dtStart.toLocaleString(options);
-    const localEnd = dtEnd.toLocaleString(options);
+    const options = { hour: '2-digit', minute: '2-digit', hourCycle: 'h12' };
+    const localStart = dtStart.toLocaleString(options).toLowerCase();
+    const localEnd = dtEnd.toLocaleString(options).toLowerCase();
     return { localStart, localEnd };
-}
+  }
 
 
 
