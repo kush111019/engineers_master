@@ -2186,7 +2186,7 @@ module.exports.scheduleEvent = async (req, res) => {
 
 
         let location = ''
-        let calObj = await getIcalObjectInstance(new Date(startDate).toISOString(), new Date(endDate).toISOString(), eventName, description, location, meetLink, leadName, leadEmail, timezone)
+        let calObj = await getIcalObjectInstance(new Date(startDate).toString(), new Date(endDate).toString(), eventName, description, location, meetLink, leadName, leadEmail, timezone)
 
         await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, formattedString, timezone, calObj)
 
