@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, dateFormattor, tranformAvailabilityArray, getIcalObjectInstance, getStartAndEndDate, formatDateTime } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, dateFormattor, tranformAvailabilityArray, getIcalObjectInstance,convertToLocal, convertToTimezone } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
@@ -643,7 +643,8 @@ module.exports.leadReSync = async (req, res) => {
                             'client_id': process.env.SALESFORCE_CONSUMER_KEY,
                             'client_secret': process.env.SALESFORCE_CONSUMER_SECRET,
                             'redirect_uri': process.env.REDIRECT_URL,
-                            'refresh_token': accessData.salesforce_refresh_token
+                            'refresh_token': accessData.salesforce_refresh_token,
+                            'scope': 'refresh_token offline_access' // add this line
                         });
                         const config = {
                             headers: {
@@ -653,6 +654,7 @@ module.exports.leadReSync = async (req, res) => {
 
                         axios.post('https://login.salesforce.com/services/oauth2/token', data, config)
                             .then(async (res) => {
+                                console.log("response",res);
                                 const expiresIn = 7200; // Default expiration time for Salesforce access tokens
                                 const issuedAt = new Date(parseInt(res.data.issued_at));
                                 const expirationTime = new Date(issuedAt.getTime() + expiresIn * 1000).toISOString();
@@ -1647,7 +1649,10 @@ module.exports.addAvailability = async (req, res) => {
                 let dayName = daysEnum[ts.day]
                 if (ts.checked) {
                     for (let subTs of ts.timeSlots) {
-                        let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: subTs.startTime, var3: subTs.endTime, var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked })
+                        const { utcStart, utcEnd } = await convertToLocal(subTs.startTime, subTs.endTime, timezone);
+                        console.log(utcStart,utcEnd);
+
+                        let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: utcStart, var3: utcEnd, var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked })
                         let addTimeSlot = await connection.query(s3)
                     }
                 } else {
@@ -1738,6 +1743,14 @@ module.exports.availabilityDetails = async (req, res) => {
             let availability = await connection.query(s2)
             if (availability.rowCount > 0) {
                 let finalArray = await tranformAvailabilityArray(availability.rows)
+                for(let item of finalArray[0].time_slots) {
+                    for(let slot of item.time_slot) {
+                        let {localStart, localEnd} = await convertToTimezone(slot.start_time,slot.end_time, availability.rows[0].timezone)
+    
+                        slot.start_time = localStart
+                        slot.end_time = localEnd
+                    }
+                }
                 res.json({
                     status: 200,
                     success: true,
@@ -1787,9 +1800,15 @@ module.exports.updateAvailability = async (req, res) => {
                 let s3 = dbScript(db_sql['Q355'], { var1: _dt, var2: availabilityId })
                 let deleteTimeSlots = await connection.query(s3)
                 for (let ts of timeSlots) {
-                    for (let subTs of ts.timeSlot) {
-                        let dayName = daysEnum[ts.day]
-                        let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: subTs.startTime, var3: subTs.endTime, var4: availabilityId, var5: findAdmin.rows[0].company_id, var6: ts.checked })
+                    let dayName = daysEnum[ts.day]
+                    if (ts.checked) {
+                        for (let subTs of ts.timeSlot) {
+                            const { utcStart, utcEnd } = await convertToLocal(subTs.startTime, subTs.endTime, timezone);
+                            let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: utcStart, var3: utcEnd, var4: availabilityId, var5: findAdmin.rows[0].company_id, var6: ts.checked })
+                            let addTimeSlot = await connection.query(s3)
+                        }
+                    } else {
+                        let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: '', var3: '', var4: availabilityId, var5: findAdmin.rows[0].company_id, var6: ts.checked })
                         let addTimeSlot = await connection.query(s3)
                     }
                 }
@@ -2016,23 +2035,32 @@ module.exports.eventsList = async (req, res) => {
 
 module.exports.eventDetails = async (req, res) => {
     try {
-        let { eventId } = req.query
+        let { eventId, timezone } = req.query
         let s1 = dbScript(db_sql['Q348'], { var1: eventId })
         let showEventDetails = await connection.query(s1)
         if (showEventDetails.rowCount > 0) {
             let finalArray = await tranformAvailabilityArray(showEventDetails.rows[0].availability_time_slots)
+            for(let item of finalArray[0].time_slots) {
+                for(let slot of item.time_slot) {
+                    let {localStart, localEnd} = await convertToTimezone(slot.start_time,slot.end_time, timezone)
+
+                    slot.start_time = localStart
+                    slot.end_time = localEnd
+                }
+            }
             showEventDetails.rows[0].availability_time_slots = finalArray[0]
             let booked_slots = [];
             let s2 = dbScript(db_sql['Q362'], { var1: eventId })
             let scheduledEvents = await connection.query(s2)
             for (let data of scheduledEvents.rows) {
+                console.log(data.date,"data.date");
                 const date = new Date(data.date);
                 // set hours, minutes, and seconds to 00:00:00
                 date.setHours(0, 0, 0, 0);
                 // set the timezone to the local timezone
                 const localDate = new Date(date.toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
 
-                const { startDate, endDate } = await getStartAndEndDate(localDate.toISOString(), data.start_time, data.end_time);
+                const { startDate, endDate } = await dateFormattor(localDate.toISOString(), data.start_time, data.end_time);
                 booked_slots.push({
                     startTime: startDate,
                     endTime: endDate
@@ -2153,18 +2181,18 @@ module.exports.scheduleEvent = async (req, res) => {
 
         await connection.query('BEGIN')
 
-        let {formattedString,
-            startDate, endDate} = await dateFormattor(date, startTime, endTime)
-        
+        let { formattedString,
+            startDate, endDate } = await dateFormattor(date, startTime, endTime)
+
 
         let location = ''
-        let calObj = await getIcalObjectInstance(new Date(startDate).toISOString(), new Date(endDate).toISOString(), eventName, description, location, meetLink, leadName, leadEmail,timezone)
+        let calObj = await getIcalObjectInstance(new Date(startDate).toISOString(), new Date(endDate).toISOString(), eventName, description, location, meetLink, leadName, leadEmail, timezone)
 
         await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, formattedString, timezone, calObj)
 
         await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, formattedString, timezone, calObj)
 
-        let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: date, var3: startTime, var4: endTime, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10 : timezone})
+        let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: date, var3: startTime, var4: endTime, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10: timezone })
         let createSchedule = await connection.query(s1)
 
         if (createSchedule.rowCount > 0) {

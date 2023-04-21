@@ -7,6 +7,7 @@ const uuid = require("node-uuid")
 const notificationEnum = require('../utils/notificationEnum')
 const { notificationMail, notificationMail2 } = require('../utils/sendMail')
 const { default: ical } = require('ical-generator');
+const { DateTime } = require('luxon');
 
 module.exports.mysql_real_escape_string = (str) => {
     return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
@@ -644,6 +645,7 @@ module.exports.getParentUserList = async (userData, company_id) => {
 }
 
 module.exports.tranformAvailabilityArray = async (arr) => {
+
     const outputArray = arr.map(obj => {
         const newTimeSlots = obj.time_slots.reduce((acc, curr) => {
             const existingSlot = acc.find(slot => slot.days === curr.days);
@@ -686,25 +688,6 @@ module.exports.getIcalObjectInstance = async (startTime, endTime, eventName, des
         name: eventName,
     });
 
-    // cal.createEvent({
-    //     start: {
-    //       tzid: timezone,//'America/Los_Angeles', // Specify the timezone ID here
-    //       value: startTime,
-    //     },
-    //     end: {
-    //       tzid: timezone,//'America/Los_Angeles', // Specify the timezone ID here
-    //       value: endTime,
-    //     },
-    //     summary: eventName,
-    //     description: description,
-    //     location: location,
-    //     url: meetLink,
-    //     organizer: {
-    //       name: leadName,
-    //       email: leadEmail,
-    //     },
-    //   });
-
     cal.createEvent({
         start: startTime,
         end: endTime,
@@ -740,7 +723,7 @@ module.exports.dateFormattor = async (dateStr, startTime, endTime) => {
     // Create a new Date object with the year, month, day, hours, minutes, and seconds
     const startDate = new Date(year, month, day, startHours, startMinutes, startSeconds);
 
-    
+
     // const startDate1 = await convertDateToISOWithTimezone(startDate)
 
     // Calculate the duration between the start and end times in milliseconds
@@ -753,8 +736,6 @@ module.exports.dateFormattor = async (dateStr, startTime, endTime) => {
     // Format the date and time strings
     const dateString = startDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-    console.log(dateString, "dateString");
-
     const startTimeString = startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
     const endTimeString = endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
@@ -762,9 +743,38 @@ module.exports.dateFormattor = async (dateStr, startTime, endTime) => {
     // Combine the formatted strings
     const formattedString = `${startTimeString} - ${endTimeString} - ${dateString}`;
 
-    return {formattedString,
-            startDate, endDate};
+    return {
+        formattedString,
+        startDate, endDate
+    };
 }
+
+
+
+module.exports.convertToLocal = async (starttime, endtime, timezone) => {
+    const format = 'h:mm a';
+    const dt = DateTime.fromFormat(starttime, format, { zone: timezone });
+    const utcStart = dt.toUTC().toISO();
+
+    const dt2 = DateTime.fromFormat(endtime, format, { zone: timezone });
+    const utcEnd = dt2.toUTC().toISO();
+
+    return { utcStart, utcEnd };
+}
+
+module.exports.convertToTimezone = async (utcStart, utcEnd, targetTimezone) => {
+    const options = { timeZone: targetTimezone, hour12: true, hour: 'numeric', minute: 'numeric' };
+    const dateStart = new Date(utcStart);
+    const dateEnd = new Date(utcEnd);
+    const localStart = dateStart.toLocaleString('en-US', options); // format start time in target timezone
+    const localEnd = dateEnd.toLocaleString('en-US', options); // format end time in target timezone
+    return { localStart, localEnd };
+}
+
+
+  
+
+
 
 
 
