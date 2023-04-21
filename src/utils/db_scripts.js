@@ -2993,10 +2993,11 @@ const db_sql = {
   "Q350": `SELECT se.event_id,ue.event_name, se.date, se.start_time, se.end_time, se.lead_name, 
             se.lead_email, se.description as lead_description, 
             se.user_id, u.full_name AS creator_name, u.email_address AS creator_email,
-            ue.meet_link, ue.description as creator_description, ue.duration
+            ue.meet_link, ue.description as creator_description, ue.duration, ua.timezone
             FROM pro_scheduled_events AS se
             LEFT JOIN users AS u ON u.id = se.user_id
             LEFT JOIN pro_user_events AS ue ON ue.id = se.event_id
+            LEFT JOIN pro_user_availability AS ua ON ua.user_id = se.user_id
             WHERE se.user_id = '{var1}' AND se.company_id = '{var2}' AND se.deleted_at IS NULL`,
   "Q351": `SELECT ua.id, ua.schedule_name, ua.timezone, ua.created_at,
               ua.user_id, u.full_name,
