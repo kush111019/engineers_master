@@ -707,7 +707,7 @@ module.exports.getIcalObjectInstance = async (startTime, endTime, eventName, des
 }
 
 
-module.exports.dateFormattor = async (dateStr, startTime, endTime) => {
+module.exports.dateFormattor = async (dateStr, startTime, endTime, timezone) => {
     // Parse the input date and extract the year, month, and day
     const year = parseInt(dateStr.slice(0, 4));
     const month = parseInt(dateStr.slice(5, 7)) - 1;
@@ -724,32 +724,30 @@ module.exports.dateFormattor = async (dateStr, startTime, endTime) => {
 
     // Create a new Date object with the year, month, day, hours, minutes, and seconds
     const startDate = new Date(year, month, day, startHours, startMinutes, startSeconds);
+    const endDate = new Date(year, month, day, endHours, endMinutes, endSeconds);
 
+    // Convert the start and end dates to the specified timezone
+    const startString = startDate.toLocaleString('en-US', { timeZone: timezone });
+    const endString = endDate.toLocaleString('en-US', { timeZone: timezone });
 
-    // const startDate1 = await convertDateToISOWithTimezone(startDate)
+    // Extract the formatted start and end dates
+    const startDateString = startString.split(',')[0];
+    const endDateString = endString.split(',')[0];
 
-    // Calculate the duration between the start and end times in milliseconds
-    const duration = (endHours - startHours) * 60 * 60 * 1000 + (endMinutes - startMinutes) * 60 * 1000 + (endSeconds - startSeconds) * 1000;
-
-    // Add the duration to the start date to get the end date
-    const endDate = new Date(startDate.getTime() + duration);
-    // const endDate1 = await convertDateToISOWithTimezone(endDate);
-
-    // Format the date and time strings
-    const dateString = startDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-
-    const startTimeString = startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-
-    const endTimeString = endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    // Extract the formatted start and end times
+    const startTimeString = startString.split(',')[1].trim();
+    const endTimeString = endString.split(',')[1].trim();
 
     // Combine the formatted strings
-    const formattedString = `${startTimeString} - ${endTimeString} - ${dateString}`;
+    const formattedString = `${startTimeString} - ${endTimeString} - ${startDateString}`;
 
     return {
         formattedString,
-        startDate, endDate
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString()
     };
 }
+
 
 
 
