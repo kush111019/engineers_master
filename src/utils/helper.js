@@ -688,13 +688,9 @@ module.exports.getIcalObjectInstance = async (startTime, endTime, eventName, des
         name: eventName,
     });
 
-    // Convert the start and end dates to the specified timezone
-    const startDateString = startTime.toLocaleString('en-US', { timeZone: timezone });
-    const endDateString = endTime.toLocaleString('en-US', { timeZone: timezone });
-
     cal.createEvent({
-        start: startDateString,
-        end: endDateString,
+        start: startTime,
+        end: endTime,
         timezone: timezone,
         summary: eventName,
         description: description,
