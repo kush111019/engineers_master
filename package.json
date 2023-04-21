@@ -27,6 +27,7 @@
     "js-sha3": "^0.8.0",
     "jsforce": "^1.11.0",
     "jsonwebtoken": "^8.5.1",
+    "luxon": "^3.3.0",
     "mailparser": "^3.5.0",
     "moment": "^2.29.4",
     "morgan": "^1.10.0",
