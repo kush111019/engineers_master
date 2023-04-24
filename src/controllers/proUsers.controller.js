@@ -599,18 +599,8 @@ module.exports.searchLead = async () => {
 
                         if (updateStatusInCompany.rowCount > 0) {
                             await connection.query('COMMIT')
-                            res.json({
-                                status: 200,
-                                success: true,
-                                message: "hubspot leads synced successfully"
-                            })
                         } else {
                             await connection.query('ROLLBACK')
-                            res.json({
-                                status: 400,
-                                success: false,
-                                message: "Something went wrong"
-                            })
                         }
                     }
                 } catch (error) {
@@ -2042,8 +2032,9 @@ module.exports.eventDetails = async (req, res) => {
             let finalArray = await tranformAvailabilityArray(showEventDetails.rows[0].availability_time_slots)
             for(let item of finalArray[0].time_slots) {
                 for(let slot of item.time_slot) {
+                    console.log("start time :-",slot.start_time,",","end time :-",slot.end_time,",","timezone:-", timezone);
                     let {localStart, localEnd} = await convertToTimezone(slot.start_time,slot.end_time, timezone)
-
+                    console.log("local start time as per time zone:- ",localStart,"------", "local start time as per time zone:- ",localEnd);
                     slot.start_time = localStart
                     slot.end_time = localEnd
                 }
@@ -2065,6 +2056,7 @@ module.exports.eventDetails = async (req, res) => {
                     startTime: startDate,
                     endTime: endDate
                 })
+                console.log(booked_slots,"booked_slots");
             }
             showEventDetails.rows[0].booked_slots = booked_slots
             res.json({

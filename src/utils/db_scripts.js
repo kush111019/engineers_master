@@ -2972,7 +2972,7 @@ const db_sql = {
                 (
                 SELECT json_agg(availability)
                 FROM (
-                    SELECT ua.id, ua.schedule_name, ua.timezone,ua.timezone_value, ua.created_at,
+                    SELECT ua.id, ua.schedule_name, ua.timezone, ua.created_at,
                             ua.user_id, u.full_name,
                           (
                             SELECT json_agg(pro_user_time_slot.*)
