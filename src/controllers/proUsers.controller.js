@@ -2169,20 +2169,27 @@ module.exports.updateEvent = async (req, res) => {
 
 module.exports.scheduleEvent = async (req, res) => {
     try {
-        let { eventId, eventName, meetLink, date, startTime, endTime, leadName, leadEmail, description, userId, creatorName, creatorEmail, companyId, timezone } = req.body
-
+        let { eventId, eventName, meetLink, date, startTime, endTime, leadName, leadEmail, description, userId, creatorName, creatorEmail,creatorTimezone, companyId, leadTimezone } = req.body
+        console.log(req.body);
         await connection.query('BEGIN')
-
-        let { formattedString, startDate, endDate } = await dateFormattor(date, startTime, endTime, timezone)
-
         let location = ''
-        let calObj = await getIcalObjectInstance(startDate, endDate, eventName, description, location, meetLink, leadName, leadEmail, timezone)
 
-        await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, formattedString, timezone, calObj)
+        // for creator
+        let creatorDate = await dateFormattor(date, startTime, endTime, creatorTimezone)
+        let calObjCreator = await getIcalObjectInstance(creatorDate.startDate, creatorDate.endDate, eventName, description, location, meetLink, leadName, leadEmail, creatorTimezone)
 
-        await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, formattedString, timezone, calObj)
+        await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, creatorDate.formattedString, creatorTimezone, calObjCreator)
 
-        let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: date, var3: startTime, var4: endTime, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10: timezone })
+        // for lead
+        let leadDates = await dateFormattor(date, startTime, endTime, leadTimezone)
+        let calObjLead = await getIcalObjectInstance(leadDates.startDate, leadDates.endDate, eventName, description, location, meetLink, leadName, leadEmail, leadTimezone)
+
+        await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, leadDates.formattedString, leadTimezone, calObjLead)
+
+        let {localStart, localEnd} = await convertToTimezone(creatorDate.startDate, creatorDate.endDate, creatorTimezone)
+
+        //storing scheduled event in DB.
+        let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: date, var3: localStart, var4: localEnd, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10: timezone })
         let createSchedule = await connection.query(s1)
 
         if (createSchedule.rowCount > 0) {
