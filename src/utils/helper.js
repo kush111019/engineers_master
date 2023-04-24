@@ -706,6 +706,7 @@ module.exports.getIcalObjectInstance = async (startTime, endTime, eventName, des
 
 
 module.exports.dateFormattor = async (dateStr, startTime, endTime, timezone) => {
+    console.log(dateStr, startTime, endTime, timezone,"dateStr, startTime, endTime, timezone")
     // Parse the input date and extract the year, month, and day
     const year = parseInt(dateStr.slice(0, 4));
     const month = parseInt(dateStr.slice(5, 7)) - 1;
@@ -723,19 +724,19 @@ module.exports.dateFormattor = async (dateStr, startTime, endTime, timezone) => 
     // Create a new Date object with the year, month, day, hours, minutes, and seconds
     const startDate = new Date(year, month, day, startHours, startMinutes, startSeconds);
     const endDate = new Date(year, month, day, endHours, endMinutes, endSeconds);
-
+console.log(startDate,endDate,"startdate","enddate");
     // Convert the start and end dates to the specified timezone
     const startString = startDate.toLocaleString('en-US', { timeZone: timezone });
     const endString = endDate.toLocaleString('en-US', { timeZone: timezone });
-
+console.log(startString,"startString",endString,"endString" );
     // Extract the formatted start and end dates
     const startDateString = startString.split(',')[0];
     const endDateString = endString.split(',')[0];
-
+console.log(startDateString,"startDateString");
     // Extract the formatted start and end times
     const startTimeString = startString.split(',')[1].trim();
     const endTimeString = endString.split(',')[1].trim();
-
+console.log(startTimeString,"startTimeString",endTimeString,"endTimeString" );
     // Combine the formatted strings
     const formattedString = `${startTimeString} - ${endTimeString} - ${startDateString}`;
 
