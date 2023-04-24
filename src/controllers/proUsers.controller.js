@@ -2032,9 +2032,7 @@ module.exports.eventDetails = async (req, res) => {
             let finalArray = await tranformAvailabilityArray(showEventDetails.rows[0].availability_time_slots)
             for(let item of finalArray[0].time_slots) {
                 for(let slot of item.time_slot) {
-                    console.log("start time :-",slot.start_time,",","end time :-",slot.end_time,",","timezone:-", timezone, "1111111111");
                     let {localStart, localEnd} = await convertToTimezone(slot.start_time,slot.end_time, timezone)
-                    console.log("local start time as per time zone:- ",localStart,"------", "local start time as per time zone:- ",localEnd, "222222222");
                     slot.start_time = localStart
                     slot.end_time = localEnd
                 }
@@ -2044,19 +2042,17 @@ module.exports.eventDetails = async (req, res) => {
             let s2 = dbScript(db_sql['Q362'], { var1: eventId })
             let scheduledEvents = await connection.query(s2)
             for (let data of scheduledEvents.rows) {
-                console.log(data.date,"data.date");
                 const date = new Date(data.date);
                 // set hours, minutes, and seconds to 00:00:00
                 date.setHours(0, 0, 0, 0);
                 // set the timezone to the local timezone
                 const localDate = new Date(date.toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
 
-                const { startDate, endDate } = await dateFormattor(localDate.toISOString(), data.start_time, data.end_time);
+                const { startDate, endDate } = await dateFormattor(localDate.toISOString(), data.start_time, data.end_time,timezone);
                 booked_slots.push({
                     startTime: startDate,
                     endTime: endDate
                 })
-                console.log(booked_slots,"booked_slots");
             }
             showEventDetails.rows[0].booked_slots = booked_slots
             res.json({
