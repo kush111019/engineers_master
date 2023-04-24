@@ -2049,7 +2049,7 @@ module.exports.eventDetails = async (req, res) => {
                     date.setHours(0, 0, 0, 0);
                     // set the timezone to the local timezone
                     const localDate = new Date(date.toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
-
+console.log(localDate.toISOString(),"localDate");
                     const { startDate, endDate } = await dateFormattor(localDate.toISOString(), data.start_time, data.end_time, timezone);
                     console.log(startDate, endDate,"startDate, endDate");
                     booked_slots.push({
