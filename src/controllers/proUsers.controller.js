@@ -645,7 +645,6 @@ module.exports.leadReSync = async (req, res) => {
 
                         axios.post('https://login.salesforce.com/services/oauth2/token', data, config)
                             .then(async (res) => {
-                                console.log("response", res);
                                 const expiresIn = 7200; // Default expiration time for Salesforce access tokens
                                 const issuedAt = new Date(parseInt(res.data.issued_at));
                                 const expirationTime = new Date(issuedAt.getTime() + expiresIn * 1000).toISOString();
@@ -1641,7 +1640,6 @@ module.exports.addAvailability = async (req, res) => {
                 if (ts.checked) {
                     for (let subTs of ts.timeSlots) {
                         const { utcStart, utcEnd } = await convertToLocal(subTs.startTime, subTs.endTime, timezone);
-                        console.log(utcStart, utcEnd);
 
                         let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: utcStart, var3: utcEnd, var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked })
                         let addTimeSlot = await connection.query(s3)
@@ -2044,13 +2042,11 @@ module.exports.eventDetails = async (req, res) => {
             let scheduledEvents = await connection.query(s2)
             if (scheduledEvents.rowCount > 0) {
                 for (let data of scheduledEvents.rows) {
-                    console.log(data.date, "data.date");
                     const date = new Date(data.date);
                     // set hours, minutes, and seconds to 00:00:00
                     date.setHours(0, 0, 0, 0);
                     // set the timezone to the local timezone
                     const localDate = new Date(date.toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
-                    console.log(localDate.toISOString().split('T')[0], "localDate");
 
                     const sTime = moment(data.start_time, 'hh:mm a');
                     const formattedSTimeStr = sTime.format('hh:mm:ss');
@@ -2059,7 +2055,6 @@ module.exports.eventDetails = async (req, res) => {
                     const formattedETimeStr = eTime.format('hh:mm:ss');
 
                     const { startDate, endDate } = await dateFormattor(localDate.toISOString().split('T')[0], formattedSTimeStr, formattedETimeStr, timezone);
-                    console.log(startDate, endDate, "startDate, endDate");
                     booked_slots.push({
                         startTime: startDate,
                         endTime: endDate
@@ -2084,7 +2079,7 @@ module.exports.eventDetails = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.stack,
+            message: error.message,
         })
     }
 }
@@ -2218,7 +2213,7 @@ module.exports.scheduleEvent = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.stack,
+            message: error.message,
         })
     }
 }
