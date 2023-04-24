@@ -2988,8 +2988,8 @@ const db_sql = {
             LEFT JOIN pro_user_availability AS a ON a.id = e.availability_id
             LEFT JOIN users AS u ON u.id = e.user_id 
             WHERE e.id = '{var1}' AND e.deleted_at IS NULL`,
-  "Q349": `INSERT INTO pro_scheduled_events(event_id, date, start_time, end_time, lead_name, lead_email, description, user_id, company_id, timezone,timezone_value )
-            VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}') RETURNING *`,
+  "Q349": `INSERT INTO pro_scheduled_events(event_id, date, start_time, end_time, lead_name, lead_email, description, user_id, company_id, timezone )
+            VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}') RETURNING *`,
   "Q350": `SELECT se.event_id,ue.event_name, se.date, se.start_time, se.end_time, se.lead_name, 
             se.lead_email, se.description as lead_description, se.timezone,
             se.user_id, u.full_name AS creator_name, u.email_address AS creator_email,
