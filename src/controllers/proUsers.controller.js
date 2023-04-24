@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, dateFormattor, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, dateFormattor, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1 } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
@@ -2176,30 +2176,23 @@ module.exports.scheduleEvent = async (req, res) => {
         console.log(req.body,"req.body");
         await connection.query('BEGIN')
         let location = ''
-        const sTime = moment(startTime, 'hh:mm a');
-        const formattedSTimeStr = sTime.format('hh:mm:ss');
-
-        const eTime = moment(endTime, 'hh:mm a');
-        const formattedETimeStr = eTime.format('hh:mm:ss');
-        // for creator
-        let creatorDate = await dateFormattor(date, formattedSTimeStr, formattedETimeStr, creatorTimezone)
+       // for creator
+        let creatorDate = await dateFormattor(date, startTime, endTime, leadTimezone, creatorTimezone)
         console.log(creatorDate,"creatorDate");
-        let calObjCreator = await getIcalObjectInstance(creatorDate.startDate, creatorDate.endDate, eventName, description, location, meetLink, leadName, leadEmail, creatorTimezone)
-
-        await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, creatorDate.formattedString, creatorTimezone, calObjCreator)
+        let calObjCreator = await getIcalObjectInstance(creatorDate.creatorStartTime, creatorDate.creatorEndTime, eventName, description, location, meetLink, leadName, leadEmail, creatorTimezone)
+        await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, creatorDate.formattedDateString, creatorTimezone, calObjCreator)
 
         // for lead
-        let leadDates = await dateFormattor(date, formattedSTimeStr, formattedETimeStr, leadTimezone)
+        let leadDates = await dateFormattor1(date, startTime, endTime, leadTimezone)
         console.log(leadDates,"leadDates");
         let calObjLead = await getIcalObjectInstance(leadDates.startDate, leadDates.endDate, eventName, description, location, meetLink, leadName, leadEmail, leadTimezone)
 
-        await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, leadDates.formattedString, leadTimezone, calObjLead)
+        let formattedString = `${startTime} - ${endTime} - ${date}`
 
-        let { localStart, localEnd } = await convertToTimezone(creatorDate.startDate, creatorDate.endDate, creatorTimezone)
-        console.log(localStart, localEnd ,"{ localStart, localEnd }");
+        await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, formattedString, leadTimezone, calObjLead)
 
-        //storing scheduled event in DB.
-        let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: creatorDate.startDate, var3: localStart, var4: localEnd, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10: creatorTimezone })
+        // storing scheduled event in DB.
+        let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: creatorDate.creatorStartTime.split(',')[0], var3: creatorDate.creatorStartTime, var4: creatorDate.creatorEndTime, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10: creatorTimezone })
         let createSchedule = await connection.query(s1)
 
         if (createSchedule.rowCount > 0) {
