@@ -16,6 +16,7 @@ const nodemailer = require("nodemailer");
 const { encrypt, decrypt } = require('../utils/crypto');
 const { daysEnum } = require('../utils/notificationEnum')
 const ical = require('ical-generator');
+const moment = require("moment")
 
 
 //Sales Force auth client
@@ -2043,15 +2044,22 @@ module.exports.eventDetails = async (req, res) => {
             let scheduledEvents = await connection.query(s2)
             if (scheduledEvents.rowCount > 0) {
                 for (let data of scheduledEvents.rows) {
-                    console.log(data.date,"data.date");
+                    console.log(data.date, "data.date");
                     const date = new Date(data.date);
                     // set hours, minutes, and seconds to 00:00:00
                     date.setHours(0, 0, 0, 0);
                     // set the timezone to the local timezone
                     const localDate = new Date(date.toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
-console.log(localDate.toISOString().split('T')[0],"localDate");
-                    const { startDate, endDate } = await dateFormattor(localDate.toISOString().split('T')[0], data.start_time, data.end_time, timezone);
-                    console.log(startDate, endDate,"startDate, endDate");
+                    console.log(localDate.toISOString().split('T')[0], "localDate");
+
+                    const sTime = moment(data.start_time, 'hh:mm a');
+                    const formattedSTimeStr = sTime.format('hh:mm:ss');
+
+                    const eTime = moment(data.end_time, 'hh:mm a');
+                    const formattedETimeStr = eTime.format('hh:mm:ss');
+
+                    const { startDate, endDate } = await dateFormattor(localDate.toISOString().split('T')[0], formattedSTimeStr, formattedETimeStr, timezone);
+                    console.log(startDate, endDate, "startDate, endDate");
                     booked_slots.push({
                         startTime: startDate,
                         endTime: endDate
