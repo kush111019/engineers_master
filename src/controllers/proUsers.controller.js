@@ -2170,7 +2170,6 @@ module.exports.updateEvent = async (req, res) => {
 module.exports.scheduleEvent = async (req, res) => {
     try {
         let { eventId, eventName, meetLink, date, startTime, endTime, leadName, leadEmail, description, userId, creatorName, creatorEmail,creatorTimezone, companyId, leadTimezone } = req.body
-        console.log(req.body);
         await connection.query('BEGIN')
         let location = ''
 
