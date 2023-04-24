@@ -2189,7 +2189,7 @@ module.exports.scheduleEvent = async (req, res) => {
         let {localStart, localEnd} = await convertToTimezone(creatorDate.startDate, creatorDate.endDate, creatorTimezone)
 
         //storing scheduled event in DB.
-        let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: date, var3: localStart, var4: localEnd, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10: timezone })
+        let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: creatorDate.startDate, var3: localStart, var4: localEnd, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10: creatorTimezone })
         let createSchedule = await connection.query(s1)
 
         if (createSchedule.rowCount > 0) {
