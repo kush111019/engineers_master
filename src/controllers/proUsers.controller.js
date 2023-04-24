@@ -2173,6 +2173,7 @@ module.exports.updateEvent = async (req, res) => {
 module.exports.scheduleEvent = async (req, res) => {
     try {
         let { eventId, eventName, meetLink, date, startTime, endTime, leadName, leadEmail, description, userId, creatorName, creatorEmail, creatorTimezone, companyId, leadTimezone } = req.body
+        console.log(req.body,"req.body");
         await connection.query('BEGIN')
         let location = ''
         const sTime = moment(startTime, 'hh:mm a');
@@ -2182,17 +2183,20 @@ module.exports.scheduleEvent = async (req, res) => {
         const formattedETimeStr = eTime.format('hh:mm:ss');
         // for creator
         let creatorDate = await dateFormattor(date, formattedSTimeStr, formattedETimeStr, creatorTimezone)
+        console.log(creatorDate,"creatorDate");
         let calObjCreator = await getIcalObjectInstance(creatorDate.startDate, creatorDate.endDate, eventName, description, location, meetLink, leadName, leadEmail, creatorTimezone)
 
         await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, creatorDate.formattedString, creatorTimezone, calObjCreator)
 
         // for lead
         let leadDates = await dateFormattor(date, formattedSTimeStr, formattedETimeStr, leadTimezone)
+        console.log(leadDates,"leadDates");
         let calObjLead = await getIcalObjectInstance(leadDates.startDate, leadDates.endDate, eventName, description, location, meetLink, leadName, leadEmail, leadTimezone)
 
         await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, leadDates.formattedString, leadTimezone, calObjLead)
 
         let { localStart, localEnd } = await convertToTimezone(creatorDate.startDate, creatorDate.endDate, creatorTimezone)
+        console.log(localStart, localEnd ,"{ localStart, localEnd }");
 
         //storing scheduled event in DB.
         let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: creatorDate.startDate, var3: localStart, var4: localEnd, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10: creatorTimezone })
