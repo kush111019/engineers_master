@@ -2032,9 +2032,9 @@ module.exports.eventDetails = async (req, res) => {
             let finalArray = await tranformAvailabilityArray(showEventDetails.rows[0].availability_time_slots)
             for(let item of finalArray[0].time_slots) {
                 for(let slot of item.time_slot) {
-                    console.log("start time :-",slot.start_time,",","end time :-",slot.end_time,",","timezone:-", timezone);
+                    console.log("start time :-",slot.start_time,",","end time :-",slot.end_time,",","timezone:-", timezone, "1111111111");
                     let {localStart, localEnd} = await convertToTimezone(slot.start_time,slot.end_time, timezone)
-                    console.log("local start time as per time zone:- ",localStart,"------", "local start time as per time zone:- ",localEnd);
+                    console.log("local start time as per time zone:- ",localStart,"------", "local start time as per time zone:- ",localEnd, "222222222");
                     slot.start_time = localStart
                     slot.end_time = localEnd
                 }
