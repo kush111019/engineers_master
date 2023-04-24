@@ -2175,15 +2175,19 @@ module.exports.scheduleEvent = async (req, res) => {
         let { eventId, eventName, meetLink, date, startTime, endTime, leadName, leadEmail, description, userId, creatorName, creatorEmail, creatorTimezone, companyId, leadTimezone } = req.body
         await connection.query('BEGIN')
         let location = ''
+        const sTime = moment(startTime, 'hh:mm a');
+        const formattedSTimeStr = sTime.format('hh:mm:ss');
 
+        const eTime = moment(endTime, 'hh:mm a');
+        const formattedETimeStr = eTime.format('hh:mm:ss');
         // for creator
-        let creatorDate = await dateFormattor(date, startTime, endTime, creatorTimezone)
+        let creatorDate = await dateFormattor(date, formattedSTimeStr, formattedETimeStr, creatorTimezone)
         let calObjCreator = await getIcalObjectInstance(creatorDate.startDate, creatorDate.endDate, eventName, description, location, meetLink, leadName, leadEmail, creatorTimezone)
 
         await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, creatorDate.formattedString, creatorTimezone, calObjCreator)
 
         // for lead
-        let leadDates = await dateFormattor(date, startTime, endTime, leadTimezone)
+        let leadDates = await dateFormattor(date, formattedSTimeStr, formattedETimeStr, leadTimezone)
         let calObjLead = await getIcalObjectInstance(leadDates.startDate, leadDates.endDate, eventName, description, location, meetLink, leadName, leadEmail, leadTimezone)
 
         await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, leadDates.formattedString, leadTimezone, calObjLead)
