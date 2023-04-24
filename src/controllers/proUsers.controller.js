@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, dateFormattor, tranformAvailabilityArray, getIcalObjectInstance,convertToLocal, convertToTimezone } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, dateFormattor, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
@@ -644,7 +644,7 @@ module.exports.leadReSync = async (req, res) => {
 
                         axios.post('https://login.salesforce.com/services/oauth2/token', data, config)
                             .then(async (res) => {
-                                console.log("response",res);
+                                console.log("response", res);
                                 const expiresIn = 7200; // Default expiration time for Salesforce access tokens
                                 const issuedAt = new Date(parseInt(res.data.issued_at));
                                 const expirationTime = new Date(issuedAt.getTime() + expiresIn * 1000).toISOString();
@@ -1640,7 +1640,7 @@ module.exports.addAvailability = async (req, res) => {
                 if (ts.checked) {
                     for (let subTs of ts.timeSlots) {
                         const { utcStart, utcEnd } = await convertToLocal(subTs.startTime, subTs.endTime, timezone);
-                        console.log(utcStart,utcEnd);
+                        console.log(utcStart, utcEnd);
 
                         let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: utcStart, var3: utcEnd, var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked })
                         let addTimeSlot = await connection.query(s3)
@@ -1733,10 +1733,10 @@ module.exports.availabilityDetails = async (req, res) => {
             let availability = await connection.query(s2)
             if (availability.rowCount > 0) {
                 let finalArray = await tranformAvailabilityArray(availability.rows)
-                for(let item of finalArray[0].time_slots) {
-                    for(let slot of item.time_slot) {
-                        let {localStart, localEnd} = await convertToTimezone(slot.start_time,slot.end_time, availability.rows[0].timezone)
-    
+                for (let item of finalArray[0].time_slots) {
+                    for (let slot of item.time_slot) {
+                        let { localStart, localEnd } = await convertToTimezone(slot.start_time, slot.end_time, availability.rows[0].timezone)
+
                         slot.start_time = localStart
                         slot.end_time = localEnd
                     }
@@ -2030,9 +2030,9 @@ module.exports.eventDetails = async (req, res) => {
         let showEventDetails = await connection.query(s1)
         if (showEventDetails.rowCount > 0) {
             let finalArray = await tranformAvailabilityArray(showEventDetails.rows[0].availability_time_slots)
-            for(let item of finalArray[0].time_slots) {
-                for(let slot of item.time_slot) {
-                    let {localStart, localEnd} = await convertToTimezone(slot.start_time,slot.end_time, timezone)
+            for (let item of finalArray[0].time_slots) {
+                for (let slot of item.time_slot) {
+                    let { localStart, localEnd } = await convertToTimezone(slot.start_time, slot.end_time, timezone)
                     slot.start_time = localStart
                     slot.end_time = localEnd
                 }
@@ -2041,18 +2041,22 @@ module.exports.eventDetails = async (req, res) => {
             let booked_slots = [];
             let s2 = dbScript(db_sql['Q362'], { var1: eventId })
             let scheduledEvents = await connection.query(s2)
-            for (let data of scheduledEvents.rows) {
-                const date = new Date(data.date);
-                // set hours, minutes, and seconds to 00:00:00
-                date.setHours(0, 0, 0, 0);
-                // set the timezone to the local timezone
-                const localDate = new Date(date.toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
+            if (scheduledEvents.rowCount > 0) {
+                for (let data of scheduledEvents.rows) {
+                    console.log(data.date,"data.date");
+                    const date = new Date(data.date);
+                    // set hours, minutes, and seconds to 00:00:00
+                    date.setHours(0, 0, 0, 0);
+                    // set the timezone to the local timezone
+                    const localDate = new Date(date.toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
 
-                const { startDate, endDate } = await dateFormattor(localDate.toISOString(), data.start_time, data.end_time,timezone);
-                booked_slots.push({
-                    startTime: startDate,
-                    endTime: endDate
-                })
+                    const { startDate, endDate } = await dateFormattor(localDate.toISOString(), data.start_time, data.end_time, timezone);
+                    console.log(startDate, endDate,"startDate, endDate");
+                    booked_slots.push({
+                        startTime: startDate,
+                        endTime: endDate
+                    })
+                }
             }
             showEventDetails.rows[0].booked_slots = booked_slots
             res.json({
@@ -2072,7 +2076,7 @@ module.exports.eventDetails = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.message,
+            message: error.stack,
         })
     }
 }
@@ -2165,7 +2169,7 @@ module.exports.updateEvent = async (req, res) => {
 
 module.exports.scheduleEvent = async (req, res) => {
     try {
-        let { eventId, eventName, meetLink, date, startTime, endTime, leadName, leadEmail, description, userId, creatorName, creatorEmail,creatorTimezone, companyId, leadTimezone } = req.body
+        let { eventId, eventName, meetLink, date, startTime, endTime, leadName, leadEmail, description, userId, creatorName, creatorEmail, creatorTimezone, companyId, leadTimezone } = req.body
         await connection.query('BEGIN')
         let location = ''
 
@@ -2181,7 +2185,7 @@ module.exports.scheduleEvent = async (req, res) => {
 
         await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, leadDates.formattedString, leadTimezone, calObjLead)
 
-        let {localStart, localEnd} = await convertToTimezone(creatorDate.startDate, creatorDate.endDate, creatorTimezone)
+        let { localStart, localEnd } = await convertToTimezone(creatorDate.startDate, creatorDate.endDate, creatorTimezone)
 
         //storing scheduled event in DB.
         let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: creatorDate.startDate, var3: localStart, var4: localEnd, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10: creatorTimezone })
