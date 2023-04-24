@@ -8,6 +8,7 @@ const notificationEnum = require('../utils/notificationEnum')
 const { notificationMail, notificationMail2 } = require('../utils/sendMail')
 const { default: ical } = require('ical-generator');
 const { DateTime } = require('luxon');
+const moment = require('moment-timezone');
 
 module.exports.mysql_real_escape_string = (str) => {
     return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
@@ -705,49 +706,36 @@ module.exports.getIcalObjectInstance = async (startTime, endTime, eventName, des
 }
 
 
-module.exports.dateFormattor = async (dateStr, startTime, endTime, timezone) => {
-    // Parse the input date and extract the year, month, and day
-    const year = parseInt(dateStr.slice(0, 4));
-    const month = parseInt(dateStr.slice(5, 7)) - 1;
-    const day = parseInt(dateStr.slice(8, 10));
+module.exports.dateFormattor = async (date, startTime, endTime, leadTimezone, creatorTimezone) => {
+    const leadStartTime = new Date(`${date} ${startTime}`).toLocaleString('en-US', { timeZone: leadTimezone });
+    const leadEndTime = new Date(`${date} ${endTime}`).toLocaleString('en-US', { timeZone: leadTimezone });
 
-    // Parse the start and end times and extract the hours, minutes, and seconds
-    const startHours = parseInt(startTime.slice(0, 2));
-    const startMinutes = parseInt(startTime.slice(3, 5));
-    const startSeconds = parseInt(startTime.slice(6, 8));
+    const creatorStartTime = new Date(leadStartTime).toLocaleString('en-US', { timeZone: creatorTimezone });
+    const creatorEndTime = new Date(leadEndTime).toLocaleString('en-US', { timeZone: creatorTimezone });
 
-    const endHours = parseInt(endTime.slice(0, 2));
-    const endMinutes = parseInt(endTime.slice(3, 5));
-    const endSeconds = parseInt(endTime.slice(6, 8));
+    const formattedStartTime = formatDate(creatorStartTime, creatorTimezone);
+    const formattedEndTime = formatDate(creatorEndTime, creatorTimezone);
+    const formattedDate = moment(creatorStartTime).format('M/D/YYYY');
 
-    // Create a new Date object with the year, month, day, hours, minutes, and seconds
-    const startDate = new Date(year, month, day, startHours, startMinutes, startSeconds);
-    const endDate = new Date(year, month, day, endHours, endMinutes, endSeconds);
+    const formattedDateString = `${formattedStartTime} - ${formattedEndTime} - ${formattedDate}`;
 
-    // Convert the start and end dates to the specified timezone
-    const startString = startDate.toLocaleString('en-US', { timeZone: timezone });
-    const endString = endDate.toLocaleString('en-US', { timeZone: timezone });
-
-    // Extract the formatted start and end dates
-    const startDateString = startString.split(',')[0];
-    const endDateString = endString.split(',')[0];
-
-    // Extract the formatted start and end times
-    const startTimeString = startString.split(',')[1].trim();
-    const endTimeString = endString.split(',')[1].trim();
-
-    // Combine the formatted strings
-    const formattedString = `${startTimeString} - ${endTimeString} - ${startDateString}`;
-
-    return {
-        formattedString,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString()
-    };
+    return { creatorStartTime, creatorEndTime, formattedDateString };
 }
 
+function formatDate(date, timezone) {
+    const format = 'hh:mm:ss A';
+    const timezoneDate = moment(date).tz(timezone);
+    const formattedDate = timezoneDate.format(format);
+    return formattedDate;
+}
 
-
+module.exports.dateFormattor1 = async (date, startTime, endTime, timezone) => {
+    const startDate = moment.tz(`${date} ${startTime}`, `${timezone}`);
+    const endDate = moment.tz(`${date} ${endTime}`, `${timezone}`);
+    const localStartDate = startDate.clone().local();
+    const localEndDate = endDate.clone().local();
+    return { startDate: localStartDate.format(), endDate: localEndDate.format() };
+}
 
 module.exports.convertToLocal = async (starttime, endtime, timezone) => {
     const format = 'h:mm a';
@@ -767,7 +755,7 @@ module.exports.convertToTimezone = async (utcStart, utcEnd, targetTimezone) => {
     const localStart = dtStart.toLocaleString(options).toLowerCase();
     const localEnd = dtEnd.toLocaleString(options).toLowerCase();
     return { localStart, localEnd };
-  }
+}
 
 
 
