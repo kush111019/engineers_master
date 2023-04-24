@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, dateFormattor, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1 } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, dateFormattor, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, conevrtDateTime } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
@@ -2054,7 +2054,7 @@ module.exports.eventDetails = async (req, res) => {
                     const eTime = moment(data.end_time, 'hh:mm a');
                     const formattedETimeStr = eTime.format('hh:mm:ss');
 
-                    const { startDate, endDate } = await dateFormattor(localDate.toISOString().split('T')[0], formattedSTimeStr, formattedETimeStr, timezone);
+                    const { startDate, endDate } = await conevrtDateTime(localDate.toISOString().split('T')[0], formattedSTimeStr, formattedETimeStr, timezone);
                     booked_slots.push({
                         startTime: startDate,
                         endTime: endDate
@@ -2079,7 +2079,7 @@ module.exports.eventDetails = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.message,
+            message: error.stack,
         })
     }
 }
