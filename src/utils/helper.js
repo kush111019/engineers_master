@@ -705,6 +705,30 @@ module.exports.getIcalObjectInstance = async (startTime, endTime, eventName, des
     return cal;
 }
 
+module.exports.conevrtDateTime = async(inputDate, inputStartTime, inputEndTime, leadTimezone, creatorTimezone) => {
+     // Create a moment object for the input date and times in the creator's timezone
+     const inputMoment = moment.tz(`${inputDate} ${inputStartTime}`, creatorTimezone);
+     const inputEndTimeMoment = moment.tz(`${inputDate} ${inputEndTime}`, creatorTimezone);
+ 
+     // Calculate the duration between the start time and end time in milliseconds
+     const durationMs = inputEndTimeMoment.diff(inputMoment);
+ 
+     // Get the ISO strings for the creator start time and end time
+     const creatorStartIso = inputMoment.toISOString();
+     const creatorEndIso = inputEndTimeMoment.toISOString();
+ 
+     // Get the formatted string for the creator start time, end time, and date
+     const creatorStartFormatted = inputMoment.format('hh:mm:ss A');
+     const creatorEndFormatted = inputEndTimeMoment.format('hh:mm:ss A');
+     const formattedDateString = inputMoment.format('M/D/YYYY');
+ 
+     // Return an object containing the ISO strings and formatted string
+     return {
+         startDate: creatorStartIso,
+         endDate: creatorEndIso,
+         formattedString: `${creatorStartFormatted} - ${creatorEndFormatted} - ${formattedDateString}`
+     };
+}
 
 module.exports.dateFormattor = async (date, startTime, endTime, leadTimezone, creatorTimezone) => {
     const leadStartTime = new Date(`${date} ${startTime}`).toLocaleString('en-US', { timeZone: leadTimezone });
