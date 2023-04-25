@@ -648,36 +648,43 @@ module.exports.getParentUserList = async (userData, company_id) => {
 module.exports.tranformAvailabilityArray = async (arr) => {
 
     const outputArray = arr.map(obj => {
-        const newTimeSlots = obj.time_slots.reduce((acc, curr) => {
-            const existingSlot = acc.find(slot => slot.days === curr.days);
-            if (existingSlot) {
-                existingSlot.time_slot.push({
-                    id: curr.id,
-                    start_time: curr.start_time,
-                    end_time: curr.end_time
-                });
-            } else {
-                acc.push({
-                    days: curr.days,
-                    availability_id: curr.availability_id,
-                    company_id: curr.company_id,
-                    created_at: curr.created_at,
-                    updated_at: curr.updated_at,
-                    deleted_at: curr.deleted_at,
-                    checked: curr.checked,
-                    time_slot: (curr.checked) ? [{
+        if (obj.time_slots) {
+            const newTimeSlots = obj.time_slots.reduce((acc, curr) => {
+                const existingSlot = acc.find(slot => slot.days === curr.days);
+                if (existingSlot) {
+                    existingSlot.time_slot.push({
                         id: curr.id,
                         start_time: curr.start_time,
                         end_time: curr.end_time
-                    }] : []
-                });
-            }
-            return acc;
-        }, []);
-        return {
-            ...obj,
-            time_slots: newTimeSlots
-        };
+                    });
+                } else {
+                    acc.push({
+                        days: curr.days,
+                        availability_id: curr.availability_id,
+                        company_id: curr.company_id,
+                        created_at: curr.created_at,
+                        updated_at: curr.updated_at,
+                        deleted_at: curr.deleted_at,
+                        checked: curr.checked,
+                        time_slot: (curr.checked) ? [{
+                            id: curr.id,
+                            start_time: curr.start_time,
+                            end_time: curr.end_time
+                        }] : []
+                    });
+                }
+                return acc;
+            }, []);
+            return {
+                ...obj,
+                time_slots: newTimeSlots
+            };
+        } else {
+            return {
+                ...obj,
+                time_slots: []
+            };
+        }
     });
 
     return outputArray;
@@ -687,7 +694,7 @@ module.exports.getIcalObjectInstance = async (startTime, endTime, eventName, des
     const cal = ical({
         domain: 'hirisetech.com',
         name: eventName,
-        timezone : timezone,
+        timezone: timezone,
     });
 
     cal.createEvent({
