@@ -2998,15 +2998,27 @@ const db_sql = {
             LEFT JOIN users AS u ON u.id = se.user_id
             LEFT JOIN pro_user_events AS ue ON ue.id = se.event_id
             WHERE se.user_id = '{var1}' AND se.company_id = '{var2}' AND se.deleted_at IS NULL`,
-  "Q351": `SELECT ua.id, ua.schedule_name, ua.timezone, ua.created_at,
+  "Q351": ` SELECT ua.id, ua.schedule_name, ua.timezone, ua.created_at,
               ua.user_id, u.full_name,
               (
-                SELECT json_agg(pro_user_time_slot.*)
-                FROM pro_user_time_slot
-                WHERE ua.id = pro_user_time_slot.availability_id AND pro_user_time_slot.deleted_at IS NULL 
-              )as time_slots
-            FROM pro_user_availability as ua
-            LEFT JOIN users as u ON u.id = ua.user_id
+                SELECT json_agg(time_slot)
+                FROM (
+                  SELECT *
+                  FROM pro_user_time_slot
+                  WHERE ua.id = pro_user_time_slot.availability_id AND pro_user_time_slot.deleted_at IS NULL 
+                  ORDER BY CASE pro_user_time_slot.days
+                      WHEN 'Sunday' THEN 1
+                      WHEN 'Monday' THEN 2
+                      WHEN 'Tuesday' THEN 3
+                      WHEN 'Wednesday' THEN 4
+                      WHEN 'Thursday' THEN 5
+                      WHEN 'Friday' THEN 6
+                      WHEN 'Saturday' THEN 7
+                  END
+                ) AS time_slot
+              ) AS time_slots
+            FROM pro_user_availability AS ua
+            LEFT JOIN users AS u ON u.id = ua.user_id
             WHERE ua.id = '{var1}' AND ua.deleted_at IS NULL`,
   "Q352": `UPDATE pro_user_availability SET schedule_name = '{var1}', timezone = '{var2}', updated_at = '{var4}' WHERE id = '{var3}' RETURNING *`,
   "Q353": `UPDATE pro_user_time_slot SET checked = '{var1}', start_time = '{var2}', end_time = '{var3}', updated_at = '{var5}' WHERE id = '{var4}' RETURNING *`,
