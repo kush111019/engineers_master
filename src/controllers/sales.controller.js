@@ -1171,7 +1171,7 @@ module.exports.addRecognizedRevenue = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
 
-        let s2 = dbScript(db_sql['Q229'], { var1: salesId })
+        let s2 = dbScript(db_sql['Q114'], { var1: salesId })
         let findSales = await connection.query(s2)
 
         if (findSales.rowCount > 0) {
@@ -1214,6 +1214,29 @@ module.exports.addRecognizedRevenue = async (req, res) => {
                 }
             }
             totalCommission = totalCommission + commission;
+            for (let comData of findSales.rows) {
+                let userCommission = Number(totalCommission * Number(comData.user_percentage / 100))
+
+                userCommission = userCommission.toFixed(2)
+
+                let notification_userId = [];
+                notification_userId.push(comData.created_by)
+
+                let s8 = dbScript(db_sql['Q339'], { var1: comData.user_id, var2: comData.id, var3: comData.user_type })
+                let findCommission = await connection.query(s8)
+
+                if (findCommission.rowCount == 0) {
+                    let s7 = dbScript(db_sql['Q334'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: Number(userCommission), var5: comData.user_type })
+                    let addUserCommission = await connection.query(s7);
+                } else {
+                    let s9 = dbScript(db_sql['Q337'], { var1: Number(userCommission), var2: findCommission.rows[0].id })
+                    let updateUserCommission = await connection.query(s9);
+                }
+
+                let notification_typeId = findSales.rows[0].id;
+                await notificationsOperations({ type: 6, msg: 6.1, notification_typeId, notification_userId }, userId);
+            }
+
             let s6 = dbScript(db_sql['Q253'], { var1: totalCommission, var2: salesId })
             let updateSalesData = await connection.query(s6)
 
@@ -1543,5 +1566,163 @@ module.exports.archivedSales = async (req, res) => {
         })
     }
 
+}
+
+module.exports.userCommissionList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            let s1 = dbScript(db_sql['Q335'], { var1: roleUsers.join(","), var2: checkPermission.rows[0].company_id })
+            let commissionList = await connection.query(s1)
+
+            if (commissionList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'User commission List',
+                    data: commissionList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty User commission List',
+                    data: []
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.salesWiseCommissionList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { salesId } = req.query;
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
+            let s1 = dbScript(db_sql['Q336'], { var1: salesId, var2: checkPermission.rows[0].company_id })
+            let commissionList = await connection.query(s1)
+
+            if (commissionList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'User commission List',
+                    data: commissionList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty User commission List',
+                    data: []
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.updateUserCommission = async (req, res) => {
+    try {
+        let userId = req.user.id;
+        let { id, bonusAmount, notes } = req.body
+
+        await connection.query('BEGIN')
+
+        let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_update) {
+
+            let _dt = new Date().toISOString()
+
+            let s2 = dbScript(db_sql['Q338'], { var1: id, var2: Number(bonusAmount), var3: mysql_real_escape_string(notes), var4: _dt })
+            let updateUserCommission = await connection.query(s2)
+
+            if (updateUserCommission.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'User commission updated successfully'
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: 'Something went wrong'
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.commissionDetails = async (req, res) => {
+    try {
+        let { commissionId } = req.query;
+
+        let s1 = dbScript(db_sql['Q340'], { var1: commissionId })
+        let commission = await connection.query(s1)
+
+        if (commission.rowCount > 0) {
+            res.json({
+                status: 200,
+                success: true,
+                message: "User commission details",
+                data: commission.rows
+            })
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: "Empty User commission details",
+                data: []
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
 }
 

@@ -6,6 +6,9 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 const uuid = require("node-uuid")
 const notificationEnum = require('../utils/notificationEnum')
 const { notificationMail, notificationMail2 } = require('../utils/sendMail')
+const { default: ical } = require('ical-generator');
+const { DateTime } = require('luxon');
+const moment = require('moment-timezone');
 
 module.exports.mysql_real_escape_string = (str) => {
     return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
@@ -35,6 +38,9 @@ module.exports.mysql_real_escape_string = (str) => {
     })
 }
 
+module.exports.mysql_real_escape_string2 = (str) => {
+    return str.replace(/'/g, "''");
+}
 module.exports.containsObject = (obj, list) => {
     for (let i = 0; i < list.length; i++) {
         if (list[i].message_id === obj.messageId) {
@@ -183,7 +189,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
                 var3: card.id, var4: token.id, var5: charge.id, var6: subscription.current_period_end,
                 var7: _dt, var8: transaction.rows[0].id, var9: Math.round(totalAmount), var10: true,
                 var11: charge.receipt_url, var12: userCount, var13: planId, var14: "",
-                var15 : proUserCount
+                var15: proUserCount
             })
             let updateTransaction = await connection.query(s3)
 
@@ -192,7 +198,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
             let s5 = dbScript(db_sql['Q102'], { var1: expiryDate, var2: user.rows[0].id, var3: _dt })
             let updateUserExpiryDate = await connection.query(s5)
 
-            let s6 = dbScript(db_sql['Q197'], { var1: expiryDate, var2: userCount,var3 : proUserCount, var4: _dt, var5: user.rows[0].company_id })
+            let s6 = dbScript(db_sql['Q197'], { var1: expiryDate, var2: userCount, var3: proUserCount, var4: _dt, var5: user.rows[0].company_id })
             let updateCompanyExpiryDate = await connection.query(s6)
 
 
@@ -281,11 +287,11 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
 
             let s3 = dbScript(db_sql['Q135'], {
                 var1: user.rows[0].id, var2: transaction.rows[0].company_id, var3: planId, var4: transaction.rows[0].stripe_customer_id, var5: subscription.id, var6: card.id, var7: token.id, var8: "", var9: subscription.current_period_end, var10: userCount, var11: "",
-                var12: Math.round(totalAmount), var13: "", var14 : proUserCount
+                var12: Math.round(totalAmount), var13: "", var14: proUserCount
             })
             let createUpgradedTransaction = await connection.query(s3)
 
-            let s4 = dbScript(db_sql['Q105'], { var1: transaction.rows[0].stripe_customer_id, var2: transaction.rows[0].stripe_subscription_id, var3: transaction.rows[0].stripe_card_id, var4: transaction.rows[0].stripe_token_id, var5: transaction.rows[0].stripe_charge_id, var6: transaction.rows[0].expiry_date, var7: _dt, var8: transaction.rows[0].id, var9: transaction.rows[0].total_amount, var10: false, var11: transaction.rows[0].payment_receipt, var12: transaction.rows[0].user_count, var13: transaction.rows[0].plan_id, var14: createUpgradedTransaction.rows[0].id, var15 : proUserCount })
+            let s4 = dbScript(db_sql['Q105'], { var1: transaction.rows[0].stripe_customer_id, var2: transaction.rows[0].stripe_subscription_id, var3: transaction.rows[0].stripe_card_id, var4: transaction.rows[0].stripe_token_id, var5: transaction.rows[0].stripe_charge_id, var6: transaction.rows[0].expiry_date, var7: _dt, var8: transaction.rows[0].id, var9: transaction.rows[0].total_amount, var10: false, var11: transaction.rows[0].payment_receipt, var12: transaction.rows[0].user_count, var13: transaction.rows[0].plan_id, var14: createUpgradedTransaction.rows[0].id, var15: proUserCount })
             let updateTransaction = await connection.query(s4)
 
             if (createUpgradedTransaction.rowCount > 0 && updateTransaction.rowCount > 0) {
@@ -609,7 +615,6 @@ module.exports.instantNotificationsList = async (newNotificationRecieved, socket
     }
 }
 
-
 // get perent roles and their user's list from this function 
 module.exports.getParentUserList = async (userData, company_id) => {
     let roleIds = []
@@ -632,9 +637,147 @@ module.exports.getParentUserList = async (userData, company_id) => {
     for (let id of roleIds) {
         let s2 = dbScript(db_sql['Q21'], { var1: id, var2: company_id })
         let getUserData = await connection.query(s2);
-        if (getUserData.rowCount > 0 ) {
-            returnData.push( getUserData.rows[0])
+        if (getUserData.rowCount > 0) {
+            returnData.push(getUserData.rows[0])
         }
     }
     return returnData
 }
+
+//this function is coverting one form of array to different form of array according to need
+module.exports.tranformAvailabilityArray = async (arr) => {
+
+    const outputArray = arr.map(obj => {
+        if (obj.time_slots) {
+            const newTimeSlots = obj.time_slots.reduce((acc, curr) => {
+                const existingSlot = acc.find(slot => slot.days === curr.days);
+                if (existingSlot) {
+                    existingSlot.time_slot.push({
+                        id: curr.id,
+                        start_time: curr.start_time,
+                        end_time: curr.end_time
+                    });
+                } else {
+                    acc.push({
+                        days: curr.days,
+                        availability_id: curr.availability_id,
+                        company_id: curr.company_id,
+                        created_at: curr.created_at,
+                        updated_at: curr.updated_at,
+                        deleted_at: curr.deleted_at,
+                        checked: curr.checked,
+                        time_slot: (curr.checked) ? [{
+                            id: curr.id,
+                            start_time: curr.start_time,
+                            end_time: curr.end_time
+                        }] : []
+                    });
+                }
+                return acc;
+            }, []);
+            return {
+                ...obj,
+                time_slots: newTimeSlots
+            };
+        } else {
+            return {
+                ...obj,
+                time_slots: []
+            };
+        }
+    });
+
+    return outputArray;
+}
+
+module.exports.getIcalObjectInstance = async (startTime, endTime, eventName, description, location, meetLink, leadName, leadEmail, timezone) => {
+    const cal = ical({
+        domain: 'hirisetech.com',
+        name: eventName,
+        timezone: timezone,
+    });
+
+    cal.createEvent({
+        start: startTime,
+        end: endTime,
+        summary: eventName,
+        description: description,
+        location: location,
+        url: meetLink,
+        organizer: {
+            name: leadName,
+            email: leadEmail,
+        },
+    });
+
+    return cal;
+}
+
+module.exports.dateFormattor1 = async (date, startTime, endTime, timezone) => {
+    const startDate = moment.tz(`${date} ${startTime}`, `${timezone}`);
+    const endDate = moment.tz(`${date} ${endTime}`, `${timezone}`);
+    const localStartDate = startDate.clone().local();
+    const localEndDate = endDate.clone().local();
+    return { startDate: localStartDate.format(), endDate: localEndDate.format() };
+}
+
+// converting local time to utc time
+module.exports.convertToLocal = async (starttime, endtime, timezone) => {
+    const format = 'h:mm a';
+    const dt = DateTime.fromFormat(starttime, format, { zone: timezone });
+    const utcStart = dt.toUTC().toISO();
+
+    const dt2 = DateTime.fromFormat(endtime, format, { zone: timezone });
+    const utcEnd = dt2.toUTC().toISO();
+
+    return { utcStart, utcEnd };
+}
+
+// converting utc time to local time
+module.exports.convertToTimezone = async (utcStart, utcEnd, targetTimezone) => {
+    const dtStart = DateTime.fromISO(utcStart, { zone: 'utc' }).setZone(targetTimezone);
+    const dtEnd = DateTime.fromISO(utcEnd, { zone: 'utc' }).setZone(targetTimezone);
+    const options = { hour: '2-digit', minute: '2-digit', hourCycle: 'h12' };
+    const localStart = dtStart.toLocaleString(options).toLowerCase();
+    const localEnd = dtEnd.toLocaleString(options).toLowerCase();
+    return { localStart, localEnd };
+}
+
+module.exports.convertTimeToTargetedTz = async (startTime, endTime, timezone, date, targetedTimezone) => {
+    // Create a Moment object for the start time with the provided timezone and date
+    const startMoment = moment.tz(`${date} ${startTime}`, "YYYY-MM-DD hh:mm a", timezone);
+
+    // Create a Moment object for the end time with the provided timezone and date
+    const endMoment = moment.tz(`${date} ${endTime}`, "YYYY-MM-DD hh:mm a", timezone);
+
+    // Convert the Moment objects to UTC timezone
+    const startUtc = startMoment.utc();
+    const endUtc = endMoment.utc();
+
+    // Convert the UTC start time and end time to the targeted time zone with the specified date
+    const startTargetedTimezone = startUtc.tz(targetedTimezone);
+    const endTargetedTimezone = endUtc.tz(targetedTimezone);
+
+    // Format the output strings
+    const startTargetedTimezoneString = startTargetedTimezone.format("YYYY-MM-DD hh:mm a");
+    const endTargetedTimezoneString = endTargetedTimezone.format("YYYY-MM-DD hh:mm a");
+
+    const startTargetedTimezoneStringIso = startTargetedTimezone.toISOString();
+    const endTargetedTimezoneStringIso = endTargetedTimezone.toISOString();
+
+    // Return the results
+    return {
+        startTimeTargetedTimezone: startTargetedTimezoneString,
+        endTimeTargetedTimezone: endTargetedTimezoneString,
+        startTargetedTimezoneStringIso: startTargetedTimezoneStringIso,
+        endTargetedTimezoneStringIso: endTargetedTimezoneStringIso
+    };
+}
+
+
+
+
+
+
+
+

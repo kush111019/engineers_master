@@ -110,7 +110,10 @@ router.post('/addRecognizedRevenue', verifyTokenFn, controller.sales.addRecogniz
 router.get('/recognizedRevenueList', verifyTokenFn, controller.sales.recognizedRevenueList)
 router.get('/getRemainingTargetAmount', verifyTokenFn, controller.sales.getRemainingTargetAmount)
 router.get('/getAllApiDeatilsRelatedSales', verifyTokenFn, controller.sales.getAllApiDeatilsRelatedSales)
-
+router.get('/userCommissionList', verifyTokenFn, controller.sales.userCommissionList)
+router.get('/salesWiseCommissionList', verifyTokenFn, controller.sales.salesWiseCommissionList)
+router.put('/updateUserCommission', verifyTokenFn, controller.sales.updateUserCommission)
+router.get('/commissionDetails', verifyTokenFn, controller.sales.commissionDetails)
 
 
 //----------------------------------------Sales Approval --------------------------------
@@ -227,11 +230,35 @@ router.put('/notificationRead', verifyTokenFn, controller.notifications.notifica
 
 
 //-----------------------------------------Connectors------------------------------
-router.get('/connectorList',verifyTokenFn,controller.connectors.connectorsList)
-router.get('/auth/authUrl',controller.connectors.authUrl);
-router.post('/auth/callback',verifyTokenFn,controller.connectors.callback)
-router.get('/leadReSync',verifyTokenFn,controller.connectors.leadReSync)
-router.get('/proLeadsList',verifyTokenFn,controller.connectors.proLeadsList)
-router.get('/salesListForPro',verifyTokenFn,controller.connectors.salesListForPro)
-router.get('/recognizationDetailsPro',verifyTokenFn,controller.connectors.recognizationDetailsPro)
+router.get('/connectorList',verifyTokenFn,controller.proUser.connectorsList)
+router.get('/auth/authUrl',controller.proUser.authUrl);
+router.post('/auth/callback',verifyTokenFn,controller.proUser.callback)
+router.get('/leadReSync',verifyTokenFn,controller.proUser.leadReSync)
+router.get('/proLeadsList',verifyTokenFn,controller.proUser.proLeadsList)
+router.get('/salesListForPro',verifyTokenFn,controller.proUser.salesListForPro)
+router.get('/recognizationDetailsPro',verifyTokenFn,controller.proUser.recognizationDetailsPro)
+router.post('/addAvailability',verifyTokenFn,controller.proUser.addAvailability)
+router.get('/availabilityList',verifyTokenFn, controller.proUser.availableTimeList)
+
+//pro email 
+router.post('/createProEmailTemplate',verifyTokenFn,controller.proUser.createProEmailTemplate)
+router.get('/emailTemplateList',verifyTokenFn,controller.proUser.emailTemplateList)
+router.put('/updateEmailTemplate',verifyTokenFn,controller.proUser.updateEmailTemplate)
+router.put('/deleteEmailTemplate',verifyTokenFn,controller.proUser.deleteEmailTemplate)
+router.post('/addSmtpCreds',verifyTokenFn, controller.proUser.addSmtpCreds)
+router.get('/credentialList', verifyTokenFn, controller.proUser.credentialList)
+router.post('/sendEmailToLead', verifyTokenFn,controller.proUser.sendEmailToLead)
+
+//event and calendar for pro
+router.post('/createEvent',verifyTokenFn,controller.proUser.createEvent)
+router.get('/eventsList',verifyTokenFn,controller.proUser.eventsList)
+router.get('/eventDetails', controller.proUser.eventDetails)
+router.post('/scheduleEvent',controller.proUser.scheduleEvent)
+router.get('/scheduledEventsList', verifyTokenFn, controller.proUser.scheduledEventsList)
+router.get('/availabilityDetails',verifyTokenFn,controller.proUser.availabilityDetails)
+router.put('/updateAvailability',verifyTokenFn,controller.proUser.updateAvailability)
+router.put('/deleteAvalability',verifyTokenFn,controller.proUser.deleteAvalability)
+router.put('/deleteTimeSlot',verifyTokenFn,controller.proUser.deleteTimeSlot)
+router.put('/updateEvent',verifyTokenFn,controller.proUser.updateEvent)
+router.put('/deleteEvent',verifyTokenFn,controller.proUser.deleteEvent)
 module.exports = router;

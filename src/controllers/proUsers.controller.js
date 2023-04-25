@@ -9,8 +9,13 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string } = require('../utils/helper')
-const { issueJWT } = require("../utils/jwt")
+const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz } = require('../utils/helper')
+const { issueJWT } = require("../utils/jwt");
+const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
+const nodemailer = require("nodemailer");
+const { encrypt, decrypt } = require('../utils/crypto');
+const { daysEnum } = require('../utils/notificationEnum')
+
 
 //Sales Force auth client
 const oauth2Client = new OAuth2({
@@ -101,6 +106,8 @@ module.exports.connectorsList = async (req, res) => {
 module.exports.authUrl = async (req, res) => {
     try {
         let { provider } = req.query
+
+        //AuthUrl for linkedin
         if (provider.toLowerCase() == 'linkedin') {
             let scope = ['r_liteprofile', 'r_emailaddress'];
             const authUrl = LinkedIn.auth.authorize(scope, 'state');
@@ -110,6 +117,8 @@ module.exports.authUrl = async (req, res) => {
                 data: authUrl,
             })
         }
+
+        //AuthUrl for hubspot
         if (provider.toLowerCase() == 'hubspot') {
             const scope = ['content']
             const authUrl = hubspotClient.oauth.getAuthorizationUrl(process.env.HUBSPOT_CLIENT_ID, process.env.REDIRECT_URL, scope)
@@ -119,6 +128,7 @@ module.exports.authUrl = async (req, res) => {
                 data: authUrl,
             })
         }
+        //AuthUrl for salesforce
         if (provider.toLowerCase() == 'salesforce') {
             const conn = new Connection({
                 loginUrl: 'https://login.salesforce.com',
@@ -154,6 +164,7 @@ module.exports.callback = async (req, res) => {
         if (findUser.rowCount > 0) {
             if (provider.toLowerCase() == 'linkedin') {
                 await connection.query('BEGIN')
+                //generating access token using authorization code for linkedin
                 LinkedIn.auth.getAccessToken(code, state, async (err, results) => {
                     if (err) {
                         return res.json({
@@ -207,6 +218,7 @@ module.exports.callback = async (req, res) => {
             }
             if (provider.toLowerCase() == 'hubspot') {
                 await connection.query('BEGIN')
+                //generating access token using authorization code for hubspot
                 let token = await hubspotClient.oauth.tokensApi.createToken(
                     'authorization_code',
                     code, // the code you received from the oauth flow
@@ -220,6 +232,7 @@ module.exports.callback = async (req, res) => {
                 let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
                 let getConnectors = await connection.query(s2)
                 if (getConnectors.rowCount == 0) {
+                    //sotring the access token if not already stored
                     let s3 = dbScript(db_sql['Q323'], { var1: userId, var2: findUser.rows[0].company_id, var3: token.accessToken, var4: true, var5: token.refreshToken, var6: expiry })
                     let storeAccessToken = await connection.query(s3)
                     if (storeAccessToken.rowCount > 0) {
@@ -238,6 +251,7 @@ module.exports.callback = async (req, res) => {
                         })
                     }
                 } else {
+                    //updating the access token if already stored
                     let _dt = new Date().toISOString()
                     let s4 = dbScript(db_sql['Q320'], { var1: token.accessToken, var2: true, var3: token.refreshToken, var4: expiry, var5: userId, var6: findUser.rows[0].company_id })
                     let storeAccessToken = await connection.query(s4)
@@ -259,6 +273,8 @@ module.exports.callback = async (req, res) => {
                 }
             }
             if (provider.toLowerCase() == 'salesforce') {
+                //generating access token using authorization code for salesforce
+
                 await connection.query('BEGIN')
                 const authorizationCode = code; // The code received from the redirect URL
                 const data = new FormData();
@@ -282,6 +298,7 @@ module.exports.callback = async (req, res) => {
                         let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
                         let getConnectors = await connection.query(s2)
                         if (getConnectors.rowCount == 0) {
+                            //sotring the access token if not already stored
                             let s3 = dbScript(db_sql['Q321'], { var1: userId, var2: findUser.rows[0].company_id, var3: response.data.access_token, var4: true, var5: response.data.refresh_token, var6: expirationTime })
                             let storeAccessToken = await connection.query(s3)
                             if (storeAccessToken.rowCount > 0) {
@@ -300,6 +317,7 @@ module.exports.callback = async (req, res) => {
                                 })
                             }
                         } else {
+                            //updating the access token if already stored
                             let _dt = new Date().toISOString()
                             let s4 = dbScript(db_sql['Q325'], { var1: response.data.access_token, var2: true, var3: response.data.refresh_token, var4: expirationTime, var5: userId, var6: findUser.rows[0].company_id })
                             let storeAccessToken = await connection.query(s4)
@@ -354,6 +372,7 @@ module.exports.searchLead = async () => {
                     let expiryDate = new Date(accessData.salesforce_expiry)
                     let accessToken = ''
                     if (expiryDate < curDate) {
+                        //if current date is greater than expiry date then we are generating the access token using refresh token
                         const data = qs.stringify({
                             'grant_type': 'refresh_token',
                             'client_id': process.env.SALESFORCE_CONSUMER_KEY,
@@ -383,15 +402,18 @@ module.exports.searchLead = async () => {
                                 console.error('Authorization error:', err.message);
                             });
                     } else {
+                        //if current date is less than expiry date then we are using the already existing access token
                         accessToken = accessData.salesforce_token
                     }
 
+                    //using access token to fetch user data from salesforce
                     axios.get('https://login.salesforce.com/services/oauth2/userinfo', {
                         headers: {
                             Authorization: `Bearer ${accessToken}`
                         }
                     })
                         .then(response => {
+                            //searching lead with given below query
                             const apiUrl = `${response.data.urls.custom_domain}` + `${process.env.SALESFORCE_API_VERSION}`;
                             const query = 'SELECT uniqueId__c,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
                             axios({
@@ -403,7 +425,8 @@ module.exports.searchLead = async () => {
                             })
                                 .then(async (response) => {
                                     if (response.data.records.length > 0) {
-                                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id, var2: accessData.user_id })
+                                        //finding lead stored in db if not already present then inserting very first time
+                                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
                                         let findSyncLead = await connection.query(s1)
                                         //Initial insertion
                                         if (findSyncLead.rowCount == 0) {
@@ -420,6 +443,7 @@ module.exports.searchLead = async () => {
                                                 let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
                                             }
                                         } else {
+                                            //if already exists then updating it
                                             for (let data of response.data.records) {
                                                 if (new Date(accessData.salesforce_last_sync) < new Date(data.LastModifiedDate)) {
                                                     let titleId = await titleFn(data.Title, accessData.company_id)
@@ -479,6 +503,7 @@ module.exports.searchLead = async () => {
                     console.log(error)
                 }
             }
+            //searching leads for hubspot
             if (accessData.hubspot_status) {
                 await connection.query('BEGIN')
                 try {
@@ -486,6 +511,7 @@ module.exports.searchLead = async () => {
                     let expiryDate = new Date(accessData.hubspot_expiry)
                     let accessToken = ''
                     if (expiryDate < curDate) {
+                        //if current date is greater than expiry date then we are generating the access token using refresh token
                         const hubspotClient = new hubspot.Client({ developerApiKey: process.env.HUBSPOT_API_KEY })
                         let token = await hubspotClient.oauth.tokensApi.createToken(
                             'refresh_token',
@@ -504,6 +530,7 @@ module.exports.searchLead = async () => {
                         let storeAccessToken = await connection.query(s4)
 
                     } else {
+                        //if current date is less than expiry date then we are using the already existing access token
                         accessToken = accessData.hubspot_token
                     }
                     const hubspotClient = new hubspot.Client({ "accessToken": accessToken });
@@ -516,6 +543,7 @@ module.exports.searchLead = async () => {
                     const propertiesWithHistory = undefined;
                     const associations = undefined;
                     const archived = false;
+                    //getting apiResponse using above properties that we want
                     const apiResponse = await hubspotClient.crm.contacts.basicApi.getPage(limit, after, properties, propertiesWithHistory, associations, archived);
                     let leadsData = apiResponse.results
                     if (leadsData.length > 0) {
@@ -540,6 +568,7 @@ module.exports.searchLead = async () => {
                                 let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, '')
                             }
                         } else {
+                            //updating if alreaddy exists
                             for (let data of leadsData) {
                                 if (new Date(accessData.hubspot_last_sync) < new Date(data.updatedAt)) {
 
@@ -554,7 +583,7 @@ module.exports.searchLead = async () => {
 
                                     let leadName = data.properties.firstname + ' ' + data.properties.lastname
 
-                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id, var2 : accessData.company_id})
+                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id, var2: accessData.company_id })
                                     let checkLead = await connection.query(s10)
                                     if (checkLead.rowCount > 0) {
                                         let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
@@ -563,7 +592,7 @@ module.exports.searchLead = async () => {
                                         let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, '')
                                     }
                                 } else {
-                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id, var2 : accessData.company_id })
+                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id, var2: accessData.company_id })
                                     let checkLead = await connection.query(s10)
                                     if (checkLead.rowCount == 0) {
 
@@ -593,18 +622,8 @@ module.exports.searchLead = async () => {
 
                         if (updateStatusInCompany.rowCount > 0) {
                             await connection.query('COMMIT')
-                            res.json({
-                                status: 200,
-                                success: true,
-                                message: "hubspot leads synced successfully"
-                            })
                         } else {
                             await connection.query('ROLLBACK')
-                            res.json({
-                                status: 400,
-                                success: false,
-                                message: "Something went wrong"
-                            })
                         }
                     }
                 } catch (error) {
@@ -614,7 +633,7 @@ module.exports.searchLead = async () => {
         }
     }
 }
-
+//to Re Synchronization the lead Data 
 module.exports.leadReSync = async (req, res) => {
     let userId = req.user.id
     const { provider } = req.query;
@@ -631,13 +650,14 @@ module.exports.leadReSync = async (req, res) => {
                     let expiryDate = new Date(accessData.salesforce_expiry)
                     let accessToken = ''
                     if (expiryDate < curDate) {
-
+                        ////if current date is greater than expiry date then we are generating the access token using refresh token
                         const data = qs.stringify({
                             'grant_type': 'refresh_token',
                             'client_id': process.env.SALESFORCE_CONSUMER_KEY,
                             'client_secret': process.env.SALESFORCE_CONSUMER_SECRET,
                             'redirect_uri': process.env.REDIRECT_URL,
-                            'refresh_token': accessData.salesforce_refresh_token
+                            'refresh_token': accessData.salesforce_refresh_token,
+                            'scope': 'refresh_token offline_access' // add this line
                         });
                         const config = {
                             headers: {
@@ -647,7 +667,6 @@ module.exports.leadReSync = async (req, res) => {
 
                         axios.post('https://login.salesforce.com/services/oauth2/token', data, config)
                             .then(async (res) => {
-                                console.log(res.data, "res data");
                                 const expiresIn = 7200; // Default expiration time for Salesforce access tokens
                                 const issuedAt = new Date(parseInt(res.data.issued_at));
                                 const expirationTime = new Date(issuedAt.getTime() + expiresIn * 1000).toISOString();
@@ -661,6 +680,7 @@ module.exports.leadReSync = async (req, res) => {
                                 console.error('Authorization error:', err.message);
                             });
                     } else {
+                        //if current date is less than expiry date then we are using the already existing access token
                         accessToken = accessData.salesforce_token
                     }
                     axios.get('https://login.salesforce.com/services/oauth2/userinfo', {
@@ -668,6 +688,7 @@ module.exports.leadReSync = async (req, res) => {
                             Authorization: `Bearer ${accessToken}`
                         }
                     })
+                        //re syncing the leads data using below query parameters
                         .then(response => {
                             const apiUrl = `${response.data.urls.custom_domain}` + `${process.env.SALESFORCE_API_VERSION}`;
                             const query = 'SELECT uniqueId__c,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
@@ -680,7 +701,7 @@ module.exports.leadReSync = async (req, res) => {
                             })
                                 .then(async (response) => {
                                     if (response.data.records.length > 0) {
-                                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id, var2: accessData.user_id })
+                                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
                                         let findSyncLead = await connection.query(s1)
                                         //Initial insertion
                                         if (findSyncLead.rowCount == 0) {
@@ -699,6 +720,7 @@ module.exports.leadReSync = async (req, res) => {
                                         } else {
                                             for (let data of response.data.records) {
                                                 if (new Date(accessData.salesforce_last_sync) < new Date(data.LastModifiedDate)) {
+                                                    //checing if the last modification date is greater then last resync date if true then updating data
                                                     let titleId = await titleFn(data.Title, accessData.company_id)
 
                                                     let sourceId = await sourceFn(data.LeadSource, accessData.company_id)
@@ -707,7 +729,7 @@ module.exports.leadReSync = async (req, res) => {
 
                                                     let customerId = await customerFnForsalesforce(data, accessData, industryId)
 
-                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id})
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
                                                     let checkLead = await connection.query(s10)
                                                     if (checkLead.rowCount > 0) {
                                                         let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
@@ -715,7 +737,7 @@ module.exports.leadReSync = async (req, res) => {
                                                         let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
                                                     }
                                                 } else {
-                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id})
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
                                                     let checkLead = await connection.query(s10)
                                                     if (checkLead.rowCount == 0) {
                                                         let titleId = await titleFn(data.Title, accessData.company_id)
@@ -781,6 +803,7 @@ module.exports.leadReSync = async (req, res) => {
                     })
                 }
             }
+            //for hubspot 
             if (provider.toLowerCase() == 'hubspot' && accessData.hubspot_status) {
                 await connection.query('BEGIN')
                 try {
@@ -788,6 +811,7 @@ module.exports.leadReSync = async (req, res) => {
                     let expiryDate = new Date(accessData.hubspot_expiry)
                     let accessToken = ''
                     if (expiryDate < curDate) {
+                        //if current date is greater than expiry date then we are generating the access token using refresh token
                         const hubspotClient = new hubspot.Client({ developerApiKey: process.env.HUBSPOT_API_KEY })
                         let token = await hubspotClient.oauth.tokensApi.createToken(
                             'refresh_token',
@@ -805,6 +829,7 @@ module.exports.leadReSync = async (req, res) => {
                         let s4 = dbScript(db_sql['Q320'], { var1: token.accessToken, var2: true, var3: token.refreshToken, var4: expiry, var5: accessData.user_id, var6: accessData.company_id })
                         let storeAccessToken = await connection.query(s4)
                     } else {
+                        //if current date is less than expiry date then we are using the already existing access token
                         accessToken = accessData.hubspot_token
                     }
                     const hubspotClient = new hubspot.Client({ "accessToken": accessToken });
@@ -817,10 +842,11 @@ module.exports.leadReSync = async (req, res) => {
                     const propertiesWithHistory = undefined;
                     const associations = undefined;
                     const archived = false;
+                    //getting api response with the help of query parameters provided in peoperties
                     const apiResponse = await hubspotClient.crm.contacts.basicApi.getPage(limit, after, properties, propertiesWithHistory, associations, archived);
                     let leadsData = apiResponse.results
                     if (leadsData.length > 0) {
-                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id, var2: accessData.user_id })
+                        let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
                         let findSyncLead = await connection.query(s1)
 
                         if (findSyncLead.rowCount == 0) {
@@ -839,6 +865,7 @@ module.exports.leadReSync = async (req, res) => {
                                 let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, '')
                             }
                         } else {
+                            //if first time is inserted then updating it
                             for (let data of leadsData) {
                                 if (new Date(accessData.hubspot_last_sync) < new Date(data.updatedAt)) {
 
@@ -847,7 +874,6 @@ module.exports.leadReSync = async (req, res) => {
                                     let sourceId = await sourceFn('', accessData.company_id)
 
                                     let industryId = await industryFn(data.properties.industry, accessData.company_id)
-                                    console.log(industryId,"industryId");
 
                                     let customerId = await customerFnForHubspot(data, accessData, industryId)
 
@@ -915,6 +941,7 @@ module.exports.leadReSync = async (req, res) => {
                     })
                 }
             }
+            //for linked in
             if (provider.toLowerCase() == 'linkedin' && accessData.linked_in_status) {
                 res.json({
                     status: 200,
@@ -942,10 +969,13 @@ module.exports.proLeadsList = async (req, res) => {
         if (findUser.rowCount > 0) {
             let type = 'lead'
             let leadList
+            //getting the lead list from the customer_comany_employees
             if (provider.toLowerCase() == 'all') {
+                //for all providers
                 let s2 = dbScript(db_sql['Q326'], { var1: findUser.rows[0].company_id, var2: userId, var3: type })
                 leadList = await connection.query(s2)
             } else {
+                //for perticular provider
                 let s3 = dbScript(db_sql['Q327'], { var1: findUser.rows[0].company_id, var2: userId, var3: type, var4: provider.toLowerCase() })
                 leadList = await connection.query(s3)
             }
@@ -1105,8 +1135,10 @@ module.exports.salesListForPro = async (req, res) => {
                     if (salesData.sales_users) {
                         salesData.sales_users.map(value => {
                             if (value.user_type == process.env.CAPTAIN) {
+                                //calculating commission for captain
                                 value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
                             } else {
+                                //calculating commission for supportor
                                 value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
                             }
                         })
@@ -1148,6 +1180,7 @@ module.exports.recognizationDetailsPro = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
+            //fetching sales data by sales_id from sales table
             let s3 = dbScript(db_sql['Q249'], { var1: findUser.rows[0].company_id, var2: salesId })
             let salesList = await connection.query(s3)
             let salesObj = {}
@@ -1185,15 +1218,17 @@ module.exports.recognizationDetailsPro = async (req, res) => {
 
                 if (salesData.is_service_performed) {
                     salesObj.allocatedTransaction = {
+                        sales_type: salesData.sales_type,
                         sales_target_amount: salesData.target_amount,
                         sales_target_closing_date: salesData.target_closing_date,
+                        sales_recurring_date: salesData.recurring_date,
                         sales_service_performed_at: salesData.service_performed_at,
                         sales_service_perform_note: salesData.service_perform_note
                     }
                 } else {
                     salesObj.allocatedTransaction = {}
                 }
-
+                //fetching recognized revenue using sales_id from recoginez_revenue table
                 let s5 = dbScript(db_sql['Q231'], { var1: salesData.id })
                 let recognizedRevenue = await connection.query(s5)
                 if (recognizedRevenue.rowCount > 0) {
@@ -1243,3 +1278,1045 @@ module.exports.recognizationDetailsPro = async (req, res) => {
         })
     }
 }
+
+//creating template for sending mail to lead
+module.exports.createProEmailTemplate = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { emailTemplate, templateName, jsonTemplate } = req.body
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findUser = await connection.query(s1)
+        if (findUser.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q330'], { var1: userId, var2: findUser.rows[0].company_id, var3: mysql_real_escape_string2(emailTemplate), var4: templateName, var5: mysql_real_escape_string2(jsonTemplate) })
+            let createTemplate = await connection.query(s2)
+            if (createTemplate.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Template created successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+
+        } else {
+            await connection.query('ROLLBACK')
+            res.json({
+                status: 400,
+                success: false,
+                message: "Invalid user",
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+//existing templates list created by user
+module.exports.emailTemplateList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findUser = await connection.query(s1)
+        if (findUser.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q331'], { var1: userId, var2: findUser.rows[0].company_id })
+            let templateList = await connection.query(s2)
+            if (templateList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    data: templateList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty template list",
+                    data: []
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Invalid user",
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+//updating the email template
+module.exports.updateEmailTemplate = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { templateId, templateName, emailTemplate, jsonTemplate } = req.body
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findUser = await connection.query(s1)
+        if (findUser.rowCount > 0) {
+            let _dt = new Date().toISOString();
+            let s2 = dbScript(db_sql['Q332'], { var1: templateId, var2: _dt, var3: templateName, var4: mysql_real_escape_string2(emailTemplate), var5: mysql_real_escape_string2(jsonTemplate) })
+            updateTemplate = await connection.query(s2)
+            if (updateTemplate.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Template Updated Successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            await connection.query('ROLLBACK')
+            res.json({
+                status: 400,
+                success: false,
+                message: "Invalid user",
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message
+        })
+    }
+
+}
+
+//deleting the email template
+module.exports.deleteEmailTemplate = async (req, res) => {
+    try {
+        userId = req.user.id
+        let { templateId } = req.query
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findUser = await connection.query(s1)
+        if (findUser.rowCount > 0) {
+            let _dt = new Date().toISOString();
+            let s2 = dbScript(db_sql['Q333'], { var1: templateId, var2: _dt })
+            let deleteTemplate = await connection.query(s2)
+            if (deleteTemplate.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Template Deleted Successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            await connection.query('ROLLBACK')
+            res.json({
+                status: 400,
+                success: false,
+                message: "Invalid user",
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message
+        })
+    }
+
+}
+
+//sending email to lead
+module.exports.sendEmailToLead = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { template, leadEmail, templateName, description } = req.body
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
+            let findCreds = await connection.query(s2)
+            if (findCreds.rowCount > 0) {
+                let credentialObj = {}
+                let dpass = decrypt(JSON.parse(findCreds.rows[0].app_password))
+                credentialObj.id = findCreds.rows[0].id
+                credentialObj.email = findCreds.rows[0].email
+                credentialObj.appPassword = dpass
+                credentialObj.smtpHost = findCreds.rows[0].smtp_host
+                credentialObj.smtpPort = findCreds.rows[0].smtp_port
+
+                //replacing the content of the template from the description when sending the mail to lead
+                const result = template.replace('{content}', description);
+
+                await leadEmail2(leadEmail, result, templateName, credentialObj);
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Email sent to Lead",
+                })
+
+            } else {
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "SMTP credentials not available. Please add SMTP credentials first.",
+                })
+            }
+
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Invalid user",
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+//adding user's SMTP credentials in order to send mail
+module.exports.addSmtpCreds = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { email, appPassword, smtpHost, smtpPort } = req.body
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            //sending mail through the provided smtp creds in order to check whether creds are correct
+            let transporter = nodemailer.createTransport({
+                host: smtpHost,
+                port: Number(smtpPort),
+                secure: (Number(smtpPort) == 465) ? true : false, // true for 465, false for other ports
+                auth: {
+                    user: email,
+                    pass: appPassword
+                }
+            });
+
+            // Specify the fields in the email.
+            let mailOptions = {
+                from: email,
+                to: "test@yopmail.com",
+                subject: "test Mail",
+                text: "This is a test mail to check smtp and port are correct"
+            };
+
+            // Send the email.
+            // let info = await transporter.sendMail(mailOptions)
+            let promise = new Promise((resolve, reject) => {
+                let info = transporter.sendMail(mailOptions)
+                if (info) {
+                    resolve(info)
+                } else {
+                    reject("error")
+                }
+            })
+            promise.then(async (data) => {
+                let encryptedAppPassword = JSON.stringify(encrypt(appPassword))
+                let s4 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
+                let findSmtpcreds = await connection.query(s4)
+                if (findSmtpcreds.rowCount == 0) {
+                    let s3 = dbScript(db_sql['Q341'], { var1: email, var2: encryptedAppPassword, var3: findAdmin.rows[0].id, var4: smtpHost, var5: smtpPort, var6: findAdmin.rows[0].company_id })
+                    let addCredentails = await connection.query(s3)
+                    if (addCredentails.rowCount > 0) {
+                        await connection.query('COMMIT')
+                        res.json({
+                            status: 201,
+                            success: true,
+                            message: "Credentials added successfully"
+                        })
+                    } else {
+                        await connection.query('ROLLBACK')
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Something went wrong"
+                        })
+                    }
+                } else {
+                    let _dt = new Date().toISOString()
+                    let s5 = dbScript(db_sql['Q361'], { var1: email, var2: encryptedAppPassword, var3: smtpHost, var4: smtpPort, var5: findSmtpcreds.rows[0].id, var6: _dt })
+                    let updateCreds = await connection.query(s5)
+                    if (updateCreds.rowCount > 0) {
+                        await connection.query('COMMIT')
+                        res.json({
+                            status: 201,
+                            success: true,
+                            message: "Credentials added successfully"
+                        })
+                    } else {
+                        await connection.query('ROLLBACK')
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Something went wrong"
+                        })
+                    }
+                }
+            })
+                .catch((err) =>
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: `SMTP Error : ${err.message}`
+                    })
+                )
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+//providing the credentials list
+module.exports.credentialList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
+            let credentials = await connection.query(s2)
+
+            let credentialObj = {}
+
+            if (credentials.rowCount > 0) {
+                let dpass = decrypt(JSON.parse(credentials.rows[0].app_password))
+                credentialObj.id = credentials.rows[0].id
+                credentialObj.email = credentials.rows[0].email
+                credentialObj.appPassword = dpass
+                credentialObj.smtpHost = credentials.rows[0].smtp_host
+                credentialObj.smtpPort = credentials.rows[0].smtp_port
+
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "credential List",
+                    data: credentialObj
+                })
+            } else {
+                credentialObj.id = "",
+                    credentialObj.email = "",
+                    credentialObj.appPassword = "",
+                    credentialObj.smtpHost = ""
+                credentialObj.smtpPort = ""
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty credential List",
+                    data: credentialObj
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//adding user's availability for events
+module.exports.addAvailability = async (req, res) => {
+    try {
+        let {
+            scheduleName,
+            timezone,
+            timeSlot
+        } = req.body;
+        await connection.query('BEGIN')
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q342'], { var1: mysql_real_escape_string(scheduleName), var2: timezone, var3: userId, var4: findAdmin.rows[0].company_id })
+            let createAvailability = await connection.query(s2)
+            for (let ts of timeSlot) {
+                let dayName = daysEnum[ts.day]
+                if (ts.checked) {
+                    for (let subTs of ts.timeSlots) {
+                        const { utcStart, utcEnd } = await convertToLocal(subTs.startTime, subTs.endTime, timezone);
+
+                        let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: utcStart, var3: utcEnd, var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked })
+                        let addTimeSlot = await connection.query(s3)
+                    }
+                } else {
+                    let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: '', var3: '', var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked })
+                    let addTimeSlot = await connection.query(s3)
+                }
+            }
+            if (createAvailability.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 201,
+                    success: true,
+                    message: "Availability scheduled successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//availability list of user that he has created
+module.exports.availableTimeList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q344'], { var1: userId, var2: findAdmin.rows[0].company_id })
+            let availability = await connection.query(s2)
+            if (availability.rowCount > 0) {
+                let finalArray = await tranformAvailabilityArray(availability.rows)
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Availability List",
+                    data: finalArray
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Availability List",
+                    data: []
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//showing details of perticular availability through availabilityId
+module.exports.availabilityDetails = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { availabilityId } = req.query
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q351'], { var1: availabilityId })
+            let availability = await connection.query(s2)
+            if (availability.rowCount > 0) {
+                //this function is coverting one form of array to different form of array according to need
+                let finalArray = await tranformAvailabilityArray(availability.rows)
+                for (let item of finalArray[0].time_slots) {
+                    for (let slot of item.time_slot) {
+                        // converting utc time to local time
+                        let { localStart, localEnd } = await convertToTimezone(slot.start_time, slot.end_time, availability.rows[0].timezone)
+
+                        slot.start_time = localStart
+                        slot.end_time = localEnd
+                    }
+                }
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Availability Details",
+                    data: finalArray
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "No details found on this id"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//updating user's availability for events
+module.exports.updateAvailability = async (req, res) => {
+    try {
+        let {
+            scheduleName,
+            timezone,
+            timeSlots,
+            availabilityId
+        } = req.body;
+        await connection.query('BEGIN')
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let _dt = new Date().toISOString()
+            let s2 = dbScript(db_sql['Q352'], { var1: mysql_real_escape_string(scheduleName), var2: timezone, var3: availabilityId, var4: _dt })
+            let updateAvailability = await connection.query(s2)
+            if (updateAvailability.rowCount > 0) {
+                let s3 = dbScript(db_sql['Q355'], { var1: _dt, var2: availabilityId })
+                let deleteTimeSlots = await connection.query(s3)
+                for (let ts of timeSlots) {
+                    let dayName = daysEnum[ts.day]
+                    if (ts.checked) {
+                        for (let subTs of ts.timeSlot) {
+                            // converting local time to utc time
+                            const { utcStart, utcEnd } = await convertToLocal(subTs.startTime, subTs.endTime, timezone);
+                            let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: utcStart, var3: utcEnd, var4: availabilityId, var5: findAdmin.rows[0].company_id, var6: ts.checked })
+                            let addTimeSlot = await connection.query(s3)
+                        }
+                    } else {
+                        let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: '', var3: '', var4: availabilityId, var5: findAdmin.rows[0].company_id, var6: ts.checked })
+                        let addTimeSlot = await connection.query(s3)
+                    }
+                }
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Availability Updated successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//deleting user's availability using availabilityId
+module.exports.deleteAvalability = async (req, res) => {
+    try {
+        let { availabilityId } = req.query
+        await connection.query('BEGIN')
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let _dt = new Date().toISOString()
+            let s2 = dbScript(db_sql['Q354'], { var1: _dt, var2: availabilityId })
+            let deleteAvailability = await connection.query(s2)
+            if (deleteAvailability.rowCount > 0) {
+                let s3 = dbScript(db_sql['Q355'], { var1: _dt, var2: availabilityId })
+                let deleteTimeSlots = await connection.query(s3)
+                if (deleteTimeSlots.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Availability Deleted successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//deleting available time slots 
+module.exports.deleteTimeSlot = async (req, res) => {
+    try {
+        let { slotId } = req.query
+        await connection.query('BEGIN')
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let _dt = new Date().toISOString()
+            let s2 = dbScript(db_sql['Q356'], { var1: _dt, var2: slotId })
+            let deleteTimeSlot = await connection.query(s2)
+            if (deleteTimeSlot.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Time slot Deleted successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//creating event for scheduling meeting
+module.exports.createEvent = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { eventName, meetLink, description, duration, availabilityId } = req.body
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q345'], { var1: mysql_real_escape_string(eventName), var2: meetLink, var3: mysql_real_escape_string(description), var4: userId, var5: findAdmin.rows[0].company_id, var6: duration, var7: availabilityId })
+            let addEvent = await connection.query(s2)
+            if (addEvent.rowCount > 0) {
+
+                let eventUrl = `${process.env.PRO_EVENT_URL}/${addEvent.rows[0].id}`
+                let s3 = dbScript(db_sql['Q347'], { var1: eventUrl, var2: addEvent.rows[0].id })
+                let updateEventUrl = await connection.query(s3)
+                if (updateEventUrl.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Event created successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//all event lists
+module.exports.eventsList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q346'], { var1: userId, var2: findAdmin.rows[0].company_id })
+            let eventList = await connection.query(s2)
+            if (eventList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    data: eventList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty event list",
+                    data: []
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//event details using eventId
+module.exports.eventDetails = async (req, res) => {
+    try {
+        let { eventId, timezone } = req.query
+        let s1 = dbScript(db_sql['Q348'], { var1: eventId })
+        let showEventDetails = await connection.query(s1)
+        if (showEventDetails.rowCount > 0) {
+            if(showEventDetails.rows[0].availability_time_slots.length > 0){
+                let finalArray = await tranformAvailabilityArray(showEventDetails.rows[0].availability_time_slots)
+                for (let item of finalArray[0].time_slots) {
+                    for (let slot of item.time_slot) {
+                        let { localStart, localEnd } = await convertToTimezone(slot.start_time, slot.end_time, timezone)
+                        slot.start_time = localStart
+                        slot.end_time = localEnd
+                    }
+                }
+                showEventDetails.rows[0].availability_time_slots = finalArray[0]
+            }
+            
+            let booked_slots = [];
+            let s2 = dbScript(db_sql['Q362'], { var1: eventId })
+            let scheduledEvents = await connection.query(s2)
+            if (scheduledEvents.rowCount > 0) {
+                for (let data of scheduledEvents.rows) {
+                    booked_slots.push({
+                        startTime: data.start_time,
+                        endTime: data.end_time
+                    })
+                }
+            }
+            showEventDetails.rows[0].booked_slots = booked_slots
+            res.json({
+                status: 200,
+                success: true,
+                message: "Event Details",
+                data: showEventDetails.rows
+            })
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: "No event found on this Id"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//deleting events using eventId
+module.exports.deleteEvent = async (req, res) => {
+    try {
+        let { eventId } = req.query
+        await connection.query('BEGIN')
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let _dt = new Date().toISOString()
+            let s2 = dbScript(db_sql['Q358'], { var1: _dt, var2: eventId })
+            let updateEvent = await connection.query(s2)
+            if (updateEvent.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Event Deleted successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//updating events using eventId
+module.exports.updateEvent = async (req, res) => {
+    try {
+        let { eventId, eventName, meetLink, description, duration, availabilityId } = req.body
+        await connection.query('BEGIN')
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+            let _dt = new Date().toISOString()
+            let s2 = dbScript(db_sql['Q357'], { var1: mysql_real_escape_string(eventName), var2: meetLink, var3: mysql_real_escape_string(description), var4: duration, var5: availabilityId, var6: eventId, var7: _dt })
+            let updateEvent = await connection.query(s2)
+            if (updateEvent.rowCount > 0) {
+                await connection.query('COMMIT')
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Event Updated successfully"
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Something went wrong"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//scheduling event - Lead
+module.exports.scheduleEvent = async (req, res) => {
+    try {
+        let { eventId, eventName, meetLink, date, startTime, endTime, leadName, leadEmail, description, userId, creatorName, creatorEmail, creatorTimezone, companyId, leadTimezone } = req.body
+        await connection.query('BEGIN')
+        let location = ''
+        // for creator ------------------------------------ converting the leads timezone into creators timezone
+        const result = await convertTimeToTargetedTz(startTime, endTime, leadTimezone, date, creatorTimezone);
+
+        //creating obj for calendar during scheduling events
+        let calObjCreator = await getIcalObjectInstance(result.startTargetedTimezoneStringIso, result.endTargetedTimezoneStringIso, eventName, description, location, meetLink, leadName, leadEmail, creatorTimezone)
+
+        let formattedDateString = `${result.startTimeTargetedTimezone} - ${result.endTimeTargetedTimezone}`
+        await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, formattedDateString, creatorTimezone, calObjCreator)
+        //-------------------------------------------------
+        // for lead ---------------------------------------
+        let leadDates = await dateFormattor1(date, startTime, endTime, leadTimezone)
+        let calObjLead = await getIcalObjectInstance(leadDates.startDate, leadDates.endDate, eventName, description, location, meetLink, leadName, leadEmail, leadTimezone)
+
+        let formattedString = `${startTime} - ${endTime} - ${date}`
+
+        await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, formattedString, leadTimezone, calObjLead)
+        // //------------------------------------------------
+        // // storing scheduled event in DB.
+        let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: result.startTargetedTimezoneStringIso, var3: result.startTargetedTimezoneStringIso, var4: result.endTargetedTimezoneStringIso, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10: creatorTimezone })
+        let createSchedule = await connection.query(s1)
+
+        if (createSchedule.rowCount > 0) {
+            await connection.query('COMMIT')
+            res.json({
+                status: 201,
+                success: true,
+                message: "Event scheduled successfully"
+            })
+        } else {
+            await connection.query('ROLLBACK')
+            res.json({
+                status: 400,
+                success: false,
+                message: "Something went wrong"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.scheduledEventsList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rows.length > 0) {
+
+            let s2 = dbScript(db_sql['Q350'], { var1: userId, var2: findAdmin.rows[0].company_id })
+            let scheduleEvents = await connection.query(s2)
+            for (let event of scheduleEvents.rows) {
+                let result = await convertToTimezone(event.start_time, event.end_time, event.timezone)
+                event.start_time = result.localStart;
+                event.end_time = result.localEnd;
+                event.date = new Date(event.date).toLocaleString().split(" ")[0];
+            }
+
+            if (scheduleEvents.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Scheduled events list",
+                    data: scheduleEvents.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Scheduled events list",
+                    data: []
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
