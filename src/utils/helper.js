@@ -615,7 +615,6 @@ module.exports.instantNotificationsList = async (newNotificationRecieved, socket
     }
 }
 
-
 // get perent roles and their user's list from this function 
 module.exports.getParentUserList = async (userData, company_id) => {
     let roleIds = []
@@ -705,54 +704,6 @@ module.exports.getIcalObjectInstance = async (startTime, endTime, eventName, des
     return cal;
 }
 
-module.exports.conevrtDateTime = async(inputDate, inputStartTime, inputEndTime, leadTimezone, creatorTimezone) => {
-     // Create a moment object for the input date and times in the creator's timezone
-     const inputMoment = moment.tz(`${inputDate} ${inputStartTime}`, creatorTimezone);
-     const inputEndTimeMoment = moment.tz(`${inputDate} ${inputEndTime}`, creatorTimezone);
- 
-     // Calculate the duration between the start time and end time in milliseconds
-     const durationMs = inputEndTimeMoment.diff(inputMoment);
- 
-     // Get the ISO strings for the creator start time and end time
-     const creatorStartIso = inputMoment.toISOString();
-     const creatorEndIso = inputEndTimeMoment.toISOString();
- 
-     // Get the formatted string for the creator start time, end time, and date
-     const creatorStartFormatted = inputMoment.format('hh:mm:ss A');
-     const creatorEndFormatted = inputEndTimeMoment.format('hh:mm:ss A');
-     const formattedDateString = inputMoment.format('M/D/YYYY');
- 
-     // Return an object containing the ISO strings and formatted string
-     return {
-         startDate: creatorStartIso,
-         endDate: creatorEndIso,
-         formattedString: `${creatorStartFormatted} - ${creatorEndFormatted} - ${formattedDateString}`
-     };
-}
-
-module.exports.dateFormattor = async (date, startTime, endTime, leadTimezone, creatorTimezone) => {
-    const leadStartTime = new Date(`${date} ${startTime}`).toLocaleString('en-US', { timeZone: leadTimezone });
-    const leadEndTime = new Date(`${date} ${endTime}`).toLocaleString('en-US', { timeZone: leadTimezone });
-
-    const creatorStartTime = new Date(leadStartTime).toLocaleString('en-US', { timeZone: creatorTimezone });
-    const creatorEndTime = new Date(leadEndTime).toLocaleString('en-US', { timeZone: creatorTimezone });
-
-    const formattedStartTime = formatDate(creatorStartTime, creatorTimezone);
-    const formattedEndTime = formatDate(creatorEndTime, creatorTimezone);
-    const formattedDate = moment(creatorStartTime).format('M/D/YYYY');
-
-    const formattedDateString = `${formattedStartTime} - ${formattedEndTime} - ${formattedDate}`;
-
-    return { creatorStartTime, creatorEndTime, formattedDateString };
-}
-
-function formatDate(date, timezone) {
-    const format = 'hh:mm:ss A';
-    const timezoneDate = moment(date).tz(timezone);
-    const formattedDate = timezoneDate.format(format);
-    return formattedDate;
-}
-
 module.exports.dateFormattor1 = async (date, startTime, endTime, timezone) => {
     const startDate = moment.tz(`${date} ${startTime}`, `${timezone}`);
     const endDate = moment.tz(`${date} ${endTime}`, `${timezone}`);
@@ -781,6 +732,36 @@ module.exports.convertToTimezone = async (utcStart, utcEnd, targetTimezone) => {
     return { localStart, localEnd };
 }
 
+module.exports.convertTimeToTargetedTz = async (startTime, endTime, timezone, date, targetedTimezone) => {
+    // Create a Moment object for the start time with the provided timezone and date
+    const startMoment = moment.tz(`${date} ${startTime}`, "YYYY-MM-DD hh:mm a", timezone);
+
+    // Create a Moment object for the end time with the provided timezone and date
+    const endMoment = moment.tz(`${date} ${endTime}`, "YYYY-MM-DD hh:mm a", timezone);
+
+    // Convert the Moment objects to UTC timezone
+    const startUtc = startMoment.utc();
+    const endUtc = endMoment.utc();
+
+    // Convert the UTC start time and end time to the targeted time zone with the specified date
+    const startTargetedTimezone = startUtc.tz(targetedTimezone);
+    const endTargetedTimezone = endUtc.tz(targetedTimezone);
+
+    // Format the output strings
+    const startTargetedTimezoneString = startTargetedTimezone.format("YYYY-MM-DD hh:mm a");
+    const endTargetedTimezoneString = endTargetedTimezone.format("YYYY-MM-DD hh:mm a");
+
+    const startTargetedTimezoneStringIso = startTargetedTimezone.toISOString();
+    const endTargetedTimezoneStringIso = endTargetedTimezone.toISOString();
+
+    // Return the results
+    return {
+        startTimeTargetedTimezone: startTargetedTimezoneString,
+        endTimeTargetedTimezone: endTargetedTimezoneString,
+        startTargetedTimezoneStringIso: startTargetedTimezoneStringIso,
+        endTargetedTimezoneStringIso: endTargetedTimezoneStringIso
+    };
+}
 
 
 

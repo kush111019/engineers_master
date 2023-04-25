@@ -9,14 +9,12 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, dateFormattor, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, conevrtDateTime } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
 const { encrypt, decrypt } = require('../utils/crypto');
 const { daysEnum } = require('../utils/notificationEnum')
-const ical = require('ical-generator');
-const moment = require("moment")
 
 
 //Sales Force auth client
@@ -2042,22 +2040,9 @@ module.exports.eventDetails = async (req, res) => {
             let scheduledEvents = await connection.query(s2)
             if (scheduledEvents.rowCount > 0) {
                 for (let data of scheduledEvents.rows) {
-                    const date = new Date(data.date);
-                    // set hours, minutes, and seconds to 00:00:00
-                    date.setHours(0, 0, 0, 0);
-                    // set the timezone to the local timezone
-                    const localDate = new Date(date.toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }));
-
-                    const sTime = moment(data.start_time, 'hh:mm a');
-                    const formattedSTimeStr = sTime.format('hh:mm:ss');
-
-                    const eTime = moment(data.end_time, 'hh:mm a');
-                    const formattedETimeStr = eTime.format('hh:mm:ss');
-
-                    const { startDate, endDate } = await conevrtDateTime(localDate.toISOString().split('T')[0], formattedSTimeStr, formattedETimeStr, timezone);
                     booked_slots.push({
-                        startTime: startDate,
-                        endTime: endDate
+                        startTime: data.start_time,
+                        endTime: data.end_time
                     })
                 }
             }
@@ -2173,26 +2158,28 @@ module.exports.updateEvent = async (req, res) => {
 module.exports.scheduleEvent = async (req, res) => {
     try {
         let { eventId, eventName, meetLink, date, startTime, endTime, leadName, leadEmail, description, userId, creatorName, creatorEmail, creatorTimezone, companyId, leadTimezone } = req.body
-        console.log(req.body,"req.body");
+        console.log(req.body, "req.body");
         await connection.query('BEGIN')
         let location = ''
-       // for creator
-        let creatorDate = await dateFormattor(date, startTime, endTime, leadTimezone, creatorTimezone)
-        console.log(creatorDate,"creatorDate");
-        let calObjCreator = await getIcalObjectInstance(creatorDate.creatorStartTime, creatorDate.creatorEndTime, eventName, description, location, meetLink, leadName, leadEmail, creatorTimezone)
-        await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, creatorDate.formattedDateString, creatorTimezone, calObjCreator)
+        // for creator ------------------------------------
+        const result = await convertTimeToTargetedTz(startTime, endTime, leadTimezone, date, creatorTimezone);
+        console.log(result, "result");
+        let calObjCreator = await getIcalObjectInstance(result.startTargetedTimezoneStringIso, result.endTargetedTimezoneStringIso, eventName, description, location, meetLink, leadName, leadEmail, creatorTimezone)
 
-        // for lead
+        let formattedDateString = `${result.startTimeTargetedTimezone} - ${result.endTimeTargetedTimezone}`
+        await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, formattedDateString, creatorTimezone, calObjCreator)
+        //-------------------------------------------------
+        // for lead ---------------------------------------
         let leadDates = await dateFormattor1(date, startTime, endTime, leadTimezone)
-        console.log(leadDates,"leadDates");
+        console.log(leadDates, "leadDates");
         let calObjLead = await getIcalObjectInstance(leadDates.startDate, leadDates.endDate, eventName, description, location, meetLink, leadName, leadEmail, leadTimezone)
 
         let formattedString = `${startTime} - ${endTime} - ${date}`
 
         await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, formattedString, leadTimezone, calObjLead)
-
-        // storing scheduled event in DB.
-        let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: creatorDate.creatorStartTime.split(',')[0], var3: creatorDate.creatorStartTime, var4: creatorDate.creatorEndTime, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10: creatorTimezone })
+        // //------------------------------------------------
+        // // storing scheduled event in DB.
+        let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: result.startTargetedTimezoneStringIso, var3: result.startTargetedTimezoneStringIso, var4: result.endTargetedTimezoneStringIso, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10: creatorTimezone })
         let createSchedule = await connection.query(s1)
 
         if (createSchedule.rowCount > 0) {
