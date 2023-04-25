@@ -2215,6 +2215,12 @@ module.exports.scheduledEventsList = async (req, res) => {
 
             let s2 = dbScript(db_sql['Q350'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let scheduleEvents = await connection.query(s2)
+            for(let event of scheduleEvents.rows){
+                let result = await convertToTimezone(event.start_time, event.end_time,event.timezone)
+                event.start_time = result.localStart;
+                event.end_time = result.localEnd;
+                event.date = new Date(event.date).toLocaleString().split(" ")[0];
+            }
 
             if (scheduleEvents.rowCount > 0) {
                 res.json({
