@@ -106,6 +106,8 @@ module.exports.connectorsList = async (req, res) => {
 module.exports.authUrl = async (req, res) => {
     try {
         let { provider } = req.query
+
+        //AuthUrl for linkedin
         if (provider.toLowerCase() == 'linkedin') {
             let scope = ['r_liteprofile', 'r_emailaddress'];
             const authUrl = LinkedIn.auth.authorize(scope, 'state');
@@ -115,6 +117,8 @@ module.exports.authUrl = async (req, res) => {
                 data: authUrl,
             })
         }
+
+        //AuthUrl for hubspot
         if (provider.toLowerCase() == 'hubspot') {
             const scope = ['content']
             const authUrl = hubspotClient.oauth.getAuthorizationUrl(process.env.HUBSPOT_CLIENT_ID, process.env.REDIRECT_URL, scope)
@@ -124,6 +128,7 @@ module.exports.authUrl = async (req, res) => {
                 data: authUrl,
             })
         }
+        //AuthUrl for salesforce
         if (provider.toLowerCase() == 'salesforce') {
             const conn = new Connection({
                 loginUrl: 'https://login.salesforce.com',
@@ -159,6 +164,7 @@ module.exports.callback = async (req, res) => {
         if (findUser.rowCount > 0) {
             if (provider.toLowerCase() == 'linkedin') {
                 await connection.query('BEGIN')
+                //generating access token using authorization code for linkedin
                 LinkedIn.auth.getAccessToken(code, state, async (err, results) => {
                     if (err) {
                         return res.json({
@@ -212,6 +218,7 @@ module.exports.callback = async (req, res) => {
             }
             if (provider.toLowerCase() == 'hubspot') {
                 await connection.query('BEGIN')
+                //generating access token using authorization code for hubspot
                 let token = await hubspotClient.oauth.tokensApi.createToken(
                     'authorization_code',
                     code, // the code you received from the oauth flow
@@ -225,6 +232,7 @@ module.exports.callback = async (req, res) => {
                 let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
                 let getConnectors = await connection.query(s2)
                 if (getConnectors.rowCount == 0) {
+                    //sotring the access token if not already stored
                     let s3 = dbScript(db_sql['Q323'], { var1: userId, var2: findUser.rows[0].company_id, var3: token.accessToken, var4: true, var5: token.refreshToken, var6: expiry })
                     let storeAccessToken = await connection.query(s3)
                     if (storeAccessToken.rowCount > 0) {
@@ -243,6 +251,7 @@ module.exports.callback = async (req, res) => {
                         })
                     }
                 } else {
+                    //updating the access token if already stored
                     let _dt = new Date().toISOString()
                     let s4 = dbScript(db_sql['Q320'], { var1: token.accessToken, var2: true, var3: token.refreshToken, var4: expiry, var5: userId, var6: findUser.rows[0].company_id })
                     let storeAccessToken = await connection.query(s4)
@@ -264,6 +273,8 @@ module.exports.callback = async (req, res) => {
                 }
             }
             if (provider.toLowerCase() == 'salesforce') {
+                //generating access token using authorization code for salesforce
+
                 await connection.query('BEGIN')
                 const authorizationCode = code; // The code received from the redirect URL
                 const data = new FormData();
@@ -287,6 +298,7 @@ module.exports.callback = async (req, res) => {
                         let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
                         let getConnectors = await connection.query(s2)
                         if (getConnectors.rowCount == 0) {
+                            //sotring the access token if not already stored
                             let s3 = dbScript(db_sql['Q321'], { var1: userId, var2: findUser.rows[0].company_id, var3: response.data.access_token, var4: true, var5: response.data.refresh_token, var6: expirationTime })
                             let storeAccessToken = await connection.query(s3)
                             if (storeAccessToken.rowCount > 0) {
@@ -305,6 +317,7 @@ module.exports.callback = async (req, res) => {
                                 })
                             }
                         } else {
+                            //updating the access token if already stored
                             let _dt = new Date().toISOString()
                             let s4 = dbScript(db_sql['Q325'], { var1: response.data.access_token, var2: true, var3: response.data.refresh_token, var4: expirationTime, var5: userId, var6: findUser.rows[0].company_id })
                             let storeAccessToken = await connection.query(s4)
@@ -359,6 +372,7 @@ module.exports.searchLead = async () => {
                     let expiryDate = new Date(accessData.salesforce_expiry)
                     let accessToken = ''
                     if (expiryDate < curDate) {
+                        //if current date is greater than expiry date then we are generating the access token using refresh token
                         const data = qs.stringify({
                             'grant_type': 'refresh_token',
                             'client_id': process.env.SALESFORCE_CONSUMER_KEY,
@@ -388,15 +402,18 @@ module.exports.searchLead = async () => {
                                 console.error('Authorization error:', err.message);
                             });
                     } else {
+                        //if current date is less than expiry date then we are using the already existing access token
                         accessToken = accessData.salesforce_token
                     }
 
+                    //using access token to fetch user data from salesforce
                     axios.get('https://login.salesforce.com/services/oauth2/userinfo', {
                         headers: {
                             Authorization: `Bearer ${accessToken}`
                         }
                     })
                         .then(response => {
+                            //searching lead with given below query
                             const apiUrl = `${response.data.urls.custom_domain}` + `${process.env.SALESFORCE_API_VERSION}`;
                             const query = 'SELECT uniqueId__c,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
                             axios({
@@ -408,6 +425,7 @@ module.exports.searchLead = async () => {
                             })
                                 .then(async (response) => {
                                     if (response.data.records.length > 0) {
+                                        //finding lead stored in db if not already present then inserting very first time
                                         let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
                                         let findSyncLead = await connection.query(s1)
                                         //Initial insertion
@@ -425,6 +443,7 @@ module.exports.searchLead = async () => {
                                                 let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
                                             }
                                         } else {
+                                            //if already exists then updating it
                                             for (let data of response.data.records) {
                                                 if (new Date(accessData.salesforce_last_sync) < new Date(data.LastModifiedDate)) {
                                                     let titleId = await titleFn(data.Title, accessData.company_id)
@@ -484,6 +503,7 @@ module.exports.searchLead = async () => {
                     console.log(error)
                 }
             }
+            //searching leads for hubspot
             if (accessData.hubspot_status) {
                 await connection.query('BEGIN')
                 try {
@@ -491,6 +511,7 @@ module.exports.searchLead = async () => {
                     let expiryDate = new Date(accessData.hubspot_expiry)
                     let accessToken = ''
                     if (expiryDate < curDate) {
+                        //if current date is greater than expiry date then we are generating the access token using refresh token
                         const hubspotClient = new hubspot.Client({ developerApiKey: process.env.HUBSPOT_API_KEY })
                         let token = await hubspotClient.oauth.tokensApi.createToken(
                             'refresh_token',
@@ -509,6 +530,7 @@ module.exports.searchLead = async () => {
                         let storeAccessToken = await connection.query(s4)
 
                     } else {
+                        //if current date is less than expiry date then we are using the already existing access token
                         accessToken = accessData.hubspot_token
                     }
                     const hubspotClient = new hubspot.Client({ "accessToken": accessToken });
@@ -521,6 +543,7 @@ module.exports.searchLead = async () => {
                     const propertiesWithHistory = undefined;
                     const associations = undefined;
                     const archived = false;
+                    //getting apiResponse using above properties that we want
                     const apiResponse = await hubspotClient.crm.contacts.basicApi.getPage(limit, after, properties, propertiesWithHistory, associations, archived);
                     let leadsData = apiResponse.results
                     if (leadsData.length > 0) {
@@ -545,6 +568,7 @@ module.exports.searchLead = async () => {
                                 let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, '')
                             }
                         } else {
+                            //updating if alreaddy exists
                             for (let data of leadsData) {
                                 if (new Date(accessData.hubspot_last_sync) < new Date(data.updatedAt)) {
 
@@ -609,7 +633,7 @@ module.exports.searchLead = async () => {
         }
     }
 }
-
+//to Re Synchronization the lead Data 
 module.exports.leadReSync = async (req, res) => {
     let userId = req.user.id
     const { provider } = req.query;
@@ -626,7 +650,7 @@ module.exports.leadReSync = async (req, res) => {
                     let expiryDate = new Date(accessData.salesforce_expiry)
                     let accessToken = ''
                     if (expiryDate < curDate) {
-
+                        ////if current date is greater than expiry date then we are generating the access token using refresh token
                         const data = qs.stringify({
                             'grant_type': 'refresh_token',
                             'client_id': process.env.SALESFORCE_CONSUMER_KEY,
@@ -656,6 +680,7 @@ module.exports.leadReSync = async (req, res) => {
                                 console.error('Authorization error:', err.message);
                             });
                     } else {
+                        //if current date is less than expiry date then we are using the already existing access token
                         accessToken = accessData.salesforce_token
                     }
                     axios.get('https://login.salesforce.com/services/oauth2/userinfo', {
@@ -663,6 +688,7 @@ module.exports.leadReSync = async (req, res) => {
                             Authorization: `Bearer ${accessToken}`
                         }
                     })
+                        //re syncing the leads data using below query parameters
                         .then(response => {
                             const apiUrl = `${response.data.urls.custom_domain}` + `${process.env.SALESFORCE_API_VERSION}`;
                             const query = 'SELECT uniqueId__c,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
@@ -694,6 +720,7 @@ module.exports.leadReSync = async (req, res) => {
                                         } else {
                                             for (let data of response.data.records) {
                                                 if (new Date(accessData.salesforce_last_sync) < new Date(data.LastModifiedDate)) {
+                                                    //checing if the last modification date is greater then last resync date if true then updating data
                                                     let titleId = await titleFn(data.Title, accessData.company_id)
 
                                                     let sourceId = await sourceFn(data.LeadSource, accessData.company_id)
@@ -776,6 +803,7 @@ module.exports.leadReSync = async (req, res) => {
                     })
                 }
             }
+            //for hubspot 
             if (provider.toLowerCase() == 'hubspot' && accessData.hubspot_status) {
                 await connection.query('BEGIN')
                 try {
@@ -783,6 +811,7 @@ module.exports.leadReSync = async (req, res) => {
                     let expiryDate = new Date(accessData.hubspot_expiry)
                     let accessToken = ''
                     if (expiryDate < curDate) {
+                        //if current date is greater than expiry date then we are generating the access token using refresh token
                         const hubspotClient = new hubspot.Client({ developerApiKey: process.env.HUBSPOT_API_KEY })
                         let token = await hubspotClient.oauth.tokensApi.createToken(
                             'refresh_token',
@@ -800,6 +829,7 @@ module.exports.leadReSync = async (req, res) => {
                         let s4 = dbScript(db_sql['Q320'], { var1: token.accessToken, var2: true, var3: token.refreshToken, var4: expiry, var5: accessData.user_id, var6: accessData.company_id })
                         let storeAccessToken = await connection.query(s4)
                     } else {
+                        //if current date is less than expiry date then we are using the already existing access token
                         accessToken = accessData.hubspot_token
                     }
                     const hubspotClient = new hubspot.Client({ "accessToken": accessToken });
@@ -812,6 +842,7 @@ module.exports.leadReSync = async (req, res) => {
                     const propertiesWithHistory = undefined;
                     const associations = undefined;
                     const archived = false;
+                    //getting api response with the help of query parameters provided in peoperties
                     const apiResponse = await hubspotClient.crm.contacts.basicApi.getPage(limit, after, properties, propertiesWithHistory, associations, archived);
                     let leadsData = apiResponse.results
                     if (leadsData.length > 0) {
@@ -834,6 +865,7 @@ module.exports.leadReSync = async (req, res) => {
                                 let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, '')
                             }
                         } else {
+                            //if first time is inserted then updating it
                             for (let data of leadsData) {
                                 if (new Date(accessData.hubspot_last_sync) < new Date(data.updatedAt)) {
 
@@ -909,6 +941,7 @@ module.exports.leadReSync = async (req, res) => {
                     })
                 }
             }
+            //for linked in
             if (provider.toLowerCase() == 'linkedin' && accessData.linked_in_status) {
                 res.json({
                     status: 200,
@@ -936,10 +969,13 @@ module.exports.proLeadsList = async (req, res) => {
         if (findUser.rowCount > 0) {
             let type = 'lead'
             let leadList
+            //getting the lead list from the customer_comany_employees
             if (provider.toLowerCase() == 'all') {
+                //for all providers
                 let s2 = dbScript(db_sql['Q326'], { var1: findUser.rows[0].company_id, var2: userId, var3: type })
                 leadList = await connection.query(s2)
             } else {
+                //for perticular provider
                 let s3 = dbScript(db_sql['Q327'], { var1: findUser.rows[0].company_id, var2: userId, var3: type, var4: provider.toLowerCase() })
                 leadList = await connection.query(s3)
             }
@@ -1099,8 +1135,10 @@ module.exports.salesListForPro = async (req, res) => {
                     if (salesData.sales_users) {
                         salesData.sales_users.map(value => {
                             if (value.user_type == process.env.CAPTAIN) {
+                                //calculating commission for captain
                                 value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
                             } else {
+                                //calculating commission for supportor
                                 value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
                             }
                         })
@@ -1142,6 +1180,7 @@ module.exports.recognizationDetailsPro = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
+            //fetching sales data by sales_id from sales table
             let s3 = dbScript(db_sql['Q249'], { var1: findUser.rows[0].company_id, var2: salesId })
             let salesList = await connection.query(s3)
             let salesObj = {}
@@ -1189,7 +1228,7 @@ module.exports.recognizationDetailsPro = async (req, res) => {
                 } else {
                     salesObj.allocatedTransaction = {}
                 }
-
+                //fetching recognized revenue using sales_id from recoginez_revenue table
                 let s5 = dbScript(db_sql['Q231'], { var1: salesData.id })
                 let recognizedRevenue = await connection.query(s5)
                 if (recognizedRevenue.rowCount > 0) {
@@ -1240,6 +1279,7 @@ module.exports.recognizationDetailsPro = async (req, res) => {
     }
 }
 
+//creating template for sending mail to lead
 module.exports.createProEmailTemplate = async (req, res) => {
     try {
         let userId = req.user.id
@@ -1284,6 +1324,7 @@ module.exports.createProEmailTemplate = async (req, res) => {
     }
 }
 
+//existing templates list created by user
 module.exports.emailTemplateList = async (req, res) => {
     try {
         let userId = req.user.id
@@ -1322,6 +1363,7 @@ module.exports.emailTemplateList = async (req, res) => {
     }
 }
 
+//updating the email template
 module.exports.updateEmailTemplate = async (req, res) => {
     try {
         let userId = req.user.id
@@ -1367,6 +1409,7 @@ module.exports.updateEmailTemplate = async (req, res) => {
 
 }
 
+//deleting the email template
 module.exports.deleteEmailTemplate = async (req, res) => {
     try {
         userId = req.user.id
@@ -1412,6 +1455,7 @@ module.exports.deleteEmailTemplate = async (req, res) => {
 
 }
 
+//sending email to lead
 module.exports.sendEmailToLead = async (req, res) => {
     try {
         let userId = req.user.id
@@ -1430,8 +1474,9 @@ module.exports.sendEmailToLead = async (req, res) => {
                 credentialObj.smtpHost = findCreds.rows[0].smtp_host
                 credentialObj.smtpPort = findCreds.rows[0].smtp_port
 
+                //replacing the content of the template from the description when sending the mail to lead
                 const result = template.replace('{content}', description);
-                
+
                 await leadEmail2(leadEmail, result, templateName, credentialObj);
                 res.json({
                     status: 200,
@@ -1463,6 +1508,7 @@ module.exports.sendEmailToLead = async (req, res) => {
     }
 }
 
+//adding user's SMTP credentials in order to send mail
 module.exports.addSmtpCreds = async (req, res) => {
     try {
         let userId = req.user.id
@@ -1471,6 +1517,7 @@ module.exports.addSmtpCreds = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0) {
+            //sending mail through the provided smtp creds in order to check whether creds are correct
             let transporter = nodemailer.createTransport({
                 host: smtpHost,
                 port: Number(smtpPort),
@@ -1566,6 +1613,7 @@ module.exports.addSmtpCreds = async (req, res) => {
     }
 }
 
+//providing the credentials list
 module.exports.credentialList = async (req, res) => {
     try {
         let userId = req.user.id
@@ -1621,6 +1669,7 @@ module.exports.credentialList = async (req, res) => {
     }
 }
 
+//adding user's availability for events
 module.exports.addAvailability = async (req, res) => {
     try {
         let {
@@ -1681,6 +1730,7 @@ module.exports.addAvailability = async (req, res) => {
     }
 }
 
+//availability list of user that he has created
 module.exports.availableTimeList = async (req, res) => {
     try {
         let userId = req.user.id
@@ -1721,6 +1771,7 @@ module.exports.availableTimeList = async (req, res) => {
     }
 }
 
+//showing details of perticular availability through availabilityId
 module.exports.availabilityDetails = async (req, res) => {
     try {
         let userId = req.user.id
@@ -1731,9 +1782,11 @@ module.exports.availabilityDetails = async (req, res) => {
             let s2 = dbScript(db_sql['Q351'], { var1: availabilityId })
             let availability = await connection.query(s2)
             if (availability.rowCount > 0) {
+                //this function is coverting one form of array to different form of array according to need
                 let finalArray = await tranformAvailabilityArray(availability.rows)
                 for (let item of finalArray[0].time_slots) {
                     for (let slot of item.time_slot) {
+                        // converting utc time to local time
                         let { localStart, localEnd } = await convertToTimezone(slot.start_time, slot.end_time, availability.rows[0].timezone)
 
                         slot.start_time = localStart
@@ -1769,6 +1822,7 @@ module.exports.availabilityDetails = async (req, res) => {
     }
 }
 
+//updating user's availability for events
 module.exports.updateAvailability = async (req, res) => {
     try {
         let {
@@ -1792,6 +1846,7 @@ module.exports.updateAvailability = async (req, res) => {
                     let dayName = daysEnum[ts.day]
                     if (ts.checked) {
                         for (let subTs of ts.timeSlot) {
+                            // converting local time to utc time
                             const { utcStart, utcEnd } = await convertToLocal(subTs.startTime, subTs.endTime, timezone);
                             let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: utcStart, var3: utcEnd, var4: availabilityId, var5: findAdmin.rows[0].company_id, var6: ts.checked })
                             let addTimeSlot = await connection.query(s3)
@@ -1832,6 +1887,7 @@ module.exports.updateAvailability = async (req, res) => {
     }
 }
 
+//deleting user's availability using availabilityId
 module.exports.deleteAvalability = async (req, res) => {
     try {
         let { availabilityId } = req.query
@@ -1886,6 +1942,7 @@ module.exports.deleteAvalability = async (req, res) => {
     }
 }
 
+//deleting available time slots 
 module.exports.deleteTimeSlot = async (req, res) => {
     try {
         let { slotId } = req.query
@@ -1929,6 +1986,7 @@ module.exports.deleteTimeSlot = async (req, res) => {
     }
 }
 
+//creating event for scheduling meeting
 module.exports.createEvent = async (req, res) => {
     try {
         let userId = req.user.id
@@ -1984,6 +2042,7 @@ module.exports.createEvent = async (req, res) => {
     }
 }
 
+//all event lists
 module.exports.eventsList = async (req, res) => {
     try {
         let userId = req.user.id
@@ -2022,21 +2081,25 @@ module.exports.eventsList = async (req, res) => {
     }
 }
 
+//event details using eventId
 module.exports.eventDetails = async (req, res) => {
     try {
         let { eventId, timezone } = req.query
         let s1 = dbScript(db_sql['Q348'], { var1: eventId })
         let showEventDetails = await connection.query(s1)
         if (showEventDetails.rowCount > 0) {
-            let finalArray = await tranformAvailabilityArray(showEventDetails.rows[0].availability_time_slots)
-            for (let item of finalArray[0].time_slots) {
-                for (let slot of item.time_slot) {
-                    let { localStart, localEnd } = await convertToTimezone(slot.start_time, slot.end_time, timezone)
-                    slot.start_time = localStart
-                    slot.end_time = localEnd
+            if(showEventDetails.rows[0].availability_time_slots.length > 0){
+                let finalArray = await tranformAvailabilityArray(showEventDetails.rows[0].availability_time_slots)
+                for (let item of finalArray[0].time_slots) {
+                    for (let slot of item.time_slot) {
+                        let { localStart, localEnd } = await convertToTimezone(slot.start_time, slot.end_time, timezone)
+                        slot.start_time = localStart
+                        slot.end_time = localEnd
+                    }
                 }
+                showEventDetails.rows[0].availability_time_slots = finalArray[0]
             }
-            showEventDetails.rows[0].availability_time_slots = finalArray[0]
+            
             let booked_slots = [];
             let s2 = dbScript(db_sql['Q362'], { var1: eventId })
             let scheduledEvents = await connection.query(s2)
@@ -2066,11 +2129,12 @@ module.exports.eventDetails = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.stack,
+            message: error.message,
         })
     }
 }
 
+//deleting events using eventId
 module.exports.deleteEvent = async (req, res) => {
     try {
         let { eventId } = req.query
@@ -2114,6 +2178,7 @@ module.exports.deleteEvent = async (req, res) => {
     }
 }
 
+//updating events using eventId
 module.exports.updateEvent = async (req, res) => {
     try {
         let { eventId, eventName, meetLink, description, duration, availabilityId } = req.body
@@ -2157,14 +2222,16 @@ module.exports.updateEvent = async (req, res) => {
     }
 }
 
+//scheduling event - Lead
 module.exports.scheduleEvent = async (req, res) => {
     try {
         let { eventId, eventName, meetLink, date, startTime, endTime, leadName, leadEmail, description, userId, creatorName, creatorEmail, creatorTimezone, companyId, leadTimezone } = req.body
         await connection.query('BEGIN')
         let location = ''
-        // for creator ------------------------------------
+        // for creator ------------------------------------ converting the leads timezone into creators timezone
         const result = await convertTimeToTargetedTz(startTime, endTime, leadTimezone, date, creatorTimezone);
-        console.log(result, "result");
+
+        //creating obj for calendar during scheduling events
         let calObjCreator = await getIcalObjectInstance(result.startTargetedTimezoneStringIso, result.endTargetedTimezoneStringIso, eventName, description, location, meetLink, leadName, leadEmail, creatorTimezone)
 
         let formattedDateString = `${result.startTimeTargetedTimezone} - ${result.endTimeTargetedTimezone}`
@@ -2172,7 +2239,6 @@ module.exports.scheduleEvent = async (req, res) => {
         //-------------------------------------------------
         // for lead ---------------------------------------
         let leadDates = await dateFormattor1(date, startTime, endTime, leadTimezone)
-        console.log(leadDates, "leadDates");
         let calObjLead = await getIcalObjectInstance(leadDates.startDate, leadDates.endDate, eventName, description, location, meetLink, leadName, leadEmail, leadTimezone)
 
         let formattedString = `${startTime} - ${endTime} - ${date}`
@@ -2216,8 +2282,8 @@ module.exports.scheduledEventsList = async (req, res) => {
 
             let s2 = dbScript(db_sql['Q350'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let scheduleEvents = await connection.query(s2)
-            for(let event of scheduleEvents.rows){
-                let result = await convertToTimezone(event.start_time, event.end_time,event.timezone)
+            for (let event of scheduleEvents.rows) {
+                let result = await convertToTimezone(event.start_time, event.end_time, event.timezone)
                 event.start_time = result.localStart;
                 event.end_time = result.localEnd;
                 event.date = new Date(event.date).toLocaleString().split(" ")[0];
@@ -2253,5 +2319,4 @@ module.exports.scheduledEventsList = async (req, res) => {
         })
     }
 }
-
 
