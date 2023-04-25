@@ -2991,7 +2991,7 @@ const db_sql = {
   "Q349": `INSERT INTO pro_scheduled_events(event_id, date, start_time, end_time, lead_name, lead_email, description, user_id, company_id, timezone )
             VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}') RETURNING *`,
   "Q350": `SELECT se.id, se.event_id,ue.event_name, se.date, se.start_time, se.end_time, se.lead_name, 
-            se.lead_email, se.description as lead_description, se.timezone,
+            se.lead_email, se.description as lead_description, se.timezone, se.created_at,
             se.user_id, u.full_name AS creator_name, u.email_address AS creator_email,
             ue.meet_link, ue.description as creator_description, ue.duration
             FROM pro_scheduled_events AS se
