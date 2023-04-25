@@ -1415,7 +1415,7 @@ module.exports.deleteEmailTemplate = async (req, res) => {
 module.exports.sendEmailToLead = async (req, res) => {
     try {
         let userId = req.user.id
-        let { template, leadEmail, templateName } = req.body
+        let { template, leadEmail, templateName, description } = req.body
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0) {
@@ -1430,7 +1430,9 @@ module.exports.sendEmailToLead = async (req, res) => {
                 credentialObj.smtpHost = findCreds.rows[0].smtp_host
                 credentialObj.smtpPort = findCreds.rows[0].smtp_port
 
-                await leadEmail2(leadEmail, template, templateName, credentialObj);
+                const result = template.replace('{content}', description);
+                
+                await leadEmail2(leadEmail, result, templateName, credentialObj);
                 res.json({
                     status: 200,
                     success: true,
