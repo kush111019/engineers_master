@@ -644,6 +644,7 @@ module.exports.getParentUserList = async (userData, company_id) => {
     return returnData
 }
 
+//this function is coverting one form of array to different form of array according to need
 module.exports.tranformAvailabilityArray = async (arr) => {
 
     const outputArray = arr.map(obj => {
@@ -686,6 +687,7 @@ module.exports.getIcalObjectInstance = async (startTime, endTime, eventName, des
     const cal = ical({
         domain: 'hirisetech.com',
         name: eventName,
+        timezone : timezone,
     });
 
     cal.createEvent({
@@ -712,6 +714,7 @@ module.exports.dateFormattor1 = async (date, startTime, endTime, timezone) => {
     return { startDate: localStartDate.format(), endDate: localEndDate.format() };
 }
 
+// converting local time to utc time
 module.exports.convertToLocal = async (starttime, endtime, timezone) => {
     const format = 'h:mm a';
     const dt = DateTime.fromFormat(starttime, format, { zone: timezone });
@@ -723,6 +726,7 @@ module.exports.convertToLocal = async (starttime, endtime, timezone) => {
     return { utcStart, utcEnd };
 }
 
+// converting utc time to local time
 module.exports.convertToTimezone = async (utcStart, utcEnd, targetTimezone) => {
     const dtStart = DateTime.fromISO(utcStart, { zone: 'utc' }).setZone(targetTimezone);
     const dtEnd = DateTime.fromISO(utcEnd, { zone: 'utc' }).setZone(targetTimezone);
