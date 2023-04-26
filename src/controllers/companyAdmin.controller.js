@@ -11,7 +11,6 @@ const { mysql_real_escape_string, verifyTokenFn } = require('../utils/helper')
 
 
 let createAdmin = async (bodyData, cId, res) => {
-    //let id = uuid.v4()
     let {
         name,
         emailAddress,
@@ -27,7 +26,7 @@ let createAdmin = async (bodyData, cId, res) => {
     let findUser = await connection.query(s3)
     if (findUser.rowCount == 0) {
        
-        //let roleId = uuid.v4()
+        //creating role
         let s4 = dbScript(db_sql['Q11'], { var1: cId })
         let createRole = await connection.query(s4)
 
@@ -52,7 +51,6 @@ let createAdmin = async (bodyData, cId, res) => {
                 let updateuser = await connection.query(s6)  
             }
 
-            //let configId = uuid.v4()
             let s10 = dbScript(db_sql['Q76'], { var1: "$", var2: "us", var3: "MM-DD-YYYY", var4: saveuser.rows[0].id, var5: cId ,var6: 3,var7: 2})
             let addConfig = await connection.query(s10)
 
@@ -61,7 +59,6 @@ let createAdmin = async (bodyData, cId, res) => {
             let moduleArr = []
             for ( let data of findModules.rows) {
                 moduleArr.push(data.id)
-                //let perId = uuid.v4()
                 let s7 = dbScript(db_sql['Q20'], { var1: createRole.rows[0].id, var2: data.id, var3: true, var4: true, var5: true, var6: true, var7: true, var8: saveuser.rows[0].id })
                 var addPermission = await connection.query(s7)
             }
@@ -137,6 +134,7 @@ let createAdmin = async (bodyData, cId, res) => {
 
 }
 
+//uploading company logo
 module.exports.uploadLogo = async (req, res) => {
     try {
         let file = req.file
@@ -158,6 +156,7 @@ module.exports.uploadLogo = async (req, res) => {
     }
 }
 
+//signup for main_admin and creating company
 module.exports.signUp = async (req, res) => {
     try {
         let {
@@ -184,6 +183,7 @@ module.exports.signUp = async (req, res) => {
                 let saveCompanyDetails = await connection.query(s3)
 
                 if (saveCompanyDetails.rowCount > 0) {
+                    //calling create admin api
                     await createAdmin(req.body, saveCompanyDetails.rows[0].id, res)
                 } else {
                     await connection.query('ROLLBACK')
@@ -221,6 +221,7 @@ module.exports.signUp = async (req, res) => {
     }
 }
 
+//setting password for user when admin has created user
 module.exports.setPasswordForLogin = async (req, res) => {
     try {
         let {
@@ -279,6 +280,7 @@ module.exports.setPasswordForLogin = async (req, res) => {
     }
 }
 
+//verifying user
 module.exports.verifyUser = async (req, res) => {
     try {
         let user = await verifyTokenFn(req)
@@ -332,6 +334,7 @@ module.exports.verifyUser = async (req, res) => {
     }
 }
 
+//login user
 module.exports.login = async (req, res) => {
     try {
         let { emailAddress, password } = req.body;

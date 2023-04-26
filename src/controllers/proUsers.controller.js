@@ -885,6 +885,7 @@ module.exports.leadReSync = async (req, res) => {
                                         let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
                                     }
                                     else {
+                                        //Hubspot function for inserting lead data
                                         let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, '')
                                     }
                                 } else {
@@ -2234,9 +2235,10 @@ module.exports.scheduleEvent = async (req, res) => {
         //creating obj for calendar during scheduling events
         let calObjCreator = await getIcalObjectInstance(result.startTargetedTimezoneStringIso, result.endTargetedTimezoneStringIso, eventName, description, location, meetLink, leadName, leadEmail, creatorTimezone)
 
+        //for sending mail to creator
         let formattedDateString = `${result.startTimeTargetedTimezone} - ${result.endTimeTargetedTimezone}`
         await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, formattedDateString, creatorTimezone, calObjCreator)
-        //-------------------------------------------------
+    
         // for lead ---------------------------------------
         let leadDates = await dateFormattor1(date, startTime, endTime, leadTimezone)
         let calObjLead = await getIcalObjectInstance(leadDates.startDate, leadDates.endDate, eventName, description, location, meetLink, leadName, leadEmail, leadTimezone)
@@ -2244,8 +2246,8 @@ module.exports.scheduleEvent = async (req, res) => {
         let formattedString = `${startTime} - ${endTime} - ${date}`
 
         await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, formattedString, leadTimezone, calObjLead)
-        // //------------------------------------------------
-        // // storing scheduled event in DB.
+       
+        //storing scheduled event in DB.
         let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: result.startTargetedTimezoneStringIso, var3: result.startTargetedTimezoneStringIso, var4: result.endTargetedTimezoneStringIso, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10: creatorTimezone })
         let createSchedule = await connection.query(s1)
 
@@ -2273,6 +2275,7 @@ module.exports.scheduleEvent = async (req, res) => {
     }
 }
 
+//sheduled event list scheduled by leads
 module.exports.scheduledEventsList = async (req, res) => {
     try {
         let userId = req.user.id
@@ -2283,6 +2286,7 @@ module.exports.scheduledEventsList = async (req, res) => {
             let s2 = dbScript(db_sql['Q350'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let scheduleEvents = await connection.query(s2)
             for (let event of scheduleEvents.rows) {
+                // converting utc time to local time
                 let result = await convertToTimezone(event.start_time, event.end_time, event.timezone)
                 event.start_time = result.localStart;
                 event.end_time = result.localEnd;
