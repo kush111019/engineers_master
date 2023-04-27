@@ -2427,7 +2427,7 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
     
                     let updatedSalesDetails = salesDetails.rows.map((sale, index) => ({
                         ...sale,
-                        ...notesCount.rows[index]
+                        ...(notesCount.rows[index] ? { notes_count: notesCount.rows[index] } : { notes_count: 0 })
                     }));
 
                     let count = 0
@@ -2452,7 +2452,7 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                         avgNotesCount: avgNotesCount,
                         maxNotesCount: maxNotesCount,
                         minNotesCount: minNotesCount,
-                        sciiCount: sciiCount
+                        scii: sciiCount
                     }
                 }else{
                     captainWiseSaleObj = {
