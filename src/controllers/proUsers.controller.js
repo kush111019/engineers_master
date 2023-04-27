@@ -2426,6 +2426,18 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                         ...sale,
                         ...notesCount.rows[index]
                     }));
+
+                    let count = 0
+                    let notesCount1 = []
+                    updatedSalesDetails.map((detail) => {
+                        count += Number(detail.notes_count)
+                        notesCount1.push(Number(detail.notes_count))
+                    })
+                    
+                    let avgNotesCount = count / salesDetails.rowCount
+                    let maxNotesCount = Math.max(...notesCount1);
+                    let minNotesCount = Math.min(...notesCount1);
+
                     captainWiseSaleObj = {
                         salesDetails: updatedSalesDetails,
                         avgRecognizedRevenue: avgRecognizedRevenue,
@@ -2434,7 +2446,10 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                         avgClosingTime: avgClosingTime,
                         maxClosingTime: maxClosingTime,
                         minClosingTime: minClosingTime,
-                        sciiCount: (sciiCount) ? sciiCount : 1
+                        avgNotesCount: avgNotesCount,
+                        maxNotesCount: maxNotesCount,
+                        minNotesCount: minNotesCount,
+                        sciiCount: sciiCount
                     }
                 }else{
                     captainWiseSaleObj = {

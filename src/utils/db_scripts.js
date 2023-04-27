@@ -3058,12 +3058,12 @@ const db_sql = {
               s.created_at,
               s.closed_at,
               SUM(r.recognized_amount :: decimal) as recognized_amount,
-              TRUNC(EXTRACT(DAY FROM (s.closed_at - s.created_at)) / (365.25/12), 2) AS duration_in_months
+              EXTRACT(DAY FROM (s.closed_at - s.created_at)) / (365.25/12) AS duration_in_months
             FROM
               sales s
-              JOIN sales_users su ON s.id = su.sales_id 
-              JOIN users u ON su.user_id = u.id
-              JOIN customer_companies c ON s.customer_id = c.id
+              LEFT JOIN sales_users su ON s.id = su.sales_id 
+              LEFT JOIN users u ON su.user_id = u.id
+              LEFT JOIN customer_companies c ON s.customer_id = c.id
               LEFT JOIN recognized_revenue r ON s.id = r.sales_id
             WHERE
               su.user_id = '{var1}' 
