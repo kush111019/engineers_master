@@ -2433,7 +2433,7 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                         count += Number(detail.notes_count)
                         notesCount1.push(Number(detail.notes_count))
                     })
-                    
+
                     let avgNotesCount = count / salesDetails.rowCount
                     let maxNotesCount = Math.max(...notesCount1);
                     let minNotesCount = Math.min(...notesCount1);
@@ -2460,6 +2460,9 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                         avgClosingTime: 0,
                         maxClosingTime: 0,
                         minClosingTime: 0,
+                        avgNotesCount : 0,
+                        maxNotesCount : 0,
+                        minNotesCount : 0,
                         sciiCount: 0
                     }
                 }
