@@ -2414,7 +2414,7 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                     }
                     let sciiCount = 0;
                     if (aboveCount == 0 && belowCount == 0) {
-                        sciiCount = "NA"
+                        sciiCount = 0
                     } else if (aboveCount == 0 || belowCount == 0) {
                         sciiCount = 1
                     } else {
@@ -2535,7 +2535,7 @@ module.exports.sciiSales = async (req, res) => {
                         }
                         let sciiCount = 0;
                         if (aboveCount == 0 && belowCount == 0) {
-                            sciiCount = "NA"
+                            sciiCount = 0
                         } else if (aboveCount == 0 || belowCount == 0) {
                             sciiCount = 1
                         } else {
