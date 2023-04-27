@@ -3038,6 +3038,61 @@ const db_sql = {
           LEFT JOIN users AS u ON u.id = se.user_id
           LEFT JOIN pro_user_events AS ue ON ue.id = se.event_id
           WHERE se.event_id = '{var1}' AND se.deleted_at IS NULL`,
+  "Q363":`SELECT  
+            su.user_id, 
+            u.full_name,
+            array_agg(DISTINCT su.sales_id) AS sales_ids
+          FROM 
+            sales_users su
+          JOIN 
+            users u ON su.user_id = u.id
+          WHERE 
+            su.user_type = 'captain' AND
+            su.company_id = '{var1}' AND su.deleted_at IS NULL
+          GROUP BY 
+            su.user_id,
+            u.full_name;`, 
+  "Q364" : `SELECT
+              s.id,
+              c.customer_name,
+              s.created_at,
+              s.closed_at,
+              r.recognized_amount,
+              ROUND(EXTRACT(DAY FROM (s.closed_at - s.created_at)) / (365.25/12), 2) AS duration_in_months
+            FROM
+              sales s
+              JOIN sales_users su ON s.id = su.sales_id 
+              JOIN users u ON su.user_id = u.id
+              JOIN customer_companies c ON s.customer_id = c.id
+              LEFT JOIN recognized_revenue r ON s.id = r.sales_id
+            WHERE
+              su.user_id = '{var1}' 
+              AND s.id IN ({var2})
+              AND s.closed_at IS NOT NULL
+            GROUP BY
+              s.id,
+              c.customer_name,
+              s.created_at,
+              s.closed_at,
+              r.recognized_amount
+            ORDER BY
+              s.id ASC`,  
+  "Q365":`		select COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) AND user_id = '{var1}'`,
+  "Q366":`SELECT  
+            su.user_id, 
+            u.full_name,
+            array_agg(DISTINCT su.sales_id) AS sales_ids
+          FROM 
+            sales_users su
+          JOIN 
+            users u ON su.user_id = u.id
+          WHERE 
+            su.user_type = 'captain' AND
+            su.user_id = '{var1}' AND su.deleted_at IS NULL
+          GROUP BY 
+            su.user_id,
+            u.full_name;`,    
+
 
 }
 
