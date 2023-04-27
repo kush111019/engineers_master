@@ -2379,7 +2379,7 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                 salesIds.rows.map((data) => {
                     console.log(data,"data");
                     if(data.sales_ids.length > 0){
-                        salesIdArr.push("'" + data.sales_ids.toString() + "'")
+                        salesIdArr.push("'" + data.sales_ids.join("','") + "'")
                     }
                 })
                 console.log(salesIdArr,"salesIdArr");
