@@ -2089,7 +2089,7 @@ module.exports.eventDetails = async (req, res) => {
         let s1 = dbScript(db_sql['Q348'], { var1: eventId })
         let showEventDetails = await connection.query(s1)
         if (showEventDetails.rowCount > 0) {
-            if(showEventDetails.rows[0].availability_time_slots.length > 0){
+            if (showEventDetails.rows[0].availability_time_slots.length > 0) {
                 let finalArray = await tranformAvailabilityArray(showEventDetails.rows[0].availability_time_slots)
                 for (let item of finalArray[0].time_slots) {
                     for (let slot of item.time_slot) {
@@ -2100,7 +2100,7 @@ module.exports.eventDetails = async (req, res) => {
                 }
                 showEventDetails.rows[0].availability_time_slots = finalArray[0]
             }
-            
+
             let booked_slots = [];
             let s2 = dbScript(db_sql['Q362'], { var1: eventId })
             let scheduledEvents = await connection.query(s2)
@@ -2238,7 +2238,7 @@ module.exports.scheduleEvent = async (req, res) => {
         //for sending mail to creator
         let formattedDateString = `${result.startTimeTargetedTimezone} - ${result.endTimeTargetedTimezone}`
         await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, formattedDateString, creatorTimezone, calObjCreator)
-    
+
         // for lead ---------------------------------------
         let leadDates = await dateFormattor1(date, startTime, endTime, leadTimezone)
         let calObjLead = await getIcalObjectInstance(leadDates.startDate, leadDates.endDate, eventName, description, location, meetLink, leadName, leadEmail, leadTimezone)
@@ -2246,7 +2246,7 @@ module.exports.scheduleEvent = async (req, res) => {
         let formattedString = `${startTime} - ${endTime} - ${date}`
 
         await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, formattedString, leadTimezone, calObjLead)
-       
+
         //storing scheduled event in DB.
         let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: result.startTargetedTimezoneStringIso, var3: result.startTargetedTimezoneStringIso, var4: result.endTargetedTimezoneStringIso, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10: creatorTimezone })
         let createSchedule = await connection.query(s1)
@@ -2281,7 +2281,7 @@ module.exports.scheduledEventsList = async (req, res) => {
         let userId = req.user.id
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rowCount > 0) {
 
             let s2 = dbScript(db_sql['Q350'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let scheduleEvents = await connection.query(s2)
@@ -2324,3 +2324,138 @@ module.exports.scheduledEventsList = async (req, res) => {
     }
 }
 
+//sales analysis
+module.exports.salesCaptainList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q363'], { var1: findAdmin.rows[0].company_id })
+            let salesCatains = await connection.query(s2)
+            if (salesCatains.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Sales catain list",
+                    data: salesCatains.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Sales catain list",
+                    data: []
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.stack,
+        })
+    }
+}
+
+module.exports.captainWiseSalesDetails = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { captainId, salesId } = req.body
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0) {
+            let salesIdArr = []
+            salesId.map((id) => {
+                salesIdArr.push("'" + id.toString() + "'")
+            })
+            let captainWiseSaleObj = {}
+            let s2 = dbScript(db_sql['Q364'], { var1: captainId, var2: salesIdArr.join(',') })
+            let salesDetails = await connection.query(s2)
+            if (salesDetails.rowCount > 0) {
+                let s3 = dbScript(db_sql['Q365'], { var1: captainId, var2: salesIdArr.join(',') })
+                let notesCount = await connection.query(s3)
+
+                let month = 0
+                let durationMonth = []
+                let revenue = 0
+                let recognizedRevenue = []
+                salesDetails.rows.map((detail) => {
+                    month += Number(detail.duration_in_months)
+                    durationMonth.push(Number(detail.duration_in_months))
+                    revenue += Number(detail.recognized_amount)
+                    recognizedRevenue.push(Number(detail.recognized_amount))
+                })
+                let avgClosingTime = month / salesDetails.rowCount
+                let maxClosingTime = Math.max(...durationMonth);
+                let minClosingTime = Math.min(...durationMonth);
+
+                let sciiAvg = avgClosingTime;
+                let aboveCount = 0;
+                let belowCount = 0;
+                for (let i = 0; i < durationMonth.length; i++) {
+                    if (durationMonth[i] > sciiAvg) {
+                        aboveCount++;
+                    } else if (durationMonth[i] < sciiAvg) {
+                        belowCount++;
+                    }
+                }
+                let sciiCount = Number(belowCount / aboveCount)
+
+                let avgRecognizedRevenue = revenue / salesDetails.rowCount
+                let maxRecognizedRevenue = Math.max(...recognizedRevenue);
+                let minRecognizedRevenue = Math.min(...recognizedRevenue);
+
+                let updatedSalesDetails = salesDetails.rows.map((sale, index) => ({
+                    ...sale,
+                    ...notesCount.rows[index]
+                }));
+                captainWiseSaleObj = {
+                    salesDetails: updatedSalesDetails,
+                    avgRecognizedRevenue: avgRecognizedRevenue,
+                    maxRecognizedRevenue: maxRecognizedRevenue,
+                    minRecognizedRevenue: minRecognizedRevenue,
+                    avgClosingTime: avgClosingTime,
+                    maxClosingTime: maxClosingTime,
+                    minClosingTime: minClosingTime,
+                    sciiCount: (sciiCount) ? sciiCount : 0
+                }
+            }else{
+                captainWiseSaleObj = {
+                    salesDetails: [],
+                    avgRecognizedRevenue: 0,
+                    maxRecognizedRevenue: 0,
+                    minRecognizedRevenue: 0,
+                    avgClosingTime: 0,
+                    maxClosingTime: 0,
+                    minClosingTime: 0,
+                    sciiCount: 0
+                }
+            }
+            res.json({
+                status: 200,
+                success: true,
+                message: "Captain wise sales details",
+                data: captainWiseSaleObj
+            })
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
