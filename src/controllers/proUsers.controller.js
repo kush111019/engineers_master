@@ -2337,14 +2337,14 @@ module.exports.salesCaptainList = async (req, res) => {
                 res.json({
                     status: 200,
                     success: true,
-                    message: "Sales catain list",
+                    message: "Sales captain list",
                     data: salesCatains.rows
                 })
             } else {
                 res.json({
                     status: 200,
                     success: false,
-                    message: "Empty Sales catain list",
+                    message: "Empty Sales captain list",
                     data: []
                 })
             }
