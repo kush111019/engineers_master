@@ -2373,22 +2373,17 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
         if (findAdmin.rowCount > 0) {
             let s2 = dbScript(db_sql['Q366'], { var1: captainId })
             let salesIds = await connection.query(s2)
-            console.log(salesIds.rows,"salesIds.rows");
             if(salesIds.rowCount > 0){
                 let salesIdArr = []
                 salesIds.rows.map((data) => {
-                    console.log(data,"data");
                     salesIdArr.push("'" + data.sales_ids.toString() + "'")
                 })
-                console.log(salesIdArr,"salesIdArr");
-                console.log(salesIdArr.join(','),"salesIdArr.join(',')");
                 let captainWiseSaleObj = {}
-                let s3 = dbScript(db_sql['Q364'], { var1: captainId, var2: salesIdArr.join(',') })
-                console.log(s3,"s3");
+                let s3 = dbScript(db_sql['Q364'], { var1: captainId, var2: salesIdArr.join(",") })
                 let salesDetails = await connection.query(s3)
                 
                 if (salesDetails.rowCount > 0) {
-                    let s4 = dbScript(db_sql['Q365'], { var1: captainId, var2: salesIdArr.join(',') })
+                    let s4 = dbScript(db_sql['Q365'], { var1: captainId, var2: salesIdArr.join(",") })
                     let notesCount = await connection.query(s4)
     
                     let month = 0
