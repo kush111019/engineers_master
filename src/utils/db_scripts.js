@@ -3044,11 +3044,14 @@ const db_sql = {
             array_agg(DISTINCT su.sales_id) AS sales_ids
           FROM 
             sales_users su
-          JOIN 
+          LEFT JOIN 
             users u ON su.user_id = u.id
+          LEFT JOIN
+            sales s ON su.sales_id = s.id
           WHERE 
             su.user_type = 'captain' AND
             su.company_id = '{var1}' AND su.deleted_at IS NULL
+            AND s.closed_at IS NOT NULL
           GROUP BY 
             su.user_id,
             u.full_name;`, 
@@ -3084,11 +3087,14 @@ const db_sql = {
             array_agg(DISTINCT su.sales_id) AS sales_ids
           FROM 
             sales_users su
-          JOIN 
+          LEFT JOIN 
             users u ON su.user_id = u.id
+          LEFT JOIN
+            sales s ON su.sales_id = s.id
           WHERE 
             su.user_type = 'captain' AND
             su.user_id = '{var1}' AND su.deleted_at IS NULL
+            AND s.closed_at IS NOT NULL
           GROUP BY 
             su.user_id,
             u.full_name;`,    
