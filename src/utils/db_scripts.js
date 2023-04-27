@@ -3053,12 +3053,12 @@ const db_sql = {
             su.user_id,
             u.full_name;`, 
   "Q364" : `SELECT
-              s.id,
+              DISTINCT(s.id),
               c.customer_name,
               s.created_at,
               s.closed_at,
-              r.recognized_amount,
-              ROUND(EXTRACT(DAY FROM (s.closed_at - s.created_at)) / (365.25/12), 2) AS duration_in_months
+              SUM(r.recognized_amount :: decimal) as recognized_amount,
+              TRUNC(EXTRACT(DAY FROM (s.closed_at - s.created_at)) / (365.25/12), 2) AS duration_in_months
             FROM
               sales s
               JOIN sales_users su ON s.id = su.sales_id 
@@ -3077,7 +3077,7 @@ const db_sql = {
               r.recognized_amount
             ORDER BY
               s.id ASC`,  
-  "Q365":`		select COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) AND user_id = '{var1}'`,
+  "Q365":`select COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) AND user_id = '{var1}'`,
   "Q366":`SELECT  
             su.user_id, 
             u.full_name,
