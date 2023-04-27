@@ -3051,42 +3051,14 @@ const db_sql = {
             su.company_id = '{var1}' AND su.deleted_at IS NULL
           GROUP BY 
             su.user_id,
-            u.full_name;`,  
-  // "Q364":`SELECT
-  //           s.id,
-  //           c.customer_name,
-  //           s.created_at,
-  //           s.closed_at,
-  //           EXTRACT(DAY FROM (s.closed_at - s.created_at)) AS duration_in_days,
-  //           COUNT(f.id) AS follow_up_notes,
-  //           AVG(r.recognized_amount :: decimal) AS avg_recognized_revenue,
-  //           MAX(r.recognized_amount :: decimal) AS max_recognized_revenue,
-  //           MIN(r.recognized_amount :: decimal) AS min_recognized_revenue
-  //         FROM
-  //           sales s
-  //           JOIN sales_users su ON s.id = su.sales_id 
-  //           JOIN users u ON su.user_id = u.id
-  //           JOIN customer_companies c ON s.customer_id = c.id
-  //           LEFT JOIN follow_up_notes f ON s.id = f.sales_id AND su.user_id = f.user_id
-  //           LEFT JOIN recognized_revenue r ON s.id = r.sales_id
-  //         WHERE
-  //           su.user_id = '{var1}' 
-  //           AND s.id IN ({var2})
-  //           AND s.closed_at IS NOT NULL
-  //         GROUP BY
-  //           s.id,
-  //           c.customer_name,
-  //           s.created_at,
-  //           s.closed_at
-  //         ORDER BY
-  //           s.id ASC;` 
+            u.full_name;`, 
   "Q364" : `SELECT
               s.id,
               c.customer_name,
               s.created_at,
               s.closed_at,
               r.recognized_amount,
-              DATE_PART('year', age(s.closed_at, s.created_at)) * 12 + DATE_PART('month', age(s.closed_at, s.created_at)) AS duration_in_months
+              ROUND(EXTRACT(DAY FROM (s.closed_at - s.created_at)) / (365.25/12), 2) AS duration_in_months
             FROM
               sales s
               JOIN sales_users su ON s.id = su.sales_id 
@@ -3105,7 +3077,21 @@ const db_sql = {
               r.recognized_amount
             ORDER BY
               s.id ASC`,  
-  "Q365":`		select COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) AND user_id = '{var1}'`   
+  "Q365":`		select COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) AND user_id = '{var1}'`,
+  "Q366":`SELECT  
+            su.user_id, 
+            u.full_name,
+            array_agg(DISTINCT su.sales_id) AS sales_ids
+          FROM 
+            sales_users su
+          JOIN 
+            users u ON su.user_id = u.id
+          WHERE 
+            su.user_type = 'captain' AND
+            su.user_id = '{var1}' AND su.deleted_at IS NULL
+          GROUP BY 
+            su.user_id,
+            u.full_name;`,    
 
 
 }

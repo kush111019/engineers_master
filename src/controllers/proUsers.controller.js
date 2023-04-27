@@ -2367,83 +2367,100 @@ module.exports.salesCaptainList = async (req, res) => {
 module.exports.captainWiseSalesDetails = async (req, res) => {
     try {
         let userId = req.user.id
-        let { captainId, salesId } = req.body
+        let { captainId } = req.query
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0) {
-            let salesIdArr = []
-            salesId.map((id) => {
-                salesIdArr.push("'" + id.toString() + "'")
-            })
-            let captainWiseSaleObj = {}
-            let s2 = dbScript(db_sql['Q364'], { var1: captainId, var2: salesIdArr.join(',') })
-            let salesDetails = await connection.query(s2)
-            if (salesDetails.rowCount > 0) {
-                let s3 = dbScript(db_sql['Q365'], { var1: captainId, var2: salesIdArr.join(',') })
-                let notesCount = await connection.query(s3)
-
-                let month = 0
-                let durationMonth = []
-                let revenue = 0
-                let recognizedRevenue = []
-                salesDetails.rows.map((detail) => {
-                    month += Number(detail.duration_in_months)
-                    durationMonth.push(Number(detail.duration_in_months))
-                    revenue += Number(detail.recognized_amount)
-                    recognizedRevenue.push(Number(detail.recognized_amount))
+            let s2 = dbScript(db_sql['Q366'], { var1: captainId })
+            let salesIds = await connection.query(s2)
+            if(salesIds.rowCount > 0){
+                let salesIdArr = []
+                salesIds.rows.map((data) => {
+                    salesIdArr.push("'" + data.sales_ids.toString() + "'")
                 })
-                let avgClosingTime = month / salesDetails.rowCount
-                let maxClosingTime = Math.max(...durationMonth);
-                let minClosingTime = Math.min(...durationMonth);
-
-                let sciiAvg = avgClosingTime;
-                let aboveCount = 0;
-                let belowCount = 0;
-                for (let i = 0; i < durationMonth.length; i++) {
-                    if (durationMonth[i] > sciiAvg) {
-                        aboveCount++;
-                    } else if (durationMonth[i] < sciiAvg) {
-                        belowCount++;
+                let captainWiseSaleObj = {}
+                let s3 = dbScript(db_sql['Q364'], { var1: captainId, var2: salesIdArr.join(',') })
+                let salesDetails = await connection.query(s3)
+                if (salesDetails.rowCount > 0) {
+                    let s4 = dbScript(db_sql['Q365'], { var1: captainId, var2: salesIdArr.join(',') })
+                    let notesCount = await connection.query(s4)
+    
+                    let month = 0
+                    let durationMonth = []
+                    let revenue = 0
+                    let recognizedRevenue = []
+                    salesDetails.rows.map((detail) => {
+                        month += Number(detail.duration_in_months)
+                        durationMonth.push(Number(detail.duration_in_months))
+                        revenue += Number(detail.recognized_amount)
+                        recognizedRevenue.push(Number(detail.recognized_amount))
+                    })
+                    let avgClosingTime = month / salesDetails.rowCount
+                    let maxClosingTime = Math.max(...durationMonth);
+                    let minClosingTime = Math.min(...durationMonth);
+    
+                    let sciiAvg = avgClosingTime;
+                    let aboveCount = 0;
+                    let belowCount = 0;
+                    for (let i = 0; i < durationMonth.length; i++) {
+                        if (durationMonth[i] > sciiAvg) {
+                            aboveCount++;
+                        } else if (durationMonth[i] < sciiAvg) {
+                            belowCount++;
+                        }
+                    }
+                    let sciiCount = 0;
+                    if(aboveCount == 0 && belowCount == 0){
+                        sciiCount = "NA"
+                    }else if(aboveCount == 0 || belowCount == 0){
+                        sciiCount = 1
+                    }else{
+                        sciiCount = Number(belowCount / aboveCount)
+                    }
+    
+                    let avgRecognizedRevenue = revenue / salesDetails.rowCount
+                    let maxRecognizedRevenue = Math.max(...recognizedRevenue);
+                    let minRecognizedRevenue = Math.min(...recognizedRevenue);
+    
+                    let updatedSalesDetails = salesDetails.rows.map((sale, index) => ({
+                        ...sale,
+                        ...notesCount.rows[index]
+                    }));
+                    captainWiseSaleObj = {
+                        salesDetails: updatedSalesDetails,
+                        avgRecognizedRevenue: avgRecognizedRevenue,
+                        maxRecognizedRevenue: maxRecognizedRevenue,
+                        minRecognizedRevenue: minRecognizedRevenue,
+                        avgClosingTime: avgClosingTime,
+                        maxClosingTime: maxClosingTime,
+                        minClosingTime: minClosingTime,
+                        sciiCount: (sciiCount) ? sciiCount : 1
+                    }
+                }else{
+                    captainWiseSaleObj = {
+                        salesDetails: [],
+                        avgRecognizedRevenue: 0,
+                        maxRecognizedRevenue: 0,
+                        minRecognizedRevenue: 0,
+                        avgClosingTime: 0,
+                        maxClosingTime: 0,
+                        minClosingTime: 0,
+                        sciiCount: 0
                     }
                 }
-                let sciiCount = Number(belowCount / aboveCount)
-
-                let avgRecognizedRevenue = revenue / salesDetails.rowCount
-                let maxRecognizedRevenue = Math.max(...recognizedRevenue);
-                let minRecognizedRevenue = Math.min(...recognizedRevenue);
-
-                let updatedSalesDetails = salesDetails.rows.map((sale, index) => ({
-                    ...sale,
-                    ...notesCount.rows[index]
-                }));
-                captainWiseSaleObj = {
-                    salesDetails: updatedSalesDetails,
-                    avgRecognizedRevenue: avgRecognizedRevenue,
-                    maxRecognizedRevenue: maxRecognizedRevenue,
-                    minRecognizedRevenue: minRecognizedRevenue,
-                    avgClosingTime: avgClosingTime,
-                    maxClosingTime: maxClosingTime,
-                    minClosingTime: minClosingTime,
-                    sciiCount: (sciiCount) ? sciiCount : 0
-                }
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Captain wise sales details",
+                    data: captainWiseSaleObj
+                })
             }else{
-                captainWiseSaleObj = {
-                    salesDetails: [],
-                    avgRecognizedRevenue: 0,
-                    maxRecognizedRevenue: 0,
-                    minRecognizedRevenue: 0,
-                    avgClosingTime: 0,
-                    maxClosingTime: 0,
-                    minClosingTime: 0,
-                    sciiCount: 0
-                }
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Sales not found",
+                })
             }
-            res.json({
-                status: 200,
-                success: true,
-                message: "Captain wise sales details",
-                data: captainWiseSaleObj
-            })
         } else {
             res.json({
                 status: 400,
