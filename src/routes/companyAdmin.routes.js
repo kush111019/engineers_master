@@ -264,7 +264,8 @@ router.put('/deleteEvent',verifyTokenFn,controller.proUser.deleteEvent)
 
 //Sales Analysis
 router.get('/salesCaptainList', verifyTokenFn, controller.proUser.salesCaptainList)
-router.get('/captainWiseSalesDetails', verifyTokenFn, controller.proUser.captainWiseSalesDetails)
+router.get('/captainWiseSalesDetails', verifyTokenFn, controller.proUser.captainWiseSalesDetails);
+router.get('/sciiSales',verifyTokenFn, controller.proUser.sciiSales)
 
 
 

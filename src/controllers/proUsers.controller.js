@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz,paginatedResults } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
@@ -2373,21 +2373,21 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
         if (findAdmin.rowCount > 0) {
             let s2 = dbScript(db_sql['Q366'], { var1: captainId })
             let salesIds = await connection.query(s2)
-            if(salesIds.rowCount > 0){
+            if (salesIds.rowCount > 0) {
                 let salesIdArr = []
                 salesIds.rows.map((data) => {
-                    if(data.sales_ids.length > 0){
+                    if (data.sales_ids.length > 0) {
                         salesIdArr.push("'" + data.sales_ids.join("','") + "'")
                     }
                 })
                 let captainWiseSaleObj = {}
                 let s3 = dbScript(db_sql['Q364'], { var1: captainId, var2: salesIdArr.join(",") })
                 let salesDetails = await connection.query(s3)
-                
+
                 if (salesDetails.rowCount > 0) {
                     let s4 = dbScript(db_sql['Q365'], { var1: captainId, var2: salesIdArr.join(",") })
                     let notesCount = await connection.query(s4)
-    
+
                     let month = 0
                     let durationMonth = []
                     let revenue = 0
@@ -2401,7 +2401,7 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                     let avgClosingTime = month / salesDetails.rowCount
                     let maxClosingTime = Math.max(...durationMonth);
                     let minClosingTime = Math.min(...durationMonth);
-    
+
                     let sciiAvg = avgClosingTime;
                     let aboveCount = 0;
                     let belowCount = 0;
@@ -2413,21 +2413,21 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                         }
                     }
                     let sciiCount = 0;
-                    if(aboveCount == 0 && belowCount == 0){
+                    if (aboveCount == 0 && belowCount == 0) {
                         sciiCount = "NA"
-                    }else if(aboveCount == 0 || belowCount == 0){
+                    } else if (aboveCount == 0 || belowCount == 0) {
                         sciiCount = 1
-                    }else{
+                    } else {
                         sciiCount = Number(belowCount / aboveCount)
                     }
-    
+
                     let avgRecognizedRevenue = revenue / salesDetails.rowCount
                     let maxRecognizedRevenue = Math.max(...recognizedRevenue);
                     let minRecognizedRevenue = Math.min(...recognizedRevenue);
-    
+
                     let updatedSalesDetails = salesDetails.rows.map((sale, index) => ({
                         ...sale,
-                        ...(notesCount.rows[index] ? notesCount.rows[index] : {notes_count: 0 })
+                        ...(notesCount.rows[index] ? notesCount.rows[index] : { notes_count: 0 })
                     }));
 
                     let count = 0
@@ -2454,7 +2454,7 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                         minNotesCount: minNotesCount,
                         scii: sciiCount
                     }
-                }else{
+                } else {
                     captainWiseSaleObj = {
                         salesDetails: [],
                         avgRecognizedRevenue: 0,
@@ -2463,9 +2463,9 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                         avgClosingTime: 0,
                         maxClosingTime: 0,
                         minClosingTime: 0,
-                        avgNotesCount : 0,
-                        maxNotesCount : 0,
-                        minNotesCount : 0,
+                        avgNotesCount: 0,
+                        maxNotesCount: 0,
+                        minNotesCount: 0,
                         sciiCount: 0
                     }
                 }
@@ -2475,11 +2475,101 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                     message: "Captain wise sales details",
                     data: captainWiseSaleObj
                 })
-            }else{
+            } else {
                 res.json({
                     status: 200,
                     success: false,
                     message: "Sales not found",
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.sciiSales = async (req, res) => {
+    try {
+        let { page } = req.query
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q363'], { var1: findAdmin.rows[0].company_id })
+            let salesCatains = await connection.query(s2)
+            let sciiArr = []
+            if (salesCatains.rowCount > 0) {
+                for (captain of salesCatains.rows) {
+                    let salesIdArr = []
+                    if (captain.sales_ids.length > 0) {
+                        salesIdArr.push("'" + captain.sales_ids.join("','") + "'")
+                    }
+                    let s3 = dbScript(db_sql['Q364'], { var1: captain.user_id, var2: salesIdArr.join(",") })
+                    let salesDetails = await connection.query(s3)
+                    if (salesDetails.rowCount > 0) {
+                        let month = 0
+                        let durationMonth = []
+                        salesDetails.rows.map((detail) => {
+                            month += Number(detail.duration_in_months)
+                            durationMonth.push(Number(detail.duration_in_months))
+                        })
+                        let avgClosingTime = month / salesDetails.rowCount
+                        let aboveCount = 0;
+                        let belowCount = 0;
+                        for (let i = 0; i < durationMonth.length; i++) {
+                            if (durationMonth[i] > avgClosingTime) {
+                                aboveCount++;
+                            } else if (durationMonth[i] < avgClosingTime) {
+                                belowCount++;
+                            }
+                        }
+                        let sciiCount = 0;
+                        if (aboveCount == 0 && belowCount == 0) {
+                            sciiCount = "NA"
+                        } else if (aboveCount == 0 || belowCount == 0) {
+                            sciiCount = 1
+                        } else {
+                            sciiCount = Number(belowCount / aboveCount)
+                        }
+                        sciiArr.push({
+                            captain_id : captain.user_id,
+                            captain_name : captain.full_name,
+                            scii : sciiCount
+                        })
+                    }
+                }
+                if(sciiArr.length > 0){
+                    let result = await paginatedResults(sciiArr, page)
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "scii list",
+                        data: result
+                    })
+                }else{
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty scii list",
+                        data: []
+                    })
+                }
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Sales captain list",
+                    data: []
                 })
             }
         } else {
