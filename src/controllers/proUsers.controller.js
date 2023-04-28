@@ -2391,7 +2391,7 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                     // create map of sales details by sales ID
                     let salesMap = {}
                     for (let sale of salesDetails.rows) {
-                        salesMap[sale.id] = { ...sale }
+                        salesMap[sale.id] = { ...sale, notes_count: 0 }
                     }
 
                     // update sales details with notes count
