@@ -2407,7 +2407,7 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                     let updatedSalesDetails = Object.values(salesMap)
 
                     // calculate aggregate note counts
-                    let notesCountArr = updatedSalesDetails.map((detail) => Number(detail.notes_count || 0))
+                    updatedSalesDetails = updatedSalesDetails.map((detail) => Number(detail.notes_count || 0))
                     let count = notesCountArr.reduce((acc, val) => acc + val, 0)
                     let avgNotesCount = count / updatedSalesDetails.length
                     let maxNotesCount = Math.max(...notesCountArr)
