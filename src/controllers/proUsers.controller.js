@@ -2388,6 +2388,41 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                     let s4 = dbScript(db_sql['Q365'], { var1: captainId, var2: salesIdArr.join(",") })
                     let notesCount = await connection.query(s4)
 
+                    // create map of sales details by sales ID
+                    let salesMap = {}
+                    for (let sale of salesDetails.rows) {
+                        salesMap[sale.id] = { ...sale }
+                    }
+
+                    // update sales details with notes count
+                    for (let note of notesCount.rows) {
+                        let saleId = note.sales_id
+                        let notesCount = Number(note.notes_count)
+                        if (salesMap[saleId]) {
+                            salesMap[saleId].notes_count = notesCount
+                        }
+                    }
+
+                    // convert sales map back to array
+                    let updatedSalesDetails = Object.values(salesMap)
+
+                    // calculate aggregate note counts
+                    let notesCountArr = updatedSalesDetails.map((detail) => Number(detail.notes_count || 0))
+                    let count = notesCountArr.reduce((acc, val) => acc + val, 0)
+                    let avgNotesCount = count / updatedSalesDetails.length
+                    let maxNotesCount = Math.max(...notesCountArr)
+                    let minNotesCount = Math.min(...notesCountArr)
+
+                    // let count = 0
+                    // let notesCount1 = []
+
+                    // if (notesCount.rowCount > 0) {
+                    //     notesCount.rows.map((data) => {
+                    //         count += Number(data.notes_count)
+                    //         notesCount1.push(Number(data.notes_count))
+                    //     })
+                    // }
+
                     let revenue = 0
                     let recognizedRevenue = []
 
@@ -2435,21 +2470,21 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                     let maxRecognizedRevenue = Math.max(...recognizedRevenue);
                     let minRecognizedRevenue = Math.min(...recognizedRevenue);
 
-                    let updatedSalesDetails = salesDetails.rows.map((sale, index) => ({
-                        ...sale,
-                        ...(notesCount.rows[index] ? notesCount.rows[index] : { notes_count: 0 })
-                    }));
+                    // let updatedSalesDetails = salesDetails.rows.map((sale, index) => ({
+                    //     ...sale,
+                    //     ...(notesCount.rows[index] ? notesCount.rows[index] : { notes_count: 0 })
+                    // }));
 
-                    let count = 0
-                    let notesCount1 = []
-                    updatedSalesDetails.map((detail) => {
-                        count += Number(detail.notes_count)
-                        notesCount1.push(Number(detail.notes_count))
-                    })
+                    // let count = 0
+                    // let notesCount1 = []
+                    // updatedSalesDetails.map((detail) => {
+                    //     count += Number(detail.notes_count)
+                    //     notesCount1.push(Number(detail.notes_count))
+                    // })
 
-                    let avgNotesCount = count / salesDetails.rowCount
-                    let maxNotesCount = Math.max(...notesCount1);
-                    let minNotesCount = Math.min(...notesCount1);
+                    // let avgNotesCount = count / salesDetails.rowCount
+                    // let maxNotesCount = Math.max(...notesCount1);
+                    // let minNotesCount = Math.min(...notesCount1);
 
                     captainWiseSaleObj = {
                         salesDetails: updatedSalesDetails,
