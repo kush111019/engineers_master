@@ -3077,7 +3077,7 @@ const db_sql = {
               s.closed_at
             ORDER BY
               s.id ASC`,  
-  "Q365":`select COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) AND user_id = '{var1}'`,
+  "Q365":`select sales_id,COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) AND user_id = '{var1}' GROUP BY sales_id`,
   "Q366":`SELECT  
             su.user_id, 
             u.full_name,
