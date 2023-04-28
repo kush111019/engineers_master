@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz,paginatedResults } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
@@ -2391,9 +2391,9 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                     let revenue = 0
                     let recognizedRevenue = []
 
-                    let s5 = dbScript(db_sql['Q367'],{var1 : salesIdArr.join(",")})
+                    let s5 = dbScript(db_sql['Q367'], { var1: salesIdArr.join(",") })
                     let recognizedAmount = await connection.query(s5)
-                    if(recognizedAmount.rowCount > 0){
+                    if (recognizedAmount.rowCount > 0) {
                         recognizedAmount.rows.map(amount => {
                             revenue += Number(amount.recognized_amount)
                             recognizedRevenue.push(Number(amount.recognized_amount))
@@ -2412,22 +2412,25 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                     let sciiAvg = avgClosingTime;
                     let aboveCount = 0;
                     let belowCount = 0;
-                    for (let i = 0; i < durationMonth.length; i++) {
-                        if (durationMonth[i] > sciiAvg) {
-                            aboveCount++;
-                        } else if (durationMonth[i] < sciiAvg) {
-                            belowCount++;
-                        }
-                    }
                     let sciiCount = 0;
-                    if (aboveCount == 0 && belowCount == 0) {
-                        sciiCount = 0
-                    } else if (aboveCount == 0 || belowCount == 0) {
+                    if (durationMonth.length == 1) {
                         sciiCount = 1
                     } else {
-                        sciiCount = Number(belowCount / aboveCount)
+                        for (let i = 0; i < durationMonth.length; i++) {
+                            if (durationMonth[i] > sciiAvg) {
+                                aboveCount++;
+                            } else if (durationMonth[i] < sciiAvg) {
+                                belowCount++;
+                            }
+                        }
+                        if (aboveCount == 0 && belowCount == 0) {
+                            sciiCount = 0
+                        } else if (aboveCount == 0 || belowCount == 0) {
+                            sciiCount = 1
+                        } else {
+                            sciiCount = Number(belowCount / aboveCount)
+                        }
                     }
-
                     let avgRecognizedRevenue = revenue / salesDetails.rowCount
                     let maxRecognizedRevenue = Math.max(...recognizedRevenue);
                     let minRecognizedRevenue = Math.min(...recognizedRevenue);
@@ -2533,29 +2536,33 @@ module.exports.sciiSales = async (req, res) => {
                         let avgClosingTime = month / salesDetails.rowCount
                         let aboveCount = 0;
                         let belowCount = 0;
-                        for (let i = 0; i < durationMonth.length; i++) {
-                            if (durationMonth[i] > avgClosingTime) {
-                                aboveCount++;
-                            } else if (durationMonth[i] < avgClosingTime) {
-                                belowCount++;
-                            }
-                        }
                         let sciiCount = 0;
-                        if (aboveCount == 0 && belowCount == 0) {
-                            sciiCount = 0
-                        } else if (aboveCount == 0 || belowCount == 0) {
+                        if (durationMonth.length == 1) {
                             sciiCount = 1
                         } else {
-                            sciiCount = Number(belowCount / aboveCount)
+                            for (let i = 0; i < durationMonth.length; i++) {
+                                if (durationMonth[i] > avgClosingTime) {
+                                    aboveCount++;
+                                } else if (durationMonth[i] < avgClosingTime) {
+                                    belowCount++;
+                                }
+                            }
+                            if (aboveCount == 0 && belowCount == 0) {
+                                sciiCount = 0
+                            } else if (aboveCount == 0 || belowCount == 0) {
+                                sciiCount = 1
+                            } else {
+                                sciiCount = Number(belowCount / aboveCount)
+                            }
                         }
                         sciiArr.push({
-                            captain_id : captain.user_id,
-                            captain_name : captain.full_name,
-                            scii : sciiCount
+                            captain_id: captain.user_id,
+                            captain_name: captain.full_name,
+                            scii: sciiCount
                         })
                     }
                 }
-                if(sciiArr.length > 0){
+                if (sciiArr.length > 0) {
                     let result = await paginatedResults(sciiArr, page)
                     res.json({
                         status: 200,
@@ -2563,7 +2570,7 @@ module.exports.sciiSales = async (req, res) => {
                         message: "scii list",
                         data: result
                     })
-                }else{
+                } else {
                     res.json({
                         status: 200,
                         success: false,
