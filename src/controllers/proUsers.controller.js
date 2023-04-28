@@ -2387,13 +2387,12 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                 if (salesDetails.rowCount > 0) {
                     let s4 = dbScript(db_sql['Q365'], { var1: captainId, var2: salesIdArr.join(",") })
                     let notesCount = await connection.query(s4)
-console.log(notesCount.rows, "notesCount.rows");
+
                     // create map of sales details by sales ID
                     let salesMap = {}
                     for (let sale of salesDetails.rows) {
                         salesMap[sale.id] = { ...sale }
                     }
-                    console.log(salesMap,"salesMap1111111");
 
                     // update sales details with notes count
                     for (const note of notesCount.rows) {
@@ -2403,28 +2402,17 @@ console.log(notesCount.rows, "notesCount.rows");
                             salesMap[saleId].notes_count = notesCount
                         }
                     }
-                    console.log(salesMap,"salesMap22222222");
 
                     // convert sales map back to array
                     const updatedSalesDetails = Object.values(salesMap)
-console.log(updatedSalesDetails,"updatedSalesDetails");
+
                     // calculate aggregate note counts
                     let notesCountArr = updatedSalesDetails.map((detail) => Number(detail.notes_count || 0))
-                    console.log(notesCountArr,"notesCountArr");
+
                     let count = notesCountArr.reduce((acc, val) => acc + val, 0)
                     let avgNotesCount = count / updatedSalesDetails.length
                     let maxNotesCount = Math.max(...notesCountArr)
                     let minNotesCount = Math.min(...notesCountArr)
-
-                    // let count = 0
-                    // let notesCount1 = []
-
-                    // if (notesCount.rowCount > 0) {
-                    //     notesCount.rows.map((data) => {
-                    //         count += Number(data.notes_count)
-                    //         notesCount1.push(Number(data.notes_count))
-                    //     })
-                    // }
 
                     let revenue = 0
                     let recognizedRevenue = []
@@ -2472,22 +2460,6 @@ console.log(updatedSalesDetails,"updatedSalesDetails");
                     let avgRecognizedRevenue = revenue / salesDetails.rowCount
                     let maxRecognizedRevenue = Math.max(...recognizedRevenue);
                     let minRecognizedRevenue = Math.min(...recognizedRevenue);
-
-                    // let updatedSalesDetails = salesDetails.rows.map((sale, index) => ({
-                    //     ...sale,
-                    //     ...(notesCount.rows[index] ? notesCount.rows[index] : { notes_count: 0 })
-                    // }));
-
-                    // let count = 0
-                    // let notesCount1 = []
-                    // updatedSalesDetails.map((detail) => {
-                    //     count += Number(detail.notes_count)
-                    //     notesCount1.push(Number(detail.notes_count))
-                    // })
-
-                    // let avgNotesCount = count / salesDetails.rowCount
-                    // let maxNotesCount = Math.max(...notesCount1);
-                    // let minNotesCount = Math.min(...notesCount1);
 
                     captainWiseSaleObj = {
                         salesDetails: updatedSalesDetails,
