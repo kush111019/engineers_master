@@ -1326,7 +1326,27 @@ const db_sql = {
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.reason,l.emp_type,
-                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
+                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name ,
+                ( 
+                  SELECT  json_agg(customer_company_employees.*)
+                      FROM (
+                      SELECT 
+                        customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+                        customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
+                        customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
+                        customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
+                        customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
+                        customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                        u1.full_name as created_by,s.source,t.title,c.customer_name,u2.full_name as assigned_sales_lead_name, customer_company_employees.sync_source
+                      FROM customer_company_employees 
+                      LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                      LEFT JOIN users AS u2 ON u2.id = customer_company_employees.assigned_sales_lead_to
+                      LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                      LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                      LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+                      WHERE l.id = customer_company_employees.pid AND emp_type = 'lead' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL
+                    ) customer_company_employees 
+                  ) as child_lead
               FROM 
                 customer_company_employees AS l 
               LEFt JOIN 
@@ -1791,7 +1811,27 @@ const db_sql = {
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.reason,l.emp_type,
-                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
+                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name ,
+                ( 
+                  SELECT  json_agg(customer_company_employees.*)
+                      FROM (
+                      SELECT 
+                        customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+                        customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
+                        customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
+                        customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
+                        customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
+                        customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                        u1.full_name as created_by,s.source,t.title,c.customer_name,u2.full_name as assigned_sales_lead_name, customer_company_employees.sync_source
+                      FROM customer_company_employees 
+                      LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                      LEFT JOIN users AS u2 ON u2.id = customer_company_employees.assigned_sales_lead_to
+                      LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                      LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                      LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+                      WHERE l.id = customer_company_employees.pid AND emp_type = 'lead' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL
+                    ) customer_company_employees 
+                  ) as child_lead
               FROM 
                 customer_company_employees AS l 
               LEFt JOIN 
@@ -1818,7 +1858,27 @@ const db_sql = {
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
-                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
+                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name ,
+                ( 
+                  SELECT  json_agg(customer_company_employees.*)
+                      FROM (
+                      SELECT 
+                        customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+                        customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
+                        customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
+                        customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
+                        customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
+                        customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                        u1.full_name as created_by,s.source,t.title,c.customer_name,u2.full_name as assigned_sales_lead_name, customer_company_employees.sync_source
+                      FROM customer_company_employees 
+                      LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                      LEFT JOIN users AS u2 ON u2.id = customer_company_employees.assigned_sales_lead_to
+                      LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                      LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                      LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+                      WHERE l.id = customer_company_employees.pid AND emp_type = 'lead' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL
+                    ) customer_company_employees 
+                  ) as child_lead
               FROM 
                 customer_company_employees AS l 
               LEFt JOIN 
@@ -1844,7 +1904,27 @@ const db_sql = {
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
-                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
+                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name ,
+                ( 
+                  SELECT  json_agg(customer_company_employees.*)
+                      FROM (
+                      SELECT 
+                        customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+                        customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
+                        customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
+                        customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
+                        customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
+                        customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                        u1.full_name as created_by,s.source,t.title,c.customer_name,u2.full_name as assigned_sales_lead_name, customer_company_employees.sync_source
+                      FROM customer_company_employees 
+                      LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                      LEFT JOIN users AS u2 ON u2.id = customer_company_employees.assigned_sales_lead_to
+                      LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                      LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                      LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+                      WHERE l.id = customer_company_employees.pid AND emp_type = 'lead' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL
+                    ) customer_company_employees 
+                  ) as child_lead
               FROM 
                 customer_company_employees AS l 
               LEFt JOIN 
@@ -1914,7 +1994,27 @@ const db_sql = {
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
-                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
+                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name ,
+                ( 
+                  SELECT  json_agg(customer_company_employees.*)
+                      FROM (
+                      SELECT 
+                        customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+                        customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
+                        customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
+                        customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
+                        customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
+                        customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                        u1.full_name as created_by,s.source,t.title,c.customer_name,u2.full_name as assigned_sales_lead_name, customer_company_employees.sync_source
+                      FROM customer_company_employees 
+                      LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                      LEFT JOIN users AS u2 ON u2.id = customer_company_employees.assigned_sales_lead_to
+                      LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                      LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                      LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+                      WHERE l.id = customer_company_employees.pid AND emp_type = 'lead' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL
+                    ) customer_company_employees 
+                  ) as child_lead
               FROM 
                 customer_company_employees AS l 
               LEFt JOIN 
@@ -2386,7 +2486,27 @@ const db_sql = {
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
-                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name 
+                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name ,
+                ( 
+                  SELECT  json_agg(customer_company_employees.*)
+                      FROM (
+                      SELECT 
+                        customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+                        customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
+                        customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
+                        customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
+                        customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
+                        customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                        u1.full_name as created_by,s.source,t.title,c.customer_name,u2.full_name as assigned_sales_lead_name, customer_company_employees.sync_source
+                      FROM customer_company_employees 
+                      LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                      LEFT JOIN users AS u2 ON u2.id = customer_company_employees.assigned_sales_lead_to
+                      LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                      LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                      LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+                      WHERE l.id = customer_company_employees.pid AND emp_type = 'lead' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL
+                    ) customer_company_employees 
+                  ) as child_lead
             FROM 
               customer_company_employees AS l 
             LEFt JOIN 
