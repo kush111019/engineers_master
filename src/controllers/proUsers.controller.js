@@ -2387,27 +2387,30 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                 if (salesDetails.rowCount > 0) {
                     let s4 = dbScript(db_sql['Q365'], { var1: captainId, var2: salesIdArr.join(",") })
                     let notesCount = await connection.query(s4)
-
+console.log(notesCount.rows, "notesCount.rows");
                     // create map of sales details by sales ID
                     let salesMap = {}
                     for (let sale of salesDetails.rows) {
                         salesMap[sale.id] = { ...sale }
                     }
+                    console.log(salesMap,"salesMap1111111");
 
                     // update sales details with notes count
-                    for (let note of notesCount.rows) {
-                        let saleId = note.sales_id
-                        let notesCount = Number(note.notes_count)
+                    for (const note of notesCount.rows) {
+                        const saleId = note.sales_id
+                        const notesCount = Number(note.notes_count)
                         if (salesMap[saleId]) {
                             salesMap[saleId].notes_count = notesCount
                         }
                     }
+                    console.log(salesMap,"salesMap22222222");
 
                     // convert sales map back to array
-                    let updatedSalesDetails = Object.values(salesMap)
-
+                    const updatedSalesDetails = Object.values(salesMap)
+console.log(updatedSalesDetails,"updatedSalesDetails");
                     // calculate aggregate note counts
-                    updatedSalesDetails = updatedSalesDetails.map((detail) => Number(detail.notes_count || 0))
+                    let notesCountArr = updatedSalesDetails.map((detail) => Number(detail.notes_count || 0))
+                    console.log(notesCountArr,"notesCountArr");
                     let count = notesCountArr.reduce((acc, val) => acc + val, 0)
                     let avgNotesCount = count / updatedSalesDetails.length
                     let maxNotesCount = Math.max(...notesCountArr)
