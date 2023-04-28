@@ -1282,7 +1282,7 @@ const db_sql = {
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,
                 l.created_at,l.is_converted,l.is_rejected,l.reason,
                 u1.full_name AS creator_name, c.customer_name ,
-                 u2.full_name as assigned_sales_lead_name
+                u2.full_name as assigned_sales_lead_name
               FROM 
                 customer_company_employees AS l
               LEFt JOIN 
@@ -3060,14 +3060,12 @@ const db_sql = {
               c.customer_name,
               s.created_at,
               s.closed_at,
-              SUM(r.recognized_amount :: decimal) as recognized_amount,
               EXTRACT(DAY FROM (s.closed_at - s.created_at)) / (365.25/12) AS duration_in_months
             FROM
               sales s
               LEFT JOIN sales_users su ON s.id = su.sales_id 
               LEFT JOIN users u ON su.user_id = u.id
               LEFT JOIN customer_companies c ON s.customer_id = c.id
-              LEFT JOIN recognized_revenue r ON s.id = r.sales_id
             WHERE
               su.user_id = '{var1}' 
               AND s.id IN ({var2})
@@ -3076,8 +3074,7 @@ const db_sql = {
               s.id,
               c.customer_name,
               s.created_at,
-              s.closed_at,
-              r.recognized_amount
+              s.closed_at
             ORDER BY
               s.id ASC`,  
   "Q365":`select COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) AND user_id = '{var1}'`,
@@ -3097,7 +3094,8 @@ const db_sql = {
             AND s.closed_at IS NOT NULL
           GROUP BY 
             su.user_id,
-            u.full_name;`,    
+            u.full_name;`, 
+  "Q367":`SELECT recognized_amount FROM recognized_revenue WHERE sales_id IN ({var1}) AND deleted_at IS NULL`,
 
 
 }
