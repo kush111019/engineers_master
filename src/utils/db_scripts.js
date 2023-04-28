@@ -1316,7 +1316,7 @@ const db_sql = {
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
-                l.company_id = '{var1}' AND emp_type = '{var2}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+                l.company_id = '{var1}' AND emp_type = '{var2}' AND l.pid IS NULL AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               ORDER BY 
                 l.created_at DESC`,
 
@@ -1360,7 +1360,7 @@ const db_sql = {
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
-                (l.creator_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1})) AND emp_type= '{var2}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+                (l.creator_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1})) AND l.emp_type= '{var2}' AND l.pid IS NULL AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               ORDER BY 
                 l.created_at DESC`,
 
@@ -1713,7 +1713,7 @@ const db_sql = {
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
-                l.company_id = '{var1}'  AND emp_type = '{var2}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+                l.company_id = '{var1}'  AND l.emp_type = '{var2}' AND l.pid IS NULL AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
                 AND l.is_rejected = TRUE
               ORDER BY 
                 l.created_at DESC`,
@@ -1757,7 +1757,7 @@ const db_sql = {
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
-                l.company_id = '{var1}' AND emp_type = '{var2}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+                l.company_id = '{var1}' AND l.emp_type = '{var2}' AND l.pid IS NULL AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
                 AND l.marketing_qualified_lead = TRUE
               ORDER BY 
                 l.created_at DESC`,
@@ -1801,7 +1801,7 @@ const db_sql = {
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
-                l.company_id = '{var1}' AND emp_type = '{var2}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+                l.company_id = '{var1}' AND l.emp_type = '{var2}' AND l.pid IS NULL AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
                 AND l.is_converted = TRUE
               ORDER BY 
                 l.created_at DESC`,
@@ -1846,7 +1846,7 @@ const db_sql = {
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
                 (l.creator_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1}))
-                 AND emp_type= '{var2}'
+                 AND l.emp_type= '{var2}' AND l.pid IS NULL
                  AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
                  AND l.is_rejected = TRUE
               ORDER BY 
@@ -1893,7 +1893,7 @@ const db_sql = {
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
                 (l.creator_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1}))
-                  AND emp_type= '{var2}'
+                  AND l.emp_type= '{var2}' AND l.pid IS NULL
                   AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
                   AND l.marketing_qualified_lead = TRUE
               ORDER BY 
@@ -1939,7 +1939,7 @@ const db_sql = {
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
                 (l.creator_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1}))
-                  AND emp_type= '{var2}'
+                  AND l.emp_type= '{var2}' AND l.pid IS NULL
                   AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
                   AND l.is_converted = TRUE
               ORDER BY 
@@ -1983,7 +1983,7 @@ const db_sql = {
               LEFT JOIN 
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
-                l.assigned_sales_lead_to = '{var1}' AND emp_type = '{var2}'
+                l.assigned_sales_lead_to = '{var1}' AND l.emp_type = '{var2}' AND l.pid IS NULL
                 AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               ORDER BY 
                 l.created_at DESC`,
@@ -2029,7 +2029,7 @@ const db_sql = {
                 customer_companies AS c ON c.id = l.customer_company_id
               WHERE 
                 l.assigned_sales_lead_to IN ({var1})
-                AND emp_type= '{var2}'
+                AND l.emp_type= '{var2}' AND l.pid IS NULL
                 AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               ORDER BY 
                 l.created_at DESC`,
@@ -2475,7 +2475,7 @@ const db_sql = {
             LEFT JOIN 
               customer_companies AS c ON c.id = l.customer_company_id
             WHERE 
-              l.company_id = '{var1}' AND emp_type = '{var2}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+              l.company_id = '{var1}' AND l.emp_type = '{var2}' AND l.pid IS NULL AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               AND l.is_converted = FALSE
             ORDER BY 
               l.created_at DESC`,
@@ -2521,7 +2521,7 @@ const db_sql = {
               customer_companies AS c ON c.id = l.customer_company_id
             WHERE 
               (l.creator_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1}))
-                AND emp_type= '{var2}'
+                AND l.emp_type= '{var2}' AND l.pid IS NULL
                 AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
                 AND l.is_converted = FALSE
             ORDER BY 
