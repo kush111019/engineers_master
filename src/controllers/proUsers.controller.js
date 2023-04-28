@@ -2388,15 +2388,22 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                     let s4 = dbScript(db_sql['Q365'], { var1: captainId, var2: salesIdArr.join(",") })
                     let notesCount = await connection.query(s4)
 
-                    let month = 0
-                    let durationMonth = []
                     let revenue = 0
                     let recognizedRevenue = []
+
+                    let s5 = dbScript(db_sql['Q367'],{var1 : salesIdArr.join(",")})
+                    let recognizedAmount = await connection.query(s5)
+                    if(recognizedAmount.rowCount > 0){
+                        recognizedAmount.rows.map(amount => {
+                            revenue += Number(amount.recognized_amount)
+                            recognizedRevenue.push(Number(amount.recognized_amount))
+                        })
+                    }
+                    let month = 0
+                    let durationMonth = []
                     salesDetails.rows.map((detail) => {
                         month += Number(detail.duration_in_months)
                         durationMonth.push(Number(detail.duration_in_months))
-                        revenue += Number(detail.recognized_amount)
-                        recognizedRevenue.push(Number(detail.recognized_amount))
                     })
                     let avgClosingTime = month / salesDetails.rowCount
                     let maxClosingTime = Math.max(...durationMonth);
