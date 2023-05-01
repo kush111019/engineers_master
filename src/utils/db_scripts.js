@@ -1371,7 +1371,7 @@ const db_sql = {
 
   "Q173": `UPDATE customer_company_employees SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`,
 
-  "Q174": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND emp_type = 'lead' AND deleted_at IS NULL`,
+  "Q174": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND emp_type = 'lead' AND pid IS NULL AND deleted_at IS NULL`,
 
   "Q175": `SELECT 
                 COUNT(*),
@@ -1381,7 +1381,7 @@ const db_sql = {
               INNER JOIN 
                 users AS u ON u.id = l.creator_id
               WHERE 
-                l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+                l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.pid IS NULL AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
               GROUP BY 
                 u.full_name
               ORDER BY 
@@ -1420,7 +1420,7 @@ const db_sql = {
                 users u ON u.id = l.creator_id
               where 
                 (l.creator_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1})) AND 
-                l.emp_type = 'lead' AND l.deleted_at IS NULL AND u.deleted_at IS NULL
+                l.emp_type = 'lead' AND l.pid IS NULL AND l.deleted_at IS NULL AND u.deleted_at IS NULL
               ORDER BY 
                 u.full_name {var4}
               LIMIT {var2} OFFSET {var3}`,
@@ -1447,7 +1447,7 @@ const db_sql = {
               INNER JOIN 
                 users AS u ON u.id = l.creator_id
               WHERE 
-                l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.marketing_qualified_lead = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+                l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.pid IS NULL AND l.marketing_qualified_lead = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
               GROUP BY 
                 u.full_name
               ORDER BY 
@@ -1456,7 +1456,7 @@ const db_sql = {
   "Q191": `SELECT * FROM lead_sources WHERE LOWER(source) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
   "Q192": `SELECT * FROM lead_titles WHERE LOWER(title) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
   "Q193": `SELECT * FROM lead_industries WHERE LOWER(industry) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
-  "Q194": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND emp_type = 'lead' AND marketing_qualified_lead = true AND deleted_at IS NULL`,
+  "Q194": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND emp_type = 'lead' AND pid IS NULL AND marketing_qualified_lead = true AND deleted_at IS NULL`,
   "Q195": `UPDATE companies SET is_marketing_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q196": `UPDATE companies SET expiry_date = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   "Q197": `UPDATE companies SET expiry_date = '{var1}', user_count = '{var2}',pro_user_count = '{var3}', updated_at = '{var4}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *`,
@@ -1567,17 +1567,17 @@ const db_sql = {
               INNER JOIN 
                 users AS u ON u.id = l.assigned_sales_lead_to
               WHERE 
-              l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+              l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.pid IS NULL AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
               GROUP BY 
                 u.full_name
               ORDER BY 
                 count {var4}
               LIMIT {var2} OFFSET {var3}`,
-  "Q213": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND assigned_sales_lead_to IS NOT NULL AND emp_type = 'lead'  AND deleted_at IS NULL`,
+  "Q213": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND assigned_sales_lead_to IS NOT NULL AND emp_type = 'lead' AND pid IS NULL  AND deleted_at IS NULL`,
   "Q214": `UPDATE companies SET company_logo = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q215": `UPDATE customer_company_employees SET is_rejected = '{var2}', reason = '{var3}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`,
   "Q216": `SELECT * FROM sales WHERE lead_id = '{var1}' AND deleted_at IS NULL`,
-  "Q217": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND emp_type = 'lead' AND is_rejected = '{var2}' AND deleted_at IS NULL`,
+  "Q217": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND emp_type = 'lead' AND pid IS NULL AND is_rejected = '{var2}' AND deleted_at IS NULL`,
   "Q218": `SELECT 
               COUNT(*),
               u.full_name AS created_by
@@ -1586,7 +1586,7 @@ const db_sql = {
             INNER JOIN 
               users AS u ON u.id = l.creator_id
             WHERE 
-              l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.is_rejected = '{var5}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
+              l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.pid IS NULL AND l.is_rejected = '{var5}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
             GROUP BY 
               u.full_name
             ORDER BY 
