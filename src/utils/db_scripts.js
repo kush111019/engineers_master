@@ -3300,7 +3300,7 @@ const db_sql = {
               c.customer_name,
               s.created_at,
               s.closed_at,
-              EXTRACT(DAY FROM (s.closed_at - s.created_at)) / (365.25/12) AS duration_in_months
+              (DATE_PART('epoch', s.closed_at) - DATE_PART('epoch', s.created_at)) / 86400.0 AS duration_in_days
             FROM
               sales s
               LEFT JOIN sales_users su ON s.id = su.sales_id 
