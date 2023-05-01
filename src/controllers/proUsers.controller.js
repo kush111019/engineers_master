@@ -2382,6 +2382,7 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                 })
                 let captainWiseSaleObj = {}
                 let s3 = dbScript(db_sql['Q364'], { var1: captainId, var2: salesIdArr.join(",") })
+                console.log(s3,"s3");
                 let salesDetails = await connection.query(s3)
 
                 if (salesDetails.rowCount > 0) {
@@ -2425,27 +2426,27 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                             recognizedRevenue.push(Number(amount.recognized_amount))
                         })
                     }
-                    let month = 0
-                    let durationMonth = []
+                    let days = 0
+                    let durationDay = []
                     salesDetails.rows.map((detail) => {
-                        month += Number(detail.duration_in_months)
-                        durationMonth.push(Number(detail.duration_in_months))
+                        days += Number(detail.duration_in_days)
+                        durationDay.push(Number(detail.duration_in_days))
                     })
-                    let avgClosingTime = month / salesDetails.rowCount
-                    let maxClosingTime = Math.max(...durationMonth);
-                    let minClosingTime = Math.min(...durationMonth);
+                    let avgClosingTime = days / salesDetails.rowCount
+                    let maxClosingTime = Math.max(...durationDay);
+                    let minClosingTime = Math.min(...durationDay);
 
                     let sciiAvg = avgClosingTime;
                     let aboveCount = 0;
                     let belowCount = 0;
                     let sciiCount = 0;
-                    if (durationMonth.length == 1) {
+                    if (durationDay.length == 1) {
                         sciiCount = 1
                     } else {
-                        for (let i = 0; i < durationMonth.length; i++) {
-                            if (durationMonth[i] > sciiAvg) {
+                        for (let i = 0; i < durationDay.length; i++) {
+                            if (durationDay[i] > sciiAvg) {
                                 aboveCount++;
-                            } else if (durationMonth[i] < sciiAvg) {
+                            } else if (durationDay[i] < sciiAvg) {
                                 belowCount++;
                             }
                         }
@@ -2537,23 +2538,23 @@ module.exports.sciiSales = async (req, res) => {
                     let s3 = dbScript(db_sql['Q364'], { var1: captain.user_id, var2: salesIdArr.join(",") })
                     let salesDetails = await connection.query(s3)
                     if (salesDetails.rowCount > 0) {
-                        let month = 0
-                        let durationMonth = []
+                        let days = 0
+                        let durationDays = []
                         salesDetails.rows.map((detail) => {
-                            month += Number(detail.duration_in_months)
-                            durationMonth.push(Number(detail.duration_in_months))
+                            days += Number(detail.duration_in_days)
+                            durationDays.push(Number(detail.duration_in_days))
                         })
-                        let avgClosingTime = month / salesDetails.rowCount
+                        let avgClosingTime = days / salesDetails.rowCount
                         let aboveCount = 0;
                         let belowCount = 0;
                         let sciiCount = 0;
-                        if (durationMonth.length == 1) {
+                        if (durationDays.length == 1) {
                             sciiCount = 1
                         } else {
-                            for (let i = 0; i < durationMonth.length; i++) {
-                                if (durationMonth[i] > avgClosingTime) {
+                            for (let i = 0; i < durationDays.length; i++) {
+                                if (durationDays[i] > avgClosingTime) {
                                     aboveCount++;
-                                } else if (durationMonth[i] < avgClosingTime) {
+                                } else if (durationDays[i] < avgClosingTime) {
                                     belowCount++;
                                 }
                             }
