@@ -16,8 +16,10 @@ module.exports.checkParams = (req, res, next) => {
     console.log("params",params);
     
     for (const key in params) {
+        console.log("key",key);
         const value = params[key];
-        if (value === undefined || value === null || typeof value !== 'string' || value.trim() === '' || value === 'undefined') {
+        console.log("value",value);
+        if (value === undefined || value === null || value === '' || value === 'undefined') {
           res.status(400).json({ message: 'Please provide all parameters.' });
           return;
         }
