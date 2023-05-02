@@ -139,13 +139,10 @@ module.exports.leadsList = async (req, res) => {
         }
         else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-            console.log(roleUsers,"roleUsers");
             let findLeadList
             if (status.toLowerCase() == 'all') {
                 let s4 = dbScript(db_sql['Q171'], { var1: roleUsers.join(","), var2: type })
-                console.log(s4,"s4");
                 findLeadList = await connection.query(s4)
-                console.log(findLeadList,"findLeadList");
             }
             else if (status.toLowerCase() == 'rejected') {
                 let s5 = dbScript(db_sql['Q235'], { var1: roleUsers.join(","), var2: type })
