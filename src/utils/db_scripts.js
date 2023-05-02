@@ -1321,7 +1321,7 @@ const db_sql = {
                 l.created_at DESC`,
 
   "Q171": `SELECT 
-                DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
@@ -1806,7 +1806,7 @@ const db_sql = {
               ORDER BY 
                 l.created_at DESC`,
   "Q235": `SELECT 
-                DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
@@ -1853,7 +1853,7 @@ const db_sql = {
                 l.created_at DESC`,
 
   "Q236": `SELECT 
-                DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
@@ -1899,7 +1899,7 @@ const db_sql = {
               ORDER BY 
                 l.created_at DESC`,
   "Q237": `SELECT 
-                DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
@@ -1989,7 +1989,7 @@ const db_sql = {
                 l.created_at DESC`,
   
   "Q239": `SELECT 
-                DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
@@ -2481,7 +2481,7 @@ const db_sql = {
               l.created_at DESC`,
 
   "Q299": `SELECT 
-                DISTINCT(l.id), l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+                l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
