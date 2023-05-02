@@ -10,16 +10,18 @@ const { default: ical } = require('ical-generator');
 const { DateTime } = require('luxon');
 const moment = require('moment-timezone');
 
+
 module.exports.checkParams = (req, res, next) => {
     const params = req.body || req.query || req.params;
     console.log("params",params);
     
     for (const key in params) {
-      if (!params[key] || params[key].trim() === '' || params[key] === 'undefined' || params[key] === 'null') {
-        res.status(400).json({ message: 'Please provide all parameters.' });
-        return;
+        const value = params[key];
+        if (value === undefined || value === null || typeof value !== 'string' || value.trim() === '' || value === 'undefined') {
+          res.status(400).json({ message: 'Please provide all parameters.' });
+          return;
+        }
       }
-    }
     
     // If all parameters are valid, call the next middleware function or route handler
     next();
