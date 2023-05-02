@@ -2368,146 +2368,154 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
     try {
         let userId = req.user.id
         let { captainId } = req.query
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0) {
-            let s2 = dbScript(db_sql['Q366'], { var1: captainId })
-            let salesIds = await connection.query(s2)
-            if (salesIds.rowCount > 0) {
-                let salesIdArr = []
-                salesIds.rows.map((data) => {
-                    if (data.sales_ids.length > 0) {
-                        salesIdArr.push("'" + data.sales_ids.join("','") + "'")
-                    }
-                })
-                let captainWiseSaleObj = {}
-                let s3 = dbScript(db_sql['Q364'], { var1: captainId, var2: salesIdArr.join(",") })
-                console.log(s3,"s3");
-                let salesDetails = await connection.query(s3)
-
-                if (salesDetails.rowCount > 0) {
-                    let s4 = dbScript(db_sql['Q365'], { var1: captainId, var2: salesIdArr.join(",") })
-                    let notesCount = await connection.query(s4)
-
-                    // create map of sales details by sales ID
-                    let salesMap = {}
-                    for (let sale of salesDetails.rows) {
-                        salesMap[sale.id] = { ...sale, notes_count: 0 }
-                    }
-
-                    // update sales details with notes count
-                    for (const note of notesCount.rows) {
-                        const saleId = note.sales_id
-                        const notesCount = Number(note.notes_count)
-                        if (salesMap[saleId]) {
-                            salesMap[saleId].notes_count = notesCount
+        if (captainId) {
+            let s1 = dbScript(db_sql['Q8'], { var1: userId })
+            let findAdmin = await connection.query(s1)
+            if (findAdmin.rowCount > 0) {
+                let s2 = dbScript(db_sql['Q366'], { var1: captainId })
+                let salesIds = await connection.query(s2)
+                if (salesIds.rowCount > 0) {
+                    let salesIdArr = []
+                    salesIds.rows.map((data) => {
+                        if (data.sales_ids.length > 0) {
+                            salesIdArr.push("'" + data.sales_ids.join("','") + "'")
                         }
-                    }
-
-                    // convert sales map back to array
-                    const updatedSalesDetails = Object.values(salesMap)
-
-                    // calculate aggregate note counts
-                    let notesCountArr = updatedSalesDetails.map((detail) => Number(detail.notes_count || 0))
-
-                    let count = notesCountArr.reduce((acc, val) => acc + val, 0)
-                    let avgNotesCount = count / updatedSalesDetails.length
-                    let maxNotesCount = Math.max(...notesCountArr)
-                    let minNotesCount = Math.min(...notesCountArr)
-
-                    let revenue = 0
-                    let recognizedRevenue = []
-
-                    let s5 = dbScript(db_sql['Q367'], { var1: salesIdArr.join(",") })
-                    let recognizedAmount = await connection.query(s5)
-                    if (recognizedAmount.rowCount > 0) {
-                        recognizedAmount.rows.map(amount => {
-                            revenue += Number(amount.recognized_amount)
-                            recognizedRevenue.push(Number(amount.recognized_amount))
-                        })
-                    }
-                    let days = 0
-                    let durationDay = []
-                    salesDetails.rows.map((detail) => {
-                        days += Number(detail.duration_in_days)
-                        durationDay.push(Number(detail.duration_in_days))
                     })
-                    let avgClosingTime = days / salesDetails.rowCount
-                    let maxClosingTime = Math.max(...durationDay);
-                    let minClosingTime = Math.min(...durationDay);
+                    let captainWiseSaleObj = {}
+                    let s3 = dbScript(db_sql['Q364'], { var1: captainId, var2: salesIdArr.join(",") })
+                    console.log(s3, "s3");
+                    let salesDetails = await connection.query(s3)
 
-                    let sciiAvg = avgClosingTime;
-                    let aboveCount = 0;
-                    let belowCount = 0;
-                    let sciiCount = 0;
-                    if (durationDay.length == 1) {
-                        sciiCount = 1
-                    } else {
-                        for (let i = 0; i < durationDay.length; i++) {
-                            if (durationDay[i] > sciiAvg) {
-                                aboveCount++;
-                            } else if (durationDay[i] < sciiAvg) {
-                                belowCount++;
+                    if (salesDetails.rowCount > 0) {
+                        let s4 = dbScript(db_sql['Q365'], { var1: captainId, var2: salesIdArr.join(",") })
+                        let notesCount = await connection.query(s4)
+
+                        // create map of sales details by sales ID
+                        let salesMap = {}
+                        for (let sale of salesDetails.rows) {
+                            salesMap[sale.id] = { ...sale, notes_count: 0 }
+                        }
+
+                        // update sales details with notes count
+                        for (const note of notesCount.rows) {
+                            const saleId = note.sales_id
+                            const notesCount = Number(note.notes_count)
+                            if (salesMap[saleId]) {
+                                salesMap[saleId].notes_count = notesCount
                             }
                         }
-                        if (aboveCount == 0 && belowCount == 0) {
-                            sciiCount = 0
-                        } else if (aboveCount == 0 || belowCount == 0) {
+
+                        // convert sales map back to array
+                        const updatedSalesDetails = Object.values(salesMap)
+
+                        // calculate aggregate note counts
+                        let notesCountArr = updatedSalesDetails.map((detail) => Number(detail.notes_count || 0))
+
+                        let count = notesCountArr.reduce((acc, val) => acc + val, 0)
+                        let avgNotesCount = count / updatedSalesDetails.length
+                        let maxNotesCount = Math.max(...notesCountArr)
+                        let minNotesCount = Math.min(...notesCountArr)
+
+                        let revenue = 0
+                        let recognizedRevenue = []
+
+                        let s5 = dbScript(db_sql['Q367'], { var1: salesIdArr.join(",") })
+                        let recognizedAmount = await connection.query(s5)
+                        if (recognizedAmount.rowCount > 0) {
+                            recognizedAmount.rows.map(amount => {
+                                revenue += Number(amount.recognized_amount)
+                                recognizedRevenue.push(Number(amount.recognized_amount))
+                            })
+                        }
+                        let days = 0
+                        let durationDay = []
+                        salesDetails.rows.map((detail) => {
+                            days += Number(detail.duration_in_days)
+                            durationDay.push(Number(detail.duration_in_days))
+                        })
+                        let avgClosingTime = days / salesDetails.rowCount
+                        let maxClosingTime = Math.max(...durationDay);
+                        let minClosingTime = Math.min(...durationDay);
+
+                        let sciiAvg = avgClosingTime;
+                        let aboveCount = 0;
+                        let belowCount = 0;
+                        let sciiCount = 0;
+                        if (durationDay.length == 1) {
                             sciiCount = 1
                         } else {
-                            sciiCount = Number(belowCount / aboveCount)
+                            for (let i = 0; i < durationDay.length; i++) {
+                                if (durationDay[i] > sciiAvg) {
+                                    aboveCount++;
+                                } else if (durationDay[i] < sciiAvg) {
+                                    belowCount++;
+                                }
+                            }
+                            if (aboveCount == 0 && belowCount == 0) {
+                                sciiCount = 0
+                            } else if (aboveCount == 0 || belowCount == 0) {
+                                sciiCount = 1
+                            } else {
+                                sciiCount = Number(belowCount / aboveCount)
+                            }
+                        }
+                        let avgRecognizedRevenue = revenue / salesDetails.rowCount
+                        let maxRecognizedRevenue = Math.max(...recognizedRevenue);
+                        let minRecognizedRevenue = Math.min(...recognizedRevenue);
+
+                        captainWiseSaleObj = {
+                            salesDetails: updatedSalesDetails,
+                            avgRecognizedRevenue: avgRecognizedRevenue,
+                            maxRecognizedRevenue: maxRecognizedRevenue,
+                            minRecognizedRevenue: minRecognizedRevenue,
+                            avgClosingTime: avgClosingTime,
+                            maxClosingTime: maxClosingTime,
+                            minClosingTime: minClosingTime,
+                            avgNotesCount: avgNotesCount,
+                            maxNotesCount: maxNotesCount,
+                            minNotesCount: minNotesCount,
+                            scii: sciiCount
+                        }
+                    } else {
+                        captainWiseSaleObj = {
+                            salesDetails: [],
+                            avgRecognizedRevenue: 0,
+                            maxRecognizedRevenue: 0,
+                            minRecognizedRevenue: 0,
+                            avgClosingTime: 0,
+                            maxClosingTime: 0,
+                            minClosingTime: 0,
+                            avgNotesCount: 0,
+                            maxNotesCount: 0,
+                            minNotesCount: 0,
+                            sciiCount: 0
                         }
                     }
-                    let avgRecognizedRevenue = revenue / salesDetails.rowCount
-                    let maxRecognizedRevenue = Math.max(...recognizedRevenue);
-                    let minRecognizedRevenue = Math.min(...recognizedRevenue);
-
-                    captainWiseSaleObj = {
-                        salesDetails: updatedSalesDetails,
-                        avgRecognizedRevenue: avgRecognizedRevenue,
-                        maxRecognizedRevenue: maxRecognizedRevenue,
-                        minRecognizedRevenue: minRecognizedRevenue,
-                        avgClosingTime: avgClosingTime,
-                        maxClosingTime: maxClosingTime,
-                        minClosingTime: minClosingTime,
-                        avgNotesCount: avgNotesCount,
-                        maxNotesCount: maxNotesCount,
-                        minNotesCount: minNotesCount,
-                        scii: sciiCount
-                    }
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Captain wise sales details",
+                        data: captainWiseSaleObj
+                    })
                 } else {
-                    captainWiseSaleObj = {
-                        salesDetails: [],
-                        avgRecognizedRevenue: 0,
-                        maxRecognizedRevenue: 0,
-                        minRecognizedRevenue: 0,
-                        avgClosingTime: 0,
-                        maxClosingTime: 0,
-                        minClosingTime: 0,
-                        avgNotesCount: 0,
-                        maxNotesCount: 0,
-                        minNotesCount: 0,
-                        sciiCount: 0
-                    }
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Sales not found",
+                    })
                 }
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "Captain wise sales details",
-                    data: captainWiseSaleObj
-                })
             } else {
                 res.json({
-                    status: 200,
+                    status: 400,
                     success: false,
-                    message: "Sales not found",
+                    message: "User not found"
                 })
             }
         } else {
             res.json({
                 status: 400,
                 success: false,
-                message: "User not found"
+                message: "Please provide a captain id"
             })
         }
     } catch (error) {
