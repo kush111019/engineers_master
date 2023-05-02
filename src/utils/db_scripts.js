@@ -3203,7 +3203,13 @@ const db_sql = {
             LEFT JOIN users as u ON u.id = ua.user_id
             WHERE ua.user_id = '{var1}' AND ua.company_id = '{var2}' AND ua.deleted_at IS NULL`,
   "Q345": `INSERT INTO pro_user_events(event_name, meet_link, description, user_id, company_id, duration, availability_id) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}') RETURNING *`,
-  "Q346": `SELECT * FROM pro_user_events WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
+  "Q346": `SELECT pe.id, pe.event_name, pe.meet_link, pe.description, pe.event_url, 
+              pe.availability_id,pe.user_id,pe.company_id,pe.created_at,pe.updated_at,
+              pe.deleted_at, se.id as scheduled_event_id 
+           FROM pro_user_events AS pe
+           LEFT JOIN pro_scheduled_events AS se ON pe.id = se.event_id
+           WHERE pe.user_id = '{var1}' AND pe.company_id = '{var2}' 
+          AND pe.deleted_at IS NULL AND se.deleted_at IS NULL`,
   "Q347": `UPDATE pro_user_events SET event_url = '{var1}' WHERE id = '{var2}' RETURNING *`,
   "Q348": `SELECT e.id AS event_id, e.event_name, e.meet_link, e.description, e.event_url,
                 e.duration, e.availability_id, e.company_id, 
