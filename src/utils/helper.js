@@ -12,6 +12,7 @@ const moment = require('moment-timezone');
 
 module.exports.checkParams = (req, res, next) => {
     const params = req.body || req.query || req.params;
+    console.log("params",params);
     
     for (const key in params) {
       if (!params[key] || params[key].trim() === '' || params[key] === 'undefined' || params[key] === 'null') {
