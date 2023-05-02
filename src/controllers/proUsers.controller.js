@@ -2368,7 +2368,7 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
     try {
         let userId = req.user.id
         let { captainId } = req.query
-        if (captainId) {
+        if (captainId == '' || !captainId) {
             let s1 = dbScript(db_sql['Q8'], { var1: userId })
             let findAdmin = await connection.query(s1)
             if (findAdmin.rowCount > 0) {
