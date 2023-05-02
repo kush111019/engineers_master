@@ -362,8 +362,11 @@ module.exports.deleteCustomer = async (req, res) => {
         if (checkPermission.rows[0].permission_to_delete) {
             let s2 = dbScript(db_sql['Q222'], { var1: customerId })
             let checkCustomerInSales = await connection.query(s2)
+
+            let s3 = dbScript(db_sql['Q368'], { var1: customerId })
+            let checkCustomerInCustomerCom = await connection.query(s3)
             
-            if (checkCustomerInSales.rowCount == 0) {
+            if (checkCustomerInSales.rowCount == 0 && checkCustomerInCustomerCom.rowCount == 0) {
 
                 let _dt = new Date().toISOString();
                 let s4 = dbScript(db_sql['Q47'], { var1: _dt, var2: customerId, var3: checkPermission.rows[0].company_id })
@@ -387,7 +390,7 @@ module.exports.deleteCustomer = async (req, res) => {
                 res.json({
                     status: 200,
                     success: false,
-                    message: "This record has been used by Sales"
+                    message: "This record has been used by Sales/Leads"
                 })
             }
         } else {

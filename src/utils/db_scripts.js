@@ -3342,6 +3342,7 @@ const db_sql = {
             su.user_id,
             u.full_name;`, 
   "Q367":`SELECT recognized_amount FROM recognized_revenue WHERE sales_id IN ({var1}) AND deleted_at IS NULL`,
+  "Q368":`SELECT * FROM customer_company_employees WHERE customer_company_id = '{var1}' AND deleted_at IS NULL`
 
 
 }
