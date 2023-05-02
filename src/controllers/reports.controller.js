@@ -267,7 +267,9 @@ module.exports.revenuePerProduct = async (req, res) => {
             let revenuePerProductArr = []
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
+                console.log(roleUsers,"roleUsers");
                 let s4 = dbScript(db_sql['Q151'], { var1: roleUsers.join(","), var2: orderBy, var3: sDate, var4: eDate })
+                console.log(s4,"s4");
                 let revenuePerProduct = await connection.query(s4)
                 if (revenuePerProduct.rowCount > 0) {
                     for (let product of revenuePerProduct.rows) {
