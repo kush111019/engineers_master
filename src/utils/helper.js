@@ -10,6 +10,20 @@ const { default: ical } = require('ical-generator');
 const { DateTime } = require('luxon');
 const moment = require('moment-timezone');
 
+module.exports.checkParams = (req, res, next) => {
+    const params = req.body || req.query || req.params;
+    
+    for (const key in params) {
+      if (!params[key] || params[key].trim() === '' || params[key] === 'undefined' || params[key] === 'null') {
+        res.status(400).json({ message: 'Please provide all parameters.' });
+        return;
+      }
+    }
+    
+    // If all parameters are valid, call the next middleware function or route handler
+    next();
+}
+  
 module.exports.mysql_real_escape_string = (str) => {
     return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
         switch (char) {
@@ -41,6 +55,7 @@ module.exports.mysql_real_escape_string = (str) => {
 module.exports.mysql_real_escape_string2 = (str) => {
     return str.replace(/'/g, "''");
 }
+
 module.exports.containsObject = (obj, list) => {
     for (let i = 0; i < list.length; i++) {
         if (list[i].message_id === obj.messageId) {
