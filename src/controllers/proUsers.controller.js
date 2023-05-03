@@ -1741,6 +1741,15 @@ module.exports.availableTimeList = async (req, res) => {
             let s2 = dbScript(db_sql['Q344'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let availability = await connection.query(s2)
             if (availability.rowCount > 0) {
+                for(let item of availability.rows){
+                    let s3 = dbScript(db_sql['Q370'],{var1 : item.id})
+                    let findAvailability = await connection.query(s3)
+                    if(findAvailability.rowCount > 0){
+                        item.isAvailabilityAdded = true
+                    }else{
+                        item.isAvailabilityAdded = false
+                    }
+                }
                 let finalArray = await tranformAvailabilityArray(availability.rows)
                 res.json({
                     status: 200,
