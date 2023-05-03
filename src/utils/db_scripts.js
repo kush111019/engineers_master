@@ -3343,7 +3343,7 @@ const db_sql = {
   "Q367":`SELECT recognized_amount FROM recognized_revenue WHERE sales_id IN ({var1}) AND deleted_at IS NULL`,
   "Q368":`SELECT * FROM customer_company_employees WHERE customer_company_id = '{var1}' AND deleted_at IS NULL`,
   "Q369":`SELECT id FROM pro_scheduled_events WHERE event_id = '{var1}' AND deleted_at IS NULL LIMIT 1`,
-  "Q370":`SELECT id FROM pro_user_events WHERE availabity_id = '{var1}' AND deleted_at IS NULL LIMIT 1`
+  "Q370":`SELECT id FROM pro_user_events WHERE availability_id = '{var1}' AND deleted_at IS NULL LIMIT 1`
 
 
 }
