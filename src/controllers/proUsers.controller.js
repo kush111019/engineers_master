@@ -2053,6 +2053,15 @@ module.exports.eventsList = async (req, res) => {
             let s2 = dbScript(db_sql['Q346'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let eventList = await connection.query(s2)
             if (eventList.rowCount > 0) {
+                for(let event of eventList.rows){
+                    let s3 = dbScript(db_sql['Q369'],{var1 : event.id})
+                    let findSchedule = await connection.query(s3)
+                    if(findSchedule.rowCount > 0){
+                        event.isEventScheduled = true
+                    }else{
+                        event.isEventScheduled = false
+                    }
+                }
                 res.json({
                     status: 200,
                     success: true,
