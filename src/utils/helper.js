@@ -683,6 +683,7 @@ module.exports.tranformAvailabilityArray = async (arr) => {
                         updated_at: curr.updated_at,
                         deleted_at: curr.deleted_at,
                         checked: curr.checked,
+                        isAvailabilityAdded : curr.isAvailabilityAdded,
                         time_slot: (curr.checked) ? [{
                             id: curr.id,
                             start_time: curr.start_time,
