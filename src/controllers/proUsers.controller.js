@@ -1289,6 +1289,15 @@ module.exports.createProEmailTemplate = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
+            // checking if emailTemplate is contains {content} section
+            if (!emailTemplate.includes('{content}')) {
+                // throw new Error('Email template does not contain {content} section.');
+                return res.json({
+                    status: 400,
+                    success: false,
+                    message: "Email template does not contain {content} section.",
+                })
+            }
             let s2 = dbScript(db_sql['Q330'], { var1: userId, var2: findUser.rows[0].company_id, var3: mysql_real_escape_string2(emailTemplate), var4: templateName, var5: mysql_real_escape_string2(jsonTemplate) })
             let createTemplate = await connection.query(s2)
             if (createTemplate.rowCount > 0) {
@@ -1373,6 +1382,15 @@ module.exports.updateEmailTemplate = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
+            // checking if emailTemplate is contains {content} section
+            if (!emailTemplate.includes('{content}')) {
+                // throw new Error('Email template does not contain {content} section.');
+                return res.json({
+                    status: 400,
+                    success: false,
+                    message: "Email template does not contain {content} section.",
+                })
+            }
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q332'], { var1: templateId, var2: _dt, var3: templateName, var4: mysql_real_escape_string2(emailTemplate), var5: mysql_real_escape_string2(jsonTemplate) })
             updateTemplate = await connection.query(s2)
@@ -1475,7 +1493,17 @@ module.exports.sendEmailToLead = async (req, res) => {
                 credentialObj.smtpHost = findCreds.rows[0].smtp_host
                 credentialObj.smtpPort = findCreds.rows[0].smtp_port
 
-                //replacing the content of the template from the description when sending the mail to lead
+               
+                // checking if emailTemplate is contains {content} section
+                if (!template.includes('{content}')) {
+                    // throw new Error('Email template does not contain {content} section.');
+                    return res.json({
+                        status: 400,
+                        success: false,
+                        message: "Email template does not contain {content} section.",
+                    })
+                }
+ //replacing the content of the template from the description when sending the mail to lead
                 const result = template.replace('{content}', description);
 
                 await leadEmail2(leadEmail, result, templateName, credentialObj);
@@ -1741,12 +1769,12 @@ module.exports.availableTimeList = async (req, res) => {
             let s2 = dbScript(db_sql['Q344'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let availability = await connection.query(s2)
             if (availability.rowCount > 0) {
-                for(let item of availability.rows){
-                    let s3 = dbScript(db_sql['Q370'],{var1 : item.id})
+                for (let item of availability.rows) {
+                    let s3 = dbScript(db_sql['Q370'], { var1: item.id })
                     let findAvailability = await connection.query(s3)
-                    if(findAvailability.rowCount > 0){
+                    if (findAvailability.rowCount > 0) {
                         item.isAvailabilityAdded = true
-                    }else{
+                    } else {
                         item.isAvailabilityAdded = false
                     }
                 }
@@ -2062,12 +2090,12 @@ module.exports.eventsList = async (req, res) => {
             let s2 = dbScript(db_sql['Q346'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let eventList = await connection.query(s2)
             if (eventList.rowCount > 0) {
-                for(let event of eventList.rows){
-                    let s3 = dbScript(db_sql['Q369'],{var1 : event.id})
+                for (let event of eventList.rows) {
+                    let s3 = dbScript(db_sql['Q369'], { var1: event.id })
                     let findSchedule = await connection.query(s3)
-                    if(findSchedule.rowCount > 0){
+                    if (findSchedule.rowCount > 0) {
                         event.isEventScheduled = true
-                    }else{
+                    } else {
                         event.isEventScheduled = false
                     }
                 }
