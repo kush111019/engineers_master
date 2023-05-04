@@ -2429,7 +2429,6 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                     })
                     let captainWiseSaleObj = {}
                     let s3 = dbScript(db_sql['Q364'], { var1: captainId, var2: salesIdArr.join(",") })
-                    console.log(s3, "s3");
                     let salesDetails = await connection.query(s3)
 
                     if (salesDetails.rowCount > 0) {
@@ -2591,7 +2590,6 @@ module.exports.captainWiseGraph = async (req, res) => {
                         }
                     })
                     let s3 = dbScript(db_sql['Q364'], { var1: captainId, var2: salesIdArr.join(",") })
-                    console.log(s3, "s3");
                     let salesDetails = await connection.query(s3)
 
                     if (salesDetails.rowCount > 0) {
