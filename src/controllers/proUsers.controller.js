@@ -1493,7 +1493,7 @@ module.exports.sendEmailToLead = async (req, res) => {
                 credentialObj.smtpHost = findCreds.rows[0].smtp_host
                 credentialObj.smtpPort = findCreds.rows[0].smtp_port
 
-               
+
                 // checking if emailTemplate is contains {content} section
                 if (!template.includes('{content}')) {
                     // throw new Error('Email template does not contain {content} section.');
@@ -1503,7 +1503,7 @@ module.exports.sendEmailToLead = async (req, res) => {
                         message: "Email template does not contain {content} section.",
                     })
                 }
- //replacing the content of the template from the description when sending the mail to lead
+                //replacing the content of the template from the description when sending the mail to lead
                 const result = template.replace('{content}', description);
 
                 await leadEmail2(leadEmail, result, templateName, credentialObj);
@@ -2543,6 +2543,96 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                         message: "Captain wise sales details",
                         data: captainWiseSaleObj
                     })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Sales not found",
+                    })
+                }
+            } else {
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "User not found"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Please provide a captain id"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.captainWiseGraph = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { captainId, page } = req.query
+        if (captainId) {
+            let s1 = dbScript(db_sql['Q8'], { var1: userId })
+            let findAdmin = await connection.query(s1)
+            if (findAdmin.rowCount > 0) {
+                let s2 = dbScript(db_sql['Q366'], { var1: captainId })
+                let salesIds = await connection.query(s2)
+                if (salesIds.rowCount > 0) {
+                    let salesIdArr = []
+                    salesIds.rows.map((data) => {
+                        if (data.sales_ids.length > 0) {
+                            salesIdArr.push("'" + data.sales_ids.join("','") + "'")
+                        }
+                    })
+                    let s3 = dbScript(db_sql['Q364'], { var1: captainId, var2: salesIdArr.join(",") })
+                    console.log(s3, "s3");
+                    let salesDetails = await connection.query(s3)
+
+                    if (salesDetails.rowCount > 0) {
+                        let s4 = dbScript(db_sql['Q365'], { var1: captainId, var2: salesIdArr.join(",") })
+                        let notesCount = await connection.query(s4)
+
+                        // create map of sales details by sales ID
+                        let salesMap = {}
+                        for (let sale of salesDetails.rows) {
+                            salesMap[sale.id] = { ...sale, notes_count: 0 }
+                        }
+
+                        // update sales details with notes count
+                        for (const note of notesCount.rows) {
+                            const saleId = note.sales_id
+                            const notesCount = Number(note.notes_count)
+                            if (salesMap[saleId]) {
+                                salesMap[saleId].notes_count = notesCount
+                            }
+                        }
+
+                        // convert sales map back to array
+                        const updatedSalesDetails = Object.values(salesMap)
+
+                        if (updatedSalesDetails.length > 0) {
+                            let result = await paginatedResults(updatedSalesDetails, page)
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "Sales Details",
+                                data: result
+                            })
+                        }
+                    } else {
+                        res.json({
+                            status: 200,
+                            success: false,
+                            message: "Empty sales details",
+                            data: [],
+                        })
+                    }
                 } else {
                     res.json({
                         status: 200,

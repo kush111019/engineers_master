@@ -267,6 +267,7 @@ router.put('/deleteEvent',verifyTokenFn,checkParams,controller.proUser.deleteEve
 router.get('/salesCaptainList', verifyTokenFn,checkParams, controller.proUser.salesCaptainList)
 router.get('/captainWiseSalesDetails', verifyTokenFn,checkParams, controller.proUser.captainWiseSalesDetails);
 router.get('/sciiSales',verifyTokenFn,checkParams, controller.proUser.sciiSales)
+router.get('/captainWiseGraph',verifyTokenFn,checkParams, controller.proUser.captainWiseGraph)
 
 
 
