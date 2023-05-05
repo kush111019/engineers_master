@@ -1349,9 +1349,9 @@ module.exports.emailTemplateList = async (req, res) => {
             let masterTemplate = await connection.query(s3)
             if (templateList.rowCount > 0 && masterTemplate.rowCount > 0) {
                 for(let temp of masterTemplate.rows){
-                    let updatedTemp = temp.template.replace('{logo}', company.rows[0].company_logo)
+                    let updatedTemp = temp.template.replaceAll('{logo}', company.rows[0].company_logo)
                     temp.template = updatedTemp
-                    let updateName = temp.template.replace('{company_name}', company.rows[0].company_name)
+                    let updateName = temp.template.replaceAll('{company_name}', company.rows[0].company_name)
                     temp.template = updateName
                 }
                 combinedArray = [...masterTemplate.rows, ...templateList.rows];
