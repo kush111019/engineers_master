@@ -1353,7 +1353,7 @@ module.exports.emailTemplateList = async (req, res) => {
                         temp.template = temp.template.replace(/\{logo\}/g, company.rows[0].company_logo);
                     }
                     if (temp.template.includes('{company_name}')) {
-                        temp.template = temp.template.replaceAll(/\{company_name\}/g, company.rows[0].company_name);
+                        temp.template = temp.template.replace(/\{company_name\}/g, company.rows[0].company_name);
                     }
                 }
                 combinedArray = [...masterTemplate.rows, ...templateList.rows];
