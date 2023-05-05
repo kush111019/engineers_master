@@ -1349,7 +1349,11 @@ module.exports.emailTemplateList = async (req, res) => {
             let masterTemplate = await connection.query(s3)
             if (templateList.rowCount > 0 && masterTemplate.rowCount > 0) {
                 for(let temp of masterTemplate.rows){
-                    temp.template.replace('{logo}', company.rows[0].company_logo)
+                    console.log(temp.template,"temp.template");
+                    let updatedTemp = temp.template.replace('{logo}', company.rows[0].company_logo)
+                    console.log(updatedTemp,"updatedTemp");
+                    temp.template = updatedTemp
+                    console.log(temp.template ,"temp.template 222222222222222222");
                 }
                 combinedArray = [...masterTemplate.rows, ...templateList.rows];
                 res.json({
