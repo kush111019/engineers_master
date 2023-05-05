@@ -1745,7 +1745,8 @@ module.exports.addAvailability = async (req, res) => {
                 res.json({
                     status: 201,
                     success: true,
-                    message: "Availability scheduled successfully"
+                    message: "Availability scheduled successfully",
+                    data: createAvailability.rows
                 })
             } else {
                 await connection.query('ROLLBACK')
