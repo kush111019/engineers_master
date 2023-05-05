@@ -1343,11 +1343,14 @@ module.exports.emailTemplateList = async (req, res) => {
         if (findUser.rowCount > 0) {
             let s2 = dbScript(db_sql['Q331'], { var1: userId, var2: findUser.rows[0].company_id })
             let templateList = await connection.query(s2)
-            if (templateList.rowCount > 0) {
+            let s3 = dbScript(db_sql['Q371'],{})
+            let masterTemplate = await connection.query(s3)
+            if (templateList.rowCount > 0 && masterTemplate.rowCount > 0) {
+                combinedArray = [...masterTemplate.rows, ...templateList.rows];
                 res.json({
                     status: 200,
                     success: true,
-                    data: templateList.rows
+                    data: combinedArray
                 })
             } else {
                 res.json({
