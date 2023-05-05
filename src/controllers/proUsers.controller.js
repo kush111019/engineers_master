@@ -1347,7 +1347,7 @@ module.exports.emailTemplateList = async (req, res) => {
             let templateList = await connection.query(s2)
             let s3 = dbScript(db_sql['Q371'], {})
             let masterTemplate = await connection.query(s3)
-            if (templateList.rowCount > 0 && masterTemplate.rowCount > 0) {
+            if (templateList.rowCount > 0 || masterTemplate.rowCount > 0) {
                 for (let temp of masterTemplate.rows) {
                     if (temp.template.includes('{logo}')) {
                         temp.template = temp.template.replace(/\{logo\}/g, company.rows[0].company_logo);
