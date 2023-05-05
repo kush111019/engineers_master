@@ -3242,7 +3242,7 @@ const db_sql = {
             FROM pro_scheduled_events AS se
             LEFT JOIN users AS u ON u.id = se.user_id
             LEFT JOIN pro_user_events AS ue ON ue.id = se.event_id
-            WHERE se.user_id = '{var1}' AND se.company_id = '{var2}' AND se.deleted_at IS NULL`,
+            WHERE se.user_id = '{var1}' AND se.company_id = '{var2}' AND se.deleted_at IS NULL ORDER BY created_at desc`,
   "Q351": ` SELECT ua.id, ua.schedule_name, ua.timezone, ua.created_at,
               ua.user_id, u.full_name,
               (
