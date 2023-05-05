@@ -1341,11 +1341,16 @@ module.exports.emailTemplateList = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
+            let s6 = dbScript(db_sql['Q9'], { var1: findUser.rows[0].company_id })
+            let company = await connection.query(s6)
             let s2 = dbScript(db_sql['Q331'], { var1: userId, var2: findUser.rows[0].company_id })
             let templateList = await connection.query(s2)
             let s3 = dbScript(db_sql['Q371'],{})
             let masterTemplate = await connection.query(s3)
             if (templateList.rowCount > 0 && masterTemplate.rowCount > 0) {
+                for(let temp of masterTemplate.rows){
+                    temp.template.replace('{logo}', company.rows[0].company_logo)
+                }
                 combinedArray = [...masterTemplate.rows, ...templateList.rows];
                 res.json({
                     status: 200,
