@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
@@ -885,6 +885,7 @@ module.exports.leadReSync = async (req, res) => {
                                         let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
                                     }
                                     else {
+                                        //Hubspot function for inserting lead data
                                         let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, '')
                                     }
                                 } else {
@@ -1288,6 +1289,15 @@ module.exports.createProEmailTemplate = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
+            // checking if emailTemplate is contains {content} section
+            if (!emailTemplate.includes('{content}')) {
+                // throw new Error('Email template does not contain {content} section.');
+                return res.json({
+                    status: 400,
+                    success: false,
+                    message: "Email template does not contain {content} section.",
+                })
+            }
             let s2 = dbScript(db_sql['Q330'], { var1: userId, var2: findUser.rows[0].company_id, var3: mysql_real_escape_string2(emailTemplate), var4: templateName, var5: mysql_real_escape_string2(jsonTemplate) })
             let createTemplate = await connection.query(s2)
             if (createTemplate.rowCount > 0) {
@@ -1331,13 +1341,26 @@ module.exports.emailTemplateList = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
+            let s6 = dbScript(db_sql['Q9'], { var1: findUser.rows[0].company_id })
+            let company = await connection.query(s6)
             let s2 = dbScript(db_sql['Q331'], { var1: userId, var2: findUser.rows[0].company_id })
             let templateList = await connection.query(s2)
-            if (templateList.rowCount > 0) {
+            let s3 = dbScript(db_sql['Q371'], {})
+            let masterTemplate = await connection.query(s3)
+            if (templateList.rowCount > 0 || masterTemplate.rowCount > 0) {
+                for (let temp of masterTemplate.rows) {
+                    if (temp.template.includes('{logo}')) {
+                        temp.template = temp.template.replace(/\{logo\}/g, company.rows[0].company_logo);
+                    }
+                    if (temp.template.includes('{company_name}')) {
+                        temp.template = temp.template.replace(/\{company_name\}/g, company.rows[0].company_name);
+                    }
+                }
+                combinedArray = [...masterTemplate.rows, ...templateList.rows];
                 res.json({
                     status: 200,
                     success: true,
-                    data: templateList.rows
+                    data: combinedArray
                 })
             } else {
                 res.json({
@@ -1372,6 +1395,15 @@ module.exports.updateEmailTemplate = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0) {
+            // checking if emailTemplate is contains {content} section
+            if (!emailTemplate.includes('{content}')) {
+                // throw new Error('Email template does not contain {content} section.');
+                return res.json({
+                    status: 400,
+                    success: false,
+                    message: "Email template does not contain {content} section.",
+                })
+            }
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q332'], { var1: templateId, var2: _dt, var3: templateName, var4: mysql_real_escape_string2(emailTemplate), var5: mysql_real_escape_string2(jsonTemplate) })
             updateTemplate = await connection.query(s2)
@@ -1474,6 +1506,16 @@ module.exports.sendEmailToLead = async (req, res) => {
                 credentialObj.smtpHost = findCreds.rows[0].smtp_host
                 credentialObj.smtpPort = findCreds.rows[0].smtp_port
 
+
+                // checking if emailTemplate is contains {content} section
+                if (!template.includes('{content}')) {
+                    // throw new Error('Email template does not contain {content} section.');
+                    return res.json({
+                        status: 400,
+                        success: false,
+                        message: "Email template does not contain {content} section.",
+                    })
+                }
                 //replacing the content of the template from the description when sending the mail to lead
                 const result = template.replace('{content}', description);
 
@@ -1703,7 +1745,8 @@ module.exports.addAvailability = async (req, res) => {
                 res.json({
                     status: 201,
                     success: true,
-                    message: "Availability scheduled successfully"
+                    message: "Availability scheduled successfully",
+                    data: createAvailability.rows
                 })
             } else {
                 await connection.query('ROLLBACK')
@@ -1740,6 +1783,15 @@ module.exports.availableTimeList = async (req, res) => {
             let s2 = dbScript(db_sql['Q344'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let availability = await connection.query(s2)
             if (availability.rowCount > 0) {
+                for (let item of availability.rows) {
+                    let s3 = dbScript(db_sql['Q370'], { var1: item.id })
+                    let findAvailability = await connection.query(s3)
+                    if (findAvailability.rowCount > 0) {
+                        item.isAvailabilityAdded = true
+                    } else {
+                        item.isAvailabilityAdded = false
+                    }
+                }
                 let finalArray = await tranformAvailabilityArray(availability.rows)
                 res.json({
                     status: 200,
@@ -2052,6 +2104,15 @@ module.exports.eventsList = async (req, res) => {
             let s2 = dbScript(db_sql['Q346'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let eventList = await connection.query(s2)
             if (eventList.rowCount > 0) {
+                for (let event of eventList.rows) {
+                    let s3 = dbScript(db_sql['Q369'], { var1: event.id })
+                    let findSchedule = await connection.query(s3)
+                    if (findSchedule.rowCount > 0) {
+                        event.isEventScheduled = true
+                    } else {
+                        event.isEventScheduled = false
+                    }
+                }
                 res.json({
                     status: 200,
                     success: true,
@@ -2088,7 +2149,7 @@ module.exports.eventDetails = async (req, res) => {
         let s1 = dbScript(db_sql['Q348'], { var1: eventId })
         let showEventDetails = await connection.query(s1)
         if (showEventDetails.rowCount > 0) {
-            if(showEventDetails.rows[0].availability_time_slots.length > 0){
+            if (showEventDetails.rows[0].availability_time_slots.length > 0) {
                 let finalArray = await tranformAvailabilityArray(showEventDetails.rows[0].availability_time_slots)
                 for (let item of finalArray[0].time_slots) {
                     for (let slot of item.time_slot) {
@@ -2099,7 +2160,7 @@ module.exports.eventDetails = async (req, res) => {
                 }
                 showEventDetails.rows[0].availability_time_slots = finalArray[0]
             }
-            
+
             let booked_slots = [];
             let s2 = dbScript(db_sql['Q362'], { var1: eventId })
             let scheduledEvents = await connection.query(s2)
@@ -2234,9 +2295,10 @@ module.exports.scheduleEvent = async (req, res) => {
         //creating obj for calendar during scheduling events
         let calObjCreator = await getIcalObjectInstance(result.startTargetedTimezoneStringIso, result.endTargetedTimezoneStringIso, eventName, description, location, meetLink, leadName, leadEmail, creatorTimezone)
 
+        //for sending mail to creator
         let formattedDateString = `${result.startTimeTargetedTimezone} - ${result.endTimeTargetedTimezone}`
         await eventScheduleMail(creatorName, creatorEmail, eventName, meetLink, leadName, leadEmail, description, formattedDateString, creatorTimezone, calObjCreator)
-        //-------------------------------------------------
+
         // for lead ---------------------------------------
         let leadDates = await dateFormattor1(date, startTime, endTime, leadTimezone)
         let calObjLead = await getIcalObjectInstance(leadDates.startDate, leadDates.endDate, eventName, description, location, meetLink, leadName, leadEmail, leadTimezone)
@@ -2244,8 +2306,8 @@ module.exports.scheduleEvent = async (req, res) => {
         let formattedString = `${startTime} - ${endTime} - ${date}`
 
         await eventScheduleMail(leadName, leadEmail, eventName, meetLink, leadName, leadEmail, description, formattedString, leadTimezone, calObjLead)
-        // //------------------------------------------------
-        // // storing scheduled event in DB.
+
+        //storing scheduled event in DB.
         let s1 = dbScript(db_sql['Q349'], { var1: eventId, var2: result.startTargetedTimezoneStringIso, var3: result.startTargetedTimezoneStringIso, var4: result.endTargetedTimezoneStringIso, var5: mysql_real_escape_string(leadName), var6: leadEmail, var7: mysql_real_escape_string(description), var8: userId, var9: companyId, var10: creatorTimezone })
         let createSchedule = await connection.query(s1)
 
@@ -2273,16 +2335,18 @@ module.exports.scheduleEvent = async (req, res) => {
     }
 }
 
+//sheduled event list scheduled by leads
 module.exports.scheduledEventsList = async (req, res) => {
     try {
         let userId = req.user.id
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rowCount > 0) {
 
             let s2 = dbScript(db_sql['Q350'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let scheduleEvents = await connection.query(s2)
             for (let event of scheduleEvents.rows) {
+                // converting utc time to local time
                 let result = await convertToTimezone(event.start_time, event.end_time, event.timezone)
                 event.start_time = result.localStart;
                 event.end_time = result.localEnd;
@@ -2320,3 +2384,387 @@ module.exports.scheduledEventsList = async (req, res) => {
     }
 }
 
+//sales analysis
+module.exports.salesCaptainList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q363'], { var1: findAdmin.rows[0].company_id })
+            let salesCatains = await connection.query(s2)
+            if (salesCatains.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Sales captain list",
+                    data: salesCatains.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Sales captain list",
+                    data: []
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.stack,
+        })
+    }
+}
+
+module.exports.captainWiseSalesDetails = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { captainId } = req.query
+        if (captainId) {
+            let s1 = dbScript(db_sql['Q8'], { var1: userId })
+            let findAdmin = await connection.query(s1)
+            if (findAdmin.rowCount > 0) {
+                let s2 = dbScript(db_sql['Q366'], { var1: captainId })
+                let salesIds = await connection.query(s2)
+                if (salesIds.rowCount > 0) {
+                    let salesIdArr = []
+                    salesIds.rows.map((data) => {
+                        if (data.sales_ids.length > 0) {
+                            salesIdArr.push("'" + data.sales_ids.join("','") + "'")
+                        }
+                    })
+                    let captainWiseSaleObj = {}
+                    let s3 = dbScript(db_sql['Q364'], { var1: captainId, var2: salesIdArr.join(",") })
+                    let salesDetails = await connection.query(s3)
+
+                    if (salesDetails.rowCount > 0) {
+                        let s4 = dbScript(db_sql['Q365'], { var1: captainId, var2: salesIdArr.join(",") })
+                        let notesCount = await connection.query(s4)
+
+                        // create map of sales details by sales ID
+                        let salesMap = {}
+                        for (let sale of salesDetails.rows) {
+                            salesMap[sale.id] = { ...sale, notes_count: 0 }
+                        }
+
+                        // update sales details with notes count
+                        for (const note of notesCount.rows) {
+                            const saleId = note.sales_id
+                            const notesCount = Number(note.notes_count)
+                            if (salesMap[saleId]) {
+                                salesMap[saleId].notes_count = notesCount
+                            }
+                        }
+
+                        // convert sales map back to array
+                        const updatedSalesDetails = Object.values(salesMap)
+
+                        // calculate aggregate note counts
+                        let notesCountArr = updatedSalesDetails.map((detail) => Number(detail.notes_count || 0))
+
+                        let count = notesCountArr.reduce((acc, val) => acc + val, 0)
+                        let avgNotesCount = count / updatedSalesDetails.length
+                        let maxNotesCount = Math.max(...notesCountArr)
+                        let minNotesCount = Math.min(...notesCountArr)
+
+                        let revenue = 0
+                        let recognizedRevenue = []
+
+                        let s5 = dbScript(db_sql['Q367'], { var1: salesIdArr.join(",") })
+                        let recognizedAmount = await connection.query(s5)
+                        if (recognizedAmount.rowCount > 0) {
+                            recognizedAmount.rows.map(amount => {
+                                revenue += Number(amount.recognized_amount)
+                                recognizedRevenue.push(Number(amount.recognized_amount))
+                            })
+                        }
+                        let days = 0
+                        let durationDay = []
+                        salesDetails.rows.map((detail) => {
+                            days += Number(detail.duration_in_days)
+                            durationDay.push(Number(detail.duration_in_days))
+                        })
+                        let avgClosingTime = days / salesDetails.rowCount
+                        let maxClosingTime = Math.max(...durationDay);
+                        let minClosingTime = Math.min(...durationDay);
+
+                        let sciiAvg = avgClosingTime;
+                        let aboveCount = 0;
+                        let belowCount = 0;
+                        let sciiCount = 0;
+                        if (durationDay.length == 1) {
+                            sciiCount = 1
+                        } else {
+                            for (let i = 0; i < durationDay.length; i++) {
+                                if (durationDay[i] > sciiAvg) {
+                                    aboveCount++;
+                                } else if (durationDay[i] < sciiAvg) {
+                                    belowCount++;
+                                }
+                            }
+                            if (aboveCount == 0 && belowCount == 0) {
+                                sciiCount = 0
+                            } else if (aboveCount == 0 || belowCount == 0) {
+                                sciiCount = 1
+                            } else {
+                                sciiCount = Number(belowCount / aboveCount)
+                            }
+                        }
+                        let avgRecognizedRevenue = revenue / salesDetails.rowCount
+                        let maxRecognizedRevenue = Math.max(...recognizedRevenue);
+                        let minRecognizedRevenue = Math.min(...recognizedRevenue);
+
+                        captainWiseSaleObj = {
+                            salesDetails: updatedSalesDetails,
+                            avgRecognizedRevenue: avgRecognizedRevenue,
+                            maxRecognizedRevenue: maxRecognizedRevenue,
+                            minRecognizedRevenue: minRecognizedRevenue,
+                            avgClosingTime: avgClosingTime.toFixed(4),
+                            maxClosingTime: maxClosingTime.toFixed(4),
+                            minClosingTime: minClosingTime.toFixed(4),
+                            avgNotesCount: avgNotesCount,
+                            maxNotesCount: maxNotesCount,
+                            minNotesCount: minNotesCount,
+                            scii: sciiCount
+                        }
+                    } else {
+                        captainWiseSaleObj = {
+                            salesDetails: [],
+                            avgRecognizedRevenue: 0,
+                            maxRecognizedRevenue: 0,
+                            minRecognizedRevenue: 0,
+                            avgClosingTime: 0,
+                            maxClosingTime: 0,
+                            minClosingTime: 0,
+                            avgNotesCount: 0,
+                            maxNotesCount: 0,
+                            minNotesCount: 0,
+                            sciiCount: 0
+                        }
+                    }
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Captain wise sales details",
+                        data: captainWiseSaleObj
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Sales not found",
+                    })
+                }
+            } else {
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "User not found"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Please provide a captain id"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.captainWiseGraph = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { captainId, page } = req.query
+        if (captainId) {
+            let s1 = dbScript(db_sql['Q8'], { var1: userId })
+            let findAdmin = await connection.query(s1)
+            if (findAdmin.rowCount > 0) {
+                let s2 = dbScript(db_sql['Q366'], { var1: captainId })
+                let salesIds = await connection.query(s2)
+                if (salesIds.rowCount > 0) {
+                    let salesIdArr = []
+                    salesIds.rows.map((data) => {
+                        if (data.sales_ids.length > 0) {
+                            salesIdArr.push("'" + data.sales_ids.join("','") + "'")
+                        }
+                    })
+                    let s3 = dbScript(db_sql['Q364'], { var1: captainId, var2: salesIdArr.join(",") })
+                    let salesDetails = await connection.query(s3)
+
+                    if (salesDetails.rowCount > 0) {
+                        let s4 = dbScript(db_sql['Q365'], { var1: captainId, var2: salesIdArr.join(",") })
+                        let notesCount = await connection.query(s4)
+
+                        // create map of sales details by sales ID
+                        let salesMap = {}
+                        for (let sale of salesDetails.rows) {
+                            salesMap[sale.id] = { ...sale, notes_count: 0 }
+                        }
+
+                        // update sales details with notes count
+                        for (const note of notesCount.rows) {
+                            const saleId = note.sales_id
+                            const notesCount = Number(note.notes_count)
+                            if (salesMap[saleId]) {
+                                salesMap[saleId].notes_count = notesCount
+                            }
+                        }
+
+                        // convert sales map back to array
+                        const updatedSalesDetails = Object.values(salesMap)
+
+                        if (updatedSalesDetails.length > 0) {
+                            let result = await paginatedResults(updatedSalesDetails, page)
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "Sales Details",
+                                data: result
+                            })
+                        }
+                    } else {
+                        res.json({
+                            status: 200,
+                            success: false,
+                            message: "Empty sales details",
+                            data: [],
+                        })
+                    }
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Sales not found",
+                    })
+                }
+            } else {
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "User not found"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Please provide a captain id"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.sciiSales = async (req, res) => {
+    try {
+        let { page } = req.query
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q363'], { var1: findAdmin.rows[0].company_id })
+            let salesCatains = await connection.query(s2)
+            let sciiArr = []
+            if (salesCatains.rowCount > 0) {
+                for (captain of salesCatains.rows) {
+                    let salesIdArr = []
+                    if (captain.sales_ids.length > 0) {
+                        salesIdArr.push("'" + captain.sales_ids.join("','") + "'")
+                    }
+                    let s3 = dbScript(db_sql['Q364'], { var1: captain.user_id, var2: salesIdArr.join(",") })
+                    let salesDetails = await connection.query(s3)
+                    if (salesDetails.rowCount > 0) {
+                        let days = 0
+                        let durationDays = []
+                        salesDetails.rows.map((detail) => {
+                            days += Number(detail.duration_in_days)
+                            durationDays.push(Number(detail.duration_in_days))
+                        })
+                        let avgClosingTime = days / salesDetails.rowCount
+                        let aboveCount = 0;
+                        let belowCount = 0;
+                        let sciiCount = 0;
+                        if (durationDays.length == 1) {
+                            sciiCount = 1
+                        } else {
+                            for (let i = 0; i < durationDays.length; i++) {
+                                if (durationDays[i] > avgClosingTime) {
+                                    aboveCount++;
+                                } else if (durationDays[i] < avgClosingTime) {
+                                    belowCount++;
+                                }
+                            }
+                            if (aboveCount == 0 && belowCount == 0) {
+                                sciiCount = 0
+                            } else if (aboveCount == 0 || belowCount == 0) {
+                                sciiCount = 1
+                            } else {
+                                sciiCount = Number(belowCount / aboveCount)
+                            }
+                        }
+                        sciiArr.push({
+                            captain_id: captain.user_id,
+                            captain_name: captain.full_name,
+                            scii: sciiCount
+                        })
+                    }
+                }
+                if (sciiArr.length > 0) {
+                    let result = await paginatedResults(sciiArr, page)
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "scii list",
+                        data: result
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty scii list",
+                        data: []
+                    })
+                }
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Sales captain list",
+                    data: []
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}

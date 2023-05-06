@@ -93,12 +93,13 @@ module.exports.customerFnForsalesforce = async (data, accessData, industryId) =>
         return customerId = findCustomer.rows[0].id
     }
 }
-
+// hubspot function for inserting lead data
 module.exports.leadFnForHubspot = async (leadName, titleId, sourceId, customerId, data, accessData, leadId) => {
     let s11 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(leadName), var2: titleId ? titleId : 'null', var3: mysql_real_escape_string(data.properties.email), var4: data.properties.phone, var5: (data.properties.address) ? mysql_real_escape_string(data.properties.address) : "", var6: sourceId ? sourceId : 'null', var7: '', var8: data.properties.website ? data.properties.website : '', var9: '', var10: false, var11: 'null', var12: '', var13: accessData.user_id, var14: accessData.company_id, var15: customerId ? customerId : 'null', var16: 'lead', var17: data.id, var18: 'hubspot', var19: leadId ? leadId : 'null' })
     let createLead = await connection.query(s11)
 }
 
+//salesforce function for inserting lead data
 module.exports.leadFnForsalesforce = async (titleId, sourceId, customerId, data, accessData, leadId) => {
     let leadAddress = ''
     if (data.Address.street) {

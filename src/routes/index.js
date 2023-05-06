@@ -3,25 +3,26 @@ const controller = require('../controllers');
 const router = express.Router();
 const {uploadLogo} = require('../utils/uploadfiles')
 const { verifyTokenFn } = require('../utils/jwt')
+const {checkParams} = require('../utils/helper')
 
 
 
 router.use('/superAdmin', require('./superAdmin.routes'))
 router.use('/companyAdmin', require('./companyAdmin.routes'))
 
-router.post('/auth/upload',uploadLogo.single('image'),controller.companyAdmin.uploadLogo);
-router.post('/auth/signUp' , controller.companyAdmin.signUp)
-router.post('/auth/verifyUser' , controller.companyAdmin.verifyUser)
-router.post('/auth/login' , controller.companyAdmin.login)
-router.post('/auth/setPassword',controller.companyAdmin.setPasswordForLogin)
-router.post('/auth/forgotPassword',controller.companyAdmin.forgotPassword)
-router.post('/auth/resetPassword',controller.companyAdmin.resetPassword)
-router.post('/auth/proUserLogin',controller.proUser.proUserLogin)
-router.post('/auth/contactUs', controller.contactUs.contactUs)
+router.post('/auth/upload',uploadLogo.single('image'),checkParams,controller.companyAdmin.uploadLogo);
+router.post('/auth/signUp' , checkParams,controller.companyAdmin.signUp)
+router.post('/auth/verifyUser' , checkParams,controller.companyAdmin.verifyUser)
+router.post('/auth/login' , checkParams,controller.companyAdmin.login)
+router.post('/auth/setPassword',checkParams,controller.companyAdmin.setPasswordForLogin)
+router.post('/auth/forgotPassword',checkParams,controller.companyAdmin.forgotPassword)
+router.post('/auth/resetPassword',checkParams,controller.companyAdmin.resetPassword)
+router.post('/auth/proUserLogin',checkParams,controller.proUser.proUserLogin)
+router.post('/auth/contactUs', checkParams,controller.contactUs.contactUs)
 
-router.get('/plansList',controller.payment.plansList)
+router.get('/plansList',checkParams,controller.payment.plansList)
 
-router.get('/countryDetails',verifyTokenFn, controller.companyAdmin.countryDetails)
+router.get('/countryDetails',verifyTokenFn, checkParams,controller.companyAdmin.countryDetails)
 
 
 module.exports = router;
