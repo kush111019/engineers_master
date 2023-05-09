@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults,getParentUserList } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
@@ -2751,6 +2751,86 @@ module.exports.sciiSales = async (req, res) => {
                     success: false,
                     message: "Empty Sales captain list",
                     data: []
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.commissionReport = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { salesRepId, startDate, endDate } = req.query
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0) {
+            startDate = new Date(startDate)
+            startDate.setHours(0, 0, 0, 0)
+            let sDate = new Date(startDate).toISOString()
+            endDate = new Date(endDate)
+            endDate.setHours(23, 59, 59, 999)
+            let eDate = new Date(endDate).toISOString()
+
+            let s2 = dbScript(db_sql['Q12'], { var1: findAdmin.rows[0].role_id })
+            let roleData = await connection.query(s2)
+            let managerName = ''
+            if (roleData.rows[0].reporter) {
+                let parentList = await getParentUserList(roleData.rows[0], findAdmin.rows[0].company_id);
+                managerName = parentList[0].full_name
+            }
+
+            let s3 = dbScript(db_sql['Q373'], { var1: salesRepId, var2: sDate, var3: eDate })
+            let commissionData = await connection.query(s3)
+            let _dt = new Date().toISOString()
+            let data = {
+                salesRepName: results[0].sales_rep_name,
+                companyName: results[0].company_name,
+                companyLogo: results[0].company_logo,
+                currentDate : _dt,
+                fromDate : sDate,
+                toDate : eDate,
+                managerName : managerName,
+                report: [],
+                totalPerpetualCommissionEarned: 0,
+                totalSubscriptionCommissionEarned: 0
+            };
+
+            for (let row of commissionData.rows) {
+                data.report.push({
+                    id: row.id,
+                    customerName: row.customer_name,
+                    date: row.closed_at,
+                    dealType: row.sales_type,
+                    salesRole: row.user_type,
+                    earnedCommission: row.total_commission_amount
+                });
+
+                if (row.sales_type === 'Perpetual') {
+                    data.totalPerpetualCommissionEarned += Number(row.total_commission_amount);
+                } else if (row.sales_type === 'Subscription') {
+                    data.totalSubscriptionCommissionEarned += Number(row.total_commission_amount);
+                }
+
+                data.totalCommission = data.totalPerpetualCommissionEarned +  data.totalSubscriptionCommissionEarned
+            }
+            if (data) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Commission Report",
+                    data : data
                 })
             }
         } else {
