@@ -177,7 +177,7 @@ module.exports.acceptOrRejectApproveRequestForSales = async (req, res) => {
                 let s5 = dbScript(db_sql['Q229'],{var1 : sales_id});
                 let findSales = await connection.query(s5);
 
-                let discountedAmount = (Number(findSales.rows[0].target_amount) - (Number(findSales.rows[0].target_amount) * (Number(percentage)/100)));
+                let discountedAmount = (Number(findSales.rows[0].target_amount) - (Number(findSales.rows[0].target_amount) * (Number(findApproval.rows[0].percentage)/100)));
 
                 let s6 = dbScript(db_sql['Q372'],{var1 : discountedAmount, var2 : sales_id})
                 let updatedTargetAmount = await connection.query(s6)
