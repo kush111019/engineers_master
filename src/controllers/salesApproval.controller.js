@@ -159,7 +159,6 @@ module.exports.acceptOrRejectApproveRequestForSales = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
 
-        // if (checkPermission.rows[0].permission_to_create) {
         let _dt = new Date().toISOString();
 
         let s2 = dbScript(db_sql['Q294'], { var1: _dt, var2: approval_status, var3: sales_id })
@@ -171,16 +170,48 @@ module.exports.acceptOrRejectApproveRequestForSales = async (req, res) => {
             // add notification in notification list
             let notification_userId = [updateSalesApprovalStatus.rows[0].requested_user_id];
             if (approval_status == 'Accepted') {
-                let s4 = dbScript(db_sql['Q296'],{var1 : approval_id, var2 : sales_id})
+                let s4 = dbScript(db_sql['Q296'], { var1: approval_id, var2: sales_id })
                 let findApproval = await connection.query(s4);
 
-                let s5 = dbScript(db_sql['Q229'],{var1 : sales_id});
+                let s5 = dbScript(db_sql['Q229'], { var1: sales_id });
                 let findSales = await connection.query(s5);
 
-                let discountedAmount = (Number(findSales.rows[0].target_amount) - (Number(findSales.rows[0].target_amount) * (Number(findApproval.rows[0].percentage)/100)));
+                let discountedAmount = (Number(findSales.rows[0].target_amount) - (Number(findSales.rows[0].target_amount) * (Number(findApproval.rows[0].percentage) / 100)));
 
-                let s6 = dbScript(db_sql['Q372'],{var1 : discountedAmount, var2 : sales_id})
-                let updatedTargetAmount = await connection.query(s6)
+                let totalCommission = 0;
+
+                let s6 = dbScript(db_sql['Q161'], { var1: findSales.rows[0].slab_id })
+                let slab = await connection.query(s6)
+
+                let remainingAmount = Number(discountedAmount);
+                let commission = 0
+                //if remainning amount is 0 then no reason to check 
+                for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
+                    let slab_percentage = Number(slab.rows[i].percentage)
+                    let slab_maxAmount = Number(slab.rows[i].max_amount)
+                    let slab_minAmount = Number(slab.rows[i].min_amount)
+                    if (slab.rows[i].is_max) {
+                        // Reached the last slab
+                        commission += ((slab_percentage / 100) * remainingAmount)
+                        break;
+                    }
+                    else {
+                        // This is not the last slab
+                        let diff = slab_minAmount == 0 ? 0 : 1
+                        let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+                        slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+                        commission += ((slab_percentage / 100) * slab_diff)
+                        remainingAmount -= slab_diff
+                        if (remainingAmount <= 0) {
+                            break;
+                        }
+                    }
+                }
+                totalCommission = totalCommission + commission
+
+                let s7 = dbScript(db_sql['Q372'], { var1: discountedAmount, var2: totalCommission, var3: sales_id })
+                let updatedTargetAmount = await connection.query(s7)
+
                 await notificationsOperations({ type: 1, msg: 1.7, notification_typeId, notification_userId }, userId);
             } else {
                 await notificationsOperations({ type: 1, msg: 1.8, notification_typeId, notification_userId }, userId);
