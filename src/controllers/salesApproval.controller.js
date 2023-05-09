@@ -171,6 +171,16 @@ module.exports.acceptOrRejectApproveRequestForSales = async (req, res) => {
             // add notification in notification list
             let notification_userId = [updateSalesApprovalStatus.rows[0].requested_user_id];
             if (approval_status == 'Accepted') {
+                let s4 = dbScript(db_sql['Q296'],{var1 : approval_id, var2 : sales_id})
+                let findApproval = await connection.query(s4);
+
+                let s5 = dbScript(db_sql['Q229'],{var1 : sales_id});
+                let findSales = await connection.query(s5);
+
+                let discountedAmount = (Number(findSales.rows[0].target_amount) - (Number(findSales.rows[0].target_amount) * (Number(percentage)/100)));
+
+                let s6 = dbScript(db_sql['Q372'],{var1 : discountedAmount, var2 : sales_id})
+                let updatedTargetAmount = await connection.query(s6)
                 await notificationsOperations({ type: 1, msg: 1.7, notification_typeId, notification_userId }, userId);
             } else {
                 await notificationsOperations({ type: 1, msg: 1.8, notification_typeId, notification_userId }, userId);
