@@ -2823,7 +2823,7 @@ module.exports.commissionReport = async (req, res) => {
                         date: row.closed_at,
                         dealType: row.sales_type,
                         salesRole: row.user_type,
-                        earnedCommission: row.total_commission_amount
+                        earnedCommission: Number(row.total_commission_amount)
                     });
 
                     if (row.sales_type === 'Perpetual') {
