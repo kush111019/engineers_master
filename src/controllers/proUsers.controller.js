@@ -2419,7 +2419,7 @@ module.exports.salesCaptainList = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.stack,
+            message: error.message,
         })
     }
 }
@@ -2820,7 +2820,7 @@ module.exports.commissionReport = async (req, res) => {
                     data.report.push({
                         id: row.id,
                         customerName: row.customer_name,
-                        date: row.closed_at,
+                        date: row.created_at,
                         dealType: row.sales_type,
                         salesRole: row.user_type,
                         earnedCommission: Number(row.total_commission_amount)
