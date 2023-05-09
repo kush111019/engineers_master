@@ -2814,13 +2814,13 @@ module.exports.commissionReport = async (req, res) => {
                     date: row.closed_at,
                     dealType: row.sales_type,
                     salesRole: row.user_type,
-                    earnedCommission: row.total_commission_amount
+                    earnedCommission: Number(row.total_commission_amount).toFixed(4)
                 });
 
                 if (row.sales_type === 'Perpetual') {
-                    data.totalPerpetualCommissionEarned += Number(row.total_commission_amount);
+                    data.totalPerpetualCommissionEarned += Number(row.total_commission_amount).toFixed(4);
                 } else if (row.sales_type === 'Subscription') {
-                    data.totalSubscriptionCommissionEarned += Number(row.total_commission_amount);
+                    data.totalSubscriptionCommissionEarned += Number(row.total_commission_amount).toFixed(4);
                 }
 
                 data.totalCommission = data.totalPerpetualCommissionEarned +  data.totalSubscriptionCommissionEarned
