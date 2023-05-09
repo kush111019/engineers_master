@@ -2791,7 +2791,12 @@ module.exports.commissionReport = async (req, res) => {
             let managerName = ''
             if (roleData.rows[0].reporter) {
                 let parentList = await getParentUserList(roleData.rows[0], findAdmin.rows[0].company_id);
-                managerName = parentList[0].full_name
+                for(let parent of parentList) {
+                    if(parent.role_id == roleData.rows[0].reporter) {
+                        managerName = parent.full_name
+                    }
+                }
+                
             }
 
             let s4 = dbScript(db_sql['Q373'], { var1: salesRepId, var2: sDate, var3: eDate })
