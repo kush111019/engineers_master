@@ -268,6 +268,7 @@ router.get('/salesCaptainList', verifyTokenFn,checkParams, controller.proUser.sa
 router.get('/captainWiseSalesDetails', verifyTokenFn,checkParams, controller.proUser.captainWiseSalesDetails);
 router.get('/sciiSales',verifyTokenFn,checkParams, controller.proUser.sciiSales)
 router.get('/captainWiseGraph',verifyTokenFn,checkParams, controller.proUser.captainWiseGraph)
+router.get('/commissionReport', verifyTokenFn,checkParams, controller.proUser.commissionReport)
 
 
 
