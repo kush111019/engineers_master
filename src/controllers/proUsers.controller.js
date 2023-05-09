@@ -2841,6 +2841,24 @@ module.exports.commissionReport = async (req, res) => {
                         message: "Commission Report",
                         data: data
                     })
+                }else{
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty Commission Report",
+                        data: {
+                            salesRepName: "",
+                            companyName: "",
+                            companyLogo: "",
+                            currentDate: _dt,
+                            fromDate: sDate,
+                            toDate: eDate,
+                            managerName: managerName,
+                            report: [],
+                            totalPerpetualCommissionEarned: 0,
+                            totalSubscriptionCommissionEarned: 0
+                        }
+                    })
                 }
             } else {
                 res.json({
