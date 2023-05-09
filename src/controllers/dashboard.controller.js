@@ -182,6 +182,13 @@ module.exports.revenues = async (req, res) => {
                         data: [], totalRevenueAndCommission
                     })
                 }
+            }else{
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Revenues and Commissions",
+                    data: [], totalRevenueAndCommission
+                })
             }
         } else if (checkPermission.rows[0].permission_to_view_own) {
             let revenueCommissionBydate = [];
