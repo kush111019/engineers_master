@@ -25,18 +25,12 @@ module.exports.revenues = async (req, res) => {
             let subscriptionBooking = 0;
             let subscriptionCommission = 0;
             let R1 = 0
-            console.log(sDate,"sDate", eDate,"edate");
             let s2 = dbScript(db_sql['Q254'], { var1: checkPermission.rows[0].company_id, var2: 'Perpetual', var3: sDate, var4: eDate })
-            console.log(s2,"s2");
             let salesPerpetualData = await connection.query(s2)
-            console.log(salesPerpetualData.rows, "salesPerpetualData");
-            console.log("-----------------------------------------------------");
             if (salesPerpetualData.rowCount > 0) {
                 for (let data of salesPerpetualData.rows) {
                     bookingCommission = bookingCommission + Number(data.booking_commission)
                     revenueCommission = revenueCommission + Number(data.revenue_commission)
-                    console.log(revenueCommission,"revenueCommission00000");
-                    console.log("-------------------------------------------------");
                     let s5 = dbScript(db_sql['Q256'], { var1: data.sales_id })
                     let recognizedRevenueData = await connection.query(s5)
                     R1 = R1 + Number(recognizedRevenueData.rows[0].amount)
@@ -49,19 +43,12 @@ module.exports.revenues = async (req, res) => {
                     }
                 }
             }
-            console.log(revenueCommission,"revenueCommission");
-            console.log("----------------------------------");
 
             let s3 = dbScript(db_sql['Q254'], { var1: checkPermission.rows[0].company_id, var2: 'Subscription', var3: sDate, var4: eDate })
-            console.log(s3,"s3");
             let salesSubscriptionData = await connection.query(s3)
-            console.log(salesSubscriptionData.rows,"salesSubscriptionData");
-            console.log("----------------------------------");
             if (salesSubscriptionData.rowCount > 0) {
                 for (let data of salesSubscriptionData.rows) {
                     subscriptionCommission = subscriptionCommission + Number(data.revenue_commission)
-                    console.log(subscriptionCommission,"subscriptionCommission000000");
-                    console.log("----------------------------------");
                     let s5 = dbScript(db_sql['Q256'], { var1: data.sales_id })
                     let recognizedRevenueData = await connection.query(s5)
                     if (recognizedRevenueData.rows[0].amount) {
@@ -74,14 +61,9 @@ module.exports.revenues = async (req, res) => {
                     }
                 }
             }
-            console.log(subscriptionCommission,"subscriptionCommission");
-            console.log("----------------------------------");
 
             let s4 = dbScript(db_sql['Q255'], { var1: checkPermission.rows[0].company_id, var3: sDate, var4: eDate })
-            console.log(s4,"s4");
             let recognizedRevenueData = await connection.query(s4)
-            console.log(recognizedRevenueData.rows,"recognizedRevenueData");
-            console.log("----------------------------------");
             totalRevenueAndCommission.totalPerpetualBooking = Number(perpetualBooking);
 
             totalRevenueAndCommission.totalSubscriptionBooking = Number(subscriptionBooking);
@@ -91,10 +73,6 @@ module.exports.revenues = async (req, res) => {
             totalRevenueAndCommission.totalRevenueBooking = R1
 
             totalRevenueAndCommission.totalRevenueCommission = Number(subscriptionCommission) + Number(revenueCommission);
-            console.log(totalRevenueAndCommission.totalRevenueBooking,"totalRevenueAndCommission.totalRevenueBooking");
-            console.log("----------------------------------");
-            console.log(totalRevenueAndCommission.totalRevenueBooking,"totalRevenueAndCommission.totalRevenueBooking");
-            console.log("----------------------------------");
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s5 = dbScript(db_sql['Q77'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate, var5: roleUsers.join(',') })
             let salesData = await connection.query(s5)
