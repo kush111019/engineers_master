@@ -3346,7 +3346,7 @@ const db_sql = {
   "Q370":`SELECT id FROM pro_user_events WHERE availability_id = '{var1}' AND deleted_at IS NULL LIMIT 1`,
   "Q371":`SELECT * FROM email_templates WHERE is_master = true AND deleted_at IS NULL`,
   "Q372":`UPDATE sales SET target_amount = '{var1}', booking_commission = '{var2}' WHERE id = '{var3}' AND deleted_At IS NULL RETURNING *`,
-  "Q373":`SELECT uc.id, us.created_at, uc.total_commission_amount, uc.user_type, u.full_name AS sales_rep_name,
+  "Q373":`SELECT uc.id, uc.created_at, uc.total_commission_amount, uc.user_type, u.full_name AS sales_rep_name,
               c.company_name, c.company_logo, cc.customer_name, s.closed_at, s.sales_type
           FROM user_commissions AS uc 
           LEFT JOIN users as u ON u.id = uc.user_id
