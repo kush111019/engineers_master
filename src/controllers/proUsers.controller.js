@@ -2783,17 +2783,20 @@ module.exports.commissionReport = async (req, res) => {
             endDate.setHours(23, 59, 59, 999)
             let eDate = new Date(endDate).toISOString()
 
-            let s2 = dbScript(db_sql['Q12'], { var1: findAdmin.rows[0].role_id })
-            let roleData = await connection.query(s2)
+            let s2 = dbScript(db_sql['Q8'], { var1: salesRepId })
+            let finduser = await connection.query(s2)
+
+            let s3 = dbScript(db_sql['Q12'], { var1: finduser.rows[0].role_id })
+            let roleData = await connection.query(s3)
             let managerName = ''
             if (roleData.rows[0].reporter) {
                 let parentList = await getParentUserList(roleData.rows[0], findAdmin.rows[0].company_id);
                 managerName = parentList[0].full_name
             }
 
-            let s3 = dbScript(db_sql['Q373'], { var1: salesRepId, var2: sDate, var3: eDate })
+            let s4 = dbScript(db_sql['Q373'], { var1: salesRepId, var2: sDate, var3: eDate })
             let _dt = new Date().toISOString()
-            let commissionData = await connection.query(s3)
+            let commissionData = await connection.query(s4)
             if (commissionData.rowCount > 0) {
                 let data = {
                     salesRepName: commissionData.rows[0].sales_rep_name,
