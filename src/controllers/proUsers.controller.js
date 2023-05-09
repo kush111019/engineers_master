@@ -2853,10 +2853,11 @@ module.exports.commissionReport = async (req, res) => {
                             currentDate: "",
                             fromDate: "",
                             toDate: "",
-                            managerName: managerName,
+                            managerName: "",
                             report: [],
                             totalPerpetualCommissionEarned: 0,
-                            totalSubscriptionCommissionEarned: 0
+                            totalSubscriptionCommissionEarned: 0,
+                            totalCommission: 0
                         }
                     })
                 }
@@ -2872,10 +2873,11 @@ module.exports.commissionReport = async (req, res) => {
                         currentDate: "",
                         fromDate: "",
                         toDate: "",
-                        managerName: managerName,
+                        managerName: "",
                         report: [],
                         totalPerpetualCommissionEarned: 0,
-                        totalSubscriptionCommissionEarned: 0
+                        totalSubscriptionCommissionEarned: 0,
+                        totalCommission: 0
                     }
                 })
             }
