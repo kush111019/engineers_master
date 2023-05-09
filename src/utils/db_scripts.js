@@ -3344,7 +3344,8 @@ const db_sql = {
   "Q368":`SELECT * FROM customer_company_employees WHERE customer_company_id = '{var1}' AND deleted_at IS NULL`,
   "Q369":`SELECT id FROM pro_scheduled_events WHERE event_id = '{var1}' AND deleted_at IS NULL LIMIT 1`,
   "Q370":`SELECT id FROM pro_user_events WHERE availability_id = '{var1}' AND deleted_at IS NULL LIMIT 1`,
-  "Q371":`SELECT * FROM email_templates WHERE is_master = true AND deleted_at IS NULL`
+  "Q371":`SELECT * FROM email_templates WHERE is_master = true AND deleted_at IS NULL`,
+  "Q372":`UPDATE sales SET target_amount = '{var1}' WHERE id = '{var2}' AND deleted_At IS NULL RETURNING *`
 
 
 }

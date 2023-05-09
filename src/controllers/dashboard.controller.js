@@ -62,17 +62,22 @@ module.exports.revenues = async (req, res) => {
                 }
             }
 
-            let s4 = dbScript(db_sql['Q255'], { var1: checkPermission.rows[0].company_id, var3: sDate, var4: eDate })
-            let recognizedRevenueData = await connection.query(s4)
+            // let s4 = dbScript(db_sql['Q255'], { var1: checkPermission.rows[0].company_id, var3: sDate, var4: eDate })
+            // let recognizedRevenueData = await connection.query(s4)
+
+            //---------------------Dashboard boxes data----------------------
+            //Bookings(Perpetual)
             totalRevenueAndCommission.totalPerpetualBooking = Number(perpetualBooking);
-
+            //Subscription Revenue
             totalRevenueAndCommission.totalSubscriptionBooking = Number(subscriptionBooking);
-
+            //Booking Commission
             totalRevenueAndCommission.totalBookingCommission = Number(bookingCommission)
-
+            //Revenue
             totalRevenueAndCommission.totalRevenueBooking = R1
-
+            //Earned Commission
             totalRevenueAndCommission.totalRevenueCommission = Number(subscriptionCommission) + Number(revenueCommission);
+            //------------------------------------------------------------
+
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s5 = dbScript(db_sql['Q77'], { var1: checkPermission.rows[0].company_id, var2: orderBy, var3: sDate, var4: eDate, var5: roleUsers.join(',') })
             let salesData = await connection.query(s5)
