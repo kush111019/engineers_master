@@ -24,6 +24,7 @@ module.exports.revenues = async (req, res) => {
             let revenueCommission = 0;
             let subscriptionBooking = 0;
             let subscriptionCommission = 0;
+            let R1 = 0
             console.log(sDate,"sDate", eDate,"edate");
             let s2 = dbScript(db_sql['Q254'], { var1: checkPermission.rows[0].company_id, var2: 'Perpetual', var3: sDate, var4: eDate })
             console.log(s2,"s2");
@@ -38,6 +39,7 @@ module.exports.revenues = async (req, res) => {
                     console.log("-------------------------------------------------");
                     let s5 = dbScript(db_sql['Q256'], { var1: data.sales_id })
                     let recognizedRevenueData = await connection.query(s5)
+                    R1 = R1 + Number(recognizedRevenueData.rows[0].amount)
                     if (data.archived_at) {
                         if (recognizedRevenueData.rows[0].amount) {
                             perpetualBooking = perpetualBooking + Number(recognizedRevenueData.rows[0].amount)
@@ -63,6 +65,7 @@ module.exports.revenues = async (req, res) => {
                     let s5 = dbScript(db_sql['Q256'], { var1: data.sales_id })
                     let recognizedRevenueData = await connection.query(s5)
                     if (recognizedRevenueData.rows[0].amount) {
+                        R1 = R1 + Number(recognizedRevenueData.rows[0].amount)
                         if (data.archived_at) {
                             subscriptionBooking = subscriptionBooking + Number(recognizedRevenueData.rows[0].amount)
                         } else {
@@ -85,7 +88,7 @@ module.exports.revenues = async (req, res) => {
 
             totalRevenueAndCommission.totalBookingCommission = Number(bookingCommission)
 
-            totalRevenueAndCommission.totalRevenueBooking = recognizedRevenueData.rows[0].amount ? Number(recognizedRevenueData.rows[0].amount) : 0;
+            totalRevenueAndCommission.totalRevenueBooking = R1
 
             totalRevenueAndCommission.totalRevenueCommission = Number(subscriptionCommission) + Number(revenueCommission);
             console.log(totalRevenueAndCommission.totalRevenueBooking,"totalRevenueAndCommission.totalRevenueBooking");
