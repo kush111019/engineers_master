@@ -2795,7 +2795,7 @@ module.exports.commissionReport = async (req, res) => {
             let commissionData = await connection.query(s3)
             let _dt = new Date().toISOString()
             let data = {
-                salesRepName: commissionData.rows[0].full_name,
+                salesRepName: commissionData.rows[0].sales_rep_name,
                 companyName: commissionData.rows[0].company_name,
                 companyLogo: commissionData.rows[0].company_logo,
                 currentDate : _dt,
