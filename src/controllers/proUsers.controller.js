@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults,getParentUserList } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults, getParentUserList } = require('../utils/helper')
 const { issueJWT } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
@@ -2792,45 +2792,65 @@ module.exports.commissionReport = async (req, res) => {
             }
 
             let s3 = dbScript(db_sql['Q373'], { var1: salesRepId, var2: sDate, var3: eDate })
-            let commissionData = await connection.query(s3)
             let _dt = new Date().toISOString()
-            let data = {
-                salesRepName: commissionData.rows[0].full_name,
-                companyName: commissionData.rows[0].company_name,
-                companyLogo: commissionData.rows[0].company_logo,
-                currentDate : _dt,
-                fromDate : sDate,
-                toDate : eDate,
-                managerName : managerName,
-                report: [],
-                totalPerpetualCommissionEarned: 0,
-                totalSubscriptionCommissionEarned: 0
-            };
+            let commissionData = await connection.query(s3)
+            if (commissionData.rowCount > 0) {
+                let data = {
+                    salesRepName: commissionData.rows[0].sales_rep_name,
+                    companyName: commissionData.rows[0].company_name,
+                    companyLogo: commissionData.rows[0].company_logo,
+                    currentDate: _dt,
+                    fromDate: sDate,
+                    toDate: eDate,
+                    managerName: managerName,
+                    report: [],
+                    totalPerpetualCommissionEarned: 0,
+                    totalSubscriptionCommissionEarned: 0
+                };
 
-            for (let row of commissionData.rows) {
-                data.report.push({
-                    id: row.id,
-                    customerName: row.customer_name,
-                    date: row.closed_at,
-                    dealType: row.sales_type,
-                    salesRole: row.user_type,
-                    earnedCommission: row.total_commission_amount
-                });
+                for (let row of commissionData.rows) {
+                    data.report.push({
+                        id: row.id,
+                        customerName: row.customer_name,
+                        date: row.closed_at,
+                        dealType: row.sales_type,
+                        salesRole: row.user_type,
+                        earnedCommission: row.total_commission_amount
+                    });
 
-                if (row.sales_type === 'Perpetual') {
-                    data.totalPerpetualCommissionEarned += Number(row.total_commission_amount);
-                } else if (row.sales_type === 'Subscription') {
-                    data.totalSubscriptionCommissionEarned += Number(row.total_commission_amount);
+                    if (row.sales_type === 'Perpetual') {
+                        data.totalPerpetualCommissionEarned += Number(row.total_commission_amount);
+                    } else if (row.sales_type === 'Subscription') {
+                        data.totalSubscriptionCommissionEarned += Number(row.total_commission_amount);
+                    }
+
+                    data.totalCommission = data.totalPerpetualCommissionEarned + data.totalSubscriptionCommissionEarned
                 }
-
-                data.totalCommission = data.totalPerpetualCommissionEarned +  data.totalSubscriptionCommissionEarned
-            }
-            if (data) {
+                if (data) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Commission Report",
+                        data: data
+                    })
+                }
+            } else {
                 res.json({
                     status: 200,
-                    success: true,
-                    message: "Commission Report",
-                    data : data
+                    success: false,
+                    message: "Empty Commission Report",
+                    data: {
+                        salesRepName: "",
+                        companyName: "",
+                        companyLogo: "",
+                        currentDate: _dt,
+                        fromDate: sDate,
+                        toDate: eDate,
+                        managerName: managerName,
+                        report: [],
+                        totalPerpetualCommissionEarned: 0,
+                        totalSubscriptionCommissionEarned: 0
+                    }
                 })
             }
         } else {
