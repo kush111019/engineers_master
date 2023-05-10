@@ -1202,7 +1202,16 @@ module.exports.recognizationDetailsPro = async (req, res) => {
                         }
                     }
                 } else {
-                    salesObj.customerContractDetails = {}
+                    salesObj.customerContractDetails = {
+                        lead_name: '',
+                        customer_name: '',
+                        lead_title: '',
+                        lead_source: '',
+                        lead_created_at: '',
+                        lead_targeted_value: '',
+                        lead_notes: '',
+                        lead_address: ''
+                    }
                 }
 
                 salesObj.performanceObligation = {
@@ -1227,7 +1236,14 @@ module.exports.recognizationDetailsPro = async (req, res) => {
                         sales_service_perform_note: salesData.service_perform_note
                     }
                 } else {
-                    salesObj.allocatedTransaction = {}
+                    salesObj.allocatedTransaction = {
+                        sales_type: '',
+                        sales_target_amount: '',
+                        sales_target_closing_date: '',
+                        sales_recurring_date: '',
+                        sales_service_performed_at: '',
+                        sales_service_perform_note: ''
+                    }
                 }
                 //fetching recognized revenue using sales_id from recoginez_revenue table
                 let s5 = dbScript(db_sql['Q231'], { var1: salesData.id })
@@ -2787,12 +2803,12 @@ module.exports.commissionReport = async (req, res) => {
             let managerName = ''
             if (roleData.rows[0].reporter) {
                 let parentList = await getParentUserList(roleData.rows[0], findAdmin.rows[0].company_id);
-                for(let parent of parentList) {
-                    if(parent.role_id == roleData.rows[0].reporter) {
+                for (let parent of parentList) {
+                    if (parent.role_id == roleData.rows[0].reporter) {
                         managerName = parent.full_name
                     }
                 }
-                
+
             }
 
             let s4 = dbScript(db_sql['Q373'], { var1: salesRepId, var2: startDate, var3: endDate })
@@ -2837,7 +2853,7 @@ module.exports.commissionReport = async (req, res) => {
                         message: "Commission Report",
                         data: data
                     })
-                }else{
+                } else {
                     res.json({
                         status: 200,
                         success: false,
