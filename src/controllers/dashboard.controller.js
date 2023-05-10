@@ -108,6 +108,8 @@ module.exports.revenues = async (req, res) => {
                             } else {
                                 subscriptionBooking1 = Number(saleData.target_amount)
                             }
+                        }else{
+                            subscriptionBooking1 = Number(saleData.target_amount)
                         }
                         revenueCommissionByDateObj.booking = 0;
                         revenueCommissionByDateObj.subscription_booking = Number(subscriptionBooking1);
