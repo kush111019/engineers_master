@@ -2776,12 +2776,12 @@ module.exports.commissionReport = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0) {
-            startDate = new Date(startDate)
-            startDate.setHours(0, 0, 0, 0)
-            let sDate = new Date(startDate).toISOString()
-            endDate = new Date(endDate)
-            endDate.setHours(23, 59, 59, 999)
-            let eDate = new Date(endDate).toISOString()
+            // startDate = new Date(startDate)
+            // startDate.setHours(0, 0, 0, 0)
+            // let sDate = new Date(startDate).toISOString()
+            // endDate = new Date(endDate)
+            // endDate.setHours(23, 59, 59, 999)
+            // let eDate = new Date(endDate).toISOString()
 
             let s2 = dbScript(db_sql['Q8'], { var1: salesRepId })
             let finduser = await connection.query(s2)
@@ -2799,7 +2799,7 @@ module.exports.commissionReport = async (req, res) => {
                 
             }
 
-            let s4 = dbScript(db_sql['Q373'], { var1: salesRepId, var2: sDate, var3: eDate })
+            let s4 = dbScript(db_sql['Q373'], { var1: salesRepId, var2: startDate, var3: endDate })
             let _dt = new Date().toISOString()
             let commissionData = await connection.query(s4)
             if (commissionData.rowCount > 0) {
@@ -2808,8 +2808,8 @@ module.exports.commissionReport = async (req, res) => {
                     companyName: commissionData.rows[0].company_name,
                     companyLogo: commissionData.rows[0].company_logo,
                     currentDate: _dt,
-                    fromDate: sDate,
-                    toDate: eDate,
+                    fromDate: startDate,
+                    toDate: endDate,
                     managerName: managerName,
                     report: [],
                     totalPerpetualCommissionEarned: 0,
@@ -2820,7 +2820,7 @@ module.exports.commissionReport = async (req, res) => {
                     data.report.push({
                         id: row.id,
                         customerName: row.customer_name,
-                        date: row.created_at,
+                        date: row.recognized_at,
                         dealType: row.sales_type,
                         salesRole: row.user_type,
                         earnedCommission: Number(row.total_commission_amount)
