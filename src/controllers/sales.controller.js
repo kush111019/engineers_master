@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { mysql_real_escape_string, getUserAndSubUser, notificationsOperations } = require('../utils/helper')
+const { mysql_real_escape_string, getUserAndSubUser, notificationsOperations, calculateCommission } = require('../utils/helper')
 const moduleName = process.env.SALES_MODULE
 const customerModule = process.env.CUSTOMERS_MODULE
 const userModule = process.env.USERS_MODULE
@@ -112,34 +112,35 @@ module.exports.createSales = async (req, res) => {
             revenueId = (revenueId == '') ? '' : revenueId
             targetAmount = (targetAmount == '') ? '0' : targetAmount
 
-            let totalCommission = 0;
-            let s4 = dbScript(db_sql['Q161'], { var1: slabId })
-            let slab = await connection.query(s4)
-            let remainingAmount = Number(targetAmount);
-            let commission = 0
-            //if remainning amount is 0 then no reason to check 
-            for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
-                let slab_percentage = Number(slab.rows[i].percentage)
-                let slab_maxAmount = Number(slab.rows[i].max_amount)
-                let slab_minAmount = Number(slab.rows[i].min_amount)
-                if (slab.rows[i].is_max) {
-                    // Reached the last slab
-                    commission += ((slab_percentage / 100) * remainingAmount)
-                    break;
-                }
-                else {
-                    // This is not the last slab
-                    let diff = slab_minAmount == 0 ? 0 : 1
-                    let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-                    slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-                    commission += ((slab_percentage / 100) * slab_diff)
-                    remainingAmount -= slab_diff
-                    if (remainingAmount <= 0) {
-                        break;
-                    }
-                }
-            }
-            totalCommission = totalCommission + commission
+            // let totalCommission = 0;
+            // let s4 = dbScript(db_sql['Q161'], { var1: slabId })
+            // let slab = await connection.query(s4)
+            // let remainingAmount = Number(targetAmount);
+            // let commission = 0
+            // //if remainning amount is 0 then no reason to check 
+            // for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
+            //     let slab_percentage = Number(slab.rows[i].percentage)
+            //     let slab_maxAmount = Number(slab.rows[i].max_amount)
+            //     let slab_minAmount = Number(slab.rows[i].min_amount)
+            //     if (slab.rows[i].is_max) {
+            //         // Reached the last slab
+            //         commission += ((slab_percentage / 100) * remainingAmount)
+            //         break;
+            //     }
+            //     else {
+            //         // This is not the last slab
+            //         let diff = slab_minAmount == 0 ? 0 : 1
+            //         let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+            //         slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+            //         commission += ((slab_percentage / 100) * slab_diff)
+            //         remainingAmount -= slab_diff
+            //         if (remainingAmount <= 0) {
+            //             break;
+            //         }
+            //     }
+            // }
+            // totalCommission = totalCommission + commission
+            let totalCommission = await calculateCommission(slabId,targetAmount)
 
             let _dt = new Date().toISOString();
 
@@ -452,34 +453,36 @@ module.exports.updateSales = async (req, res) => {
 
             let _dt = new Date().toISOString();
 
-            let totalCommission = 0;
-            let s4 = dbScript(db_sql['Q161'], { var1: slabId })
-            let slab = await connection.query(s4)
-            let remainingAmount = Number(targetAmount);
-            let commission = 0
-            //if remainning amount is 0 then no reason to check 
-            for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
-                let slab_percentage = Number(slab.rows[i].percentage)
-                let slab_maxAmount = Number(slab.rows[i].max_amount)
-                let slab_minAmount = Number(slab.rows[i].min_amount)
-                if (slab.rows[i].is_max) {
-                    // Reached the last slab
-                    commission += ((slab_percentage / 100) * remainingAmount)
-                    break;
-                }
-                else {
-                    // This is not the last slab
-                    let diff = slab_minAmount == 0 ? 0 : 1
-                    let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-                    slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-                    commission += ((slab_percentage / 100) * slab_diff)
-                    remainingAmount -= slab_diff
-                    if (remainingAmount <= 0) {
-                        break;
-                    }
-                }
-            }
+            // let totalCommission = 0;
+            // let s4 = dbScript(db_sql['Q161'], { var1: slabId })
+            // let slab = await connection.query(s4)
+            // let remainingAmount = Number(targetAmount);
+            // let commission = 0
+            // //if remainning amount is 0 then no reason to check 
+            // for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
+            //     let slab_percentage = Number(slab.rows[i].percentage)
+            //     let slab_maxAmount = Number(slab.rows[i].max_amount)
+            //     let slab_minAmount = Number(slab.rows[i].min_amount)
+            //     if (slab.rows[i].is_max) {
+            //         // Reached the last slab
+            //         commission += ((slab_percentage / 100) * remainingAmount)
+            //         break;
+            //     }
+            //     else {
+            //         // This is not the last slab
+            //         let diff = slab_minAmount == 0 ? 0 : 1
+            //         let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+            //         slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+            //         commission += ((slab_percentage / 100) * slab_diff)
+            //         remainingAmount -= slab_diff
+            //         if (remainingAmount <= 0) {
+            //             break;
+            //         }
+            //     }
+            // }
+            // totalCommission = totalCommission + commission
 
+            let totalCommission = await calculateCommission(slabId,targetAmount )
 
             let s11 = dbScript(db_sql['Q229'], { var1: salesId })
             let findSales = await connection.query(s11)
@@ -489,7 +492,7 @@ module.exports.updateSales = async (req, res) => {
             let performedDate = (!is_service_performed) ? 'null' :
                 (findSales.rows[0].service_performed_at !== null && is_service_performed) ? new Date(findSales.rows[0].service_performed_at).toISOString() : _dt;
 
-            totalCommission = totalCommission + commission
+            
             let s5 = dbScript(db_sql['Q62'], { var1: customerId, var2: commissionSplitId, var3: is_overwrite, var4: _dt, var5: salesId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: mysql_real_escape_string(qualification), var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17: currency, var18: slabId, var19: leadId, var20: totalCommission, var21: committedDate, var22: is_service_performed, var23: mysql_real_escape_string(service_perform_note), var24: performedDate })
             let updateSales = await connection.query(s5)
 
@@ -1184,36 +1187,10 @@ module.exports.addRecognizedRevenue = async (req, res) => {
             let s5 = dbScript(db_sql['Q256'], { var1: salesId })
             let recognizeRevenue = await connection.query(s5)
 
-            //get slab's list here
-            let totalCommission = 0;
-            let s4 = dbScript(db_sql['Q161'], { var1: findSales.rows[0].slab_id })
-            let slab = await connection.query(s4)
+            let totalCommission = await calculateCommission(findSales.rows[0].slab_id,recognizeRevenue.rows[0].amount )
 
-            let remainingAmount = Number(recognizeRevenue.rows[0].amount);
-            let commission = 0
-            //if remainning amount is 0 then no reason to check 
-            for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
-                let slab_percentage = Number(slab.rows[i].percentage)
-                let slab_maxAmount = Number(slab.rows[i].max_amount)
-                let slab_minAmount = Number(slab.rows[i].min_amount)
-                if (slab.rows[i].is_max) {
-                    // Reached the last slab
-                    commission += ((slab_percentage / 100) * remainingAmount)
-                    break;
-                }
-                else {
-                    // This is not the last slab
-                    let diff = slab_minAmount == 0 ? 0 : 1
-                    let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-                    slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-                    commission += ((slab_percentage / 100) * slab_diff)
-                    remainingAmount -= slab_diff
-                    if (remainingAmount <= 0) {
-                        break;
-                    }
-                }
-            }
-            totalCommission = totalCommission + commission;
+            let commissionOnRecognizedAmount =  await calculateCommission(findSales.rows[0].slab_id,amount )
+
             for (let comData of findSales.rows) {
                 let userCommission = Number(totalCommission * Number(comData.user_percentage / 100))
 
@@ -1235,6 +1212,13 @@ module.exports.addRecognizedRevenue = async (req, res) => {
 
                 let notification_typeId = findSales.rows[0].id;
                 await notificationsOperations({ type: 6, msg: 6.1, notification_typeId, notification_userId }, userId);
+
+                let recognizedUserCommission = Number(commissionOnRecognizedAmount * Number(comData.user_percentage / 100))
+
+                recognizedUserCommission = recognizedUserCommission.toFixed(2)
+
+                let s10 = dbScript(db_sql['Q374'],{var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: Number(recognizedUserCommission), var5: comData.user_type, var6 : date})
+                let addRecognizedCommission = await connection.query(s10)
             }
 
             let s6 = dbScript(db_sql['Q253'], { var1: totalCommission, var2: salesId })
