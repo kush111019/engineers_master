@@ -1247,7 +1247,9 @@ module.exports.recognizationDetailsPro = async (req, res) => {
                         sales_recognized_data: recArr
                     }
                 } else {
-                    salesObj.recognizedRevenue = {}
+                    salesObj.recognizedRevenue = {
+                        sales_recognized_data: []
+                    }
                 }
             }
             if (salesList.rowCount > 0) {
