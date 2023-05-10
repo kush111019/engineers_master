@@ -2776,12 +2776,6 @@ module.exports.commissionReport = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0) {
-            // startDate = new Date(startDate)
-            // startDate.setHours(0, 0, 0, 0)
-            // let sDate = new Date(startDate).toISOString()
-            // endDate = new Date(endDate)
-            // endDate.setHours(23, 59, 59, 999)
-            // let eDate = new Date(endDate).toISOString()
 
             let s2 = dbScript(db_sql['Q8'], { var1: salesRepId })
             let finduser = await connection.query(s2)
@@ -2820,16 +2814,16 @@ module.exports.commissionReport = async (req, res) => {
                     data.report.push({
                         id: row.id,
                         customerName: row.customer_name,
-                        date: row.recognized_at,
+                        date: row.recognized_date,
                         dealType: row.sales_type,
                         salesRole: row.user_type,
-                        earnedCommission: Number(row.total_commission_amount)
+                        earnedCommission: Number(row.commission_amount)
                     });
 
                     if (row.sales_type === 'Perpetual') {
-                        data.totalPerpetualCommissionEarned += Number(row.total_commission_amount);
+                        data.totalPerpetualCommissionEarned += Number(row.commission_amount);
                     } else if (row.sales_type === 'Subscription') {
-                        data.totalSubscriptionCommissionEarned += Number(row.total_commission_amount);
+                        data.totalSubscriptionCommissionEarned += Number(row.commission_amount);
                     }
 
                     data.totalCommission = data.totalPerpetualCommissionEarned + data.totalSubscriptionCommissionEarned
