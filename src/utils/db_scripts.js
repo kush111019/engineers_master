@@ -3346,15 +3346,18 @@ const db_sql = {
   "Q370":`SELECT id FROM pro_user_events WHERE availability_id = '{var1}' AND deleted_at IS NULL LIMIT 1`,
   "Q371":`SELECT * FROM email_templates WHERE is_master = true AND deleted_at IS NULL`,
   "Q372":`UPDATE sales SET target_amount = '{var1}', booking_commission = '{var2}' WHERE id = '{var3}' AND deleted_At IS NULL RETURNING *`,
-  "Q373":`SELECT uc.id, uc.created_at, uc.total_commission_amount, uc.user_type, u.full_name AS sales_rep_name,
-              c.company_name, c.company_logo, cc.customer_name, s.closed_at, s.sales_type
-          FROM user_commissions AS uc 
-          LEFT JOIN users as u ON u.id = uc.user_id
+  "Q373":`SELECT rc.id, rc.recognized_date, rc.commission_amount, rc.user_type, u.full_name AS sales_rep_name,
+            c.company_name, c.company_logo, cc.customer_name, s.closed_at, s.sales_type
+          FROM recognized_commission AS rc 
+          LEFT JOIN users as u ON u.id = rc.user_id
           LEFT JOIN companies as c ON c.id = u.company_id
-          LEFT JOIN sales as s ON s.id = uc.sales_id
+          LEFT JOIN sales as s ON s.id = rc.sales_id
           LEFT JOIN customer_companies as cc ON cc.id = s.customer_id
-          WHERE uc.user_id = '{var1}' AND uc.created_at BETWEEN '{var2}' AND '{var3}' 
-              AND uc.deleted_at IS NULL AND u.deleted_at IS NULL`
+          WHERE rc.user_id = '{var1}' 
+          AND TO_DATE(rc.recognized_date, 'MM-DD-YYYY') BETWEEN TO_DATE('{var2}', 'MM-DD-YYYY') AND TO_DATE('{var3}', 'MM-DD-YYYY')
+            AND rc.deleted_at IS NULL AND u.deleted_at IS NULL`,
+  "Q374":`INSERT INTO recognized_commission(user_id, sales_id, company_id, commission_amount,user_type, recognized_date)
+          VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') RETURNING *`
 
 
 }

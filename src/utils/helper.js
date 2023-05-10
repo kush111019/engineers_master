@@ -793,6 +793,40 @@ module.exports.convertTimeToTargetedTz = async (startTime, endTime, timezone, da
 }
 
 
+module.exports.calculateCommission = async(slabId, amount)=>{
+    let totalCommission = 0; //findSales.rows[0].slab_id
+    let s4 = dbScript(db_sql['Q161'], { var1: slabId  })
+    let slab = await connection.query(s4)
+
+    let remainingAmount = Number(amount); //recognizeRevenue.rows[0].amount
+    let commission = 0
+    //if remainning amount is 0 then no reason to check 
+    for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
+        let slab_percentage = Number(slab.rows[i].percentage)
+        let slab_maxAmount = Number(slab.rows[i].max_amount)
+        let slab_minAmount = Number(slab.rows[i].min_amount)
+        if (slab.rows[i].is_max) {
+            // Reached the last slab
+            commission += ((slab_percentage / 100) * remainingAmount)
+            break;
+        }
+        else {
+            // This is not the last slab
+            let diff = slab_minAmount == 0 ? 0 : 1
+            let slab_diff = (slab_maxAmount - slab_minAmount + diff)
+            slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
+            commission += ((slab_percentage / 100) * slab_diff)
+            remainingAmount -= slab_diff
+            if (remainingAmount <= 0) {
+                break;
+            }
+        }
+    }
+    totalCommission = totalCommission + commission;
+
+    return totalCommission
+}
+
 
 
 
