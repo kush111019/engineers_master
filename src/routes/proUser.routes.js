@@ -6,6 +6,7 @@ const {checkParams} = require('../utils/helper')
 
 router.get('/showProfile', verifyTokenFnForPro,checkParams,controller.proUser.showProfile)
 router.get('/usersList', verifyTokenFnForPro,checkParams,controller.proUser.usersList)
+router.put('/changePassword', verifyTokenFnForPro,checkParams,controller.proUser.changePassword)
 //-----------------------------------------Connectors------------------------------
 router.get('/connectorList',verifyTokenFnForPro,checkParams,controller.proUser.connectorsList)
 router.get('/auth/authUrl',controller.proUser.authUrl);

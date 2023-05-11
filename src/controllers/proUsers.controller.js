@@ -177,6 +177,62 @@ module.exports.showProfile = async (req, res) => {
     }
 }
 
+module.exports.changePassword = async (req, res) => {
+    try {
+        let userEmail = req.user.email
+        let { isProUser } = req.user
+        const { oldPassword, newPassword } = req.body;
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let user = await connection.query(s1)
+        if (user.rows.length > 0 && isProUser) {
+            if (user.rows[0].encrypted_password == oldPassword) {
+               
+                let _dt = new Date().toISOString();
+                let s2 = dbScript(db_sql['Q5'], { var1: user.rows[0].id, var2: newPassword, var3: _dt, var4: user.rows[0].company_id })
+                let updatePass = await connection.query(s2)
+                
+                if (updatePass.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.send({
+                        status: 201,
+                        success: true,
+                        message: "Password Changed Successfully!",
+                    });
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Incorrect Old Password"
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    }
+    catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 500,
+            success: false,
+            message: error.message
+        })
+    }
+}
+
 //get all user list of any company in that function 
 module.exports.usersList = async (req, res) => {
     try {
