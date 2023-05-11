@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { mysql_real_escape_string, getUserAndSubUser, notificationsOperations, calculateCommission } = require('../utils/helper')
+const { mysql_real_escape_string, getUserAndSubUser, notificationsOperations, calculateCommission, getParentUserList } = require('../utils/helper')
 const moduleName = process.env.SALES_MODULE
 const customerModule = process.env.CUSTOMERS_MODULE
 const userModule = process.env.USERS_MODULE
