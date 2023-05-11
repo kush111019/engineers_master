@@ -10,7 +10,7 @@ const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
 const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults, getParentUserList } = require('../utils/helper')
-const { issueJWT } = require("../utils/jwt");
+const { issueJWTForPro } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
 const { encrypt, decrypt } = require('../utils/crypto');
@@ -28,13 +28,168 @@ const oauth2Client = new OAuth2({
 const hubspotClient = new hubspot.Client({ developerApiKey: process.env.HUBSPOT_API_KEY })
 
 
+module.exports.proUserLogin = async (req, res) => {
+    try {
+        let { emailAddress, password } = req.body;
+        let s1 = dbScript(db_sql['Q329'], { var1: mysql_real_escape_string(emailAddress) })
+        let admin = await connection.query(s1)
+        if (admin.rows.length > 0) {
+            if (admin.rows[0].encrypted_password == password) {
+                if (admin.rows[0].is_verified == true) {
+                    if (admin.rows[0].is_locked == false) {
+                        if (admin.rows[0].is_deactivated == false) {
+                            let configuration = {}
+                            configuration.id = admin.rows[0].config_id
+                            configuration.currency = admin.rows[0].currency,
+                                configuration.phoneFormat = admin.rows[0].phone_format,
+                                configuration.dateFormat = admin.rows[0].date_format,
+                                configuration.beforeClosingDays = (admin.rows[0].before_closing_days) ? admin.rows[0].before_closing_days : '',
+                                configuration.afterClosingDays = (admin.rows[0].after_closing_days) ? admin.rows[0].after_closing_days : ''
+
+                            let s2 = dbScript(db_sql['Q125'], { var1: admin.rows[0].id, var2: admin.rows[0].company_id })
+                            let imapCreds = await connection.query(s2)
+                            let isImapCred = (imapCreds.rowCount == 0) ? false : true
+
+                            let moduleId = JSON.parse(admin.rows[0].module_ids)
+                            let modulePemissions = []
+                            for (let data of moduleId) {
+                                let s3 = dbScript(db_sql['Q58'], { var1: data, var2: admin.rows[0].role_id })
+                                let findModulePermissions = await connection.query(s3)
+                                modulePemissions.push({
+                                    moduleId: data,
+                                    moduleName: findModulePermissions.rows[0].module_name,
+                                    permissions: findModulePermissions.rows
+                                })
+                            }
+
+                            let payload = {
+                                id: admin.rows[0].id,
+                                email: admin.rows[0].email_address,
+                                isProUser: true
+                            }
+                            let jwtToken = await issueJWTForPro(payload);
+                            let profileImage = admin.rows[0].avatar
+
+                            res.send({
+                                status: 200,
+                                success: true,
+                                message: "Login Successfull",
+                                data: {
+                                    token: jwtToken,
+                                    id: admin.rows[0].id,
+                                    name: admin.rows[0].full_name,
+                                    isAdmin: admin.rows[0].is_admin,
+                                    roleId: admin.rows[0].role_id,
+                                    role: admin.rows[0].role_name,
+                                    profileImage: profileImage,
+                                    modulePermissions: modulePemissions,
+                                    configuration: configuration,
+                                    isImapCred: isImapCred,
+                                    isImapEnable: admin.rows[0].is_imap_enable,
+                                    isMarketingEnable: admin.rows[0].is_marketing_enable,
+                                    expiryDate: (admin.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : '',
+                                    isMainAdmin: admin.rows[0].is_main_admin,
+                                    companyName: admin.rows[0].company_name,
+                                    companyLogo: admin.rows[0].company_logo
+                                }
+                            });
+                        } else {
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: "deactivated user"
+                            })
+                        }
+                    } else {
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Locked by super Admin/Plan Expired"
+                        })
+                    }
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Please verify before login"
+                    })
+                }
+            } else {
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Incorrect password"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Invalid credentials Or Not a pro user"
+            })
+        }
+    }
+    catch (error) {
+        res.json({
+            status: 500,
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+//get all user list of any company in that function 
+module.exports.usersList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { isProUser } = req.user
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0 && isProUser) {
+            //check user's on the basis of company id
+            let s4 = dbScript(db_sql['Q314'], { var1: findAdmin.rows[0].company_id, var2 : false })
+            findUsers = await connection.query(s4);
+
+            if (findUsers.rows.length > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Users list',
+                    data: findUsers.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty users list",
+                    data: []
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found",
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 module.exports.connectorsList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
             let getConnectors = await connection.query(s2)
             let connectorsArr = []
@@ -158,10 +313,11 @@ module.exports.authUrl = async (req, res) => {
 module.exports.callback = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         const { code, state, provider } = req.query;
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             if (provider.toLowerCase() == 'linkedin') {
                 await connection.query('BEGIN')
                 //generating access token using authorization code for linkedin
@@ -636,10 +792,11 @@ module.exports.searchLead = async () => {
 //to Re Synchronization the lead Data 
 module.exports.leadReSync = async (req, res) => {
     let userId = req.user.id
+    let { isProUser } = req.user
     const { provider } = req.query;
     let s1 = dbScript(db_sql['Q8'], { var1: userId })
     let findUser = await connection.query(s1)
-    if (findUser.rowCount > 0) {
+    if (findUser.rowCount > 0 && isProUser) {
         let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
         let getConnectors = await connection.query(s2)
         for (let accessData of getConnectors.rows) {
@@ -964,10 +1121,11 @@ module.exports.leadReSync = async (req, res) => {
 module.exports.proLeadsList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { provider } = req.query
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             let type = 'lead'
             let leadList
             //getting the lead list from the customer_comany_employees
@@ -1012,121 +1170,13 @@ module.exports.proLeadsList = async (req, res) => {
     }
 }
 
-module.exports.proUserLogin = async (req, res) => {
-    try {
-        let { emailAddress, password } = req.body;
-        let s1 = dbScript(db_sql['Q329'], { var1: mysql_real_escape_string(emailAddress) })
-        let admin = await connection.query(s1)
-        if (admin.rows.length > 0) {
-            if (admin.rows[0].encrypted_password == password) {
-                if (admin.rows[0].is_verified == true) {
-                    if (admin.rows[0].is_locked == false) {
-                        if (admin.rows[0].is_deactivated == false) {
-                            let configuration = {}
-                            configuration.id = admin.rows[0].config_id
-                            configuration.currency = admin.rows[0].currency,
-                                configuration.phoneFormat = admin.rows[0].phone_format,
-                                configuration.dateFormat = admin.rows[0].date_format,
-                                configuration.beforeClosingDays = (admin.rows[0].before_closing_days) ? admin.rows[0].before_closing_days : '',
-                                configuration.afterClosingDays = (admin.rows[0].after_closing_days) ? admin.rows[0].after_closing_days : ''
-
-                            let s2 = dbScript(db_sql['Q125'], { var1: admin.rows[0].id, var2: admin.rows[0].company_id })
-                            let imapCreds = await connection.query(s2)
-                            let isImapCred = (imapCreds.rowCount == 0) ? false : true
-
-                            let moduleId = JSON.parse(admin.rows[0].module_ids)
-                            let modulePemissions = []
-                            for (let data of moduleId) {
-                                let s3 = dbScript(db_sql['Q58'], { var1: data, var2: admin.rows[0].role_id })
-                                let findModulePermissions = await connection.query(s3)
-                                modulePemissions.push({
-                                    moduleId: data,
-                                    moduleName: findModulePermissions.rows[0].module_name,
-                                    permissions: findModulePermissions.rows
-                                })
-                            }
-
-                            let payload = {
-                                id: admin.rows[0].id,
-                                email: admin.rows[0].email_address,
-                            }
-                            let jwtToken = await issueJWT(payload);
-                            let profileImage = admin.rows[0].avatar
-
-                            res.send({
-                                status: 200,
-                                success: true,
-                                message: "Login Successfull",
-                                data: {
-                                    token: jwtToken,
-                                    id: admin.rows[0].id,
-                                    name: admin.rows[0].full_name,
-                                    isAdmin: admin.rows[0].is_admin,
-                                    roleId: admin.rows[0].role_id,
-                                    role: admin.rows[0].role_name,
-                                    profileImage: profileImage,
-                                    modulePermissions: modulePemissions,
-                                    configuration: configuration,
-                                    isImapCred: isImapCred,
-                                    isImapEnable: admin.rows[0].is_imap_enable,
-                                    isMarketingEnable: admin.rows[0].is_marketing_enable,
-                                    expiryDate: (admin.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : '',
-                                    isMainAdmin: admin.rows[0].is_main_admin,
-                                    companyName: admin.rows[0].company_name,
-                                    companyLogo: admin.rows[0].company_logo
-                                }
-                            });
-                        } else {
-                            res.json({
-                                status: 400,
-                                success: false,
-                                message: "deactivated user"
-                            })
-                        }
-                    } else {
-                        res.json({
-                            status: 400,
-                            success: false,
-                            message: "Locked by super Admin/Plan Expired"
-                        })
-                    }
-                } else {
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Please verify before login"
-                    })
-                }
-            } else {
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Incorrect password"
-                })
-            }
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Invalid credentials Or Not a pro user"
-            })
-        }
-    }
-    catch (error) {
-        res.json({
-            status: 500,
-            success: false,
-            message: error.message
-        })
-    }
-}
-
 module.exports.salesListForPro = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
 
             let s6 = dbScript(db_sql['Q302'], { var1: findUser.rows[0].company_id })
             let salesList = await connection.query(s6)
@@ -1177,10 +1227,11 @@ module.exports.salesListForPro = async (req, res) => {
 module.exports.recognizationDetailsPro = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { salesId } = req.query;
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             //fetching sales data by sales_id from sales table
             let s3 = dbScript(db_sql['Q249'], { var1: findUser.rows[0].company_id, var2: salesId })
             let salesList = await connection.query(s3)
@@ -1302,11 +1353,12 @@ module.exports.recognizationDetailsPro = async (req, res) => {
 module.exports.createProEmailTemplate = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { emailTemplate, templateName, jsonTemplate } = req.body
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             // checking if emailTemplate is contains {content} section
             if (!emailTemplate.includes('{content}')) {
                 // throw new Error('Email template does not contain {content} section.');
@@ -1356,9 +1408,10 @@ module.exports.createProEmailTemplate = async (req, res) => {
 module.exports.emailTemplateList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             let s6 = dbScript(db_sql['Q9'], { var1: findUser.rows[0].company_id })
             let company = await connection.query(s6)
             let s2 = dbScript(db_sql['Q331'], { var1: userId, var2: findUser.rows[0].company_id })
@@ -1408,11 +1461,12 @@ module.exports.emailTemplateList = async (req, res) => {
 module.exports.updateEmailTemplate = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { templateId, templateName, emailTemplate, jsonTemplate } = req.body
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             // checking if emailTemplate is contains {content} section
             if (!emailTemplate.includes('{content}')) {
                 // throw new Error('Email template does not contain {content} section.');
@@ -1463,11 +1517,12 @@ module.exports.updateEmailTemplate = async (req, res) => {
 module.exports.deleteEmailTemplate = async (req, res) => {
     try {
         userId = req.user.id
+        let { isProUser } = req.user
         let { templateId } = req.query
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q333'], { var1: templateId, var2: _dt })
             let deleteTemplate = await connection.query(s2)
@@ -1509,10 +1564,11 @@ module.exports.deleteEmailTemplate = async (req, res) => {
 module.exports.sendEmailToLead = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { template, leadEmail, templateName, description } = req.body
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0) {
+        if (findAdmin.rowCount > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
             let findCreds = await connection.query(s2)
             if (findCreds.rowCount > 0) {
@@ -1572,11 +1628,12 @@ module.exports.sendEmailToLead = async (req, res) => {
 module.exports.addSmtpCreds = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { email, appPassword, smtpHost, smtpPort } = req.body
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             //sending mail through the provided smtp creds in order to check whether creds are correct
             let transporter = nodemailer.createTransport({
                 host: smtpHost,
@@ -1677,10 +1734,11 @@ module.exports.addSmtpCreds = async (req, res) => {
 module.exports.credentialList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
             let credentials = await connection.query(s2)
 
@@ -1739,9 +1797,10 @@ module.exports.addAvailability = async (req, res) => {
         } = req.body;
         await connection.query('BEGIN')
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q342'], { var1: mysql_real_escape_string(scheduleName), var2: timezone, var3: userId, var4: findAdmin.rows[0].company_id })
             let createAvailability = await connection.query(s2)
             for (let ts of timeSlot) {
@@ -1795,9 +1854,10 @@ module.exports.addAvailability = async (req, res) => {
 module.exports.availableTimeList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q344'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let availability = await connection.query(s2)
             if (availability.rowCount > 0) {
@@ -1845,10 +1905,11 @@ module.exports.availableTimeList = async (req, res) => {
 module.exports.availabilityDetails = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { availabilityId } = req.query
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q351'], { var1: availabilityId })
             let availability = await connection.query(s2)
             if (availability.rowCount > 0) {
@@ -1903,9 +1964,10 @@ module.exports.updateAvailability = async (req, res) => {
         } = req.body;
         await connection.query('BEGIN')
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let _dt = new Date().toISOString()
             let s2 = dbScript(db_sql['Q352'], { var1: mysql_real_escape_string(scheduleName), var2: timezone, var3: availabilityId, var4: _dt })
             let updateAvailability = await connection.query(s2)
@@ -1963,9 +2025,10 @@ module.exports.deleteAvalability = async (req, res) => {
         let { availabilityId } = req.query
         await connection.query('BEGIN')
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let _dt = new Date().toISOString()
             let s2 = dbScript(db_sql['Q354'], { var1: _dt, var2: availabilityId })
             let deleteAvailability = await connection.query(s2)
@@ -2018,9 +2081,10 @@ module.exports.deleteTimeSlot = async (req, res) => {
         let { slotId } = req.query
         await connection.query('BEGIN')
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let _dt = new Date().toISOString()
             let s2 = dbScript(db_sql['Q356'], { var1: _dt, var2: slotId })
             let deleteTimeSlot = await connection.query(s2)
@@ -2060,11 +2124,12 @@ module.exports.deleteTimeSlot = async (req, res) => {
 module.exports.createEvent = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { eventName, meetLink, description, duration, availabilityId } = req.body
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q345'], { var1: mysql_real_escape_string(eventName), var2: meetLink, var3: mysql_real_escape_string(description), var4: userId, var5: findAdmin.rows[0].company_id, var6: duration, var7: availabilityId })
             let addEvent = await connection.query(s2)
             if (addEvent.rowCount > 0) {
@@ -2116,9 +2181,10 @@ module.exports.createEvent = async (req, res) => {
 module.exports.eventsList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q346'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let eventList = await connection.query(s2)
             if (eventList.rowCount > 0) {
@@ -2219,9 +2285,10 @@ module.exports.deleteEvent = async (req, res) => {
         let { eventId } = req.query
         await connection.query('BEGIN')
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let _dt = new Date().toISOString()
             let s2 = dbScript(db_sql['Q358'], { var1: _dt, var2: eventId })
             let updateEvent = await connection.query(s2)
@@ -2263,9 +2330,10 @@ module.exports.updateEvent = async (req, res) => {
         let { eventId, eventName, meetLink, description, duration, availabilityId } = req.body
         await connection.query('BEGIN')
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let _dt = new Date().toISOString()
             let s2 = dbScript(db_sql['Q357'], { var1: mysql_real_escape_string(eventName), var2: meetLink, var3: mysql_real_escape_string(description), var4: duration, var5: availabilityId, var6: eventId, var7: _dt })
             let updateEvent = await connection.query(s2)
@@ -2357,9 +2425,10 @@ module.exports.scheduleEvent = async (req, res) => {
 module.exports.scheduledEventsList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0) {
+        if (findAdmin.rowCount > 0 && isProUser) {
 
             let s2 = dbScript(db_sql['Q350'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let scheduleEvents = await connection.query(s2)
@@ -2406,9 +2475,10 @@ module.exports.scheduledEventsList = async (req, res) => {
 module.exports.salesCaptainList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0) {
+        if (findAdmin.rowCount > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q363'], { var1: findAdmin.rows[0].company_id })
             let salesCatains = await connection.query(s2)
             if (salesCatains.rowCount > 0) {
@@ -2445,11 +2515,12 @@ module.exports.salesCaptainList = async (req, res) => {
 module.exports.captainWiseSalesDetails = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { captainId } = req.query
         if (captainId) {
             let s1 = dbScript(db_sql['Q8'], { var1: userId })
             let findAdmin = await connection.query(s1)
-            if (findAdmin.rowCount > 0) {
+            if (findAdmin.rowCount > 0 && isProUser) {
                 let s2 = dbScript(db_sql['Q366'], { var1: captainId })
                 let salesIds = await connection.query(s2)
                 if (salesIds.rowCount > 0) {
@@ -2607,11 +2678,12 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
 module.exports.captainWiseGraph = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { captainId, page } = req.query
         if (captainId) {
             let s1 = dbScript(db_sql['Q8'], { var1: userId })
             let findAdmin = await connection.query(s1)
-            if (findAdmin.rowCount > 0) {
+            if (findAdmin.rowCount > 0 && isProUser) {
                 let s2 = dbScript(db_sql['Q366'], { var1: captainId })
                 let salesIds = await connection.query(s2)
                 if (salesIds.rowCount > 0) {
@@ -2697,9 +2769,10 @@ module.exports.sciiSales = async (req, res) => {
     try {
         let { page } = req.query
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0) {
+        if (findAdmin.rowCount > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q363'], { var1: findAdmin.rows[0].company_id })
             let salesCatains = await connection.query(s2)
             let sciiArr = []
@@ -2790,10 +2863,11 @@ module.exports.sciiSales = async (req, res) => {
 module.exports.commissionReport = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { salesRepId, startDate, endDate } = req.query
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0) {
+        if (findAdmin.rowCount > 0 && isProUser) {
 
             let s2 = dbScript(db_sql['Q8'], { var1: salesRepId })
             let finduser = await connection.query(s2)

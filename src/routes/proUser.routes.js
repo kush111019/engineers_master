@@ -1,0 +1,49 @@
+const express = require('express')
+var router = express.Router()
+var controller = require('../controllers/index')
+const { verifyTokenFnForPro } = require('../utils/jwt')
+const {checkParams} = require('../utils/helper')
+
+router.get('/usersList', verifyTokenFnForPro,checkParams,controller.proUser.usersList)
+//-----------------------------------------Connectors------------------------------
+router.get('/connectorList',verifyTokenFnForPro,checkParams,controller.proUser.connectorsList)
+router.get('/auth/authUrl',controller.proUser.authUrl);
+router.post('/auth/callback',verifyTokenFnForPro,checkParams,controller.proUser.callback)
+router.get('/leadReSync',verifyTokenFnForPro,checkParams,controller.proUser.leadReSync)
+router.get('/proLeadsList',verifyTokenFnForPro,checkParams,controller.proUser.proLeadsList)
+router.get('/salesListForPro',verifyTokenFnForPro,checkParams,controller.proUser.salesListForPro)
+router.get('/recognizationDetailsPro',verifyTokenFnForPro,checkParams,controller.proUser.recognizationDetailsPro)
+router.post('/addAvailability',verifyTokenFnForPro,checkParams,controller.proUser.addAvailability)
+router.get('/availabilityList',verifyTokenFnForPro,checkParams, controller.proUser.availableTimeList)
+
+//pro email 
+router.post('/createProEmailTemplate',verifyTokenFnForPro,checkParams,controller.proUser.createProEmailTemplate)
+router.get('/emailTemplateList',verifyTokenFnForPro,checkParams,controller.proUser.emailTemplateList)
+router.put('/updateEmailTemplate',verifyTokenFnForPro,checkParams,controller.proUser.updateEmailTemplate)
+router.put('/deleteEmailTemplate',verifyTokenFnForPro,checkParams,controller.proUser.deleteEmailTemplate)
+router.post('/addSmtpCreds',verifyTokenFnForPro,checkParams, controller.proUser.addSmtpCreds)
+router.get('/credentialList', verifyTokenFnForPro,checkParams, controller.proUser.credentialList)
+router.post('/sendEmailToLead', verifyTokenFnForPro,checkParams,controller.proUser.sendEmailToLead)
+
+//event and calendar for pro
+router.post('/createEvent',verifyTokenFnForPro,checkParams,controller.proUser.createEvent)
+router.get('/eventsList',verifyTokenFnForPro,checkParams,controller.proUser.eventsList)
+router.get('/eventDetails', controller.proUser.eventDetails)
+router.post('/scheduleEvent',controller.proUser.scheduleEvent)
+router.get('/scheduledEventsList', verifyTokenFnForPro,checkParams, controller.proUser.scheduledEventsList)
+router.get('/availabilityDetails',verifyTokenFnForPro,checkParams,controller.proUser.availabilityDetails)
+router.put('/updateAvailability',verifyTokenFnForPro,checkParams,controller.proUser.updateAvailability)
+router.put('/deleteAvalability',verifyTokenFnForPro,checkParams,controller.proUser.deleteAvalability)
+router.put('/deleteTimeSlot',verifyTokenFnForPro,checkParams,controller.proUser.deleteTimeSlot)
+router.put('/updateEvent',verifyTokenFnForPro,checkParams,controller.proUser.updateEvent)
+router.put('/deleteEvent',verifyTokenFnForPro,checkParams,controller.proUser.deleteEvent)
+
+//Sales Analysis
+router.get('/salesCaptainList', verifyTokenFnForPro,checkParams, controller.proUser.salesCaptainList)
+router.get('/captainWiseSalesDetails', verifyTokenFnForPro,checkParams, controller.proUser.captainWiseSalesDetails);
+router.get('/sciiSales',verifyTokenFnForPro,checkParams, controller.proUser.sciiSales)
+router.get('/captainWiseGraph',verifyTokenFnForPro,checkParams, controller.proUser.captainWiseGraph)
+router.get('/commissionReport', verifyTokenFnForPro,checkParams, controller.proUser.commissionReport)
+
+
+module.exports = router;
