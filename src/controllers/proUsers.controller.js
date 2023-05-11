@@ -141,6 +141,7 @@ module.exports.proUserLogin = async (req, res) => {
 module.exports.showProfile = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0 && isProUser) {
