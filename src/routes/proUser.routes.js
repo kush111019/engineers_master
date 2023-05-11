@@ -4,6 +4,7 @@ var controller = require('../controllers/index')
 const { verifyTokenFnForPro } = require('../utils/jwt')
 const {checkParams} = require('../utils/helper')
 
+router.get('/showProfile', verifyTokenFnForPro,checkParams,controller.proUser.showProfile)
 router.get('/usersList', verifyTokenFnForPro,checkParams,controller.proUser.usersList)
 //-----------------------------------------Connectors------------------------------
 router.get('/connectorList',verifyTokenFnForPro,checkParams,controller.proUser.connectorsList)
