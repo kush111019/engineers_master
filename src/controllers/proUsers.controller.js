@@ -138,6 +138,44 @@ module.exports.proUserLogin = async (req, res) => {
     }
 }
 
+module.exports.showProfile = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let checkUser = await connection.query(s1)
+        if (checkUser.rows.length > 0 && isProUser) {
+            let s2 = dbScript(db_sql['Q9'], { var1: checkUser.rows[0].company_id })
+            let companyData = await connection.query(s2)
+            if (companyData.rowCount > 0) {
+                checkUser.rows[0].companyName = companyData.rows[0].company_name
+                checkUser.rows[0].companyAddress = companyData.rows[0].company_address
+                checkUser.rows[0].companyLogo = companyData.rows[0].company_logo
+            } else {
+                checkUser.rows[0].companyName = ""
+                checkUser.rows[0].companyAddress = ""
+                checkUser.rows[0].companyLogo = ""
+            }
+            res.json({
+                status: 200,
+                success: true,
+                message: 'User data',
+                data: checkUser.rows[0]
+            })
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 //get all user list of any company in that function 
 module.exports.usersList = async (req, res) => {
     try {
