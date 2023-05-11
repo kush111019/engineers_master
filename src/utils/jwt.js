@@ -113,7 +113,36 @@ const jwt = {
                 return next();
             }
         });
-    }
+    },
+
+    issueJWTForPro: async user => {
+        let payload = {
+            id: user.id,
+            email: user.email,
+            isProUser : user.isProUser
+        };
+        const jwtToken = await jsonwebtoken.sign(payload, 'KEy')
+        return jwtToken;
+    },
+
+    verifyTokenFnForPro: async (req, res, next) => {
+        var token = req.headers.authorization
+        await jsonwebtoken.verify(token, 'KEy', function (err, decoded) {
+            if (err) {
+                return res.status(401).json({
+                    success: false,
+                    message: "Session timed out. Please sign in again",
+                });
+            } else {
+                req.user = {
+                    id: decoded.id,
+                    email: decoded.email,
+                    isProUser : decoded.isProUser,
+                }
+                return next();
+            }
+        });
+    },
 };
 module.exports = jwt;
 

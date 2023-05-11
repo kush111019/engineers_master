@@ -1710,3 +1710,125 @@ module.exports.commissionDetails = async (req, res) => {
     }
 }
 
+module.exports.commissionReport = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { salesRepId, startDate, endDate } = req.query
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0 ) {
+
+            let s2 = dbScript(db_sql['Q8'], { var1: salesRepId })
+            let finduser = await connection.query(s2)
+
+            let s3 = dbScript(db_sql['Q12'], { var1: finduser.rows[0].role_id })
+            let roleData = await connection.query(s3)
+            let managerName = ''
+            if (roleData.rows[0].reporter) {
+                let parentList = await getParentUserList(roleData.rows[0], findAdmin.rows[0].company_id);
+                for (let parent of parentList) {
+                    if (parent.role_id == roleData.rows[0].reporter) {
+                        managerName = parent.full_name
+                    }
+                }
+
+            }
+
+            let s4 = dbScript(db_sql['Q373'], { var1: salesRepId, var2: startDate, var3: endDate })
+            let _dt = new Date().toISOString()
+            let commissionData = await connection.query(s4)
+            if (commissionData.rowCount > 0) {
+                let data = {
+                    salesRepName: commissionData.rows[0].sales_rep_name,
+                    companyName: commissionData.rows[0].company_name,
+                    companyLogo: commissionData.rows[0].company_logo,
+                    currentDate: _dt,
+                    fromDate: startDate,
+                    toDate: endDate,
+                    managerName: managerName,
+                    report: [],
+                    totalPerpetualCommissionEarned: 0,
+                    totalSubscriptionCommissionEarned: 0
+                };
+
+                for (let row of commissionData.rows) {
+                    data.report.push({
+                        id: row.id,
+                        customerName: row.customer_name,
+                        date: row.recognized_date,
+                        dealType: row.sales_type,
+                        salesRole: row.user_type,
+                        earnedCommission: Number(row.commission_amount)
+                    });
+
+                    if (row.sales_type === 'Perpetual') {
+                        data.totalPerpetualCommissionEarned += Number(row.commission_amount);
+                    } else if (row.sales_type === 'Subscription') {
+                        data.totalSubscriptionCommissionEarned += Number(row.commission_amount);
+                    }
+
+                    data.totalCommission = data.totalPerpetualCommissionEarned + data.totalSubscriptionCommissionEarned
+                }
+                if (data) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Commission Report",
+                        data: data
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty Commission Report",
+                        data: {
+                            salesRepName: "",
+                            companyName: "",
+                            companyLogo: "",
+                            currentDate: "",
+                            fromDate: "",
+                            toDate: "",
+                            managerName: "",
+                            report: [],
+                            totalPerpetualCommissionEarned: 0,
+                            totalSubscriptionCommissionEarned: 0,
+                            totalCommission: 0
+                        }
+                    })
+                }
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Commission Report",
+                    data: {
+                        salesRepName: "",
+                        companyName: "",
+                        companyLogo: "",
+                        currentDate: "",
+                        fromDate: "",
+                        toDate: "",
+                        managerName: "",
+                        report: [],
+                        totalPerpetualCommissionEarned: 0,
+                        totalSubscriptionCommissionEarned: 0,
+                        totalCommission: 0
+                    }
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
