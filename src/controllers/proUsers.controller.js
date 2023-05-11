@@ -167,10 +167,9 @@ module.exports.usersList = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found",
+                message: "Unauthorized",
             })
         }
     } catch (error) {
@@ -500,10 +499,9 @@ module.exports.callback = async (req, res) => {
             }
         } else {
             await connection.query('ROLLBACK')
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "Invalid user",
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1110,10 +1108,9 @@ module.exports.leadReSync = async (req, res) => {
         }
     } else {
         await connection.query('ROLLBACK')
-        res.json({
-            status: 400,
+        res.status(403).json({
             success: false,
-            message: "Invalid user",
+            message: "Unathorised"
         })
     }
 }
@@ -1388,10 +1385,9 @@ module.exports.createProEmailTemplate = async (req, res) => {
 
         } else {
             await connection.query('ROLLBACK')
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "Invalid user",
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1442,10 +1438,9 @@ module.exports.emailTemplateList = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "Invalid user",
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1496,10 +1491,9 @@ module.exports.updateEmailTemplate = async (req, res) => {
             }
         } else {
             await connection.query('ROLLBACK')
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "Invalid user",
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1543,10 +1537,9 @@ module.exports.deleteEmailTemplate = async (req, res) => {
             }
         } else {
             await connection.query('ROLLBACK')
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "Invalid user",
+                message: "Unauthorized",
             })
         }
     } catch (error) {
@@ -1609,10 +1602,9 @@ module.exports.sendEmailToLead = async (req, res) => {
             }
 
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "Invalid user",
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1714,10 +1706,9 @@ module.exports.addSmtpCreds = async (req, res) => {
                     })
                 )
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1772,10 +1763,9 @@ module.exports.credentialList = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1834,10 +1824,9 @@ module.exports.addAvailability = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1886,10 +1875,9 @@ module.exports.availableTimeList = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1938,10 +1926,9 @@ module.exports.availabilityDetails = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2003,10 +1990,9 @@ module.exports.updateAvailability = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2059,10 +2045,9 @@ module.exports.deleteAvalability = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2104,10 +2089,9 @@ module.exports.deleteTimeSlot = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2161,10 +2145,9 @@ module.exports.createEvent = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2211,10 +2194,9 @@ module.exports.eventsList = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2308,10 +2290,9 @@ module.exports.deleteEvent = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2353,10 +2334,9 @@ module.exports.updateEvent = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2456,10 +2436,9 @@ module.exports.scheduledEventsList = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2497,10 +2476,9 @@ module.exports.salesCaptainList = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2653,10 +2631,9 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 400,
+                res.status(403).json({
                     success: false,
-                    message: "User not found"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -2743,10 +2720,9 @@ module.exports.captainWiseGraph = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 400,
+                res.status(403).json({
                     success: false,
-                    message: "User not found"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -2845,10 +2821,9 @@ module.exports.sciiSales = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2968,10 +2943,9 @@ module.exports.commissionReport = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
