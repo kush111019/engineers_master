@@ -225,6 +225,7 @@ router.put('/deleteLeadSource', verifyTokenFn,checkParams, controller.configurat
 router.get('/notificationList', verifyTokenFn,checkParams, controller.notifications.notificationList)
 router.get('/notifications', verifyTokenFn,checkParams, controller.notifications.allNotificationList)
 router.put('/notificationRead', verifyTokenFn,checkParams, controller.notifications.notificationRead)
+router.put('/readAllNotifications', verifyTokenFn,checkParams, controller.notifications.notificationReadAll)
 
 
 module.exports = router;
