@@ -96,3 +96,36 @@ module.exports.notificationRead = async (req, res) => {
         })
     }
 }
+
+module.exports.notificationReadAll = async (req, res) => {
+    try {
+        let userId = req.user.id;
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q375'], { var1: userId })
+        let notificationList = await connection.query(s1);
+        
+        if (notificationList.rows.length > 0) {
+            await connection.query('COMMIT')
+            res.json({
+                status: 200,
+                success: true,
+                message: "All Notification Read Sucessfully",
+                data: notificationList.rows
+            })
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: "Notification not found",
+                data: []
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
