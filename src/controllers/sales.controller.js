@@ -140,7 +140,7 @@ module.exports.createSales = async (req, res) => {
             //     }
             // }
             // totalCommission = totalCommission + commission
-            let totalCommission = await calculateCommission(slabId,targetAmount)
+            let totalCommission = await calculateCommission(slabId, targetAmount)
 
             let _dt = new Date().toISOString();
 
@@ -482,7 +482,7 @@ module.exports.updateSales = async (req, res) => {
             // }
             // totalCommission = totalCommission + commission
 
-            let totalCommission = await calculateCommission(slabId,targetAmount )
+            let totalCommission = await calculateCommission(slabId, targetAmount)
 
             let s11 = dbScript(db_sql['Q229'], { var1: salesId })
             let findSales = await connection.query(s11)
@@ -492,7 +492,7 @@ module.exports.updateSales = async (req, res) => {
             let performedDate = (!is_service_performed) ? 'null' :
                 (findSales.rows[0].service_performed_at !== null && is_service_performed) ? new Date(findSales.rows[0].service_performed_at).toISOString() : _dt;
 
-            
+
             let s5 = dbScript(db_sql['Q62'], { var1: customerId, var2: commissionSplitId, var3: is_overwrite, var4: _dt, var5: salesId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: mysql_real_escape_string(qualification), var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17: currency, var18: slabId, var19: leadId, var20: totalCommission, var21: committedDate, var22: is_service_performed, var23: mysql_real_escape_string(service_perform_note), var24: performedDate })
             let updateSales = await connection.query(s5)
 
@@ -1187,9 +1187,17 @@ module.exports.addRecognizedRevenue = async (req, res) => {
             let s5 = dbScript(db_sql['Q256'], { var1: salesId })
             let recognizeRevenue = await connection.query(s5)
 
-            let totalCommission = await calculateCommission(findSales.rows[0].slab_id,recognizeRevenue.rows[0].amount )
+            let totalCommission = await calculateCommission(findSales.rows[0].slab_id, recognizeRevenue.rows[0].amount)
 
-            let commissionOnRecognizedAmount =  await calculateCommission(findSales.rows[0].slab_id,amount )
+            let commissionOncurrentAmount = 0
+            let s11 = dbScript(db_sql['Q376'], { var1: salesId });
+            let previousCommission = await connection.query(s11);
+
+            if (previousCommission.rowCount > 0) {
+                commissionOncurrentAmount = Number(totalCommission) - Number(previousCommission.rows[0].commission)
+            } else {
+                commissionOncurrentAmount = Number(totalCommission)
+            }
 
             for (let comData of findSales.rows) {
                 let userCommission = Number(totalCommission * Number(comData.user_percentage / 100))
@@ -1213,11 +1221,11 @@ module.exports.addRecognizedRevenue = async (req, res) => {
                 let notification_typeId = findSales.rows[0].id;
                 await notificationsOperations({ type: 6, msg: 6.1, notification_typeId, notification_userId }, userId);
 
-                let recognizedUserCommission = Number(commissionOnRecognizedAmount * Number(comData.user_percentage / 100))
+                let recognizedUserCommission = Number(commissionOncurrentAmount * Number(comData.user_percentage / 100))
 
                 recognizedUserCommission = recognizedUserCommission.toFixed(2)
 
-                let s10 = dbScript(db_sql['Q374'],{var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: Number(recognizedUserCommission), var5: comData.user_type, var6 : date})
+                let s10 = dbScript(db_sql['Q374'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: Number(recognizedUserCommission), var5: comData.user_type, var6: date, var7: amount })
                 let addRecognizedCommission = await connection.query(s10)
             }
 
@@ -1716,7 +1724,7 @@ module.exports.commissionReport = async (req, res) => {
         let { salesRepId, startDate, endDate } = req.query
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0 ) {
+        if (findAdmin.rowCount > 0) {
 
             let s2 = dbScript(db_sql['Q8'], { var1: salesRepId })
             let finduser = await connection.query(s2)
