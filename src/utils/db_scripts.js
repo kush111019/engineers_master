@@ -3356,9 +3356,14 @@ const db_sql = {
           WHERE rc.user_id = '{var1}' 
           AND TO_DATE(rc.recognized_date, 'MM-DD-YYYY') BETWEEN TO_DATE('{var2}', 'MM-DD-YYYY') AND TO_DATE('{var3}', 'MM-DD-YYYY')
             AND rc.deleted_at IS NULL AND u.deleted_at IS NULL`,
-  "Q374":`INSERT INTO recognized_commission(user_id, sales_id, company_id, commission_amount,user_type, recognized_date)
-          VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}') RETURNING *`,
+  "Q374":`INSERT INTO recognized_commission(user_id, sales_id, company_id, commission_amount,user_type, recognized_date, recognized_amount)
+          VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}','{var7}') RETURNING *`,
   "Q375":`UPDATE notifications SET is_read = true WHERE user_id = '{var1}' RETURNING *`,
+  "Q376":`SELECT SUM(commission_amount::DECIMAL) as commission FROM recognized_commission
+            WHERE 
+              sales_id = '{var1}' 
+            AND 
+              deleted_at IS NULL`
 
 
 }
