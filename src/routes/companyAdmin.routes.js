@@ -32,6 +32,7 @@ router.put('/deleteUser', verifyTokenFn,checkParams, controller.users.deleteUser
 router.put('/lockUserAccount', verifyTokenFn,checkParams, controller.users.lockUserAccount)
 router.put('/deactivateUserAccount', verifyTokenFn,checkParams, controller.users.deactivateUserAccount)
 router.put('/AssigneSaleOrLeadToNewUser', verifyTokenFn,checkParams, controller.users.AssigneSaleOrLeadToNewUser)
+router.put('/resendVerificationLink', verifyTokenFn,checkParams,controller.users.resendVerificationLink )
 
 //---------------------------------------modules------------------------------------------
 
