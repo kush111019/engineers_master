@@ -25,7 +25,7 @@ let createAdmin = async (bodyData, cId, res) => {
     let s3 = dbScript(db_sql['Q4'], { var1: emailAddress })
     let findUser = await connection.query(s3)
     if (findUser.rowCount == 0) {
-       
+
         //creating role
         let s4 = dbScript(db_sql['Q11'], { var1: cId })
         let createRole = await connection.query(s4)
@@ -44,20 +44,20 @@ let createAdmin = async (bodyData, cId, res) => {
                 var9: mysql_real_escape_string(companyAddress), var10: expiryDate
             })
             let saveuser = await connection.query(s5)
-            if( saveuser.rowCount>0){
+            if (saveuser.rowCount > 0) {
                 let s6 = dbScript(db_sql['Q56'], {
                     var1: saveuser.rows[0].id,
                 })
-                let updateuser = await connection.query(s6)  
+                let updateuser = await connection.query(s6)
             }
 
-            let s10 = dbScript(db_sql['Q76'], { var1: "$", var2: "us", var3: "MM-DD-YYYY", var4: saveuser.rows[0].id, var5: cId ,var6: 3,var7: 2})
+            let s10 = dbScript(db_sql['Q76'], { var1: "$", var2: "us", var3: "MM-DD-YYYY", var4: saveuser.rows[0].id, var5: cId, var6: 3, var7: 2 })
             let addConfig = await connection.query(s10)
 
             let s6 = dbScript(db_sql['Q6'], {})
             let findModules = await connection.query(s6)
             let moduleArr = []
-            for ( let data of findModules.rows) {
+            for (let data of findModules.rows) {
                 moduleArr.push(data.id)
                 let s7 = dbScript(db_sql['Q20'], { var1: createRole.rows[0].id, var2: data.id, var3: true, var4: true, var5: true, var6: true, var7: true, var8: saveuser.rows[0].id })
                 var addPermission = await connection.query(s7)
@@ -177,9 +177,9 @@ module.exports.signUp = async (req, res) => {
             if (trialDays.rowCount > 0) {
                 let currentDate = new Date()
                 expiryDate = new Date(currentDate.setDate(currentDate.getDate() + Number(trialDays.rows[0].trial_days))).toISOString()
-                
-                
-                let s3 = dbScript(db_sql['Q2'], { var1:  mysql_real_escape_string(companyName), var2: companyLogo, var3: mysql_real_escape_string(companyAddress), var4 : expiryDate, var5 : trialDays.rows[0].trial_users })
+
+
+                let s3 = dbScript(db_sql['Q2'], { var1: mysql_real_escape_string(companyName), var2: companyLogo, var3: mysql_real_escape_string(companyAddress), var4: expiryDate, var5: trialDays.rows[0].trial_users })
                 let saveCompanyDetails = await connection.query(s3)
 
                 if (saveCompanyDetails.rowCount > 0) {
@@ -233,11 +233,11 @@ module.exports.setPasswordForLogin = async (req, res) => {
             let s1 = dbScript(db_sql['Q8'], { var1: user.id })
             let checkuser = await connection.query(s1);
             if (checkuser.rows.length > 0) {
-                
+
                 let _dt = new Date().toISOString();
                 let s2 = dbScript(db_sql['Q5'], { var1: user.id, var2: password, var3: _dt, var4: checkuser.rows[0].company_id })
                 let updateuser = await connection.query(s2)
-                
+
                 if (updateuser.rowCount == 1) {
                     await connection.query('COMMIT')
                     res.json({
@@ -292,7 +292,7 @@ module.exports.verifyUser = async (req, res) => {
                 let _dt = new Date().toISOString();
                 let s2 = dbScript(db_sql['Q7'], { var1: user.id, var2: _dt })
                 let updateuser = await connection.query(s2)
-               
+
                 if (updateuser.rowCount == 1) {
                     await connection.query('COMMIT')
                     res.json({
@@ -493,11 +493,11 @@ module.exports.changePassword = async (req, res) => {
         let user = await connection.query(s1)
         if (user.rows.length > 0) {
             if (user.rows[0].encrypted_password == oldPassword) {
-               
+
                 let _dt = new Date().toISOString();
                 let s2 = dbScript(db_sql['Q5'], { var1: user.rows[0].id, var2: newPassword, var3: _dt, var4: user.rows[0].company_id })
                 let updatePass = await connection.query(s2)
-                
+
                 if (updatePass.rowCount > 0) {
                     await connection.query('COMMIT')
                     res.send({
@@ -575,11 +575,11 @@ module.exports.updateUserProfile = async (req, res) => {
         let findUser = await connection.query(s1)
 
         if (findUser.rows.length > 0) {
-           
+
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q10'], { var1: mysql_real_escape_string(name), var2: avatar, var3: mysql_real_escape_string(emailAddress), var4: phoneNumber, var5: mobileNumber, var6: mysql_real_escape_string(address), var7: _dt, var8: userId, var9: findUser.rows[0].company_id })
             let updateUser = await connection.query(s2)
-            
+
             if (updateUser.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
@@ -682,11 +682,11 @@ module.exports.resetPassword = async (req, res) => {
             let s1 = dbScript(db_sql['Q8'], { var1: user.id })
             let checkuser = await connection.query(s1);
             if (checkuser.rows.length > 0) {
-                
+
                 let _dt = new Date().toISOString();
                 let s2 = dbScript(db_sql['Q5'], { var1: user.id, var2: password, var3: _dt, var4: checkuser.rows[0].company_id })
                 let updateuser = await connection.query(s2)
-               
+
                 if (updateuser.rowCount == 1) {
                     await connection.query('COMMIT')
                     res.json({
@@ -771,9 +771,9 @@ module.exports.countryDetails = async (req, res) => {
                         success: true,
                         message: "Empty Country details",
                         data: {
-                            countries : [],
-                            currencies : [],
-                            dateFormat : []
+                            countries: [],
+                            currencies: [],
+                            dateFormat: []
                         }
                     })
                 } else {
@@ -812,18 +812,18 @@ module.exports.updateCompanyLogo = async (req, res) => {
         let findUser = await connection.query(s1)
 
         if (findUser.rows.length > 0) {
-          
+
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q214'], { var1: path, var2: _dt, var3: findUser.rows[0].company_id })
             let updateLogo = await connection.query(s2)
-            
+
             if (updateLogo.rowCount > 0) {
                 await connection.query('COMMIT')
                 res.json({
                     success: true,
                     status: 200,
                     message: 'CompanyLogo updated successfully',
-                    data : path
+                    data: path
                 })
             } else {
                 await connection.query('ROLLBACK')
