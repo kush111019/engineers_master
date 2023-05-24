@@ -71,13 +71,16 @@ const db_sql = {
   "Q31": `INSERT INTO follow_up_notes (sales_id, company_id, user_id, notes) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
   "Q32": `SELECT f.id, f.notes, f.created_at, f.user_id, u.full_name, u.avatar 
               FROM follow_up_notes as f
-              INNER JOIN users AS u ON u.id = f.user_id
+              LEFT JOIN users AS u ON u.id = f.user_id
               WHERE sales_id = '{var1}' AND f.deleted_at IS NULL ORDER BY created_at DESC`,
   "Q33": `UPDATE permissions SET user_id = '{var2}' WHERE role_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   "Q34": `UPDATE roles SET module_ids = '{var1}' , updated_at = '{var2}' WHERE id = '{var3}' RETURNING * `,
-  "Q35": `SELECT m.id, m.module_name, p.permission_to_view_global,p.permission_to_view_own, p.permission_to_create, 
-              p.permission_to_update, p.permission_to_delete FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
-              INNER JOIN roles AS r ON r.id = p.role_id WHERE m.id IN ('{var1}') AND r.id = '{var2}' 
+  "Q35": `SELECT m.id, m.module_name, p.permission_to_view_global,p.permission_to_view_own,
+              p.permission_to_create, p.permission_to_update, p.permission_to_delete 
+              FROM modules AS m 
+              LEFT JOIN permissions AS p ON p.module_id = m.id
+              LEFT JOIN roles AS r ON r.id = p.role_id 
+              WHERE m.id IN ('{var1}') AND r.id = '{var2}' 
               AND m.deleted_at IS NULL AND p.deleted_at IS NULL
               ORDER BY m.module_ctr ASC`,
   "Q36": `INSERT INTO customer_companies ( user_id,customer_name, company_id, address, currency, industry) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
@@ -126,8 +129,9 @@ const db_sql = {
   "Q41": `SELECT u.id, u.company_id, u.role_id, u.avatar, u.full_name,u.email_address,u.mobile_number,u.phone_number,u.address,u.is_verified,u.created_by,
               m.id AS module_id, m.module_name, m.module_type, p.id AS permission_id, p.permission_to_view_global, p.permission_to_view_own,
               p.permission_to_create, p.permission_to_update, p.permission_to_delete
-              FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
-              INNER JOIN users AS u ON u.role_id = p.role_id
+              FROM modules AS m 
+              LEFT JOIN permissions AS p ON p.module_id = m.id
+              LEFT JOIN users AS u ON u.role_id = p.role_id
               WHERE m.module_name = '{var1}' AND u.id = '{var2}' AND m.deleted_at IS NULL 
               AND p.deleted_at IS NULL AND u.deleted_at IS NULL`,
   "Q42": `UPDATE customer_companies SET customer_name = '{var1}', updated_at = '{var2}', address = '{var3}', currency = '{var4}', industry = '{var7}' WHERE id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
@@ -183,7 +187,7 @@ const db_sql = {
                 u.full_name AS created_by 
               FROM 
                 customer_companies AS c 
-              INNER JOIN users AS u ON u.id = c.user_id
+              LEFT JOIN users AS u ON u.id = c.user_id
               WHERE c.company_id = '{var1}' AND c.is_rejected = '{var2}'`,
   "Q53": `INSERT INTO 
             sales (customer_id, customer_commission_split_id, is_overwrite, company_id, 
@@ -268,8 +272,11 @@ const db_sql = {
           VALUES
             ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') RETURNING *`,
   "Q58": `SELECT m.id, m.module_name, p.permission_to_view_global,p.permission_to_view_own, p.permission_to_create, 
-          p.permission_to_update, p.permission_to_delete FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
-          INNER JOIN roles AS r ON r.id = p.role_id WHERE m.id = '{var1}' AND r.id = '{var2}' 
+          p.permission_to_update, p.permission_to_delete 
+          FROM modules AS m 
+          LEFT JOIN permissions AS p ON p.module_id = m.id
+          LEFT JOIN roles AS r ON r.id = p.role_id 
+          WHERE m.id = '{var1}' AND r.id = '{var2}' 
           AND m.deleted_at IS NULL AND p.deleted_at IS NULL`,
   "Q59": `UPDATE sales SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
   "Q60": `UPDATE sales_users 
@@ -586,7 +593,7 @@ const db_sql = {
                 p.end_of_life, p.currency, p.company_id, p.created_at, p.updated_at, p.user_id, u.full_name as created_by 
               FROM 
                 products AS p
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u ON p.user_id = u.id
               WHERE 
                 p.company_id = '{var1}' AND p.deleted_at IS NULL
@@ -633,29 +640,29 @@ const db_sql = {
   "Q111": `SELECT id, chat_name, is_group_chat, last_message, group_admin,user_a, user_b, created_at FROM chat WHERE (user_a = '{var1}' or user_b = '{var1}') AND company_id = '{var2}' AND is_group_chat = '{var3}' AND deleted_at IS NULL`,
   "Q112": `SELECT id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at FROM chat WHERE id = '{var1}' AND deleted_at IS NULL `,
   "Q113": `SELECT u.id, u.full_name, u.avatar FROM chat_room_members AS cm 
-              INNER JOIN users AS u ON u.id = cm.user_id
+              LEFT JOIN users AS u ON u.id = cm.user_id
               WHERE room_id = '{var1}' AND cm.deleted_at IS NULL AND u.deleted_at IS NULL`,
   "Q114": `SELECT 
               sc.id,su.user_id,su.user_percentage,su.user_type,sc.customer_id,sc.target_amount,sc.slab_id,
               u.full_name, u.created_by
            FROM sales AS sc 
-           INNER JOIN sales_users AS su ON sc.id = su.sales_id 
-           INNER JOIN users AS u ON su.user_id = u.id 
+           LEFT JOIN sales_users AS su ON sc.id = su.sales_id 
+           LEFT JOIN users AS u ON su.user_id = u.id 
            WHERE sc.id = '{var1}' 
            AND sc.deleted_at IS NULL AND su.deleted_at IS NULL AND u.deleted_at IS NULL`,
   "Q115": `INSERT INTO chat(chat_name, is_group_chat, user_a, user_b, group_admin, sales_id, company_id) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}','{var6}','{var7}') RETURNING *`,
   "Q116": `SELECT id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin FROM chat WHERE id = '{var1}' AND company_id = '{var2}' AND is_group_chat = '{var3}' AND deleted_at IS NULL`,
   "Q117": `SELECT m.id, m.sender, m.content, m.chat_id, m.read_by, m.created_at, u.full_name,
-              u.avatar, u.id AS sender_id FROM message AS m INNER JOIN users AS u ON m.sender = u.id 
+              u.avatar, u.id AS sender_id FROM message AS m LEFT JOIN users AS u ON m.sender = u.id 
               WHERE m.id = '{var1}' AND m.deleted_at IS NULL`,
   "Q118": `SELECT m.id AS messageId, m.content, m.sender AS senderId, m.chat_id, m.read_by, m.created_at,
               u.full_name, u.avatar, c.id, c.chat_name, c.is_group_chat,
               c.group_admin, c.user_a, c.user_b, c.created_at as user_created_at FROM message AS m 
-              INNER JOIN users AS u ON m.sender = u.id
-              INNER JOIN chat AS c ON m.chat_id = c.id  WHERE chat_id = '{var1}' AND m.deleted_at IS NULL ORDER BY m.created_at DESC LIMIT 1`,
+              LEFT JOIN users AS u ON m.sender = u.id
+              LEFT JOIN chat AS c ON m.chat_id = c.id  WHERE chat_id = '{var1}' AND m.deleted_at IS NULL ORDER BY m.created_at DESC LIMIT 1`,
   "Q119": `SELECT m.id AS messageId,m.content,m.sender AS senderId, m.created_at,
              u.full_name, u.avatar FROM message AS m 
-             INNER JOIN users AS u ON m.sender = u.id
+             LEFT JOIN users AS u ON m.sender = u.id
             WHERE chat_id = '{var1}' AND m.deleted_at IS NULL ORDER BY m.created_at ASC `,
   "Q120": `SELECT id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at FROM chat WHERE sales_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
   "Q121": `SELECT room_id, user_id, group_name FROM chat_room_members WHERE user_id = '{var1}' AND deleted_at IS NULL`,
@@ -870,7 +877,7 @@ const db_sql = {
                 u1.is_main_admin, u1.created_by, u2.full_name AS creator_name 
               FROM 
                 users AS u1 
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u2 ON u2.id = u1.created_by  
               WHERE 
                 u1.created_by = '{var1}' AND u1.deleted_at IS NULL 
@@ -1252,7 +1259,7 @@ const db_sql = {
   "Q160": `UPDATE slabs SET deleted_at = '{var1}' WHERE slab_id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL`,
   "Q161": `SELECT * FROM slabs WHERE slab_id ='{var1}' AND deleted_at IS NULL ORDER BY slab_ctr ASC`,
   "Q162": `SELECT u.id, u.full_name, r.id as role_id,r.role_name, r.module_ids, r.reporter  FROM roles AS r 
-              INNER JOIN users AS u ON u.role_id = r.id 
+              LEFT JOIN users AS u ON u.role_id = r.id 
               WHERE r.id = '{var1}'  AND r.deleted_at IS NULL`,
   "Q163": `SELECT * FROM contact_us WHERE deleted_at IS NULL`,
   "Q164": `SELECT * from chat where is_group_chat = 'true' AND company_id = '{var1}' AND deleted_at IS NULL`,
@@ -1378,7 +1385,7 @@ const db_sql = {
                 u.full_name AS created_by
               FROM 
                 customer_company_employees AS l 
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u ON u.id = l.creator_id
               WHERE 
                 l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.pid IS NULL AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
@@ -1444,7 +1451,7 @@ const db_sql = {
                 u.full_name AS created_by
               FROM 
                 customer_company_employees AS l 
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u ON u.id = l.creator_id
               WHERE 
                 l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.pid IS NULL AND l.marketing_qualified_lead = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
@@ -1564,7 +1571,7 @@ const db_sql = {
                 u.full_name AS created_by
               FROM 
                 customer_company_employees AS l 
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u ON u.id = l.assigned_sales_lead_to
               WHERE 
               l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.pid IS NULL AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
@@ -1583,7 +1590,7 @@ const db_sql = {
               u.full_name AS created_by
             FROM 
               customer_company_employees AS l 
-            INNER JOIN 
+            LEFT JOIN 
               users AS u ON u.id = l.creator_id
             WHERE 
               l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.pid IS NULL AND l.is_rejected = '{var5}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
@@ -1657,7 +1664,7 @@ const db_sql = {
               u1.is_main_admin, u1.created_by, u2.full_name AS creator_name 
             FROM 
               users AS u1 
-            INNER JOIN 
+            LEFT JOIN 
               users AS u2 ON u2.id = u1.created_by  
             WHERE 
               u1.id = '{var1}' AND u1.deleted_at IS NULL 
@@ -2043,13 +2050,13 @@ const db_sql = {
                 u2.full_name AS transferd_back_to_name, t.sales_id, c.customer_name 
               FROM 
                 transfered_back_sales AS t
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u1 ON u1.id = t.transferd_back_by_id
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u2 ON u2.id = t.transferd_back_to_id
-              INNER JOIN 
+              LEFT JOIN 
                 sales AS sc ON sc.id = t.sales_id
-              INNER JOIN 
+              LEFT JOIN 
                 customer_companies AS c ON sc.customer_id = c.id
               WHERE 
                 sales_id = '{var1}'`,
@@ -2293,7 +2300,7 @@ const db_sql = {
               p.end_of_life, p.currency, p.company_id, p.created_at, p.updated_at, p.user_id, u.full_name as created_by 
             FROM 
               products AS p
-            INNER JOIN 
+            LEFT JOIN 
               users AS u ON p.user_id = u.id
             WHERE 
               p.user_id IN ({var1}) AND p.deleted_at IS NULL
