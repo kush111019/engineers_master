@@ -268,9 +268,7 @@ module.exports.uploadMailAttechment = async (req, res) => {
         let files = req.files
         uploadedArr = []
         for(let item of files){
-            console.log(item,"item11111111111");
             let path = `${process.env.MAIL_ATTECHMENT_PATH}/${item.filename}`
-            console.log(path,"path2222222222");
             uploadedArr.push(
                 {
                     filename : item.originalname,
@@ -331,8 +329,8 @@ module.exports.sendEmail = async (req, res) => {
                 }
                 
                 if (storeSentMail.rowCount > 0) {
-                    await connection.query('COMMIT')
                     await sendEmailToContact2(emails, subject, message, cc, senderEmail, attachmentsArr);
+                    await connection.query('COMMIT')
                     res.json({
                         status: 200,
                         success: true,
