@@ -633,7 +633,11 @@ const db_sql = {
               stripe_card_id = '{var3}', stripe_token_id = '{var4}', stripe_charge_id = '{var5}', 
               expiry_date = '{var6}', updated_at = '{var7}', total_amount = '{var9}', immediate_upgrade = '{var10}', payment_receipt = '{var11}', user_count = '{var12}', plan_id = '{var13}', upgraded_transaction_id = '{var14}', pro_user_count = '{var15}'  WHERE id = '{var8}' AND deleted_at IS NULL RETURNING *`,
   "Q106": `UPDATE transactions SET is_canceled = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
-  "Q107": `SELECT id, chat_name, is_group_chat, last_message, group_admin,user_a, user_b, created_at FROM chat WHERE is_group_chat = 'false' AND ((user_a = '{var1}' AND user_b = '{var2}') or (user_a = '{var2}' AND user_b = '{var1}')) AND deleted_at IS NULL`,
+  "Q107": `SELECT id, chat_name, is_group_chat, last_message, group_admin,user_a, user_b, 
+              created_at FROM chat 
+          WHERE is_group_chat = 'false' AND 
+          ((user_a = '{var1}' AND user_b = '{var2}') or (user_a = '{var2}' AND user_b = '{var1}')) 
+          AND deleted_at IS NULL`,
   "Q108": `INSERT INTO message( chat_id, sender, content) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
   "Q109": `UPDATE chat SET last_message = '{var1}', updated_at = '{var3}' WHERE id = '{var2}'  AND deleted_at IS NULL RETURNING *`,
   "Q110": `INSERT INTO chat_room_members ( room_id, user_id, group_name) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
