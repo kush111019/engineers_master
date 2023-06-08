@@ -46,6 +46,8 @@ router.get('/captainWiseSalesDetails', verifyTokenFnForPro,checkParams, controll
 router.get('/sciiSales',verifyTokenFnForPro,checkParams, controller.proUser.sciiSales)
 router.get('/captainWiseGraph',verifyTokenFnForPro,checkParams, controller.proUser.captainWiseGraph)
 router.get('/commissionReport', verifyTokenFnForPro,checkParams, controller.proUser.commissionReport)
+router.get('/salesMatricsDetails', verifyTokenFnForPro,checkParams, controller.proUser.salesMatricsDetails)
+router.get('/annualSalesMatrics', verifyTokenFnForPro,checkParams, controller.proUser.annualSalesMatrics)
 
 
 module.exports = router;

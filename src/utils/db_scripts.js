@@ -3374,7 +3374,199 @@ const db_sql = {
             WHERE 
               sales_id = '{var1}' 
             AND 
-              deleted_at IS NULL`
+              deleted_at IS NULL`,
+//   "Q377":`SELECT 
+//   COUNT(*) AS total_rows,
+//   COUNT(CASE WHEN cce.is_converted = true THEN 1 END) AS converted_rows
+// FROM customer_company_employees AS cce
+// WHERE cce.creator_id = '8ed3f51b-d9e7-4795-b11b-b32e2ec010bc'
+//   AND cce.created_at >= DATE_TRUNC('year', CURRENT_DATE) - INTERVAL '3 months' -- Start of previous financial year
+//   AND cce.created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '9 months' -- Start of current financial year
+//   AND cce.pid IS NULL;`        
+  "Q378":`SELECT 
+            COUNT(*) AS total__lead_rows,
+            COUNT(CASE WHEN cce.is_converted = true THEN 1 END) AS converted_lead_rows
+          FROM customer_company_employees AS cce
+          WHERE cce.company_id = '{var1}'
+            AND cce.creator_id IN ({var2}) 
+            AND cce.created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' 
+            AND cce.created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'
+            AND cce.pid IS NULL;`,
+  "Q379":`SELECT 
+            u.id, u.full_name AS sales_rep,
+            sc.id as sales_id
+          FROM  
+            sales AS sc 
+            LEFT JOIN sales_users AS cr ON cr.sales_id = sc.id
+            AND cr.user_type = 'captain'
+          LEFT JOIN users AS u ON u.id = cr.user_id
+          WHERE cr.user_id IN ({var1}) AND sc.deleted_at IS NULL AND u.deleted_at IS NULL and cr.deleted_at IS NULL`   ,
+          //Yearly data
+  "Q380":`SELECT COUNT(*) 
+          FROM follow_up_notes
+          WHERE user_id = '{var1}'
+              AND deleted_at IS NULL
+              AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' 
+              AND created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months';`  ,
+  "Q381":`SELECT COUNT(*) AS converted_sales_count 
+          FROM customer_company_employees
+          WHERE creator_id = '{var1}' AND is_converted = 'true'
+              AND deleted_at IS NULL
+              AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' 
+              AND created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'`,
+  "Q382":`SELECT SUM(CAST(rr.recognized_amount AS numeric)) AS total_revenue
+          FROM recognized_revenue rr
+          JOIN sales s ON s.id = rr.sales_id
+          WHERE s.user_id = '{var1}'
+            AND s.sales_type = 'Subscription'
+            AND s.created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months'
+            AND s.created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months';` ,
+  "Q383":`SELECT COUNT(*) AS created_sales 
+          FROM sales 
+          WHERE user_id = '{var1}'
+              AND deleted_at IS NULL
+              AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' 
+              AND created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'`, 
+              //Quarterly Data    
+  // "Q384": `SELECT
+  //           COUNT(*) AS created_sales,
+  //           CASE
+  //               WHEN created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' * 0
+  //                   AND created_at < DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' * 1 THEN 'Quarter 1'
+  //               WHEN created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' * 1
+  //                   AND created_at < DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' * 2 THEN 'Quarter 2'
+  //               WHEN created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' * 2
+  //                   AND created_at < DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' * 3 THEN 'Quarter 3'
+  //               ELSE 'Quarter 4'
+  //           END AS quarter
+  //         FROM
+  //           sales
+  //         WHERE
+  //           user_id = '{var1}'
+  //           AND deleted_at IS NULL
+  //           AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year')
+  //           AND created_at < DATE_TRUNC('year', CURRENT_DATE)
+  //         GROUP BY
+  //           quarter;`,   
+  //follow_up_counts For quarter 
+  "Q384":`SELECT SUM(CAST(rr.recognized_amount AS numeric)) AS annual_recurring_revenue
+          FROM recognized_revenue rr
+          JOIN sales s ON s.id = rr.sales_id
+          WHERE rr.company_id = '{var1}'
+          AND rr.user_id IN ({var2}) AND rr.deleted_at IS NULL AND s.deleted_at is NULL
+            AND s.sales_type = 'Subscription'
+            AND s.created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months'
+            AND s.created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months';`,
+  "Q385": `SELECT
+            CASE
+              WHEN EXTRACT(MONTH FROM created_at) IN (4, 5, 6) THEN 1
+              WHEN EXTRACT(MONTH FROM created_at) IN (7, 8, 9) THEN 2
+              WHEN EXTRACT(MONTH FROM created_at) IN (10, 11, 12) THEN 3
+              ELSE 4
+            END AS quarter,
+            EXTRACT(YEAR FROM created_at) AS year,
+            COUNT(*) AS note_count
+          FROM
+            follow_up_notes
+          WHERE
+            user_id = '{var1}'
+            AND deleted_at IS NULL
+            AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year')
+            AND created_at < DATE_TRUNC('year', CURRENT_DATE)
+          GROUP BY
+            quarter, year
+          ORDER BY
+            year, quarter;`,
+            //for created_sales
+  "Q386":`SELECT
+              CASE
+                WHEN EXTRACT(MONTH FROM created_at) IN (4, 5, 6) THEN 1
+                WHEN EXTRACT(MONTH FROM created_at) IN (7, 8, 9) THEN 2
+                WHEN EXTRACT(MONTH FROM created_at) IN (10, 11, 12) THEN 3
+                ELSE 4
+              END AS quarter,
+              EXTRACT(YEAR FROM created_at) AS year,
+              COUNT(*) AS created_sales
+            FROM
+              sales
+            WHERE
+              user_id = '{var1}'
+              AND deleted_at IS NULL
+              AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year')
+              AND created_at < DATE_TRUNC('year', CURRENT_DATE)
+            GROUP BY
+              quarter, year
+            ORDER BY
+              year, quarter;`,
+              //for converted sales
+  "Q387":`WITH quarters AS (
+                SELECT generate_series(1, 4) AS quarter
+            )
+            SELECT 
+                q.quarter,
+                COALESCE(c.converted_sales_count, 0) AS converted_sales_count
+            FROM 
+                quarters q
+            LEFT JOIN (
+                SELECT 
+                    EXTRACT(QUARTER FROM created_at) AS quarter,
+                    COUNT(*) AS converted_sales_count 
+                FROM 
+                    customer_company_employees
+                WHERE 
+                    creator_id = '{var1}' 
+                    AND is_converted = 'true'
+                    AND deleted_at IS NULL
+                    AND (
+                        (created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' 
+                        AND created_at < DATE_TRUNC('year', CURRENT_DATE - INTERVAL '9 months') + INTERVAL '3 months')
+                        OR
+                        (created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '9 months') + INTERVAL '3 months' 
+                        AND created_at < DATE_TRUNC('year', CURRENT_DATE - INTERVAL '6 months') + INTERVAL '3 months')
+                        OR
+                        (created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '6 months') + INTERVAL '3 months' 
+                        AND created_at < DATE_TRUNC('year', CURRENT_DATE - INTERVAL '3 months') + INTERVAL '3 months')
+                        OR
+                        (created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '3 months') + INTERVAL '3 months' 
+                        AND created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months')
+                    )
+                GROUP BY 
+                    quarter
+            ) c ON q.quarter = c.quarter;`   ,
+            //for recognized revenue
+  "Q388":`WITH quarters AS (
+              SELECT generate_series(1, 4) AS quarter
+          )
+          SELECT 
+              q.quarter,
+              COALESCE(SUM(CAST(r.recognized_amount AS numeric)), 0) AS total_revenue
+          FROM 
+              quarters q
+          LEFT JOIN (
+              SELECT 
+                  EXTRACT(QUARTER FROM s.created_at) AS quarter,
+                  rr.recognized_amount
+              FROM 
+                  recognized_revenue rr
+              JOIN 
+                  sales s ON s.id = rr.sales_id
+              WHERE 
+                  s.user_id = '{var1}'
+                  AND s.sales_type = 'Subscription'
+                  AND s.created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months'
+                  AND s.created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'
+          ) r ON q.quarter = r.quarter
+          GROUP BY 
+              q.quarter;
+          `             ,
+          //followUp counts annualy for loggedIn user and subuser
+  "Q389":`SELECT COUNT(*) AS engagement_counts
+          FROM follow_up_notes
+          WHERE company_id = '{var1}' 
+              AND user_id IN ({var2})
+              AND deleted_at IS NULL
+              AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' 
+              AND created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'`                        
 
 
 }

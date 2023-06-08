@@ -798,13 +798,13 @@ module.exports.calculateCommission = async(slabId, amount)=>{
     let s4 = dbScript(db_sql['Q161'], { var1: slabId  })
     let slab = await connection.query(s4)
 
-    let remainingAmount = Number(amount); //recognizeRevenue.rows[0].amount
+    let remainingAmount = Number(amount); //recognizeRevenue.rows[0].amount  //100000 //95000 //90000
     let commission = 0
     //if remainning amount is 0 then no reason to check 
     for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
-        let slab_percentage = Number(slab.rows[i].percentage)
-        let slab_maxAmount = Number(slab.rows[i].max_amount)
-        let slab_minAmount = Number(slab.rows[i].min_amount)
+        let slab_percentage = Number(slab.rows[i].percentage) //3  //5 //7
+        let slab_maxAmount = Number(slab.rows[i].max_amount) //5000  //10000 //100000
+        let slab_minAmount = Number(slab.rows[i].min_amount) //0  //5001 //10001
         if (slab.rows[i].is_max) {
             // Reached the last slab
             commission += ((slab_percentage / 100) * remainingAmount)
@@ -812,11 +812,11 @@ module.exports.calculateCommission = async(slabId, amount)=>{
         }
         else {
             // This is not the last slab
-            let diff = slab_minAmount == 0 ? 0 : 1
-            let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-            slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-            commission += ((slab_percentage / 100) * slab_diff)
-            remainingAmount -= slab_diff
+            let diff = slab_minAmount == 0 ? 0 : 1   //0 //1 //1
+            let slab_diff = (slab_maxAmount - slab_minAmount + diff) //5000-0+0 //10000-5001+1 //10000-10001 + 1
+            slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff  //5000 //5000 //90000
+            commission += ((slab_percentage / 100) * slab_diff) //(0+3/100)*5000 = 150 //250 //6300 =>6700
+            remainingAmount -= slab_diff //100000-5000 // 95000-5000 //90000-90000
             if (remainingAmount <= 0) {
                 break;
             }
