@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults, getParentUserList } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults, getParentUserList, getUserAndSubUser } = require('../utils/helper')
 const { issueJWTForPro } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
@@ -187,11 +187,11 @@ module.exports.changePassword = async (req, res) => {
         let user = await connection.query(s1)
         if (user.rows.length > 0 && isProUser) {
             if (user.rows[0].encrypted_password == oldPassword) {
-               
+
                 let _dt = new Date().toISOString();
                 let s2 = dbScript(db_sql['Q5'], { var1: user.rows[0].id, var2: newPassword, var3: _dt, var4: user.rows[0].company_id })
                 let updatePass = await connection.query(s2)
-                
+
                 if (updatePass.rowCount > 0) {
                     await connection.query('COMMIT')
                     res.send({
@@ -243,7 +243,7 @@ module.exports.usersList = async (req, res) => {
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0 && isProUser) {
             //check user's on the basis of company id
-            let s4 = dbScript(db_sql['Q314'], { var1: findAdmin.rows[0].company_id, var2 : false })
+            let s4 = dbScript(db_sql['Q314'], { var1: findAdmin.rows[0].company_id, var2: false })
             findUsers = await connection.query(s4);
 
             if (findUsers.rows.length > 0) {
@@ -3048,6 +3048,171 @@ module.exports.commissionReport = async (req, res) => {
             status: 400,
             success: false,
             message: error.message,
+        })
+    }
+}
+
+module.exports.salesMatricsDetails = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { isProUser } = req.user
+        let { duration, page } = req.query
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0 && isProUser) {
+
+            let roleUsers = await getUserAndSubUser(findAdmin.rows[0])
+
+            let s4 = dbScript(db_sql['Q379'], { var1: roleUsers.join(",") })
+            let findCaptains = await connection.query(s4)
+
+            let data = [];
+
+            for (let captain of findCaptains.rows) {
+                if (duration === "year") {
+                    let s5 = dbScript(db_sql['Q380'], { var1: captain.id });
+                    let followUpCounts = await connection.query(s5);
+                    if (followUpCounts.rowCount > 0) {
+                        captain.followUpCounts = Number(followUpCounts.rows[0].count);
+                    } else {
+                        captain.followUpCounts = 0
+                    }
+
+                    let s6 = dbScript(db_sql['Q381'], { var1: captain.id })
+                    let convertedSales = await connection.query(s6)
+                    if (convertedSales.rowCount > 0) {
+                        captain.convertedSalesByCaptain = Number(convertedSales.rows[0].converted_sales_count);
+                    } else {
+                        captain.convertedSalesByCaptain = 0
+                    }
+
+                    let s7 = dbScript(db_sql['Q382'], { var1: captain.id })
+                    let recognizedRevenue = await connection.query(s7)
+                    if (recognizedRevenue.rowCount > 0) {
+                        captain.recognizedRevenue = Number(recognizedRevenue.rows[0].total_revenue)
+                    } else {
+                        captain.recognizedRevenue = 0
+                    }
+
+                    let s8 = dbScript(db_sql['Q383'], { var1: captain.id })
+                    let createdSales = await connection.query(s8)
+                    if (createdSales.rowCount > 0) {
+                        captain.createdSales = Number(createdSales.rows[0].created_sales)
+                    } else {
+                        captain.createdSales = 0
+                    }
+                } else {
+                    let s9 = dbScript(db_sql['Q385'], { var1: captain.id });
+                    let followUpCounts = await connection.query(s9);
+                    if (followUpCounts.rowCount > 0) {
+                        captain.followUpCounts = followUpCounts.rows
+                    } else {
+                        captain.followUpCounts = 0
+                    }
+
+                    let s10 = dbScript(db_sql['Q386'], { var1: captain.id });
+                    let createdSales = await connection.query(s10);
+                    if (createdSales.rowCount > 0) {
+                        captain.CreatedSales = createdSales.rows
+                    } else {
+                        captain.createdSales = 0
+                    }
+
+                    let s11 = dbScript(db_sql['Q387'], { var1: captain.id });
+                    let convertedSales = await connection.query(s11);
+                    if (convertedSales.rowCount > 0) {
+                        captain.convertedSales = convertedSales.rows
+                    } else {
+                        captain.convertedSales = []
+                    }
+
+                    let s12 = dbScript(db_sql['Q388'], { var1: captain.id });
+                    let recognizedRevenue = await connection.query(s12);
+                    if (recognizedRevenue.rowCount > 0) {
+                        captain.recognizedRevenue = recognizedRevenue.rows
+                    } else {
+                        captain.recognizedRevenue = []
+                    }
+                }
+                data.push(captain)
+            }
+            let result = await paginatedResults(data, page)
+            res.json({
+                status: 200,
+                success: true,
+                message: "Users sales matrics",
+                data: result
+            });
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.stack,
+        })
+    }
+}
+
+module.exports.annualSalesMatrics = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { isProUser } = req.user
+        let { duration, page } = req.query
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0 && isProUser) {
+            let data = {}
+            let roleUsers = await getUserAndSubUser(findAdmin.rows[0])
+            let s3 = dbScript(db_sql['Q378'], { var1: findAdmin.rows[0].company_id, var2: roleUsers.join(",") })
+            let findTotalCOnvertedCounts = await connection.query(s3)
+
+            let s13 = dbScript(db_sql['Q384'], { var1: findAdmin.rows[0].company_id, var2: roleUsers.join(",") })
+            let annualRecurringRevenue = await connection.query(s13)
+
+            let s14 = dbScript(db_sql['Q389'], { var1: findAdmin.rows[0].company_id, var2: roleUsers.join(",") })
+            let engagementMatrics = await connection.query(s14)
+
+            data.findTotalCOnvertedCounts = findTotalCOnvertedCounts.rows;
+            data.annualRecurringRevenue = annualRecurringRevenue.rows[0].annual_recurring_revenue
+            data.engagementMatrics = engagementMatrics.rows[0].engagement_counts
+
+            if (data) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Sales conversion list",
+                    data: data
+                });
+
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty sales matrics",
+                    data: {
+                        findTotalCOnvertedCounts: [],
+                        annualRecurringRevenue: 0,
+                        engagementMatrics: 0
+                    }
+                });
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.stack,
         })
     }
 }
