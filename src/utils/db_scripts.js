@@ -3566,7 +3566,8 @@ const db_sql = {
               AND user_id IN ({var2})
               AND deleted_at IS NULL
               AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' 
-              AND created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'`                        
+              AND created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'`,
+  "Q390": `INSERT INTO pro_quarter_config(user_id, company_id, quarter, start_date, end_date) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`                                    
 
 
 }
