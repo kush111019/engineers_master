@@ -3570,7 +3570,8 @@ const db_sql = {
   "Q390": `INSERT INTO pro_quarter_config(user_id, company_id, quarter, start_date, end_date) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *` ,
   "Q391": `SELECT * FROM pro_quarter_config WHERE company_id = '{var1}' AND deleted_at IS NULL`      ,
   "Q392":`UPDATE pro_quarter_config SET quarter = '{var1}', start_date = '{var2}', end_date = '{var3}', updated_at = '{var4}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *` ,
-  "Q393": `SELECT start_date FROM pro_quarter_config WHERE company_id = '{var1}' AND quarter = '{var2}' AND deleted_at IS NULL`                            
+  "Q393": `SELECT start_date FROM pro_quarter_config WHERE company_id = '{var1}' AND quarter = '{var2}' AND deleted_at IS NULL`,
+  "Q394": `UPDATE companies SET company_address = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`                            
 
 
 }

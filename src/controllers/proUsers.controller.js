@@ -3218,88 +3218,88 @@ module.exports.annualSalesMatrics = async (req, res) => {
     }
 }
 
-module.exports.ShowQuarterConfig = async (req, res) => {
-    try {
-        let userId = req.user.id
-        let { isProUser } = req.user
-        let { startDate } = req.body
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0 && isProUser) {
-            let s2 = dbScript(db_sql['Q391'], { var1: findAdmin.rows[0].company_id })
-            let showConfig = await connection.query(s2)
-            if (showConfig.rowCount > 0) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "quarter configuration",
-                    data: showConfig.rows
-                })
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: "empty configuration",
-                    data: []
-                })
-            }
-        } else {
-            res.status(403).json({
-                success: false,
-                message: "Unathorised"
-            })
-        }
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
+// module.exports.ShowQuarterConfig = async (req, res) => {
+//     try {
+//         let userId = req.user.id
+//         let { isProUser } = req.user
+//         let { startDate } = req.body
+//         let s1 = dbScript(db_sql['Q8'], { var1: userId })
+//         let findAdmin = await connection.query(s1)
+//         if (findAdmin.rowCount > 0 && isProUser) {
+//             let s2 = dbScript(db_sql['Q391'], { var1: findAdmin.rows[0].company_id })
+//             let showConfig = await connection.query(s2)
+//             if (showConfig.rowCount > 0) {
+//                 res.json({
+//                     status: 200,
+//                     success: true,
+//                     message: "quarter configuration",
+//                     data: showConfig.rows
+//                 })
+//             } else {
+//                 res.json({
+//                     status: 200,
+//                     success: false,
+//                     message: "empty configuration",
+//                     data: []
+//                 })
+//             }
+//         } else {
+//             res.status(403).json({
+//                 success: false,
+//                 message: "Unathorised"
+//             })
+//         }
+//     } catch (error) {
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }
 
-module.exports.updateQuarterConfig = async (req, res) => {
-    try {
-        let userId = req.user.id
-        let { isProUser } = req.user
-        let { startDate } = req.body
-        await connection.query("BEGIN")
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0 && isProUser) {
-            let s2 = dbScript(db_sql['Q391'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
-            let showConfig = await connection.query(s2)
-            let quarters = await calculateQuarters(startDate)
-            let _dt = new Date().toISOString();
-            if (showConfig.rowCount > 0) {
-                for(let i = 0; i<4; i++){
-                    let s3 = dbScript(db_sql['Q392'],{var1 : quarters[i].quarter, var2 : quarters[i].start_date, var3 : quarters[i].end_date, var4 : _dt, var5 : showConfig.rows[i].id})
-                    let updateQuarterConfig = await connection.query(s3)
-                }
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "quarter configuration updated successfully."
-                })
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: "empty configuration",
-                    data: []
-                })
-            }
-        } else {
-            res.status(403).json({
-                success: false,
-                message: "Unathorised"
-            })
-        }
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.message,
-        })
-    }
-}
+// module.exports.updateQuarterConfig = async (req, res) => {
+//     try {
+//         let userId = req.user.id
+//         let { isProUser } = req.user
+//         let { startDate } = req.body
+//         await connection.query("BEGIN")
+//         let s1 = dbScript(db_sql['Q8'], { var1: userId })
+//         let findAdmin = await connection.query(s1)
+//         if (findAdmin.rowCount > 0 && isProUser) {
+//             let s2 = dbScript(db_sql['Q391'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
+//             let showConfig = await connection.query(s2)
+//             let quarters = await calculateQuarters(startDate)
+//             let _dt = new Date().toISOString();
+//             if (showConfig.rowCount > 0) {
+//                 for(let i = 0; i<4; i++){
+//                     let s3 = dbScript(db_sql['Q392'],{var1 : quarters[i].quarter, var2 : quarters[i].start_date, var3 : quarters[i].end_date, var4 : _dt, var5 : showConfig.rows[i].id})
+//                     let updateQuarterConfig = await connection.query(s3)
+//                 }
+//                 res.json({
+//                     status: 200,
+//                     success: true,
+//                     message: "quarter configuration updated successfully."
+//                 })
+//             } else {
+//                 res.json({
+//                     status: 200,
+//                     success: false,
+//                     message: "empty configuration",
+//                     data: []
+//                 })
+//             }
+//         } else {
+//             res.status(403).json({
+//                 success: false,
+//                 message: "Unathorised"
+//             })
+//         }
+//     } catch (error) {
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }

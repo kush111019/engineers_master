@@ -19,6 +19,7 @@ router.get('/showProfile', verifyTokenFn,checkParams, controller.companyAdmin.sh
 router.put('/updateProfile', verifyTokenFn,checkParams, controller.companyAdmin.updateUserProfile)
 router.put('/changePassword', verifyTokenFn,checkParams, controller.companyAdmin.changePassword)
 router.put('/updateCompanyLogo', verifyTokenFn,checkParams, uploadLogo.single('file'), controller.companyAdmin.updateCompanyLogo)
+router.put('/updateCompanyProfile', verifyTokenFn,checkParams, controller.companyAdmin.updateCompanyProfile)
 
 //-------------------------------------Users-------------------------------------------------
 router.get('/userCount', verifyTokenFn,checkParams, controller.users.userCount)

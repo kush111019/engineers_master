@@ -50,8 +50,8 @@ router.get('/salesMatricsDetails', verifyTokenFnForPro,checkParams, controller.p
 router.get('/annualSalesMatrics', verifyTokenFnForPro,checkParams, controller.proUser.annualSalesMatrics)
 
 
-router.get('/ShowQuarterConfig', verifyTokenFnForPro,checkParams, controller.proUser.ShowQuarterConfig)
-router.put('/updateQuarterConfig', verifyTokenFnForPro,checkParams, controller.proUser.updateQuarterConfig)
+// router.get('/ShowQuarterConfig', verifyTokenFnForPro,checkParams, controller.proUser.ShowQuarterConfig)
+// router.put('/updateQuarterConfig', verifyTokenFnForPro,checkParams, controller.proUser.updateQuarterConfig)
 
 
 module.exports = router;
