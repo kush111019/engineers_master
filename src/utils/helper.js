@@ -828,7 +828,6 @@ module.exports.calculateCommission = async(slabId, amount)=>{
 }
 
 module.exports.calculateQuarters = async (startDate) =>{
-    console.log(startDate,"startDate");
     const quarters = [];
     const [startMonth, startDay, startYear] = startDate.split('-').map(Number);
   
@@ -839,9 +838,9 @@ module.exports.calculateQuarters = async (startDate) =>{
       const quarterName = `${i + 1}`;
   
       quarters.push({
-        start_date: quarterStartDate,
-        end_date: quarterEndDate,
-        name: quarterName
+        start_date: quarterStartDate.toISOString(),
+        end_date: quarterEndDate.toISOString(),
+        quarter: quarterName
       });
     }
   

@@ -71,8 +71,9 @@ let createAdmin = async (bodyData, cId, res) => {
             let updateModule = await connection.query(s8)
 
             let quarters = await calculateQuarters(startDate)
-            console.log(quarters, "Quarters");
+
             for (let data of quarters) {
+                console.log(data, "data");
                 let s9 = dbScript(db_sql['Q390'], { var1: saveuser.rows[0].id, var2: cId, var3: data.quarter, var4: data.start_date, var5: data.end_date })
                 var createquarters = await connection.query(s9)
             }
@@ -460,14 +461,20 @@ module.exports.showProfile = async (req, res) => {
         if (checkUser.rows.length > 0) {
             let s2 = dbScript(db_sql['Q9'], { var1: checkUser.rows[0].company_id })
             let companyData = await connection.query(s2)
+
+            let s3 = dbScript(db_sql['Q393'],{ var1 : checkUser.rows[0].company_id , var2 : '1'})
+            let ShowquarterConfig = await connection.query(s3)
             if (companyData.rowCount > 0) {
                 checkUser.rows[0].companyName = companyData.rows[0].company_name
                 checkUser.rows[0].companyAddress = companyData.rows[0].company_address
-                checkUser.rows[0].companyLogo = companyData.rows[0].company_logo
+                checkUser.rows[0].companyLogo = companyData.rows[0].company_logo,
+                checkUser.rows[0].startDate = ShowquarterConfig.rows[0].start_date
+
             } else {
                 checkUser.rows[0].companyName = ""
                 checkUser.rows[0].companyAddress = ""
                 checkUser.rows[0].companyLogo = ""
+                checkUser.rows[0].startDate = ""
             }
             res.json({
                 status: 200,
