@@ -468,7 +468,7 @@ module.exports.showProfile = async (req, res) => {
                 checkUser.rows[0].companyName = companyData.rows[0].company_name
                 checkUser.rows[0].companyAddress = companyData.rows[0].company_address
                 checkUser.rows[0].companyLogo = companyData.rows[0].company_logo,
-                checkUser.rows[0].startDate = ShowquarterConfig.rows[0].start_date
+                checkUser.rows[0].startDate = ShowquarterConfig.rows[0].start_date ? ShowquarterConfig.rows[0].start_date : ""
 
             } else {
                 checkUser.rows[0].companyName = ""
