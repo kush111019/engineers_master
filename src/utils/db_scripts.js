@@ -3567,7 +3567,10 @@ const db_sql = {
               AND deleted_at IS NULL
               AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' 
               AND created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'`,
-  "Q390": `INSERT INTO pro_quarter_config(user_id, company_id, quarter, start_date, end_date) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`                                    
+  "Q390": `INSERT INTO pro_quarter_config(user_id, company_id, quarter, start_date, end_date) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *` ,
+  "Q391": `SELECT * FROM pro_quarter_config WHERE company_id = '{var1}' AND deleted_at IS NULL`      ,
+  "Q392":`UPDATE pro_quarter_config SET quarter = '{var1}', start_date = '{var2}', end_date = '{var3}', updated_at = '{var4}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *` ,
+  "Q393": `SELECT start_date FROM pro_quarter_config WHERE company_id = '{var1}' AND quarter = '{var2}' AND deleted_at IS NULL`                            
 
 
 }
