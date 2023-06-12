@@ -462,13 +462,13 @@ module.exports.showProfile = async (req, res) => {
             let s2 = dbScript(db_sql['Q9'], { var1: checkUser.rows[0].company_id })
             let companyData = await connection.query(s2)
 
-            let s3 = dbScript(db_sql['Q393'],{ var1 : checkUser.rows[0].company_id , var2 : '1'})
+            let s3 = dbScript(db_sql['Q393'], { var1: checkUser.rows[0].company_id, var2: '1' })
             let ShowquarterConfig = await connection.query(s3)
             if (companyData.rowCount > 0) {
                 checkUser.rows[0].companyName = companyData.rows[0].company_name
                 checkUser.rows[0].companyAddress = companyData.rows[0].company_address
                 checkUser.rows[0].companyLogo = companyData.rows[0].company_logo,
-                checkUser.rows[0].startDate = ShowquarterConfig.rows[0].start_date ? ShowquarterConfig.rows[0].start_date : ""
+                    checkUser.rows[0].startDate = ShowquarterConfig.rows[0].start_date ? ShowquarterConfig.rows[0].start_date : ""
 
             } else {
                 checkUser.rows[0].companyName = ""
@@ -859,6 +859,70 @@ module.exports.updateCompanyLogo = async (req, res) => {
             })
         }
 
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            success: false,
+            status: 400,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.updateCompanyProfile = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { startDate, companyAddress } = req.body
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let checkUser = await connection.query(s1)
+        let _dt = new Date().toISOString();
+        if (checkUser.rows.length > 0) {
+            let s2 = dbScript(db_sql['Q391'], { var1: checkUser.rows[0].company_id })
+            let showConfig = await connection.query(s2)
+            let quarters = await calculateQuarters(startDate)
+            let _dt = new Date().toISOString();
+            if (showConfig.rowCount > 0) {
+                for (let i = 0; i < 4; i++) {
+                    let s3 = dbScript(db_sql['Q392'], { var1: quarters[i].quarter, var2: quarters[i].start_date, var3: quarters[i].end_date, var4: _dt, var5: showConfig.rows[i].id })
+                    let updateQuarterConfig = await connection.query(s3)
+                }
+
+                let s3 = dbScript(db_sql['Q394'], { var1: mysql_real_escape_string(companyAddress), var2: _dt, var3: checkUser.rows[0].company_id })
+                let updateCompanyAddress = await connection.query(s3)
+
+                if (updateCompanyAddress.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Comapny configuration updated successfully."
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        success: false,
+                        status: 400,
+                        message: "Something Went Wrong",
+                        data: ""
+                    })
+                }
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "empty configuration",
+                    data: []
+                })
+            }
+        } else {
+            res.json({
+                success: false,
+                status: 200,
+                message: "Admin not found",
+                data: ""
+            })
+        }
     } catch (error) {
         await connection.query('ROLLBACK')
         res.json({
