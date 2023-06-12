@@ -827,6 +827,27 @@ module.exports.calculateCommission = async(slabId, amount)=>{
     return totalCommission
 }
 
+module.exports.calculateQuarters = async (startDate) =>{
+    console.log(startDate,"startDate");
+    const quarters = [];
+    const [startMonth, startDay, startYear] = startDate.split('-').map(Number);
+  
+    for (let i = 0; i < 4; i++) {
+      const quarterStartDate = new Date(startYear, startMonth - 1 + (i * 3), startDay);
+      const quarterEndDate = new Date(startYear, startMonth - 1 + (i * 3) + 3, startDay - 1);
+  
+      const quarterName = `${i + 1}`;
+  
+      quarters.push({
+        start_date: quarterStartDate,
+        end_date: quarterEndDate,
+        name: quarterName
+      });
+    }
+  
+    return quarters;
+}
+
 
 
 

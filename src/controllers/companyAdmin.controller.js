@@ -7,7 +7,7 @@ const {
     welcomeEmail2,
 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { mysql_real_escape_string, verifyTokenFn } = require('../utils/helper')
+const { mysql_real_escape_string, verifyTokenFn, calculateQuarters } = require('../utils/helper')
 
 
 let createAdmin = async (bodyData, cId, res) => {
@@ -17,7 +17,8 @@ let createAdmin = async (bodyData, cId, res) => {
         mobileNumber,
         companyAddress,
         phoneNumber,
-        encryptedPassword
+        encryptedPassword,
+        startDate
     } = bodyData
     await connection.query('BEGIN')
     let avatar = process.env.DEFAULT_LOGO;
@@ -69,7 +70,14 @@ let createAdmin = async (bodyData, cId, res) => {
             })
             let updateModule = await connection.query(s8)
 
-            if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0 && addConfig.rowCount > 0) {
+            let quarters = await calculateQuarters(startDate)
+            console.log(quarters, "Quarters");
+            for (let data of quarters) {
+                let s9 = dbScript(db_sql['Q390'], { var1: saveuser.rows[0].id, var2: cId, var3: data.quarter, var4: data.start_date, var5: data.end_date })
+                var createquarters = await connection.query(s9)
+            }
+
+            if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0 && addConfig.rowCount > 0 && createquarters.rowCount > 0) {
                 await connection.query('COMMIT')
                 const payload = {
                     id: saveuser.rows[0].id,
