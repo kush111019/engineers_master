@@ -70,15 +70,12 @@ let createAdmin = async (bodyData, cId, res) => {
             })
             let updateModule = await connection.query(s8)
 
-            let quarters = await calculateQuarters(startDate)
+            //updating company for config quarter
+            let s9 = dbScript(db_sql['Q390'], { var1: startDate, var2: cId })
+            let updateQuarter = await connection.query(s9)
 
-            for (let data of quarters) {
-                console.log(data, "data");
-                let s9 = dbScript(db_sql['Q390'], { var1: saveuser.rows[0].id, var2: cId, var3: data.quarter, var4: data.start_date, var5: data.end_date })
-                var createquarters = await connection.query(s9)
-            }
 
-            if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0 && addConfig.rowCount > 0 && createquarters.rowCount > 0) {
+            if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0 && addConfig.rowCount > 0 && updateQuarter.rowCount > 0) {
                 await connection.query('COMMIT')
                 const payload = {
                     id: saveuser.rows[0].id,
@@ -878,41 +875,24 @@ module.exports.updateCompanyProfile = async (req, res) => {
         let checkUser = await connection.query(s1)
         let _dt = new Date().toISOString();
         if (checkUser.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q391'], { var1: checkUser.rows[0].company_id })
-            let showConfig = await connection.query(s2)
-            let quarters = await calculateQuarters(startDate)
             let _dt = new Date().toISOString();
-            if (showConfig.rowCount > 0) {
-                for (let i = 0; i < 4; i++) {
-                    let s3 = dbScript(db_sql['Q392'], { var1: quarters[i].quarter, var2: quarters[i].start_date, var3: quarters[i].end_date, var4: _dt, var5: showConfig.rows[i].id })
-                    let updateQuarterConfig = await connection.query(s3)
-                }
+            let s3 = dbScript(db_sql['Q394'], { var1: mysql_real_escape_string(companyAddress), var2: _dt, var3: checkUser.rows[0].company_id, var4: startDate })
+            let updateCompanyAddress = await connection.query(s3)
 
-                let s3 = dbScript(db_sql['Q394'], { var1: mysql_real_escape_string(companyAddress), var2: _dt, var3: checkUser.rows[0].company_id })
-                let updateCompanyAddress = await connection.query(s3)
-
-                if (updateCompanyAddress.rowCount > 0) {
-                    await connection.query('COMMIT')
-                    res.json({
-                        status: 200,
-                        success: true,
-                        message: "Comapny configuration updated successfully."
-                    })
-                } else {
-                    await connection.query('ROLLBACK')
-                    res.json({
-                        success: false,
-                        status: 400,
-                        message: "Something Went Wrong",
-                        data: ""
-                    })
-                }
-            } else {
+            if (updateCompanyAddress.rowCount > 0) {
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
+                    success: true,
+                    message: "Comapny configuration updated successfully."
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
                     success: false,
-                    message: "empty configuration",
-                    data: []
+                    status: 400,
+                    message: "Something Went Wrong",
+                    data: ""
                 })
             }
         } else {

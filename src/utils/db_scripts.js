@@ -3567,11 +3567,77 @@ const db_sql = {
               AND deleted_at IS NULL
               AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' 
               AND created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'`,
-  "Q390": `INSERT INTO pro_quarter_config(user_id, company_id, quarter, start_date, end_date) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *` ,
+  "Q390": `UPDATE companies SET quarter = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *` ,
   "Q391": `SELECT * FROM pro_quarter_config WHERE company_id = '{var1}' AND deleted_at IS NULL`      ,
   "Q392":`UPDATE pro_quarter_config SET quarter = '{var1}', start_date = '{var2}', end_date = '{var3}', updated_at = '{var4}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *` ,
   "Q393": `SELECT start_date FROM pro_quarter_config WHERE company_id = '{var1}' AND quarter = '{var2}' AND deleted_at IS NULL`,
-  "Q394": `UPDATE companies SET company_address = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`                            
+  "Q394": `UPDATE companies SET company_address = '{var1}', updated_at = '{var2}', quarter = '{var4}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
+  "Q395":`WITH quarter_dates AS (
+                SELECT
+                    start_date::timestamp with time zone AS quarter_start,
+                    end_date::timestamp with time zone AS quarter_end
+                FROM
+                    pro_quarter_config
+                WHERE
+                    quarter = '{var2}' -- Replace <desired_quarter> with the specific quarter number you want to retrieve data for
+                    AND deleted_at IS NULL
+                ORDER BY
+                    start_date
+                LIMIT 1
+            )
+            SELECT
+                COUNT(*) AS total_lead_count,
+                COUNT(CASE WHEN is_converted = true THEN 1 END) AS converted_lead_count
+            FROM
+                customer_company_employees cce
+            WHERE
+                cce.creator_id = '{var1}'
+                AND cce.created_at BETWEEN (SELECT quarter_start FROM quarter_dates) AND (SELECT quarter_end FROM quarter_dates)
+                AND cce.title IS NOT NULL
+                AND cce.deleted_at IS NULL`    ,
+  "Q396": ` SELECT
+                COUNT(*) AS open_sales,
+                COALESCE(SUM(CASE WHEN closed_at IS NOT NULL THEN 1 ELSE 0 END), 0) AS closed_sales
+              FROM
+                sales
+              WHERE
+                user_id = '{var1}'
+                AND created_at BETWEEN
+                    (SELECT start_date::timestamp with time zone FROM pro_quarter_config WHERE quarter = '1' LIMIT 1)
+                    AND
+                    (SELECT end_date::timestamp with time zone FROM pro_quarter_config WHERE quarter = '1' LIMIT 1);`,
+  "Q397":` SELECT rr.recognized_amount, rr.sales_id
+            FROM recognized_revenue AS rr
+            LEFT JOIN sales AS s ON s.id = rr.sales_id
+            JOIN pro_quarter_config AS pqc ON rr.company_id = pqc.company_id
+            JOIN sales_users AS su ON su.sales_id = rr.sales_id
+            WHERE rr.user_id = '{var1}'
+              AND s.sales_type = 'Perpetual'
+              AND s.closed_at IS NOT NULL
+              AND rr.created_at BETWEEN pqc.start_date::timestamp with time zone AND pqc.end_date::timestamp with time zone
+              AND pqc.quarter::integer IN (1, 2, 3, 4)
+              AND su.user_type = 'captain'
+              AND rr.deleted_at IS NULL
+              AND s.deleted_at IS NULL
+              AND pqc.deleted_at IS NULL
+              AND su.deleted_at IS NULL
+            GROUP BY rr.recognized_amount, rr.sales_id`,
+  "Q398":` SELECT rr.recognized_amount, rr.sales_id
+            FROM recognized_revenue AS rr
+            LEFT JOIN sales AS s ON s.id = rr.sales_id
+            JOIN pro_quarter_config AS pqc ON rr.company_id = pqc.company_id
+            JOIN sales_users AS su ON su.sales_id = rr.sales_id
+            WHERE rr.user_id = '{var1}'
+              AND s.sales_type = 'Subscription'
+              AND s.closed_at IS NOT NULL
+              AND s.recurring_date::timestamp with time zone BETWEEN pqc.start_date::timestamp with time zone AND pqc.end_date::timestamp with time zone
+              AND pqc.quarter::integer IN (1, 2, 3, 4)
+              AND su.user_type = 'captain'
+              AND rr.deleted_at IS NULL
+              AND s.deleted_at IS NULL
+              AND pqc.deleted_at IS NULL
+              AND su.deleted_at IS NULL
+            GROUP BY rr.recognized_amount, rr.sales_id`                                                                  
 
 
 }
