@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults, getParentUserList, getUserAndSubUser, calculateQuarters } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults, getParentUserList, getUserAndSubUser, calculateQuarters, getQuarterMonthsDates } = require('../utils/helper')
 const { issueJWTForPro } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
@@ -1681,7 +1681,7 @@ module.exports.sendEmailToLead = async (req, res) => {
                 //replacing the content of the template from the description when sending the mail to lead
                 const result = template.replace('{content}', description);
 
-                await leadEmail2(leadEmail, result, templateName, credentialObj);
+                await leadEmail(leadEmail, result, templateName, credentialObj);
                 res.json({
                     status: 200,
                     success: true,
@@ -3053,162 +3053,235 @@ module.exports.commissionReport = async (req, res) => {
     }
 }
 
-module.exports.salesMatricsDetails = async (req, res) => {
+module.exports.salesMetricsReport = async (req, res) => {
     try {
         let userId = req.user.id
         let { isProUser } = req.user
-        let { duration, page } = req.query
+        let { selectQuarter, includeStatus, captainId } = req.body
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0 && isProUser) {
+            let s2 = dbScript(db_sql['Q9'], { var1: findAdmin.rows[0].company_id })
+            let findQuarter = await connection.query(s2)
 
-            let roleUsers = await getUserAndSubUser(findAdmin.rows[0])
+            let quarters = await calculateQuarters(findQuarter.rows[0].quarter)
+            let selectedStartDate = '';
+            let selectedEndDate = '';
 
-            let s4 = dbScript(db_sql['Q379'], { var1: roleUsers.join(",") })
-            let findCaptains = await connection.query(s4)
-
-            let data = [];
-
-            for (let captain of findCaptains.rows) {
-                if (duration === "year") {
-                    let s5 = dbScript(db_sql['Q380'], { var1: captain.id });
-                    let followUpCounts = await connection.query(s5);
-                    if (followUpCounts.rowCount > 0) {
-                        captain.followUpCounts = Number(followUpCounts.rows[0].count);
-                    } else {
-                        captain.followUpCounts = 0
-                    }
-
-                    let s6 = dbScript(db_sql['Q381'], { var1: captain.id })
-                    let convertedSales = await connection.query(s6)
-                    if (convertedSales.rowCount > 0) {
-                        captain.convertedSalesByCaptain = Number(convertedSales.rows[0].converted_sales_count);
-                    } else {
-                        captain.convertedSalesByCaptain = 0
-                    }
-
-                    let s7 = dbScript(db_sql['Q382'], { var1: captain.id })
-                    let recognizedRevenue = await connection.query(s7)
-                    if (recognizedRevenue.rowCount > 0) {
-                        captain.recognizedRevenue = Number(recognizedRevenue.rows[0].total_revenue)
-                    } else {
-                        captain.recognizedRevenue = 0
-                    }
-
-                    let s8 = dbScript(db_sql['Q383'], { var1: captain.id })
-                    let createdSales = await connection.query(s8)
-                    if (createdSales.rowCount > 0) {
-                        captain.createdSales = Number(createdSales.rows[0].created_sales)
-                    } else {
-                        captain.createdSales = 0
-                    }
-                } else {
-                    let s9 = dbScript(db_sql['Q385'], { var1: captain.id });
-                    let followUpCounts = await connection.query(s9);
-                    if (followUpCounts.rowCount > 0) {
-                        captain.followUpCounts = followUpCounts.rows
-                    } else {
-                        captain.followUpCounts = 0
-                    }
-
-                    let s10 = dbScript(db_sql['Q386'], { var1: captain.id });
-                    let createdSales = await connection.query(s10);
-                    if (createdSales.rowCount > 0) {
-                        captain.CreatedSales = createdSales.rows
-                    } else {
-                        captain.createdSales = 0
-                    }
-
-                    let s11 = dbScript(db_sql['Q387'], { var1: captain.id });
-                    let convertedSales = await connection.query(s11);
-                    if (convertedSales.rowCount > 0) {
-                        captain.convertedSales = convertedSales.rows
-                    } else {
-                        captain.convertedSales = []
-                    }
-
-                    let s12 = dbScript(db_sql['Q388'], { var1: captain.id });
-                    let recognizedRevenue = await connection.query(s12);
-                    if (recognizedRevenue.rowCount > 0) {
-                        captain.recognizedRevenue = recognizedRevenue.rows
-                    } else {
-                        captain.recognizedRevenue = []
-                    }
+            for (const quarter of quarters) {
+                if (quarter.quarter == String(selectQuarter)) {
+                    selectedStartDate = quarter.start_date;
+                    selectedEndDate = quarter.end_date;
+                    break;
                 }
-                data.push(captain)
             }
-            let result = await paginatedResults(data, page)
-            res.json({
-                status: 200,
-                success: true,
-                message: "Users sales matrics",
-                data: result
-            });
-        } else {
-            res.status(403).json({
-                success: false,
-                message: "Unathorised"
-            })
-        }
-    } catch (error) {
-        res.json({
-            status: 400,
-            success: false,
-            message: error.stack,
-        })
-    }
-}
 
-module.exports.annualSalesMatrics = async (req, res) => {
-    try {
-        let userId = req.user.id
-        let { isProUser } = req.user
-        let { duration, page } = req.query
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0 && isProUser) {
-            let data = {}
-            let roleUsers = await getUserAndSubUser(findAdmin.rows[0])
-            let s3 = dbScript(db_sql['Q378'], { var1: findAdmin.rows[0].company_id, var2: roleUsers.join(",") })
-            let findTotalCOnvertedCounts = await connection.query(s3)
+            let data = []
+            let findLeadCounts
+            let salesActivities
+            let findTotalAndWonDealCount
+            let yearlyRecognizedRevenue
+            let monthlyRecognizedRevenue
 
-            let s13 = dbScript(db_sql['Q384'], { var1: findAdmin.rows[0].company_id, var2: roleUsers.join(",") })
-            let annualRecurringRevenue = await connection.query(s13)
+            let findMonthsDateOfQuarter = await getQuarterMonthsDates(selectedStartDate, selectedEndDate)
 
-            let s14 = dbScript(db_sql['Q389'], { var1: findAdmin.rows[0].company_id, var2: roleUsers.join(",") })
-            let engagementMatrics = await connection.query(s14)
+            if (includeStatus !== true) {
+                let s3 = dbScript(db_sql['Q395'], { var1: selectedStartDate, var2: selectedEndDate, var3: captainId })
+                findLeadCounts = await connection.query(s3)
+                findLeadCounts.rows[0].total_lead_count = Number(findLeadCounts.rows[0].total_lead_count) ? Number(findLeadCounts.rows[0].total_lead_count) : 0
+                findLeadCounts.rows[0].converted_lead_count = Number(findLeadCounts.rows[0].converted_lead_count) ? Number(findLeadCounts.rows[0].converted_lead_count) : 0
 
-            data.findTotalCOnvertedCounts = findTotalCOnvertedCounts.rows;
-            data.annualRecurringRevenue = annualRecurringRevenue.rows[0].annual_recurring_revenue
-            data.engagementMatrics = engagementMatrics.rows[0].engagement_counts
 
-            if (data) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "Sales conversion list",
-                    data: data
-                });
+                findLeadCounts.rows[0].convertedLeadPercentage = (findLeadCounts.rows[0].converted_lead_count / findLeadCounts.rows[0].total_lead_count) * 100 ? (findLeadCounts.rows[0].converted_lead_count / findLeadCounts.rows[0].total_lead_count) * 100 : 0
 
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: "Empty sales matrics",
-                    data: {
-                        findTotalCOnvertedCounts: [],
-                        annualRecurringRevenue: 0,
-                        engagementMatrics: 0
+                //finding total sales ids in which the user_id is captain
+
+
+                let s4 = dbScript(db_sql['Q366'], { var1: captainId })
+                let salesIds = await connection.query(s4)
+                if (salesIds.rowCount > 0) {
+                    let salesIdArr = []
+                    salesIds.rows.map((data) => {
+                        if (data.sales_ids.length > 0) {
+                            salesIdArr.push("'" + data.sales_ids.join("','") + "'")
+                        }
+                    })
+                    //finding total sales and closed sales in which the given captain_id is captian
+                    let s5 = dbScript(db_sql['Q397'], { var1: selectedStartDate, var2: selectedEndDate, var3: salesIdArr.join(",") })
+                    findTotalAndWonDealCount = await connection.query(s5)
+                    if (findTotalAndWonDealCount.rowCount > 0) {
+                        findTotalAndWonDealCount.total_sales_count = findTotalAndWonDealCount.rows[0].total_sales_count
+                        findTotalAndWonDealCount.closed_sales_count = findTotalAndWonDealCount.rows[0].closed_sales_count
+
+                    } else {
+                        findTotalAndWonDealCount.total_sales_count = 0
+                        findTotalAndWonDealCount.closed_sales_count = 0
                     }
-                });
+
+                    findTotalAndWonDealCount.rows[0].winPercentage = (closed_sales_count / total_sales_count) * 100 ? (closed_sales_count / total_sales_count) * 100 : 0
+
+                    //yearly recognized_revenue Subscription+perpetual
+                    let s6 = dbScript(db_sql['Q398'], { var1: quarters[0].start_date, var2: quarters[3].end_date, var3: salesIdArr.join(",") })
+                    yearlyRecognizedRevenue = await connection.query(s6)
+
+
+                    //monthly recognized_revenue Subscription+perpetual on perticular quarter
+                    let s7 = dbScript(db_sql['Q399'], { var1: findMonthsDateOfQuarter[0].start_date, var2: findMonthsDateOfQuarter[0].end_date, var3: findMonthsDateOfQuarter[1].start_date, var4: findMonthsDateOfQuarter[1].end_date, var5: findMonthsDateOfQuarter[2].start_date, var6: findMonthsDateOfQuarter[2].end_date, var7: salesIdArr.join(",") })
+                    monthlyRecognizedRevenue = await connection.query(s7)
+
+                    let s14 = dbScript(db_sql['Q401'], { var1: selectedStartDate, var2: selectedEndDate, var3: captainId })
+                    salesActivities = await connection.query(s14);
+                    console.log("salesActivities", salesActivities);
+
+                    salesActivities.rows[0].activity_per_deal = Number(salesActivities.rows[0].total_sales_activities / salesActivities.rows[0].total_deals_created)
+
+
+                } else {
+                    return res.json({
+                        status: 200,
+                        success: false,
+                        message: "Sales not found",
+                        data: {
+                            lead_counts: findLeadCounts.rows[0] ? findLeadCounts.rows[0] : 0,
+                            sales_activities_per_deal: {
+                                total_sales_activities: 0,
+                                total_deals_created: 0,
+                                activity_per_deal: 0
+
+                            },
+                            sales_counts: {
+                                total_sales_count: 0,
+                                closed_sales_count: 0,
+                                winPercentage: 0
+                            },
+                            yearly_recognized_revenue: {
+                                total_amount: 0
+                            },
+                            monthly_revenue: [
+                                {
+                                    total_amount: 0,
+                                    month_number: 1
+                                },
+                                {
+                                    total_amount: 0,
+                                    month_number: 2
+                                },
+                                {
+                                    total_amount: 0,
+                                    month_number: 3
+                                }
+                            ]
+                        }
+                    })
+                }
+            } else {
+                let s8 = dbScript(db_sql['Q8'], { var1: captainId })
+                let findPermission = await connection.query(s8)
+                let roleUsers = await getUserAndSubUser(findPermission.rows[0])
+                let s9 = dbScript(db_sql['Q396'], { var1: selectedStartDate, var2: selectedEndDate, var3: roleUsers.join(",") })
+                findLeadCounts = await connection.query(s9)
+                if (findLeadCounts.rowCount > 0) {
+                    findLeadCounts.rows[0].total_lead_count = findLeadCounts.rows[0].total_lead_count
+                    findLeadCounts.rows[0].converted_lead_count = findLeadCounts.rows[0].converted_lead_count
+                } else {
+                    findLeadCounts.rows[0].total_lead_count = 0
+                    findLeadCounts.rows[0].converted_lead_count = 0
+                }
+
+                let s10 = dbScript(db_sql['Q400'], { var1: roleUsers.join(",") })
+                let salesIds = await connection.query(s10)
+                if (salesIds.rowCount > 0) {
+                    let salesIdArr = []
+                    salesIds.rows.map((data) => {
+                        if (data.sales_ids.length > 0) {
+                            salesIdArr.push("'" + data.sales_ids.join("','") + "'")
+                        }
+                    })
+                    let s11 = dbScript(db_sql['Q397'], { var1: selectedStartDate, var2: selectedEndDate, var3: salesIdArr.join(",") })
+                    findTotalAndWonDealCount = await connection.query(s11)
+                    if (findTotalAndWonDealCount.rowCount > 0) {
+                        findTotalAndWonDealCount.total_sales_count = findTotalAndWonDealCount.rows[0].total_sales_count
+                        findTotalAndWonDealCount.closed_sales_count = findTotalAndWonDealCount.rows[0].closed_sales_count
+
+                    } else {
+                        findTotalAndWonDealCount.total_sales_count = 0
+                        findTotalAndWonDealCount.closed_sales_count = 0
+                    }
+
+                    //yearly recognized_revenue Subscription+perpetual
+                    let s12 = dbScript(db_sql['Q398'], { var1: quarters[0].start_date, var2: quarters[3].end_date, var3: salesIdArr.join(",") })
+                    yearlyRecognizedRevenue = await connection.query(s12)
+
+                    //monthly recognized_revenue Subscription+perpetual on perticular quarter
+                    let s13 = dbScript(db_sql['Q399'], { var1: findMonthsDateOfQuarter[0].start_date, var2: findMonthsDateOfQuarter[0].end_date, var3: findMonthsDateOfQuarter[1].start_date, var4: findMonthsDateOfQuarter[1].end_date, var5: findMonthsDateOfQuarter[2].start_date, var6: findMonthsDateOfQuarter[2].end_date, var7: salesIdArr.join(",") })
+                    monthlyRecognizedRevenue = await connection.query(s13)
+
+                    let s15 = dbScript(db_sql['Q402'], { var1: selectedStartDate, var2: selectedEndDate, var3: roleUsers.join(",") })
+                    salesActivities = await connection.query(s15);
+                    console.log("salesActivities", salesActivities);
+
+                    salesActivities.rows[0].activity_per_deal = Number(salesActivities.rows[0].total_sales_activities / salesActivities.rows[0].total_deals_created)
+
+
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Sales not found",
+                        data: {
+                            lead_counts: findLeadCounts.rows[0] ? findLeadCounts.rows[0] : 0,
+                            sales_activities_per_deal: {
+                                total_sales_activities: 0,
+                                total_deals_created: 0,
+                                activity_per_deal: 0
+
+                            },
+                            sales_counts: {
+                                total_sales_count: 0,
+                                closed_sales_count: 0,
+                                winPercentage: 0
+                            },
+                            yearly_recognized_revenue: {
+                                total_amount: 0
+                            },
+                            monthly_revenue: [
+                                {
+                                    total_amount: 0,
+                                    month_number: 1
+                                },
+                                {
+                                    total_amount: 0,
+                                    month_number: 2
+                                },
+                                {
+                                    total_amount: 0,
+                                    month_number: 3
+                                }
+                            ]
+                        }
+                    })
+                }
             }
+
+            res.json({
+                status: 400,
+                success: false,
+                message: "sales Matrics data",
+                data: {
+                    lead_counts: findLeadCounts.rows[0],
+                    sales_activities_per_deal: salesActivities.rows[0],
+                    sales_counts: findTotalAndWonDealCount.rows[0],
+                    yearly_recognized_revenue: yearlyRecognizedRevenue.rows[0],
+                    monthly_revenue: monthlyRecognizedRevenue.rows
+                }
+            })
+
         } else {
             res.status(403).json({
                 success: false,
                 message: "Unathorised"
             })
         }
-
     } catch (error) {
         res.json({
             status: 400,
@@ -3216,90 +3289,4 @@ module.exports.annualSalesMatrics = async (req, res) => {
             message: error.stack,
         })
     }
-}
-
-// module.exports.ShowQuarterConfig = async (req, res) => {
-//     try {
-//         let userId = req.user.id
-//         let { isProUser } = req.user
-//         let { startDate } = req.body
-//         let s1 = dbScript(db_sql['Q8'], { var1: userId })
-//         let findAdmin = await connection.query(s1)
-//         if (findAdmin.rowCount > 0 && isProUser) {
-//             let s2 = dbScript(db_sql['Q391'], { var1: findAdmin.rows[0].company_id })
-//             let showConfig = await connection.query(s2)
-//             if (showConfig.rowCount > 0) {
-//                 res.json({
-//                     status: 200,
-//                     success: true,
-//                     message: "quarter configuration",
-//                     data: showConfig.rows
-//                 })
-//             } else {
-//                 res.json({
-//                     status: 200,
-//                     success: false,
-//                     message: "empty configuration",
-//                     data: []
-//                 })
-//             }
-//         } else {
-//             res.status(403).json({
-//                 success: false,
-//                 message: "Unathorised"
-//             })
-//         }
-//     } catch (error) {
-//         res.json({
-//             status: 400,
-//             success: false,
-//             message: error.message,
-//         })
-//     }
-// }
-
-// module.exports.updateQuarterConfig = async (req, res) => {
-//     try {
-//         let userId = req.user.id
-//         let { isProUser } = req.user
-//         let { startDate } = req.body
-//         await connection.query("BEGIN")
-//         let s1 = dbScript(db_sql['Q8'], { var1: userId })
-//         let findAdmin = await connection.query(s1)
-//         if (findAdmin.rowCount > 0 && isProUser) {
-//             let s2 = dbScript(db_sql['Q391'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
-//             let showConfig = await connection.query(s2)
-//             let quarters = await calculateQuarters(startDate)
-//             let _dt = new Date().toISOString();
-//             if (showConfig.rowCount > 0) {
-//                 for(let i = 0; i<4; i++){
-//                     let s3 = dbScript(db_sql['Q392'],{var1 : quarters[i].quarter, var2 : quarters[i].start_date, var3 : quarters[i].end_date, var4 : _dt, var5 : showConfig.rows[i].id})
-//                     let updateQuarterConfig = await connection.query(s3)
-//                 }
-//                 res.json({
-//                     status: 200,
-//                     success: true,
-//                     message: "quarter configuration updated successfully."
-//                 })
-//             } else {
-//                 res.json({
-//                     status: 200,
-//                     success: false,
-//                     message: "empty configuration",
-//                     data: []
-//                 })
-//             }
-//         } else {
-//             res.status(403).json({
-//                 success: false,
-//                 message: "Unathorised"
-//             })
-//         }
-//     } catch (error) {
-//         res.json({
-//             status: 400,
-//             success: false,
-//             message: error.message,
-//         })
-//     }
-// }
+} 
