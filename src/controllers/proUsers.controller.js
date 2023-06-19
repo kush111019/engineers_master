@@ -3076,7 +3076,6 @@ module.exports.salesMetricsReport = async (req, res) => {
                 }
             }
 
-            let data = []
             let findLeadCounts
             let salesActivities
             let findTotalAndWonDealCount
@@ -3118,7 +3117,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                         findTotalAndWonDealCount.closed_sales_count = 0
                     }
 
-                    findTotalAndWonDealCount.rows[0].winPercentage = (closed_sales_count / total_sales_count) * 100 ? (closed_sales_count / total_sales_count) * 100 : 0
+                    findTotalAndWonDealCount.rows[0].winPercentage = (findTotalAndWonDealCount.rows[0].closed_sales_count / findTotalAndWonDealCount.rows[0].total_sales_count) * 100 ? (closed_sales_count / total_sales_count) * 100 : 0
 
                     //yearly recognized_revenue Subscription+perpetual
                     let s6 = dbScript(db_sql['Q398'], { var1: quarters[0].start_date, var2: quarters[3].end_date, var3: salesIdArr.join(",") })
@@ -3131,7 +3130,6 @@ module.exports.salesMetricsReport = async (req, res) => {
 
                     let s14 = dbScript(db_sql['Q401'], { var1: selectedStartDate, var2: selectedEndDate, var3: captainId })
                     salesActivities = await connection.query(s14);
-                    console.log("salesActivities", salesActivities);
 
                     salesActivities.rows[0].activity_per_deal = Number(salesActivities.rows[0].total_sales_activities / salesActivities.rows[0].total_deals_created)
 
@@ -3187,6 +3185,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                     findLeadCounts.rows[0].total_lead_count = 0
                     findLeadCounts.rows[0].converted_lead_count = 0
                 }
+                findLeadCounts.rows[0].convertedLeadPercentage = (findLeadCounts.rows[0].converted_lead_count / findLeadCounts.rows[0].total_lead_count) * 100 ? (findLeadCounts.rows[0].converted_lead_count / findLeadCounts.rows[0].total_lead_count) * 100 : 0
 
                 let s10 = dbScript(db_sql['Q400'], { var1: roleUsers.join(",") })
                 let salesIds = await connection.query(s10)
@@ -3207,7 +3206,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                         findTotalAndWonDealCount.total_sales_count = 0
                         findTotalAndWonDealCount.closed_sales_count = 0
                     }
-
+                    findTotalAndWonDealCount.rows[0].winPercentage = (findTotalAndWonDealCount.rows[0].closed_sales_count / findTotalAndWonDealCount.rows[0].total_sales_count) * 100 ? (closed_sales_count / total_sales_count) * 100 : 0
                     //yearly recognized_revenue Subscription+perpetual
                     let s12 = dbScript(db_sql['Q398'], { var1: quarters[0].start_date, var2: quarters[3].end_date, var3: salesIdArr.join(",") })
                     yearlyRecognizedRevenue = await connection.query(s12)
@@ -3218,7 +3217,6 @@ module.exports.salesMetricsReport = async (req, res) => {
 
                     let s15 = dbScript(db_sql['Q402'], { var1: selectedStartDate, var2: selectedEndDate, var3: roleUsers.join(",") })
                     salesActivities = await connection.query(s15);
-                    console.log("salesActivities", salesActivities);
 
                     salesActivities.rows[0].activity_per_deal = Number(salesActivities.rows[0].total_sales_activities / salesActivities.rows[0].total_deals_created)
 
