@@ -13,19 +13,19 @@ const moment = require('moment-timezone');
 
 module.exports.checkParams = (req, res, next) => {
     const params = req.body || req.query || req.params;
-    
+
     for (const key in params) {
         const value = params[key];
         if (value === undefined || value === null || value === 'undefined') {
-          res.status(400).json({ message: 'Please provide all parameters.' });
-          return;
+            res.status(400).json({ message: 'Please provide all parameters.' });
+            return;
         }
-      }
-    
+    }
+
     // If all parameters are valid, call the next middleware function or route handler
     next();
 }
-  
+
 module.exports.mysql_real_escape_string = (str) => {
     return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
         switch (char) {
@@ -683,7 +683,7 @@ module.exports.tranformAvailabilityArray = async (arr) => {
                         updated_at: curr.updated_at,
                         deleted_at: curr.deleted_at,
                         checked: curr.checked,
-                        isAvailabilityAdded : curr.isAvailabilityAdded,
+                        isAvailabilityAdded: curr.isAvailabilityAdded,
                         time_slot: (curr.checked) ? [{
                             id: curr.id,
                             start_time: curr.start_time,
@@ -793,9 +793,9 @@ module.exports.convertTimeToTargetedTz = async (startTime, endTime, timezone, da
 }
 
 
-module.exports.calculateCommission = async(slabId, amount)=>{
+module.exports.calculateCommission = async (slabId, amount) => {
     let totalCommission = 0; //findSales.rows[0].slab_id
-    let s4 = dbScript(db_sql['Q161'], { var1: slabId  })
+    let s4 = dbScript(db_sql['Q161'], { var1: slabId })
     let slab = await connection.query(s4)
 
     let remainingAmount = Number(amount); //recognizeRevenue.rows[0].amount  //100000 //95000 //90000
@@ -827,25 +827,54 @@ module.exports.calculateCommission = async(slabId, amount)=>{
     return totalCommission
 }
 
-module.exports.calculateQuarters = async (startDate) =>{
+module.exports.calculateQuarters = async (startDate) => {
     const quarters = [];
-    const [startMonth, startDay, startYear] = startDate.split('-').map(Number);
-  
+    const startUtcDate = new Date(startDate);
+    const startLocalDate = new Date(startUtcDate.toLocaleDateString());
+
+    const startYear = startLocalDate.getFullYear();
+    const startMonth = startLocalDate.getMonth() + 1; // Add 1 because months are zero-based
+    const startDay = startLocalDate.getDate();
+
     for (let i = 0; i < 4; i++) {
-      const quarterStartDate = new Date(startYear, startMonth - 1 + (i * 3), startDay);
-      const quarterEndDate = new Date(startYear, startMonth - 1 + (i * 3) + 3, startDay - 1);
-  
-      const quarterName = `${i + 1}`;
-  
-      quarters.push({
-        start_date: quarterStartDate.toISOString(),
-        end_date: quarterEndDate.toISOString(),
-        quarter: quarterName
+        const quarterStartDate = new Date(startYear, startMonth - 1 + (i * 3), startDay);
+        const quarterEndDate = new Date(startYear, startMonth - 1 + (i * 3) + 3, startDay - 1);
+        const quarterName = `${i + 1}`;
+
+        quarters.push({
+            start_date: quarterStartDate.toISOString(),
+            end_date: quarterEndDate.toISOString(),
+            quarter: quarterName
+        });
+
+    }
+    return quarters;
+};
+
+module.exports.getQuarterMonthsDates = async(start_date, end_date) => {
+
+    const startDate = new Date(start_date);
+    const endDate = new Date(end_date);
+
+    const startMonth = startDate.getMonth();
+    const endMonth = endDate.getMonth();
+
+    const dates = [];
+
+    for (let month = startMonth; month <= endMonth; month++) {
+      const tempDate = new Date(startDate);
+      tempDate.setMonth(month);
+      const startOfMonth = new Date(tempDate.getFullYear(), tempDate.getMonth(), 1);
+      const endOfMonth = new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0);
+
+      dates.push({
+        start_date: startOfMonth.toISOString(),
+        end_date: endOfMonth.toISOString()
       });
     }
-  
-    return quarters;
-}
+
+    return dates;
+};
 
 
 

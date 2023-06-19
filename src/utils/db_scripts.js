@@ -1998,7 +1998,7 @@ const db_sql = {
                 AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               ORDER BY 
                 l.created_at DESC`,
-  
+
   "Q239": `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
@@ -3286,7 +3286,7 @@ const db_sql = {
   "Q359": `SELECT assigned_to FROM forecast WHERE (id = '{var1}' OR pid = '{var1}') AND deleted_at IS NULL`,
   // "Q360":`SELECT * from imap_credentials WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
   "Q361": `UPDATE imap_credentials SET email = '{var1}', app_password = '{var2}', smtp_host = '{var3}', smtp_port = '{var4}', updated_at = '{var6}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *`,
-  "Q362":`SELECT se.event_id,ue.event_name, se.date, se.start_time, se.end_time, se.lead_name, 
+  "Q362": `SELECT se.event_id,ue.event_name, se.date, se.start_time, se.end_time, se.lead_name, 
               se.lead_email, se.description as lead_description, 
               se.user_id, u.full_name AS creator_name, u.email_address AS creator_email,
               ue.meet_link, ue.description as creator_description, ue.duration
@@ -3294,7 +3294,7 @@ const db_sql = {
           LEFT JOIN users AS u ON u.id = se.user_id
           LEFT JOIN pro_user_events AS ue ON ue.id = se.event_id
           WHERE se.event_id = '{var1}' AND se.deleted_at IS NULL`,
-  "Q363":`SELECT  
+  "Q363": `SELECT  
             su.user_id, 
             u.full_name,
             array_agg(DISTINCT su.sales_id) AS sales_ids
@@ -3310,8 +3310,8 @@ const db_sql = {
             AND s.closed_at IS NOT NULL
           GROUP BY 
             su.user_id,
-            u.full_name;`, 
-  "Q364" : `SELECT
+            u.full_name;`,
+  "Q364": `SELECT
               DISTINCT(s.id),
               c.customer_name,
               s.created_at,
@@ -3332,12 +3332,12 @@ const db_sql = {
               s.created_at,
               s.closed_at
             ORDER BY
-              s.id ASC`,  
-  "Q365":`select sales_id,COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) AND user_id = '{var1}' GROUP BY sales_id`,
-  "Q366":`SELECT  
+              s.id ASC`,
+  "Q365": `select sales_id,COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) AND user_id = '{var1}' GROUP BY sales_id`,
+  "Q366": `SELECT  
             su.user_id, 
             u.full_name,
-            array_agg(DISTINCT su.sales_id) AS sales_ids
+            array_agg(DISTINCT su.sales_id) AS sales_ids  
           FROM 
             sales_users su
           LEFT JOIN 
@@ -3350,14 +3350,14 @@ const db_sql = {
             AND s.closed_at IS NOT NULL
           GROUP BY 
             su.user_id,
-            u.full_name;`, 
-  "Q367":`SELECT recognized_amount FROM recognized_revenue WHERE sales_id IN ({var1}) AND deleted_at IS NULL`,
-  "Q368":`SELECT * FROM customer_company_employees WHERE customer_company_id = '{var1}' AND deleted_at IS NULL`,
-  "Q369":`SELECT id FROM pro_scheduled_events WHERE event_id = '{var1}' AND deleted_at IS NULL LIMIT 1`,
-  "Q370":`SELECT id FROM pro_user_events WHERE availability_id = '{var1}' AND deleted_at IS NULL LIMIT 1`,
-  "Q371":`SELECT * FROM email_templates WHERE is_master = true AND deleted_at IS NULL`,
-  "Q372":`UPDATE sales SET target_amount = '{var1}', booking_commission = '{var2}' WHERE id = '{var3}' AND deleted_At IS NULL RETURNING *`,
-  "Q373":`SELECT rc.id, rc.recognized_date, rc.commission_amount, rc.user_type, u.full_name AS sales_rep_name,
+            u.full_name;`,
+  "Q367": `SELECT recognized_amount FROM recognized_revenue WHERE sales_id IN ({var1}) AND deleted_at IS NULL`,
+  "Q368": `SELECT * FROM customer_company_employees WHERE customer_company_id = '{var1}' AND deleted_at IS NULL`,
+  "Q369": `SELECT id FROM pro_scheduled_events WHERE event_id = '{var1}' AND deleted_at IS NULL LIMIT 1`,
+  "Q370": `SELECT id FROM pro_user_events WHERE availability_id = '{var1}' AND deleted_at IS NULL LIMIT 1`,
+  "Q371": `SELECT * FROM email_templates WHERE is_master = true AND deleted_at IS NULL`,
+  "Q372": `UPDATE sales SET target_amount = '{var1}', booking_commission = '{var2}' WHERE id = '{var3}' AND deleted_At IS NULL RETURNING *`,
+  "Q373": `SELECT rc.id, rc.recognized_date, rc.commission_amount, rc.user_type, u.full_name AS sales_rep_name,
             c.company_name, c.company_logo, cc.customer_name, s.closed_at, s.sales_type
           FROM recognized_commission AS rc 
           LEFT JOIN users as u ON u.id = rc.user_id
@@ -3367,279 +3367,116 @@ const db_sql = {
           WHERE rc.user_id = '{var1}' 
           AND TO_DATE(rc.recognized_date, 'MM-DD-YYYY') BETWEEN TO_DATE('{var2}', 'MM-DD-YYYY') AND TO_DATE('{var3}', 'MM-DD-YYYY')
             AND rc.deleted_at IS NULL AND u.deleted_at IS NULL`,
-  "Q374":`INSERT INTO recognized_commission(user_id, sales_id, company_id, commission_amount,user_type, recognized_date, recognized_amount)
+  "Q374": `INSERT INTO recognized_commission(user_id, sales_id, company_id, commission_amount,user_type, recognized_date, recognized_amount)
           VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}','{var7}') RETURNING *`,
-  "Q375":`UPDATE notifications SET is_read = true WHERE user_id = '{var1}' RETURNING *`,
-  "Q376":`SELECT SUM(commission_amount::DECIMAL) as commission FROM recognized_commission
+  "Q375": `UPDATE notifications SET is_read = true WHERE user_id = '{var1}' RETURNING *`,
+  "Q376": `SELECT SUM(commission_amount::DECIMAL) as commission FROM recognized_commission
             WHERE 
               sales_id = '{var1}' 
             AND 
               deleted_at IS NULL`,
-//   "Q377":`SELECT 
-//   COUNT(*) AS total_rows,
-//   COUNT(CASE WHEN cce.is_converted = true THEN 1 END) AS converted_rows
-// FROM customer_company_employees AS cce
-// WHERE cce.creator_id = '8ed3f51b-d9e7-4795-b11b-b32e2ec010bc'
-//   AND cce.created_at >= DATE_TRUNC('year', CURRENT_DATE) - INTERVAL '3 months' -- Start of previous financial year
-//   AND cce.created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '9 months' -- Start of current financial year
-//   AND cce.pid IS NULL;`        
-  "Q378":`SELECT 
-            COUNT(*) AS total__lead_rows,
-            COUNT(CASE WHEN cce.is_converted = true THEN 1 END) AS converted_lead_rows
-          FROM customer_company_employees AS cce
-          WHERE cce.company_id = '{var1}'
-            AND cce.creator_id IN ({var2}) 
-            AND cce.created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' 
-            AND cce.created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'
-            AND cce.pid IS NULL;`,
-  "Q379":`SELECT 
-            u.id, u.full_name AS sales_rep,
-            sc.id as sales_id
-          FROM  
-            sales AS sc 
-            LEFT JOIN sales_users AS cr ON cr.sales_id = sc.id
-            AND cr.user_type = 'captain'
-          LEFT JOIN users AS u ON u.id = cr.user_id
-          WHERE cr.user_id IN ({var1}) AND sc.deleted_at IS NULL AND u.deleted_at IS NULL and cr.deleted_at IS NULL`   ,
-          //Yearly data
-  "Q380":`SELECT COUNT(*) 
-          FROM follow_up_notes
-          WHERE user_id = '{var1}'
-              AND deleted_at IS NULL
-              AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' 
-              AND created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months';`  ,
-  "Q381":`SELECT COUNT(*) AS converted_sales_count 
-          FROM customer_company_employees
-          WHERE creator_id = '{var1}' AND is_converted = 'true'
-              AND deleted_at IS NULL
-              AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' 
-              AND created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'`,
-  "Q382":`SELECT SUM(CAST(rr.recognized_amount AS numeric)) AS total_revenue
-          FROM recognized_revenue rr
-          JOIN sales s ON s.id = rr.sales_id
-          WHERE s.user_id = '{var1}'
-            AND s.sales_type = 'Subscription'
-            AND s.created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months'
-            AND s.created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months';` ,
-  "Q383":`SELECT COUNT(*) AS created_sales 
-          FROM sales 
-          WHERE user_id = '{var1}'
-              AND deleted_at IS NULL
-              AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' 
-              AND created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'`, 
-              //Quarterly Data    
-  // "Q384": `SELECT
-  //           COUNT(*) AS created_sales,
-  //           CASE
-  //               WHEN created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' * 0
-  //                   AND created_at < DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' * 1 THEN 'Quarter 1'
-  //               WHEN created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' * 1
-  //                   AND created_at < DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' * 2 THEN 'Quarter 2'
-  //               WHEN created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' * 2
-  //                   AND created_at < DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' * 3 THEN 'Quarter 3'
-  //               ELSE 'Quarter 4'
-  //           END AS quarter
-  //         FROM
-  //           sales
-  //         WHERE
-  //           user_id = '{var1}'
-  //           AND deleted_at IS NULL
-  //           AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year')
-  //           AND created_at < DATE_TRUNC('year', CURRENT_DATE)
-  //         GROUP BY
-  //           quarter;`,   
-  //follow_up_counts For quarter 
-  "Q384":`SELECT SUM(CAST(rr.recognized_amount AS numeric)) AS annual_recurring_revenue
-          FROM recognized_revenue rr
-          JOIN sales s ON s.id = rr.sales_id
-          WHERE rr.company_id = '{var1}'
-          AND rr.user_id IN ({var2}) AND rr.deleted_at IS NULL AND s.deleted_at is NULL
-            AND s.sales_type = 'Subscription'
-            AND s.created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months'
-            AND s.created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months';`,
-  "Q385": `SELECT
-            CASE
-              WHEN EXTRACT(MONTH FROM created_at) IN (4, 5, 6) THEN 1
-              WHEN EXTRACT(MONTH FROM created_at) IN (7, 8, 9) THEN 2
-              WHEN EXTRACT(MONTH FROM created_at) IN (10, 11, 12) THEN 3
-              ELSE 4
-            END AS quarter,
-            EXTRACT(YEAR FROM created_at) AS year,
-            COUNT(*) AS note_count
-          FROM
-            follow_up_notes
-          WHERE
-            user_id = '{var1}'
-            AND deleted_at IS NULL
-            AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year')
-            AND created_at < DATE_TRUNC('year', CURRENT_DATE)
-          GROUP BY
-            quarter, year
-          ORDER BY
-            year, quarter;`,
-            //for created_sales
-  "Q386":`SELECT
-              CASE
-                WHEN EXTRACT(MONTH FROM created_at) IN (4, 5, 6) THEN 1
-                WHEN EXTRACT(MONTH FROM created_at) IN (7, 8, 9) THEN 2
-                WHEN EXTRACT(MONTH FROM created_at) IN (10, 11, 12) THEN 3
-                ELSE 4
-              END AS quarter,
-              EXTRACT(YEAR FROM created_at) AS year,
-              COUNT(*) AS created_sales
-            FROM
-              sales
-            WHERE
-              user_id = '{var1}'
-              AND deleted_at IS NULL
-              AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year')
-              AND created_at < DATE_TRUNC('year', CURRENT_DATE)
-            GROUP BY
-              quarter, year
-            ORDER BY
-              year, quarter;`,
-              //for converted sales
-  "Q387":`WITH quarters AS (
-                SELECT generate_series(1, 4) AS quarter
-            )
-            SELECT 
-                q.quarter,
-                COALESCE(c.converted_sales_count, 0) AS converted_sales_count
-            FROM 
-                quarters q
-            LEFT JOIN (
-                SELECT 
-                    EXTRACT(QUARTER FROM created_at) AS quarter,
-                    COUNT(*) AS converted_sales_count 
-                FROM 
-                    customer_company_employees
-                WHERE 
-                    creator_id = '{var1}' 
-                    AND is_converted = 'true'
-                    AND deleted_at IS NULL
-                    AND (
-                        (created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' 
-                        AND created_at < DATE_TRUNC('year', CURRENT_DATE - INTERVAL '9 months') + INTERVAL '3 months')
-                        OR
-                        (created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '9 months') + INTERVAL '3 months' 
-                        AND created_at < DATE_TRUNC('year', CURRENT_DATE - INTERVAL '6 months') + INTERVAL '3 months')
-                        OR
-                        (created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '6 months') + INTERVAL '3 months' 
-                        AND created_at < DATE_TRUNC('year', CURRENT_DATE - INTERVAL '3 months') + INTERVAL '3 months')
-                        OR
-                        (created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '3 months') + INTERVAL '3 months' 
-                        AND created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months')
-                    )
-                GROUP BY 
-                    quarter
-            ) c ON q.quarter = c.quarter;`   ,
-            //for recognized revenue
-  "Q388":`WITH quarters AS (
-              SELECT generate_series(1, 4) AS quarter
-          )
-          SELECT 
-              q.quarter,
-              COALESCE(SUM(CAST(r.recognized_amount AS numeric)), 0) AS total_revenue
-          FROM 
-              quarters q
-          LEFT JOIN (
-              SELECT 
-                  EXTRACT(QUARTER FROM s.created_at) AS quarter,
-                  rr.recognized_amount
-              FROM 
-                  recognized_revenue rr
-              JOIN 
-                  sales s ON s.id = rr.sales_id
-              WHERE 
-                  s.user_id = '{var1}'
-                  AND s.sales_type = 'Subscription'
-                  AND s.created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months'
-                  AND s.created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'
-          ) r ON q.quarter = r.quarter
-          GROUP BY 
-              q.quarter;
-          `             ,
-          //followUp counts annualy for loggedIn user and subuser
-  "Q389":`SELECT COUNT(*) AS engagement_counts
-          FROM follow_up_notes
-          WHERE company_id = '{var1}' 
-              AND user_id IN ({var2})
-              AND deleted_at IS NULL
-              AND created_at >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1 year') + INTERVAL '3 months' 
-              AND created_at < DATE_TRUNC('year', CURRENT_DATE) + INTERVAL '3 months'`,
-  "Q390": `UPDATE companies SET quarter = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *` ,
-  "Q391": `SELECT * FROM pro_quarter_config WHERE company_id = '{var1}' AND deleted_at IS NULL`      ,
-  "Q392":`UPDATE pro_quarter_config SET quarter = '{var1}', start_date = '{var2}', end_date = '{var3}', updated_at = '{var4}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *` ,
+  "Q390": `UPDATE companies SET quarter = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   "Q393": `SELECT start_date FROM pro_quarter_config WHERE company_id = '{var1}' AND quarter = '{var2}' AND deleted_at IS NULL`,
   "Q394": `UPDATE companies SET company_address = '{var1}', updated_at = '{var2}', quarter = '{var4}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
-  "Q395":`WITH quarter_dates AS (
-                SELECT
-                    start_date::timestamp with time zone AS quarter_start,
-                    end_date::timestamp with time zone AS quarter_end
-                FROM
-                    pro_quarter_config
-                WHERE
-                    quarter = '{var2}' -- Replace <desired_quarter> with the specific quarter number you want to retrieve data for
-                    AND deleted_at IS NULL
-                ORDER BY
-                    start_date
-                LIMIT 1
+  "Q395":`SELECT
+            COUNT(*) AS total_lead_count,
+            COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS converted_lead_count
+          FROM
+            customer_company_employees
+          WHERE
+            creator_id = '{var3}'
+            AND created_at >= '{var1}'
+            AND created_at <= '{var2}'
+            AND title IS NOT NULL
+            AND deleted_at IS NULL;` ,
+  "Q396": `SELECT
+              COUNT(*) AS total_lead_count,
+              COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END),0) AS converted_lead_count
+            FROM
+              customer_company_employees
+            WHERE
+              creator_id IN ({var3})
+              AND created_at >= '{var1}'
+              AND created_at <= '{var2}'
+              AND title IS NOT NULL
+              AND deleted_at IS NULL`,
+  "Q397":`SELECT
+            COUNT(*) AS total_sales_count,
+            COALESCE(SUM(CASE WHEN closed_at IS NOT NULL THEN 1 ELSE 0 END),0) AS closed_sales_count
+          FROM
+            sales
+          WHERE
+            created_at BETWEEN '{var1}' AND '{var2}'
+            AND id IN ({var3})
+            AND deleted_at IS NULL` ,
+  "Q398":` SELECT SUM(rr.recognized_amount::numeric) AS total_amount
+            FROM 
+              recognized_revenue AS rr
+            WHERE 
+              rr.sales_id IN ({var3})
+            AND 
+              rr.created_at >= '{var1}'
+            AND 
+              rr.created_at <= '{var2}'
+            AND 
+              rr.deleted_at IS NULL;`,
+  "Q399":`WITH months AS (
+                SELECT 1 AS month_number, '{var1}'::timestamp with time zone AS start_date, '{var2}'::timestamp with time zone AS end_date UNION
+                SELECT 2 AS month_number, '{var3}'::timestamp with time zone AS start_date, '{var4}'::timestamp with time zone AS end_date UNION
+                SELECT 3 AS month_number, '{var5}'::timestamp with time zone AS start_date, '{var6}'::timestamp with time zone AS end_date
             )
             SELECT
-                COUNT(*) AS total_lead_count,
-                COUNT(CASE WHEN is_converted = true THEN 1 END) AS converted_lead_count
+                COALESCE(SUM(r.recognized_amount::numeric), 0) AS total_amount,
+                m.month_number
             FROM
-                customer_company_employees cce
-            WHERE
-                cce.creator_id = '{var1}'
-                AND cce.created_at BETWEEN (SELECT quarter_start FROM quarter_dates) AND (SELECT quarter_end FROM quarter_dates)
-                AND cce.title IS NOT NULL
-                AND cce.deleted_at IS NULL`    ,
-  "Q396": ` SELECT
-                COUNT(*) AS open_sales,
-                COALESCE(SUM(CASE WHEN closed_at IS NOT NULL THEN 1 ELSE 0 END), 0) AS closed_sales
-              FROM
-                sales
-              WHERE
-                user_id = '{var1}'
-                AND created_at BETWEEN
-                    (SELECT start_date::timestamp with time zone FROM pro_quarter_config WHERE quarter = '1' LIMIT 1)
-                    AND
-                    (SELECT end_date::timestamp with time zone FROM pro_quarter_config WHERE quarter = '1' LIMIT 1);`,
-  "Q397":` SELECT rr.recognized_amount, rr.sales_id
-            FROM recognized_revenue AS rr
-            LEFT JOIN sales AS s ON s.id = rr.sales_id
-            JOIN pro_quarter_config AS pqc ON rr.company_id = pqc.company_id
-            JOIN sales_users AS su ON su.sales_id = rr.sales_id
-            WHERE rr.user_id = '{var1}'
-              AND s.sales_type = 'Perpetual'
-              AND s.closed_at IS NOT NULL
-              AND rr.created_at BETWEEN pqc.start_date::timestamp with time zone AND pqc.end_date::timestamp with time zone
-              AND pqc.quarter::integer IN (1, 2, 3, 4)
-              AND su.user_type = 'captain'
-              AND rr.deleted_at IS NULL
-              AND s.deleted_at IS NULL
-              AND pqc.deleted_at IS NULL
-              AND su.deleted_at IS NULL
-            GROUP BY rr.recognized_amount, rr.sales_id`,
-  "Q398":` SELECT rr.recognized_amount, rr.sales_id
-            FROM recognized_revenue AS rr
-            LEFT JOIN sales AS s ON s.id = rr.sales_id
-            JOIN pro_quarter_config AS pqc ON rr.company_id = pqc.company_id
-            JOIN sales_users AS su ON su.sales_id = rr.sales_id
-            WHERE rr.user_id = '{var1}'
-              AND s.sales_type = 'Subscription'
-              AND s.closed_at IS NOT NULL
-              AND s.recurring_date::timestamp with time zone BETWEEN pqc.start_date::timestamp with time zone AND pqc.end_date::timestamp with time zone
-              AND pqc.quarter::integer IN (1, 2, 3, 4)
-              AND su.user_type = 'captain'
-              AND rr.deleted_at IS NULL
-              AND s.deleted_at IS NULL
-              AND pqc.deleted_at IS NULL
-              AND su.deleted_at IS NULL
-            GROUP BY rr.recognized_amount, rr.sales_id`                                                                  
-
-
+                months m
+            LEFT JOIN
+                recognized_revenue r ON r.sales_id IN ({var7})
+                AND r.created_at BETWEEN m.start_date AND m.end_date AND r.deleted_at IS NULL
+            GROUP BY
+                m.month_number
+            ORDER BY
+                m.month_number`,
+  "Q400":`SELECT
+          array_agg(DISTINCT su.sales_id) AS sales_ids
+                  FROM 
+                    sales_users su
+                  LEFT JOIN 
+                    users u ON su.user_id = u.id
+                  LEFT JOIN
+                    sales s ON su.sales_id = s.id
+                  WHERE 
+                    su.user_type = 'captain' AND
+                    su.user_id IN ({var1}) 
+                  AND 
+                    su.deleted_at IS NULL
+                  AND 
+                    s.closed_at IS NOT NULL
+                  AND 
+                    s.deleted_at IS NULL
+                  AND 
+                    u.deleted_at IS NULL `,
+  "Q401":`SELECT
+            COUNT(*) AS total_sales_activities,
+            COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS total_deals_created
+          FROM
+            customer_company_employees
+          WHERE
+            creator_id = '{var3}'
+            AND created_at >= '{var1}'
+            AND created_at <= '{var2}'
+            AND deleted_at IS NULL;` ,
+  "Q402":`SELECT
+          COUNT(*) AS total_sales_activities,
+            COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS total_deals_created
+          FROM
+            customer_company_employees
+          WHERE
+            creator_id IN ({var3})
+            AND created_at >= '{var1}'
+            AND created_at <= '{var2}'
+            AND deleted_at IS NULL;`           
+          
 }
 
 function dbScript(template, variables) {
