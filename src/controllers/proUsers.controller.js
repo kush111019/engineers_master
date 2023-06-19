@@ -3222,7 +3222,6 @@ module.exports.salesMetricsReport = async (req, res) => {
                     salesActivities = await connection.query(s15);
 
                     salesActivities.rows[0].activity_per_deal = Number(salesActivities.rows[0].total_sales_activities / salesActivities.rows[0].total_deals_created) ? Number(salesActivities.rows[0].total_sales_activities / salesActivities.rows[0].total_deals_created) : 0
-
                 } else {
                     res.json({
                         status: 200,
@@ -3264,8 +3263,8 @@ module.exports.salesMetricsReport = async (req, res) => {
             }
 
             res.json({
-                status: 400,
-                success: false,
+                status: 200,
+                success: true,
                 message: "sales Matrics data",
                 data: {
                     lead_counts: findLeadCounts.rows[0],
@@ -3275,7 +3274,6 @@ module.exports.salesMetricsReport = async (req, res) => {
                     monthly_revenue: monthlyRecognizedRevenue.rows
                 }
             })
-
         } else {
             res.status(403).json({
                 success: false,
