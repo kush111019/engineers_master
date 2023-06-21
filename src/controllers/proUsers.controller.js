@@ -3063,9 +3063,7 @@ module.exports.salesMetricsReport = async (req, res) => {
         if (findAdmin.rowCount > 0 && isProUser) {
 
             let s2 = dbScript(db_sql["Q9"], { var1: findAdmin.rows[0].company_id });
-            console.log(s2,"s2");
             let findQuarter = await connection.query(s2);
-            console.log(findQuarter.rows[0].quarter,"findQuarter.rows[0].quarter");
             let quarters = await calculateQuarters(findQuarter.rows[0].quarter);
             let selectedStartDate = "";
             let selectedEndDate = "";
@@ -3077,6 +3075,9 @@ module.exports.salesMetricsReport = async (req, res) => {
                     break;
                 }
             }
+
+            console.log(selectedStartDate, "selectedStartDate");
+            console.log(selectedEndDate, "selectedEndDate");
 
             let findLeadCounts;
             let salesActivities;
@@ -3093,15 +3094,12 @@ module.exports.salesMetricsReport = async (req, res) => {
                 selectedEndDate
             );
 
-            console.log(selectedStartDate, selectedEndDate);
-
             if (includeStatus !== true) {
                 let s3 = dbScript(db_sql["Q395"], {
                     var1: selectedStartDate,
                     var2: selectedEndDate,
                     var3: captainId,
                 });
-                console.log(s3, "s3");
                 findLeadCounts = await connection.query(s3);
                 findLeadCounts.rows[0].total_lead_count = Number(
                     findLeadCounts.rows[0].total_lead_count
@@ -3131,7 +3129,6 @@ module.exports.salesMetricsReport = async (req, res) => {
 
                 //finding only closed sales ids in which the user_id is captain
                 let s4 = dbScript(db_sql["Q366"], { var1: captainId });
-                console.log(s4, "s4");
                 let salesIds = await connection.query(s4);
 
                 if (salesIds.rowCount > 0) {
@@ -3192,18 +3189,39 @@ module.exports.salesMetricsReport = async (req, res) => {
                     if (findMissingRecognized.rowCount > 0) {
                         findMissingRecognized.rows.forEach((item) => {
                             if (item.recognized_amount === "0") {
-                                high_risk_missing_rr.push(item.customer_name);
+                                high_risk_missing_rr.push({ customer_name: item.customer_name, amount: item.target_amount });
                             } else {
-                                low_risk_missing_rr.push(item.customer_name);
+                                low_risk_missing_rr.push({ customer_name: item.customer_name, amount: 0 });
                             }
                         });
+                        let totalHighRiskRR = 0;
+                        let totalLowRiskRR = 0;
+                        if (high_risk_missing_rr.length > 0) {
+                            for (let i = 0; i < high_risk_missing_rr.length; i++) {
+                                totalHighRiskRR += parseInt(high_risk_missing_rr[i].amount);
+                            }
+                        } else {
+                            totalHighRiskRR = totalHighRiskRR
+                        }
+                        if (low_risk_missing_rr.length > 0) {
+                            for (let i = 0; i < low_risk_missing_rr.length; i++) {
+                                totalLowRiskRR += 0;
+                            }
+                        } else {
+                            totalLowRiskRR = totalLowRiskRR
+                        }
                         findMissingRR.high_risk_missing_rr = high_risk_missing_rr;
                         findMissingRR.low_risk_missing_rr = low_risk_missing_rr;
+                        findMissingRR.high_risk_total_missing_rr = totalHighRiskRR;
+                        findMissingRR.low_risk_total_missing_rr = totalLowRiskRR;
                     } else {
                         findMissingRR.high_risk_missing_rr = "";
                         findMissingRR.low_risk_missing_rr = "";
+                        findMissingRR.high_risk_total_missing_rr = 0
+                        findMissingRR.low_risk_total_missing_rr = 0;
                     }
                 } if (allSalesIds.rowCount > 0) {
+                    console.log(allSalesIds.rows, "allSalesIds");
                     let allSalesIdArr = [];
                     allSalesIds.rows.map((data) => {
                         if (data.sales_ids.length > 0) {
@@ -3248,13 +3266,34 @@ module.exports.salesMetricsReport = async (req, res) => {
                     let low_risk_sales_deals = [];
                     for (const sale of findTotalSupport.rows) {
                         if (sale.ids.length < 2 || sale.notes.length < 0) {
-                            high_risk_sales_deals.push(sale.customer_name);
+                            high_risk_sales_deals.push({ salesName: sale.customer_name, amount: sale.target_amount });
                         } else {
-                            low_risk_sales_deals.push(sale.customer_name);
+                            low_risk_sales_deals.push({ salesNmae: sale.customer_name, amount: sale.target_amount });
                         }
                     }
+
+                    let totalHighRiskAmount = 0;
+                    let totalLowRiskAmount = 0;
+                    if (high_risk_sales_deals.length > 0) {
+                        for (let i = 0; i < high_risk_sales_deals.length; i++) {
+                            totalHighRiskAmount += parseInt(high_risk_sales_deals[i].amount);
+                        }
+                    } else {
+                        totalHighRiskAmount = totalHighRiskAmount
+                    }
+                    if (low_risk_sales_deals.length > 0) {
+                        for (let i = 0; i < high_risk_sales_deals.length; i++) {
+                            totalLowRiskAmount += parseInt(low_risk_sales_deals[i].amount);
+                        }
+                    } else {
+                        totalLowRiskAmount = totalLowRiskAmount
+                    }
+                    let total_sales_deals_amount = totalHighRiskAmount + totalLowRiskAmount
                     risk_sales_deals.high_risk_sales_deals = high_risk_sales_deals;
                     risk_sales_deals.low_risk_sales_deals = low_risk_sales_deals;
+                    risk_sales_deals.total_high_risk_amount = totalHighRiskAmount;
+                    risk_sales_deals.total_low_risk_amount = totalLowRiskAmount;
+                    risk_sales_deals.total_sales_deals_amount = total_sales_deals_amount;
 
 
                     let s19 = dbScript(db_sql['Q407'], { var1: captainId })
@@ -3287,7 +3326,8 @@ module.exports.salesMetricsReport = async (req, res) => {
                         if (!salesBySalesId[sale.sales_id]) {
                             salesBySalesId[sale.sales_id] = {
                                 targetClosingDates: new Set(),
-                                customer_name: sale.customer_name
+                                customer_name: sale.customer_name,
+                                amount: sale.target_amount
                             };
                         }
 
@@ -3300,13 +3340,19 @@ module.exports.salesMetricsReport = async (req, res) => {
                         const salesInfo = salesBySalesId[salesId];
 
                         if (salesInfo.targetClosingDates.size > 1) {
-                            high_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name });
+                            high_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name, missing_amount: salesInfo.amount });
                         } else {
-                            low_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name });
+                            low_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name, missing_amount: salesInfo.amount });
                         }
                     }
+
+                    let totalHighRiskSlippageAmount = high_risk_sales.reduce((total, sale) => total + parseInt(sale.missing_amount), 0);
+                    let totalLowRiskSlippageAmount = low_risk_sales.reduce((total, sale) => total + parseInt(sale.missing_amount), 0);
+
                     closingDateSlippage.high_risk_sales = high_risk_sales
                     closingDateSlippage.low_risk_sales = low_risk_sales
+                    closingDateSlippage.total_high_risk_slippage_amount = totalHighRiskSlippageAmount
+                    closingDateSlippage.total_low_risk_slippage_amount = totalLowRiskSlippageAmount
 
                     //EOL products
                     let s25 = dbScript(db_sql['Q411'], { var1: allSalesIdArr.join(",") })
@@ -3320,6 +3366,11 @@ module.exports.salesMetricsReport = async (req, res) => {
                             lowRiskEolSale: []
                         }
                     }
+                    
+                    let totalHighRiskEolMissingAmount = eolSales.highRiskEolSale.reduce((total, sale) => total + parseInt(sale.target_amount), 0);
+                    let totalLowRiskEolMissingAmount = eolSales.lowRiskEolSale.reduce((total, sale) => total + parseInt(sale.target_amount), 0);
+                    eolSales.total_high_risk_eol_missing_amount = totalHighRiskEolMissingAmount
+                    eolSales.total_low_risk_eol_missing_amount = totalLowRiskEolMissingAmount
 
                 } else {
                     return res.json({
@@ -3364,11 +3415,12 @@ module.exports.salesMetricsReport = async (req, res) => {
                                 high_risk_sales: [],
                                 low_risk_sales: []
                             },
-                            eolSales : {
+                            eolSales: {
                                 highRiskEolSale: [],
                                 lowRiskEolSale: []
                             },
-                            revenueGap: revenueGap
+                            revenueGap: revenueGap,
+
                         },
                     });
                 }
@@ -3406,10 +3458,8 @@ module.exports.salesMetricsReport = async (req, res) => {
                 let allSalesIds = await connection.query(s21);
 
                 let s10 = dbScript(db_sql["Q400"], { var1: roleUsers.join(",") });
-                console.log(s10, "s10");
                 let salesIds = await connection.query(s10);
                 if (salesIds.rowCount > 0) {
-                    console.log(salesIds.rows, "salesIds");
                     let salesIdArr = [];
                     salesIds.rows.map((data) => {
                         if (data.sales_ids.length > 0) {
@@ -3458,25 +3508,49 @@ module.exports.salesMetricsReport = async (req, res) => {
                         var2: selectedEndDate,
                         var3: salesIdArr.join(","),
                     });
+                    // console.log(s23,"s23");
                     let findMissingRecognized = await connection.query(s23);
-                    console.log(findMissingRecognized.rows, "findMissingRecognized");
 
                     let high_risk_missing_rr = [];
                     let low_risk_missing_rr = [];
                     if (findMissingRecognized.rowCount > 0) {
                         findMissingRecognized.rows.forEach((item) => {
                             if (item.recognized_amount === "0") {
-                                high_risk_missing_rr.push(item.customer_name);
+                                high_risk_missing_rr.push({ customer_name: item.customer_name, amount: item.target_amount });
                             } else {
-                                low_risk_missing_rr.push(item.customer_name);
+                                low_risk_missing_rr.push({ customer_name: item.customer_name, amount: 0 });
                             }
                         });
+                        // console.log(high_risk_missing_rr, "high_risk_missing_rr");
+                        // console.log(low_risk_missing_rr, "low_risk_missing_rr");
+
+                        let totalHighRiskRR = 0;
+                        let totalLowRiskRR = 0;
+                        if (high_risk_missing_rr.length > 0) {
+                            for (let i = 0; i < high_risk_missing_rr.length; i++) {
+                                totalHighRiskRR += parseInt(high_risk_missing_rr[i].amount);
+                            }
+                        } else {
+                            totalHighRiskRR = totalHighRiskRR
+                        }
+                        if (low_risk_missing_rr.length > 0) {
+                            for (let i = 0; i < low_risk_missing_rr.length; i++) {
+                                totalLowRiskRR += 0
+                            }
+                        } else {
+                            totalLowRiskRR = totalLowRiskRR
+                        }
 
                         findMissingRR.high_risk_missing_rr = high_risk_missing_rr;
                         findMissingRR.low_risk_missing_rr = low_risk_missing_rr;
+                        findMissingRR.high_risk_total_missing_rr = totalHighRiskRR;
+                        findMissingRR.low_risk_total_missing_rr = totalLowRiskRR;
+
                     } else {
                         findMissingRR.high_risk_missing_rr = "";
                         findMissingRR.low_risk_missing_rr = "";
+                        findMissingRR.high_risk_total_missing_rr = 0;
+                        findMissingRR.low_risk_total_missing_rr = 0;
                     }
 
                 } if (allSalesIds.rowCount > 0) {
@@ -3523,17 +3597,38 @@ module.exports.salesMetricsReport = async (req, res) => {
                     let low_risk_sales_deals = [];
                     for (const sale of findTotalSupport.rows) {
                         if (sale.ids.length < 2 || sale.notes.length < 0) {
-                            high_risk_sales_deals.push(sale.customer_name);
+                            high_risk_sales_deals.push({ salesName: sale.customer_name, amount: sale.target_amount });
                         } else {
-                            low_risk_sales_deals.push(sale.customer_name);
+                            low_risk_sales_deals.push({ salesNmae: sale.customer_name, amount: sale.target_amount });
                         }
                     }
+
+                    let totalHighRiskAmount = 0;
+                    let totalLowRiskAmount = 0;
+                    if (high_risk_sales_deals.length > 0) {
+                        for (let i = 0; i < high_risk_sales_deals.length; i++) {
+                            totalHighRiskAmount += parseInt(high_risk_sales_deals[i].amount);
+                        }
+                    } else {
+                        totalHighRiskAmount = totalHighRiskAmount
+                    }
+                    if (low_risk_sales_deals.length > 0) {
+                        for (let i = 0; i < low_risk_sales_deals.length; i++) {
+                            totalLowRiskAmount += parseInt(low_risk_sales_deals[i].amount);
+                        }
+                    } else {
+                        totalLowRiskAmount = totalLowRiskAmount
+                    }
+                    let total_sales_deals_amount = totalHighRiskAmount + totalLowRiskAmount
                     risk_sales_deals.high_risk_sales_deals = high_risk_sales_deals;
                     risk_sales_deals.low_risk_sales_deals = low_risk_sales_deals;
+                    risk_sales_deals.total_high_risk_amount = totalHighRiskAmount;
+                    risk_sales_deals.total_low_risk_amount = totalLowRiskAmount;
+                    risk_sales_deals.total_sales_deals_amount = total_sales_deals_amount;
+
 
                     // //finding revenue gap
                     let s24 = dbScript(db_sql['Q410'], { var1: roleUsers.join(",") })
-                    console.log(s24, "s24");
                     let findForecastAmount = await connection.query(s24)
                     let totalForecaseAmount = 0
                     if (findForecastAmount.rowCount > 0) {
@@ -3564,7 +3659,8 @@ module.exports.salesMetricsReport = async (req, res) => {
                         if (!salesBySalesId[sale.sales_id]) {
                             salesBySalesId[sale.sales_id] = {
                                 targetClosingDates: new Set(),
-                                customer_name: sale.customer_name
+                                customer_name: sale.customer_name,
+                                amount: sale.target_amount
                             };
                         }
 
@@ -3577,13 +3673,19 @@ module.exports.salesMetricsReport = async (req, res) => {
                         const salesInfo = salesBySalesId[salesId];
 
                         if (salesInfo.targetClosingDates.size > 1) {
-                            high_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name });
+                            high_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name, missing_amount: salesInfo.amount });
                         } else {
-                            low_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name });
+                            low_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name, missing_amount: salesInfo.amount });
                         }
                     }
+
+                    let totalHighRiskSlippageAmount = high_risk_sales.reduce((total, sale) => total + parseInt(sale.missing_amount), 0);
+                    let totalLowRiskSlippageAmount = low_risk_sales.reduce((total, sale) => total + parseInt(sale.missing_amount), 0);
+
                     closingDateSlippage.high_risk_sales = high_risk_sales
                     closingDateSlippage.low_risk_sales = low_risk_sales
+                    closingDateSlippage.total_high_risk_slippage_amount = totalHighRiskSlippageAmount
+                    closingDateSlippage.total_low_risk_slippage_amount = totalLowRiskSlippageAmount
 
 
                     //EOL products
@@ -3598,6 +3700,11 @@ module.exports.salesMetricsReport = async (req, res) => {
                             lowRiskEolSale: []
                         }
                     }
+
+                    let totalHighRiskEolMissingAmount = eolSales.highRiskEolSale.reduce((total, sale) => total + parseInt(sale.target_amount), 0);
+                    let totalLowRiskEolMissingAmount = eolSales.lowRiskEolSale.reduce((total, sale) => total + parseInt(sale.target_amount), 0);
+                    eolSales.total_high_risk_eol_missing_amount = totalHighRiskEolMissingAmount
+                    eolSales.total_low_risk_eol_missing_amount = totalLowRiskEolMissingAmount
 
                 } else {
                     res.json({
@@ -3642,7 +3749,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                                 high_risk_sales: [],
                                 low_risk_sales: []
                             },
-                            eolSales : {
+                            eolSales: {
                                 highRiskEolSale: [],
                                 lowRiskEolSale: []
                             },
