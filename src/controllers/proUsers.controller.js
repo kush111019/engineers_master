@@ -3215,8 +3215,8 @@ module.exports.salesMetricsReport = async (req, res) => {
                         findMissingRR.high_risk_total_missing_rr = totalHighRiskRR;
                         findMissingRR.low_risk_total_missing_rr = totalLowRiskRR;
                     } else {
-                        findMissingRR.high_risk_missing_rr = "";
-                        findMissingRR.low_risk_missing_rr = "";
+                        findMissingRR.high_risk_missing_rr = [];
+                        findMissingRR.low_risk_missing_rr = [];
                         findMissingRR.high_risk_total_missing_rr = 0
                         findMissingRR.low_risk_total_missing_rr = 0;
                     }
