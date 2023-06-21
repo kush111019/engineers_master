@@ -9,7 +9,7 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults, getParentUserList, getUserAndSubUser, calculateQuarters, getQuarterMonthsDates } = require('../utils/helper')
+const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults, getParentUserList, getUserAndSubUser, calculateQuarters, getQuarterMonthsDates, calculateEOLProducts } = require('../utils/helper')
 const { issueJWTForPro } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
@@ -3055,18 +3055,20 @@ module.exports.commissionReport = async (req, res) => {
 
 module.exports.salesMetricsReport = async (req, res) => {
     try {
-        let userId = req.user.id
-        let { isProUser } = req.user
-        let { selectQuarter, includeStatus, captainId } = req.body
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findAdmin = await connection.query(s1)
+        let userId = req.user.id;
+        let { isProUser } = req.user;
+        let { selectQuarter, includeStatus, captainId } = req.body;
+        let s1 = dbScript(db_sql["Q8"], { var1: userId });
+        let findAdmin = await connection.query(s1);
         if (findAdmin.rowCount > 0 && isProUser) {
-            let s2 = dbScript(db_sql['Q9'], { var1: findAdmin.rows[0].company_id })
-            let findQuarter = await connection.query(s2)
 
-            let quarters = await calculateQuarters(findQuarter.rows[0].quarter)
-            let selectedStartDate = '';
-            let selectedEndDate = '';
+            let s2 = dbScript(db_sql["Q9"], { var1: findAdmin.rows[0].company_id });
+            console.log(s2,"s2");
+            let findQuarter = await connection.query(s2);
+            console.log(findQuarter.rows[0].quarter,"findQuarter.rows[0].quarter");
+            let quarters = await calculateQuarters(findQuarter.rows[0].quarter);
+            let selectedStartDate = "";
+            let selectedEndDate = "";
 
             for (const quarter of quarters) {
                 if (quarter.quarter == String(selectQuarter)) {
@@ -3076,65 +3078,248 @@ module.exports.salesMetricsReport = async (req, res) => {
                 }
             }
 
-            let findLeadCounts
-            let salesActivities
-            let findTotalAndWonDealCount
-            let yearlyRecognizedRevenue
-            let monthlyRecognizedRevenue
+            let findLeadCounts;
+            let salesActivities;
+            let findTotalAndWonDealCount;
+            let yearlyRecognizedRevenue;
+            let monthlyRecognizedRevenue;
+            let risk_sales_deals = {};
+            let findMissingRR = {};
+            let closingDateSlippage = {};
+            let eolSales = {}
+            let revenueGap = 0;
+            let findMonthsDateOfQuarter = await getQuarterMonthsDates(
+                selectedStartDate,
+                selectedEndDate
+            );
 
-            let findMonthsDateOfQuarter = await getQuarterMonthsDates(selectedStartDate, selectedEndDate)
-            
+            console.log(selectedStartDate, selectedEndDate);
+
             if (includeStatus !== true) {
-                console.log(includeStatus,"includeStatus");
-                let s3 = dbScript(db_sql['Q395'], { var1: selectedStartDate, var2: selectedEndDate, var3: captainId })
-                findLeadCounts = await connection.query(s3)
-                console.log(s3,"s3");
-                findLeadCounts.rows[0].total_lead_count = Number(findLeadCounts.rows[0].total_lead_count) ? Number(findLeadCounts.rows[0].total_lead_count) : 0
-                findLeadCounts.rows[0].converted_lead_count = Number(findLeadCounts.rows[0].converted_lead_count) ? Number(findLeadCounts.rows[0].converted_lead_count) : 0
+                let s3 = dbScript(db_sql["Q395"], {
+                    var1: selectedStartDate,
+                    var2: selectedEndDate,
+                    var3: captainId,
+                });
+                console.log(s3, "s3");
+                findLeadCounts = await connection.query(s3);
+                findLeadCounts.rows[0].total_lead_count = Number(
+                    findLeadCounts.rows[0].total_lead_count
+                )
+                    ? Number(findLeadCounts.rows[0].total_lead_count)
+                    : 0;
+                findLeadCounts.rows[0].converted_lead_count = Number(
+                    findLeadCounts.rows[0].converted_lead_count
+                )
+                    ? Number(findLeadCounts.rows[0].converted_lead_count)
+                    : 0;
 
-                findLeadCounts.rows[0].convertedLeadPercentage = Number(findLeadCounts.rows[0].converted_lead_count / findLeadCounts.rows[0].total_lead_count) * 100 ? Number(findLeadCounts.rows[0].converted_lead_count / findLeadCounts.rows[0].total_lead_count) * 100 : 0
+                findLeadCounts.rows[0].convertedLeadPercentage =
+                    Number(
+                        findLeadCounts.rows[0].converted_lead_count /
+                        findLeadCounts.rows[0].total_lead_count
+                    ) * 100
+                        ? Number(
+                            findLeadCounts.rows[0].converted_lead_count /
+                            findLeadCounts.rows[0].total_lead_count
+                        ) * 100
+                        : 0;
 
+                //finding total open and closed sales in which captainId is captain
+                let s17 = dbScript(db_sql["Q404"], { var1: captainId });
+                let allSalesIds = await connection.query(s17);
 
-                //finding total sales ids in which the user_id is captain
+                //finding only closed sales ids in which the user_id is captain
+                let s4 = dbScript(db_sql["Q366"], { var1: captainId });
+                console.log(s4, "s4");
+                let salesIds = await connection.query(s4);
 
-                let s4 = dbScript(db_sql['Q366'], { var1: captainId })
-                let salesIds = await connection.query(s4)
                 if (salesIds.rowCount > 0) {
-                    let salesIdArr = []
+                    let salesIdArr = [];
                     salesIds.rows.map((data) => {
                         if (data.sales_ids.length > 0) {
-                            salesIdArr.push("'" + data.sales_ids.join("','") + "'")
+                            salesIdArr.push("'" + data.sales_ids.join("','") + "'");
                         }
-                    })
-                    //finding total sales and closed sales in which the given captain_id is captian
-                    let s5 = dbScript(db_sql['Q397'], { var1: selectedStartDate, var2: selectedEndDate, var3: salesIdArr.join(",") })
-                    findTotalAndWonDealCount = await connection.query(s5)
-                    if (findTotalAndWonDealCount.rowCount > 0) {
-                        findTotalAndWonDealCount.rows[0].total_sales_count = Number(findTotalAndWonDealCount.rows[0].total_sales_count)
-                        findTotalAndWonDealCount.rows[0].closed_sales_count = Number(findTotalAndWonDealCount.rows[0].closed_sales_count)
-
-                    } else {
-                        findTotalAndWonDealCount.rows[0].total_sales_count = 0
-                        findTotalAndWonDealCount.rows[0].closed_sales_count = 0
-                    }
-
-
-                    findTotalAndWonDealCount.rows[0].winPercentage = (findTotalAndWonDealCount.closed_sales_count/findTotalAndWonDealCount.total_sales_count)*100 ? (findTotalAndWonDealCount.closed_sales_count/findTotalAndWonDealCount.total_sales_count)*100 : 0
+                    });
 
                     //yearly recognized_revenue Subscription+perpetual
-                    let s6 = dbScript(db_sql['Q398'], { var1: quarters[0].start_date, var2: quarters[3].end_date, var3: salesIdArr.join(",") })
-                    yearlyRecognizedRevenue = await connection.query(s6)
-
-
+                    let s6 = dbScript(db_sql["Q398"], {
+                        var1: quarters[0].start_date,
+                        var2: quarters[3].end_date,
+                        var3: salesIdArr.join(","),
+                    });
+                    yearlyRecognizedRevenue = await connection.query(s6);
                     //monthly recognized_revenue Subscription+perpetual on perticular quarter
-                    let s7 = dbScript(db_sql['Q399'], { var1: findMonthsDateOfQuarter[0].start_date, var2: findMonthsDateOfQuarter[0].end_date, var3: findMonthsDateOfQuarter[1].start_date, var4: findMonthsDateOfQuarter[1].end_date, var5: findMonthsDateOfQuarter[2].start_date, var6: findMonthsDateOfQuarter[2].end_date, var7: salesIdArr.join(",") })
-                    monthlyRecognizedRevenue = await connection.query(s7)
+                    let s7 = dbScript(db_sql["Q399"], {
+                        var1: findMonthsDateOfQuarter[0].start_date,
+                        var2: findMonthsDateOfQuarter[0].end_date,
+                        var3: findMonthsDateOfQuarter[1].start_date,
+                        var4: findMonthsDateOfQuarter[1].end_date,
+                        var5: findMonthsDateOfQuarter[2].start_date,
+                        var6: findMonthsDateOfQuarter[2].end_date,
+                        var7: salesIdArr.join(","),
+                    });
+                    monthlyRecognizedRevenue = await connection.query(s7);
 
-                    let s14 = dbScript(db_sql['Q401'], { var1: selectedStartDate, var2: selectedEndDate, var3: captainId })
+                    let s14 = dbScript(db_sql["Q401"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: captainId,
+                    });
                     salesActivities = await connection.query(s14);
 
-                    salesActivities.rows[0].activity_per_deal = Number(salesActivities.rows[0].total_sales_activities / salesActivities.rows[0].total_deals_created) ? Number(salesActivities.rows[0].total_sales_activities / salesActivities.rows[0].total_deals_created) : 0
+                    salesActivities.rows[0].activity_per_deal = Number(
+                        salesActivities.rows[0].total_sales_activities /
+                        salesActivities.rows[0].total_deals_created
+                    )
+                        ? Number(
+                            salesActivities.rows[0].total_sales_activities /
+                            salesActivities.rows[0].total_deals_created
+                        )
+                        : 0;
 
+                    //sales leakage activity
+
+                    let s18 = dbScript(db_sql["Q406"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: salesIdArr.join(","),
+                    });
+                    let findMissingRecognized = await connection.query(s18);
+
+                    let high_risk_missing_rr = [];
+                    let low_risk_missing_rr = [];
+                    if (findMissingRecognized.rowCount > 0) {
+                        findMissingRecognized.rows.forEach((item) => {
+                            if (item.recognized_amount === "0") {
+                                high_risk_missing_rr.push(item.customer_name);
+                            } else {
+                                low_risk_missing_rr.push(item.customer_name);
+                            }
+                        });
+                        findMissingRR.high_risk_missing_rr = high_risk_missing_rr;
+                        findMissingRR.low_risk_missing_rr = low_risk_missing_rr;
+                    } else {
+                        findMissingRR.high_risk_missing_rr = "";
+                        findMissingRR.low_risk_missing_rr = "";
+                    }
+                } if (allSalesIds.rowCount > 0) {
+                    let allSalesIdArr = [];
+                    allSalesIds.rows.map((data) => {
+                        if (data.sales_ids.length > 0) {
+                            allSalesIdArr.push("'" + data.sales_ids.join("','") + "'");
+                        }
+                    });
+
+                    let s5 = dbScript(db_sql["Q397"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: allSalesIdArr.join(","),
+                    });
+                    findTotalAndWonDealCount = await connection.query(s5);
+                    if (findTotalAndWonDealCount.rowCount > 0) {
+                        findTotalAndWonDealCount.rows[0].total_sales_count = Number(
+                            findTotalAndWonDealCount.rows[0].total_sales_count
+                        );
+                        findTotalAndWonDealCount.rows[0].closed_sales_count = Number(
+                            findTotalAndWonDealCount.rows[0].closed_sales_count
+                        );
+                    } else {
+                        findTotalAndWonDealCount.rows[0].total_sales_count = 0;
+                        findTotalAndWonDealCount.rows[0].closed_sales_count = 0;
+                    }
+
+                    findTotalAndWonDealCount.rows[0].winPercentage =
+                        (findTotalAndWonDealCount.closed_sales_count /
+                            findTotalAndWonDealCount.total_sales_count) *
+                            100
+                            ? (findTotalAndWonDealCount.closed_sales_count /
+                                findTotalAndWonDealCount.total_sales_count) *
+                            100
+                            : 0;
+
+                    let s16 = dbScript(db_sql["Q405"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: allSalesIdArr.join(","),
+                    });
+                    let findTotalSupport = await connection.query(s16);
+                    let high_risk_sales_deals = [];
+                    let low_risk_sales_deals = [];
+                    for (const sale of findTotalSupport.rows) {
+                        if (sale.ids.length < 2 || sale.notes.length < 0) {
+                            high_risk_sales_deals.push(sale.customer_name);
+                        } else {
+                            low_risk_sales_deals.push(sale.customer_name);
+                        }
+                    }
+                    risk_sales_deals.high_risk_sales_deals = high_risk_sales_deals;
+                    risk_sales_deals.low_risk_sales_deals = low_risk_sales_deals;
+
+
+                    let s19 = dbScript(db_sql['Q407'], { var1: captainId })
+                    let findForecastAmount = await connection.query(s19)
+                    let totalForecaseAmount = 0
+                    if (findForecastAmount.rowCount > 0) {
+                        for (let amount of findForecastAmount.rows) {
+                            totalForecaseAmount += Number(amount.amount)
+                        }
+                        let yearlyRR = yearlyRecognizedRevenue.rows[0]
+                        revenueGap = totalForecaseAmount - Number(yearlyRR.total_amount)
+                    } else {
+                        revenueGap = 0
+                    }
+
+                    let s20 = dbScript(db_sql['Q408'], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: allSalesIdArr.join(","),
+                    })
+                    let findDateSlippage = await connection.query(s20)
+
+                    const high_risk_sales = [];
+                    const low_risk_sales = [];
+
+                    const salesBySalesId = {};
+
+                    // Group sales by sales_id and track target_closing_dates
+                    for (const sale of findDateSlippage.rows) {
+                        if (!salesBySalesId[sale.sales_id]) {
+                            salesBySalesId[sale.sales_id] = {
+                                targetClosingDates: new Set(),
+                                customer_name: sale.customer_name
+                            };
+                        }
+
+                        const salesInfo = salesBySalesId[sale.sales_id];
+                        salesInfo.targetClosingDates.add(sale.target_closing_date);
+                    }
+
+                    // Categorize sales based on target_closing_dates count
+                    for (const salesId in salesBySalesId) {
+                        const salesInfo = salesBySalesId[salesId];
+
+                        if (salesInfo.targetClosingDates.size > 1) {
+                            high_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name });
+                        } else {
+                            low_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name });
+                        }
+                    }
+                    closingDateSlippage.high_risk_sales = high_risk_sales
+                    closingDateSlippage.low_risk_sales = low_risk_sales
+
+                    //EOL products
+                    let s25 = dbScript(db_sql['Q411'], { var1: allSalesIdArr.join(",") })
+                    let findEOLProduct = await connection.query(s25)
+                    if (findEOLProduct.rowCount > 0) {
+                        let findEOLSales = await calculateEOLProducts(findEOLProduct.rows);
+                        eolSales = findEOLSales;
+                    } else {
+                        eolSales = {
+                            highRiskEolSale: [],
+                            lowRiskEolSale: []
+                        }
+                    }
 
                 } else {
                     return res.json({
@@ -3146,82 +3331,274 @@ module.exports.salesMetricsReport = async (req, res) => {
                             sales_activities_per_deal: {
                                 total_sales_activities: 0,
                                 total_deals_created: 0,
-                                activity_per_deal: 0
-
+                                activity_per_deal: 0,
                             },
                             sales_counts: {
                                 total_sales_count: 0,
                                 closed_sales_count: 0,
-                                winPercentage: 0
+                                winPercentage: 0,
                             },
                             yearly_recognized_revenue: {
-                                total_amount: 0
+                                total_amount: 0,
                             },
                             monthly_revenue: [
                                 {
                                     total_amount: 0,
-                                    month_number: 1
+                                    month_number: 1,
                                 },
                                 {
                                     total_amount: 0,
-                                    month_number: 2
+                                    month_number: 2,
                                 },
                                 {
                                     total_amount: 0,
-                                    month_number: 3
-                                }
-                            ]
-                        }
-                    })
+                                    month_number: 3,
+                                },
+                            ],
+                            risk_sales_deals: {
+                                high_risk_sales_deals: [],
+                                low_risk_sales_deals: [],
+                            },
+                            findMissingRR: 0,
+                            closingDateSlippage: {
+                                high_risk_sales: [],
+                                low_risk_sales: []
+                            },
+                            eolSales : {
+                                highRiskEolSale: [],
+                                lowRiskEolSale: []
+                            },
+                            revenueGap: revenueGap
+                        },
+                    });
                 }
             } else {
-                let s8 = dbScript(db_sql['Q8'], { var1: captainId })
-                let findPermission = await connection.query(s8)
-                let roleUsers = await getUserAndSubUser(findPermission.rows[0])
-                let s9 = dbScript(db_sql['Q396'], { var1: selectedStartDate, var2: selectedEndDate, var3: roleUsers.join(",") })
-                findLeadCounts = await connection.query(s9)
+                let s8 = dbScript(db_sql["Q8"], { var1: captainId });
+                let findPermission = await connection.query(s8);
+                let roleUsers = await getUserAndSubUser(findPermission.rows[0]);
+                let s9 = dbScript(db_sql["Q396"], {
+                    var1: selectedStartDate,
+                    var2: selectedEndDate,
+                    var3: roleUsers.join(","),
+                });
+                findLeadCounts = await connection.query(s9);
                 if (findLeadCounts.rowCount > 0) {
-                    findLeadCounts.rows[0].total_lead_count = findLeadCounts.rows[0].total_lead_count
-                    findLeadCounts.rows[0].converted_lead_count = findLeadCounts.rows[0].converted_lead_count
+                    findLeadCounts.rows[0].total_lead_count =
+                        findLeadCounts.rows[0].total_lead_count;
+                    findLeadCounts.rows[0].converted_lead_count =
+                        findLeadCounts.rows[0].converted_lead_count;
                 } else {
-                    findLeadCounts.rows[0].total_lead_count = 0
-                    findLeadCounts.rows[0].converted_lead_count = 0
+                    findLeadCounts.rows[0].total_lead_count = 0;
+                    findLeadCounts.rows[0].converted_lead_count = 0;
                 }
-                findLeadCounts.rows[0].convertedLeadPercentage = Number(findLeadCounts.rows[0].converted_lead_count / findLeadCounts.rows[0].total_lead_count) * 100 ? Number(findLeadCounts.rows[0].converted_lead_count / findLeadCounts.rows[0].total_lead_count) * 100 : 0
+                findLeadCounts.rows[0].convertedLeadPercentage =
+                    Number(
+                        findLeadCounts.rows[0].converted_lead_count /
+                        findLeadCounts.rows[0].total_lead_count
+                    ) * 100
+                        ? Number(
+                            findLeadCounts.rows[0].converted_lead_count /
+                            findLeadCounts.rows[0].total_lead_count
+                        ) * 100
+                        : 0;
 
-                let s10 = dbScript(db_sql['Q400'], { var1: roleUsers.join(",") })
-                let salesIds = await connection.query(s10)
+                let s21 = dbScript(db_sql["Q409"], { var1: roleUsers.join(",") });
+                let allSalesIds = await connection.query(s21);
+
+                let s10 = dbScript(db_sql["Q400"], { var1: roleUsers.join(",") });
+                console.log(s10, "s10");
+                let salesIds = await connection.query(s10);
                 if (salesIds.rowCount > 0) {
-                    let salesIdArr = []
+                    console.log(salesIds.rows, "salesIds");
+                    let salesIdArr = [];
                     salesIds.rows.map((data) => {
                         if (data.sales_ids.length > 0) {
-                            salesIdArr.push("'" + data.sales_ids.join("','") + "'")
+                            salesIdArr.push("'" + data.sales_ids.join("','") + "'");
                         }
-                    })
-                    let s11 = dbScript(db_sql['Q397'], { var1: selectedStartDate, var2: selectedEndDate, var3: salesIdArr.join(",") })
-                    findTotalAndWonDealCount = await connection.query(s11)
-                    if (findTotalAndWonDealCount.rowCount > 0) {
-                        findTotalAndWonDealCount.total_sales_count = Number(findTotalAndWonDealCount.rows[0].total_sales_count)
-                        findTotalAndWonDealCount.closed_sales_count = Number(findTotalAndWonDealCount.rows[0].closed_sales_count)
+                    });
 
-                    } else {
-                        findTotalAndWonDealCount.total_sales_count = 0
-                        findTotalAndWonDealCount.closed_sales_count = 0
-                    }
-                    findTotalAndWonDealCount.rows[0].winPercentage = (findTotalAndWonDealCount.closed_sales_count/findTotalAndWonDealCount.total_sales_count)*100 ? (findTotalAndWonDealCount.closed_sales_count/findTotalAndWonDealCount.total_sales_count)*100 : 0
-                    
-                    //yearly recognized_revenue Subscription+perpetual
-                    let s12 = dbScript(db_sql['Q398'], { var1: quarters[0].start_date, var2: quarters[3].end_date, var3: salesIdArr.join(",") })
-                    yearlyRecognizedRevenue = await connection.query(s12)
+                    let s12 = dbScript(db_sql["Q398"], {
+                        var1: quarters[0].start_date,
+                        var2: quarters[3].end_date,
+                        var3: salesIdArr.join(","),
+                    });
+                    yearlyRecognizedRevenue = await connection.query(s12);
 
                     //monthly recognized_revenue Subscription+perpetual on perticular quarter
-                    let s13 = dbScript(db_sql['Q399'], { var1: findMonthsDateOfQuarter[0].start_date, var2: findMonthsDateOfQuarter[0].end_date, var3: findMonthsDateOfQuarter[1].start_date, var4: findMonthsDateOfQuarter[1].end_date, var5: findMonthsDateOfQuarter[2].start_date, var6: findMonthsDateOfQuarter[2].end_date, var7: salesIdArr.join(",") })
-                    monthlyRecognizedRevenue = await connection.query(s13)
+                    let s13 = dbScript(db_sql["Q399"], {
+                        var1: findMonthsDateOfQuarter[0].start_date,
+                        var2: findMonthsDateOfQuarter[0].end_date,
+                        var3: findMonthsDateOfQuarter[1].start_date,
+                        var4: findMonthsDateOfQuarter[1].end_date,
+                        var5: findMonthsDateOfQuarter[2].start_date,
+                        var6: findMonthsDateOfQuarter[2].end_date,
+                        var7: salesIdArr.join(","),
+                    });
+                    monthlyRecognizedRevenue = await connection.query(s13);
 
-                    let s15 = dbScript(db_sql['Q402'], { var1: selectedStartDate, var2: selectedEndDate, var3: roleUsers.join(",") })
+                    let s15 = dbScript(db_sql["Q402"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: roleUsers.join(","),
+                    });
                     salesActivities = await connection.query(s15);
 
-                    salesActivities.rows[0].activity_per_deal = Number(salesActivities.rows[0].total_sales_activities / salesActivities.rows[0].total_deals_created) ? Number(salesActivities.rows[0].total_sales_activities / salesActivities.rows[0].total_deals_created) : 0
+                    salesActivities.rows[0].activity_per_deal = Number(
+                        salesActivities.rows[0].total_sales_activities /
+                        salesActivities.rows[0].total_deals_created
+                    )
+                        ? Number(
+                            salesActivities.rows[0].total_sales_activities /
+                            salesActivities.rows[0].total_deals_created
+                        )
+                        : 0;
+
+                    let s23 = dbScript(db_sql["Q406"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: salesIdArr.join(","),
+                    });
+                    let findMissingRecognized = await connection.query(s23);
+                    console.log(findMissingRecognized.rows, "findMissingRecognized");
+
+                    let high_risk_missing_rr = [];
+                    let low_risk_missing_rr = [];
+                    if (findMissingRecognized.rowCount > 0) {
+                        findMissingRecognized.rows.forEach((item) => {
+                            if (item.recognized_amount === "0") {
+                                high_risk_missing_rr.push(item.customer_name);
+                            } else {
+                                low_risk_missing_rr.push(item.customer_name);
+                            }
+                        });
+
+                        findMissingRR.high_risk_missing_rr = high_risk_missing_rr;
+                        findMissingRR.low_risk_missing_rr = low_risk_missing_rr;
+                    } else {
+                        findMissingRR.high_risk_missing_rr = "";
+                        findMissingRR.low_risk_missing_rr = "";
+                    }
+
+                } if (allSalesIds.rowCount > 0) {
+                    let allSalesIdArr = [];
+                    allSalesIds.rows.map((data) => {
+                        if (data.sales_ids.length > 0) {
+                            allSalesIdArr.push("'" + data.sales_ids.join("','") + "'");
+                        }
+                    })
+
+                    let s11 = dbScript(db_sql["Q397"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: allSalesIdArr.join(","),
+                    });
+                    findTotalAndWonDealCount = await connection.query(s11);
+                    if (findTotalAndWonDealCount.rowCount > 0) {
+                        findTotalAndWonDealCount.total_sales_count = Number(
+                            findTotalAndWonDealCount.rows[0].total_sales_count
+                        );
+                        findTotalAndWonDealCount.closed_sales_count = Number(
+                            findTotalAndWonDealCount.rows[0].closed_sales_count
+                        );
+                    } else {
+                        findTotalAndWonDealCount.total_sales_count = 0;
+                        findTotalAndWonDealCount.closed_sales_count = 0;
+                    }
+                    findTotalAndWonDealCount.rows[0].winPercentage =
+                        (findTotalAndWonDealCount.closed_sales_count /
+                            findTotalAndWonDealCount.total_sales_count) *
+                            100
+                            ? (findTotalAndWonDealCount.closed_sales_count /
+                                findTotalAndWonDealCount.total_sales_count) *
+                            100
+                            : 0;
+
+                    let s22 = dbScript(db_sql["Q405"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: allSalesIdArr.join(","),
+                    });
+                    let findTotalSupport = await connection.query(s22);
+                    let high_risk_sales_deals = [];
+                    let low_risk_sales_deals = [];
+                    for (const sale of findTotalSupport.rows) {
+                        if (sale.ids.length < 2 || sale.notes.length < 0) {
+                            high_risk_sales_deals.push(sale.customer_name);
+                        } else {
+                            low_risk_sales_deals.push(sale.customer_name);
+                        }
+                    }
+                    risk_sales_deals.high_risk_sales_deals = high_risk_sales_deals;
+                    risk_sales_deals.low_risk_sales_deals = low_risk_sales_deals;
+
+                    // //finding revenue gap
+                    let s24 = dbScript(db_sql['Q410'], { var1: roleUsers.join(",") })
+                    console.log(s24, "s24");
+                    let findForecastAmount = await connection.query(s24)
+                    let totalForecaseAmount = 0
+                    if (findForecastAmount.rowCount > 0) {
+                        for (let amount of findForecastAmount.rows) {
+                            totalForecaseAmount += Number(amount.amount)
+                        }
+                        let yearlyRR = yearlyRecognizedRevenue.rows[0]
+                        revenueGap = totalForecaseAmount - Number(yearlyRR.total_amount)
+                    } else {
+                        revenueGap = 0
+                    }
+
+                    //finding sales where date is slippage 2 or more than 2 times
+                    let s23 = dbScript(db_sql['Q408'], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: allSalesIdArr.join(","),
+                    })
+                    let findDateSlippage = await connection.query(s23)
+
+                    const high_risk_sales = [];
+                    const low_risk_sales = [];
+
+                    const salesBySalesId = {};
+
+                    // Group sales by sales_id and track target_closing_dates
+                    for (const sale of findDateSlippage.rows) {
+                        if (!salesBySalesId[sale.sales_id]) {
+                            salesBySalesId[sale.sales_id] = {
+                                targetClosingDates: new Set(),
+                                customer_name: sale.customer_name
+                            };
+                        }
+
+                        const salesInfo = salesBySalesId[sale.sales_id];
+                        salesInfo.targetClosingDates.add(sale.target_closing_date);
+                    }
+
+                    // Categorize sales based on target_closing_dates count
+                    for (const salesId in salesBySalesId) {
+                        const salesInfo = salesBySalesId[salesId];
+
+                        if (salesInfo.targetClosingDates.size > 1) {
+                            high_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name });
+                        } else {
+                            low_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name });
+                        }
+                    }
+                    closingDateSlippage.high_risk_sales = high_risk_sales
+                    closingDateSlippage.low_risk_sales = low_risk_sales
+
+
+                    //EOL products
+                    let s26 = dbScript(db_sql['Q411'], { var1: allSalesIdArr.join(",") })
+                    let findEOLProduct = await connection.query(s26)
+                    if (findEOLProduct.rowCount > 0) {
+                        let findEOLSales = await calculateEOLProducts(findEOLProduct.rows);
+                        eolSales = findEOLSales;
+                    } else {
+                        eolSales = {
+                            highRiskEolSale: [],
+                            lowRiskEolSale: []
+                        }
+                    }
+
                 } else {
                     res.json({
                         status: 200,
@@ -3232,36 +3609,48 @@ module.exports.salesMetricsReport = async (req, res) => {
                             sales_activities_per_deal: {
                                 total_sales_activities: 0,
                                 total_deals_created: 0,
-                                activity_per_deal: 0
-
+                                activity_per_deal: 0,
                             },
                             sales_counts: {
                                 total_sales_count: 0,
                                 closed_sales_count: 0,
-                                winPercentage: 0
+                                winPercentage: 0,
                             },
                             yearly_recognized_revenue: {
-                                total_amount: 0
+                                total_amount: 0,
                             },
                             monthly_revenue: [
                                 {
                                     total_amount: 0,
-                                    month_number: 1
+                                    month_number: 1,
                                 },
                                 {
                                     total_amount: 0,
-                                    month_number: 2
+                                    month_number: 2,
                                 },
                                 {
                                     total_amount: 0,
-                                    month_number: 3
-                                }
-                            ]
-                        }
-                    })
+                                    month_number: 3,
+                                },
+                            ],
+                            risk_sales_deals: {
+                                high_risk_sales_deals: [],
+                                low_risk_sales_deals: [],
+                            },
+                            findMissingRR: 0,
+                            closingDateSlippage: {
+                                high_risk_sales: [],
+                                low_risk_sales: []
+                            },
+                            eolSales : {
+                                highRiskEolSale: [],
+                                lowRiskEolSale: []
+                            },
+                            revenueGap: revenueGap
+                        },
+                    });
                 }
             }
-
             res.json({
                 status: 200,
                 success: true,
@@ -3271,20 +3660,25 @@ module.exports.salesMetricsReport = async (req, res) => {
                     sales_activities_per_deal: salesActivities.rows[0],
                     sales_counts: findTotalAndWonDealCount.rows[0],
                     yearly_recognized_revenue: yearlyRecognizedRevenue.rows[0],
-                    monthly_revenue: monthlyRecognizedRevenue.rows
-                }
-            })
+                    monthly_revenue: monthlyRecognizedRevenue.rows,
+                    risk_sales_deals: risk_sales_deals,
+                    findMissingRR: findMissingRR,
+                    closingDateSlippage: closingDateSlippage,
+                    eolSales: eolSales,
+                    revenueGap: revenueGap
+                },
+            });
         } else {
             res.status(403).json({
                 success: false,
-                message: "Unathorised"
-            })
+                message: "Unathorised",
+            });
         }
     } catch (error) {
         res.json({
             status: 400,
             success: false,
             message: error.stack,
-        })
+        });
     }
-} 
+};
