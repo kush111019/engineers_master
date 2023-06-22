@@ -955,7 +955,7 @@ module.exports.calculateEOLProducts = async(resultSet) => {
    
    
      return { highRiskEolSale, lowRiskEolSale };
-   }
+}
   
 
 

@@ -3076,9 +3076,6 @@ module.exports.salesMetricsReport = async (req, res) => {
                 }
             }
 
-            console.log(selectedStartDate, "selectedStartDate");
-            console.log(selectedEndDate, "selectedEndDate");
-
             let findLeadCounts;
             let salesActivities;
             let findTotalAndWonDealCount;
@@ -3089,6 +3086,10 @@ module.exports.salesMetricsReport = async (req, res) => {
             let closingDateSlippage = {};
             let eolSales = {}
             let revenueGap = 0;
+            let totalLeakage = 0;
+            let totalLeakageAmountClosed = 0
+            let totalLeakageAmountAll = 0
+            
             let findMonthsDateOfQuarter = await getQuarterMonthsDates(
                 selectedStartDate,
                 selectedEndDate
@@ -3122,6 +3123,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                             findLeadCounts.rows[0].total_lead_count
                         ) * 100
                         : 0;
+
 
                 //finding total open and closed sales in which captainId is captain
                 let s17 = dbScript(db_sql["Q404"], { var1: captainId });
@@ -3183,7 +3185,6 @@ module.exports.salesMetricsReport = async (req, res) => {
                         var3: salesIdArr.join(","),
                     });
                     let findMissingRecognized = await connection.query(s18);
-
                     let high_risk_missing_rr = [];
                     let low_risk_missing_rr = [];
                     if (findMissingRecognized.rowCount > 0) {
@@ -3191,9 +3192,31 @@ module.exports.salesMetricsReport = async (req, res) => {
                             if (item.recognized_amount === "0") {
                                 high_risk_missing_rr.push({ customer_name: item.customer_name, amount: item.target_amount });
                             } else {
-                                low_risk_missing_rr.push({ customer_name: item.customer_name, amount: 0 });
+                                if (!low_risk_missing_rr[item.sales_id]) {
+                                    low_risk_missing_rr[item.sales_id] = {
+                                        customer_name: item.customer_name,
+                                        recognized_amount: 0,
+                                        target_amount: parseFloat(item.target_amount),
+                                    };
+                                }
+                                low_risk_missing_rr[item.sales_id].recognized_amount += parseFloat(item.recognized_amount);
                             }
                         });
+
+                        for (const salesId in low_risk_missing_rr) {
+                            const item = low_risk_missing_rr[salesId];
+                            const amountDifference = item.target_amount - item.recognized_amount;
+                            low_risk_missing_rr[salesId] = {
+                                customer_name: item.customer_name,
+                                amount: amountDifference,
+                            };
+                        }
+
+                        // Create a new array to store the modified low-risk missing records
+                        const modifiedLowRiskMissingRR = Object.values(low_risk_missing_rr);
+                        low_risk_missing_rr = modifiedLowRiskMissingRR;
+
+
                         let totalHighRiskRR = 0;
                         let totalLowRiskRR = 0;
                         if (high_risk_missing_rr.length > 0) {
@@ -3205,23 +3228,29 @@ module.exports.salesMetricsReport = async (req, res) => {
                         }
                         if (low_risk_missing_rr.length > 0) {
                             for (let i = 0; i < low_risk_missing_rr.length; i++) {
-                                totalLowRiskRR += 0;
+                                totalLowRiskRR += parseInt(low_risk_missing_rr[i].amount);
                             }
                         } else {
                             totalLowRiskRR = totalLowRiskRR
                         }
+
                         findMissingRR.high_risk_missing_rr = high_risk_missing_rr;
                         findMissingRR.low_risk_missing_rr = low_risk_missing_rr;
                         findMissingRR.high_risk_total_missing_rr = totalHighRiskRR;
                         findMissingRR.low_risk_total_missing_rr = totalLowRiskRR;
+                        findMissingRR.all_total_missing_rr = Number(totalHighRiskRR + totalLowRiskRR)
+
+
+                        totalLeakageAmountClosed = Number(totalHighRiskRR + totalLowRiskRR)
+
                     } else {
                         findMissingRR.high_risk_missing_rr = [];
                         findMissingRR.low_risk_missing_rr = [];
-                        findMissingRR.high_risk_total_missing_rr = 0
+                        findMissingRR.high_risk_total_missing_rr = 0;
                         findMissingRR.low_risk_total_missing_rr = 0;
+                        findMissingRR.all_total_missing_rr = 0
                     }
                 } if (allSalesIds.rowCount > 0) {
-                    console.log(allSalesIds.rows, "allSalesIds");
                     let allSalesIdArr = [];
                     allSalesIds.rows.map((data) => {
                         if (data.sales_ids.length > 0) {
@@ -3248,11 +3277,11 @@ module.exports.salesMetricsReport = async (req, res) => {
                     }
 
                     findTotalAndWonDealCount.rows[0].winPercentage =
-                        (findTotalAndWonDealCount.closed_sales_count /
-                            findTotalAndWonDealCount.total_sales_count) *
+                        (findTotalAndWonDealCount.rows[0].closed_sales_count /
+                            findTotalAndWonDealCount.rows[0].total_sales_count) *
                             100
-                            ? (findTotalAndWonDealCount.closed_sales_count /
-                                findTotalAndWonDealCount.total_sales_count) *
+                            ? (findTotalAndWonDealCount.rows[0].closed_sales_count /
+                                findTotalAndWonDealCount.rows[0].total_sales_count) *
                             100
                             : 0;
 
@@ -3288,11 +3317,11 @@ module.exports.salesMetricsReport = async (req, res) => {
                     } else {
                         totalLowRiskAmount = totalLowRiskAmount
                     }
-                    let total_sales_deals_amount = totalHighRiskAmount + totalLowRiskAmount
                     risk_sales_deals.high_risk_sales_deals = high_risk_sales_deals;
                     risk_sales_deals.low_risk_sales_deals = low_risk_sales_deals;
                     risk_sales_deals.total_high_risk_amount = totalHighRiskAmount;
                     risk_sales_deals.total_low_risk_amount = totalLowRiskAmount;
+                    total_sales_deals_amount = Number(totalHighRiskAmount + totalLowRiskAmount)
                     risk_sales_deals.total_sales_deals_amount = total_sales_deals_amount;
 
 
@@ -3353,9 +3382,14 @@ module.exports.salesMetricsReport = async (req, res) => {
                     closingDateSlippage.low_risk_sales = low_risk_sales
                     closingDateSlippage.total_high_risk_slippage_amount = totalHighRiskSlippageAmount
                     closingDateSlippage.total_low_risk_slippage_amount = totalLowRiskSlippageAmount
+                    closingDateSlippage.all_total_slippage_amount = Number(totalHighRiskSlippageAmount + totalLowRiskSlippageAmount)
 
+                    const Sdate = new Date(selectedStartDate);
+                    const Edate = new Date(selectedEndDate);
+                    const SformattedDate = Sdate.toISOString().substring(0, 10);
+                    const EformattedDate = Edate.toISOString().substring(0, 10);
                     //EOL products
-                    let s25 = dbScript(db_sql['Q411'], { var1: allSalesIdArr.join(",") })
+                    let s25 = dbScript(db_sql['Q411'], { var1: allSalesIdArr.join(","), var2: SformattedDate, var3: EformattedDate })
                     let findEOLProduct = await connection.query(s25)
                     if (findEOLProduct.rowCount > 0) {
                         let findEOLSales = await calculateEOLProducts(findEOLProduct.rows);
@@ -3366,11 +3400,16 @@ module.exports.salesMetricsReport = async (req, res) => {
                             lowRiskEolSale: []
                         }
                     }
-                    
+
                     let totalHighRiskEolMissingAmount = eolSales.highRiskEolSale.reduce((total, sale) => total + parseInt(sale.target_amount), 0);
                     let totalLowRiskEolMissingAmount = eolSales.lowRiskEolSale.reduce((total, sale) => total + parseInt(sale.target_amount), 0);
                     eolSales.total_high_risk_eol_missing_amount = totalHighRiskEolMissingAmount
                     eolSales.total_low_risk_eol_missing_amount = totalLowRiskEolMissingAmount
+                    eolSales.all_total_eol_missing_amount = Number(totalHighRiskEolMissingAmount + totalLowRiskEolMissingAmount)
+
+                    totalLeakageAmountAll = (Number(totalHighRiskEolMissingAmount + totalLowRiskEolMissingAmount) + Number(totalHighRiskSlippageAmount + totalLowRiskSlippageAmount) + total_sales_deals_amount)
+
+                    totalLeakage = totalLeakageAmountAll + totalLeakageAmountClosed
 
                 } else {
                     return res.json({
@@ -3508,7 +3547,6 @@ module.exports.salesMetricsReport = async (req, res) => {
                         var2: selectedEndDate,
                         var3: salesIdArr.join(","),
                     });
-                    // console.log(s23,"s23");
                     let findMissingRecognized = await connection.query(s23);
 
                     let high_risk_missing_rr = [];
@@ -3518,11 +3556,30 @@ module.exports.salesMetricsReport = async (req, res) => {
                             if (item.recognized_amount === "0") {
                                 high_risk_missing_rr.push({ customer_name: item.customer_name, amount: item.target_amount });
                             } else {
-                                low_risk_missing_rr.push({ customer_name: item.customer_name, amount: 0 });
+                                if (!low_risk_missing_rr[item.sales_id]) {
+                                    low_risk_missing_rr[item.sales_id] = {
+                                        customer_name: item.customer_name,
+                                        recognized_amount: 0,
+                                        target_amount: parseFloat(item.target_amount),
+                                    };
+                                }
+                                low_risk_missing_rr[item.sales_id].recognized_amount += parseFloat(item.recognized_amount);
                             }
                         });
-                        // console.log(high_risk_missing_rr, "high_risk_missing_rr");
-                        // console.log(low_risk_missing_rr, "low_risk_missing_rr");
+
+                        for (const salesId in low_risk_missing_rr) {
+                            const item = low_risk_missing_rr[salesId];
+                            const amountDifference = item.target_amount - item.recognized_amount;
+                            low_risk_missing_rr[salesId] = {
+                                customer_name: item.customer_name,
+                                amount: amountDifference,
+                            };
+                        }
+
+                        // Create a new array to store the modified low-risk missing records
+                        const modifiedLowRiskMissingRR = Object.values(low_risk_missing_rr);
+                        low_risk_missing_rr = modifiedLowRiskMissingRR;
+
 
                         let totalHighRiskRR = 0;
                         let totalLowRiskRR = 0;
@@ -3535,7 +3592,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                         }
                         if (low_risk_missing_rr.length > 0) {
                             for (let i = 0; i < low_risk_missing_rr.length; i++) {
-                                totalLowRiskRR += 0
+                                totalLowRiskRR += parseInt(low_risk_missing_rr[i].amount);
                             }
                         } else {
                             totalLowRiskRR = totalLowRiskRR
@@ -3545,14 +3602,14 @@ module.exports.salesMetricsReport = async (req, res) => {
                         findMissingRR.low_risk_missing_rr = low_risk_missing_rr;
                         findMissingRR.high_risk_total_missing_rr = totalHighRiskRR;
                         findMissingRR.low_risk_total_missing_rr = totalLowRiskRR;
-
+                        findMissingRR.all_total_missing_rr = Number(totalHighRiskRR + totalLowRiskRR)
+                        totalLeakageAmountClosed = Number(totalHighRiskRR + totalLowRiskRR)
                     } else {
                         findMissingRR.high_risk_missing_rr = [];
                         findMissingRR.low_risk_missing_rr = [];
                         findMissingRR.high_risk_total_missing_rr = 0;
                         findMissingRR.low_risk_total_missing_rr = 0;
                     }
-
                 } if (allSalesIds.rowCount > 0) {
                     let allSalesIdArr = [];
                     allSalesIds.rows.map((data) => {
@@ -3602,7 +3659,6 @@ module.exports.salesMetricsReport = async (req, res) => {
                             low_risk_sales_deals.push({ salesNmae: sale.customer_name, amount: sale.target_amount });
                         }
                     }
-
                     let totalHighRiskAmount = 0;
                     let totalLowRiskAmount = 0;
                     if (high_risk_sales_deals.length > 0) {
@@ -3626,8 +3682,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                     risk_sales_deals.total_low_risk_amount = totalLowRiskAmount;
                     risk_sales_deals.total_sales_deals_amount = total_sales_deals_amount;
 
-
-                    // //finding revenue gap
+                  //finding revenue gap
                     let s24 = dbScript(db_sql['Q410'], { var1: roleUsers.join(",") })
                     let findForecastAmount = await connection.query(s24)
                     let totalForecaseAmount = 0
@@ -3663,7 +3718,6 @@ module.exports.salesMetricsReport = async (req, res) => {
                                 amount: sale.target_amount
                             };
                         }
-
                         const salesInfo = salesBySalesId[sale.sales_id];
                         salesInfo.targetClosingDates.add(sale.target_closing_date);
                     }
@@ -3686,10 +3740,15 @@ module.exports.salesMetricsReport = async (req, res) => {
                     closingDateSlippage.low_risk_sales = low_risk_sales
                     closingDateSlippage.total_high_risk_slippage_amount = totalHighRiskSlippageAmount
                     closingDateSlippage.total_low_risk_slippage_amount = totalLowRiskSlippageAmount
+                    closingDateSlippage.all_total_slippage_amount = Number(totalHighRiskSlippageAmount + totalLowRiskSlippageAmount)
 
+                    const Sdate = new Date(selectedStartDate);
+                    const Edate = new Date(selectedEndDate);
+                    const SformattedDate = Sdate.toISOString().substring(0, 10);
+                    const EformattedDate = Edate.toISOString().substring(0, 10);
 
                     //EOL products
-                    let s26 = dbScript(db_sql['Q411'], { var1: allSalesIdArr.join(",") })
+                    let s26 = dbScript(db_sql['Q411'], { var1: allSalesIdArr.join(","), var2: SformattedDate, var3: EformattedDate })
                     let findEOLProduct = await connection.query(s26)
                     if (findEOLProduct.rowCount > 0) {
                         let findEOLSales = await calculateEOLProducts(findEOLProduct.rows);
@@ -3705,6 +3764,12 @@ module.exports.salesMetricsReport = async (req, res) => {
                     let totalLowRiskEolMissingAmount = eolSales.lowRiskEolSale.reduce((total, sale) => total + parseInt(sale.target_amount), 0);
                     eolSales.total_high_risk_eol_missing_amount = totalHighRiskEolMissingAmount
                     eolSales.total_low_risk_eol_missing_amount = totalLowRiskEolMissingAmount
+                    eolSales.all_total_eol_missing_amount = Number(totalHighRiskEolMissingAmount + totalLowRiskEolMissingAmount)
+
+                    //total leakage amount 
+                    totalLeakageAmountAll = (Number(totalHighRiskEolMissingAmount + totalLowRiskEolMissingAmount) + Number(totalHighRiskSlippageAmount + totalLowRiskSlippageAmount) + total_sales_deals_amount)
+
+                    totalLeakage = totalLeakageAmountAll + totalLeakageAmountClosed
 
                 } else {
                     res.json({
@@ -3772,7 +3837,8 @@ module.exports.salesMetricsReport = async (req, res) => {
                     findMissingRR: findMissingRR,
                     closingDateSlippage: closingDateSlippage,
                     eolSales: eolSales,
-                    revenueGap: revenueGap
+                    revenueGap: revenueGap,
+                    totalLeakage: totalLeakage
                 },
             });
         } else {
