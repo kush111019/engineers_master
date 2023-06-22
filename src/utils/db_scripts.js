@@ -71,13 +71,16 @@ const db_sql = {
   "Q31": `INSERT INTO follow_up_notes (sales_id, company_id, user_id, notes) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
   "Q32": `SELECT f.id, f.notes, f.created_at, f.user_id, u.full_name, u.avatar 
               FROM follow_up_notes as f
-              INNER JOIN users AS u ON u.id = f.user_id
+              LEFT JOIN users AS u ON u.id = f.user_id
               WHERE sales_id = '{var1}' AND f.deleted_at IS NULL ORDER BY created_at DESC`,
   "Q33": `UPDATE permissions SET user_id = '{var2}' WHERE role_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   "Q34": `UPDATE roles SET module_ids = '{var1}' , updated_at = '{var2}' WHERE id = '{var3}' RETURNING * `,
-  "Q35": `SELECT m.id, m.module_name, p.permission_to_view_global,p.permission_to_view_own, p.permission_to_create, 
-              p.permission_to_update, p.permission_to_delete FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
-              INNER JOIN roles AS r ON r.id = p.role_id WHERE m.id IN ('{var1}') AND r.id = '{var2}' 
+  "Q35": `SELECT m.id, m.module_name, p.permission_to_view_global,p.permission_to_view_own,
+              p.permission_to_create, p.permission_to_update, p.permission_to_delete 
+              FROM modules AS m 
+              LEFT JOIN permissions AS p ON p.module_id = m.id
+              LEFT JOIN roles AS r ON r.id = p.role_id 
+              WHERE m.id IN ('{var1}') AND r.id = '{var2}' 
               AND m.deleted_at IS NULL AND p.deleted_at IS NULL
               ORDER BY m.module_ctr ASC`,
   "Q36": `INSERT INTO customer_companies ( user_id,customer_name, company_id, address, currency, industry) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
@@ -126,8 +129,9 @@ const db_sql = {
   "Q41": `SELECT u.id, u.company_id, u.role_id, u.avatar, u.full_name,u.email_address,u.mobile_number,u.phone_number,u.address,u.is_verified,u.created_by,
               m.id AS module_id, m.module_name, m.module_type, p.id AS permission_id, p.permission_to_view_global, p.permission_to_view_own,
               p.permission_to_create, p.permission_to_update, p.permission_to_delete
-              FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
-              INNER JOIN users AS u ON u.role_id = p.role_id
+              FROM modules AS m 
+              LEFT JOIN permissions AS p ON p.module_id = m.id
+              LEFT JOIN users AS u ON u.role_id = p.role_id
               WHERE m.module_name = '{var1}' AND u.id = '{var2}' AND m.deleted_at IS NULL 
               AND p.deleted_at IS NULL AND u.deleted_at IS NULL`,
   "Q42": `UPDATE customer_companies SET customer_name = '{var1}', updated_at = '{var2}', address = '{var3}', currency = '{var4}', industry = '{var7}' WHERE id = '{var5}' AND company_id = '{var6}' AND deleted_at IS NULL RETURNING *`,
@@ -183,7 +187,7 @@ const db_sql = {
                 u.full_name AS created_by 
               FROM 
                 customer_companies AS c 
-              INNER JOIN users AS u ON u.id = c.user_id
+              LEFT JOIN users AS u ON u.id = c.user_id
               WHERE c.company_id = '{var1}' AND c.is_rejected = '{var2}'`,
   "Q53": `INSERT INTO 
             sales (customer_id, customer_commission_split_id, is_overwrite, company_id, 
@@ -268,8 +272,11 @@ const db_sql = {
           VALUES
             ('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}') RETURNING *`,
   "Q58": `SELECT m.id, m.module_name, p.permission_to_view_global,p.permission_to_view_own, p.permission_to_create, 
-          p.permission_to_update, p.permission_to_delete FROM modules AS m INNER JOIN permissions AS p ON p.module_id = m.id
-          INNER JOIN roles AS r ON r.id = p.role_id WHERE m.id = '{var1}' AND r.id = '{var2}' 
+          p.permission_to_update, p.permission_to_delete 
+          FROM modules AS m 
+          LEFT JOIN permissions AS p ON p.module_id = m.id
+          LEFT JOIN roles AS r ON r.id = p.role_id 
+          WHERE m.id = '{var1}' AND r.id = '{var2}' 
           AND m.deleted_at IS NULL AND p.deleted_at IS NULL`,
   "Q59": `UPDATE sales SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
   "Q60": `UPDATE sales_users 
@@ -586,7 +593,7 @@ const db_sql = {
                 p.end_of_life, p.currency, p.company_id, p.created_at, p.updated_at, p.user_id, u.full_name as created_by 
               FROM 
                 products AS p
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u ON p.user_id = u.id
               WHERE 
                 p.company_id = '{var1}' AND p.deleted_at IS NULL
@@ -626,36 +633,40 @@ const db_sql = {
               stripe_card_id = '{var3}', stripe_token_id = '{var4}', stripe_charge_id = '{var5}', 
               expiry_date = '{var6}', updated_at = '{var7}', total_amount = '{var9}', immediate_upgrade = '{var10}', payment_receipt = '{var11}', user_count = '{var12}', plan_id = '{var13}', upgraded_transaction_id = '{var14}', pro_user_count = '{var15}'  WHERE id = '{var8}' AND deleted_at IS NULL RETURNING *`,
   "Q106": `UPDATE transactions SET is_canceled = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
-  "Q107": `SELECT id, chat_name, is_group_chat, last_message, group_admin,user_a, user_b, created_at FROM chat WHERE is_group_chat = 'false' AND ((user_a = '{var1}' AND user_b = '{var2}') or (user_a = '{var2}' AND user_b = '{var1}')) AND deleted_at IS NULL`,
+  "Q107": `SELECT id, chat_name, is_group_chat, last_message, group_admin,user_a, user_b, 
+              created_at FROM chat 
+          WHERE is_group_chat = 'false' AND 
+          ((user_a = '{var1}' AND user_b = '{var2}') or (user_a = '{var2}' AND user_b = '{var1}')) 
+          AND deleted_at IS NULL`,
   "Q108": `INSERT INTO message( chat_id, sender, content) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
   "Q109": `UPDATE chat SET last_message = '{var1}', updated_at = '{var3}' WHERE id = '{var2}'  AND deleted_at IS NULL RETURNING *`,
   "Q110": `INSERT INTO chat_room_members ( room_id, user_id, group_name) VALUES('{var1}','{var2}','{var3}') RETURNING *`,
   "Q111": `SELECT id, chat_name, is_group_chat, last_message, group_admin,user_a, user_b, created_at FROM chat WHERE (user_a = '{var1}' or user_b = '{var1}') AND company_id = '{var2}' AND is_group_chat = '{var3}' AND deleted_at IS NULL`,
   "Q112": `SELECT id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at FROM chat WHERE id = '{var1}' AND deleted_at IS NULL `,
   "Q113": `SELECT u.id, u.full_name, u.avatar FROM chat_room_members AS cm 
-              INNER JOIN users AS u ON u.id = cm.user_id
+              LEFT JOIN users AS u ON u.id = cm.user_id
               WHERE room_id = '{var1}' AND cm.deleted_at IS NULL AND u.deleted_at IS NULL`,
   "Q114": `SELECT 
               sc.id,su.user_id,su.user_percentage,su.user_type,sc.customer_id,sc.target_amount,sc.slab_id,
               u.full_name, u.created_by
            FROM sales AS sc 
-           INNER JOIN sales_users AS su ON sc.id = su.sales_id 
-           INNER JOIN users AS u ON su.user_id = u.id 
+           LEFT JOIN sales_users AS su ON sc.id = su.sales_id 
+           LEFT JOIN users AS u ON su.user_id = u.id 
            WHERE sc.id = '{var1}' 
            AND sc.deleted_at IS NULL AND su.deleted_at IS NULL AND u.deleted_at IS NULL`,
   "Q115": `INSERT INTO chat(chat_name, is_group_chat, user_a, user_b, group_admin, sales_id, company_id) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}','{var6}','{var7}') RETURNING *`,
   "Q116": `SELECT id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin FROM chat WHERE id = '{var1}' AND company_id = '{var2}' AND is_group_chat = '{var3}' AND deleted_at IS NULL`,
   "Q117": `SELECT m.id, m.sender, m.content, m.chat_id, m.read_by, m.created_at, u.full_name,
-              u.avatar, u.id AS sender_id FROM message AS m INNER JOIN users AS u ON m.sender = u.id 
+              u.avatar, u.id AS sender_id FROM message AS m LEFT JOIN users AS u ON m.sender = u.id 
               WHERE m.id = '{var1}' AND m.deleted_at IS NULL`,
   "Q118": `SELECT m.id AS messageId, m.content, m.sender AS senderId, m.chat_id, m.read_by, m.created_at,
               u.full_name, u.avatar, c.id, c.chat_name, c.is_group_chat,
               c.group_admin, c.user_a, c.user_b, c.created_at as user_created_at FROM message AS m 
-              INNER JOIN users AS u ON m.sender = u.id
-              INNER JOIN chat AS c ON m.chat_id = c.id  WHERE chat_id = '{var1}' AND m.deleted_at IS NULL ORDER BY m.created_at DESC LIMIT 1`,
+              LEFT JOIN users AS u ON m.sender = u.id
+              LEFT JOIN chat AS c ON m.chat_id = c.id  WHERE chat_id = '{var1}' AND m.deleted_at IS NULL ORDER BY m.created_at DESC LIMIT 1`,
   "Q119": `SELECT m.id AS messageId,m.content,m.sender AS senderId, m.created_at,
              u.full_name, u.avatar FROM message AS m 
-             INNER JOIN users AS u ON m.sender = u.id
+             LEFT JOIN users AS u ON m.sender = u.id
             WHERE chat_id = '{var1}' AND m.deleted_at IS NULL ORDER BY m.created_at ASC `,
   "Q120": `SELECT id, chat_name, is_group_chat, user_a, user_b, last_message, group_admin, created_at, updated_at FROM chat WHERE sales_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
   "Q121": `SELECT room_id, user_id, group_name FROM chat_room_members WHERE user_id = '{var1}' AND deleted_at IS NULL`,
@@ -870,7 +881,7 @@ const db_sql = {
                 u1.is_main_admin, u1.created_by, u2.full_name AS creator_name 
               FROM 
                 users AS u1 
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u2 ON u2.id = u1.created_by  
               WHERE 
                 u1.created_by = '{var1}' AND u1.deleted_at IS NULL 
@@ -1252,7 +1263,7 @@ const db_sql = {
   "Q160": `UPDATE slabs SET deleted_at = '{var1}' WHERE slab_id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL`,
   "Q161": `SELECT * FROM slabs WHERE slab_id ='{var1}' AND deleted_at IS NULL ORDER BY slab_ctr ASC`,
   "Q162": `SELECT u.id, u.full_name, r.id as role_id,r.role_name, r.module_ids, r.reporter  FROM roles AS r 
-              INNER JOIN users AS u ON u.role_id = r.id 
+              LEFT JOIN users AS u ON u.role_id = r.id 
               WHERE r.id = '{var1}'  AND r.deleted_at IS NULL`,
   "Q163": `SELECT * FROM contact_us WHERE deleted_at IS NULL`,
   "Q164": `SELECT * from chat where is_group_chat = 'true' AND company_id = '{var1}' AND deleted_at IS NULL`,
@@ -1378,7 +1389,7 @@ const db_sql = {
                 u.full_name AS created_by
               FROM 
                 customer_company_employees AS l 
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u ON u.id = l.creator_id
               WHERE 
                 l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.pid IS NULL AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
@@ -1444,7 +1455,7 @@ const db_sql = {
                 u.full_name AS created_by
               FROM 
                 customer_company_employees AS l 
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u ON u.id = l.creator_id
               WHERE 
                 l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.pid IS NULL AND l.marketing_qualified_lead = true AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
@@ -1564,7 +1575,7 @@ const db_sql = {
                 u.full_name AS created_by
               FROM 
                 customer_company_employees AS l 
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u ON u.id = l.assigned_sales_lead_to
               WHERE 
               l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.pid IS NULL AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
@@ -1583,7 +1594,7 @@ const db_sql = {
               u.full_name AS created_by
             FROM 
               customer_company_employees AS l 
-            INNER JOIN 
+            LEFT JOIN 
               users AS u ON u.id = l.creator_id
             WHERE 
               l.company_id = '{var1}' AND l.emp_type = 'lead' AND l.pid IS NULL AND l.is_rejected = '{var5}' AND l.deleted_at IS NULL AND u.deleted_at IS NULL 
@@ -1657,7 +1668,7 @@ const db_sql = {
               u1.is_main_admin, u1.created_by, u2.full_name AS creator_name 
             FROM 
               users AS u1 
-            INNER JOIN 
+            LEFT JOIN 
               users AS u2 ON u2.id = u1.created_by  
             WHERE 
               u1.id = '{var1}' AND u1.deleted_at IS NULL 
@@ -1987,7 +1998,7 @@ const db_sql = {
                 AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               ORDER BY 
                 l.created_at DESC`,
-  
+
   "Q239": `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
@@ -2043,13 +2054,13 @@ const db_sql = {
                 u2.full_name AS transferd_back_to_name, t.sales_id, c.customer_name 
               FROM 
                 transfered_back_sales AS t
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u1 ON u1.id = t.transferd_back_by_id
-              INNER JOIN 
+              LEFT JOIN 
                 users AS u2 ON u2.id = t.transferd_back_to_id
-              INNER JOIN 
+              LEFT JOIN 
                 sales AS sc ON sc.id = t.sales_id
-              INNER JOIN 
+              LEFT JOIN 
                 customer_companies AS c ON sc.customer_id = c.id
               WHERE 
                 sales_id = '{var1}'`,
@@ -2293,7 +2304,7 @@ const db_sql = {
               p.end_of_life, p.currency, p.company_id, p.created_at, p.updated_at, p.user_id, u.full_name as created_by 
             FROM 
               products AS p
-            INNER JOIN 
+            LEFT JOIN 
               users AS u ON p.user_id = u.id
             WHERE 
               p.user_id IN ({var1}) AND p.deleted_at IS NULL
@@ -3275,7 +3286,7 @@ const db_sql = {
   "Q359": `SELECT assigned_to FROM forecast WHERE (id = '{var1}' OR pid = '{var1}') AND deleted_at IS NULL`,
   // "Q360":`SELECT * from imap_credentials WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
   "Q361": `UPDATE imap_credentials SET email = '{var1}', app_password = '{var2}', smtp_host = '{var3}', smtp_port = '{var4}', updated_at = '{var6}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *`,
-  "Q362":`SELECT se.event_id,ue.event_name, se.date, se.start_time, se.end_time, se.lead_name, 
+  "Q362": `SELECT se.event_id,ue.event_name, se.date, se.start_time, se.end_time, se.lead_name, 
               se.lead_email, se.description as lead_description, 
               se.user_id, u.full_name AS creator_name, u.email_address AS creator_email,
               ue.meet_link, ue.description as creator_description, ue.duration
@@ -3283,7 +3294,7 @@ const db_sql = {
           LEFT JOIN users AS u ON u.id = se.user_id
           LEFT JOIN pro_user_events AS ue ON ue.id = se.event_id
           WHERE se.event_id = '{var1}' AND se.deleted_at IS NULL`,
-  "Q363":`SELECT  
+  "Q363": `SELECT  
             su.user_id, 
             u.full_name,
             array_agg(DISTINCT su.sales_id) AS sales_ids
@@ -3299,8 +3310,8 @@ const db_sql = {
             AND s.closed_at IS NOT NULL
           GROUP BY 
             su.user_id,
-            u.full_name;`, 
-  "Q364" : `SELECT
+            u.full_name;`,
+  "Q364": `SELECT
               DISTINCT(s.id),
               c.customer_name,
               s.created_at,
@@ -3321,12 +3332,12 @@ const db_sql = {
               s.created_at,
               s.closed_at
             ORDER BY
-              s.id ASC`,  
-  "Q365":`select sales_id,COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) AND user_id = '{var1}' GROUP BY sales_id`,
-  "Q366":`SELECT  
+              s.id ASC`,
+  "Q365": `select sales_id,COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) AND user_id = '{var1}' GROUP BY sales_id`,
+  "Q366": `SELECT  
             su.user_id, 
             u.full_name,
-            array_agg(DISTINCT su.sales_id) AS sales_ids
+            array_agg(DISTINCT su.sales_id) AS sales_ids  
           FROM 
             sales_users su
           LEFT JOIN 
@@ -3339,14 +3350,274 @@ const db_sql = {
             AND s.closed_at IS NOT NULL
           GROUP BY 
             su.user_id,
-            u.full_name;`, 
-  "Q367":`SELECT recognized_amount FROM recognized_revenue WHERE sales_id IN ({var1}) AND deleted_at IS NULL`,
-  "Q368":`SELECT * FROM customer_company_employees WHERE customer_company_id = '{var1}' AND deleted_at IS NULL`,
-  "Q369":`SELECT id FROM pro_scheduled_events WHERE event_id = '{var1}' AND deleted_at IS NULL LIMIT 1`,
-  "Q370":`SELECT id FROM pro_user_events WHERE availability_id = '{var1}' AND deleted_at IS NULL LIMIT 1`,
-  "Q371":`SELECT * FROM email_templates WHERE is_master = true AND deleted_at IS NULL`
+            u.full_name;`,
+  "Q367": `SELECT recognized_amount FROM recognized_revenue WHERE sales_id IN ({var1}) AND deleted_at IS NULL`,
+  "Q368": `SELECT * FROM customer_company_employees WHERE customer_company_id = '{var1}' AND deleted_at IS NULL`,
+  "Q369": `SELECT id FROM pro_scheduled_events WHERE event_id = '{var1}' AND deleted_at IS NULL LIMIT 1`,
+  "Q370": `SELECT id FROM pro_user_events WHERE availability_id = '{var1}' AND deleted_at IS NULL LIMIT 1`,
+  "Q371": `SELECT * FROM email_templates WHERE is_master = true AND deleted_at IS NULL`,
+  "Q372": `UPDATE sales SET target_amount = '{var1}', booking_commission = '{var2}' WHERE id = '{var3}' AND deleted_At IS NULL RETURNING *`,
+  "Q373": `SELECT rc.id, rc.recognized_date, rc.commission_amount, rc.user_type, u.full_name AS sales_rep_name,
+            c.company_name, c.company_logo, cc.customer_name, s.closed_at, s.sales_type
+          FROM recognized_commission AS rc 
+          LEFT JOIN users as u ON u.id = rc.user_id
+          LEFT JOIN companies as c ON c.id = u.company_id
+          LEFT JOIN sales as s ON s.id = rc.sales_id
+          LEFT JOIN customer_companies as cc ON cc.id = s.customer_id
+          WHERE rc.user_id = '{var1}' 
+          AND TO_DATE(rc.recognized_date, 'MM-DD-YYYY') BETWEEN TO_DATE('{var2}', 'MM-DD-YYYY') AND TO_DATE('{var3}', 'MM-DD-YYYY')
+            AND rc.deleted_at IS NULL AND u.deleted_at IS NULL`,
+  "Q374": `INSERT INTO recognized_commission(user_id, sales_id, company_id, commission_amount,user_type, recognized_date, recognized_amount)
+          VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}','{var7}') RETURNING *`,
+  "Q375": `UPDATE notifications SET is_read = true WHERE user_id = '{var1}' RETURNING *`,
+  "Q376": `SELECT SUM(commission_amount::DECIMAL) as commission FROM recognized_commission
+            WHERE 
+              sales_id = '{var1}' 
+            AND 
+              deleted_at IS NULL`,
+  "Q390": `UPDATE companies SET quarter = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
+  "Q393": `SELECT start_date FROM pro_quarter_config WHERE company_id = '{var1}' AND quarter = '{var2}' AND deleted_at IS NULL`,
+  "Q394": `UPDATE companies SET company_address = '{var1}', updated_at = '{var2}', quarter = '{var4}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
+  "Q395":`SELECT
+        COUNT(*) AS total_lead_count,
+        COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS converted_lead_count
+      FROM
+        customer_company_employees
+      WHERE
+        creator_id = '{var3}'
+        AND created_at >= '{var1}'
+        AND created_at <= '{var2}'
+        AND title IS NOT NULL
+        AND deleted_at IS NULL;` ,
+      "Q396": `SELECT
+          COUNT(*) AS total_lead_count,
+          COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END),0) AS converted_lead_count
+        FROM
+          customer_company_employees
+        WHERE
+          creator_id IN ({var3})
+          AND created_at >= '{var1}'
+          AND created_at <= '{var2}'
+          AND title IS NOT NULL
+          AND deleted_at IS NULL`,
+      "Q397":`SELECT
+        COUNT(*) AS total_sales_count,
+        COALESCE(SUM(CASE WHEN closed_at IS NOT NULL THEN 1 ELSE 0 END),0) AS closed_sales_count
+      FROM
+        sales
+      WHERE
+        created_at BETWEEN '{var1}' AND '{var2}'
+        AND id IN ({var3})
+        AND deleted_at IS NULL` ,
+      "Q398":` SELECT SUM(rr.recognized_amount::numeric) AS total_amount
+        FROM 
+          recognized_revenue AS rr
+        WHERE 
+          rr.sales_id IN ({var3})
+        AND 
+          rr.created_at >= '{var1}'
+        AND 
+          rr.created_at <= '{var2}'
+        AND 
+          rr.deleted_at IS NULL;`,
+      "Q399":`WITH months AS (
+            SELECT 1 AS month_number, '{var1}'::timestamp with time zone AS start_date, '{var2}'::timestamp with time zone AS end_date UNION
+            SELECT 2 AS month_number, '{var3}'::timestamp with time zone AS start_date, '{var4}'::timestamp with time zone AS end_date UNION
+            SELECT 3 AS month_number, '{var5}'::timestamp with time zone AS start_date, '{var6}'::timestamp with time zone AS end_date
+        )
+        SELECT
+            COALESCE(SUM(r.recognized_amount::numeric), 0) AS total_amount,
+            m.month_number
+        FROM
+            months m
+        LEFT JOIN
+            recognized_revenue r ON r.sales_id IN ({var7})
+            AND r.created_at BETWEEN m.start_date AND m.end_date AND r.deleted_at IS NULL
+        GROUP BY
+            m.month_number
+        ORDER BY
+            m.month_number`,
+      "Q400":`SELECT sales_ids
+        FROM (
+          SELECT
+            array_agg(DISTINCT su.sales_id) AS sales_ids
+          FROM
+            sales_users su
+          LEFT JOIN
+            users u ON su.user_id = u.id
+          LEFT JOIN
+            sales s ON su.sales_id = s.id
+          WHERE
+            su.user_type = 'captain'
+            AND su.user_id IN ({var1})
+            AND su.deleted_at IS NULL
+            AND s.closed_at IS NOT NULL
+            AND s.deleted_at IS NULL
+            AND u.deleted_at IS NULL
+        ) subquery
+        WHERE sales_ids IS NOT NULL AND array_length(sales_ids, 1) > 0; `,
+      "Q401":`SELECT
+        COUNT(*) AS total_sales_activities,
+        COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS total_deals_created
+      FROM
+        customer_company_employees
+      WHERE
+        creator_id = '{var3}'
+        AND created_at >= '{var1}'
+        AND created_at <= '{var2}'
+        AND deleted_at IS NULL;` ,
+      "Q402":`SELECT
+      COUNT(*) AS total_sales_activities,
+        COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS total_deals_created
+      FROM
+        customer_company_employees
+      WHERE
+        creator_id IN ({var3})
+        AND created_at >= '{var1}'
+        AND created_at <= '{var2}'
+        AND deleted_at IS NULL;`,
+      "Q403":`SELECT su.sales_id, ARRAY_AGG(su.id) AS ids, cc.customer_name
+      FROM sales_users su
+      LEFT JOIN sales s ON su.sales_id = s.id
+      LEFT JOIN customer_companies cc ON s.customer_id = cc.id
+      WHERE su.sales_id IN ({var3})
+        AND su.user_type = 'support'
+        AND s.created_at BETWEEN '{var1}' AND '{var2}'
+        AND s.deleted_at IS NULL
+        AND su.deleted_at IS NULL
+        AND cc.deleted_at IS NULL
+      GROUP BY su.sales_id, su.user_type, cc.customer_name
+      ORDER BY su.sales_id;
+        `,
+      "Q404":`SELECT  
+        su.user_id, 
+        u.full_name,
+        array_agg(DISTINCT su.sales_id) AS sales_ids
+      FROM 
+        sales_users su
+      LEFT JOIN 
+        users u ON su.user_id = u.id
+      LEFT JOIN
+        sales s ON su.sales_id = s.id
+      WHERE 
+        su.user_type = 'captain' AND
+        su.user_id = '{var1}' AND su.deleted_at IS NULL
+      GROUP BY 
+        su.user_id,
+        u.full_name;`,
+        
+      "Q405":`SELECT
+        su.sales_id,
+        ARRAY_AGG(su.id) AS ids,
+        s.target_amount,
+        cc.customer_name,
+        COALESCE(fn.notes, '{}'::TEXT[]) AS notes
+      FROM
+        sales_users su
+        LEFT JOIN sales s ON su.sales_id = s.id
+        LEFT JOIN customer_companies cc ON s.customer_id = cc.id
+        LEFT JOIN (
+          SELECT sales_id, ARRAY_AGG(notes) AS notes
+          FROM follow_up_notes
+          GROUP BY sales_id
+        ) AS fn ON s.id = fn.sales_id
+      WHERE
+        su.sales_id IN ({var3})
+        AND su.user_type = 'support'
+        AND s.created_at BETWEEN '{var1}' AND '{var2}'
+        AND su.deleted_at IS NULL
+        AND s.deleted_at IS NULL
+        AND cc.deleted_at IS NULL
+        AND s.closed_at IS NULL
+      GROUP BY
+        su.sales_id,
+        su.user_type,
+        cc.customer_name,
+        fn.notes,
+        target_amount
+      ORDER BY
+        su.sales_id;
+      `,
+      "Q406":`SELECT rr.sales_id, CAST(rr.recognized_amount AS VARCHAR) AS recognized_amount, cc.customer_name, s.target_amount
+              FROM recognized_revenue AS rr
+              LEFT JOIN sales AS s ON s.id = rr.sales_id
+              LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
+              WHERE rr.sales_id IN ({var3})
+              AND s.created_at BETWEEN '{var1}' AND '{var2}'
+              AND s.deleted_at IS NULL
+              AND cc.deleted_at IS NULL
 
+              UNION ALL
 
+              SELECT s.id AS sales_id, CAST('0' AS VARCHAR) AS recognized_amount, cc.customer_name, s.target_amount
+              FROM sales AS s
+              LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
+              WHERE s.id IN ({var3})
+              AND s.created_at BETWEEN '{var1}' AND '{var2}'
+              AND s.id NOT IN (SELECT sales_id FROM recognized_revenue)
+              AND s.deleted_at IS NULL
+              AND cc.deleted_at IS NULL;
+              `,
+      "Q407":`SELECT amount FROM forecast WHERE assigned_to = '{var1}' AND timeline = 'Annual' AND deleted_at IS NULL AND pid != '0' `,
+      "Q408":`SELECT sl.id, sl.target_amount, sl.sales_id, sl.target_closing_date, cc.customer_name
+      FROM sales_logs sl
+      LEFT JOIN customer_companies cc ON sl.customer_id = cc.id
+      WHERE sl.sales_id IN ({var3})
+      AND sl.created_at BETWEEN '{var1}' AND '{var2}'
+        AND sl.deleted_at IS NULL
+        AND cc.deleted_at IS NULL
+        AND sl.target_closing_date IS NOT NULL
+        AND sl.target_closing_date != '';`,
+      "Q409":`SELECT  
+        su.user_id, 
+        u.full_name,
+        array_agg(DISTINCT su.sales_id) AS sales_ids
+      FROM 
+        sales_users su
+      LEFT JOIN 
+        users u ON su.user_id = u.id
+      LEFT JOIN
+        sales s ON su.sales_id = s.id
+      WHERE 
+        su.user_type = 'captain' AND
+        su.user_id IN ({var1}) AND su.deleted_at IS NULL
+      GROUP BY 
+        su.user_id,
+        u.full_name;`,
+      "Q410":`SELECT amount FROM forecast WHERE assigned_to IN ({var1}) AND timeline = 'Annual' AND deleted_at IS NULL AND pid != '0'` ,
+      "Q411":`SELECT
+            s.customer_id,
+            s.target_amount,
+            cc.customer_name,
+            pis.product_id,
+            pis.sales_id,
+            array_agg(p.product_name) AS product_names,
+            p.end_of_life
+          FROM
+            sales s
+          LEFT JOIN
+            product_in_sales pis ON s.id = pis.sales_id
+          LEFT JOIN
+            products p ON pis.product_id = p.id
+          LEFT JOIN
+            customer_companies cc ON s.customer_id = cc.id
+          WHERE
+            s.id IN ({var1})
+            AND TO_DATE(p.end_of_life, 'MM-DD-YYYY') BETWEEN DATE '{var2}' AND DATE '{var3}'
+            AND s.deleted_at IS NULL
+            AND pis.deleted_at IS NULL
+            AND p.deleted_at IS NULL
+          GROUP BY
+            s.customer_id,
+            s.target_amount,
+            cc.customer_name,
+            pis.product_id,
+            pis.sales_id,
+          p.end_of_life;`,
+      "Q412":`SELECT id,customer_id,target_amount FROM sales WHERE id IN({var3})
+      AND created_at BETWEEN '{var1}' AND '{var2}'
+      AND deleted_at is NULL
+      AND closed_at IS NULL`
 }
 
 function dbScript(template, variables) {

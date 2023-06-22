@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { mysql_real_escape_string, getUserAndSubUser, notificationsOperations } = require('../utils/helper')
+const { mysql_real_escape_string, getUserAndSubUser, notificationsOperations, calculateCommission, getParentUserList } = require('../utils/helper')
 const moduleName = process.env.SALES_MODULE
 const customerModule = process.env.CUSTOMERS_MODULE
 const userModule = process.env.USERS_MODULE
@@ -112,39 +112,13 @@ module.exports.createSales = async (req, res) => {
             revenueId = (revenueId == '') ? '' : revenueId
             targetAmount = (targetAmount == '') ? '0' : targetAmount
 
-            let totalCommission = 0;
-            let s4 = dbScript(db_sql['Q161'], { var1: slabId })
-            let slab = await connection.query(s4)
-            let remainingAmount = Number(targetAmount);
-            let commission = 0
-            //if remainning amount is 0 then no reason to check 
-            for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
-                let slab_percentage = Number(slab.rows[i].percentage)
-                let slab_maxAmount = Number(slab.rows[i].max_amount)
-                let slab_minAmount = Number(slab.rows[i].min_amount)
-                if (slab.rows[i].is_max) {
-                    // Reached the last slab
-                    commission += ((slab_percentage / 100) * remainingAmount)
-                    break;
-                }
-                else {
-                    // This is not the last slab
-                    let diff = slab_minAmount == 0 ? 0 : 1
-                    let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-                    slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-                    commission += ((slab_percentage / 100) * slab_diff)
-                    remainingAmount -= slab_diff
-                    if (remainingAmount <= 0) {
-                        break;
-                    }
-                }
-            }
-            totalCommission = totalCommission + commission
+            let totalCommission = await calculateCommission(slabId, targetAmount)
 
             let _dt = new Date().toISOString();
 
             let s5 = dbScript(db_sql['Q53'], { var1: customerId, var2: commissionSplitId, var3: is_overwrite, var4: checkPermission.rows[0].company_id, var5: businessId, var6: revenueId, var7: mysql_real_escape_string(qualification), var8: is_qualified, var9: targetAmount, var10: targetClosingDate, var11: salesType, var12: subscriptionPlan, var13: recurringDate, var14: currency, var15: userId, var16: slabId, var17: leadId, var18: totalCommission, var19: is_qualified ? _dt : 'null', var20: is_service_performed, var21: mysql_real_escape_string(service_perform_note), var22: is_service_performed ? _dt : 'null' })
             let createSales = await connection.query(s5)
+
             let salesUsersForLog = [];
             let s7 = dbScript(db_sql['Q57'], { var1: captainId, var2: Number(captainPercentage), var3: process.env.CAPTAIN, var4: commissionSplitId, var5: createSales.rows[0].id, var6: checkPermission.rows[0].company_id })
             let addSalesCaptain = await connection.query(s7)
@@ -160,7 +134,7 @@ module.exports.createSales = async (req, res) => {
                     let s8 = dbScript(db_sql['Q57'], { var1: supporterData.id, var2: Number(supporterData.percentage), var3: process.env.SUPPORT, var4: commissionSplitId, var5: createSales.rows[0].id, var6: checkPermission.rows[0].company_id })
                     addSalesSupporter = await connection.query(s8)
                     supporterIds.push(addSalesSupporter.rows[0].id)
-                    if (addSalesCaptain.rowCount > 0) {
+                    if (addSalesSupporter.rowCount > 0) {
                         let s8 = dbScript(db_sql['Q8'], { var1: addSalesSupporter.rows[0].user_id })
                         let userName = await connection.query(s8)
                         addSalesSupporter.rows[0].user_name = (userName.rows[0].full_name) ? mysql_real_escape_string(userName.rows[0].full_name) : "";
@@ -452,34 +426,7 @@ module.exports.updateSales = async (req, res) => {
 
             let _dt = new Date().toISOString();
 
-            let totalCommission = 0;
-            let s4 = dbScript(db_sql['Q161'], { var1: slabId })
-            let slab = await connection.query(s4)
-            let remainingAmount = Number(targetAmount);
-            let commission = 0
-            //if remainning amount is 0 then no reason to check 
-            for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
-                let slab_percentage = Number(slab.rows[i].percentage)
-                let slab_maxAmount = Number(slab.rows[i].max_amount)
-                let slab_minAmount = Number(slab.rows[i].min_amount)
-                if (slab.rows[i].is_max) {
-                    // Reached the last slab
-                    commission += ((slab_percentage / 100) * remainingAmount)
-                    break;
-                }
-                else {
-                    // This is not the last slab
-                    let diff = slab_minAmount == 0 ? 0 : 1
-                    let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-                    slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-                    commission += ((slab_percentage / 100) * slab_diff)
-                    remainingAmount -= slab_diff
-                    if (remainingAmount <= 0) {
-                        break;
-                    }
-                }
-            }
-
+            let totalCommission = await calculateCommission(slabId, targetAmount)
 
             let s11 = dbScript(db_sql['Q229'], { var1: salesId })
             let findSales = await connection.query(s11)
@@ -489,7 +436,7 @@ module.exports.updateSales = async (req, res) => {
             let performedDate = (!is_service_performed) ? 'null' :
                 (findSales.rows[0].service_performed_at !== null && is_service_performed) ? new Date(findSales.rows[0].service_performed_at).toISOString() : _dt;
 
-            totalCommission = totalCommission + commission
+
             let s5 = dbScript(db_sql['Q62'], { var1: customerId, var2: commissionSplitId, var3: is_overwrite, var4: _dt, var5: salesId, var6: checkPermission.rows[0].company_id, var7: businessId, var8: revenueId, var9: mysql_real_escape_string(qualification), var10: is_qualified, var11: targetAmount, var12: targetClosingDate, var14: salesType, var15: subscriptionPlan, var16: recurringDate, var17: currency, var18: slabId, var19: leadId, var20: totalCommission, var21: committedDate, var22: is_service_performed, var23: mysql_real_escape_string(service_perform_note), var24: performedDate })
             let updateSales = await connection.query(s5)
 
@@ -1184,36 +1131,18 @@ module.exports.addRecognizedRevenue = async (req, res) => {
             let s5 = dbScript(db_sql['Q256'], { var1: salesId })
             let recognizeRevenue = await connection.query(s5)
 
-            //get slab's list here
-            let totalCommission = 0;
-            let s4 = dbScript(db_sql['Q161'], { var1: findSales.rows[0].slab_id })
-            let slab = await connection.query(s4)
+            let totalCommission = await calculateCommission(findSales.rows[0].slab_id, recognizeRevenue.rows[0].amount)
 
-            let remainingAmount = Number(recognizeRevenue.rows[0].amount);
-            let commission = 0
-            //if remainning amount is 0 then no reason to check 
-            for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
-                let slab_percentage = Number(slab.rows[i].percentage)
-                let slab_maxAmount = Number(slab.rows[i].max_amount)
-                let slab_minAmount = Number(slab.rows[i].min_amount)
-                if (slab.rows[i].is_max) {
-                    // Reached the last slab
-                    commission += ((slab_percentage / 100) * remainingAmount)
-                    break;
-                }
-                else {
-                    // This is not the last slab
-                    let diff = slab_minAmount == 0 ? 0 : 1
-                    let slab_diff = (slab_maxAmount - slab_minAmount + diff)
-                    slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff
-                    commission += ((slab_percentage / 100) * slab_diff)
-                    remainingAmount -= slab_diff
-                    if (remainingAmount <= 0) {
-                        break;
-                    }
-                }
+            let commissionOncurrentAmount = 0
+            let s11 = dbScript(db_sql['Q376'], { var1: salesId });
+            let previousCommission = await connection.query(s11);
+
+            if (previousCommission.rowCount > 0) {
+                commissionOncurrentAmount = Number(totalCommission) - Number(previousCommission.rows[0].commission)
+            } else {
+                commissionOncurrentAmount = Number(totalCommission)
             }
-            totalCommission = totalCommission + commission;
+
             for (let comData of findSales.rows) {
                 let userCommission = Number(totalCommission * Number(comData.user_percentage / 100))
 
@@ -1235,6 +1164,13 @@ module.exports.addRecognizedRevenue = async (req, res) => {
 
                 let notification_typeId = findSales.rows[0].id;
                 await notificationsOperations({ type: 6, msg: 6.1, notification_typeId, notification_userId }, userId);
+
+                let recognizedUserCommission = Number(commissionOncurrentAmount * Number(comData.user_percentage / 100))
+
+                recognizedUserCommission = recognizedUserCommission.toFixed(2)
+
+                let s10 = dbScript(db_sql['Q374'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: Number(recognizedUserCommission), var5: comData.user_type, var6: date, var7: amount })
+                let addRecognizedCommission = await connection.query(s10)
             }
 
             let s6 = dbScript(db_sql['Q253'], { var1: totalCommission, var2: salesId })
@@ -1715,6 +1651,128 @@ module.exports.commissionDetails = async (req, res) => {
                 success: false,
                 message: "Empty User commission details",
                 data: []
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.commissionReport = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { salesRepId, startDate, endDate } = req.query
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0) {
+
+            let s2 = dbScript(db_sql['Q8'], { var1: salesRepId })
+            let finduser = await connection.query(s2)
+
+            let s3 = dbScript(db_sql['Q12'], { var1: finduser.rows[0].role_id })
+            let roleData = await connection.query(s3)
+            let managerName = ''
+            if (roleData.rows[0].reporter) {
+                let parentList = await getParentUserList(roleData.rows[0], findAdmin.rows[0].company_id);
+                for (let parent of parentList) {
+                    if (parent.role_id == roleData.rows[0].reporter) {
+                        managerName = parent.full_name
+                    }
+                }
+
+            }
+
+            let s4 = dbScript(db_sql['Q373'], { var1: salesRepId, var2: startDate, var3: endDate })
+            let _dt = new Date().toISOString()
+            let commissionData = await connection.query(s4)
+            if (commissionData.rowCount > 0) {
+                let data = {
+                    salesRepName: commissionData.rows[0].sales_rep_name,
+                    companyName: commissionData.rows[0].company_name,
+                    companyLogo: commissionData.rows[0].company_logo,
+                    currentDate: _dt,
+                    fromDate: startDate,
+                    toDate: endDate,
+                    managerName: managerName,
+                    report: [],
+                    totalPerpetualCommissionEarned: 0,
+                    totalSubscriptionCommissionEarned: 0
+                };
+
+                for (let row of commissionData.rows) {
+                    data.report.push({
+                        id: row.id,
+                        customerName: row.customer_name,
+                        date: row.recognized_date,
+                        dealType: row.sales_type,
+                        salesRole: row.user_type,
+                        earnedCommission: Number(row.commission_amount)
+                    });
+
+                    if (row.sales_type === 'Perpetual') {
+                        data.totalPerpetualCommissionEarned += Number(row.commission_amount);
+                    } else if (row.sales_type === 'Subscription') {
+                        data.totalSubscriptionCommissionEarned += Number(row.commission_amount);
+                    }
+
+                    data.totalCommission = data.totalPerpetualCommissionEarned + data.totalSubscriptionCommissionEarned
+                }
+                if (data) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Commission Report",
+                        data: data
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty Commission Report",
+                        data: {
+                            salesRepName: "",
+                            companyName: "",
+                            companyLogo: "",
+                            currentDate: "",
+                            fromDate: "",
+                            toDate: "",
+                            managerName: "",
+                            report: [],
+                            totalPerpetualCommissionEarned: 0,
+                            totalSubscriptionCommissionEarned: 0,
+                            totalCommission: 0
+                        }
+                    })
+                }
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Commission Report",
+                    data: {
+                        salesRepName: "",
+                        companyName: "",
+                        companyLogo: "",
+                        currentDate: "",
+                        fromDate: "",
+                        toDate: "",
+                        managerName: "",
+                        report: [],
+                        totalPerpetualCommissionEarned: 0,
+                        totalSubscriptionCommissionEarned: 0,
+                        totalCommission: 0
+                    }
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "User not found"
             })
         }
     } catch (error) {

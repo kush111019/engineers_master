@@ -13,19 +13,19 @@ const moment = require('moment-timezone');
 
 module.exports.checkParams = (req, res, next) => {
     const params = req.body || req.query || req.params;
-    
+
     for (const key in params) {
         const value = params[key];
         if (value === undefined || value === null || value === 'undefined') {
-          res.status(400).json({ message: 'Please provide all parameters.' });
-          return;
+            res.status(400).json({ message: 'Please provide all parameters.' });
+            return;
         }
-      }
-    
+    }
+
     // If all parameters are valid, call the next middleware function or route handler
     next();
 }
-  
+
 module.exports.mysql_real_escape_string = (str) => {
     return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
         switch (char) {
@@ -683,7 +683,7 @@ module.exports.tranformAvailabilityArray = async (arr) => {
                         updated_at: curr.updated_at,
                         deleted_at: curr.deleted_at,
                         checked: curr.checked,
-                        isAvailabilityAdded : curr.isAvailabilityAdded,
+                        isAvailabilityAdded: curr.isAvailabilityAdded,
                         time_slot: (curr.checked) ? [{
                             id: curr.id,
                             start_time: curr.start_time,
@@ -792,6 +792,171 @@ module.exports.convertTimeToTargetedTz = async (startTime, endTime, timezone, da
     };
 }
 
+
+module.exports.calculateCommission = async (slabId, amount) => {
+    let totalCommission = 0; //findSales.rows[0].slab_id
+    let s4 = dbScript(db_sql['Q161'], { var1: slabId })
+    let slab = await connection.query(s4)
+
+    let remainingAmount = Number(amount); //recognizeRevenue.rows[0].amount  //100000 //95000 //90000
+    let commission = 0
+    //if remainning amount is 0 then no reason to check 
+    for (let i = 0; i < slab.rows.length && remainingAmount > 0; i++) {
+        let slab_percentage = Number(slab.rows[i].percentage) //3  //5 //7
+        let slab_maxAmount = Number(slab.rows[i].max_amount) //5000  //10000 //100000
+        let slab_minAmount = Number(slab.rows[i].min_amount) //0  //5001 //10001
+        if (slab.rows[i].is_max) {
+            // Reached the last slab
+            commission += ((slab_percentage / 100) * remainingAmount)
+            break;
+        }
+        else {
+            // This is not the last slab
+            let diff = slab_minAmount == 0 ? 0 : 1   //0 //1 //1
+            let slab_diff = (slab_maxAmount - slab_minAmount + diff) //5000-0+0 //10000-5001+1 //10000-10001 + 1
+            slab_diff = (slab_diff > remainingAmount) ? remainingAmount : slab_diff  //5000 //5000 //90000
+            commission += ((slab_percentage / 100) * slab_diff) //(0+3/100)*5000 = 150 //250 //6300 =>6700
+            remainingAmount -= slab_diff //100000-5000 // 95000-5000 //90000-90000
+            if (remainingAmount <= 0) {
+                break;
+            }
+        }
+    }
+    totalCommission = totalCommission + commission;
+
+    return totalCommission
+}
+
+module.exports.calculateQuarters = async (startDate) => {
+    console.log(startDate);
+    const quarters = [];
+    const startUtcDate = new Date(startDate);
+    const startLocalDate = new Date(startUtcDate.toLocaleDateString());
+
+    const startYear = startLocalDate.getFullYear();
+    const startMonth = startLocalDate.getMonth() + 1; // Add 1 because months are zero-based
+    const startDay = startLocalDate.getDate();
+
+    for (let i = 0; i < 4; i++) {
+        const quarterStartDate = new Date(startYear, startMonth - 1 + (i * 3), startDay);
+        const quarterEndDate = new Date(startYear, startMonth - 1 + (i * 3) + 3, startDay - 1);
+        const quarterName = `${i + 1}`;
+
+        quarters.push({
+            start_date: quarterStartDate.toISOString(),
+            end_date: quarterEndDate.toISOString(),
+            quarter: quarterName
+        });
+
+    }
+    return quarters;
+};
+
+module.exports.getQuarterMonthsDates = async(start_date, end_date) => {
+
+    const startDate = new Date(start_date);
+    const endDate = new Date(end_date);
+
+    const startMonth = startDate.getMonth();
+    const endMonth = endDate.getMonth();
+
+    const dates = [];
+
+    for (let month = startMonth; month <= endMonth; month++) {
+      const tempDate = new Date(startDate);
+      tempDate.setMonth(month);
+      const startOfMonth = new Date(tempDate.getFullYear(), tempDate.getMonth(), 1);
+      const endOfMonth = new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0);
+
+      dates.push({
+        start_date: startOfMonth.toISOString(),
+        end_date: endOfMonth.toISOString()
+      });
+    }
+
+    return dates;
+};
+
+
+
+module.exports.calculateEOLProducts = async(resultSet) => {
+    // Object to store combined data by sales_id
+   const combinedData = {};
+   
+   // Process the result set
+   for (const result of resultSet) {
+     const { sales_id, customer_name, product_names, end_of_life, target_amount } = result;
+   
+     // If sales_id already exists in combinedData, append product_names and end_of_life
+     if (combinedData[sales_id]) {
+       combinedData[sales_id].product_names.push(...product_names);
+       combinedData[sales_id].end_of_life.push(end_of_life);
+     } else {
+       // Create a new entry in combinedData for the sales_id
+       combinedData[sales_id] = {
+         sales_id,
+         customer_name,
+         target_amount,
+         product_names: [...product_names],
+         end_of_life: [end_of_life]
+       };
+     }
+   }
+   
+   // Convert combinedData object to an array
+   const combinedResult = Object.values(combinedData);
+   
+   const highRiskEolSale = [];
+   const lowRiskEolSale = [];
+   
+   // Get the current date
+   const currentDate = new Date();
+   
+   // Iterate over each sale
+   combinedResult.forEach((sale) => {
+     const { sales_id, customer_name, product_names, end_of_life,target_amount } = sale;
+   
+     // Check if product_names and end_of_life exist
+     if (product_names && end_of_life) {
+       // Flag to track if any product is within 15 days of end_of_life
+       let isHighRisk = false;
+   
+       // Iterate over each product
+       for (let i = 0; i < product_names.length; i++) {
+         const eolDateParts = end_of_life[i].split(/[/-]/);
+         const eolDate = new Date(
+           Number(eolDateParts[2]),
+           Number(eolDateParts[0]) - 1,
+           Number(eolDateParts[1])
+         );
+   
+         // Calculate the difference in days
+         const timeDiff = eolDate.getTime() - currentDate.getTime();
+         const diffInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+   
+         // Check if the product is within 15 days of end_of_life
+         if (diffInDays <= 15) {
+           isHighRisk = true;
+           break;
+         }
+       }
+   
+       // Categorize the sale based on the end_of_life of products
+       if (isHighRisk) {
+         highRiskEolSale.push({ sales_id, customer_name, target_amount });
+       } else {
+         lowRiskEolSale.push({ sales_id, customer_name, target_amount });
+       }
+     } else {
+       // Handle the case where product_names or end_of_life is missing
+       lowRiskEolSale.push({ sales_id, customer_name, target_amount });
+     }
+   });
+   
+   
+     return { highRiskEolSale, lowRiskEolSale };
+}
+  
 
 
 

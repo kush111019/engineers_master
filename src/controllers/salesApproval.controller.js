@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { mysql_real_escape_string, getUserAndSubUser, notificationsOperations, getParentUserList } = require('../utils/helper')
+const { mysql_real_escape_string, getUserAndSubUser, notificationsOperations, getParentUserList, calculateCommission } = require('../utils/helper')
 const moduleName = process.env.SALES_MODULE
 const customerModule = process.env.CUSTOMERS_MODULE
 const userModule = process.env.USERS_MODULE
@@ -159,7 +159,6 @@ module.exports.acceptOrRejectApproveRequestForSales = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
 
-        // if (checkPermission.rows[0].permission_to_create) {
         let _dt = new Date().toISOString();
 
         let s2 = dbScript(db_sql['Q294'], { var1: _dt, var2: approval_status, var3: sales_id })
@@ -171,6 +170,19 @@ module.exports.acceptOrRejectApproveRequestForSales = async (req, res) => {
             // add notification in notification list
             let notification_userId = [updateSalesApprovalStatus.rows[0].requested_user_id];
             if (approval_status == 'Accepted') {
+                let s4 = dbScript(db_sql['Q296'], { var1: approval_id, var2: sales_id })
+                let findApproval = await connection.query(s4);
+
+                let s5 = dbScript(db_sql['Q229'], { var1: sales_id });
+                let findSales = await connection.query(s5);
+
+                let discountedAmount = (Number(findSales.rows[0].target_amount) - (Number(findSales.rows[0].target_amount) * (Number(findApproval.rows[0].percentage) / 100)));
+
+                let totalCommission = await calculateCommission(findSales.rows[0].slab_id,discountedAmount )
+
+                let s7 = dbScript(db_sql['Q372'], { var1: discountedAmount, var2: totalCommission, var3: sales_id })
+                let updatedTargetAmount = await connection.query(s7)
+
                 await notificationsOperations({ type: 1, msg: 1.7, notification_typeId, notification_userId }, userId);
             } else {
                 await notificationsOperations({ type: 1, msg: 1.8, notification_typeId, notification_userId }, userId);

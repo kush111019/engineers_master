@@ -524,8 +524,8 @@ module.exports.updateUser = async (req, res) => {
             //update user details
             let s4 = dbScript(db_sql['Q22'], { var1: mysql_real_escape_string(emailAddress), var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: checkPermission.rows[0].company_id, var10: isAdmin, var11: isProUser })
             let updateUser = await connection.query(s4)
-            await connection.query('COMMIT')
             if (updateUser.rowCount > 0) {
+            await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
@@ -572,8 +572,8 @@ module.exports.lockUserAccount = async (req, res) => {
             //update user status is locked here
             let s4 = dbScript(db_sql['Q30'], { var1: isLocked, var2: userId, var3: _dt })
             let updateUser = await connection.query(s4)
-            await connection.query('COMMIT')
             if (updateUser.rowCount > 0) {
+            await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,

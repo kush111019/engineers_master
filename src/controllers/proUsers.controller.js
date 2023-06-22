@@ -9,8 +9,8 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
-const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults } = require('../utils/helper')
-const { issueJWT } = require("../utils/jwt");
+const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults, getParentUserList, getUserAndSubUser, calculateQuarters, getQuarterMonthsDates, calculateEOLProducts } = require('../utils/helper')
+const { issueJWTForPro } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
 const nodemailer = require("nodemailer");
 const { encrypt, decrypt } = require('../utils/crypto');
@@ -27,14 +27,262 @@ const oauth2Client = new OAuth2({
 //Hubspot auth client
 const hubspotClient = new hubspot.Client({ developerApiKey: process.env.HUBSPOT_API_KEY })
 
+module.exports.proUserLogin = async (req, res) => {
+    try {
+        let { emailAddress, password } = req.body;
+        let s1 = dbScript(db_sql['Q329'], { var1: mysql_real_escape_string(emailAddress) })
+        let admin = await connection.query(s1)
+        if (admin.rows.length > 0) {
+            if (admin.rows[0].encrypted_password == password) {
+                if (admin.rows[0].is_verified == true) {
+                    if (admin.rows[0].is_locked == false) {
+                        if (admin.rows[0].is_deactivated == false) {
+                            let configuration = {}
+                            configuration.id = admin.rows[0].config_id
+                            configuration.currency = admin.rows[0].currency,
+                                configuration.phoneFormat = admin.rows[0].phone_format,
+                                configuration.dateFormat = admin.rows[0].date_format,
+                                configuration.beforeClosingDays = (admin.rows[0].before_closing_days) ? admin.rows[0].before_closing_days : '',
+                                configuration.afterClosingDays = (admin.rows[0].after_closing_days) ? admin.rows[0].after_closing_days : ''
+
+                            let s2 = dbScript(db_sql['Q125'], { var1: admin.rows[0].id, var2: admin.rows[0].company_id })
+                            let imapCreds = await connection.query(s2)
+                            let isImapCred = (imapCreds.rowCount == 0) ? false : true
+
+                            let moduleId = JSON.parse(admin.rows[0].module_ids)
+                            let modulePemissions = []
+                            for (let data of moduleId) {
+                                let s3 = dbScript(db_sql['Q58'], { var1: data, var2: admin.rows[0].role_id })
+                                let findModulePermissions = await connection.query(s3)
+                                modulePemissions.push({
+                                    moduleId: data,
+                                    moduleName: findModulePermissions.rows[0].module_name,
+                                    permissions: findModulePermissions.rows
+                                })
+                            }
+
+                            let payload = {
+                                id: admin.rows[0].id,
+                                email: admin.rows[0].email_address,
+                                isProUser: true
+                            }
+                            let jwtToken = await issueJWTForPro(payload);
+                            let profileImage = admin.rows[0].avatar
+
+                            res.send({
+                                status: 200,
+                                success: true,
+                                message: "Login Successfull",
+                                data: {
+                                    token: jwtToken,
+                                    id: admin.rows[0].id,
+                                    name: admin.rows[0].full_name,
+                                    isAdmin: admin.rows[0].is_admin,
+                                    roleId: admin.rows[0].role_id,
+                                    role: admin.rows[0].role_name,
+                                    profileImage: profileImage,
+                                    modulePermissions: modulePemissions,
+                                    configuration: configuration,
+                                    isImapCred: isImapCred,
+                                    isImapEnable: admin.rows[0].is_imap_enable,
+                                    isMarketingEnable: admin.rows[0].is_marketing_enable,
+                                    expiryDate: (admin.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : '',
+                                    isMainAdmin: admin.rows[0].is_main_admin,
+                                    companyName: admin.rows[0].company_name,
+                                    companyLogo: admin.rows[0].company_logo
+                                }
+                            });
+                        } else {
+                            res.json({
+                                status: 400,
+                                success: false,
+                                message: "deactivated user"
+                            })
+                        }
+                    } else {
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: "Locked by super Admin/Plan Expired"
+                        })
+                    }
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Please verify before login"
+                    })
+                }
+            } else {
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Incorrect password"
+                })
+            }
+        } else {
+            res.json({
+                status: 400,
+                success: false,
+                message: "Invalid credentials Or Not a pro user"
+            })
+        }
+    }
+    catch (error) {
+        res.json({
+            status: 500,
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+module.exports.showProfile = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { isProUser } = req.user
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let checkUser = await connection.query(s1)
+        if (checkUser.rows.length > 0 && isProUser) {
+            let s2 = dbScript(db_sql['Q9'], { var1: checkUser.rows[0].company_id })
+            let companyData = await connection.query(s2)
+            if (companyData.rowCount > 0) {
+                checkUser.rows[0].companyName = companyData.rows[0].company_name
+                checkUser.rows[0].companyAddress = companyData.rows[0].company_address
+                checkUser.rows[0].companyLogo = companyData.rows[0].company_logo
+            } else {
+                checkUser.rows[0].companyName = ""
+                checkUser.rows[0].companyAddress = ""
+                checkUser.rows[0].companyLogo = ""
+            }
+            res.json({
+                status: 200,
+                success: true,
+                message: 'User data',
+                data: checkUser.rows[0]
+            })
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.changePassword = async (req, res) => {
+    try {
+        let userEmail = req.user.email
+        let { isProUser } = req.user
+        const { oldPassword, newPassword } = req.body;
+        await connection.query('BEGIN')
+        let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
+        let user = await connection.query(s1)
+        if (user.rows.length > 0 && isProUser) {
+            if (user.rows[0].encrypted_password == oldPassword) {
+
+                let _dt = new Date().toISOString();
+                let s2 = dbScript(db_sql['Q5'], { var1: user.rows[0].id, var2: newPassword, var3: _dt, var4: user.rows[0].company_id })
+                let updatePass = await connection.query(s2)
+
+                if (updatePass.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.send({
+                        status: 201,
+                        success: true,
+                        message: "Password Changed Successfully!",
+                    });
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
+
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Incorrect Old Password"
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    }
+    catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            status: 500,
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+//get all user list of any company in that function 
+module.exports.usersList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { isProUser } = req.user
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0 && isProUser) {
+            //check user's on the basis of company id
+            let s4 = dbScript(db_sql['Q314'], { var1: findAdmin.rows[0].company_id, var2: false })
+            findUsers = await connection.query(s4);
+
+            if (findUsers.rows.length > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Users list',
+                    data: findUsers.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty users list",
+                    data: []
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unauthorized",
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
 
 module.exports.connectorsList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
             let getConnectors = await connection.query(s2)
             let connectorsArr = []
@@ -158,10 +406,11 @@ module.exports.authUrl = async (req, res) => {
 module.exports.callback = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         const { code, state, provider } = req.query;
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             if (provider.toLowerCase() == 'linkedin') {
                 await connection.query('BEGIN')
                 //generating access token using authorization code for linkedin
@@ -344,10 +593,9 @@ module.exports.callback = async (req, res) => {
             }
         } else {
             await connection.query('ROLLBACK')
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "Invalid user",
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -636,10 +884,11 @@ module.exports.searchLead = async () => {
 //to Re Synchronization the lead Data 
 module.exports.leadReSync = async (req, res) => {
     let userId = req.user.id
+    let { isProUser } = req.user
     const { provider } = req.query;
     let s1 = dbScript(db_sql['Q8'], { var1: userId })
     let findUser = await connection.query(s1)
-    if (findUser.rowCount > 0) {
+    if (findUser.rowCount > 0 && isProUser) {
         let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
         let getConnectors = await connection.query(s2)
         for (let accessData of getConnectors.rows) {
@@ -953,10 +1202,9 @@ module.exports.leadReSync = async (req, res) => {
         }
     } else {
         await connection.query('ROLLBACK')
-        res.json({
-            status: 400,
+        res.status(403).json({
             success: false,
-            message: "Invalid user",
+            message: "Unathorised"
         })
     }
 }
@@ -964,10 +1212,11 @@ module.exports.leadReSync = async (req, res) => {
 module.exports.proLeadsList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { provider } = req.query
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             let type = 'lead'
             let leadList
             //getting the lead list from the customer_comany_employees
@@ -1012,121 +1261,13 @@ module.exports.proLeadsList = async (req, res) => {
     }
 }
 
-module.exports.proUserLogin = async (req, res) => {
-    try {
-        let { emailAddress, password } = req.body;
-        let s1 = dbScript(db_sql['Q329'], { var1: mysql_real_escape_string(emailAddress) })
-        let admin = await connection.query(s1)
-        if (admin.rows.length > 0) {
-            if (admin.rows[0].encrypted_password == password) {
-                if (admin.rows[0].is_verified == true) {
-                    if (admin.rows[0].is_locked == false) {
-                        if (admin.rows[0].is_deactivated == false) {
-                            let configuration = {}
-                            configuration.id = admin.rows[0].config_id
-                            configuration.currency = admin.rows[0].currency,
-                                configuration.phoneFormat = admin.rows[0].phone_format,
-                                configuration.dateFormat = admin.rows[0].date_format,
-                                configuration.beforeClosingDays = (admin.rows[0].before_closing_days) ? admin.rows[0].before_closing_days : '',
-                                configuration.afterClosingDays = (admin.rows[0].after_closing_days) ? admin.rows[0].after_closing_days : ''
-
-                            let s2 = dbScript(db_sql['Q125'], { var1: admin.rows[0].id, var2: admin.rows[0].company_id })
-                            let imapCreds = await connection.query(s2)
-                            let isImapCred = (imapCreds.rowCount == 0) ? false : true
-
-                            let moduleId = JSON.parse(admin.rows[0].module_ids)
-                            let modulePemissions = []
-                            for (let data of moduleId) {
-                                let s3 = dbScript(db_sql['Q58'], { var1: data, var2: admin.rows[0].role_id })
-                                let findModulePermissions = await connection.query(s3)
-                                modulePemissions.push({
-                                    moduleId: data,
-                                    moduleName: findModulePermissions.rows[0].module_name,
-                                    permissions: findModulePermissions.rows
-                                })
-                            }
-
-                            let payload = {
-                                id: admin.rows[0].id,
-                                email: admin.rows[0].email_address,
-                            }
-                            let jwtToken = await issueJWT(payload);
-                            let profileImage = admin.rows[0].avatar
-
-                            res.send({
-                                status: 200,
-                                success: true,
-                                message: "Login Successfull",
-                                data: {
-                                    token: jwtToken,
-                                    id: admin.rows[0].id,
-                                    name: admin.rows[0].full_name,
-                                    isAdmin: admin.rows[0].is_admin,
-                                    roleId: admin.rows[0].role_id,
-                                    role: admin.rows[0].role_name,
-                                    profileImage: profileImage,
-                                    modulePermissions: modulePemissions,
-                                    configuration: configuration,
-                                    isImapCred: isImapCred,
-                                    isImapEnable: admin.rows[0].is_imap_enable,
-                                    isMarketingEnable: admin.rows[0].is_marketing_enable,
-                                    expiryDate: (admin.rows[0].role_name == 'Admin') ? admin.rows[0].expiry_date : '',
-                                    isMainAdmin: admin.rows[0].is_main_admin,
-                                    companyName: admin.rows[0].company_name,
-                                    companyLogo: admin.rows[0].company_logo
-                                }
-                            });
-                        } else {
-                            res.json({
-                                status: 400,
-                                success: false,
-                                message: "deactivated user"
-                            })
-                        }
-                    } else {
-                        res.json({
-                            status: 400,
-                            success: false,
-                            message: "Locked by super Admin/Plan Expired"
-                        })
-                    }
-                } else {
-                    res.json({
-                        status: 400,
-                        success: false,
-                        message: "Please verify before login"
-                    })
-                }
-            } else {
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Incorrect password"
-                })
-            }
-        } else {
-            res.json({
-                status: 400,
-                success: false,
-                message: "Invalid credentials Or Not a pro user"
-            })
-        }
-    }
-    catch (error) {
-        res.json({
-            status: 500,
-            success: false,
-            message: error.message
-        })
-    }
-}
-
 module.exports.salesListForPro = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
 
             let s6 = dbScript(db_sql['Q302'], { var1: findUser.rows[0].company_id })
             let salesList = await connection.query(s6)
@@ -1177,10 +1318,11 @@ module.exports.salesListForPro = async (req, res) => {
 module.exports.recognizationDetailsPro = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { salesId } = req.query;
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             //fetching sales data by sales_id from sales table
             let s3 = dbScript(db_sql['Q249'], { var1: findUser.rows[0].company_id, var2: salesId })
             let salesList = await connection.query(s3)
@@ -1202,7 +1344,16 @@ module.exports.recognizationDetailsPro = async (req, res) => {
                         }
                     }
                 } else {
-                    salesObj.customerContractDetails = {}
+                    salesObj.customerContractDetails = {
+                        lead_name: '',
+                        customer_name: '',
+                        lead_title: '',
+                        lead_source: '',
+                        lead_created_at: '',
+                        lead_targeted_value: '',
+                        lead_notes: '',
+                        lead_address: ''
+                    }
                 }
 
                 salesObj.performanceObligation = {
@@ -1227,7 +1378,14 @@ module.exports.recognizationDetailsPro = async (req, res) => {
                         sales_service_perform_note: salesData.service_perform_note
                     }
                 } else {
-                    salesObj.allocatedTransaction = {}
+                    salesObj.allocatedTransaction = {
+                        sales_type: '',
+                        sales_target_amount: '',
+                        sales_target_closing_date: '',
+                        sales_recurring_date: '',
+                        sales_service_performed_at: '',
+                        sales_service_perform_note: ''
+                    }
                 }
                 //fetching recognized revenue using sales_id from recoginez_revenue table
                 let s5 = dbScript(db_sql['Q231'], { var1: salesData.id })
@@ -1247,7 +1405,9 @@ module.exports.recognizationDetailsPro = async (req, res) => {
                         sales_recognized_data: recArr
                     }
                 } else {
-                    salesObj.recognizedRevenue = {}
+                    salesObj.recognizedRevenue = {
+                        sales_recognized_data: []
+                    }
                 }
             }
             if (salesList.rowCount > 0) {
@@ -1284,11 +1444,12 @@ module.exports.recognizationDetailsPro = async (req, res) => {
 module.exports.createProEmailTemplate = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { emailTemplate, templateName, jsonTemplate } = req.body
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             // checking if emailTemplate is contains {content} section
             if (!emailTemplate.includes('{content}')) {
                 // throw new Error('Email template does not contain {content} section.');
@@ -1318,10 +1479,9 @@ module.exports.createProEmailTemplate = async (req, res) => {
 
         } else {
             await connection.query('ROLLBACK')
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "Invalid user",
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1338,9 +1498,10 @@ module.exports.createProEmailTemplate = async (req, res) => {
 module.exports.emailTemplateList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             let s6 = dbScript(db_sql['Q9'], { var1: findUser.rows[0].company_id })
             let company = await connection.query(s6)
             let s2 = dbScript(db_sql['Q331'], { var1: userId, var2: findUser.rows[0].company_id })
@@ -1371,10 +1532,9 @@ module.exports.emailTemplateList = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "Invalid user",
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1390,11 +1550,12 @@ module.exports.emailTemplateList = async (req, res) => {
 module.exports.updateEmailTemplate = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { templateId, templateName, emailTemplate, jsonTemplate } = req.body
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             // checking if emailTemplate is contains {content} section
             if (!emailTemplate.includes('{content}')) {
                 // throw new Error('Email template does not contain {content} section.');
@@ -1424,10 +1585,9 @@ module.exports.updateEmailTemplate = async (req, res) => {
             }
         } else {
             await connection.query('ROLLBACK')
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "Invalid user",
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1445,11 +1605,12 @@ module.exports.updateEmailTemplate = async (req, res) => {
 module.exports.deleteEmailTemplate = async (req, res) => {
     try {
         userId = req.user.id
+        let { isProUser } = req.user
         let { templateId } = req.query
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0) {
+        if (findUser.rowCount > 0 && isProUser) {
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q333'], { var1: templateId, var2: _dt })
             let deleteTemplate = await connection.query(s2)
@@ -1470,10 +1631,9 @@ module.exports.deleteEmailTemplate = async (req, res) => {
             }
         } else {
             await connection.query('ROLLBACK')
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "Invalid user",
+                message: "Unauthorized",
             })
         }
     } catch (error) {
@@ -1491,10 +1651,11 @@ module.exports.deleteEmailTemplate = async (req, res) => {
 module.exports.sendEmailToLead = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { template, leadEmail, templateName, description } = req.body
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0) {
+        if (findAdmin.rowCount > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
             let findCreds = await connection.query(s2)
             if (findCreds.rowCount > 0) {
@@ -1519,7 +1680,7 @@ module.exports.sendEmailToLead = async (req, res) => {
                 //replacing the content of the template from the description when sending the mail to lead
                 const result = template.replace('{content}', description);
 
-                await leadEmail2(leadEmail, result, templateName, credentialObj);
+                await leadEmail(leadEmail, result, templateName, credentialObj);
                 res.json({
                     status: 200,
                     success: true,
@@ -1535,10 +1696,9 @@ module.exports.sendEmailToLead = async (req, res) => {
             }
 
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "Invalid user",
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1554,11 +1714,12 @@ module.exports.sendEmailToLead = async (req, res) => {
 module.exports.addSmtpCreds = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { email, appPassword, smtpHost, smtpPort } = req.body
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             //sending mail through the provided smtp creds in order to check whether creds are correct
             let transporter = nodemailer.createTransport({
                 host: smtpHost,
@@ -1639,10 +1800,9 @@ module.exports.addSmtpCreds = async (req, res) => {
                     })
                 )
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1659,10 +1819,11 @@ module.exports.addSmtpCreds = async (req, res) => {
 module.exports.credentialList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
             let credentials = await connection.query(s2)
 
@@ -1696,10 +1857,9 @@ module.exports.credentialList = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1721,9 +1881,10 @@ module.exports.addAvailability = async (req, res) => {
         } = req.body;
         await connection.query('BEGIN')
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q342'], { var1: mysql_real_escape_string(scheduleName), var2: timezone, var3: userId, var4: findAdmin.rows[0].company_id })
             let createAvailability = await connection.query(s2)
             for (let ts of timeSlot) {
@@ -1757,10 +1918,9 @@ module.exports.addAvailability = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1777,9 +1937,10 @@ module.exports.addAvailability = async (req, res) => {
 module.exports.availableTimeList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q344'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let availability = await connection.query(s2)
             if (availability.rowCount > 0) {
@@ -1808,10 +1969,9 @@ module.exports.availableTimeList = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1827,10 +1987,11 @@ module.exports.availableTimeList = async (req, res) => {
 module.exports.availabilityDetails = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { availabilityId } = req.query
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q351'], { var1: availabilityId })
             let availability = await connection.query(s2)
             if (availability.rowCount > 0) {
@@ -1859,10 +2020,9 @@ module.exports.availabilityDetails = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1885,9 +2045,10 @@ module.exports.updateAvailability = async (req, res) => {
         } = req.body;
         await connection.query('BEGIN')
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let _dt = new Date().toISOString()
             let s2 = dbScript(db_sql['Q352'], { var1: mysql_real_escape_string(scheduleName), var2: timezone, var3: availabilityId, var4: _dt })
             let updateAvailability = await connection.query(s2)
@@ -1923,10 +2084,9 @@ module.exports.updateAvailability = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -1945,9 +2105,10 @@ module.exports.deleteAvalability = async (req, res) => {
         let { availabilityId } = req.query
         await connection.query('BEGIN')
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let _dt = new Date().toISOString()
             let s2 = dbScript(db_sql['Q354'], { var1: _dt, var2: availabilityId })
             let deleteAvailability = await connection.query(s2)
@@ -1978,10 +2139,9 @@ module.exports.deleteAvalability = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2000,9 +2160,10 @@ module.exports.deleteTimeSlot = async (req, res) => {
         let { slotId } = req.query
         await connection.query('BEGIN')
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let _dt = new Date().toISOString()
             let s2 = dbScript(db_sql['Q356'], { var1: _dt, var2: slotId })
             let deleteTimeSlot = await connection.query(s2)
@@ -2022,10 +2183,9 @@ module.exports.deleteTimeSlot = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2042,11 +2202,12 @@ module.exports.deleteTimeSlot = async (req, res) => {
 module.exports.createEvent = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { eventName, meetLink, description, duration, availabilityId } = req.body
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q345'], { var1: mysql_real_escape_string(eventName), var2: meetLink, var3: mysql_real_escape_string(description), var4: userId, var5: findAdmin.rows[0].company_id, var6: duration, var7: availabilityId })
             let addEvent = await connection.query(s2)
             if (addEvent.rowCount > 0) {
@@ -2078,10 +2239,9 @@ module.exports.createEvent = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2098,9 +2258,10 @@ module.exports.createEvent = async (req, res) => {
 module.exports.eventsList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q346'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let eventList = await connection.query(s2)
             if (eventList.rowCount > 0) {
@@ -2127,10 +2288,9 @@ module.exports.eventsList = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2201,9 +2361,10 @@ module.exports.deleteEvent = async (req, res) => {
         let { eventId } = req.query
         await connection.query('BEGIN')
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let _dt = new Date().toISOString()
             let s2 = dbScript(db_sql['Q358'], { var1: _dt, var2: eventId })
             let updateEvent = await connection.query(s2)
@@ -2223,10 +2384,9 @@ module.exports.deleteEvent = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2245,9 +2405,10 @@ module.exports.updateEvent = async (req, res) => {
         let { eventId, eventName, meetLink, description, duration, availabilityId } = req.body
         await connection.query('BEGIN')
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && isProUser) {
             let _dt = new Date().toISOString()
             let s2 = dbScript(db_sql['Q357'], { var1: mysql_real_escape_string(eventName), var2: meetLink, var3: mysql_real_escape_string(description), var4: duration, var5: availabilityId, var6: eventId, var7: _dt })
             let updateEvent = await connection.query(s2)
@@ -2267,10 +2428,9 @@ module.exports.updateEvent = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2327,6 +2487,7 @@ module.exports.scheduleEvent = async (req, res) => {
             })
         }
     } catch (error) {
+        await connection.query('ROLLBACK')
         res.json({
             status: 400,
             success: false,
@@ -2339,9 +2500,10 @@ module.exports.scheduleEvent = async (req, res) => {
 module.exports.scheduledEventsList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0) {
+        if (findAdmin.rowCount > 0 && isProUser) {
 
             let s2 = dbScript(db_sql['Q350'], { var1: userId, var2: findAdmin.rows[0].company_id })
             let scheduleEvents = await connection.query(s2)
@@ -2369,10 +2531,9 @@ module.exports.scheduledEventsList = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2388,9 +2549,10 @@ module.exports.scheduledEventsList = async (req, res) => {
 module.exports.salesCaptainList = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0) {
+        if (findAdmin.rowCount > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q363'], { var1: findAdmin.rows[0].company_id })
             let salesCatains = await connection.query(s2)
             if (salesCatains.rowCount > 0) {
@@ -2409,17 +2571,16 @@ module.exports.salesCaptainList = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
         res.json({
             status: 400,
             success: false,
-            message: error.stack,
+            message: error.message,
         })
     }
 }
@@ -2427,11 +2588,12 @@ module.exports.salesCaptainList = async (req, res) => {
 module.exports.captainWiseSalesDetails = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { captainId } = req.query
         if (captainId) {
             let s1 = dbScript(db_sql['Q8'], { var1: userId })
             let findAdmin = await connection.query(s1)
-            if (findAdmin.rowCount > 0) {
+            if (findAdmin.rowCount > 0 && isProUser) {
                 let s2 = dbScript(db_sql['Q366'], { var1: captainId })
                 let salesIds = await connection.query(s2)
                 if (salesIds.rowCount > 0) {
@@ -2564,10 +2726,9 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 400,
+                res.status(403).json({
                     success: false,
-                    message: "User not found"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -2589,11 +2750,12 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
 module.exports.captainWiseGraph = async (req, res) => {
     try {
         let userId = req.user.id
+        let { isProUser } = req.user
         let { captainId, page } = req.query
         if (captainId) {
             let s1 = dbScript(db_sql['Q8'], { var1: userId })
             let findAdmin = await connection.query(s1)
-            if (findAdmin.rowCount > 0) {
+            if (findAdmin.rowCount > 0 && isProUser) {
                 let s2 = dbScript(db_sql['Q366'], { var1: captainId })
                 let salesIds = await connection.query(s2)
                 if (salesIds.rowCount > 0) {
@@ -2653,10 +2815,9 @@ module.exports.captainWiseGraph = async (req, res) => {
                     })
                 }
             } else {
-                res.json({
-                    status: 400,
+                res.status(403).json({
                     success: false,
-                    message: "User not found"
+                    message: "Unathorised"
                 })
             }
         } else {
@@ -2679,9 +2840,10 @@ module.exports.sciiSales = async (req, res) => {
     try {
         let { page } = req.query
         let userId = req.user.id
+        let { isProUser } = req.user
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0) {
+        if (findAdmin.rowCount > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q363'], { var1: findAdmin.rows[0].company_id })
             let salesCatains = await connection.query(s2)
             let sciiArr = []
@@ -2754,10 +2916,9 @@ module.exports.sciiSales = async (req, res) => {
                 })
             }
         } else {
-            res.json({
-                status: 400,
+            res.status(403).json({
                 success: false,
-                message: "User not found"
+                message: "Unathorised"
             })
         }
     } catch (error) {
@@ -2766,5 +2927,963 @@ module.exports.sciiSales = async (req, res) => {
             success: false,
             message: error.message,
         })
+    }
+}
+
+module.exports.commissionReport = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { isProUser } = req.user
+        let { salesRepId, startDate, endDate } = req.query
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0 && isProUser) {
+
+            let s2 = dbScript(db_sql['Q8'], { var1: salesRepId })
+            let finduser = await connection.query(s2)
+
+            let s3 = dbScript(db_sql['Q12'], { var1: finduser.rows[0].role_id })
+            let roleData = await connection.query(s3)
+            let managerName = ''
+            if (roleData.rows[0].reporter) {
+                let parentList = await getParentUserList(roleData.rows[0], findAdmin.rows[0].company_id);
+                for (let parent of parentList) {
+                    if (parent.role_id == roleData.rows[0].reporter) {
+                        managerName = parent.full_name
+                    }
+                }
+
+            }
+
+            let s4 = dbScript(db_sql['Q373'], { var1: salesRepId, var2: startDate, var3: endDate })
+            let _dt = new Date().toISOString()
+            let commissionData = await connection.query(s4)
+            if (commissionData.rowCount > 0) {
+                let data = {
+                    salesRepName: commissionData.rows[0].sales_rep_name,
+                    companyName: commissionData.rows[0].company_name,
+                    companyLogo: commissionData.rows[0].company_logo,
+                    currentDate: _dt,
+                    fromDate: startDate,
+                    toDate: endDate,
+                    managerName: managerName,
+                    report: [],
+                    totalPerpetualCommissionEarned: 0,
+                    totalSubscriptionCommissionEarned: 0
+                };
+
+                for (let row of commissionData.rows) {
+                    data.report.push({
+                        id: row.id,
+                        customerName: row.customer_name,
+                        date: row.recognized_date,
+                        dealType: row.sales_type,
+                        salesRole: row.user_type,
+                        earnedCommission: Number(row.commission_amount)
+                    });
+
+                    if (row.sales_type === 'Perpetual') {
+                        data.totalPerpetualCommissionEarned += Number(row.commission_amount);
+                    } else if (row.sales_type === 'Subscription') {
+                        data.totalSubscriptionCommissionEarned += Number(row.commission_amount);
+                    }
+
+                    data.totalCommission = data.totalPerpetualCommissionEarned + data.totalSubscriptionCommissionEarned
+                }
+                if (data) {
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Commission Report",
+                        data: data
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty Commission Report",
+                        data: {
+                            salesRepName: "",
+                            companyName: "",
+                            companyLogo: "",
+                            currentDate: "",
+                            fromDate: "",
+                            toDate: "",
+                            managerName: "",
+                            report: [],
+                            totalPerpetualCommissionEarned: 0,
+                            totalSubscriptionCommissionEarned: 0,
+                            totalCommission: 0
+                        }
+                    })
+                }
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Commission Report",
+                    data: {
+                        salesRepName: "",
+                        companyName: "",
+                        companyLogo: "",
+                        currentDate: "",
+                        fromDate: "",
+                        toDate: "",
+                        managerName: "",
+                        report: [],
+                        totalPerpetualCommissionEarned: 0,
+                        totalSubscriptionCommissionEarned: 0,
+                        totalCommission: 0
+                    }
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.salesMetricsReport = async (req, res) => {
+    try {
+        let userId = req.user.id;
+        let { isProUser } = req.user;
+        let { selectQuarter, includeStatus, captainId } = req.body;
+        let s1 = dbScript(db_sql["Q8"], { var1: userId });
+        let findAdmin = await connection.query(s1);
+        if (findAdmin.rowCount > 0 && isProUser) {
+
+            let s2 = dbScript(db_sql["Q9"], { var1: findAdmin.rows[0].company_id });
+            let findQuarter = await connection.query(s2);
+            let quarters = await calculateQuarters(findQuarter.rows[0].quarter);
+            let selectedStartDate = "";
+            let selectedEndDate = "";
+
+            for (const quarter of quarters) {
+                if (quarter.quarter == String(selectQuarter)) {
+                    selectedStartDate = quarter.start_date;
+                    selectedEndDate = quarter.end_date;
+                    break;
+                }
+            }
+
+            let findLeadCounts;
+            let salesActivities;
+            let findTotalAndWonDealCount;
+            let yearlyRecognizedRevenue;
+            let monthlyRecognizedRevenue;
+            let risk_sales_deals = {};
+            let findMissingRR = {};
+            let closingDateSlippage = {};
+            let eolSales = {}
+            let revenueGap = 0;
+            let totalLeakage = 0;
+            let totalLeakageAmountClosed = 0
+            let totalLeakageAmountAll = 0
+
+            let findMonthsDateOfQuarter = await getQuarterMonthsDates(
+                selectedStartDate,
+                selectedEndDate
+            );
+
+            if (includeStatus !== true) {
+                let s3 = dbScript(db_sql["Q395"], {
+                    var1: selectedStartDate,
+                    var2: selectedEndDate,
+                    var3: captainId,
+                });
+                findLeadCounts = await connection.query(s3);
+                findLeadCounts.rows[0].total_lead_count = Number(
+                    findLeadCounts.rows[0].total_lead_count
+                )
+                    ? Number(findLeadCounts.rows[0].total_lead_count)
+                    : 0;
+                findLeadCounts.rows[0].converted_lead_count = Number(
+                    findLeadCounts.rows[0].converted_lead_count
+                )
+                    ? Number(findLeadCounts.rows[0].converted_lead_count)
+                    : 0;
+
+                findLeadCounts.rows[0].convertedLeadPercentage =
+                    Number(
+                        findLeadCounts.rows[0].converted_lead_count /
+                        findLeadCounts.rows[0].total_lead_count
+                    ) * 100
+                        ? Number(
+                            findLeadCounts.rows[0].converted_lead_count /
+                            findLeadCounts.rows[0].total_lead_count
+                        ) * 100
+                        : 0;
+
+
+                //finding total open and closed sales in which captainId is captain
+                let s17 = dbScript(db_sql["Q404"], { var1: captainId });
+                let allSalesIds = await connection.query(s17);
+
+                //finding only closed sales ids in which the user_id is captain
+                let s4 = dbScript(db_sql["Q366"], { var1: captainId });
+                let salesIds = await connection.query(s4);
+
+                if (salesIds.rowCount > 0) {
+                    let salesIdArr = [];
+                    salesIds.rows.map((data) => {
+                        if (data.sales_ids.length > 0) {
+                            salesIdArr.push("'" + data.sales_ids.join("','") + "'");
+                        }
+                    });
+
+                    //yearly recognized_revenue Subscription+perpetual
+                    let s6 = dbScript(db_sql["Q398"], {
+                        var1: quarters[0].start_date,
+                        var2: quarters[3].end_date,
+                        var3: salesIdArr.join(","),
+                    });
+                    yearlyRecognizedRevenue = await connection.query(s6);
+                    //monthly recognized_revenue Subscription+perpetual on perticular quarter
+                    let s7 = dbScript(db_sql["Q399"], {
+                        var1: findMonthsDateOfQuarter[0].start_date,
+                        var2: findMonthsDateOfQuarter[0].end_date,
+                        var3: findMonthsDateOfQuarter[1].start_date,
+                        var4: findMonthsDateOfQuarter[1].end_date,
+                        var5: findMonthsDateOfQuarter[2].start_date,
+                        var6: findMonthsDateOfQuarter[2].end_date,
+                        var7: salesIdArr.join(","),
+                    });
+                    monthlyRecognizedRevenue = await connection.query(s7);
+
+                    let s14 = dbScript(db_sql["Q401"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: captainId,
+                    });
+                    salesActivities = await connection.query(s14);
+
+                    salesActivities.rows[0].activity_per_deal = Number(
+                        salesActivities.rows[0].total_sales_activities /
+                        salesActivities.rows[0].total_deals_created
+                    )
+                        ? Number(
+                            salesActivities.rows[0].total_sales_activities /
+                            salesActivities.rows[0].total_deals_created
+                        )
+                        : 0;
+
+                    //sales leakage activity
+
+                    let s18 = dbScript(db_sql["Q406"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: salesIdArr.join(","),
+                    });
+                    let findMissingRecognized = await connection.query(s18);
+                    let high_risk_missing_rr = [];
+                    let low_risk_missing_rr = [];
+                    if (findMissingRecognized.rowCount > 0) {
+                        findMissingRecognized.rows.forEach((item) => {
+                            if (item.recognized_amount === "0") {
+                                high_risk_missing_rr.push({ customer_name: item.customer_name, amount: item.target_amount });
+                            } else {
+                                if (!low_risk_missing_rr[item.sales_id]) {
+                                    low_risk_missing_rr[item.sales_id] = {
+                                        customer_name: item.customer_name,
+                                        recognized_amount: 0,
+                                        target_amount: parseFloat(item.target_amount),
+                                    };
+                                }
+                                low_risk_missing_rr[item.sales_id].recognized_amount += parseFloat(item.recognized_amount);
+                            }
+                        });
+
+                        for (const salesId in low_risk_missing_rr) {
+                            const item = low_risk_missing_rr[salesId];
+                            const amountDifference = item.target_amount - item.recognized_amount;
+                            low_risk_missing_rr[salesId] = {
+                                customer_name: item.customer_name,
+                                amount: amountDifference,
+                            };
+                        }
+
+                        // Create a new array to store the modified low-risk missing records
+                        const modifiedLowRiskMissingRR = Object.values(low_risk_missing_rr);
+                        low_risk_missing_rr = modifiedLowRiskMissingRR;
+
+
+                        let totalHighRiskRR = 0;
+                        let totalLowRiskRR = 0;
+                        if (high_risk_missing_rr.length > 0) {
+                            for (let i = 0; i < high_risk_missing_rr.length; i++) {
+                                totalHighRiskRR += parseInt(high_risk_missing_rr[i].amount);
+                            }
+                        } else {
+                            totalHighRiskRR = totalHighRiskRR
+                        }
+                        if (low_risk_missing_rr.length > 0) {
+                            for (let i = 0; i < low_risk_missing_rr.length; i++) {
+                                totalLowRiskRR += parseInt(low_risk_missing_rr[i].amount);
+                            }
+                        } else {
+                            totalLowRiskRR = totalLowRiskRR
+                        }
+
+                        findMissingRR.high_risk_missing_rr = high_risk_missing_rr;
+                        findMissingRR.low_risk_missing_rr = low_risk_missing_rr;
+                        findMissingRR.high_risk_total_missing_rr = totalHighRiskRR;
+                        findMissingRR.low_risk_total_missing_rr = totalLowRiskRR;
+                        findMissingRR.all_total_missing_rr = Number(totalHighRiskRR + totalLowRiskRR)
+
+
+                        totalLeakageAmountClosed = Number(totalHighRiskRR + totalLowRiskRR)
+
+                    } else {
+                        findMissingRR.high_risk_missing_rr = [];
+                        findMissingRR.low_risk_missing_rr = [];
+                        findMissingRR.high_risk_total_missing_rr = 0;
+                        findMissingRR.low_risk_total_missing_rr = 0;
+                        findMissingRR.all_total_missing_rr = 0
+                    }
+                } if (allSalesIds.rowCount > 0) {
+                    let allSalesIdArr = [];
+                    allSalesIds.rows.map((data) => {
+                        if (data.sales_ids.length > 0) {
+                            allSalesIdArr.push("'" + data.sales_ids.join("','") + "'");
+                        }
+                    });
+
+                    let s5 = dbScript(db_sql["Q397"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: allSalesIdArr.join(","),
+                    });
+                    findTotalAndWonDealCount = await connection.query(s5);
+                    if (findTotalAndWonDealCount.rowCount > 0) {
+                        findTotalAndWonDealCount.rows[0].total_sales_count = Number(
+                            findTotalAndWonDealCount.rows[0].total_sales_count
+                        );
+                        findTotalAndWonDealCount.rows[0].closed_sales_count = Number(
+                            findTotalAndWonDealCount.rows[0].closed_sales_count
+                        );
+                    } else {
+                        findTotalAndWonDealCount.rows[0].total_sales_count = 0;
+                        findTotalAndWonDealCount.rows[0].closed_sales_count = 0;
+                    }
+
+                    findTotalAndWonDealCount.rows[0].winPercentage =
+                        (findTotalAndWonDealCount.rows[0].closed_sales_count /
+                            findTotalAndWonDealCount.rows[0].total_sales_count) *
+                            100
+                            ? (findTotalAndWonDealCount.rows[0].closed_sales_count /
+                                findTotalAndWonDealCount.rows[0].total_sales_count) *
+                            100
+                            : 0;
+
+                    let s16 = dbScript(db_sql["Q405"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: allSalesIdArr.join(","),
+                    });
+                    let findTotalSupport = await connection.query(s16);
+                    let high_risk_sales_deals = [];
+                    let low_risk_sales_deals = [];
+                    for (const sale of findTotalSupport.rows) {
+                        if (sale.ids.length < 2 || sale.notes.length < 0) {
+                            high_risk_sales_deals.push({ salesName: sale.customer_name, amount: sale.target_amount });
+                        } else {
+                            low_risk_sales_deals.push({ salesNmae: sale.customer_name, amount: sale.target_amount });
+                        }
+                    }
+
+                    let totalHighRiskAmount = 0;
+                    let totalLowRiskAmount = 0;
+                    if (high_risk_sales_deals.length > 0) {
+                        for (let i = 0; i < high_risk_sales_deals.length; i++) {
+                            totalHighRiskAmount += parseInt(high_risk_sales_deals[i].amount);
+                        }
+                    } else {
+                        totalHighRiskAmount = totalHighRiskAmount
+                    }
+                    if (low_risk_sales_deals.length > 0) {
+                        for (let i = 0; i < high_risk_sales_deals.length; i++) {
+                            totalLowRiskAmount += parseInt(low_risk_sales_deals[i].amount);
+                        }
+                    } else {
+                        totalLowRiskAmount = totalLowRiskAmount
+                    }
+                    risk_sales_deals.high_risk_sales_deals = high_risk_sales_deals;
+                    risk_sales_deals.low_risk_sales_deals = low_risk_sales_deals;
+                    risk_sales_deals.total_high_risk_amount = totalHighRiskAmount;
+                    risk_sales_deals.total_low_risk_amount = totalLowRiskAmount;
+                    total_sales_deals_amount = Number(totalHighRiskAmount + totalLowRiskAmount)
+                    risk_sales_deals.total_sales_deals_amount = total_sales_deals_amount;
+
+
+                    let s19 = dbScript(db_sql['Q407'], { var1: captainId })
+                    let findForecastAmount = await connection.query(s19)
+                    let totalForecaseAmount = 0
+                    if (findForecastAmount.rowCount > 0) {
+                        for (let amount of findForecastAmount.rows) {
+                            totalForecaseAmount += Number(amount.amount)
+                        }
+                        let yearlyRR = yearlyRecognizedRevenue.rows[0]
+                        revenueGap = totalForecaseAmount - Number(yearlyRR.total_amount)
+                    } else {
+                        revenueGap = 0
+                    }
+
+                    let s20 = dbScript(db_sql['Q408'], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: allSalesIdArr.join(","),
+                    })
+                    let findDateSlippage = await connection.query(s20)
+
+                    const high_risk_sales = [];
+                    const low_risk_sales = [];
+
+                    const salesBySalesId = {};
+
+                    // Group sales by sales_id and track target_closing_dates
+                    for (const sale of findDateSlippage.rows) {
+                        if (!salesBySalesId[sale.sales_id]) {
+                            salesBySalesId[sale.sales_id] = {
+                                targetClosingDates: new Set(),
+                                customer_name: sale.customer_name,
+                                amount: sale.target_amount
+                            };
+                        }
+
+                        const salesInfo = salesBySalesId[sale.sales_id];
+                        salesInfo.targetClosingDates.add(sale.target_closing_date);
+                    }
+
+                    // Categorize sales based on target_closing_dates count
+                    for (const salesId in salesBySalesId) {
+                        const salesInfo = salesBySalesId[salesId];
+
+                        if (salesInfo.targetClosingDates.size > 1) {
+                            high_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name, missing_amount: salesInfo.amount });
+                        } else {
+                            low_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name, missing_amount: salesInfo.amount });
+                        }
+                    }
+
+                    let totalHighRiskSlippageAmount = high_risk_sales.reduce((total, sale) => total + parseInt(sale.missing_amount), 0);
+                    let totalLowRiskSlippageAmount = low_risk_sales.reduce((total, sale) => total + parseInt(sale.missing_amount), 0);
+
+                    closingDateSlippage.high_risk_sales = high_risk_sales
+                    closingDateSlippage.low_risk_sales = low_risk_sales
+                    closingDateSlippage.total_high_risk_slippage_amount = totalHighRiskSlippageAmount
+                    closingDateSlippage.total_low_risk_slippage_amount = totalLowRiskSlippageAmount
+                    closingDateSlippage.all_total_slippage_amount = Number(totalHighRiskSlippageAmount + totalLowRiskSlippageAmount)
+
+                    const Sdate = new Date(selectedStartDate);
+                    const Edate = new Date(selectedEndDate);
+                    const SformattedDate = Sdate.toISOString().substring(0, 10);
+                    const EformattedDate = Edate.toISOString().substring(0, 10);
+                    //EOL products
+                    let s25 = dbScript(db_sql['Q411'], { var1: allSalesIdArr.join(","), var2: SformattedDate, var3: EformattedDate })
+                    let findEOLProduct = await connection.query(s25)
+                    if (findEOLProduct.rowCount > 0) {
+                        let findEOLSales = await calculateEOLProducts(findEOLProduct.rows);
+                        eolSales = findEOLSales;
+                    } else {
+                        eolSales = {
+                            highRiskEolSale: [],
+                            lowRiskEolSale: []
+                        }
+                    }
+
+                    let totalHighRiskEolMissingAmount = eolSales.highRiskEolSale.reduce((total, sale) => total + parseInt(sale.target_amount), 0);
+                    let totalLowRiskEolMissingAmount = eolSales.lowRiskEolSale.reduce((total, sale) => total + parseInt(sale.target_amount), 0);
+                    eolSales.total_high_risk_eol_missing_amount = totalHighRiskEolMissingAmount
+                    eolSales.total_low_risk_eol_missing_amount = totalLowRiskEolMissingAmount
+                    eolSales.all_total_eol_missing_amount = Number(totalHighRiskEolMissingAmount + totalLowRiskEolMissingAmount)
+
+                    totalLeakageAmountAll = (Number(totalHighRiskEolMissingAmount + totalLowRiskEolMissingAmount) + Number(totalHighRiskSlippageAmount + totalLowRiskSlippageAmount) + total_sales_deals_amount)
+
+                    totalLeakage = totalLeakageAmountAll + totalLeakageAmountClosed
+
+                } else {
+                    return res.json({
+                        status: 200,
+                        success: false,
+                        message: "Sales not found",
+                        data: {
+                            lead_counts: findLeadCounts.rows[0] ? findLeadCounts.rows[0] : 0,
+                            sales_activities_per_deal: {
+                                total_sales_activities: 0,
+                                total_deals_created: 0,
+                                activity_per_deal: 0,
+                            },
+                            sales_counts: {
+                                total_sales_count: 0,
+                                closed_sales_count: 0,
+                                winPercentage: 0,
+                            },
+                            yearly_recognized_revenue: {
+                                total_amount: 0,
+                            },
+                            monthly_revenue: [
+                                {
+                                    total_amount: 0,
+                                    month_number: 1,
+                                },
+                                {
+                                    total_amount: 0,
+                                    month_number: 2,
+                                },
+                                {
+                                    total_amount: 0,
+                                    month_number: 3,
+                                },
+                            ],
+                            risk_sales_deals: {
+                                high_risk_sales_deals: [],
+                                low_risk_sales_deals: [],
+                                total_high_risk_amount: 0,
+                                total_low_risk_amount: 0,
+                                total_sales_deals_amount: 0
+
+                            },
+                            findMissingRR: {
+                                high_risk_missing_rr: [],
+                                low_risk_missing_rr: [],
+                                high_risk_total_missing_rr: 0,
+                                low_risk_total_missing_rr: 0,
+                                all_total_missing_rr: 0
+                            },
+                            closingDateSlippage: {
+                                high_risk_sales: [],
+                                low_risk_sales: [],
+                                total_high_risk_slippage_amount: 0,
+                                total_low_risk_slippage_amount: 0,
+                                all_total_slippage_amount: 0
+                            },
+                            eolSales: {
+                                highRiskEolSale: [],
+                                lowRiskEolSale: [],
+                                total_high_risk_eol_missing_amount: 0,
+                                total_low_risk_eol_missing_amount: 0,
+                                all_total_eol_missing_amount: 0
+                            },
+                            revenueGap: revenueGap,
+                            totalLeakage: totalLeakage
+                        },
+                    });
+                }
+            } else {
+                let s8 = dbScript(db_sql["Q8"], { var1: captainId });
+                let findPermission = await connection.query(s8);
+                let roleUsers = await getUserAndSubUser(findPermission.rows[0]);
+                let s9 = dbScript(db_sql["Q396"], {
+                    var1: selectedStartDate,
+                    var2: selectedEndDate,
+                    var3: roleUsers.join(","),
+                });
+                findLeadCounts = await connection.query(s9);
+                if (findLeadCounts.rowCount > 0) {
+                    findLeadCounts.rows[0].total_lead_count =
+                        findLeadCounts.rows[0].total_lead_count;
+                    findLeadCounts.rows[0].converted_lead_count =
+                        findLeadCounts.rows[0].converted_lead_count;
+                } else {
+                    findLeadCounts.rows[0].total_lead_count = 0;
+                    findLeadCounts.rows[0].converted_lead_count = 0;
+                }
+                findLeadCounts.rows[0].convertedLeadPercentage =
+                    Number(
+                        findLeadCounts.rows[0].converted_lead_count /
+                        findLeadCounts.rows[0].total_lead_count
+                    ) * 100
+                        ? Number(
+                            findLeadCounts.rows[0].converted_lead_count /
+                            findLeadCounts.rows[0].total_lead_count
+                        ) * 100
+                        : 0;
+
+                let s21 = dbScript(db_sql["Q409"], { var1: roleUsers.join(",") });
+                let allSalesIds = await connection.query(s21);
+
+                let s10 = dbScript(db_sql["Q400"], { var1: roleUsers.join(",") });
+                let salesIds = await connection.query(s10);
+                if (salesIds.rowCount > 0) {
+                    let salesIdArr = [];
+                    salesIds.rows.map((data) => {
+                        if (data.sales_ids.length > 0) {
+                            salesIdArr.push("'" + data.sales_ids.join("','") + "'");
+                        }
+                    });
+
+                    let s12 = dbScript(db_sql["Q398"], {
+                        var1: quarters[0].start_date,
+                        var2: quarters[3].end_date,
+                        var3: salesIdArr.join(","),
+                    });
+                    yearlyRecognizedRevenue = await connection.query(s12);
+
+                    //monthly recognized_revenue Subscription+perpetual on perticular quarter
+                    let s13 = dbScript(db_sql["Q399"], {
+                        var1: findMonthsDateOfQuarter[0].start_date,
+                        var2: findMonthsDateOfQuarter[0].end_date,
+                        var3: findMonthsDateOfQuarter[1].start_date,
+                        var4: findMonthsDateOfQuarter[1].end_date,
+                        var5: findMonthsDateOfQuarter[2].start_date,
+                        var6: findMonthsDateOfQuarter[2].end_date,
+                        var7: salesIdArr.join(","),
+                    });
+                    monthlyRecognizedRevenue = await connection.query(s13);
+
+                    let s15 = dbScript(db_sql["Q402"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: roleUsers.join(","),
+                    });
+                    salesActivities = await connection.query(s15);
+
+                    salesActivities.rows[0].activity_per_deal = Number(
+                        salesActivities.rows[0].total_sales_activities /
+                        salesActivities.rows[0].total_deals_created
+                    )
+                        ? Number(
+                            salesActivities.rows[0].total_sales_activities /
+                            salesActivities.rows[0].total_deals_created
+                        )
+                        : 0;
+
+                    let s23 = dbScript(db_sql["Q406"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: salesIdArr.join(","),
+                    });
+                    let findMissingRecognized = await connection.query(s23);
+
+                    let high_risk_missing_rr = [];
+                    let low_risk_missing_rr = [];
+                    if (findMissingRecognized.rowCount > 0) {
+                        findMissingRecognized.rows.forEach((item) => {
+                            if (item.recognized_amount === "0") {
+                                high_risk_missing_rr.push({ customer_name: item.customer_name, amount: item.target_amount });
+                            } else {
+                                if (!low_risk_missing_rr[item.sales_id]) {
+                                    low_risk_missing_rr[item.sales_id] = {
+                                        customer_name: item.customer_name,
+                                        recognized_amount: 0,
+                                        target_amount: parseFloat(item.target_amount),
+                                    };
+                                }
+                                low_risk_missing_rr[item.sales_id].recognized_amount += parseFloat(item.recognized_amount);
+                            }
+                        });
+
+                        for (const salesId in low_risk_missing_rr) {
+                            const item = low_risk_missing_rr[salesId];
+                            const amountDifference = item.target_amount - item.recognized_amount;
+                            low_risk_missing_rr[salesId] = {
+                                customer_name: item.customer_name,
+                                amount: amountDifference,
+                            };
+                        }
+
+                        // Create a new array to store the modified low-risk missing records
+                        const modifiedLowRiskMissingRR = Object.values(low_risk_missing_rr);
+                        low_risk_missing_rr = modifiedLowRiskMissingRR;
+
+
+                        let totalHighRiskRR = 0;
+                        let totalLowRiskRR = 0;
+                        if (high_risk_missing_rr.length > 0) {
+                            for (let i = 0; i < high_risk_missing_rr.length; i++) {
+                                totalHighRiskRR += parseInt(high_risk_missing_rr[i].amount);
+                            }
+                        } else {
+                            totalHighRiskRR = totalHighRiskRR
+                        }
+                        if (low_risk_missing_rr.length > 0) {
+                            for (let i = 0; i < low_risk_missing_rr.length; i++) {
+                                totalLowRiskRR += parseInt(low_risk_missing_rr[i].amount);
+                            }
+                        } else {
+                            totalLowRiskRR = totalLowRiskRR
+                        }
+
+                        findMissingRR.high_risk_missing_rr = high_risk_missing_rr;
+                        findMissingRR.low_risk_missing_rr = low_risk_missing_rr;
+                        findMissingRR.high_risk_total_missing_rr = totalHighRiskRR;
+                        findMissingRR.low_risk_total_missing_rr = totalLowRiskRR;
+                        findMissingRR.all_total_missing_rr = Number(totalHighRiskRR + totalLowRiskRR)
+                        totalLeakageAmountClosed = Number(totalHighRiskRR + totalLowRiskRR)
+                    } else {
+                        findMissingRR.high_risk_missing_rr = [];
+                        findMissingRR.low_risk_missing_rr = [];
+                        findMissingRR.high_risk_total_missing_rr = 0;
+                        findMissingRR.low_risk_total_missing_rr = 0;
+                    }
+                } if (allSalesIds.rowCount > 0) {
+                    let allSalesIdArr = [];
+                    allSalesIds.rows.map((data) => {
+                        if (data.sales_ids.length > 0) {
+                            allSalesIdArr.push("'" + data.sales_ids.join("','") + "'");
+                        }
+                    })
+
+                    let s11 = dbScript(db_sql["Q397"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: allSalesIdArr.join(","),
+                    });
+                    findTotalAndWonDealCount = await connection.query(s11);
+                    if (findTotalAndWonDealCount.rowCount > 0) {
+                        findTotalAndWonDealCount.total_sales_count = Number(
+                            findTotalAndWonDealCount.rows[0].total_sales_count
+                        );
+                        findTotalAndWonDealCount.closed_sales_count = Number(
+                            findTotalAndWonDealCount.rows[0].closed_sales_count
+                        );
+                    } else {
+                        findTotalAndWonDealCount.total_sales_count = 0;
+                        findTotalAndWonDealCount.closed_sales_count = 0;
+                    }
+                    findTotalAndWonDealCount.rows[0].winPercentage =
+                        (findTotalAndWonDealCount.closed_sales_count /
+                            findTotalAndWonDealCount.total_sales_count) *
+                            100
+                            ? (findTotalAndWonDealCount.closed_sales_count /
+                                findTotalAndWonDealCount.total_sales_count) *
+                            100
+                            : 0;
+
+                    let s22 = dbScript(db_sql["Q405"], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: allSalesIdArr.join(","),
+                    });
+                    let findTotalSupport = await connection.query(s22);
+                    let high_risk_sales_deals = [];
+                    let low_risk_sales_deals = [];
+                    for (const sale of findTotalSupport.rows) {
+                        if (sale.ids.length < 2 || sale.notes.length < 0) {
+                            high_risk_sales_deals.push({ salesName: sale.customer_name, amount: sale.target_amount });
+                        } else {
+                            low_risk_sales_deals.push({ salesNmae: sale.customer_name, amount: sale.target_amount });
+                        }
+                    }
+                    let totalHighRiskAmount = 0;
+                    let totalLowRiskAmount = 0;
+                    if (high_risk_sales_deals.length > 0) {
+                        for (let i = 0; i < high_risk_sales_deals.length; i++) {
+                            totalHighRiskAmount += parseInt(high_risk_sales_deals[i].amount);
+                        }
+                    } else {
+                        totalHighRiskAmount = totalHighRiskAmount
+                    }
+                    if (low_risk_sales_deals.length > 0) {
+                        for (let i = 0; i < low_risk_sales_deals.length; i++) {
+                            totalLowRiskAmount += parseInt(low_risk_sales_deals[i].amount);
+                        }
+                    } else {
+                        totalLowRiskAmount = totalLowRiskAmount
+                    }
+                    let total_sales_deals_amount = totalHighRiskAmount + totalLowRiskAmount
+                    risk_sales_deals.high_risk_sales_deals = high_risk_sales_deals;
+                    risk_sales_deals.low_risk_sales_deals = low_risk_sales_deals;
+                    risk_sales_deals.total_high_risk_amount = totalHighRiskAmount;
+                    risk_sales_deals.total_low_risk_amount = totalLowRiskAmount;
+                    risk_sales_deals.total_sales_deals_amount = total_sales_deals_amount;
+
+                    //finding revenue gap
+                    let s24 = dbScript(db_sql['Q410'], { var1: roleUsers.join(",") })
+                    let findForecastAmount = await connection.query(s24)
+                    let totalForecaseAmount = 0
+                    if (findForecastAmount.rowCount > 0) {
+                        for (let amount of findForecastAmount.rows) {
+                            totalForecaseAmount += Number(amount.amount)
+                        }
+                        let yearlyRR = yearlyRecognizedRevenue.rows[0]
+                        revenueGap = totalForecaseAmount - Number(yearlyRR.total_amount)
+                    } else {
+                        revenueGap = 0
+                    }
+
+                    //finding sales where date is slippage 2 or more than 2 times
+                    let s23 = dbScript(db_sql['Q408'], {
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
+                        var3: allSalesIdArr.join(","),
+                    })
+                    let findDateSlippage = await connection.query(s23)
+
+                    const high_risk_sales = [];
+                    const low_risk_sales = [];
+
+                    const salesBySalesId = {};
+
+                    // Group sales by sales_id and track target_closing_dates
+                    for (const sale of findDateSlippage.rows) {
+                        if (!salesBySalesId[sale.sales_id]) {
+                            salesBySalesId[sale.sales_id] = {
+                                targetClosingDates: new Set(),
+                                customer_name: sale.customer_name,
+                                amount: sale.target_amount
+                            };
+                        }
+                        const salesInfo = salesBySalesId[sale.sales_id];
+                        salesInfo.targetClosingDates.add(sale.target_closing_date);
+                    }
+
+                    // Categorize sales based on target_closing_dates count
+                    for (const salesId in salesBySalesId) {
+                        const salesInfo = salesBySalesId[salesId];
+
+                        if (salesInfo.targetClosingDates.size > 1) {
+                            high_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name, missing_amount: salesInfo.amount });
+                        } else {
+                            low_risk_sales.push({ sales_id: salesId, customer_name: salesInfo.customer_name, missing_amount: salesInfo.amount });
+                        }
+                    }
+
+                    let totalHighRiskSlippageAmount = high_risk_sales.reduce((total, sale) => total + parseInt(sale.missing_amount), 0);
+                    let totalLowRiskSlippageAmount = low_risk_sales.reduce((total, sale) => total + parseInt(sale.missing_amount), 0);
+
+                    closingDateSlippage.high_risk_sales = high_risk_sales
+                    closingDateSlippage.low_risk_sales = low_risk_sales
+                    closingDateSlippage.total_high_risk_slippage_amount = totalHighRiskSlippageAmount
+                    closingDateSlippage.total_low_risk_slippage_amount = totalLowRiskSlippageAmount
+                    closingDateSlippage.all_total_slippage_amount = Number(totalHighRiskSlippageAmount + totalLowRiskSlippageAmount)
+
+                    const Sdate = new Date(selectedStartDate);
+                    const Edate = new Date(selectedEndDate);
+                    const SformattedDate = Sdate.toISOString().substring(0, 10);
+                    const EformattedDate = Edate.toISOString().substring(0, 10);
+
+                    //EOL products
+                    let s26 = dbScript(db_sql['Q411'], { var1: allSalesIdArr.join(","), var2: SformattedDate, var3: EformattedDate })
+                    let findEOLProduct = await connection.query(s26)
+                    if (findEOLProduct.rowCount > 0) {
+                        let findEOLSales = await calculateEOLProducts(findEOLProduct.rows);
+                        eolSales = findEOLSales;
+                    } else {
+                        eolSales = {
+                            highRiskEolSale: [],
+                            lowRiskEolSale: []
+                        }
+                    }
+
+                    let totalHighRiskEolMissingAmount = eolSales.highRiskEolSale.reduce((total, sale) => total + parseInt(sale.target_amount), 0);
+                    let totalLowRiskEolMissingAmount = eolSales.lowRiskEolSale.reduce((total, sale) => total + parseInt(sale.target_amount), 0);
+                    eolSales.total_high_risk_eol_missing_amount = totalHighRiskEolMissingAmount
+                    eolSales.total_low_risk_eol_missing_amount = totalLowRiskEolMissingAmount
+                    eolSales.all_total_eol_missing_amount = Number(totalHighRiskEolMissingAmount + totalLowRiskEolMissingAmount)
+
+                    //total leakage amount 
+                    totalLeakageAmountAll = (Number(totalHighRiskEolMissingAmount + totalLowRiskEolMissingAmount) + Number(totalHighRiskSlippageAmount + totalLowRiskSlippageAmount) + total_sales_deals_amount)
+
+                    totalLeakage = totalLeakageAmountAll + totalLeakageAmountClosed
+
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Sales not found",
+                        data: {
+                            lead_counts: findLeadCounts.rows[0] ? findLeadCounts.rows[0] : 0,
+                            sales_activities_per_deal: {
+                                total_sales_activities: 0,
+                                total_deals_created: 0,
+                                activity_per_deal: 0,
+                            },
+                            sales_counts: {
+                                total_sales_count: 0,
+                                closed_sales_count: 0,
+                                winPercentage: 0,
+                            },
+                            yearly_recognized_revenue: {
+                                total_amount: 0,
+                            },
+                            monthly_revenue: [
+                                {
+                                    total_amount: 0,
+                                    month_number: 1,
+                                },
+                                {
+                                    total_amount: 0,
+                                    month_number: 2,
+                                },
+                                {
+                                    total_amount: 0,
+                                    month_number: 3,
+                                },
+                            ],
+                            risk_sales_deals: {
+                                high_risk_sales_deals: [],
+                                low_risk_sales_deals: [],
+                                total_high_risk_amount: 0,
+                                total_low_risk_amount: 0,
+                                total_sales_deals_amount: 0
+
+                            },
+                            findMissingRR: {
+                                high_risk_missing_rr: [],
+                                low_risk_missing_rr: [],
+                                high_risk_total_missing_rr: 0,
+                                low_risk_total_missing_rr: 0,
+                                all_total_missing_rr: 0
+                            },
+                            closingDateSlippage: {
+                                high_risk_sales: [],
+                                low_risk_sales: [],
+                                total_high_risk_slippage_amount: 0,
+                                total_low_risk_slippage_amount: 0,
+                                all_total_slippage_amount: 0
+                            },
+                            eolSales: {
+                                highRiskEolSale: [],
+                                lowRiskEolSale: [],
+                                total_high_risk_eol_missing_amount: 0,
+                                total_low_risk_eol_missing_amount: 0,
+                                all_total_eol_missing_amount: 0
+                            },
+                            revenueGap: revenueGap,
+                            totalLeakage: totalLeakage
+                        },
+                    });
+                }
+            }
+            res.json({
+                status: 200,
+                success: true,
+                message: "sales Matrics data",
+                data: {
+                    lead_counts: findLeadCounts.rows[0],
+                    sales_activities_per_deal: salesActivities.rows[0],
+                    sales_counts: findTotalAndWonDealCount.rows[0],
+                    yearly_recognized_revenue: yearlyRecognizedRevenue.rows[0],
+                    monthly_revenue: monthlyRecognizedRevenue.rows,
+                    risk_sales_deals: risk_sales_deals,
+                    findMissingRR: findMissingRR,
+                    closingDateSlippage: closingDateSlippage,
+                    eolSales: eolSales,
+                    revenueGap: revenueGap,
+                    totalLeakage: totalLeakage
+                },
+            });
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised",
+            });
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.stack,
+        });
     }
 }

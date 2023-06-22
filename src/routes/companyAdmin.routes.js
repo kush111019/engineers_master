@@ -19,6 +19,7 @@ router.get('/showProfile', verifyTokenFn,checkParams, controller.companyAdmin.sh
 router.put('/updateProfile', verifyTokenFn,checkParams, controller.companyAdmin.updateUserProfile)
 router.put('/changePassword', verifyTokenFn,checkParams, controller.companyAdmin.changePassword)
 router.put('/updateCompanyLogo', verifyTokenFn,checkParams, uploadLogo.single('file'), controller.companyAdmin.updateCompanyLogo)
+router.put('/updateCompanyProfile', verifyTokenFn,checkParams, controller.companyAdmin.updateCompanyProfile)
 
 //-------------------------------------Users-------------------------------------------------
 router.get('/userCount', verifyTokenFn,checkParams, controller.users.userCount)
@@ -32,6 +33,7 @@ router.put('/deleteUser', verifyTokenFn,checkParams, controller.users.deleteUser
 router.put('/lockUserAccount', verifyTokenFn,checkParams, controller.users.lockUserAccount)
 router.put('/deactivateUserAccount', verifyTokenFn,checkParams, controller.users.deactivateUserAccount)
 router.put('/AssigneSaleOrLeadToNewUser', verifyTokenFn,checkParams, controller.users.AssigneSaleOrLeadToNewUser)
+router.put('/resendVerificationLink', verifyTokenFn,checkParams,controller.users.resendVerificationLink )
 
 //---------------------------------------modules------------------------------------------
 
@@ -90,9 +92,6 @@ router.get('/customerListforSales', verifyTokenFn,checkParams, controller.sales.
 router.post('/createSales', verifyTokenFn,checkParams, controller.sales.createSales)
 
 router.get('/allSalesList', verifyTokenFn,checkParams, controller.sales.allSalesList)
-// router.get('/activeSalesList',verifyTokenFn,checkParams, controller.sales.activeSalesList)
-// router.get('/closedSalesList',verifyTokenFn,checkParams, controller.sales.closedSalesList)
-//router.get('/archivedSalesList',verifyTokenFn,checkParams, controller.sales.archivedSalesList)
 router.get('/salesDetails', verifyTokenFn,checkParams, controller.sales.salesDetails)
 
 router.put('/updateSales', verifyTokenFn,checkParams, controller.sales.updateSales)
@@ -115,7 +114,7 @@ router.get('/userCommissionList', verifyTokenFn,checkParams, controller.sales.us
 router.get('/salesWiseCommissionList', verifyTokenFn,checkParams, controller.sales.salesWiseCommissionList)
 router.put('/updateUserCommission', verifyTokenFn,checkParams, controller.sales.updateUserCommission)
 router.get('/commissionDetails', verifyTokenFn,checkParams, controller.sales.commissionDetails)
-
+router.get('/commissionReport', verifyTokenFn,checkParams, controller.sales.commissionReport)
 
 //----------------------------------------Sales Approval --------------------------------
 router.get('/getUpperLevelUserList', verifyTokenFn,checkParams, controller.salesApproval.getUpperLevelUserList)
@@ -228,47 +227,7 @@ router.put('/deleteLeadSource', verifyTokenFn,checkParams, controller.configurat
 router.get('/notificationList', verifyTokenFn,checkParams, controller.notifications.notificationList)
 router.get('/notifications', verifyTokenFn,checkParams, controller.notifications.allNotificationList)
 router.put('/notificationRead', verifyTokenFn,checkParams, controller.notifications.notificationRead)
-
-
-//-----------------------------------------Connectors------------------------------
-router.get('/connectorList',verifyTokenFn,checkParams,controller.proUser.connectorsList)
-router.get('/auth/authUrl',controller.proUser.authUrl);
-router.post('/auth/callback',verifyTokenFn,checkParams,controller.proUser.callback)
-router.get('/leadReSync',verifyTokenFn,checkParams,controller.proUser.leadReSync)
-router.get('/proLeadsList',verifyTokenFn,checkParams,controller.proUser.proLeadsList)
-router.get('/salesListForPro',verifyTokenFn,checkParams,controller.proUser.salesListForPro)
-router.get('/recognizationDetailsPro',verifyTokenFn,checkParams,controller.proUser.recognizationDetailsPro)
-router.post('/addAvailability',verifyTokenFn,checkParams,controller.proUser.addAvailability)
-router.get('/availabilityList',verifyTokenFn,checkParams, controller.proUser.availableTimeList)
-
-//pro email 
-router.post('/createProEmailTemplate',verifyTokenFn,checkParams,controller.proUser.createProEmailTemplate)
-router.get('/emailTemplateList',verifyTokenFn,checkParams,controller.proUser.emailTemplateList)
-router.put('/updateEmailTemplate',verifyTokenFn,checkParams,controller.proUser.updateEmailTemplate)
-router.put('/deleteEmailTemplate',verifyTokenFn,checkParams,controller.proUser.deleteEmailTemplate)
-router.post('/addSmtpCreds',verifyTokenFn,checkParams, controller.proUser.addSmtpCreds)
-router.get('/credentialList', verifyTokenFn,checkParams, controller.proUser.credentialList)
-router.post('/sendEmailToLead', verifyTokenFn,checkParams,controller.proUser.sendEmailToLead)
-
-//event and calendar for pro
-router.post('/createEvent',verifyTokenFn,checkParams,controller.proUser.createEvent)
-router.get('/eventsList',verifyTokenFn,checkParams,controller.proUser.eventsList)
-router.get('/eventDetails', controller.proUser.eventDetails)
-router.post('/scheduleEvent',controller.proUser.scheduleEvent)
-router.get('/scheduledEventsList', verifyTokenFn,checkParams, controller.proUser.scheduledEventsList)
-router.get('/availabilityDetails',verifyTokenFn,checkParams,controller.proUser.availabilityDetails)
-router.put('/updateAvailability',verifyTokenFn,checkParams,controller.proUser.updateAvailability)
-router.put('/deleteAvalability',verifyTokenFn,checkParams,controller.proUser.deleteAvalability)
-router.put('/deleteTimeSlot',verifyTokenFn,checkParams,controller.proUser.deleteTimeSlot)
-router.put('/updateEvent',verifyTokenFn,checkParams,controller.proUser.updateEvent)
-router.put('/deleteEvent',verifyTokenFn,checkParams,controller.proUser.deleteEvent)
-
-//Sales Analysis
-router.get('/salesCaptainList', verifyTokenFn,checkParams, controller.proUser.salesCaptainList)
-router.get('/captainWiseSalesDetails', verifyTokenFn,checkParams, controller.proUser.captainWiseSalesDetails);
-router.get('/sciiSales',verifyTokenFn,checkParams, controller.proUser.sciiSales)
-router.get('/captainWiseGraph',verifyTokenFn,checkParams, controller.proUser.captainWiseGraph)
-
+router.put('/readAllNotifications', verifyTokenFn,checkParams, controller.notifications.notificationReadAll)
 
 
 module.exports = router;
