@@ -27,7 +27,6 @@ const oauth2Client = new OAuth2({
 //Hubspot auth client
 const hubspotClient = new hubspot.Client({ developerApiKey: process.env.HUBSPOT_API_KEY })
 
-
 module.exports.proUserLogin = async (req, res) => {
     try {
         let { emailAddress, password } = req.body;
@@ -3089,7 +3088,7 @@ module.exports.salesMetricsReport = async (req, res) => {
             let totalLeakage = 0;
             let totalLeakageAmountClosed = 0
             let totalLeakageAmountAll = 0
-            
+
             let findMonthsDateOfQuarter = await getQuarterMonthsDates(
                 selectedStartDate,
                 selectedEndDate
@@ -3448,18 +3447,34 @@ module.exports.salesMetricsReport = async (req, res) => {
                             risk_sales_deals: {
                                 high_risk_sales_deals: [],
                                 low_risk_sales_deals: [],
+                                total_high_risk_amount: 0,
+                                total_low_risk_amount: 0,
+                                total_sales_deals_amount: 0
+
                             },
-                            findMissingRR: 0,
+                            findMissingRR: {
+                                high_risk_missing_rr: [],
+                                low_risk_missing_rr: [],
+                                high_risk_total_missing_rr: 0,
+                                low_risk_total_missing_rr: 0,
+                                all_total_missing_rr: 0
+                            },
                             closingDateSlippage: {
                                 high_risk_sales: [],
-                                low_risk_sales: []
+                                low_risk_sales: [],
+                                total_high_risk_slippage_amount: 0,
+                                total_low_risk_slippage_amount: 0,
+                                all_total_slippage_amount: 0
                             },
                             eolSales: {
                                 highRiskEolSale: [],
-                                lowRiskEolSale: []
+                                lowRiskEolSale: [],
+                                total_high_risk_eol_missing_amount: 0,
+                                total_low_risk_eol_missing_amount: 0,
+                                all_total_eol_missing_amount: 0
                             },
                             revenueGap: revenueGap,
-
+                            totalLeakage: totalLeakage
                         },
                     });
                 }
@@ -3682,7 +3697,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                     risk_sales_deals.total_low_risk_amount = totalLowRiskAmount;
                     risk_sales_deals.total_sales_deals_amount = total_sales_deals_amount;
 
-                  //finding revenue gap
+                    //finding revenue gap
                     let s24 = dbScript(db_sql['Q410'], { var1: roleUsers.join(",") })
                     let findForecastAmount = await connection.query(s24)
                     let totalForecaseAmount = 0
@@ -3808,17 +3823,34 @@ module.exports.salesMetricsReport = async (req, res) => {
                             risk_sales_deals: {
                                 high_risk_sales_deals: [],
                                 low_risk_sales_deals: [],
+                                total_high_risk_amount: 0,
+                                total_low_risk_amount: 0,
+                                total_sales_deals_amount: 0
+
                             },
-                            findMissingRR: 0,
+                            findMissingRR: {
+                                high_risk_missing_rr: [],
+                                low_risk_missing_rr: [],
+                                high_risk_total_missing_rr: 0,
+                                low_risk_total_missing_rr: 0,
+                                all_total_missing_rr: 0
+                            },
                             closingDateSlippage: {
                                 high_risk_sales: [],
-                                low_risk_sales: []
+                                low_risk_sales: [],
+                                total_high_risk_slippage_amount: 0,
+                                total_low_risk_slippage_amount: 0,
+                                all_total_slippage_amount: 0
                             },
                             eolSales: {
                                 highRiskEolSale: [],
-                                lowRiskEolSale: []
+                                lowRiskEolSale: [],
+                                total_high_risk_eol_missing_amount: 0,
+                                total_low_risk_eol_missing_amount: 0,
+                                all_total_eol_missing_amount: 0
                             },
-                            revenueGap: revenueGap
+                            revenueGap: revenueGap,
+                            totalLeakage: totalLeakage
                         },
                     });
                 }
@@ -3854,4 +3886,4 @@ module.exports.salesMetricsReport = async (req, res) => {
             message: error.stack,
         });
     }
-};
+}
