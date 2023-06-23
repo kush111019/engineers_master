@@ -3536,8 +3536,7 @@ const db_sql = {
         fn.notes,
         target_amount
       ORDER BY
-        su.sales_id;
-      `,
+        su.sales_id;`,
       "Q406":`SELECT rr.sales_id, CAST(rr.recognized_amount AS VARCHAR) AS recognized_amount, cc.customer_name, s.target_amount
               FROM recognized_revenue AS rr
               LEFT JOIN sales AS s ON s.id = rr.sales_id
@@ -3560,14 +3559,16 @@ const db_sql = {
               `,
       "Q407":`SELECT amount FROM forecast WHERE assigned_to = '{var1}' AND timeline = 'Annual' AND deleted_at IS NULL AND pid != '0' `,
       "Q408":`SELECT sl.id, sl.target_amount, sl.sales_id, sl.target_closing_date, cc.customer_name
-      FROM sales_logs sl
-      LEFT JOIN customer_companies cc ON sl.customer_id = cc.id
-      WHERE sl.sales_id IN ({var3})
-      AND sl.created_at BETWEEN '{var1}' AND '{var2}'
-        AND sl.deleted_at IS NULL
-        AND cc.deleted_at IS NULL
-        AND sl.target_closing_date IS NOT NULL
-        AND sl.target_closing_date != '';`,
+          FROM sales_logs sl
+          LEFT JOIN customer_companies cc ON sl.customer_id = cc.id
+          LEFT JOIN sales s ON s.id = sl.sales_id
+          WHERE sl.sales_id IN ({var3})
+          AND sl.created_at BETWEEN '{var1}' AND '{var2}'
+          AND sl.deleted_at IS NULL
+          AND s.deleted_at IS NULL
+          AND sl.closed_at IS NULL
+          AND s.closed_at IS NULL
+          AND cc.deleted_at IS NULL`,
       "Q409":`SELECT  
         su.user_id, 
         u.full_name,
