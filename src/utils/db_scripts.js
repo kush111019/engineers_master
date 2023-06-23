@@ -3379,214 +3379,232 @@ const db_sql = {
   "Q393": `SELECT start_date FROM pro_quarter_config WHERE company_id = '{var1}' AND quarter = '{var2}' AND deleted_at IS NULL`,
   "Q394": `UPDATE companies SET company_address = '{var1}', updated_at = '{var2}', quarter = '{var4}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
   "Q395":`SELECT
-        COUNT(*) AS total_lead_count,
-        COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS converted_lead_count
-      FROM
-        customer_company_employees
-      WHERE
-        creator_id = '{var3}'
-        AND created_at >= '{var1}'
-        AND created_at <= '{var2}'
-        AND title IS NOT NULL
-        AND deleted_at IS NULL;` ,
-      "Q396": `SELECT
-          COUNT(*) AS total_lead_count,
-          COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END),0) AS converted_lead_count
-        FROM
-          customer_company_employees
-        WHERE
-          creator_id IN ({var3})
-          AND created_at >= '{var1}'
-          AND created_at <= '{var2}'
-          AND title IS NOT NULL
-          AND deleted_at IS NULL`,
-      "Q397":`SELECT
-        COUNT(*) AS total_sales_count,
-        COALESCE(SUM(CASE WHEN closed_at IS NOT NULL THEN 1 ELSE 0 END),0) AS closed_sales_count
-      FROM
-        sales
-      WHERE
-        created_at BETWEEN '{var1}' AND '{var2}'
-        AND id IN ({var3})
-        AND deleted_at IS NULL` ,
-      "Q398":` SELECT SUM(rr.recognized_amount::numeric) AS total_amount
-        FROM 
-          recognized_revenue AS rr
-        WHERE 
-          rr.sales_id IN ({var3})
-        AND 
-          rr.created_at >= '{var1}'
-        AND 
-          rr.created_at <= '{var2}'
-        AND 
-          rr.deleted_at IS NULL;`,
-      "Q399":`WITH months AS (
-            SELECT 1 AS month_number, '{var1}'::timestamp with time zone AS start_date, '{var2}'::timestamp with time zone AS end_date UNION
-            SELECT 2 AS month_number, '{var3}'::timestamp with time zone AS start_date, '{var4}'::timestamp with time zone AS end_date UNION
-            SELECT 3 AS month_number, '{var5}'::timestamp with time zone AS start_date, '{var6}'::timestamp with time zone AS end_date
-        )
-        SELECT
-            COALESCE(SUM(r.recognized_amount::numeric), 0) AS total_amount,
-            m.month_number
-        FROM
-            months m
-        LEFT JOIN
-            recognized_revenue r ON r.sales_id IN ({var7})
-            AND r.created_at BETWEEN m.start_date AND m.end_date AND r.deleted_at IS NULL
-        GROUP BY
-            m.month_number
-        ORDER BY
-            m.month_number`,
-      "Q400":`SELECT sales_ids
-        FROM (
-          SELECT
-            array_agg(DISTINCT su.sales_id) AS sales_ids
+            COUNT(*) AS total_lead_count,
+            COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS converted_lead_count
           FROM
+            customer_company_employees
+          WHERE
+            creator_id = '{var3}'
+            AND created_at >= '{var1}'
+            AND created_at <= '{var2}'
+            AND title IS NOT NULL
+            AND pid IS NULL
+            AND assigned_sales_lead_to IS NOT NULL
+            AND deleted_at IS NULL` ,
+  "Q396": `SELECT
+              COUNT(*) AS total_lead_count,
+              COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END),0) AS converted_lead_count
+            FROM
+              customer_company_employees
+            WHERE
+              creator_id IN ({var3})
+              AND created_at >= '{var1}'
+              AND created_at <= '{var2}'
+              AND title IS NOT NULL
+              AND pid IS NULL
+              AND assigned_sales_lead_to IS NOT NULL
+              AND deleted_at IS NULL` ,
+  "Q397": `SELECT
+              COUNT(*) AS total_sales_count,
+              COALESCE(SUM(CASE WHEN closed_at IS NOT NULL THEN 1 ELSE 0 END), 0) AS closed_sales_count
+            FROM
+              sales
+            WHERE
+              created_at BETWEEN '{var1}' AND '{var2}'
+              AND id IN ({var3})
+              AND deleted_at IS NULL;` ,
+  "Q398": ` SELECT SUM(rr.recognized_amount::numeric) AS total_amount
+            FROM 
+              recognized_revenue AS rr
+            WHERE 
+              rr.sales_id IN ({var3})
+            AND 
+              rr.created_at >= '{var1}'
+            AND 
+              rr.created_at <= '{var2}'
+            AND 
+              rr.deleted_at IS NULL;`,
+  "Q399": `WITH months AS (
+        SELECT 1 AS month_number, '{var1}'::timestamp with time zone AS start_date, '{var2}'::timestamp with time zone AS end_date
+        UNION
+        SELECT 2 AS month_number, '{var3}'::timestamp with time zone AS start_date, '{var4}'::timestamp with time zone AS end_date
+        UNION
+        SELECT 3 AS month_number, '{var5}'::timestamp with time zone AS start_date, '{var6}'::timestamp with time zone AS end_date
+      )
+      SELECT
+        COALESCE(SUM(r.recognized_amount::numeric), 0) AS total_amount,
+        m.month_number
+      FROM
+        months m
+      LEFT JOIN
+        recognized_revenue r ON r.sales_id IN ({var7})
+        AND r.created_at BETWEEN m.start_date AND m.end_date
+        AND r.deleted_at IS NULL
+      GROUP BY
+        m.month_number
+      ORDER BY
+        m.month_number;`,
+  "Q400": `SELECT sales_ids
+          FROM (
+            SELECT array_agg(DISTINCT su.sales_id) AS sales_ids
+            FROM sales_users su
+            LEFT JOIN users u ON su.user_id = u.id
+            LEFT JOIN sales s ON su.sales_id = s.id
+            WHERE su.user_type = 'captain'
+              AND su.user_id IN ({var1})
+              AND su.deleted_at IS NULL
+              AND s.closed_at IS NOT NULL
+              AND s.deleted_at IS NULL
+              AND u.deleted_at IS NULL
+          ) subquery
+          WHERE sales_ids IS NOT NULL AND array_length(sales_ids, 1) > 0 `,
+  "Q401": `SELECT
+            COUNT(*) AS total_sales_activities,
+            COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS total_deals_created
+          FROM
+            customer_company_employees
+          WHERE
+            creator_id = '{var3}'
+            AND created_at >= '{var1}'
+            AND created_at <= '{var2}'
+            AND deleted_at IS NULL;` ,
+  "Q402": `SELECT
+          COUNT(*) AS total_sales_activities,
+            COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS total_deals_created
+          FROM
+            customer_company_employees
+          WHERE
+            creator_id IN ({var3})
+            AND created_at >= '{var1}'
+            AND created_at <= '{var2}'
+            AND deleted_at IS NULL;`,
+  "Q403": `SELECT su.sales_id, ARRAY_AGG(su.id) AS ids, cc.customer_name
+          FROM sales_users su
+          LEFT JOIN sales s ON su.sales_id = s.id
+          LEFT JOIN customer_companies cc ON s.customer_id = cc.id
+          WHERE su.sales_id IN ({var3})
+            AND su.user_type = 'support'
+            AND s.created_at BETWEEN '{var1}' AND '{var2}'
+            AND s.deleted_at IS NULL
+            AND su.deleted_at IS NULL
+            AND cc.deleted_at IS NULL
+          GROUP BY su.sales_id, su.user_type, cc.customer_name
+          ORDER BY su.sales_id`,
+  "Q404": `SELECT  
+            su.user_id, 
+            u.full_name,
+            array_agg(DISTINCT su.sales_id) AS sales_ids
+          FROM 
             sales_users su
-          LEFT JOIN
+          LEFT JOIN 
             users u ON su.user_id = u.id
           LEFT JOIN
             sales s ON su.sales_id = s.id
+          WHERE 
+            su.user_type = 'captain' AND
+            su.user_id = '{var1}' AND su.deleted_at IS NULL
+          GROUP BY 
+            su.user_id,
+            u.full_name;`,
+  "Q405": `SELECT
+            su.sales_id,
+            ARRAY_AGG(su.id) AS ids,
+            s.target_amount,
+            cc.customer_name,
+            COALESCE(fn.notes, '{}'::TEXT[]) AS notes
+          FROM
+            sales_users su
+            LEFT JOIN sales s ON su.sales_id = s.id
+            LEFT JOIN customer_companies cc ON s.customer_id = cc.id
+            LEFT JOIN (
+              SELECT sales_id, ARRAY_AGG(notes) AS notes
+              FROM follow_up_notes
+              GROUP BY sales_id
+            ) AS fn ON s.id = fn.sales_id
           WHERE
-            su.user_type = 'captain'
-            AND su.user_id IN ({var1})
+            su.sales_id IN ({var3})
+            AND su.user_type = 'support'
+            AND s.created_at BETWEEN '{var1}' AND '{var2}'
             AND su.deleted_at IS NULL
-            AND s.closed_at IS NOT NULL
             AND s.deleted_at IS NULL
-            AND u.deleted_at IS NULL
-        ) subquery
-        WHERE sales_ids IS NOT NULL AND array_length(sales_ids, 1) > 0; `,
-      "Q401":`SELECT
-        COUNT(*) AS total_sales_activities,
-        COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS total_deals_created
-      FROM
-        customer_company_employees
-      WHERE
-        creator_id = '{var3}'
-        AND created_at >= '{var1}'
-        AND created_at <= '{var2}'
-        AND deleted_at IS NULL;` ,
-      "Q402":`SELECT
-      COUNT(*) AS total_sales_activities,
-        COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS total_deals_created
-      FROM
-        customer_company_employees
-      WHERE
-        creator_id IN ({var3})
-        AND created_at >= '{var1}'
-        AND created_at <= '{var2}'
-        AND deleted_at IS NULL;`,
-      "Q403":`SELECT su.sales_id, ARRAY_AGG(su.id) AS ids, cc.customer_name
-      FROM sales_users su
-      LEFT JOIN sales s ON su.sales_id = s.id
-      LEFT JOIN customer_companies cc ON s.customer_id = cc.id
-      WHERE su.sales_id IN ({var3})
-        AND su.user_type = 'support'
-        AND s.created_at BETWEEN '{var1}' AND '{var2}'
-        AND s.deleted_at IS NULL
-        AND su.deleted_at IS NULL
-        AND cc.deleted_at IS NULL
-      GROUP BY su.sales_id, su.user_type, cc.customer_name
-      ORDER BY su.sales_id;
-        `,
-      "Q404":`SELECT  
-        su.user_id, 
-        u.full_name,
-        array_agg(DISTINCT su.sales_id) AS sales_ids
-      FROM 
-        sales_users su
-      LEFT JOIN 
-        users u ON su.user_id = u.id
-      LEFT JOIN
-        sales s ON su.sales_id = s.id
-      WHERE 
-        su.user_type = 'captain' AND
-        su.user_id = '{var1}' AND su.deleted_at IS NULL
-      GROUP BY 
-        su.user_id,
-        u.full_name;`,
-        
-      "Q405":`SELECT
-        su.sales_id,
-        ARRAY_AGG(su.id) AS ids,
-        s.target_amount,
-        cc.customer_name,
-        COALESCE(fn.notes, '{}'::TEXT[]) AS notes
-      FROM
-        sales_users su
-        LEFT JOIN sales s ON su.sales_id = s.id
-        LEFT JOIN customer_companies cc ON s.customer_id = cc.id
-        LEFT JOIN (
-          SELECT sales_id, ARRAY_AGG(notes) AS notes
-          FROM follow_up_notes
-          GROUP BY sales_id
-        ) AS fn ON s.id = fn.sales_id
-      WHERE
-        su.sales_id IN ({var3})
-        AND su.user_type = 'support'
-        AND s.created_at BETWEEN '{var1}' AND '{var2}'
-        AND su.deleted_at IS NULL
-        AND s.deleted_at IS NULL
-        AND cc.deleted_at IS NULL
-        AND s.closed_at IS NULL
-      GROUP BY
-        su.sales_id,
-        su.user_type,
-        cc.customer_name,
-        fn.notes,
-        target_amount
-      ORDER BY
-        su.sales_id;`,
-      "Q406":`SELECT rr.sales_id, CAST(rr.recognized_amount AS VARCHAR) AS recognized_amount, cc.customer_name, s.target_amount
-              FROM recognized_revenue AS rr
-              LEFT JOIN sales AS s ON s.id = rr.sales_id
-              LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
-              WHERE rr.sales_id IN ({var3})
-              AND s.created_at BETWEEN '{var1}' AND '{var2}'
-              AND s.deleted_at IS NULL
-              AND cc.deleted_at IS NULL
+            AND cc.deleted_at IS NULL
+            AND s.closed_at IS NULL
+          GROUP BY
+            su.sales_id,
+            su.user_type,
+            cc.customer_name,
+            fn.notes,
+            target_amount
+          ORDER BY
+            su.sales_id;`,
+  "Q406": `SELECT
+            rr.sales_id,
+            CAST(rr.recognized_amount AS VARCHAR) AS recognized_amount,
+            cc.customer_name,
+            s.target_amount
+          FROM
+            recognized_revenue AS rr
+            LEFT JOIN sales AS s ON s.id = rr.sales_id
+            LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
+          WHERE
+            rr.sales_id IN ({var3})
+            AND s.created_at BETWEEN '{var1}' AND '{var2}'
+            AND s.deleted_at IS NULL
+            AND cc.deleted_at IS NULL
 
-              UNION ALL
+          UNION ALL
 
-              SELECT s.id AS sales_id, CAST('0' AS VARCHAR) AS recognized_amount, cc.customer_name, s.target_amount
-              FROM sales AS s
-              LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
-              WHERE s.id IN ({var3})
-              AND s.created_at BETWEEN '{var1}' AND '{var2}'
-              AND s.id NOT IN (SELECT sales_id FROM recognized_revenue)
-              AND s.deleted_at IS NULL
-              AND cc.deleted_at IS NULL;
-              `,
-      "Q407":`SELECT amount FROM forecast WHERE assigned_to = '{var1}' AND timeline = 'Annual' AND deleted_at IS NULL AND pid != '0' `,
-      "Q408":`SELECT sl.id, sl.target_amount, sl.sales_id, sl.target_closing_date, cc.customer_name
-          FROM sales_logs sl
-          LEFT JOIN customer_companies cc ON sl.customer_id = cc.id
-          LEFT JOIN sales s ON s.id = sl.sales_id
-          WHERE sl.sales_id IN ({var3})
-          AND sl.created_at BETWEEN '{var1}' AND '{var2}'
-          AND sl.deleted_at IS NULL
-          AND s.deleted_at IS NULL
-          AND sl.closed_at IS NULL
-          AND s.closed_at IS NULL
-          AND cc.deleted_at IS NULL`,
-      "Q409":`SELECT  
-        su.user_id, 
-        u.full_name,
-        array_agg(DISTINCT su.sales_id) AS sales_ids
-      FROM 
-        sales_users su
-      LEFT JOIN 
-        users u ON su.user_id = u.id
-      LEFT JOIN
-        sales s ON su.sales_id = s.id
-      WHERE 
-        su.user_type = 'captain' AND
-        su.user_id IN ({var1}) AND su.deleted_at IS NULL
-      GROUP BY 
-        su.user_id,
-        u.full_name;`,
-      "Q410":`SELECT amount FROM forecast WHERE assigned_to IN ({var1}) AND timeline = 'Annual' AND deleted_at IS NULL AND pid != '0'` ,
-      "Q411":`SELECT
+          SELECT
+            s.id AS sales_id,
+            CAST('0' AS VARCHAR) AS recognized_amount,
+            cc.customer_name,
+            s.target_amount
+          FROM
+            sales AS s
+            LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
+          WHERE
+            s.id IN ({var3})
+            AND s.created_at BETWEEN '{var1}' AND '{var2}'
+            AND s.id NOT IN (SELECT sales_id FROM recognized_revenue)
+            AND s.deleted_at IS NULL
+            AND cc.deleted_at IS NULL`,
+  "Q407": `SELECT amount FROM forecast WHERE assigned_to = '{var1}' AND timeline = 'Annual' AND deleted_at IS NULL AND pid != '0' `,
+  "Q408": `SELECT
+            sl.id,
+            sl.target_amount,
+            sl.sales_id,
+            sl.target_closing_date,
+            cc.customer_name
+          FROM
+            sales_logs sl
+            LEFT JOIN customer_companies cc ON sl.customer_id = cc.id
+            LEFT JOIN sales s ON s.id = sl.sales_id
+          WHERE
+            sl.sales_id IN ({var3})
+            AND sl.created_at BETWEEN '{var1}' AND '{var2}'
+            AND sl.deleted_at IS NULL
+            AND s.deleted_at IS NULL
+            AND sl.closed_at IS NULL
+            AND s.closed_at IS NULL
+            AND cc.deleted_at IS NULL `,
+  "Q409": `SELECT  
+            su.user_id, 
+            u.full_name,
+            array_agg(DISTINCT su.sales_id) AS sales_ids
+          FROM 
+            sales_users su
+          LEFT JOIN 
+            users u ON su.user_id = u.id
+          LEFT JOIN
+            sales s ON su.sales_id = s.id
+          WHERE 
+            su.user_type = 'captain' AND
+            su.user_id IN ({var1}) AND su.deleted_at IS NULL
+          GROUP BY 
+            su.user_id,
+            u.full_name;`,
+  "Q410": `SELECT amount FROM forecast WHERE assigned_to IN ({var1}) AND timeline = 'Annual' AND deleted_at IS NULL AND pid != '0'`,
+  "Q411": `SELECT
             s.customer_id,
             s.target_amount,
             cc.customer_name,
@@ -3615,10 +3633,17 @@ const db_sql = {
             pis.product_id,
             pis.sales_id,
           p.end_of_life;`,
-      "Q412":`SELECT id,customer_id,target_amount FROM sales WHERE id IN({var3})
-      AND created_at BETWEEN '{var1}' AND '{var2}'
-      AND deleted_at is NULL
-      AND closed_at IS NULL`
+  "Q412": `SELECT
+            id,
+            customer_id,
+            target_amount
+          FROM
+            sales
+          WHERE
+            id IN ({var3})
+            AND created_at BETWEEN '{var1}' AND '{var2}'
+            AND deleted_at IS NULL
+            AND closed_at IS NULL;`
 }
 
 function dbScript(template, variables) {
