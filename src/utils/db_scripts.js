@@ -3467,6 +3467,7 @@ const db_sql = {
             creator_id = '{var3}'
             AND created_at >= '{var1}'
             AND created_at <= '{var2}'
+            AND source IS NOT NULL
             AND deleted_at IS NULL;` ,
   "Q402": `SELECT
           COUNT(*) AS total_sales_activities,
@@ -3477,6 +3478,7 @@ const db_sql = {
             creator_id IN ({var3})
             AND created_at >= '{var1}'
             AND created_at <= '{var2}'
+            AND source IS NOT NULL
             AND deleted_at IS NULL;`,
   "Q403": `SELECT su.sales_id, ARRAY_AGG(su.id) AS ids, cc.customer_name
           FROM sales_users su
