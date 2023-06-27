@@ -3310,7 +3310,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                         totalHighRiskAmount = totalHighRiskAmount
                     }
                     if (low_risk_sales_deals.length > 0) {
-                        for (let i = 0; i < high_risk_sales_deals.length; i++) {
+                        for (let i = 0; i < low_risk_sales_deals.length; i++) {
                             totalLowRiskAmount += parseInt(low_risk_sales_deals[i].amount);
                         }
                     } else {
