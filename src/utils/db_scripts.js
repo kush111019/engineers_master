@@ -3642,6 +3642,7 @@ const db_sql = {
             s.id IN ({var1})
             AND TO_DATE(p.end_of_life, 'MM-DD-YYYY') BETWEEN DATE '{var2}' AND DATE '{var3}'
             AND s.archived_at IS NULL
+            AND s.closed_at IS NULL
             AND s.deleted_at IS NULL
             AND pis.deleted_at IS NULL
             AND p.deleted_at IS NULL
