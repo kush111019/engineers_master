@@ -3564,6 +3564,7 @@ const db_sql = {
             rr.sales_id IN ({var3})
             AND s.created_at BETWEEN '{var1}' AND '{var2}'
             AND s.deleted_at IS NULL
+            AND s.archived_at IS NULL
             AND cc.deleted_at IS NULL
 
           UNION ALL
@@ -3581,6 +3582,7 @@ const db_sql = {
             AND s.created_at BETWEEN '{var1}' AND '{var2}'
             AND s.id NOT IN (SELECT sales_id FROM recognized_revenue)
             AND s.deleted_at IS NULL
+            AND s.archived_at IS NULL
             AND cc.deleted_at IS NULL`,
   "Q407": `SELECT amount FROM forecast WHERE assigned_to = '{var1}' AND timeline = 'Annual' AND deleted_at IS NULL AND pid != '0' `,
   "Q408": `SELECT
