@@ -3424,26 +3424,38 @@ const db_sql = {
               rr.created_at <= '{var2}'
             AND 
               rr.deleted_at IS NULL;`,
-  "Q399": `WITH months AS (
-        SELECT 1 AS month_number, '{var1}'::timestamp with time zone AS start_date, '{var2}'::timestamp with time zone AS end_date
-        UNION
-        SELECT 2 AS month_number, '{var3}'::timestamp with time zone AS start_date, '{var4}'::timestamp with time zone AS end_date
-        UNION
-        SELECT 3 AS month_number, '{var5}'::timestamp with time zone AS start_date, '{var6}'::timestamp with time zone AS end_date
-      )
-      SELECT
-        COALESCE(SUM(r.recognized_amount::numeric), 0) AS total_amount,
-        m.month_number
-      FROM
-        months m
-      LEFT JOIN
-        recognized_revenue r ON r.sales_id IN ({var7})
-        AND r.created_at BETWEEN m.start_date AND m.end_date
-        AND r.deleted_at IS NULL
-      GROUP BY
-        m.month_number
-      ORDER BY
-        m.month_number;`,
+  
+"Q399": `WITH months AS (
+            SELECT 
+              1 AS month_number, 
+              '{var1}'::timestamp with time zone AS start_date, 
+              '{var2}'::timestamp with time zone AS end_date
+            UNION
+            SELECT 
+              2 AS month_number, 
+              '{var3}'::timestamp with time zone AS start_date, 
+              '{var4}'::timestamp with time zone AS end_date
+            UNION
+            SELECT 
+              3 AS month_number, 
+              '{var5}'::timestamp with time zone AS start_date, 
+              '{var6}'::timestamp with time zone AS end_date
+          )
+          SELECT 
+            COALESCE(SUM(r.recognized_amount::numeric), 0) AS total_amount,
+            m.month_number,
+            to_char(m.start_date, 'Month') AS start_month,
+            to_char(m.end_date, 'Month') AS end_month
+          FROM 
+            months m
+          LEFT JOIN 
+            recognized_revenue r ON r.sales_id IN ({var7})
+            AND r.created_at BETWEEN m.start_date AND m.end_date
+            AND r.deleted_at IS NULL
+          GROUP BY 
+            m.month_number, start_month, end_month
+          ORDER BY 
+            m.month_number;`,
   "Q400": `SELECT sales_ids
           FROM (
             SELECT array_agg(DISTINCT su.sales_id) AS sales_ids
