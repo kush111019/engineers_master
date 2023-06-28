@@ -3307,6 +3307,7 @@ const db_sql = {
           WHERE 
             su.user_type = 'captain' AND
             su.company_id = '{var1}' AND su.deleted_at IS NULL
+            AND s.closed_at IS NOT NULL
           GROUP BY 
             su.user_id,
             u.full_name;`,
