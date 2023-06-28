@@ -3539,6 +3539,7 @@ const db_sql = {
             su.sales_id IN ({var3})
             AND su.user_type = 'support'
             AND s.created_at BETWEEN '{var1}' AND '{var2}'
+            AND s.archived_at IS NULL
             AND su.deleted_at IS NULL
             AND s.deleted_at IS NULL
             AND cc.deleted_at IS NULL
@@ -3598,6 +3599,7 @@ const db_sql = {
           WHERE
             sl.sales_id IN ({var3})
             AND sl.created_at BETWEEN '{var1}' AND '{var2}'
+            AND s.archived_at IS NULL
             AND sl.deleted_at IS NULL
             AND s.deleted_at IS NULL
             AND sl.closed_at IS NULL
@@ -3639,6 +3641,7 @@ const db_sql = {
           WHERE
             s.id IN ({var1})
             AND TO_DATE(p.end_of_life, 'MM-DD-YYYY') BETWEEN DATE '{var2}' AND DATE '{var3}'
+            AND s.archived_at IS NULL
             AND s.deleted_at IS NULL
             AND pis.deleted_at IS NULL
             AND p.deleted_at IS NULL
