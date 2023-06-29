@@ -46,7 +46,7 @@ module.exports.createLead = async (req, res) => {
                 sourceId = addSource.rows[0].id
             }
 
-            let s2 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(fullName), var2: titleId, var3: mysql_real_escape_string(emailAddress), var4: phoneNumber, var5: mysql_real_escape_string(address), var6: sourceId, var7: linkedinUrl, var8: website, var9: targetedValue, var10: marketingQualifiedLead, var11: assignedSalesLeadTo ? assignedSalesLeadTo : 'null', var12: mysql_real_escape_string(additionalMarketingNotes), var13: userId, var14: checkPermission.rows[0].company_id, var15: customerId, var16: empType, var17 : 'null', var18 : '', var19 : 'null' })
+            let s2 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(fullName), var2: titleId, var3: mysql_real_escape_string(emailAddress), var4: phoneNumber, var5: mysql_real_escape_string(address), var6: sourceId, var7: linkedinUrl, var8: website, var9: targetedValue, var10: marketingQualifiedLead, var11: assignedSalesLeadTo ? assignedSalesLeadTo : 'null', var12: mysql_real_escape_string(additionalMarketingNotes), var13: userId, var14: checkPermission.rows[0].company_id, var15: customerId, var16: empType, var17: 'null', var18: '', var19: 'null' })
             let createLead = await connection.query(s2)
             // add notification in notification list
             notification_typeId = createLead.rows[0].id;
@@ -206,9 +206,9 @@ module.exports.leadsDetails = async (req, res) => {
             let s2 = dbScript(db_sql['Q176'], { var1: id, var2: type })
             leadList = await connection.query(s2)
             if (leadList.rowCount > 0) {
-                if(leadList.rows[0].sales_id){
+                if (leadList.rows[0].sales_id) {
                     leadList.rows[0].is_assigned_in_sales = true
-                }else {
+                } else {
                     leadList.rows[0].is_assigned_in_sales = false
                 }
                 res.json({
@@ -504,26 +504,29 @@ module.exports.uploadLeadFile = async (req, res) => {
                             }
 
                             let customerId = ''
-                            let s12 = dbScript(db_sql['Q312'],{var1 : mysql_real_escape_string(row[10]), var2 : checkPermission.rows[0].company_id })
+                            let s12 = dbScript(db_sql['Q312'], { var1: mysql_real_escape_string(row[10]), var2: checkPermission.rows[0].company_id })
                             let findCustomer = await connection.query(s12)
-                            if(findCustomer.rowCount == 0){
+                            if (findCustomer.rowCount == 0) {
                                 let s9 = dbScript(db_sql['Q36'], { var1: checkPermission.rows[0].id, var2: mysql_real_escape_string(row[10]), var3: checkPermission.rows[0].company_id, var4: mysql_real_escape_string(row[12]), var5: row[13], var6: industryId })
                                 let createCustomer = await connection.query(s9)
                                 customerId = createCustomer.rows[0].id
-                            }else{
+                            } else {
                                 customerId = findCustomer.rows[0].id
                             }
 
-                            let s10 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(row[0]), var2: titleId, var3: mysql_real_escape_string(row[1]), var4: row[2], var5: mysql_real_escape_string(row[3]), var6: sourceId, var7: row[4], var8: row[5], var9: row[6], var10: false, var11: 'null', var12: mysql_real_escape_string(row[7]), var13: userId, var14: checkPermission.rows[0].company_id, var15: customerId, var16: 'lead', var17 : 'null', var18 : '', var19 : 'null' })
+                            let s10 = dbScript(db_sql['Q169'], { var1: mysql_real_escape_string(row[0]), var2: titleId, var3: mysql_real_escape_string(row[1]), var4: row[2], var5: mysql_real_escape_string(row[3]), var6: sourceId, var7: row[4], var8: row[5], var9: row[6], var10: false, var11: 'null', var12: mysql_real_escape_string(row[7]), var13: userId, var14: checkPermission.rows[0].company_id, var15: customerId, var16: 'lead', var17: 'null', var18: '', var19: 'null' })
                             let createLead = await connection.query(s10)
 
                             let _dt = new Date().toISOString();
                             let s11 = dbScript(db_sql['Q278'], { var1: _dt, var2: checkPermission.rows[0].company_id })
                             let updateStatusInCompany = await connection.query(s11)
 
-                            if (createLead.rowCount > 0 && updateStatusInCompany.rowCount > 0) {
+                            let s13 = dbScript(db_sql['Q279'], { var1: _dt, var2: checkPermission.rows[0].company_id })
+                            updateStatusInCompanyForCustomer = await connection.query(s13)
+
+                            if (createLead.rowCount > 0 && updateStatusInCompany.rowCount > 0 && updateStatusInCompanyForCustomer.rowCount > 0) {
                                 await connection.query('COMMIT')
-                            }else{
+                            } else {
                                 await connection.query('ROLLBACK')
                                 return res.json({
                                     status: 400,
@@ -550,7 +553,7 @@ module.exports.uploadLeadFile = async (req, res) => {
                             success: false,
                             message: err
                         })
-                    }else{
+                    } else {
                         res.json({
                             status: 201,
                             success: true,
