@@ -50,34 +50,70 @@ module.exports.marketingDashboard = async (req, res) => {
             const lists = [leadData.rows, mqlLeads.rows, assignedLeads.rows, rejectedLeads.rows, customerlist.rows];
             const counts = {};
 
+            // lists.forEach(list => {
+            //     list.forEach(item => {
+            //         if (!counts[item.created_by]) {
+            //             counts[item.created_by] = {
+            //                 created_by: item.created_by,
+            //                 count: 0,
+            //                 mqlCount: 0,
+            //                 assignedCount: 0,
+            //                 rejectedCount: 0,
+            //                 customerCount: 0
+            //             };
+            //         }
+            //     });
+            // });
+            // lists.forEach(list => {
+            //     list.forEach(item => {
+            //         if (list === leadData.rows) counts[item.created_by].count = item.count;
+            //         if (list === mqlLeads.rows) counts[item.created_by].mqlCount = item.count;
+            //         if (list === assignedLeads.rows) counts[item.created_by].assignedCount = item.count;
+            //         if (list === rejectedLeads.rows) counts[item.created_by].rejectedCount = item.count;
+            //         if (list === customerlist.rows) {
+            //             let count = 0; // Reset count for each user
+            //             list.forEach(e => {
+            //                 if (e.created_by === item.created_by) {
+            //                     count++;
+            //                 }
+            //             });
+            //             counts[item.created_by].customerCount = count;
+            //         }
+            //     });
+            // });
             lists.forEach(list => {
                 list.forEach(item => {
-                    if (!counts[item.created_by]) {
-                        counts[item.created_by] = {
-                            created_by: item.created_by,
-                            count: 0,
-                            mqlCount: 0,
-                            assignedCount: 0,
-                            rejectedCount: 0,
-                            customerCount: 0
-                        };
+                    if (item.created_by !== null) {
+                        if (!counts[item.created_by]) {
+                            counts[item.created_by] = {
+                                created_by: item.created_by,
+                                count: 0,
+                                mqlCount: 0,
+                                assignedCount: 0,
+                                rejectedCount: 0,
+                                customerCount: 0
+                            };
+                        }
                     }
                 });
             });
+            
             lists.forEach(list => {
                 list.forEach(item => {
-                    if (list === leadData.rows) counts[item.created_by].count = item.count;
-                    if (list === mqlLeads.rows) counts[item.created_by].mqlCount = item.count;
-                    if (list === assignedLeads.rows) counts[item.created_by].assignedCount = item.count;
-                    if (list === rejectedLeads.rows) counts[item.created_by].rejectedCount = item.count;
-                    if (list === customerlist.rows) {
-                        let count = 0; // Reset count for each user
-                        list.forEach(e => {
-                            if (e.created_by === item.created_by) {
-                                count++;
-                            }
-                        });
-                        counts[item.created_by].customerCount = count;
+                    if (item.created_by !== null) {
+                        if (list === leadData.rows) counts[item.created_by].count = item.count;
+                        if (list === mqlLeads.rows) counts[item.created_by].mqlCount = item.count;
+                        if (list === assignedLeads.rows) counts[item.created_by].assignedCount = item.count;
+                        if (list === rejectedLeads.rows) counts[item.created_by].rejectedCount = item.count;
+                        if (list === customerlist.rows) {
+                            let count = 0; // Reset count for each user
+                            list.forEach(e => {
+                                if (e.created_by === item.created_by) {
+                                    count++;
+                                }
+                            });
+                            counts[item.created_by].customerCount = count;
+                        }
                     }
                 });
             });
