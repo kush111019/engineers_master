@@ -1271,7 +1271,7 @@ module.exports.salesListForPro = async (req, res) => {
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0 && isProUser) {
 
-            let s6 = dbScript(db_sql['Q302'], { var1: findUser.rows[0].company_id })
+            let s6 = dbScript(db_sql['Q413'], { var1: findUser.rows[0].company_id })
             let salesList = await connection.query(s6)
 
             if (salesList.rowCount > 0) {
