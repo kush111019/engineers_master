@@ -42,6 +42,7 @@ router.put('/deleteEvent',verifyTokenFnForPro,checkParams,controller.proUser.del
 
 //Sales Analysis
 router.get('/salesCaptainList', verifyTokenFnForPro,checkParams, controller.proUser.salesCaptainList)
+router.get('/salesCaptainListForMetrics', verifyTokenFnForPro,checkParams, controller.proUser.salesCaptainListForMetrics)
 router.get('/captainWiseSalesDetails', verifyTokenFnForPro,checkParams, controller.proUser.captainWiseSalesDetails);
 router.get('/sciiSales',verifyTokenFnForPro,checkParams, controller.proUser.sciiSales)
 router.get('/captainWiseGraph',verifyTokenFnForPro,checkParams, controller.proUser.captainWiseGraph)
