@@ -3230,7 +3230,6 @@ module.exports.salesMetricsReport = async (req, res) => {
                         var6: findMonthsDateOfQuarter[2].end_date,
                         var7: allSalesIdArr.join(","),
                     });
-                    console.log(s7,"s777777777");
                     let findMonthlyRecognizedRevenue = await connection.query(s7);
 
                     monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
