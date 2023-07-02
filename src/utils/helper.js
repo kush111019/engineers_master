@@ -852,8 +852,32 @@ module.exports.calculateQuarters = async (startDate) => {
     return quarters;
 };
 
-module.exports.getQuarterMonthsDates = async(start_date, end_date) => {
+// module.exports.getQuarterMonthsDates = async(start_date, end_date) => {
 
+//     const startDate = new Date(start_date);
+//     const endDate = new Date(end_date);
+
+//     const startMonth = startDate.getMonth();
+//     const endMonth = endDate.getMonth();
+
+//     const dates = [];
+
+//     for (let month = startMonth; month <= endMonth; month++) {
+//       const tempDate = new Date(startDate);
+//       tempDate.setMonth(month);
+//       const startOfMonth = new Date(tempDate.getFullYear(), tempDate.getMonth(), 1);
+//       const endOfMonth = new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0);
+
+//       dates.push({
+//         start_date: startOfMonth.toISOString(),
+//         end_date: endOfMonth.toISOString()
+//       });
+//     }
+
+//     return dates;
+// };
+
+module.exports.getQuarterMonthsDates = async(start_date, end_date) => {
     const startDate = new Date(start_date);
     const endDate = new Date(end_date);
 
@@ -868,15 +892,16 @@ module.exports.getQuarterMonthsDates = async(start_date, end_date) => {
       const startOfMonth = new Date(tempDate.getFullYear(), tempDate.getMonth(), 1);
       const endOfMonth = new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0);
 
+      const formattedStartDate = new Date(startOfMonth.getTime() + 86400000).toISOString().split('T')[0];
+      const formattedEndDate = new Date(endOfMonth.getTime() + 86400000).toISOString().split('T')[0];
+
       dates.push({
-        start_date: startOfMonth.toISOString(),
-        end_date: endOfMonth.toISOString()
+        start_date: formattedStartDate,
+        end_date: formattedEndDate
       });
     }
-
     return dates;
 };
-
 
 
 module.exports.calculateEOLProducts = async(resultSet) => {
