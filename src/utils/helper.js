@@ -603,7 +603,7 @@ module.exports.notificationsOperations = async (nfData, userId) => {
             userName = findUserName.rows[0].full_name;
             console.log(userName, "userName1111");
             //enter notifications in db
-            let s1 = dbScript(db_sql['Q245'], { var1: findUserName.rows[0].full_name + notificationEnum.notificationMsg[nfData.msg], var2: nfData.notification_typeId, var3: id, var4: notificationEnum.notificationType[nfData.type] })
+            let s1 = dbScript(db_sql['Q245'], { var1: this.mysql_real_escape_string(findUserName.rows[0].full_name) + notificationEnum.notificationMsg[nfData.msg], var2: nfData.notification_typeId, var3: id, var4: notificationEnum.notificationType[nfData.type] })
             let notificationsData = await connection.query(s1);
             console.log(s1, "s1111");
             console.log(notificationsData.rows, "notification");
