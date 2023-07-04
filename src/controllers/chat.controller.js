@@ -275,7 +275,7 @@ module.exports.fetchChats = async (req, res) => {
                                 messageId: lastMessage.rows[0].id,
                                 sender: {
                                     id: lastMessage.rows[0].sender_id,
-                                    name: mysql_real_escape_string(lastMessage.rows[0].full_name),
+                                    name: lastMessage.rows[0].full_name,
                                     avatar: lastMessage.rows[0].avatar
                                 },
                                 content: lastMessage.rows[0].content,
@@ -332,7 +332,7 @@ module.exports.fetchChats = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.stack
+            message: error.message
         })
     }
 }
@@ -373,7 +373,7 @@ module.exports.createGroupChat = async (req, res) => {
 
                 let usersArr = []
                 for (let userId of users) {
-                    
+
                     let s5 = dbScript(db_sql['Q110'], { var1: createGroup.rows[0].id, var2: userId, var3: mysql_real_escape_string(name) })
                     let createMembers = await connection.query(s5)
 
@@ -452,7 +452,7 @@ module.exports.allMessages = async (req, res) => {
             for (let messageData of chatMessage.rows) {
                 chatArr.push({
                     sender: {
-                        full_name: mysql_real_escape_string( messageData.full_name),
+                        full_name: messageData.full_name,
                         id: messageData.senderid,
                         avatar: messageData.avatar
                     },
@@ -504,7 +504,7 @@ module.exports.sendMessage = async (req, res) => {
         let s0 = dbScript(db_sql['Q8'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
-            
+
             //inserting messages into message table
             let s1 = dbScript(db_sql['Q108'], { var1: chatId, var2: id, var3: mysql_real_escape_string(content) })
             let message = await connection.query(s1)
@@ -513,7 +513,7 @@ module.exports.sendMessage = async (req, res) => {
             let s2 = dbScript(db_sql['Q109'], { var1: message.rows[0].id, var2: chatId, var3: _dt })
             let updateLastMessage = await connection.query(s2)
             if (message.rowCount > 0 && updateLastMessage.rowCount > 0) {
-               
+
                 let s3 = dbScript(db_sql['Q118'], { var1: chatId })
                 let messageDetails = await connection.query(s3)
                 let messageObj = {}
@@ -535,7 +535,7 @@ module.exports.sendMessage = async (req, res) => {
                     messageObj = {
                         sender: {
                             id: messageDetails.rows[0].senderid,
-                            full_name: mysql_real_escape_string(messageDetails.rows[0].full_name),
+                            full_name: messageDetails.rows[0].full_name,
                             avatar: messageDetails.rows[0].avatar
                         },
                         content: messageDetails.rows[0].content,
@@ -556,7 +556,7 @@ module.exports.sendMessage = async (req, res) => {
                                 messageId: messageDetails.rows[0].messageid,
                                 sender: {
                                     id: messageDetails.rows[0].senderid,
-                                    full_name: mysql_real_escape_string(messageDetails.rows[0].full_name),
+                                    full_name: messageDetails.rows[0].full_name,
                                     avatar: messageDetails.rows[0].avatar
                                 },
                                 content: messageDetails.rows[0].content,
