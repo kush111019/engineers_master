@@ -299,7 +299,7 @@ module.exports.addBudget = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.message,
+            message: error.stack,
         })
     }
 }
