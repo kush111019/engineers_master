@@ -149,7 +149,7 @@ module.exports.fetchChats = async (req, res) => {
                                         messageId: lastMessage.rows[0].id,
                                         sender: {
                                             id: lastMessage.rows[0].sender_id,
-                                            name: mysql_real_escape_string(lastMessage.rows[0].full_name),
+                                            name: lastMessage.rows[0].full_name,
                                             avatar: lastMessage.rows[0].avatar
                                         },
                                         content: lastMessage.rows[0].content,
@@ -160,7 +160,7 @@ module.exports.fetchChats = async (req, res) => {
                             } else {
                                 chatData.push({
                                     id: chats.rows[0].id,
-                                    chatName: chats.rows[0].chat_name,
+                                    chatName: (chats.rows[0].chat_name),
                                     profile: process.env.DEFAULT_GROUP_LOGO,
                                     isGroupChat: chats.rows[0].is_group_chat,
                                     groupAdmin: chats.rows[0].group_admin,
@@ -200,7 +200,7 @@ module.exports.fetchChats = async (req, res) => {
                         }
                         if (count == 0) {
                             //if admin is not there then inseting him into that chat_room
-                            let s7 = dbScript(db_sql['Q110'], { var1: gChat.id, var2: id, var3: gChat.chat_name })
+                            let s7 = dbScript(db_sql['Q110'], { var1: gChat.id, var2: id, var3: mysql_real_escape_string(gChat.chat_name) })
                             let addAdminToGchat = await connection.query(s7)
                         }
                         let s8 = dbScript(db_sql['Q113'], { var1: gChat.id })
@@ -219,7 +219,7 @@ module.exports.fetchChats = async (req, res) => {
                                     messageId: lastMessage.rows[0].id,
                                     sender: {
                                         id: lastMessage.rows[0].sender_id,
-                                        name: mysql_real_escape_string(lastMessage.rows[0].full_name),
+                                        name: lastMessage.rows[0].full_name,
                                         avatar: lastMessage.rows[0].avatar
                                     },
                                     content: lastMessage.rows[0].content,
