@@ -149,7 +149,7 @@ module.exports.fetchChats = async (req, res) => {
                                         messageId: lastMessage.rows[0].id,
                                         sender: {
                                             id: lastMessage.rows[0].sender_id,
-                                            name: lastMessage.rows[0].full_name,
+                                            name: mysql_real_escape_string(lastMessage.rows[0].full_name),
                                             avatar: lastMessage.rows[0].avatar
                                         },
                                         content: lastMessage.rows[0].content,
@@ -219,7 +219,7 @@ module.exports.fetchChats = async (req, res) => {
                                     messageId: lastMessage.rows[0].id,
                                     sender: {
                                         id: lastMessage.rows[0].sender_id,
-                                        name: lastMessage.rows[0].full_name,
+                                        name: mysql_real_escape_string(lastMessage.rows[0].full_name),
                                         avatar: lastMessage.rows[0].avatar
                                     },
                                     content: lastMessage.rows[0].content,
@@ -275,7 +275,7 @@ module.exports.fetchChats = async (req, res) => {
                                 messageId: lastMessage.rows[0].id,
                                 sender: {
                                     id: lastMessage.rows[0].sender_id,
-                                    name: lastMessage.rows[0].full_name,
+                                    name: mysql_real_escape_string(lastMessage.rows[0].full_name),
                                     avatar: lastMessage.rows[0].avatar
                                 },
                                 content: lastMessage.rows[0].content,
@@ -332,7 +332,7 @@ module.exports.fetchChats = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.message
+            message: error.stack
         })
     }
 }
@@ -452,7 +452,7 @@ module.exports.allMessages = async (req, res) => {
             for (let messageData of chatMessage.rows) {
                 chatArr.push({
                     sender: {
-                        full_name: messageData.full_name,
+                        full_name: mysql_real_escape_string( messageData.full_name),
                         id: messageData.senderid,
                         avatar: messageData.avatar
                     },
@@ -535,7 +535,7 @@ module.exports.sendMessage = async (req, res) => {
                     messageObj = {
                         sender: {
                             id: messageDetails.rows[0].senderid,
-                            full_name: messageDetails.rows[0].full_name,
+                            full_name: mysql_real_escape_string(messageDetails.rows[0].full_name),
                             avatar: messageDetails.rows[0].avatar
                         },
                         content: messageDetails.rows[0].content,
@@ -556,7 +556,7 @@ module.exports.sendMessage = async (req, res) => {
                                 messageId: messageDetails.rows[0].messageid,
                                 sender: {
                                     id: messageDetails.rows[0].senderid,
-                                    full_name: messageDetails.rows[0].full_name,
+                                    full_name: mysql_real_escape_string(messageDetails.rows[0].full_name),
                                     avatar: messageDetails.rows[0].avatar
                                 },
                                 content: messageDetails.rows[0].content,
