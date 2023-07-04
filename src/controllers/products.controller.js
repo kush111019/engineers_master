@@ -27,7 +27,7 @@ module.exports.addProduct = async (req, res) => {
             let findProduct = await connection.query(s3)
             if (findProduct.rowCount == 0) {
               
-                let s4 = dbScript(db_sql['Q82'], { var1:productName, var2: productImage, var3: mysql_real_escape_string(description), var4: availableQuantity, var5: price, var6: endOfLife, var7: checkPermission.rows[0].company_id, var8: currency, var9: userId })
+                let s4 = dbScript(db_sql['Q82'], { var1: mysql_real_escape_string(productName), var2: productImage, var3: mysql_real_escape_string(description), var4: availableQuantity, var5: price, var6: endOfLife, var7: checkPermission.rows[0].company_id, var8: currency, var9: userId })
                 let addProduct = await connection.query(s4)
 
                 let _dt = new Date().toISOString();
@@ -93,7 +93,7 @@ module.exports.updateProduct = async (req, res) => {
         if (checkPermission.rows[0].permission_to_update) {
           
             let _dt = new Date().toISOString();
-            let s4 = dbScript(db_sql['Q83'], { var1: productId, var2: productName, var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: endOfLife, var8: _dt, var9: checkPermission.rows[0].company_id, var10: currency })
+            let s4 = dbScript(db_sql['Q83'], { var1: productId, var2: mysql_real_escape_string(productName), var3: productImage, var4: mysql_real_escape_string(description), var5: availableQuantity, var6: price, var7: endOfLife, var8: _dt, var9: checkPermission.rows[0].company_id, var10: currency })
             let updateProduct = await connection.query(s4)
             if (updateProduct.rowCount > 0) {
                 await connection.query('COMMIT')
