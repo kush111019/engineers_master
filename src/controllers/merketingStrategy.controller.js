@@ -240,34 +240,23 @@ module.exports.addBudget = async (req, res) => {
 
             let s2 = dbScript(db_sql['Q198'], { var1: timeline, var2: amount, var3: startDate, var4: endDate, var5: userId, var6: checkPermission.rows[0].company_id })
             let createBudget = await connection.query(s2)
-            console.log(s2, "s22222");
-            console.log(createBudget.rows, "createBugdet");
 
             if (createBudget.rowCount > 0) {
                 if (description.length > 0) {
                     for (let descData of description) {
                         let s3 = dbScript(db_sql['Q199'], { var1: createBudget.rows[0].id, var2: mysql_real_escape_string(descData.title), var3: descData.amount, var4: checkPermission.rows[0].id, var5: checkPermission.rows[0].company_id })
                         let addDescription = await connection.query(s3)
-                        console.log(s3 ,"s3333");
-                        console.log(addDescription.rows, "addDescription");
-
 
                         let s4 = dbScript(db_sql['Q200'], { var1: addDescription.rows[0].id, var2: createBudget.rows[0].id, var3: mysql_real_escape_string(descData.title), var4: descData.amount, var5: checkPermission.rows[0].id, var6: checkPermission.rows[0].company_id })
                         let addDescLog = await connection.query(s4)
-                        console.log(s4,"s4");
-                        console.log(addDescLog.rows, "addDescLog");
                     }
                 }
                 let s5 = dbScript(db_sql['Q201'], { var1: createBudget.rows[0].id, var2: timeline, var3: amount, var4: startDate, var5: endDate, var6: userId, var7: checkPermission.rows[0].company_id })
                 let addBudgetLog = await connection.query(s5)
-                console.log(s5, "s5555");
-                console.log(addBudgetLog.rows);
                 if (budgetData.length > 0) {
                     for (let data of budgetData) {
                         let s6 = dbScript(db_sql['Q267'], { var1: createBudget.rows[0].id, var2: data.amount, var3: data.startDate, var4: data.endDate, var5: type, var6: userId })
                         let addBudgetData = await connection.query(s6)
-                        console.log(s6, "s6666");
-                        console.log(addBudgetData.rows, "addBudgetData");
                     }
                 }
 
@@ -309,7 +298,7 @@ module.exports.addBudget = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.stack,
+            message: error.message,
         })
     }
 }

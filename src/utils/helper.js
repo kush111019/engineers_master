@@ -601,17 +601,13 @@ module.exports.notificationsOperations = async (nfData, userId) => {
             let s0 = dbScript(db_sql['Q8'], { var1: userId })
             let findUserName = await connection.query(s0)
             userName = findUserName.rows[0].full_name;
-            console.log(userName, "userName1111");
             //enter notifications in db
             let s1 = dbScript(db_sql['Q245'], { var1: this.mysql_real_escape_string(findUserName.rows[0].full_name) + notificationEnum.notificationMsg[nfData.msg], var2: nfData.notification_typeId, var3: id, var4: notificationEnum.notificationType[nfData.type] })
             let notificationsData = await connection.query(s1);
-            console.log(s1, "s1111");
-            console.log(notificationsData.rows, "notification");
             //for getting captain and support user email's address
             let s2 = dbScript(db_sql['Q8'], { var1: id })
             let findUserEmail = await connection.query(s2)
             emailArray.push(findUserEmail.rows[0].email_address)
-
         }
         if (process.env.isLocalEmail == 'true') {
             await notificationMail2(emailArray, userName + notificationEnum.notificationMsg[nfData.msg])
