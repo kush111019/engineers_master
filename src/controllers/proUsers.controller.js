@@ -1682,7 +1682,7 @@ module.exports.sendEmailToLead = async (req, res) => {
                 //replacing the content of the template from the description when sending the mail to lead
                 const result = template.replace('{content}', description);
 
-                await leadEmail(leadEmail, result, templateName, credentialObj);
+                await leadEmail2(leadEmail, result, templateName, credentialObj);
                 res.json({
                     status: 200,
                     success: true,

@@ -3,7 +3,7 @@ const { db_sql, dbScript } = require('../utils/db_scripts');
 const { sendEmailToContact2 } = require("../utils/sendMail")
 const {simpleParser} = require('mailparser');
 const Imap = require('node-imap')
-const {containsObject, setEmailRead} = require('../utils/helper')
+const {containsObject, setEmailRead, mysql_real_escape_string} = require('../utils/helper')
 const { decrypt } = require('../utils/crypto')
 
 module.exports.fetchEmails = async (req, res) => {
@@ -315,7 +315,7 @@ module.exports.sendEmail = async (req, res) => {
                 }
                 let bufferedMessage = (Buffer.from(message, "utf8")).toString('base64')
                
-                let s2 = dbScript(db_sql['Q127'], { var1:findCredentials.rows[0].email, var2: JSON.stringify(emails), var3: JSON.stringify(cc), var4: subject, var5: bufferedMessage, var6: checkAdmin.rows[0].company_id, var7: salesId, var8: JSON.stringify(attachments), var9 : checkAdmin.rows[0].id })
+                let s2 = dbScript(db_sql['Q127'], { var1:findCredentials.rows[0].email, var2: JSON.stringify(emails), var3: JSON.stringify(cc), var4: mysql_real_escape_string(subject), var5: bufferedMessage, var6: checkAdmin.rows[0].company_id, var7: salesId, var8: JSON.stringify(attachments), var9 : checkAdmin.rows[0].id })
                 let storeSentMail = await connection.query(s2)
 
                 let attachmentsArr = [];
