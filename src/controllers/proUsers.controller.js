@@ -3224,7 +3224,7 @@ module.exports.salesMetricsReport = async (req, res) => {
             let salesActivities = {}
             let totalAndWonDealCount = {}
             let monthlyRecognizedRevenue = {}
-            let yearlyRecognizedRevenue;
+            let yearlyRecognizedRevenue = 0;
             let risk_sales_deals = {};
             let missingRR = {};
             let closingDateSlippage = {};
@@ -3318,23 +3318,40 @@ module.exports.salesMetricsReport = async (req, res) => {
                     }
 
                     //monthly recognized_revenue Subscription+perpetual on perticular quarter
+                    let totalMonthlySubscriptionAmount = 0;
+
                     let s7 = dbScript(db_sql["Q399"], {
-                        var1: findMonthsDateOfQuarter[0].start_date,
-                        var2: findMonthsDateOfQuarter[0].end_date,
-                        var3: findMonthsDateOfQuarter[1].start_date,
-                        var4: findMonthsDateOfQuarter[1].end_date,
-                        var5: findMonthsDateOfQuarter[2].start_date,
-                        var6: findMonthsDateOfQuarter[2].end_date,
-                        var7: allSalesIdArr.join(","),
+                        var1: yearlyStartFormattedDate,
+                        var2: yearlyEndFormattedDate,
+                        var3: allSalesIdArr.join(","),
                     });
                     let findMonthlyRecognizedRevenue = await connection.query(s7);
-
-                    monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
+                    if (findMonthlyRecognizedRevenue.rowCount > 0) {
+                        monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
+                        //multiply by 12 to get one year subscription
+                        monthlyRecognizedRevenue.forEach(row => {
+                            const amount = parseInt(row.target_amount);
+                            const multipliedAmount = amount * 12;
+                            totalMonthlySubscriptionAmount += multipliedAmount;
+                        });
+                    } else {
+                        monthlyRecognizedRevenue = monthlyRecognizedRevenue
+                        totalMonthlySubscriptionAmount = 0;
+                    }
 
                     //yearly recognized_revenue Subscription+perpetual
+                    let yearlySubscriptionAmount = 0;
                     let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
                     let findYearlyRecognizedRevenue = await connection.query(s8);
-                    yearlyRecognizedRevenue = findYearlyRecognizedRevenue.rows[0]
+                    if (findYearlyRecognizedRevenue.rowCount > 0) {
+                        let yearlyData = findYearlyRecognizedRevenue.rows
+                        yearlyData.forEach(row => {
+                            yearlySubscriptionAmount += parseFloat(row.target_amount);
+                        });
+                    } else {
+                        yearlySubscriptionAmount = yearlySubscriptionAmount
+                    }
+                    yearlyRecognizedRevenue = parseFloat(yearlySubscriptionAmount + totalMonthlySubscriptionAmount)
 
                     //sales leakages
 
@@ -3507,9 +3524,9 @@ module.exports.salesMetricsReport = async (req, res) => {
                         for (let amount of findForecastAmount.rows) {
                             totalForecaseAmount += Number(amount.amount)
                         }
-                        revenueGap = totalForecaseAmount - Number(findYearlyRecognizedRevenue.rows[0].total_amount)
+                        revenueGap = totalForecaseAmount - Number(yearlyRecognizedRevenue)
                     } else {
-                        revenueGap = 0 - Number(findYearlyRecognizedRevenue.rows[0].total_amount)
+                        revenueGap = 0 - Number(yearlyRecognizedRevenue)
                     }
 
                     totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount))
@@ -3641,23 +3658,40 @@ module.exports.salesMetricsReport = async (req, res) => {
                         totalAndWonDealCount.winPercentage = 0;
                     }
 
-                    let s19 = dbScript(db_sql["Q399"], {
-                        var1: findMonthsDateOfQuarter[0].start_date,
-                        var2: findMonthsDateOfQuarter[0].end_date,
-                        var3: findMonthsDateOfQuarter[1].start_date,
-                        var4: findMonthsDateOfQuarter[1].end_date,
-                        var5: findMonthsDateOfQuarter[2].start_date,
-                        var6: findMonthsDateOfQuarter[2].end_date,
-                        var7: allSalesIdArr.join(","),
+                    let totalMonthlySubscriptionAmount = 0;
+
+                    let s7 = dbScript(db_sql["Q399"], {
+                        var1: yearlyStartFormattedDate,
+                        var2: yearlyEndFormattedDate,
+                        var3: allSalesIdArr.join(","),
                     });
-                    let findMonthlyRecognizedRevenue = await connection.query(s19);
-                    monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
+                    let findMonthlyRecognizedRevenue = await connection.query(s7);
+                    if (findMonthlyRecognizedRevenue.rowCount > 0) {
+                        monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
+                        //multiply by 12 to get one year subscription
+                        monthlyRecognizedRevenue.forEach(row => {
+                            const amount = parseInt(row.target_amount);
+                            const multipliedAmount = amount * 12;
+                            totalMonthlySubscriptionAmount += multipliedAmount;
+                        });
+                    } else {
+                        monthlyRecognizedRevenue = monthlyRecognizedRevenue
+                        totalMonthlySubscriptionAmount = 0;
+                    }
 
                     //yearly recognized_revenue Subscription+perpetual
+                    let yearlySubscriptionAmount = 0;
                     let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
-
                     let findYearlyRecognizedRevenue = await connection.query(s8);
-                    yearlyRecognizedRevenue = findYearlyRecognizedRevenue.rows[0]
+                    if (findYearlyRecognizedRevenue.rowCount > 0) {
+                        let yearlyData = findYearlyRecognizedRevenue.rows
+                        yearlyData.forEach(row => {
+                            yearlySubscriptionAmount += parseFloat(row.target_amount);
+                        });
+                    } else {
+                        yearlySubscriptionAmount = yearlySubscriptionAmount
+                    }
+                    yearlyRecognizedRevenue = parseFloat(yearlySubscriptionAmount + totalMonthlySubscriptionAmount)
 
                     //sales leakages
 
@@ -3826,9 +3860,9 @@ module.exports.salesMetricsReport = async (req, res) => {
                         for (let amount of findForecastAmount.rows) {
                             totalForecaseAmount += Number(amount.amount)
                         }
-                        revenueGap = totalForecaseAmount - Number(findYearlyRecognizedRevenue.rows[0].total_amount)
+                        revenueGap = totalForecaseAmount - Number(yearlyRecognizedRevenue)
                     } else {
-                        revenueGap = 0 - Number(findYearlyRecognizedRevenue.rows[0].total_amount)
+                        revenueGap = 0 - Number(yearlyRecognizedRevenue)
                     }
 
                     totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount))
