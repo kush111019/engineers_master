@@ -1550,7 +1550,7 @@ module.exports.userCommissionList = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if(checkPermission.rows[0].permission_to_view_global){
-            let s1 = dbScript(db_sql['Q335'], { var1: checkPermission.rows[0].company_id })
+            let s1 = dbScript(db_sql['Q414'], { var1: checkPermission.rows[0].company_id })
             let commissionList = await connection.query(s1)
 
             if (commissionList.rowCount > 0) {
