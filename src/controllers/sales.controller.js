@@ -1549,7 +1549,26 @@ module.exports.userCommissionList = async (req, res) => {
         let userId = req.user.id
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
-        if (checkPermission.rows[0].permission_to_view_own) {
+        if(checkPermission.rows[0].permission_to_view_global){
+            let s1 = dbScript(db_sql['Q335'], { var1: checkPermission.rows[0].company_id })
+            let commissionList = await connection.query(s1)
+
+            if (commissionList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'User commission List',
+                    data: commissionList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty User commission List',
+                    data: []
+                })
+            }
+        }else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s1 = dbScript(db_sql['Q335'], { var1: roleUsers.join(","), var2: checkPermission.rows[0].company_id })
             let commissionList = await connection.query(s1)
@@ -1569,26 +1588,7 @@ module.exports.userCommissionList = async (req, res) => {
                     data: []
                 })
             }
-        }else if(checkPermission.rows[0].permission_to_view_global){
-            let s1 = dbScript(db_sql['Q414'], { var1: checkPermission.rows[0].company_id })
-            let commissionList = await connection.query(s1)
-
-            if (commissionList.rowCount > 0) {
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: 'User commission List',
-                    data: commissionList.rows
-                })
-            } else {
-                res.json({
-                    status: 200,
-                    success: false,
-                    message: 'Empty User commission List',
-                    data: []
-                })
-            }
-        } else {
+        }else {
             res.status(403).json({
                 success: false,
                 message: "UnAthorised"
