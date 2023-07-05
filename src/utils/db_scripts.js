@@ -3455,44 +3455,70 @@ const db_sql = {
               created_at BETWEEN '{var1}' AND '{var2}'
               AND id IN ({var3})
               AND deleted_at IS NULL;` ,
-  "Q398": `SELECT COALESCE(SUM(rr.recognized_amount::numeric), 0) AS total_amount
-            FROM recognized_revenue AS rr
-            WHERE rr.sales_id IN ({var3})
-            AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') >= '{var1}'
-            AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') <= '{var2}'
-            AND rr.deleted_at IS NULL;
-            `,
-"Q399": `WITH months AS (
-            SELECT 
-              1 AS month_number, 
-              TO_TIMESTAMP('{var1}', 'YYYY-MM-DD') AS start_date, 
-              TO_TIMESTAMP('{var2}', 'YYYY-MM-DD') AS end_date
-            UNION
-            SELECT 
-              2 AS month_number, 
-              TO_TIMESTAMP('{var3}', 'YYYY-MM-DD') AS start_date, 
-              TO_TIMESTAMP('{var4}', 'YYYY-MM-DD') AS end_date
-            UNION
-            SELECT 
-              3 AS month_number, 
-              TO_TIMESTAMP('{var5}', 'YYYY-MM-DD') AS start_date, 
-              TO_TIMESTAMP('{var6}', 'YYYY-MM-DD') AS end_date
-          )
-          SELECT 
-            COALESCE(SUM(r.recognized_amount::numeric), 0) AS total_amount,
-            m.month_number,
-            to_char(m.start_date, 'Month') AS start_month,
-            to_char(m.end_date, 'Month') AS end_month
-          FROM 
-            months m
-          LEFT JOIN 
-            recognized_revenue r ON r.sales_id IN ({var7})
-            AND TO_DATE(r.recognized_date, 'MM-DD-YYYY') BETWEEN m.start_date AND m.end_date
-            AND r.deleted_at IS NULL
-          GROUP BY 
-            m.month_number, start_month, end_month
-          ORDER BY 
-            m.month_number;
+//   "Q398": `SELECT COALESCE(SUM(rr.recognized_amount::numeric), 0) AS total_amount
+//             FROM recognized_revenue AS rr
+//             WHERE rr.sales_id IN ({var3})
+//             AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') >= '{var1}'
+//             AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') <= '{var2}'
+//             AND rr.deleted_at IS NULL;
+//             `,
+// "Q399": `WITH months AS (
+//             SELECT 
+//               1 AS month_number, 
+//               TO_TIMESTAMP('{var1}', 'YYYY-MM-DD') AS start_date, 
+//               TO_TIMESTAMP('{var2}', 'YYYY-MM-DD') AS end_date
+//             UNION
+//             SELECT 
+//               2 AS month_number, 
+//               TO_TIMESTAMP('{var3}', 'YYYY-MM-DD') AS start_date, 
+//               TO_TIMESTAMP('{var4}', 'YYYY-MM-DD') AS end_date
+//             UNION
+//             SELECT 
+//               3 AS month_number, 
+//               TO_TIMESTAMP('{var5}', 'YYYY-MM-DD') AS start_date, 
+//               TO_TIMESTAMP('{var6}', 'YYYY-MM-DD') AS end_date
+//           )
+//           SELECT 
+//             COALESCE(SUM(r.recognized_amount::numeric), 0) AS total_amount,
+//             m.month_number,
+//             to_char(m.start_date, 'Month') AS start_month,
+//             to_char(m.end_date, 'Month') AS end_month
+//           FROM 
+//             months m
+//           LEFT JOIN 
+//             recognized_revenue r ON r.sales_id IN ({var7})
+//             AND TO_DATE(r.recognized_date, 'MM-DD-YYYY') BETWEEN m.start_date AND m.end_date
+//             AND r.deleted_at IS NULL
+//           GROUP BY 
+//             m.month_number, start_month, end_month
+//           ORDER BY 
+//             m.month_number;
+//           `,
+"Q398": `SELECT s.id, s.target_amount,s.subscription_plan, s.recurring_date, cc.customer_name
+            FROM sales AS s
+            LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
+            WHERE s.id IN ({var3})
+                AND s.subscription_plan = 'Annually' 
+                AND s.sales_type = 'Subscription' 
+                AND s.deleted_at IS NULL
+                AND s.archived_at IS NULl
+                AND cc.deleted_at IS NULL
+                AND cc.archived_at IS NULL
+                AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') >= '{var1}'
+                AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') <= '{var2}'
+                      `,
+  "Q399": `SELECT s.id, s.target_amount,s.subscription_plan, s.recurring_date, cc.customer_name
+                FROM sales AS s
+                LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
+                WHERE s.id IN   ({var3})
+                    AND s.subscription_plan = 'Monthly' 
+                    AND s.sales_type = 'Subscription' 
+                    AND s.deleted_at IS NULL
+                    AND s.archived_at IS NULl
+                    AND cc.deleted_at IS NULL
+                    AND cc.archived_at IS NULL
+                    AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') >= '{var1}'
+                    AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') <= '{var2}'
           `,
   "Q400": `SELECT sales_ids
           FROM (
