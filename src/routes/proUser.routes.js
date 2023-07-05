@@ -51,5 +51,8 @@ router.get('/commissionReport', verifyTokenFnForPro,checkParams, controller.proU
 // router.get('/salesMetricsData', verifyTokenFnForPro,checkParams, controller.proUser.salesMetricsData)
 router.post('/salesMetricsReport', verifyTokenFnForPro,checkParams, controller.proUser.salesMetricsReport)
 
+router.get('/salesDetails', verifyTokenFnForPro,checkParams, controller.proUser.salesDetails)
+router.get('/getUpperLevelUserList', verifyTokenFnForPro ,checkParams, controller.proUser.getUpperLevelUserList)
+
 
 module.exports = router;
