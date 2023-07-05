@@ -3301,8 +3301,12 @@ module.exports.salesMetricsReport = async (req, res) => {
                         });
 
                         Object.values(low_risk_missing_rr).forEach((item) => {
-                            const amountDifference = item.target_amount - item.recognized_amount;
-                            item.amount = amountDifference;
+                            const amountDifference = parseFloat(item.target_amount) - parseFloat(item.recognized_amount);
+                            if (amountDifference > 0) {
+                                item.amount = amountDifference;
+                            } else {
+                                delete low_risk_missing_rr[item.salesId];
+                            }
                         });
 
                         high_risk_missing_rr.forEach((item) => {
