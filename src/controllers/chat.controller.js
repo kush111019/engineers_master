@@ -160,7 +160,7 @@ module.exports.fetchChats = async (req, res) => {
                             } else {
                                 chatData.push({
                                     id: chats.rows[0].id,
-                                    chatName: chats.rows[0].chat_name,
+                                    chatName: (chats.rows[0].chat_name),
                                     profile: process.env.DEFAULT_GROUP_LOGO,
                                     isGroupChat: chats.rows[0].is_group_chat,
                                     groupAdmin: chats.rows[0].group_admin,
@@ -200,7 +200,7 @@ module.exports.fetchChats = async (req, res) => {
                         }
                         if (count == 0) {
                             //if admin is not there then inseting him into that chat_room
-                            let s7 = dbScript(db_sql['Q110'], { var1: gChat.id, var2: id, var3: gChat.chat_name })
+                            let s7 = dbScript(db_sql['Q110'], { var1: gChat.id, var2: id, var3: mysql_real_escape_string(gChat.chat_name) })
                             let addAdminToGchat = await connection.query(s7)
                         }
                         let s8 = dbScript(db_sql['Q113'], { var1: gChat.id })
@@ -373,7 +373,7 @@ module.exports.createGroupChat = async (req, res) => {
 
                 let usersArr = []
                 for (let userId of users) {
-                    
+
                     let s5 = dbScript(db_sql['Q110'], { var1: createGroup.rows[0].id, var2: userId, var3: mysql_real_escape_string(name) })
                     let createMembers = await connection.query(s5)
 
@@ -504,7 +504,7 @@ module.exports.sendMessage = async (req, res) => {
         let s0 = dbScript(db_sql['Q8'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
-            
+
             //inserting messages into message table
             let s1 = dbScript(db_sql['Q108'], { var1: chatId, var2: id, var3: mysql_real_escape_string(content) })
             let message = await connection.query(s1)
@@ -513,7 +513,7 @@ module.exports.sendMessage = async (req, res) => {
             let s2 = dbScript(db_sql['Q109'], { var1: message.rows[0].id, var2: chatId, var3: _dt })
             let updateLastMessage = await connection.query(s2)
             if (message.rowCount > 0 && updateLastMessage.rowCount > 0) {
-               
+
                 let s3 = dbScript(db_sql['Q118'], { var1: chatId })
                 let messageDetails = await connection.query(s3)
                 let messageObj = {}

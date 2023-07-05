@@ -9,6 +9,8 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
+const salesModule = process.env.SALES_MODULE
+const customerModule = process.env.CUSTOMERS_MODULE
 const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults, getParentUserList, getUserAndSubUser, calculateQuarters, getQuarterMonthsDates, calculateEOLProducts } = require('../utils/helper')
 const { issueJWTForPro } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
@@ -283,6 +285,7 @@ module.exports.connectorsList = async (req, res) => {
         let { isProUser } = req.user
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        console.log(s1, "s111");
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
@@ -1317,6 +1320,100 @@ module.exports.salesListForPro = async (req, res) => {
     }
 }
 
+//added salesDetails on 05-07-2023 to show sales details in pro popup on sales metrics
+module.exports.salesDetails = async (req, res) => {
+    try {
+        let userId = req.user.id;
+        let salesId = req.query.id;
+        console.log(salesId);
+        let { isProUser } = req.user
+        let s2 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
+        let checkPermission = await connection.query(s2)
+        if (isProUser && checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
+            let s3 = dbScript(db_sql['Q249'], { var1: checkPermission.rows[0].company_id, var2: salesId })
+            let salesList = await connection.query(s3)
+            for (let salesData of salesList.rows) {
+                if (salesData.sales_users) {
+                    salesData.sales_users.map(value => {
+                        if (value.user_type == process.env.CAPTAIN) {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        } else {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        }
+                    })
+                }
+            }
+            if (salesList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Sales details',
+                    data: salesList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty sales commission list',
+                    data: []
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.stack,
+        })
+    }
+
+}
+
+module.exports.getUpperLevelUserList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q41'], { var1: customerModule, var2: userId })
+        let checkPermission = await connection.query(s1)
+        let s2 = dbScript(db_sql['Q12'], { var1: checkPermission.rows[0].role_id })
+        let roleData = await connection.query(s2)
+        if (roleData.rows[0].reporter) {
+            let parentList = await getParentUserList(roleData.rows[0], checkPermission.rows[0].company_id);
+            if (parentList) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Perent user list',
+                    data: parentList
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty perent user list',
+                    data: []
+                })
+            }
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: "You are the admin role holder you don't need to request for that "
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 module.exports.recognizationDetailsPro = async (req, res) => {
     try {
         let userId = req.user.id
@@ -1682,7 +1779,7 @@ module.exports.sendEmailToLead = async (req, res) => {
                 //replacing the content of the template from the description when sending the mail to lead
                 const result = template.replace('{content}', description);
 
-                await leadEmail(leadEmail, result, templateName, credentialObj);
+                await leadEmail2(leadEmail, result, templateName, credentialObj);
                 res.json({
                     status: 200,
                     success: true,
@@ -3127,7 +3224,7 @@ module.exports.salesMetricsReport = async (req, res) => {
             let salesActivities = {}
             let totalAndWonDealCount = {}
             let monthlyRecognizedRevenue = {}
-            let yearlyRecognizedRevenue;
+            let yearlyRecognizedRevenue = 0;
             let risk_sales_deals = {};
             let missingRR = {};
             let closingDateSlippage = {};
@@ -3221,23 +3318,40 @@ module.exports.salesMetricsReport = async (req, res) => {
                     }
 
                     //monthly recognized_revenue Subscription+perpetual on perticular quarter
+                    let totalMonthlySubscriptionAmount = 0;
+
                     let s7 = dbScript(db_sql["Q399"], {
-                        var1: findMonthsDateOfQuarter[0].start_date,
-                        var2: findMonthsDateOfQuarter[0].end_date,
-                        var3: findMonthsDateOfQuarter[1].start_date,
-                        var4: findMonthsDateOfQuarter[1].end_date,
-                        var5: findMonthsDateOfQuarter[2].start_date,
-                        var6: findMonthsDateOfQuarter[2].end_date,
-                        var7: allSalesIdArr.join(","),
+                        var1: yearlyStartFormattedDate,
+                        var2: yearlyEndFormattedDate,
+                        var3: allSalesIdArr.join(","),
                     });
                     let findMonthlyRecognizedRevenue = await connection.query(s7);
-
-                    monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
+                    if (findMonthlyRecognizedRevenue.rowCount > 0) {
+                        monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
+                        //multiply by 12 to get one year subscription
+                        monthlyRecognizedRevenue.forEach(row => {
+                            const amount = parseInt(row.target_amount);
+                            const multipliedAmount = amount * 12;
+                            totalMonthlySubscriptionAmount += multipliedAmount;
+                        });
+                    } else {
+                        monthlyRecognizedRevenue = []
+                        totalMonthlySubscriptionAmount = 0;
+                    }
 
                     //yearly recognized_revenue Subscription+perpetual
+                    let yearlySubscriptionAmount = 0;
                     let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
                     let findYearlyRecognizedRevenue = await connection.query(s8);
-                    yearlyRecognizedRevenue = findYearlyRecognizedRevenue.rows[0]
+                    if (findYearlyRecognizedRevenue.rowCount > 0) {
+                        let yearlyData = findYearlyRecognizedRevenue.rows
+                        yearlyData.forEach(row => {
+                            yearlySubscriptionAmount += parseFloat(row.target_amount);
+                        });
+                    } else {
+                        yearlySubscriptionAmount = yearlySubscriptionAmount
+                    }
+                    yearlyRecognizedRevenue = parseFloat(yearlySubscriptionAmount + totalMonthlySubscriptionAmount)
 
                     //sales leakages
 
@@ -3301,8 +3415,12 @@ module.exports.salesMetricsReport = async (req, res) => {
                         });
 
                         Object.values(low_risk_missing_rr).forEach((item) => {
-                            const amountDifference = item.target_amount - item.recognized_amount;
-                            item.amount = amountDifference;
+                            const amountDifference = parseFloat(item.target_amount) - parseFloat(item.recognized_amount);
+                            if (amountDifference > 0) {
+                                item.amount = amountDifference;
+                            } else {
+                                delete low_risk_missing_rr[item.salesId];
+                            }
                         });
 
                         high_risk_missing_rr.forEach((item) => {
@@ -3406,9 +3524,9 @@ module.exports.salesMetricsReport = async (req, res) => {
                         for (let amount of findForecastAmount.rows) {
                             totalForecaseAmount += Number(amount.amount)
                         }
-                        revenueGap = totalForecaseAmount - Number(findYearlyRecognizedRevenue.rows[0].total_amount)
+                        revenueGap = totalForecaseAmount - Number(yearlyRecognizedRevenue)
                     } else {
-                        revenueGap = 0 - Number(findYearlyRecognizedRevenue.rows[0].total_amount)
+                        revenueGap = 0 - Number(yearlyRecognizedRevenue)
                     }
 
                     totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount))
@@ -3540,23 +3658,40 @@ module.exports.salesMetricsReport = async (req, res) => {
                         totalAndWonDealCount.winPercentage = 0;
                     }
 
-                    let s19 = dbScript(db_sql["Q399"], {
-                        var1: findMonthsDateOfQuarter[0].start_date,
-                        var2: findMonthsDateOfQuarter[0].end_date,
-                        var3: findMonthsDateOfQuarter[1].start_date,
-                        var4: findMonthsDateOfQuarter[1].end_date,
-                        var5: findMonthsDateOfQuarter[2].start_date,
-                        var6: findMonthsDateOfQuarter[2].end_date,
-                        var7: allSalesIdArr.join(","),
+                    let totalMonthlySubscriptionAmount = 0;
+
+                    let s7 = dbScript(db_sql["Q399"], {
+                        var1: yearlyStartFormattedDate,
+                        var2: yearlyEndFormattedDate,
+                        var3: allSalesIdArr.join(","),
                     });
-                    let findMonthlyRecognizedRevenue = await connection.query(s19);
-                    monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
+                    let findMonthlyRecognizedRevenue = await connection.query(s7);
+                    if (findMonthlyRecognizedRevenue.rowCount > 0) {
+                        monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
+                        //multiply by 12 to get one year subscription
+                        monthlyRecognizedRevenue.forEach(row => {
+                            const amount = parseInt(row.target_amount);
+                            const multipliedAmount = amount * 12;
+                            totalMonthlySubscriptionAmount += multipliedAmount;
+                        });
+                    } else {
+                        monthlyRecognizedRevenue = []
+                        totalMonthlySubscriptionAmount = 0;
+                    }
 
                     //yearly recognized_revenue Subscription+perpetual
+                    let yearlySubscriptionAmount = 0;
                     let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
-
                     let findYearlyRecognizedRevenue = await connection.query(s8);
-                    yearlyRecognizedRevenue = findYearlyRecognizedRevenue.rows[0]
+                    if (findYearlyRecognizedRevenue.rowCount > 0) {
+                        let yearlyData = findYearlyRecognizedRevenue.rows
+                        yearlyData.forEach(row => {
+                            yearlySubscriptionAmount += parseFloat(row.target_amount);
+                        });
+                    } else {
+                        yearlySubscriptionAmount = yearlySubscriptionAmount
+                    }
+                    yearlyRecognizedRevenue = parseFloat(yearlySubscriptionAmount + totalMonthlySubscriptionAmount)
 
                     //sales leakages
 
@@ -3725,9 +3860,9 @@ module.exports.salesMetricsReport = async (req, res) => {
                         for (let amount of findForecastAmount.rows) {
                             totalForecaseAmount += Number(amount.amount)
                         }
-                        revenueGap = totalForecaseAmount - Number(findYearlyRecognizedRevenue.rows[0].total_amount)
+                        revenueGap = totalForecaseAmount - Number(yearlyRecognizedRevenue)
                     } else {
-                        revenueGap = 0 - Number(findYearlyRecognizedRevenue.rows[0].total_amount)
+                        revenueGap = 0 - Number(yearlyRecognizedRevenue)
                     }
 
                     totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount))
@@ -3818,5 +3953,174 @@ module.exports.salesMetricsReport = async (req, res) => {
             success: false,
             message: error.stack,
         });
+    }
+}
+
+module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let allDetails = {};
+
+        let productModule = process.env.PRODUCTS_MODULE;
+        let s1 = dbScript(db_sql['Q41'], { var1: productModule, var2: userId })
+        let checkPermissionForProduct = await connection.query(s1)
+        if (checkPermissionForProduct.rows[0].permission_to_view_global) {
+            // here we are getting product deatils by global permission
+
+            let s2 = dbScript(db_sql['Q84'], { var1: checkPermissionForProduct.rows[0].company_id })
+            let productList = await connection.query(s2)
+            if (productList.rowCount > 0) {
+                allDetails.productList = productList.rows
+            } else {
+                allDetails.productList = []
+            }
+
+        } else if (checkPermissionForProduct.rows[0].permission_to_view_own) {
+            // here we are getting product deatils by own permission of user and its child user
+            let roleUsers = await getUserAndSubUser(checkPermissionForProduct.rows[0]);
+
+            let s1 = dbScript(db_sql['Q270'], { var1: roleUsers.join(",") })
+            let productList = await connection.query(s1)
+            if (productList.rowCount > 0) {
+                allDetails.productList = productList.rows
+            } else {
+                allDetails.productList = []
+            }
+
+        }
+
+        let customerModule = process.env.CUSTOMERS_MODULE;
+        let s2 = dbScript(db_sql['Q41'], { var1: customerModule, var2: userId })
+        let checkPermissionForCustomer = await connection.query(s2)
+        if (checkPermissionForCustomer.rows[0].permission_to_view_global) {
+            // here we are getting customer deatils by global permission
+
+            let s3 = dbScript(db_sql['Q39'], { var1: checkPermissionForCustomer.rows[0].company_id })
+            let customerList = await connection.query(s3)
+            if (customerList.rowCount > 0) {
+                allDetails.customerList = customerList.rows
+            } else {
+                allDetails.customerList = []
+            }
+
+        } else if (checkPermissionForCustomer.rows[0].permission_to_view_own) {
+            // here we are getting customer deatils by own permission of user and its child user
+            let roleUsers = await getUserAndSubUser(checkPermissionForCustomer.rows[0]);
+
+            let s2 = dbScript(db_sql['Q271'], { var1: roleUsers.join(","), var2: false })
+            let customerList = await connection.query(s2)
+            if (customerList.rowCount > 0) {
+                allDetails.customerList = customerList.rows
+            } else {
+                allDetails.customerList = []
+            }
+        }
+
+        let slabModule = process.env.SLABS_MODULE;
+        let s3 = dbScript(db_sql['Q41'], { var1: slabModule, var2: userId })
+        let checkPermissionForslab = await connection.query(s3)
+        if (checkPermissionForslab.rows[0].permission_to_view_global) {
+            // here we are getting slab deatils by global permission
+
+            let s5 = dbScript(db_sql['Q17'], { var1: checkPermissionForslab.rows[0].company_id })
+            let slabList = await connection.query(s5)
+            if (slabList.rowCount > 0) {
+                const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()]
+                allDetails.slabList = unique;
+            } else {
+                allDetails.slabList = []
+            }
+
+        } else if (checkPermissionForslab.rows[0].permission_to_view_own) {
+            // here we are getting slab deatils by own permission of user and its child user
+            let roleUsers = await getUserAndSubUser(checkPermissionForslab.rows[0]);
+
+            let s4 = dbScript(db_sql['Q17'], { var1: checkPermissionForslab.rows[0].company_id })
+            let slabList = await connection.query(s4)
+            if (slabList.rowCount > 0) {
+                const unique = [...new Map(slabList.rows.map(item => [item['slab_id'], item])).values()]
+                allDetails.slabList = unique;
+            } else {
+                allDetails.slabList = []
+            }
+        }
+
+        let commissionModule = process.env.COMMISSIONS_MODULE;
+        let s4 = dbScript(db_sql['Q41'], { var1: commissionModule, var2: userId })
+        let checkPermissionForCommission = await connection.query(s4)
+        if (checkPermissionForCommission.rows[0].permission_to_view_global) {
+            // here we are getting commissionSlab deatils by global permission
+
+            let s6 = dbScript(db_sql['Q50'], { var1: checkPermissionForCommission.rows[0].company_id })
+            let commissionList = await connection.query(s6)
+            if (commissionList.rowCount > 0) {
+                allDetails.commissionList = commissionList.rows
+            } else {
+                allDetails.commissionList = []
+            }
+
+        } else if (checkPermissionForCommission.rows[0].permission_to_view_own) {
+            // here we are getting commissionSlab deatils by own permission of user and its child user
+            let roleUsers = await getUserAndSubUser(checkPermissionForCommission.rows[0]);
+
+            let s5 = dbScript(db_sql['Q50'], { var1: checkPermissionForCommission.rows[0].company_id })
+            let commissionList = await connection.query(s5)
+            if (commissionList.rowCount > 0) {
+                allDetails.commissionList = commissionList.rows
+            } else {
+                allDetails.commissionList = []
+            }
+        }
+
+        let usersModule = process.env.USERS_MODULE;
+        let s5 = dbScript(db_sql['Q41'], { var1: usersModule, var2: userId })
+        let checkPermissionForusers = await connection.query(s5)
+        if (checkPermissionForusers.rows[0].permission_to_view_global) {
+            // here we are getting Users deatils by global permission
+
+            let s4 = dbScript(db_sql['Q15'], { var1: checkPermissionForusers.rows[0].company_id })
+            let userList = await connection.query(s4);
+            if (userList.rowCount > 0) {
+                allDetails.userList = userList.rows
+            } else {
+                allDetails.userList = []
+            }
+
+        } else if (checkPermissionForusers.rows[0].permission_to_view_own) {
+            // here we are getting Users deatils by own permission of user and its child user
+            let roleUsers = await getUserAndSubUser(checkPermissionForusers.rows[0]);
+
+            let s3 = dbScript(db_sql['Q272'], { var1: roleUsers.join(",") })
+            let userList = await connection.query(s3);
+            if (userList.rowCount > 0) {
+                allDetails.userList = userList.rows
+            } else {
+                allDetails.userList = []
+            }
+
+        }
+
+        if (allDetails) {
+            res.json({
+                status: 200,
+                success: true,
+                message: "All details list",
+                data: allDetails
+            })
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: "Empty details list",
+                data: []
+            })
+        }
+
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
     }
 }

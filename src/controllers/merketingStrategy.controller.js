@@ -247,7 +247,6 @@ module.exports.addBudget = async (req, res) => {
                         let s3 = dbScript(db_sql['Q199'], { var1: createBudget.rows[0].id, var2: mysql_real_escape_string(descData.title), var3: descData.amount, var4: checkPermission.rows[0].id, var5: checkPermission.rows[0].company_id })
                         let addDescription = await connection.query(s3)
 
-
                         let s4 = dbScript(db_sql['Q200'], { var1: addDescription.rows[0].id, var2: createBudget.rows[0].id, var3: mysql_real_escape_string(descData.title), var4: descData.amount, var5: checkPermission.rows[0].id, var6: checkPermission.rows[0].company_id })
                         let addDescLog = await connection.query(s4)
                     }
@@ -502,9 +501,9 @@ module.exports.updateBudget = async (req, res) => {
 
                     } else {
 
-                        let s5 = dbScript(db_sql['Q199'], { var1: budgetId, var2: desc.title, var3: desc.amount, var4: checkPermission.rows[0].id, var5: checkPermission.rows[0].company_id })
+                        let s5 = dbScript(db_sql['Q199'], { var1: budgetId, var2: mysql_real_escape_string(desc.title), var3: desc.amount, var4: checkPermission.rows[0].id, var5: checkPermission.rows[0].company_id })
                         let addDescription = await connection.query(s5)
-                        let s6 = dbScript(db_sql['Q200'], { var1: addDescription.rows[0].id, var2: budgetId, var3: desc.title, var4: desc.amount, var5: checkPermission.rows[0].id, var6: checkPermission.rows[0].company_id })
+                        let s6 = dbScript(db_sql['Q200'], { var1: addDescription.rows[0].id, var2: budgetId, var3: mysql_real_escape_string(desc.title), var4: desc.amount, var5: checkPermission.rows[0].id, var6: checkPermission.rows[0].company_id })
                         let addDescLog = await connection.query(s6)
                     }
                 }

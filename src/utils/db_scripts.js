@@ -49,7 +49,9 @@ const db_sql = {
               WHERE
                 s.company_id ='{var1}' AND s.deleted_at IS NULL
               GROUP BY
-                s.slab_id, s.id,c.closer_percentage,c.supporter_percentage `,
+                s.slab_id, s.id,c.closer_percentage,c.supporter_percentage
+              ORDER BY
+                s.created_at ASC   `,
   "Q18": `INSERT INTO slabs(min_amount, max_amount, percentage, is_max, company_id, currency, slab_ctr, user_id, slab_id, slab_name, commission_split_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}', '{var6}', '{var7}', '{var8}','{var9}','{var10}','{var11}') RETURNING * `,
   "Q19": `UPDATE slabs SET slab_name = '{var1}', min_amount = '{var2}', max_amount = '{var3}', percentage = '{var4}', is_max = '{var5}', company_id = '{var6}',currency = '{var7}', slab_ctr = '{var8}', user_id = '{var9}', updated_at = '{var12}', commission_split_id = '{var13}' WHERE id = '{var10}' AND slab_id = '{var11}' AND deleted_at IS NULL RETURNING *`,
   "Q20": `INSERT INTO permissions( role_id, module_id, permission_to_create, permission_to_update, permission_to_delete, permission_to_view_global,permission_to_view_own, user_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}') RETURNING *`,
@@ -477,7 +479,7 @@ const db_sql = {
               CASE
                   WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) < CAST(sc.target_amount AS NUMERIC) THEN true
                   WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) = CAST(sc.target_amount AS NUMERIC) THEN false
-                  ELSE true
+                  ELSE false
               END AS is_partial_recognized
             FROM
               sales AS sc
@@ -953,7 +955,7 @@ const db_sql = {
           CASE
               WHEN SUM(rr.recognized_amount) < CAST(sc.target_amount AS NUMERIC) THEN true
               WHEN SUM(rr.recognized_amount) = CAST(sc.target_amount AS NUMERIC) THEN false
-              ELSE true
+              ELSE false
           END AS is_partial_recognized
         FROM
           sales AS sc
@@ -1184,7 +1186,7 @@ const db_sql = {
             CASE
                 WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) < CAST(sc.target_amount AS NUMERIC) THEN true
                 WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) = CAST(sc.target_amount AS NUMERIC) THEN false
-                ELSE true
+                ELSE false
             END AS is_partial_recognized
           FROM sales AS sc
           LEFT JOIN sales_users AS su ON sc.id = su.sales_id
@@ -1261,7 +1263,7 @@ const db_sql = {
             CASE
                 WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) < CAST(sc.target_amount AS NUMERIC) THEN true
                 WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) = CAST(sc.target_amount AS NUMERIC) THEN false
-                ELSE true
+                ELSE false
             END AS is_partial_recognized
           FROM sales AS sc
           LEFT JOIN sales_users AS su ON sc.id = su.sales_id
@@ -2691,7 +2693,7 @@ const db_sql = {
               CASE
                   WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) < CAST(sc.target_amount AS NUMERIC) THEN true
                   WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) = CAST(sc.target_amount AS NUMERIC) THEN false
-                  ELSE true
+                  ELSE false
               END AS is_partial_recognized
             FROM sales AS sc
             LEFT JOIN sales_users AS su ON sc.id = su.sales_id
@@ -2848,7 +2850,7 @@ const db_sql = {
                 CASE
                     WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) < CAST(sc.target_amount AS NUMERIC) THEN true
                     WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) = CAST(sc.target_amount AS NUMERIC) THEN false
-                    ELSE true
+                    ELSE false
                 END AS is_partial_recognized
               FROM sales AS sc
               LEFT JOIN sales_users AS su ON sc.id = su.sales_id
@@ -3453,44 +3455,70 @@ const db_sql = {
               created_at BETWEEN '{var1}' AND '{var2}'
               AND id IN ({var3})
               AND deleted_at IS NULL;` ,
-  "Q398": `SELECT COALESCE(SUM(rr.recognized_amount::numeric), 0) AS total_amount
-            FROM recognized_revenue AS rr
-            WHERE rr.sales_id IN ({var3})
-            AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') >= '{var1}'
-            AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') <= '{var2}'
-            AND rr.deleted_at IS NULL;
-            `,
-"Q399": `WITH months AS (
-            SELECT 
-              1 AS month_number, 
-              TO_TIMESTAMP('{var1}', 'YYYY-MM-DD') AS start_date, 
-              TO_TIMESTAMP('{var2}', 'YYYY-MM-DD') AS end_date
-            UNION
-            SELECT 
-              2 AS month_number, 
-              TO_TIMESTAMP('{var3}', 'YYYY-MM-DD') AS start_date, 
-              TO_TIMESTAMP('{var4}', 'YYYY-MM-DD') AS end_date
-            UNION
-            SELECT 
-              3 AS month_number, 
-              TO_TIMESTAMP('{var5}', 'YYYY-MM-DD') AS start_date, 
-              TO_TIMESTAMP('{var6}', 'YYYY-MM-DD') AS end_date
-          )
-          SELECT 
-            COALESCE(SUM(r.recognized_amount::numeric), 0) AS total_amount,
-            m.month_number,
-            to_char(m.start_date, 'Month') AS start_month,
-            to_char(m.end_date, 'Month') AS end_month
-          FROM 
-            months m
-          LEFT JOIN 
-            recognized_revenue r ON r.sales_id IN ({var7})
-            AND TO_DATE(r.recognized_date, 'MM-DD-YYYY') BETWEEN m.start_date AND m.end_date
-            AND r.deleted_at IS NULL
-          GROUP BY 
-            m.month_number, start_month, end_month
-          ORDER BY 
-            m.month_number;
+//   "Q398": `SELECT COALESCE(SUM(rr.recognized_amount::numeric), 0) AS total_amount
+//             FROM recognized_revenue AS rr
+//             WHERE rr.sales_id IN ({var3})
+//             AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') >= '{var1}'
+//             AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') <= '{var2}'
+//             AND rr.deleted_at IS NULL;
+//             `,
+// "Q399": `WITH months AS (
+//             SELECT 
+//               1 AS month_number, 
+//               TO_TIMESTAMP('{var1}', 'YYYY-MM-DD') AS start_date, 
+//               TO_TIMESTAMP('{var2}', 'YYYY-MM-DD') AS end_date
+//             UNION
+//             SELECT 
+//               2 AS month_number, 
+//               TO_TIMESTAMP('{var3}', 'YYYY-MM-DD') AS start_date, 
+//               TO_TIMESTAMP('{var4}', 'YYYY-MM-DD') AS end_date
+//             UNION
+//             SELECT 
+//               3 AS month_number, 
+//               TO_TIMESTAMP('{var5}', 'YYYY-MM-DD') AS start_date, 
+//               TO_TIMESTAMP('{var6}', 'YYYY-MM-DD') AS end_date
+//           )
+//           SELECT 
+//             COALESCE(SUM(r.recognized_amount::numeric), 0) AS total_amount,
+//             m.month_number,
+//             to_char(m.start_date, 'Month') AS start_month,
+//             to_char(m.end_date, 'Month') AS end_month
+//           FROM 
+//             months m
+//           LEFT JOIN 
+//             recognized_revenue r ON r.sales_id IN ({var7})
+//             AND TO_DATE(r.recognized_date, 'MM-DD-YYYY') BETWEEN m.start_date AND m.end_date
+//             AND r.deleted_at IS NULL
+//           GROUP BY 
+//             m.month_number, start_month, end_month
+//           ORDER BY 
+//             m.month_number;
+//           `,
+"Q398": `SELECT s.id, s.target_amount,s.subscription_plan, s.recurring_date, cc.customer_name
+            FROM sales AS s
+            LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
+            WHERE s.id IN ({var3})
+                AND s.subscription_plan = 'Annually' 
+                AND s.sales_type = 'Subscription' 
+                AND s.deleted_at IS NULL
+                AND s.archived_at IS NULl
+                AND cc.deleted_at IS NULL
+                AND cc.archived_at IS NULL
+                AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') >= '{var1}'
+                AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') <= '{var2}'
+                      `,
+  "Q399": `SELECT s.id, s.target_amount,s.subscription_plan, s.recurring_date, cc.customer_name
+                FROM sales AS s
+                LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
+                WHERE s.id IN   ({var3})
+                    AND s.subscription_plan = 'Monthly' 
+                    AND s.sales_type = 'Subscription' 
+                    AND s.deleted_at IS NULL
+                    AND s.archived_at IS NULl
+                    AND cc.deleted_at IS NULL
+                    AND cc.archived_at IS NULL
+                    AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') >= '{var1}'
+                    AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') <= '{var2}'
           `,
   "Q400": `SELECT sales_ids
           FROM (
@@ -3773,7 +3801,17 @@ const db_sql = {
       su.company_id = '{var1}' AND su.deleted_at IS NULL
     GROUP BY 
       su.user_id,
-      u.full_name;`
+      u.full_name;`,
+  "Q414": `SELECT 
+              DISTINCT(uc.id), uc.user_id,u.full_name,uc.user_type, uc.total_commission_amount, 
+              uc.bonus_amount, uc.notes,
+              uc.sales_id,cus.customer_name AS sales_name       
+            FROM user_commissions AS uc
+            LEFT JOIN users AS u ON u.id = uc.user_id
+            LEFT JOIN sales AS sc ON sc.id = uc.sales_id
+            LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
+            WHERE uc.company_id = '{var1}' AND uc.deleted_at IS NULL
+            AND sc.deleted_at IS NULL`,     
         
 }
 
