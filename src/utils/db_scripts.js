@@ -3801,7 +3801,17 @@ const db_sql = {
       su.company_id = '{var1}' AND su.deleted_at IS NULL
     GROUP BY 
       su.user_id,
-      u.full_name;`
+      u.full_name;`,
+  "Q414": `SELECT 
+              DISTINCT(uc.id), uc.user_id,u.full_name,uc.user_type, uc.total_commission_amount, 
+              uc.bonus_amount, uc.notes,
+              uc.sales_id,cus.customer_name AS sales_name       
+            FROM user_commissions AS uc
+            LEFT JOIN users AS u ON u.id = uc.user_id
+            LEFT JOIN sales AS sc ON sc.id = uc.sales_id
+            LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
+            WHERE uc.company_id = '{var1}' AND uc.deleted_at IS NULL
+            AND sc.deleted_at IS NULL`,     
         
 }
 
