@@ -479,7 +479,7 @@ const db_sql = {
               CASE
                   WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) < CAST(sc.target_amount AS NUMERIC) THEN true
                   WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) = CAST(sc.target_amount AS NUMERIC) THEN false
-                  ELSE true
+                  ELSE false
               END AS is_partial_recognized
             FROM
               sales AS sc
@@ -955,7 +955,7 @@ const db_sql = {
           CASE
               WHEN SUM(rr.recognized_amount) < CAST(sc.target_amount AS NUMERIC) THEN true
               WHEN SUM(rr.recognized_amount) = CAST(sc.target_amount AS NUMERIC) THEN false
-              ELSE true
+              ELSE false
           END AS is_partial_recognized
         FROM
           sales AS sc
@@ -1186,7 +1186,7 @@ const db_sql = {
             CASE
                 WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) < CAST(sc.target_amount AS NUMERIC) THEN true
                 WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) = CAST(sc.target_amount AS NUMERIC) THEN false
-                ELSE true
+                ELSE false
             END AS is_partial_recognized
           FROM sales AS sc
           LEFT JOIN sales_users AS su ON sc.id = su.sales_id
@@ -1263,7 +1263,7 @@ const db_sql = {
             CASE
                 WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) < CAST(sc.target_amount AS NUMERIC) THEN true
                 WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) = CAST(sc.target_amount AS NUMERIC) THEN false
-                ELSE true
+                ELSE false
             END AS is_partial_recognized
           FROM sales AS sc
           LEFT JOIN sales_users AS su ON sc.id = su.sales_id
@@ -2693,7 +2693,7 @@ const db_sql = {
               CASE
                   WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) < CAST(sc.target_amount AS NUMERIC) THEN true
                   WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) = CAST(sc.target_amount AS NUMERIC) THEN false
-                  ELSE true
+                  ELSE false
               END AS is_partial_recognized
             FROM sales AS sc
             LEFT JOIN sales_users AS su ON sc.id = su.sales_id
@@ -2850,7 +2850,7 @@ const db_sql = {
                 CASE
                     WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) < CAST(sc.target_amount AS NUMERIC) THEN true
                     WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) = CAST(sc.target_amount AS NUMERIC) THEN false
-                    ELSE true
+                    ELSE false
                 END AS is_partial_recognized
               FROM sales AS sc
               LEFT JOIN sales_users AS su ON sc.id = su.sales_id
