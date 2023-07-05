@@ -9,6 +9,8 @@ const { dbScript, db_sql } = require('../utils/db_scripts');
 const { titleFn, sourceFn, industryFn, customerFnForHubspot,
     customerFnForsalesforce, leadFnForsalesforce, leadFnForHubspot } = require('../utils/connectors.utils')
 const moduleName = process.env.DASHBOARD_MODULE
+const salesModule = process.env.SALES_MODULE
+const customerModule = process.env.CUSTOMERS_MODULE
 const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults, getParentUserList, getUserAndSubUser, calculateQuarters, getQuarterMonthsDates, calculateEOLProducts } = require('../utils/helper')
 const { issueJWTForPro } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
@@ -283,6 +285,7 @@ module.exports.connectorsList = async (req, res) => {
         let { isProUser } = req.user
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+        console.log(s1, "s111");
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
@@ -1306,6 +1309,100 @@ module.exports.salesListForPro = async (req, res) => {
             res.status(403).json({
                 success: false,
                 message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+//added salesDetails on 05-07-2023 to show sales details in pro popup on sales metrics
+module.exports.salesDetails = async (req, res) => {
+    try {
+        let userId = req.user.id;
+        let salesId = req.query.id;
+        console.log(salesId);
+        let { isProUser } = req.user
+        let s2 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
+        let checkPermission = await connection.query(s2)
+        if (isProUser && checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
+            let s3 = dbScript(db_sql['Q249'], { var1: checkPermission.rows[0].company_id, var2: salesId })
+            let salesList = await connection.query(s3)
+            for (let salesData of salesList.rows) {
+                if (salesData.sales_users) {
+                    salesData.sales_users.map(value => {
+                        if (value.user_type == process.env.CAPTAIN) {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        } else {
+                            value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                        }
+                    })
+                }
+            }
+            if (salesList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Sales details',
+                    data: salesList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty sales commission list',
+                    data: []
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.stack,
+        })
+    }
+
+}
+
+module.exports.getUpperLevelUserList = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let s1 = dbScript(db_sql['Q41'], { var1: customerModule, var2: userId })
+        let checkPermission = await connection.query(s1)
+        let s2 = dbScript(db_sql['Q12'], { var1: checkPermission.rows[0].role_id })
+        let roleData = await connection.query(s2)
+        if (roleData.rows[0].reporter) {
+            let parentList = await getParentUserList(roleData.rows[0], checkPermission.rows[0].company_id);
+            if (parentList) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Perent user list',
+                    data: parentList
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty perent user list',
+                    data: []
+                })
+            }
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: "You are the admin role holder you don't need to request for that "
             })
         }
     } catch (error) {
