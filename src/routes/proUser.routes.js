@@ -53,6 +53,7 @@ router.post('/salesMetricsReport', verifyTokenFnForPro,checkParams, controller.p
 
 router.get('/salesDetails', verifyTokenFnForPro,checkParams, controller.proUser.salesDetails)
 router.get('/getUpperLevelUserList', verifyTokenFnForPro ,checkParams, controller.proUser.getUpperLevelUserList)
+router.get('/getAllApiDeatilsRelatedSales', verifyTokenFnForPro,checkParams, controller.proUser.getAllApiDeatilsRelatedSales)
 
 
 module.exports = router;
