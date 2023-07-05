@@ -3335,7 +3335,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                             totalMonthlySubscriptionAmount += multipliedAmount;
                         });
                     } else {
-                        monthlyRecognizedRevenue = monthlyRecognizedRevenue
+                        monthlyRecognizedRevenue = []
                         totalMonthlySubscriptionAmount = 0;
                     }
 
@@ -3675,7 +3675,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                             totalMonthlySubscriptionAmount += multipliedAmount;
                         });
                     } else {
-                        monthlyRecognizedRevenue = monthlyRecognizedRevenue
+                        monthlyRecognizedRevenue = []
                         totalMonthlySubscriptionAmount = 0;
                     }
 
