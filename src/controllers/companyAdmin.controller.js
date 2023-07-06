@@ -359,7 +359,7 @@ module.exports.login = async (req, res) => {
                                 configuration.beforeClosingDays = (admin.rows[0].before_closing_days) ? admin.rows[0].before_closing_days : '',
                                 configuration.afterClosingDays = (admin.rows[0].after_closing_days) ? admin.rows[0].after_closing_days : ''
 
-                            let s2 = dbScript(db_sql['Q125'], { var1: admin.rows[0].id, var2: admin.rows[0].company_id })
+                            let s2 = dbScript(db_sql['Q125'], { var1: admin.rows[0].company_id })
                             let imapCreds = await connection.query(s2)
                             let isImapCred = (imapCreds.rowCount == 0) ? false : true
 
