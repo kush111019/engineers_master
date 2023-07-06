@@ -1,6 +1,6 @@
 const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { mysql_real_escape_string, getUserAndSubUser, notificationsOperations } = require('../utils/helper')
+const {paginatedResults, mysql_real_escape_string, getUserAndSubUser, notificationsOperations } = require('../utils/helper')
 const moduleName = process.env.MARKETING_MODULE
 
 module.exports.marketingDashboard = async (req, res) => {
@@ -32,19 +32,19 @@ module.exports.marketingDashboard = async (req, res) => {
             let s6 = dbScript(db_sql['Q219'], { var1: checkPermission.rows[0].company_id })
             let CCount = await connection.query(s6)
 
-            let s7 = dbScript(db_sql['Q175'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
+            let s7 = dbScript(db_sql['Q175'], { var1: checkPermission.rows[0].company_id, var4: orderBy.toLowerCase() })
             let leadData = await connection.query(s7)
 
-            let s8 = dbScript(db_sql['Q190'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
+            let s8 = dbScript(db_sql['Q190'], { var1: checkPermission.rows[0].company_id, var4: orderBy.toLowerCase() })
             let mqlLeads = await connection.query(s8)
 
-            let s9 = dbScript(db_sql['Q212'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
+            let s9 = dbScript(db_sql['Q212'], { var1: checkPermission.rows[0].company_id, var4: orderBy.toLowerCase() })
             let assignedLeads = await connection.query(s9)
 
-            let s10 = dbScript(db_sql['Q218'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase(), var5: true })
+            let s10 = dbScript(db_sql['Q218'], { var1: checkPermission.rows[0].company_id, var4: orderBy.toLowerCase(), var5: true })
             let rejectedLeads = await connection.query(s10)
 
-            let s11 = dbScript(db_sql['Q220'], { var1: checkPermission.rows[0].company_id, var2: limit, var3: offset, var4: orderBy.toLowerCase() })
+            let s11 = dbScript(db_sql['Q220'], { var1: checkPermission.rows[0].company_id, var4: orderBy.toLowerCase() })
             let customerlist = await connection.query(s11)
 
             const lists = [leadData.rows, mqlLeads.rows, assignedLeads.rows, rejectedLeads.rows, customerlist.rows];
@@ -118,6 +118,7 @@ module.exports.marketingDashboard = async (req, res) => {
                 });
             });
             const LeadCount = Object.values(counts);
+            let paginatedArr = await paginatedResults(LeadCount, page)
             res.json({
                 status: 200,
                 success: true,
@@ -128,7 +129,7 @@ module.exports.marketingDashboard = async (req, res) => {
                     totalAssignedCount: ACount.rows[0].count,
                     totalRejectedCount: RCount.rows[0].count,
                     totalCustomerCount: CCount.rowCount,
-                    leadData: LeadCount
+                    leadData: paginatedArr
                 }
             })
         } else if (checkPermission.rows[0].permission_to_view_own) {
