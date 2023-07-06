@@ -209,7 +209,7 @@ module.exports.marketingDashboard = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.stack,
+            message: error.message,
         })
     }
 }
