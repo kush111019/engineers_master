@@ -14,7 +14,7 @@ module.exports.fetchEmails = async (req, res) => {
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
             let j = 0;
-            let s1 = dbScript(db_sql['Q125'], { var1: checkAdmin.rows[0].id, var2 : checkAdmin.rows[0].company_id })
+            let s1 = dbScript(db_sql['Q125'], { var1: checkAdmin.rows[0].company_id })
             let findCredentials = await connection.query(s1)
             let mainArray = []
             if (findCredentials.rowCount > 0) {
@@ -303,7 +303,7 @@ module.exports.sendEmail = async (req, res) => {
         let s0 = dbScript(db_sql['Q8'], { var1: id })
         let checkAdmin = await connection.query(s0)
         if (checkAdmin.rowCount > 0) {
-            let s1 = dbScript(db_sql['Q125'], { var1: checkAdmin.rows[0].id, var2: checkAdmin.rows[0].company_id  })
+            let s1 = dbScript(db_sql['Q125'], { var1: checkAdmin.rows[0].company_id  })
             let findCredentials = await connection.query(s1)
             if (findCredentials.rowCount > 0) {
                 let dpass = decrypt(JSON.parse(findCredentials.rows[0].app_password))
@@ -460,7 +460,7 @@ module.exports.readEmail = async (req, res) => {
     let s0 = dbScript(db_sql['Q8'], { var1: id })
     let checkAdmin = await connection.query(s0)
     if (checkAdmin.rowCount > 0) {
-        let s1 = dbScript(db_sql['Q125'], { var1: checkAdmin.rows[0].id, var2: checkAdmin.rows[0].company_id  })
+        let s1 = dbScript(db_sql['Q125'], { var1: checkAdmin.rows[0].company_id  })
         let findCredentials = await connection.query(s1)
         if (findCredentials.rowCount > 0) {
             let dpass = decrypt(JSON.parse(findCredentials.rows[0].app_password))

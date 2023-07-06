@@ -47,7 +47,7 @@ module.exports.proUserLogin = async (req, res) => {
                                 configuration.beforeClosingDays = (admin.rows[0].before_closing_days) ? admin.rows[0].before_closing_days : '',
                                 configuration.afterClosingDays = (admin.rows[0].after_closing_days) ? admin.rows[0].after_closing_days : ''
 
-                            let s2 = dbScript(db_sql['Q125'], { var1: admin.rows[0].id, var2: admin.rows[0].company_id })
+                            let s2 = dbScript(db_sql['Q125'], { var1: admin.rows[0].company_id })
                             let imapCreds = await connection.query(s2)
                             let isImapCred = (imapCreds.rowCount == 0) ? false : true
 
@@ -1755,7 +1755,7 @@ module.exports.sendEmailToLead = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0 && isProUser) {
-            let s2 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].company_id })
             let findCreds = await connection.query(s2)
             if (findCreds.rowCount > 0) {
                 let credentialObj = {}
@@ -1850,7 +1850,7 @@ module.exports.addSmtpCreds = async (req, res) => {
             })
             promise.then(async (data) => {
                 let encryptedAppPassword = JSON.stringify(encrypt(appPassword))
-                let s4 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
+                let s4 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].company_id })
                 let findSmtpcreds = await connection.query(s4)
                 if (findSmtpcreds.rowCount == 0) {
                     let s3 = dbScript(db_sql['Q341'], { var1: email, var2: encryptedAppPassword, var3: findAdmin.rows[0].id, var4: smtpHost, var5: smtpPort, var6: findAdmin.rows[0].company_id })
