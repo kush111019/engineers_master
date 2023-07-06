@@ -1423,8 +1423,7 @@ const db_sql = {
               GROUP BY 
                 u.full_name
               ORDER BY 
-                count {var4}
-              LIMIT {var2} OFFSET {var3}`,
+                count {var4} `,
   "Q176": `SELECT 
               l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
               l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
@@ -1489,8 +1488,7 @@ const db_sql = {
               GROUP BY 
                 u.full_name
               ORDER BY 
-                count {var4}
-              LIMIT {var2} OFFSET {var3}`,
+                count {var4}`,
   "Q191": `SELECT * FROM lead_sources WHERE LOWER(source) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
   "Q192": `SELECT * FROM lead_titles WHERE LOWER(title) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
   "Q193": `SELECT * FROM lead_industries WHERE LOWER(industry) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
@@ -1609,8 +1607,7 @@ const db_sql = {
               GROUP BY 
                 u.full_name
               ORDER BY 
-                count {var4}
-              LIMIT {var2} OFFSET {var3}`,
+                count {var4}`,
   "Q213": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND assigned_sales_lead_to IS NOT NULL AND emp_type = 'lead' AND pid IS NULL  AND deleted_at IS NULL`,
   "Q214": `UPDATE companies SET company_logo = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q215": `UPDATE customer_company_employees SET is_rejected = '{var2}', reason = '{var3}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`,
@@ -1628,8 +1625,7 @@ const db_sql = {
             GROUP BY 
               u.full_name
             ORDER BY 
-              count {var4}
-            LIMIT {var2} OFFSET {var3}`,
+              count {var4}`,
   "Q219": `SELECT 
                 DISTINCT(c.id)
               FROM 
@@ -1652,8 +1648,7 @@ const db_sql = {
                 u.full_name,
                 c.id
               ORDER BY 
-              u.full_name {var4}
-              LIMIT {var2} OFFSET {var3}`,
+              u.full_name {var4}`,
   "Q221": `SELECT 
             sc.id as sales_commission_id,
             sc.closed_at, 
