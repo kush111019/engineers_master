@@ -239,7 +239,7 @@ const db_sql = {
                       AND p.deleted_at IS NULL
                   ) product_in_sales
               ) AS products,
-              CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) AS total_recognized_amount,
+              CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) AS recognized_amount,
               CASE
                   WHEN sc.closed_at IS NOT NULL THEN 
                       CASE
