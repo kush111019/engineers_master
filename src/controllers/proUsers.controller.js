@@ -3586,9 +3586,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                                 closed_sales_count: 0,
                                 winPercentage: 0,
                             },
-                            yearly_recognized_revenue: {
-                                total_amount: 0,
-                            },
+                            yearly_recognized_revenue: 0,
                             monthly_revenue: [],
                             risk_sales_deals: {
                                 high_risk_sales_deals: [],
@@ -3920,14 +3918,12 @@ module.exports.salesMetricsReport = async (req, res) => {
                                 closed_sales_count: 0,
                                 winPercentage: 0,
                             },
-                            yearly_recognized_revenue: {
-                                total_amount: 0,
-                            },
+                            yearly_recognized_revenue: 0,
                             monthly_revenue: [],
                             risk_sales_deals: {
                                 high_risk_sales_deals: [],
                                 low_risk_sales_deals: [],
-                                total_high_risk_amount: 0,
+                                total_high_risk_amount: 0, 
                                 total_low_risk_amount: 0,
                                 total_sales_deals_amount: 0
 
