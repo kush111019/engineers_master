@@ -2912,7 +2912,7 @@ module.exports.salesCaptainListForGlobalAndOwn = async (req, res) => {
         let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
         let s3 = dbScript(db_sql['Q418'], { var1: roleUsers.join(",") })
         let salesCatains = await connection.query(s3)
-        
+
         if (salesCatains.rowCount > 0) {
             res.json({
                 status: 200,
@@ -3227,15 +3227,112 @@ module.exports.captainWiseGraph = async (req, res) => {
     }
 }
 
+// module.exports.sciiSales = async (req, res) => {
+//     try {
+//         let { page } = req.query
+//         let userId = req.user.id
+//         let { isProUser } = req.user
+//         let s1 = dbScript(db_sql['Q8'], { var1: userId })
+//         let findAdmin = await connection.query(s1)
+//         if (findAdmin.rowCount > 0 && isProUser) {
+//             let s2 = dbScript(db_sql['Q363'], { var1: findAdmin.rows[0].company_id })
+//             let salesCatains = await connection.query(s2)
+//             let sciiArr = []
+//             if (salesCatains.rowCount > 0) {
+//                 for (captain of salesCatains.rows) {
+//                     let salesIdArr = []
+//                     if (captain.sales_ids.length > 0) {
+//                         salesIdArr.push("'" + captain.sales_ids.join("','") + "'")
+//                     }
+//                     let s3 = dbScript(db_sql['Q364'], { var1: captain.user_id, var2: salesIdArr.join(",") })
+//                     let salesDetails = await connection.query(s3)
+//                     if (salesDetails.rowCount > 0) {
+//                         let days = 0
+//                         let durationDays = []
+//                         salesDetails.rows.map((detail) => {
+//                             days += Number(detail.duration_in_days)
+//                             durationDays.push(Number(detail.duration_in_days))
+//                         })
+//                         let avgClosingTime = days / salesDetails.rowCount
+//                         let aboveCount = 0;
+//                         let belowCount = 0;
+//                         let sciiCount = 0;
+//                         if (durationDays.length == 1) {
+//                             sciiCount = 1
+//                         } else {
+//                             for (let i = 0; i < durationDays.length; i++) {
+//                                 if (durationDays[i] > avgClosingTime) {
+//                                     aboveCount++;
+//                                 } else if (durationDays[i] < avgClosingTime) {
+//                                     belowCount++;
+//                                 }
+//                             }
+//                             if (aboveCount == 0 && belowCount == 0) {
+//                                 sciiCount = 0
+//                             } else if (aboveCount == 0 || belowCount == 0) {
+//                                 sciiCount = 1
+//                             } else {
+//                                 sciiCount = Number(belowCount / aboveCount)
+//                             }
+//                         }
+//                         sciiArr.push({
+//                             captain_id: captain.user_id,
+//                             captain_name: captain.full_name,
+//                             scii: sciiCount
+//                         })
+//                     }
+//                 }
+//                 if (sciiArr.length > 0) {
+//                     let result = await paginatedResults(sciiArr, page)
+//                     res.json({
+//                         status: 200,
+//                         success: true,
+//                         message: "scii list",
+//                         data: result
+//                     })
+//                 } else {
+//                     res.json({
+//                         status: 200,
+//                         success: false,
+//                         message: "Empty scii list",
+//                         data: []
+//                     })
+//                 }
+//             } else {
+//                 res.json({
+//                     status: 200,
+//                     success: false,
+//                     message: "Empty Sales captain list",
+//                     data: []
+//                 })
+//             }
+//         } else {
+//             res.status(403).json({
+//                 success: false,
+//                 message: "Unathorised"
+//             })
+//         }
+//     } catch (error) {
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }
+
+
+
+//scii index for global and own
 module.exports.sciiSales = async (req, res) => {
     try {
         let { page } = req.query
         let userId = req.user.id
         let { isProUser } = req.user
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0 && isProUser) {
-            let s2 = dbScript(db_sql['Q363'], { var1: findAdmin.rows[0].company_id })
+        let s1 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global && isProUser) {
+            let s2 = dbScript(db_sql['Q363'], { var1: checkPermission.rows[0].company_id })
             let salesCatains = await connection.query(s2)
             let sciiArr = []
             if (salesCatains.rowCount > 0) {
@@ -3306,7 +3403,81 @@ module.exports.sciiSales = async (req, res) => {
                     data: []
                 })
             }
-        } else {
+        } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            let s2 = dbScript(db_sql['Q418'], { var1: roleUsers.join(",") })
+            let salesCatains = await connection.query(s2)
+            let sciiArr = []
+            if (salesCatains.rowCount > 0) {
+                for (captain of salesCatains.rows) {
+                    let salesIdArr = []
+                    if (captain.sales_ids.length > 0) {
+                        salesIdArr.push("'" + captain.sales_ids.join("','") + "'")
+                    }
+                    let s3 = dbScript(db_sql['Q364'], { var1: captain.user_id, var2: salesIdArr.join(",") })
+                    let salesDetails = await connection.query(s3)
+                    if (salesDetails.rowCount > 0) {
+                        let days = 0
+                        let durationDays = []
+                        salesDetails.rows.map((detail) => {
+                            days += Number(detail.duration_in_days)
+                            durationDays.push(Number(detail.duration_in_days))
+                        })
+                        let avgClosingTime = days / salesDetails.rowCount
+                        let aboveCount = 0;
+                        let belowCount = 0;
+                        let sciiCount = 0;
+                        if (durationDays.length == 1) {
+                            sciiCount = 1
+                        } else {
+                            for (let i = 0; i < durationDays.length; i++) {
+                                if (durationDays[i] > avgClosingTime) {
+                                    aboveCount++;
+                                } else if (durationDays[i] < avgClosingTime) {
+                                    belowCount++;
+                                }
+                            }
+                            if (aboveCount == 0 && belowCount == 0) {
+                                sciiCount = 0
+                            } else if (aboveCount == 0 || belowCount == 0) {
+                                sciiCount = 1
+                            } else {
+                                sciiCount = Number(belowCount / aboveCount)
+                            }
+                        }
+                        sciiArr.push({
+                            captain_id: captain.user_id,
+                            captain_name: captain.full_name,
+                            scii: sciiCount
+                        })
+                    }
+                }
+                if (sciiArr.length > 0) {
+                    let result = await paginatedResults(sciiArr, page)
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "scii list",
+                        data: result
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty scii list",
+                        data: []
+                    })
+                }
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Sales captain list",
+                    data: []
+                })
+            }
+        }
+        else {
             res.status(403).json({
                 success: false,
                 message: "Unathorised"
