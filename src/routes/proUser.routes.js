@@ -57,6 +57,7 @@ router.get('/getAllApiDeatilsRelatedSales', verifyTokenFnForPro,checkParams, con
 
 router.get('/usersListForGlobalAndOwn', verifyTokenFnForPro,checkParams, controller.proUser.usersListForGlobalAndOwn)
 router.get('/salesCaptainListForGlobalAndOwn', verifyTokenFnForPro,checkParams, controller.proUser.salesCaptainListForGlobalAndOwn)
+router.get('/salesCaptainListForMetricsGlobalAndOwn', verifyTokenFnForPro,checkParams, controller.proUser.salesCaptainListForMetricsGlobalAndOwn)
 
 
 

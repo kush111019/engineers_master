@@ -3902,7 +3902,23 @@ const db_sql = {
             AND s.closed_at IS NOT NULL
           GROUP BY 
             su.user_id,
-            u.full_name;`,                                       
+            u.full_name;`,
+   "Q419": `SELECT  
+              su.user_id,
+              u.full_name,
+              array_agg(DISTINCT su.sales_id) AS sales_ids
+            FROM 
+              sales_users su
+            LEFT JOIN 
+              users u ON su.user_id = u.id
+            LEFT JOIN
+              sales s ON su.sales_id = s.id
+            WHERE 
+              su.user_type = 'captain' AND
+              su.user_id IN ({var1}) AND su.deleted_at IS NULL
+            GROUP BY 
+              su.user_id,
+              u.full_name;`,                                       
         
 }
 
