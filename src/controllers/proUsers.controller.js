@@ -2976,6 +2976,69 @@ module.exports.salesCaptainListForMetrics = async (req, res) => {
     }
 }
 
+
+//sales captain list for metrics own and global
+
+module.exports.salesCaptainListForMetricsGlobalAndOwn = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { isProUser } = req.user
+        let s1 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global && isProUser) {
+            let s2 = dbScript(db_sql['Q413'], { var1: checkPermission.rows[0].company_id })
+            let salesCatains = await connection.query(s2)
+            if (salesCatains.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Sales captain list",
+                    data: salesCatains.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Sales captain list",
+                    data: []
+                })
+            }
+        } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0])
+            console.log(roleUsers, "Role users");
+            let s3 = dbScript(db_sql['Q419'], { var1: roleUsers.join(",") })
+            console.log(s3 ,"s3");
+            let salesCatains = await connection.query(s3)
+            if (salesCatains.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Sales captain list",
+                    data: salesCatains.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Sales captain list",
+                    data: []
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 module.exports.captainWiseSalesDetails = async (req, res) => {
     try {
         let userId = req.user.id
