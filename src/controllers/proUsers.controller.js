@@ -279,6 +279,59 @@ module.exports.usersList = async (req, res) => {
     }
 }
 
+module.exports.usersListForGlobalAndOwn = async (req, res) => {
+    let userId = req.user.id
+    let { isProUser } = req.user
+    let s1 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
+    let checkPermission = await connection.query(s1)
+    if (checkPermission.rows[0].permission_to_view_global && isProUser) {
+        let s2 = dbScript(db_sql['Q314'], { var1: checkPermission.rows[0].company_id, var2: false })
+        findUsers = await connection.query(s2);
+
+        if (findUsers.rows.length > 0) {
+            res.json({
+                status: 200,
+                success: true,
+                message: 'Users list',
+                data: findUsers.rows
+            })
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: "Empty users list",
+                data: []
+            })
+        }
+    } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
+        let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+        console.log(roleUsers);
+        let s3 = dbScript(db_sql['Q417'], { var1: roleUsers.join(","), var2: false })
+        findUsers = await connection.query(s3);
+
+        if (findUsers.rows.length > 0) {
+            res.json({
+                status: 200,
+                success: true,
+                message: 'Users list',
+                data: findUsers.rows
+            })
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: "Empty users list",
+                data: []
+            })
+        }
+    } else {
+        res.status(403).json({
+            success: false,
+            message: "UnAthorised to see sales details"
+        })
+    }
+}
+
 module.exports.connectorsList = async (req, res) => {
     try {
         let userId = req.user.id
@@ -1251,27 +1304,77 @@ module.exports.leadReSync = async (req, res) => {
     }
 }
 
+// module.exports.proLeadsList = async (req, res) => {
+//     try {
+//         let userId = req.user.id
+//         let { isProUser } = req.user
+//         let { provider } = req.query
+//         let s1 = dbScript(db_sql['Q8'], { var1: userId })
+//         let findUser = await connection.query(s1)
+//         if (findUser.rowCount > 0 && isProUser) {
+//             let type = 'lead'
+//             let leadList
+//             //getting the lead list from the customer_comany_employees
+//             if (provider.toLowerCase() == 'all') {
+//                 //for all providers
+//                 let s2 = dbScript(db_sql['Q326'], { var1: findUser.rows[0].company_id, var2: userId, var3: type })
+//                 leadList = await connection.query(s2)
+//             } else {
+//                 //for perticular provider
+//                 let s3 = dbScript(db_sql['Q327'], { var1: findUser.rows[0].company_id, var2: userId, var3: type, var4: provider.toLowerCase() })
+//                 leadList = await connection.query(s3)
+//             }
+
+//             if (leadList.rowCount > 0) {
+//                 res.json({
+//                     status: 200,
+//                     success: true,
+//                     message: 'Leads list',
+//                     data: leadList.rows
+//                 })
+//             } else {
+//                 res.json({
+//                     status: 200,
+//                     success: false,
+//                     message: 'Empty leads list',
+//                     data: leadList.rows
+//                 })
+//             }
+//         }
+//         else {
+//             res.status(403).json({
+//                 success: false,
+//                 message: "UnAthorised"
+//             })
+//         }
+//     } catch (error) {
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }
+
 module.exports.proLeadsList = async (req, res) => {
     try {
         let userId = req.user.id
-        let { isProUser } = req.user
         let { provider } = req.query
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0 && isProUser) {
-            let type = 'lead'
+        let { isProUser } = req.user
+        let s1 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
+        let checkPermission = await connection.query(s1)
+        let type = 'lead';
+        if (checkPermission.rows[0].permission_to_view_global && isProUser) {
+            console.log("all permissions");
             let leadList
-            //getting the lead list from the customer_comany_employees
             if (provider.toLowerCase() == 'all') {
-                //for all providers
-                let s2 = dbScript(db_sql['Q326'], { var1: findUser.rows[0].company_id, var2: userId, var3: type })
+                let s2 = dbScript(db_sql['Q326'], { var1: checkPermission.rows[0].company_id, var2: type })
                 leadList = await connection.query(s2)
             } else {
                 //for perticular provider
-                let s3 = dbScript(db_sql['Q327'], { var1: findUser.rows[0].company_id, var2: userId, var3: type, var4: provider.toLowerCase() })
+                let s3 = dbScript(db_sql['Q327'], { var1: checkPermission.rows[0].company_id, var2: type, var3: provider.toLowerCase() })
                 leadList = await connection.query(s3)
             }
-
             if (leadList.rowCount > 0) {
                 res.json({
                     status: 200,
@@ -1285,6 +1388,35 @@ module.exports.proLeadsList = async (req, res) => {
                     success: false,
                     message: 'Empty leads list',
                     data: leadList.rows
+                })
+            }
+        }
+        else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            let findLeadList
+            if (provider.toLowerCase() == 'all') {
+                let s4 = dbScript(db_sql['Q415'], { var1: roleUsers.join(","), var2: type })
+                findLeadList = await connection.query(s4)
+                console.log(s4);
+            } else {
+                //for perticular provider
+                let s5 = dbScript(db_sql['Q416'], { var1: roleUsers.join(","), var2: type, var3: provider.toLowerCase() })
+                findLeadList = await connection.query(s5)
+            }
+
+            if (findLeadList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Leads list',
+                    data: findLeadList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty leads list',
+                    data: findLeadList.rows
                 })
             }
         }
@@ -1307,12 +1439,11 @@ module.exports.salesListForPro = async (req, res) => {
     try {
         let userId = req.user.id
         let { isProUser } = req.user
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0 && isProUser) {
-
-            let s6 = dbScript(db_sql['Q302'], { var1: findUser.rows[0].company_id })
-            let salesList = await connection.query(s6)
+        let s1 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global && isProUser) {
+            let s2 = dbScript(db_sql['Q302'], { var1: checkPermission.rows[0].company_id })
+            let salesList = await connection.query(s2)
 
             if (salesList.rowCount > 0) {
                 for (let salesData of salesList.rows) {
@@ -1339,6 +1470,37 @@ module.exports.salesListForPro = async (req, res) => {
                     status: 200,
                     success: false,
                     message: 'Empty sales commission list',
+                    data: []
+                })
+            }
+        } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            let s3 = dbScript(db_sql['Q303'], { var1: roleUsers.join(",") })
+            salesList = await connection.query(s3)
+
+            if (salesList.rowCount > 0) {
+                for (let salesData of salesList.rows) {
+                    if (salesData.sales_users) {
+                        salesData.sales_users.map(value => {
+                            if (value.user_type == process.env.CAPTAIN) {
+                                value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                            } else {
+                                value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                            }
+                        })
+                    }
+                }
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Sales list',
+                    data: salesList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty sales list',
                     data: []
                 })
             }
@@ -3923,7 +4085,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                             risk_sales_deals: {
                                 high_risk_sales_deals: [],
                                 low_risk_sales_deals: [],
-                                total_high_risk_amount: 0, 
+                                total_high_risk_amount: 0,
                                 total_low_risk_amount: 0,
                                 total_sales_deals_amount: 0
 

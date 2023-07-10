@@ -55,5 +55,8 @@ router.get('/salesDetails', verifyTokenFnForPro,checkParams, controller.proUser.
 router.get('/getUpperLevelUserList', verifyTokenFnForPro ,checkParams, controller.proUser.getUpperLevelUserList)
 router.get('/getAllApiDeatilsRelatedSales', verifyTokenFnForPro,checkParams, controller.proUser.getAllApiDeatilsRelatedSales)
 
+router.get('/usersListForGlobalAndOwn', verifyTokenFnForPro,checkParams, controller.proUser.usersListForGlobalAndOwn)
+
+
 
 module.exports = router;
