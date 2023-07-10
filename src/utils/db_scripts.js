@@ -3292,7 +3292,7 @@ const db_sql = {
   "Q357": `UPDATE pro_user_events SET event_name = '{var1}', meet_link = '{var2}', description = '{var3}', duration = '{var4}', availability_id = '{var5}', updated_at = '{var7}' WHERE id = '{var6}' RETURNING *`,
   "Q358": `UPDATE pro_user_events SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
   "Q359": `SELECT assigned_to FROM forecast WHERE (id = '{var1}' OR pid = '{var1}') AND deleted_at IS NULL`,
-  // "Q360":`SELECT * from imap_credentials WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
+  "Q360":`SELECT * from imap_credentials WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
   "Q361": `UPDATE imap_credentials SET email = '{var1}', app_password = '{var2}', smtp_host = '{var3}', smtp_port = '{var4}', updated_at = '{var6}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *`,
   "Q362": `SELECT se.event_id,ue.event_name, se.date, se.start_time, se.end_time, se.lead_name, 
               se.lead_email, se.description as lead_description, 
@@ -3918,7 +3918,13 @@ const db_sql = {
               su.user_id IN ({var1}) AND su.deleted_at IS NULL
             GROUP BY 
               su.user_id,
-              u.full_name;`,                                       
+              u.full_name;`,  
+              
+    "Q420": `SELECT id, company_id 
+            FROM 
+            users 
+            WHERE 
+            company_id = '{var1}' AND is_main_admin = true`,
         
 }
 
