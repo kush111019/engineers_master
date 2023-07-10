@@ -2978,7 +2978,6 @@ module.exports.salesCaptainListForMetrics = async (req, res) => {
 
 
 //sales captain list for metrics own and global
-
 module.exports.salesCaptainListForMetricsGlobalAndOwn = async (req, res) => {
     try {
         let userId = req.user.id
@@ -3383,7 +3382,6 @@ module.exports.captainWiseGraph = async (req, res) => {
 //         })
 //     }
 // }
-
 
 
 //scii index for global and own
