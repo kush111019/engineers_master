@@ -11,6 +11,7 @@ const { titleFn, sourceFn, industryFn, customerFnForHubspot,
 const moduleName = process.env.DASHBOARD_MODULE
 const salesModule = process.env.SALES_MODULE
 const customerModule = process.env.CUSTOMERS_MODULE
+const leadModule = process.env.LEADS_MODULE
 const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults, getParentUserList, getUserAndSubUser, calculateQuarters, getQuarterMonthsDates, calculateEOLProducts } = require('../utils/helper')
 const { issueJWTForPro } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
@@ -1361,7 +1362,7 @@ module.exports.proLeadsList = async (req, res) => {
         let userId = req.user.id
         let { provider } = req.query
         let { isProUser } = req.user
-        let s1 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
+        let s1 = dbScript(db_sql['Q41'], { var1: leadModule, var2: userId })
         let checkPermission = await connection.query(s1)
         let type = 'lead';
         if (checkPermission.rows[0].permission_to_view_global && isProUser) {
@@ -1390,8 +1391,7 @@ module.exports.proLeadsList = async (req, res) => {
                     data: leadList.rows
                 })
             }
-        }
-        else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
+        } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let findLeadList
             if (provider.toLowerCase() == 'all') {
