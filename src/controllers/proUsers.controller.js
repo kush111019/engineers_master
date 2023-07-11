@@ -3006,7 +3006,7 @@ module.exports.salesCaptainListForMetricsGlobalAndOwn = async (req, res) => {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0])
             console.log(roleUsers, "Role users");
             let s3 = dbScript(db_sql['Q419'], { var1: roleUsers.join(",") })
-            console.log(s3 ,"s3");
+            console.log(s3, "s3");
             let salesCatains = await connection.query(s3)
             if (salesCatains.rowCount > 0) {
                 res.json({
@@ -3730,6 +3730,22 @@ module.exports.salesMetricsReport = async (req, res) => {
             const SformattedDate = Sdate.toISOString().substring(0, 10);
             const EformattedDate = Edate.toISOString().substring(0, 10);
 
+            //current month start date and end date
+            // Get the current date
+            const currentDate = new Date();
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const startDate = new Date(year, month, 1);
+            const endDate = new Date(year, month + 1, 0);
+
+            let monthlyStartFormattedDate = startDate.toISOString().substring(0, 10);
+            let monthlyEndFormattedDate = endDate.toISOString().substring(0, 10);
+
+            // Output the start and end dates
+            console.log("Start date:", monthlyStartFormattedDate);
+            console.log("End date:", monthlyEndFormattedDate);
+
+
             if (includeStatus !== true) {
                 //lead counts
                 let s3 = dbScript(db_sql["Q395"], {
@@ -3805,8 +3821,8 @@ module.exports.salesMetricsReport = async (req, res) => {
                     let totalMonthlySubscriptionAmount = 0;
 
                     let s7 = dbScript(db_sql["Q399"], {
-                        var1: yearlyStartFormattedDate,
-                        var2: yearlyEndFormattedDate,
+                        var1: monthlyStartFormattedDate,
+                        var2: monthlyEndFormattedDate,
                         var3: allSalesIdArr.join(","),
                     });
                     let findMonthlyRecognizedRevenue = await connection.query(s7);
@@ -3824,18 +3840,20 @@ module.exports.salesMetricsReport = async (req, res) => {
                     }
 
                     //yearly recognized_revenue Subscription+perpetual
-                    let yearlySubscriptionAmount = 0;
-                    let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
-                    let findYearlyRecognizedRevenue = await connection.query(s8);
-                    if (findYearlyRecognizedRevenue.rowCount > 0) {
-                        let yearlyData = findYearlyRecognizedRevenue.rows
-                        yearlyData.forEach(row => {
-                            yearlySubscriptionAmount += parseFloat(row.target_amount);
-                        });
-                    } else {
-                        yearlySubscriptionAmount = yearlySubscriptionAmount
-                    }
-                    yearlyRecognizedRevenue = parseFloat(yearlySubscriptionAmount + totalMonthlySubscriptionAmount)
+                    // let yearlySubscriptionAmount = 0;
+                    // let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
+                    // let findYearlyRecognizedRevenue = await connection.query(s8);
+                    // if (findYearlyRecognizedRevenue.rowCount > 0) {
+                    //     let yearlyData = findYearlyRecognizedRevenue.rows
+                    //     yearlyData.forEach(row => {
+                    //         yearlySubscriptionAmount += parseFloat(row.target_amount);
+                    //     });
+                    // } else {
+                    //     yearlySubscriptionAmount = yearlySubscriptionAmount
+                    // }
+                    // yearlyRecognizedRevenue = parseFloat(yearlySubscriptionAmount + totalMonthlySubscriptionAmount)
+
+                    yearlyRecognizedRevenue = parseFloat(totalMonthlySubscriptionAmount)
 
                     //sales leakages
 
@@ -4143,8 +4161,8 @@ module.exports.salesMetricsReport = async (req, res) => {
                     let totalMonthlySubscriptionAmount = 0;
 
                     let s7 = dbScript(db_sql["Q399"], {
-                        var1: yearlyStartFormattedDate,
-                        var2: yearlyEndFormattedDate,
+                        var1: monthlyStartFormattedDate,
+                        var2: monthlyEndFormattedDate,
                         var3: allSalesIdArr.join(","),
                     });
                     let findMonthlyRecognizedRevenue = await connection.query(s7);
@@ -4173,7 +4191,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                     } else {
                         yearlySubscriptionAmount = yearlySubscriptionAmount
                     }
-                    yearlyRecognizedRevenue = parseFloat(yearlySubscriptionAmount + totalMonthlySubscriptionAmount)
+                    yearlyRecognizedRevenue = parseFloat(totalMonthlySubscriptionAmount)
 
                     //sales leakages
 
