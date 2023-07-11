@@ -236,6 +236,8 @@ module.exports.addImapCredentials = async (req, res) => {
                             rejectUnauthorized: false
                         }
                     }
+
+                    console.log(imapConfig, "imapConfig");
                     let imap = new Imap(imapConfig);
                     imap.once('error', async (err) => {
                         res.json({
@@ -261,7 +263,7 @@ module.exports.addImapCredentials = async (req, res) => {
                                 let transporter = nodemailer.createTransport({
                                     host: findMainAdminCreds.rows[0].smtp_host,
                                     port: Number(findMainAdminCreds.rows[0].smtp_port),
-                                    secure: (Number(smtpPort) == 465) ? true : false, // true for 465, false for other ports
+                                    secure: (Number(findMainAdminCreds.rows[0].smtp_port) == 465) ? true : false, // true for 465, false for other ports
                                     auth: {
                                         user: email,
                                         pass: appPassword
@@ -284,11 +286,12 @@ module.exports.addImapCredentials = async (req, res) => {
                                         console.log(info, "info");
                                         resolve(info)
                                     } else {
+                                        console.log(reject("error"));
                                         reject("error")
                                     }
                                 })
+                                console.log(promise, "promise");
                                 promise.then(async (data) => {
-
                                     let _dt = new Date().toISOString();
                                     let s2 = dbScript(db_sql['Q129'], { var1: _dt, var2: findAdmin.rows[0].id, var3: findAdmin.rows[0].company_id })
                                     let updateCredential = await connection.query(s2)
