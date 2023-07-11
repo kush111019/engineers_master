@@ -306,7 +306,6 @@ module.exports.usersListForGlobalAndOwn = async (req, res) => {
         }
     } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
         let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
-        console.log(roleUsers);
         let s3 = dbScript(db_sql['Q417'], { var1: roleUsers.join(","), var2: false })
         findUsers = await connection.query(s3);
 
@@ -339,7 +338,6 @@ module.exports.connectorsList = async (req, res) => {
         let { isProUser } = req.user
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        console.log(s1, "s111");
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
@@ -1366,7 +1364,6 @@ module.exports.proLeadsList = async (req, res) => {
         let checkPermission = await connection.query(s1)
         let type = 'lead';
         if (checkPermission.rows[0].permission_to_view_global && isProUser) {
-            console.log("all permissions");
             let leadList
             if (provider.toLowerCase() == 'all') {
                 let s2 = dbScript(db_sql['Q326'], { var1: checkPermission.rows[0].company_id, var2: type })
@@ -1524,7 +1521,6 @@ module.exports.salesDetails = async (req, res) => {
     try {
         let userId = req.user.id;
         let salesId = req.query.id;
-        console.log(salesId);
         let { isProUser } = req.user
         let s2 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
         let checkPermission = await connection.query(s2)
@@ -3004,9 +3000,7 @@ module.exports.salesCaptainListForMetricsGlobalAndOwn = async (req, res) => {
             }
         } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0])
-            console.log(roleUsers, "Role users");
             let s3 = dbScript(db_sql['Q419'], { var1: roleUsers.join(",") })
-            console.log(s3, "s3");
             let salesCatains = await connection.query(s3)
             if (salesCatains.rowCount > 0) {
                 res.json({
@@ -3740,11 +3734,6 @@ module.exports.salesMetricsReport = async (req, res) => {
 
             let monthlyStartFormattedDate = startDate.toISOString().substring(0, 10);
             let monthlyEndFormattedDate = endDate.toISOString().substring(0, 10);
-
-            // Output the start and end dates
-            console.log("Start date:", monthlyStartFormattedDate);
-            console.log("End date:", monthlyEndFormattedDate);
-
 
             if (includeStatus !== true) {
                 //lead counts
