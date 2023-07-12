@@ -2175,7 +2175,7 @@ const db_sql = {
             sc.created_at DESC`,
   "Q250": `SELECT
             u.id, u.email_address, u.full_name, u.company_id, u.avatar, u.mobile_number,
-            u.phone_number, u.address, u.role_id, u.is_admin, u.expiry_date, u.created_at,u.is_verified,
+            u.phone_number, u.address, u.role_id, u.is_admin, u.expiry_date, u.created_at,u.is_verified, u.is_deactivated
             u.is_main_admin, u.created_by,u.is_pro_user,
             r.role_name
           FROM
