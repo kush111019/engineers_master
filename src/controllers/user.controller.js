@@ -517,6 +517,7 @@ module.exports.updateUser = async (req, res) => {
 
             let s5 = dbScript(db_sql['Q12'], { var1: roleId })
             let findRole = await connection.query(s5)
+            console.log(findRole.rows, "find role");
             let isAdmin = findRole.rows[0].role_name == 'Admin' ? true : false;
 
             let _dt = new Date().toISOString();
@@ -536,7 +537,7 @@ module.exports.updateUser = async (req, res) => {
                 res.json({
                     status: 400,
                     success: false,
-                    message: "Something went wrong"
+                    message: "Something went wrongOr User is deactivated"
                 })
             }
         } else {
@@ -550,7 +551,7 @@ module.exports.updateUser = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.message,
+            message: error.stack,
         })
     }
 }
