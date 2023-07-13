@@ -4251,7 +4251,33 @@ ORDER BY
             sc.id = '{var2}' AND
             sc.deleted_at IS NULL
           ORDER BY sc.created_at DESC`,
-  "Q422":`UPDATE users SET is_pro_user = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL`                
+  "Q422":`UPDATE users SET is_pro_user = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL`,
+  "Q423": `SELECT
+              sc.id,
+              su.user_id,
+              su.user_percentage,
+              su.user_type,
+              sc.customer_id,
+              sc.target_amount,
+              sc.slab_id,
+              u.full_name,
+              u.created_by
+            FROM sales AS sc
+            LEFT JOIN (
+              SELECT
+                sales_id,
+                user_id,
+                user_type,
+                SUM(user_percentage) AS user_percentage
+              FROM sales_users
+              WHERE deleted_at IS NULL
+              GROUP BY sales_id, user_id, user_type
+            ) AS su ON sc.id = su.sales_id
+            LEFT JOIN users AS u ON su.user_id = u.id
+            WHERE
+              sc.id = '{var1}'
+              AND sc.deleted_at IS NULL
+              AND u.deleted_at IS NULL;`,                
         
 }
 

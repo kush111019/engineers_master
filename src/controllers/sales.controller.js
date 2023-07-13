@@ -1118,7 +1118,7 @@ module.exports.addRecognizedRevenue = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
 
-        let s2 = dbScript(db_sql['Q114'], { var1: salesId })
+        let s2 = dbScript(db_sql['Q423'], { var1: salesId })
         let findSales = await connection.query(s2)
 
         if (findSales.rowCount > 0) {
