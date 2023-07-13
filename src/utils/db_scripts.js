@@ -3144,7 +3144,27 @@ ORDER BY
                 SELECT json_agg(recognized_revenue.id)
                 FROM recognized_revenue 
                 WHERE user_id = '{var1}' AND deleted_at IS NULL
-              )as recognized_revenue_data
+              )as recognized_revenue_data,
+              (
+                SELECT json_agg(pro_user_availability.id)
+                FROM pro_user_availability 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as user_availability_data,
+              (
+                SELECT json_agg(pro_scheduled_events.id)
+                FROM pro_scheduled_events 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as pro_scheduled_events_data,
+              (
+                SELECT json_agg(pro_user_events.id)
+                FROM pro_user_events 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as pro_user_events_data,
+              (
+                SELECT json_agg(pro_user_time_slot.id)
+                FROM pro_user_time_slot 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as pro_user_time_slot_data
               
             FROM users where id = '{var1}' AND deleted_at IS NULL and is_deactivated = false`,
   "Q308": `SELECT * FROM customer_company_employees 
@@ -3384,7 +3404,7 @@ ORDER BY
               AND sc.deleted_at IS NULL`,
   "Q341": `INSERT INTO imap_credentials( email, app_password, user_id, smtp_host, smtp_port, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
   "Q342": `INSERT INTO pro_user_availability(schedule_name, timezone, user_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
-  "Q343": `INSERT INTO pro_user_time_slot(days,start_time, end_time, availability_id, company_id, checked) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+  "Q343": `INSERT INTO pro_user_time_slot(days,start_time, end_time, availability_id, company_id, checked, user_id) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}', '{var7}') RETURNING *`,
   "Q344": `SELECT ua.id, ua.schedule_name, ua.timezone, ua.created_at,
               ua.user_id, u.full_name,
               (
