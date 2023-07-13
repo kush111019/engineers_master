@@ -805,6 +805,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
         let {
             userId,
             newUserId,
+            isAssignProUser,
             userData
         } = req.body
         console.log(req.body);
@@ -993,6 +994,11 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
             }
 
             let _dt = new Date().toISOString();
+            if(isAssignProUser){
+            let s4 = dbScript(db_sql['Q422'], { var1: true, var2: newUserId, var3: _dt })
+            let updateNewUser = await connection.query(s4)
+            }
+
             let s4 = dbScript(db_sql['Q311'], { var1: true, var2: userId, var3: _dt, var4: newUserId })
             let updateUser = await connection.query(s4)
             if (updateUser.rowCount > 0) {
