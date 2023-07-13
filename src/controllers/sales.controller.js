@@ -336,7 +336,7 @@ module.exports.salesDetails = async (req, res) => {
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-            let s3 = dbScript(db_sql['Q249'], { var1: checkPermission.rows[0].company_id, var2: salesId })
+            let s3 = dbScript(db_sql['Q421'], { var1: checkPermission.rows[0].company_id, var2: salesId })
             let salesList = await connection.query(s3)
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
