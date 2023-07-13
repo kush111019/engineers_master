@@ -3684,8 +3684,8 @@ ORDER BY
             AND s.archived_at IS NULL
             AND cc.deleted_at IS NULL
             AND cc.archived_at IS NULL
-            AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') >= '{var1}'
-            AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') <= '{var2}'
+            AND (s.recurring_date) >= '{var1}'
+            AND (s.recurring_date) <= '{var2}'
           `,
   "Q400": `SELECT sales_ids
           FROM (
