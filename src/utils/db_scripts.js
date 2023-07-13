@@ -3647,18 +3647,25 @@ ORDER BY
                 AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') >= '{var1}'
                 AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') <= '{var2}'
                       `,
-  "Q399": `SELECT s.id, s.target_amount,s.subscription_plan, s.recurring_date, cc.customer_name
-                FROM sales AS s
-                LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
-                WHERE s.id IN   ({var3})
-                    AND s.subscription_plan = 'Monthly' 
-                    AND s.sales_type = 'Subscription' 
-                    AND s.deleted_at IS NULL
-                    AND s.archived_at IS NULl
-                    AND cc.deleted_at IS NULL
-                    AND cc.archived_at IS NULL
-                    AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') >= '{var1}'
-                    AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') <= '{var2}'
+  "Q399": `SELECT s.id, 
+              CASE WHEN s.subscription_plan = 'Monthly' THEN s.target_amount::numeric
+                  WHEN s.subscription_plan = 'Annually' THEN ROUND(s.target_amount::numeric / 12, 2)
+                  ELSE 0
+              END AS target_amount,
+              s.subscription_plan,
+              s.recurring_date,
+              cc.customer_name
+            FROM sales AS s
+            LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
+            WHERE s.id IN ({var3})
+            AND (s.subscription_plan = 'Monthly' OR s.subscription_plan = 'Annually')
+            AND s.sales_type = 'Subscription'
+            AND s.deleted_at IS NULL
+            AND s.archived_at IS NULL
+            AND cc.deleted_at IS NULL
+            AND cc.archived_at IS NULL
+            AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') >= '{var1}'
+            AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') <= '{var2}'
           `,
   "Q400": `SELECT sales_ids
           FROM (
