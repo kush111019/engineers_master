@@ -1563,7 +1563,7 @@ module.exports.salesDetails = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.stack,
+            message: error.message,
         })
     }
 
@@ -4438,7 +4438,7 @@ module.exports.salesMetricsReport = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.stack,
+            message: error.message,
         });
     }
 }
