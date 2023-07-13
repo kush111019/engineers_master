@@ -4244,7 +4244,7 @@ ORDER BY
             sc.id = '{var2}' AND
             sc.deleted_at IS NULL
           ORDER BY sc.created_at DESC`,
-  "Q422":`UPDATE users SET is_pro_user = '{var1}', updated_at = '{var3}' WHERE user_id = '{var2}' AND deleted_at IS NULL`                
+  "Q422":`UPDATE users SET is_pro_user = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL`                
         
 }
 
