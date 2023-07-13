@@ -2187,11 +2187,11 @@ module.exports.addAvailability = async (req, res) => {
                     for (let subTs of ts.timeSlots) {
                         const { utcStart, utcEnd } = await convertToLocal(subTs.startTime, subTs.endTime, timezone);
 
-                        let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: utcStart, var3: utcEnd, var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked, var7 : userId })
+                        let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: utcStart, var3: utcEnd, var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked, var7: userId })
                         let addTimeSlot = await connection.query(s3)
                     }
                 } else {
-                    let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: '', var3: '', var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked, var7 : userId })
+                    let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: '', var3: '', var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked, var7: userId })
                     let addTimeSlot = await connection.query(s3)
                 }
             }
@@ -3709,14 +3709,7 @@ module.exports.salesMetricsReport = async (req, res) => {
             let eolSales = {}
             let revenueGap = 0;
             let totalLeakage = 0;
-            let totalLeakageAmountClosed = 0
             let totalLeakageAmountAll = 0
-
-            //converting date format to 2022-12- for yearly RR
-            let yearlyStartDate = new Date(quarters[0].start_date);
-            let yearlyEndDate = new Date(quarters[3].end_date);
-            let yearlyStartFormattedDate = yearlyStartDate.toISOString().substring(0, 10);
-            let yearlyEndFormattedDate = yearlyEndDate.toISOString().substring(0, 10);
 
             //for EOL products date format
             const Sdate = new Date(selectedStartDate);
@@ -3727,13 +3720,20 @@ module.exports.salesMetricsReport = async (req, res) => {
             //current month start date and end date
             // Get the current date
             const currentDate = new Date();
+
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
             const startDate = new Date(year, month, 1);
             const endDate = new Date(year, month + 1, 0);
-
             let monthlyStartFormattedDate = startDate.toISOString().substring(0, 10);
             let monthlyEndFormattedDate = endDate.toISOString().substring(0, 10);
+
+            function formatDate(dateString) {
+                const [year, month, day] = dateString.split('-');
+                return `${month}-${day}-${year}`;
+            }
+            const formattedStartDate = formatDate(monthlyStartFormattedDate);
+            const formattedEndDate = formatDate(monthlyEndFormattedDate);
 
             if (includeStatus !== true) {
                 //lead counts
@@ -3808,10 +3808,9 @@ module.exports.salesMetricsReport = async (req, res) => {
 
                     //monthly recognized_revenue Subscription+perpetual on perticular quarter
                     let totalMonthlySubscriptionAmount = 0;
-
                     let s7 = dbScript(db_sql["Q399"], {
-                        var1: monthlyStartFormattedDate,
-                        var2: monthlyEndFormattedDate,
+                        var1: formattedStartDate,
+                        var2: formattedEndDate,
                         var3: allSalesIdArr.join(","),
                     });
                     let findMonthlyRecognizedRevenue = await connection.query(s7);
@@ -4150,10 +4149,11 @@ module.exports.salesMetricsReport = async (req, res) => {
                     let totalMonthlySubscriptionAmount = 0;
 
                     let s7 = dbScript(db_sql["Q399"], {
-                        var1: monthlyStartFormattedDate,
-                        var2: monthlyEndFormattedDate,
+                        var1: formattedStartDate,
+                        var2: formattedEndDate,
                         var3: allSalesIdArr.join(","),
                     });
+
                     let findMonthlyRecognizedRevenue = await connection.query(s7);
                     if (findMonthlyRecognizedRevenue.rowCount > 0) {
                         monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
@@ -4169,17 +4169,17 @@ module.exports.salesMetricsReport = async (req, res) => {
                     }
 
                     //yearly recognized_revenue Subscription+perpetual
-                    let yearlySubscriptionAmount = 0;
-                    let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
-                    let findYearlyRecognizedRevenue = await connection.query(s8);
-                    if (findYearlyRecognizedRevenue.rowCount > 0) {
-                        let yearlyData = findYearlyRecognizedRevenue.rows
-                        yearlyData.forEach(row => {
-                            yearlySubscriptionAmount += parseFloat(row.target_amount);
-                        });
-                    } else {
-                        yearlySubscriptionAmount = yearlySubscriptionAmount
-                    }
+                    // let yearlySubscriptionAmount = 0;
+                    // let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
+                    // let findYearlyRecognizedRevenue = await connection.query(s8);
+                    // if (findYearlyRecognizedRevenue.rowCount > 0) {
+                    //     let yearlyData = findYearlyRecognizedRevenue.rows
+                    //     yearlyData.forEach(row => {
+                    //         yearlySubscriptionAmount += parseFloat(row.target_amount);
+                    //     });
+                    // } else {
+                    //     yearlySubscriptionAmount = yearlySubscriptionAmount
+                    // }
                     yearlyRecognizedRevenue = parseFloat(totalMonthlySubscriptionAmount)
 
                     //sales leakages
