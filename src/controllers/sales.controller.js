@@ -1144,7 +1144,7 @@ module.exports.addRecognizedRevenue = async (req, res) => {
             }
 
             for (let comData of findSales.rows) {
-                let userCommission = Number(totalCommission * Number(comData.user_percentage / 100))
+                let userCommission = Number(commissionOncurrentAmount * Number(comData.user_percentage / 100))
 
                 userCommission = userCommission.toFixed(2)
 
@@ -1154,13 +1154,13 @@ module.exports.addRecognizedRevenue = async (req, res) => {
                 let s8 = dbScript(db_sql['Q339'], { var1: comData.user_id, var2: comData.id, var3: comData.user_type })
                 let findCommission = await connection.query(s8)
 
-                if (findCommission.rowCount == 0) {
+                // if (findCommission.rowCount == 0) {
                     let s7 = dbScript(db_sql['Q334'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: Number(userCommission), var5: comData.user_type })
                     let addUserCommission = await connection.query(s7);
-                } else {
+                // } else {
                     let s9 = dbScript(db_sql['Q337'], { var1: Number(userCommission), var2: findCommission.rows[0].id })
                     let updateUserCommission = await connection.query(s9);
-                }
+                // }
 
                 let notification_typeId = findSales.rows[0].id;
                 await notificationsOperations({ type: 6, msg: 6.1, notification_typeId, notification_userId }, userId);
