@@ -3669,7 +3669,7 @@ ORDER BY
                       `,
   "Q399": `SELECT s.id, 
               CASE WHEN s.subscription_plan = 'Monthly' THEN s.target_amount::numeric
-                  WHEN s.subscription_plan = 'Annually' THEN ROUND(s.target_amount::numeric / 12, 2)
+                  WHEN s.subscription_plan = 'Annually' THEN s.target_amount::numeric / 12
                   ELSE 0
               END AS target_amount,
               s.subscription_plan,
@@ -3684,8 +3684,8 @@ ORDER BY
             AND s.archived_at IS NULL
             AND cc.deleted_at IS NULL
             AND cc.archived_at IS NULL
-            AND (s.recurring_date) >= '{var1}'
-            AND (s.recurring_date) <= '{var2}'
+            AND s.recurring_date >= '{var1}'
+            AND s.recurring_date <= '{var2}'
           `,
   "Q400": `SELECT sales_ids
           FROM (
