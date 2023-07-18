@@ -3068,10 +3068,18 @@ ORDER BY
                 WHERE created_by = '{var1}' AND deleted_at IS NULL
               )as users_data,
               (
-                SELECT json_agg(sales_users.id) 
-                FROM sales_users 
-                WHERE user_id = '{var1}' AND deleted_at IS NULL
-              )as sales_users,
+                SELECT json_agg(su.id)
+                FROM sales_users su
+                INNER JOIN sales s ON su.sales_id = s.id
+                WHERE su.user_id = '{var1}'
+                  AND su.deleted_at IS NULL
+                  AND s.archived_at IS NULL
+                  AND (
+                    SELECT SUM(rr.recognized_amount::numeric)
+                    FROM recognized_revenue rr
+                    WHERE rr.sales_id = s.id
+                  ) < s.target_amount::numeric
+              ) AS sales_users,
               (
                 SELECT json_agg(customer_companies.id) 
                 FROM customer_companies 
