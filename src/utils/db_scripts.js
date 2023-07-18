@@ -3776,7 +3776,7 @@ ORDER BY
             ) AS fn ON s.id = fn.sales_id
           WHERE
             su.sales_id IN ({var3})
-            AND su.user_type = 'support'
+            AND su.user_type = 'captain'
             AND s.created_at BETWEEN '{var1}' AND '{var2}'
             AND s.archived_at IS NULL
             AND su.deleted_at IS NULL
