@@ -3759,38 +3759,71 @@ ORDER BY
           GROUP BY 
             su.user_id,
             u.full_name;`,
-  "Q405": `SELECT
-            su.sales_id,
-            ARRAY_AGG(su.id) AS ids,
-            s.target_amount,
-            cc.customer_name,
-            COALESCE(fn.notes, '{}'::TEXT[]) AS notes
-          FROM
-            sales_users su
-            LEFT JOIN sales s ON su.sales_id = s.id
-            LEFT JOIN customer_companies cc ON s.customer_id = cc.id
-            LEFT JOIN (
-              SELECT sales_id, ARRAY_AGG(notes) AS notes
-              FROM follow_up_notes
-              GROUP BY sales_id
-            ) AS fn ON s.id = fn.sales_id
-          WHERE
-            su.sales_id IN ({var3})
-            AND su.user_type = 'captain'
-            AND s.created_at BETWEEN '{var1}' AND '{var2}'
-            AND s.archived_at IS NULL
-            AND su.deleted_at IS NULL
-            AND s.deleted_at IS NULL
-            AND cc.deleted_at IS NULL
-            AND s.closed_at IS NULL
-          GROUP BY
-            su.sales_id,
-            su.user_type,
-            cc.customer_name,
-            fn.notes,
-            target_amount
-          ORDER BY
-            su.sales_id;`,
+  "Q405":`SELECT
+              su.sales_id,
+              ARRAY_AGG(su.user_id) AS ids,
+              s.target_amount,
+              cc.customer_name,
+              ARRAY_LENGTH(COALESCE(fn.notes, '{}'::TEXT[]), 1) AS notes
+            FROM
+              sales_users su
+              LEFT JOIN sales s ON su.sales_id = s.id
+              LEFT JOIN customer_companies cc ON s.customer_id = cc.id
+              LEFT JOIN (
+                SELECT sales_id, ARRAY_AGG(notes) AS notes
+                FROM follow_up_notes
+                WHERE deleted_at IS NULL -- Add the condition here
+                GROUP BY sales_id
+              ) AS fn ON s.id = fn.sales_id
+            WHERE
+              su.sales_id IN ({var3})
+              AND s.created_at BETWEEN '{var1}' AND '{var2}'
+              AND su.user_type = 'support'
+              AND s.archived_at IS NULL
+              AND su.deleted_at IS NULL
+              AND s.deleted_at IS NULL
+              AND cc.deleted_at IS NULL
+              AND s.closed_at IS NULL
+            GROUP BY
+              su.sales_id,
+              su.user_type,
+              cc.customer_name,
+              fn.notes,
+              target_amount
+            ORDER BY
+              su.sales_id;`  ,        
+  // "Q405": `SELECT
+  //           su.sales_id,
+  //           ARRAY_AGG(su.id) AS ids,
+  //           s.target_amount,
+  //           cc.customer_name,
+  //           COALESCE(fn.notes, '{}'::TEXT[]) AS notes
+  //         FROM
+  //           sales_users su
+  //           LEFT JOIN sales s ON su.sales_id = s.id
+  //           LEFT JOIN customer_companies cc ON s.customer_id = cc.id
+  //           LEFT JOIN (
+  //             SELECT sales_id, ARRAY_AGG(notes) AS notes
+  //             FROM follow_up_notes
+  //             GROUP BY sales_id
+  //           ) AS fn ON s.id = fn.sales_id
+  //         WHERE
+  //           su.sales_id IN ({var3})
+  //           AND su.user_type = 'captain'
+  //           AND s.created_at BETWEEN '{var1}' AND '{var2}'
+  //           AND s.archived_at IS NULL
+  //           AND su.deleted_at IS NULL
+  //           AND s.deleted_at IS NULL
+  //           AND cc.deleted_at IS NULL
+  //           AND s.closed_at IS NULL
+  //         GROUP BY
+  //           su.sales_id,
+  //           su.user_type,
+  //           cc.customer_name,
+  //           fn.notes,
+  //           target_amount
+  //         ORDER BY
+  //           su.sales_id;`,
   "Q406": `SELECT
             rr.sales_id,
             CAST(rr.recognized_amount AS VARCHAR) AS recognized_amount,

@@ -3854,7 +3854,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                     let totalLowRiskAmount = 0
                     if (findTotalSupport.rowCount > 0) {
                         for (const sale of findTotalSupport.rows) {
-                            const isHighRisk = sale.ids.length < 2 || sale.notes.length < 0;
+                            const isHighRisk = (sale.ids.length < 2 || sale.notes < 0);
                             const salesDeals = isHighRisk ? high_risk_sales_deals : low_risk_sales_deals;
                             salesDeals.push({ salesId: sale.sales_id, salesName: sale.customer_name, amount: sale.target_amount });
                         }
@@ -4193,7 +4193,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                     let totalLowRiskAmount = 0
                     if (findTotalSupport.rowCount > 0) {
                         for (const sale of findTotalSupport.rows) {
-                            const isHighRisk = sale.ids.length < 2 || sale.notes.length < 0;
+                            const isHighRisk = sale.ids.length < 2 || sale.notes < 0;
                             const salesDeals = isHighRisk ? high_risk_sales_deals : low_risk_sales_deals;
                             salesDeals.push({ salesId: sale.sales_id, salesName: sale.customer_name, amount: sale.target_amount });
                         }
