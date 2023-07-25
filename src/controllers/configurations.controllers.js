@@ -15,13 +15,13 @@ module.exports.addConfigs = async (req, res) => {
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-           
+
             let _dt = new Date().toISOString();
             let s2 = dbScript(db_sql['Q75'], { var1: _dt, var2: findAdmin.rows[0].company_id })
             let config = await connection.query(s2)
 
             //let id = uuid.v4()
-            let s3 = dbScript(db_sql['Q76'], { var1:currency, var2: phoneFormat, var3: dateFormat, var4: findAdmin.rows[0].id, var5: findAdmin.rows[0].company_id, var6 : beforeClosingDays, var7 : afterClosingDays })
+            let s3 = dbScript(db_sql['Q76'], { var1: currency, var2: phoneFormat, var3: dateFormat, var4: findAdmin.rows[0].id, var5: findAdmin.rows[0].company_id, var6: beforeClosingDays, var7: afterClosingDays })
 
             let addConfig = await connection.query(s3)
 
@@ -73,10 +73,10 @@ module.exports.configList = async (req, res) => {
             if (configList.rowCount > 0) {
                 configuration.id = configList.rows[0].id
                 configuration.currency = configList.rows[0].currency,
-                configuration.phoneFormat = configList.rows[0].phone_format,
-                configuration.dateFormat = configList.rows[0].date_format,
-                configuration.beforeClosingDays = (configList.rows[0].before_closing_days) ? configList.rows[0].before_closing_days : '',
-                configuration.afterClosingDays = (configList.rows[0].after_closing_days) ? configList.rows[0].after_closing_days : ''
+                    configuration.phoneFormat = configList.rows[0].phone_format,
+                    configuration.dateFormat = configList.rows[0].date_format,
+                    configuration.beforeClosingDays = (configList.rows[0].before_closing_days) ? configList.rows[0].before_closing_days : '',
+                    configuration.afterClosingDays = (configList.rows[0].after_closing_days) ? configList.rows[0].after_closing_days : ''
                 res.json({
                     status: 200,
                     success: true,
@@ -85,11 +85,11 @@ module.exports.configList = async (req, res) => {
                 })
             } else {
                 configuration.id = "",
-                configuration.currency = "",
-                configuration.phoneFormat = "",
-                configuration.dateFormat = "",
-                configuration.beforeClosingDays = "",
-                configuration.afterClosingDays = ""
+                    configuration.currency = "",
+                    configuration.phoneFormat = "",
+                    configuration.dateFormat = "",
+                    configuration.beforeClosingDays = "",
+                    configuration.afterClosingDays = ""
                 res.json({
                     status: 200,
                     success: false,
@@ -121,7 +121,7 @@ module.exports.addImapCredentials = async (req, res) => {
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
-        if (findAdmin.rows.length > 0) {
+        if (findAdmin.rows.length > 0 && findAdmin.rows[0].is_main_admin) {
             let imapConfig = {
                 user: email,
                 password: appPassword,
@@ -183,12 +183,12 @@ module.exports.addImapCredentials = async (req, res) => {
                             }
                         })
                         promise.then(async (data) => {
-                           
+
                             let _dt = new Date().toISOString();
                             let s2 = dbScript(db_sql['Q129'], { var1: _dt, var2: findAdmin.rows[0].id, var3: findAdmin.rows[0].company_id })
                             let updateCredential = await connection.query(s2)
                             let encryptedAppPassword = JSON.stringify(encrypt(appPassword))
-                            let s3 = dbScript(db_sql['Q130'], { var1:  email, var2: encryptedAppPassword, var3: findAdmin.rows[0].id, var4: imapHost, var5: imapPort, var6: smtpHost, var7: smtpPort, var8: findAdmin.rows[0].company_id })
+                            let s3 = dbScript(db_sql['Q130'], { var1: email, var2: encryptedAppPassword, var3: findAdmin.rows[0].id, var4: imapHost, var5: imapPort, var6: smtpHost, var7: smtpPort, var8: findAdmin.rows[0].company_id })
                             let addCredentails = await connection.query(s3)
 
                             if (addCredentails.rowCount > 0) {
@@ -219,6 +219,128 @@ module.exports.addImapCredentials = async (req, res) => {
                 })
             })
             imap.connect();
+        } else if (findAdmin.rows.length > 0) {
+            let s4 = dbScript(db_sql['Q420'], { var1: findAdmin.rows[0].company_id })
+            let findMainAdmin = await connection.query(s4)
+            if (findMainAdmin.rowCount > 0) {
+                let s5 = dbScript(db_sql['Q360'], { var1: findMainAdmin.rows[0].id, var2 : findMainAdmin.rows[0].company_id })
+                let findMainAdminCreds = await connection.query(s5)
+                if (findMainAdminCreds.rowCount > 0) {
+                    let imapConfig = {
+                        user: email,
+                        password: appPassword,
+                        host: findMainAdminCreds.rows[0].imap_host,
+                        port: Number(findMainAdminCreds.rows[0].imap_port),
+                        tls: true,
+                        tlsOptions: {
+                            rejectUnauthorized: false
+                        }
+                    }
+
+                    console.log(imapConfig, "imapConfig");
+                    let imap = new Imap(imapConfig);
+                    imap.once('error', async (err) => {
+                        res.json({
+                            status: 400,
+                            success: false,
+                            message: `IMAP Error : ${err.message}`
+                        })
+                    });
+
+                    function openInbox(cb) {
+                        imap.openBox('INBOX', true, cb);
+                    }
+
+                    imap.once('ready', function () {
+                        openInbox(function (err, box) {
+                            if (err) {
+                                res.json({
+                                    status: 400,
+                                    success: false,
+                                    message: `IMAP Error : ${err.message}`
+                                })
+                            } else {
+                                let transporter = nodemailer.createTransport({
+                                    host: findMainAdminCreds.rows[0].smtp_host,
+                                    port: Number(findMainAdminCreds.rows[0].smtp_port),
+                                    secure: (Number(findMainAdminCreds.rows[0].smtp_port) == 465) ? true : false, // true for 465, false for other ports
+                                    auth: {
+                                        user: email,
+                                        pass: appPassword
+                                    }
+                                });
+
+                                // Specify the fields in the email.
+                                let mailOptions = {
+                                    from: email,
+                                    to: "test@yopmail.com",
+                                    subject: "test Mail",
+                                    text: "This is a test mail to check smtp and port are correct"
+                                };
+
+                                // Send the email.
+                                // let info = await transporter.sendMail(mailOptions)
+                                let promise = new Promise((resolve, reject) => {
+                                    let info = transporter.sendMail(mailOptions)
+                                    if (info) {
+                                        console.log(info, "info");
+                                        resolve(info)
+                                    } else {
+                                        console.log(reject("error"));
+                                        reject("error")
+                                    }
+                                })
+                                console.log(promise, "promise");
+                                promise.then(async (data) => {
+                                    let _dt = new Date().toISOString();
+                                    let s2 = dbScript(db_sql['Q129'], { var1: _dt, var2: findAdmin.rows[0].id, var3: findAdmin.rows[0].company_id })
+                                    let updateCredential = await connection.query(s2)
+                                    let encryptedAppPassword = JSON.stringify(encrypt(appPassword))
+                                    let s3 = dbScript(db_sql['Q130'], { var1: email, var2: encryptedAppPassword, var3: findAdmin.rows[0].id, var4: findMainAdminCreds.rows[0].imap_host, var5: findMainAdminCreds.rows[0].imap_port, var6: findMainAdminCreds.rows[0].smtp_host, var7: findMainAdminCreds.rows[0].smtp_port, var8: findAdmin.rows[0].company_id })
+                                    let addCredentails = await connection.query(s3)
+
+                                    if (addCredentails.rowCount > 0) {
+                                        await connection.query('COMMIT')
+                                        res.json({
+                                            status: 201,
+                                            success: true,
+                                            message: "Credentials added successfully"
+                                        })
+                                    } else {
+                                        await connection.query('ROLLBACK')
+                                        res.json({
+                                            status: 400,
+                                            success: false,
+                                            message: "Something went wrong"
+                                        })
+                                    }
+
+                                })
+                                    .catch((err) =>
+                                        res.json({
+                                            status: 400,
+                                            success: false,
+                                            message: `SMTP Error : ${err.message}`
+                                        })
+                                    )
+                            }
+                        })
+                    })
+                    imap.connect();
+                } else {
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Main Admin credentials are not found"
+                    })
+                }
+            } else {
+                res.json({
+                    status: 400,
+                    success: false,
+                    message: "Admin not found"
+                })
+            }
         } else {
             res.json({
                 status: 400,
@@ -308,19 +430,19 @@ module.exports.addLeadTitle = async (req, res) => {
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            let s2 = dbScript(db_sql['Q192'], { var1: mysql_real_escape_string(leadTitle), var2:findAdmin.rows[0].company_id })
+            let s2 = dbScript(db_sql['Q192'], { var1: mysql_real_escape_string(leadTitle), var2: findAdmin.rows[0].company_id })
             let findTitle = await connection.query(s2)
             if (findTitle.rowCount == 0) {
                 let s3 = dbScript(db_sql['Q178'], { var1: mysql_real_escape_string(leadTitle), var2: findAdmin.rows[0].company_id })
                 let addTitle = await connection.query(s3)
-               
+
                 if (addTitle.rowCount > 0) {
                     await connection.query('COMMIT')
                     res.json({
                         status: 201,
                         success: true,
                         message: "Lead title added successfully",
-                        data : addTitle.rows
+                        data: addTitle.rows
                     })
                 } else {
                     await connection.query('ROLLBACK')
@@ -413,10 +535,10 @@ module.exports.deleteLeadTitle = async (req, res) => {
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0) {
 
-            let s2 = dbScript(db_sql['Q285'],{ var1 : titleId })
+            let s2 = dbScript(db_sql['Q285'], { var1: titleId })
             let checkTitleInLead = await connection.query(s2)
 
-            if(checkTitleInLead.rowCount > 0){
+            if (checkTitleInLead.rowCount > 0) {
                 return res.json({
                     status: 200,
                     success: false,
@@ -516,7 +638,7 @@ module.exports.addLeadIndustry = async (req, res) => {
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            
+
             let s2 = dbScript(db_sql['Q193'], { var1: mysql_real_escape_string(leadIndustry), var2: findAdmin.rows[0].company_id })
             let findIndustry = await connection.query(s2)
             if (findIndustry.rowCount == 0) {
@@ -528,7 +650,7 @@ module.exports.addLeadIndustry = async (req, res) => {
                         status: 201,
                         success: true,
                         message: "Lead industry added successfully",
-                        data : addIndustry.rows
+                        data: addIndustry.rows
                     })
                 } else {
                     await connection.query('ROLLBACK')
@@ -571,7 +693,7 @@ module.exports.updateLeadIndustry = async (req, res) => {
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            
+
             let _dt = new Date().toISOString()
             let s3 = dbScript(db_sql['Q183'], { var1: mysql_real_escape_string(leadIndustry), var2: _dt, var3: industryId })
 
@@ -615,16 +737,16 @@ module.exports.deleteLeadIndustry = async (req, res) => {
         let { industryId } = req.body
 
         await connection.query('BEGIN')
-        
+
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
 
-            let s2 = dbScript(db_sql['Q287'],{ var1 : industryId })
+            let s2 = dbScript(db_sql['Q287'], { var1: industryId })
             let checkIndustryInCustomers = await connection.query(s2)
 
-            if(checkIndustryInCustomers.rowCount > 0){
+            if (checkIndustryInCustomers.rowCount > 0) {
                 return res.json({
                     status: 200,
                     success: false,
@@ -724,7 +846,7 @@ module.exports.addLeadSource = async (req, res) => {
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            
+
             let s2 = dbScript(db_sql['Q191'], { var1: mysql_real_escape_string(leadSource), var2: findAdmin.rows[0].company_id })
             let findTitle = await connection.query(s2)
             if (findTitle.rowCount == 0) {
@@ -736,7 +858,7 @@ module.exports.addLeadSource = async (req, res) => {
                         status: 201,
                         success: true,
                         message: "Lead source added successfully",
-                        data : addSource.rows
+                        data: addSource.rows
                     })
                 } else {
                     await connection.query('ROLLBACK')
@@ -779,7 +901,7 @@ module.exports.updateLeadSource = async (req, res) => {
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
-            
+
             let _dt = new Date().toISOString()
             let s3 = dbScript(db_sql['Q187'], { var1: mysql_real_escape_string(leadSource), var2: _dt, var3: sourceId })
 
@@ -823,16 +945,16 @@ module.exports.deleteLeadSource = async (req, res) => {
         let { sourceId } = req.body
 
         await connection.query('BEGIN')
-        
+
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0) {
 
-            let s2 = dbScript(db_sql['Q286'],{ var1 : sourceId })
+            let s2 = dbScript(db_sql['Q286'], { var1: sourceId })
             let checkSourceInLead = await connection.query(s2)
 
-            if(checkSourceInLead.rowCount > 0){
+            if (checkSourceInLead.rowCount > 0) {
                 return res.json({
                     status: 200,
                     success: false,

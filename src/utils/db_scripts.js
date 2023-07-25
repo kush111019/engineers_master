@@ -61,7 +61,7 @@ const db_sql = {
           LEFT JOIN  
             roles AS r ON r.id = u.role_id
           WHERE u.role_id = '{var1}' AND u.company_id = '{var2}' AND u.deleted_at IS NULL `,
-  "Q22": `UPDATE users SET email_address = '{var1}', full_name ='{var2}', mobile_number = '{var3}', address = '{var4}', role_id = '{var5}' , updated_at = '{var7}',avatar = '{var8}', is_admin = '{var10}', is_pro_user = '{var11}' WHERE id = '{var6}' AND company_id = '{var9}' AND deleted_at IS NULL RETURNING * `,
+  "Q22": `UPDATE users SET email_address = '{var1}', full_name ='{var2}', mobile_number = '{var3}', address = '{var4}', role_id = '{var5}' , updated_at = '{var7}',avatar = '{var8}', is_admin = '{var10}', is_pro_user = '{var11}' WHERE id = '{var6}' AND company_id = '{var9}' AND is_deactivated = false AND deleted_at IS NULL RETURNING * `,
   "Q23": `UPDATE users SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING * `,
   "Q24": `SELECT id,email_address, full_name, company_id, avatar,mobile_number,phone_number,address,role_id,is_admin,expiry_date, created_at, deleted_at,is_locked FROM users WHERE company_id = '{var1}' ORDER BY created_at desc`,
   "Q25": `UPDATE roles SET role_name = '{var1}', reporter = '{var2}',updated_at = '{var4}' WHERE id = '{var3}' AND company_id = '{var5}' AND deleted_at IS NULL RETURNING *`,
@@ -201,64 +201,130 @@ const db_sql = {
             '{var8}','{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', 
             '{var15}', '{var16}', '{var17}', '{var18}', '{var19}', '{var20}', '{var21}', '{var22}') 
           RETURNING *`,
-  "Q54": `SELECT sc.id, sc.customer_id, sc.customer_commission_split_id AS commission_split_id, sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission, sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason, sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at, sc.user_id AS creator_id, sc.closed_at, sc.slab_id, sc.is_service_performed, sc.committed_at, sc.service_performed_at, sc.service_perform_note, cus.customer_name, cus.user_id AS customer_creator, u1.full_name AS created_by, u1.email_address AS creator_email, sc.transfered_back_by AS transfered_back_by_id, slab.slab_name, sc.approval_status, u2.full_name AS tranfer_back_by_name,
-              (
-                  SELECT json_agg(customer_company_employees.*)
-                  FROM (
-                      SELECT customer_company_employees.id, customer_company_employees.full_name, customer_company_employees.title AS title_id, customer_company_employees.email_address, customer_company_employees.phone_number, customer_company_employees.address, customer_company_employees.source AS source_id, customer_company_employees.linkedin_url, customer_company_employees.website, customer_company_employees.targeted_value, customer_company_employees.assigned_sales_lead_to, customer_company_employees.additional_marketing_notes, customer_company_employees.creator_id, customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, customer_company_employees.emp_type, customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id, u1.full_name AS created_by, s.source, t.title, c.customer_name
-                      FROM customer_company_employees
-                      LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
-                      LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
-                      LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                      LEFT JOIN customer_companies AS c ON c.id = customer_company_employees.customer_company_id
-                      WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
-                      AND customer_company_employees.is_rejected = false
-                      AND u1.deleted_at IS NULL
-                      AND customer_company_employees.deleted_at IS NULL
-                  ) customer_company_employees
-              ) AS lead_data,
-              (
-                  SELECT json_agg(sales_users.*)
-                  FROM (
-                      SELECT ss.user_id AS id, ss.user_percentage AS percentage, ss.user_type, u1.full_name AS name, u1.email_address AS email
-                      FROM sales_users AS ss
-                      LEFT JOIN users AS u1 ON u1.id = ss.user_id
-                      WHERE ss.sales_id = sc.id
-                      AND ss.deleted_at IS NULL
-                      AND u1.deleted_at IS NULL
-                  ) sales_users
-              ) AS sales_users,
-              (
-                  SELECT json_agg(product_in_sales.*)
-                  FROM (
-                      SELECT DISTINCT(p.id), p.product_name AS name
-                      FROM product_in_sales AS pis
-                      LEFT JOIN products AS p ON p.id = pis.product_id
-                      WHERE sc.id = pis.sales_id
-                      AND sc.deleted_at IS NULL
-                      AND p.deleted_at IS NULL
-                  ) product_in_sales
-              ) AS products,
-              CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) AS total_recognized_amount,
-              CASE
-                  WHEN sc.closed_at IS NOT NULL THEN 
-                      CASE
-                          WHEN CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) < CAST(sc.target_amount AS NUMERIC) THEN true
-                          WHEN CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) = CAST(sc.target_amount AS NUMERIC) THEN false
-                          ELSE true
-                      END
-                  ELSE null
-              END AS is_partial_recognized
-            FROM sales AS sc
-            LEFT JOIN users AS u1 ON u1.id = sc.user_id
-            LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
-            LEFT JOIN slabs AS slab ON slab.id = sc.slab_id
-            LEFT JOIN users AS u2 ON u2.id = sc.transfered_back_by
-            LEFT JOIN recognized_revenue AS rr ON rr.sales_id = sc.id
-            WHERE sc.company_id = '{var1}'
-            AND sc.deleted_at IS NULL
-            GROUP BY sc.id, cus.customer_name, u1.full_name, u1.email_address, slab.slab_name, u2.full_name, cus.user_id
-            ORDER BY sc.created_at DESC;`,
+  "Q54": `SELECT 
+            sc.id, 
+            sc.customer_id, 
+            sc.customer_commission_split_id AS commission_split_id, 
+            sc.is_overwrite, 
+            sc.qualification, 
+            sc.is_qualified, 
+            sc.target_amount, 
+            sc.booking_commission, 
+            sc.revenue_commission, 
+            sc.currency, 
+            sc.target_closing_date, 
+            sc.archived_at, 
+            sc.archived_by, 
+            sc.archived_reason, 
+            sc.sales_type, 
+            sc.subscription_plan, 
+            sc.recurring_date, 
+            sc.contract, 
+            sc.transfer_reason, 
+            sc.created_at, 
+            sc.user_id AS creator_id, 
+            sc.closed_at, 
+            sc.slab_id, 
+            sc.is_service_performed, 
+            sc.committed_at, 
+            sc.service_performed_at, 
+            sc.service_perform_note, 
+            cus.customer_name, 
+            cus.user_id AS customer_creator, 
+            u1.full_name AS created_by, 
+            u1.email_address AS creator_email, 
+            sc.transfered_back_by AS transfered_back_by_id, 
+            slab.slab_name, 
+            sc.approval_status, 
+            u2.full_name AS tranfer_back_by_name,
+            (
+                SELECT json_agg(customer_company_employees.*)
+                FROM (
+                    SELECT 
+                        customer_company_employees.id, 
+                        customer_company_employees.full_name, 
+                        customer_company_employees.title AS title_id, 
+                        customer_company_employees.email_address, 
+                        customer_company_employees.phone_number, 
+                        customer_company_employees.address, 
+                        customer_company_employees.source AS source_id, 
+                        customer_company_employees.linkedin_url, 
+                        customer_company_employees.website, 
+                        customer_company_employees.targeted_value, 
+                        customer_company_employees.assigned_sales_lead_to, 
+                        customer_company_employees.additional_marketing_notes, 
+                        customer_company_employees.creator_id, 
+                        customer_company_employees.reason, 
+                        customer_company_employees.created_at, 
+                        customer_company_employees.updated_at, 
+                        customer_company_employees.emp_type, 
+                        customer_company_employees.marketing_qualified_lead, 
+                        customer_company_employees.is_rejected, 
+                        customer_company_employees.customer_company_id, 
+                        u1.full_name AS created_by, 
+                        s.source, 
+                        t.title, 
+                        c.customer_name
+                    FROM customer_company_employees
+                    LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                    LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                    LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                    LEFT JOIN customer_companies AS c ON c.id = customer_company_employees.customer_company_id
+                    WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
+                    AND customer_company_employees.is_rejected = false
+                    AND u1.deleted_at IS NULL
+                    AND customer_company_employees.deleted_at IS NULL
+                ) customer_company_employees
+            ) AS lead_data,
+            (
+                SELECT json_agg(sales_users.*)
+                FROM (
+                    SELECT 
+                        ss.user_id AS id, 
+                        SUM(ss.user_percentage) AS percentage, 
+                        ss.user_type, 
+                        u1.full_name AS name, 
+                        u1.email_address AS email
+                    FROM sales_users AS ss
+                    LEFT JOIN users AS u1 ON u1.id = ss.user_id
+                    WHERE ss.sales_id = sc.id
+                    AND ss.deleted_at IS NULL
+                    AND u1.deleted_at IS NULL
+                    GROUP BY ss.user_id, u1.full_name, u1.email_address, ss.user_type
+                ) sales_users
+            ) AS sales_users,
+            (
+                SELECT json_agg(product_in_sales.*)
+                FROM (
+                    SELECT DISTINCT(p.id), p.product_name AS name
+                    FROM product_in_sales AS pis
+                    LEFT JOIN products AS p ON p.id = pis.product_id
+                    WHERE sc.id = pis.sales_id
+                    AND sc.deleted_at IS NULL
+                    AND p.deleted_at IS NULL
+                ) product_in_sales
+            ) AS products,
+            CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) AS recognized_amount,
+            CASE
+                WHEN sc.closed_at IS NOT NULL THEN 
+                    CASE
+                        WHEN CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) < CAST(sc.target_amount AS NUMERIC) THEN true
+                        WHEN CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) = CAST(sc.target_amount AS NUMERIC) THEN false
+                        ELSE false
+                    END
+                ELSE null
+            END AS is_partial_recognized
+          FROM sales AS sc
+          LEFT JOIN users AS u1 ON u1.id = sc.user_id
+          LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
+          LEFT JOIN slabs AS slab ON slab.id = sc.slab_id
+          LEFT JOIN users AS u2 ON u2.id = sc.transfered_back_by
+          LEFT JOIN recognized_revenue AS rr ON rr.sales_id = sc.id
+          WHERE sc.company_id = '{var1}'
+          AND sc.deleted_at IS NULL
+          GROUP BY sc.id, cus.customer_name, u1.full_name, u1.email_address, slab.slab_name, u2.full_name, cus.user_id
+          ORDER BY sc.created_at DESC;
+          `,
   "Q55": `SELECT * FROM customer_companies WHERE id = '{var1}'`,
   "Q56": `UPDATE users SET created_by = '{var1}' WHERE id ='{var1}'`,
   "Q57": `INSERT INTO 
@@ -348,169 +414,177 @@ const db_sql = {
   "Q71": `UPDATE sales SET archived_at = '{var1}' , archived_by = '{var2}' , archived_reason ='{var3}'
           WHERE id = '{var4}' AND company_id = '{var5}' AND deleted_at IS NULL RETURNING * `,
   "Q72": `SELECT
-              sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
-              sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
-              sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
-              sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason,
-              sc.created_at, sc.user_id as creator_id, sc.closed_at, sc.slab_id, sc.lead_id,
-              sc.is_service_performed, sc.committed_at, sc.service_performed_at, sc.service_perform_note,
-              cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by, u1.email_address as creator_email,
-              sc.transfered_back_by as transfered_back_by_id,
-              slab.slab_name, sc.approval_status,
-              u2.full_name as transfer_back_by_name,
-              (
-                  SELECT json_agg(customer_company_employees.*)
-                  FROM (
-                      SELECT 
-                          customer_company_employees.id, customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
-                          customer_company_employees.phone_number, customer_company_employees.address, customer_company_employees.source as source_id,
-                          customer_company_employees.linkedin_url, customer_company_employees.website, customer_company_employees.targeted_value,
-                          customer_company_employees.assigned_sales_lead_to, customer_company_employees.additional_marketing_notes, customer_company_employees.creator_id,
-                          customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, customer_company_employees.emp_type,
-                          customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                          u1.full_name as created_by, s.source, t.title, c.customer_name
-                      FROM customer_company_employees 
-                      LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
-                      LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
-                      LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                      LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
-                      WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
-                      AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
-                      AND customer_company_employees.deleted_at IS NULL
-                  ) customer_company_employees
-              ) as lead_data,
-              (
-                  SELECT json_agg(sales_users.*)
-                  FROM (
-                      SELECT 
-                          ss.user_id as id, ss.user_percentage as percentage, ss.user_type, u1.full_name as name, u1.email_address as email
-                      FROM sales_users as ss
-                      LEFT JOIN users AS u1 ON u1.id = ss.user_id
-                      WHERE ss.sales_id = sc.id AND ss.deleted_at IS NULL AND u1.deleted_at IS NULL
-                  ) sales_users
-              ) as sales_users,
-              (
-                  SELECT json_agg(product_in_sales.*)
-                  FROM (
-                      SELECT 
-                          DISTINCT(p.id), p.product_name as name
-                      FROM product_in_sales as pis
-                      LEFT JOIN products AS p ON p.id = pis.product_id
-                      WHERE sc.id = pis.sales_id AND sc.deleted_at IS NULL AND p.deleted_at IS NULL
-                  ) product_in_sales
-              ) as products,
-              COALESCE(rr.recognized_amount, 0) as recognized_amount,
-              CASE
-                  WHEN COALESCE(rr.recognized_amount, 0) < CAST(sc.target_amount AS NUMERIC) THEN true
-                  WHEN COALESCE(rr.recognized_amount, 0) = CAST(sc.target_amount AS NUMERIC) THEN false
-                  ELSE true
-              END AS is_partial_recognized
-            FROM
-              sales AS sc
-            LEFT JOIN
-              users AS u1 ON u1.id = sc.user_id
-            LEFT JOIN
-              customer_companies AS cus ON cus.id = sc.customer_id
-            LEFT JOIN
-              slabs AS slab ON slab.id = sc.slab_id
-            LEFT JOIN
-              users AS u2 ON u2.id = sc.transfered_back_by
-            LEFT JOIN
-              (
-                  SELECT sales_id, SUM(recognized_amount::numeric) as recognized_amount
-                  FROM recognized_revenue
-                  WHERE deleted_at IS NULL
-                  GROUP BY sales_id
-              ) rr ON rr.sales_id = sc.id
-            WHERE
-              sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.archived_at IS NOT NULL
-            ORDER BY
-              sc.created_at DESC;`,
+  sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
+  sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
+  sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
+  sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason,
+  sc.created_at, sc.user_id as creator_id, sc.closed_at, sc.slab_id, sc.lead_id,
+  sc.is_service_performed, sc.committed_at, sc.service_performed_at, sc.service_perform_note,
+  cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by, u1.email_address as creator_email,
+  sc.transfered_back_by as transfered_back_by_id,
+  slab.slab_name, sc.approval_status,
+  u2.full_name as transfer_back_by_name,
+  (
+      SELECT json_agg(customer_company_employees.*)
+      FROM (
+          SELECT 
+              customer_company_employees.id, customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+              customer_company_employees.phone_number, customer_company_employees.address, customer_company_employees.source as source_id,
+              customer_company_employees.linkedin_url, customer_company_employees.website, customer_company_employees.targeted_value,
+              customer_company_employees.assigned_sales_lead_to, customer_company_employees.additional_marketing_notes, customer_company_employees.creator_id,
+              customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, customer_company_employees.emp_type,
+              customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+              u1.full_name as created_by, s.source, t.title, c.customer_name
+          FROM customer_company_employees 
+          LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+          LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+          LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+          LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+          WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
+          AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
+          AND customer_company_employees.deleted_at IS NULL
+      ) customer_company_employees
+  ) as lead_data,
+  (
+SELECT json_agg(sales_users.*)
+FROM (
+SELECT 
+    ss.user_id AS id, 
+    SUM(ss.user_percentage) AS percentage, 
+    ss.user_type, 
+    u1.full_name AS name, 
+    u1.email_address AS email
+FROM sales_users AS ss
+LEFT JOIN users AS u1 ON u1.id = ss.user_id
+WHERE ss.sales_id = sc.id
+AND ss.deleted_at IS NULL
+AND u1.deleted_at IS NULL
+GROUP BY ss.user_id, u1.full_name, u1.email_address, ss.user_type
+) sales_users
+) as sales_users,
+  (
+      SELECT json_agg(product_in_sales.*)
+      FROM (
+          SELECT 
+              DISTINCT(p.id), p.product_name as name
+          FROM product_in_sales as pis
+          LEFT JOIN products AS p ON p.id = pis.product_id
+          WHERE sc.id = pis.sales_id AND sc.deleted_at IS NULL AND p.deleted_at IS NULL
+      ) product_in_sales
+  ) as products,
+  COALESCE(rr.recognized_amount, 0) as recognized_amount,
+  CASE
+      WHEN COALESCE(rr.recognized_amount, 0) < CAST(sc.target_amount AS NUMERIC) THEN true
+      WHEN COALESCE(rr.recognized_amount, 0) = CAST(sc.target_amount AS NUMERIC) THEN false
+      ELSE false
+  END AS is_partial_recognized
+FROM
+  sales AS sc
+LEFT JOIN
+  users AS u1 ON u1.id = sc.user_id
+LEFT JOIN
+  customer_companies AS cus ON cus.id = sc.customer_id
+LEFT JOIN
+  slabs AS slab ON slab.id = sc.slab_id
+LEFT JOIN
+  users AS u2 ON u2.id = sc.transfered_back_by
+LEFT JOIN
+  (
+      SELECT sales_id, SUM(recognized_amount::numeric) as recognized_amount
+      FROM recognized_revenue
+      WHERE deleted_at IS NULL
+      GROUP BY sales_id
+  ) rr ON rr.sales_id = sc.id
+WHERE
+  sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.archived_at IS NOT NULL
+ORDER BY
+  sc.created_at DESC;`,
     "Q73": `SELECT
-              sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
+              sc.id, sc.customer_id, sc.customer_commission_split_id AS commission_split_id,
               sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
               sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
-              sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at, sc.user_id as creator_id, sc.closed_at, sc.slab_id, sc.lead_id,
-              cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
-              sc.transfered_back_by as transfered_back_by_id,
+              sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at, sc.user_id AS creator_id, sc.closed_at, sc.slab_id, sc.lead_id,
+              cus.customer_name, cus.user_id AS customer_creator, u1.full_name AS created_by,
+              sc.transfered_back_by AS transfered_back_by_id,
               slab.slab_name, sc.approval_status,
-              u2.full_name as transfer_back_by_name,
+              u2.full_name AS transfer_back_by_name,
               (
-                  SELECT json_agg(customer_company_employees.*)
-                  FROM (
-                      SELECT
-                          customer_company_employees.id, customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
-                          customer_company_employees.phone_number, customer_company_employees.address, customer_company_employees.source as source_id,
-                          customer_company_employees.linkedin_url, customer_company_employees.website, customer_company_employees.targeted_value,
-                          customer_company_employees.assigned_sales_lead_to, customer_company_employees.additional_marketing_notes, customer_company_employees.creator_id,
-                          customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, customer_company_employees.emp_type,
-                          customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                          u1.full_name as created_by, s.source, t.title, c.customer_name
-                      FROM customer_company_employees
-                      LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
-                      LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
-                      LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                      LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
-                      WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
-                          AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
-                          AND customer_company_employees.deleted_at IS NULL
-                  ) customer_company_employees
-              ) as lead_data,
+                SELECT json_agg(customer_company_employees.*)
+                FROM (
+                  SELECT
+                    customer_company_employees.id, customer_company_employees.full_name, customer_company_employees.title AS title_id, customer_company_employees.email_address,
+                    customer_company_employees.phone_number, customer_company_employees.address, customer_company_employees.source AS source_id,
+                    customer_company_employees.linkedin_url, customer_company_employees.website, customer_company_employees.targeted_value,
+                    customer_company_employees.assigned_sales_lead_to, customer_company_employees.additional_marketing_notes, customer_company_employees.creator_id,
+                    customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, customer_company_employees.emp_type,
+                    customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                    u1.full_name AS created_by, s.source, t.title, c.customer_name
+                  FROM customer_company_employees
+                  LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                  LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                  LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                  LEFT JOIN customer_companies AS c ON c.id = customer_company_employees.customer_company_id
+                  WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
+                    AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
+                    AND customer_company_employees.deleted_at IS NULL
+                ) customer_company_employees
+              ) AS lead_data,
               (
-                  SELECT json_agg(sales_users.*)
-                  FROM (
-                      SELECT 
-                          ss.user_id as id, ss.user_percentage as percentage, ss.user_type, u1.full_name as name, u1.email_address as email
-                      FROM sales_users as ss
-                      LEFT JOIN users AS u1 ON u1.id = ss.user_id
-                      WHERE ss.sales_id = sc.id AND ss.deleted_at IS NULL AND u1.deleted_at IS NULL
-                  ) sales_users
-              ) as sales_users,
+                SELECT json_agg(sales_users.*)
+                FROM (
+                    SELECT 
+                        ss.user_id AS id, 
+                        SUM(ss.user_percentage) AS percentage, 
+                        ss.user_type, 
+                        u1.full_name AS name, 
+                        u1.email_address AS email
+                    FROM sales_users AS ss
+                    LEFT JOIN users AS u1 ON u1.id = ss.user_id
+                    WHERE ss.sales_id = sc.id
+                    AND ss.deleted_at IS NULL
+                    AND u1.deleted_at IS NULL
+                    GROUP BY ss.user_id, u1.full_name, u1.email_address, ss.user_type
+                ) sales_users
+            ) AS sales_users,
               (
-                  SELECT json_agg(product_in_sales.*)
-                  FROM (
-                      SELECT DISTINCT(p.id), p.product_name as name
-                      FROM product_in_sales as pis
-                      LEFT JOIN products AS p ON p.id = pis.product_id
-                      WHERE sc.id = pis.sales_id AND sc.deleted_at IS NULL AND p.deleted_at IS NULL
-                  ) product_in_sales
-              ) as products,
-              COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) as recognized_amount,
+                SELECT json_agg(product_in_sales.*)
+                FROM (
+                  SELECT DISTINCT(p.id), p.product_name AS name
+                  FROM product_in_sales AS pis
+                  LEFT JOIN products AS p ON p.id = pis.product_id
+                  WHERE sc.id = pis.sales_id AND sc.deleted_at IS NULL AND p.deleted_at IS NULL
+                ) product_in_sales
+              ) AS products,
+              COALESCE(CAST(rr.recognized_amount AS NUMERIC)) AS recognized_amount,
               CASE
-                  WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) < CAST(sc.target_amount AS NUMERIC) THEN true
-                  WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) = CAST(sc.target_amount AS NUMERIC) THEN false
-                  ELSE false
+                WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)) < CAST(sc.target_amount AS NUMERIC)) THEN true
+                WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)) = CAST(sc.target_amount AS NUMERIC)) THEN false
+                ELSE false
               END AS is_partial_recognized
-            FROM
-              sales AS sc
-            LEFT JOIN
-              sales_users AS su ON sc.id = su.sales_id
-            LEFT JOIN
-              users AS u1 ON u1.id = sc.user_id
-            LEFT JOIN
-              customer_companies AS cus ON cus.id = sc.customer_id
-            LEFT JOIN
-              slabs AS slab ON slab.id = sc.slab_id
-            LEFT JOIN
-              users AS u2 ON u2.id = sc.transfered_back_by
-            LEFT JOIN
-              recognized_revenue AS rr ON rr.sales_id = sc.id AND rr.deleted_at IS NULL
+            FROM sales AS sc
+            LEFT JOIN sales_users AS su ON sc.id = su.sales_id
+            LEFT JOIN users AS u1 ON u1.id = sc.user_id
+            LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
+            LEFT JOIN slabs AS slab ON slab.id = sc.slab_id
+            LEFT JOIN users AS u2 ON u2.id = sc.transfered_back_by
+            LEFT JOIN (
+            SELECT sales_id, SUM(CAST(recognized_amount AS NUMERIC)) AS recognized_amount
+              FROM recognized_revenue
+              WHERE deleted_at IS NULL
+              GROUP BY sales_id
+            ) AS rr ON rr.sales_id = sc.id
             WHERE
               (sc.user_id IN ({var1}) OR su.user_id IN ({var1}))
               AND sc.deleted_at IS NULL AND sc.archived_at IS NOT NULL
             GROUP BY
               sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite, sc.business_contact_id,
               sc.revenue_contact_id, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission,
-              sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
-              sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at, sc.user_id, sc.closed_at, sc.slab_id, sc.lead_id,
-              cus.customer_name, cus.user_id, u1.full_name,
-              sc.transfered_back_by,
-              slab.slab_name,
-              u2.full_name,
-              sc.deleted_at
+              sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason, sc.sales_type, sc.subscription_plan,
+              sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at, sc.user_id, sc.closed_at, sc.slab_id, sc.lead_id,
+              cus.customer_name, cus.user_id, u1.full_name, sc.transfered_back_by, slab.slab_name, sc.approval_status,
+              u2.full_name, sc.deleted_at,rr.recognized_amount
             ORDER BY
-              sc.created_at DESC;
-            `,
+              sc.created_at DESC;`,
   "Q74": `SELECT * FROM configurations WHERE company_id = '{var1}' AND deleted_at IS NULL `,
   "Q75": `UPDATE configurations SET deleted_at = '{var1}' WHERE company_id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   "Q76": `INSERT INTO 
@@ -900,97 +974,96 @@ const db_sql = {
               ORDER BY 
                 created_at DESC`,
   "Q155": `SELECT
-          sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
-          sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
-          sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
-          sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at,
-          sc.user_id as creator_id, sc.closed_at, sc.slab_id, sc.lead_id,
-          cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
-          sc.transfered_back_by as transfered_back_by_id,
-          slab.slab_name, sc.approval_status,
-          u2.full_name as transfer_back_by_name,
-          (
-              SELECT json_agg(customer_company_employees.*)
-              FROM (
+              sc.id, sc.customer_id, sc.customer_commission_split_id AS commission_split_id, sc.is_overwrite,
+              sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
+              sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
+              sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at,
+              sc.user_id AS creator_id, sc.closed_at, sc.slab_id, sc.lead_id,
+              cus.customer_name, cus.user_id AS customer_creator, u1.full_name AS created_by,
+              sc.transfered_back_by AS transfered_back_by_id,
+              slab.slab_name, sc.approval_status,
+              u2.full_name AS transfer_back_by_name,
+              (
+                SELECT json_agg(customer_company_employees.*)
+                FROM (
                   SELECT
-                      customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
-                      customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                      customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
-                      customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
-                      customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
-                      customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                      u1.full_name as created_by,s.source,t.title,c.customer_name
+                    customer_company_employees.id, customer_company_employees.full_name, customer_company_employees.title AS title_id, customer_company_employees.email_address,
+                    customer_company_employees.phone_number, customer_company_employees.address, customer_company_employees.source AS source_id,
+                    customer_company_employees.linkedin_url, customer_company_employees.website, customer_company_employees.targeted_value,
+                    customer_company_employees.assigned_sales_lead_to, customer_company_employees.additional_marketing_notes, customer_company_employees.creator_id,
+                    customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, customer_company_employees.emp_type,
+                    customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                    u1.full_name AS created_by, s.source, t.title, c.customer_name
                   FROM customer_company_employees
                   LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
                   LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
                   LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                  LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
-                  WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
-                  AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL
-                  AND customer_company_employees.deleted_at IS NULL
-              ) customer_company_employees
-          ) as lead_data,
-          (
-              SELECT json_agg(sales_users.*)
-              FROM (
+                  LEFT JOIN customer_companies AS c ON c.id = customer_company_employees.customer_company_id
+                  WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
+                    AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL
+                    AND customer_company_employees.deleted_at IS NULL
+                ) customer_company_employees
+              ) AS lead_data,
+              (
+                SELECT json_agg(sales_users.*)
+                FROM (
+                    SELECT 
+                        ss.user_id AS id, 
+                        SUM(ss.user_percentage) AS percentage, 
+                        ss.user_type, 
+                        u1.full_name AS name, 
+                        u1.email_address AS email
+                    FROM sales_users AS ss
+                    LEFT JOIN users AS u1 ON u1.id = ss.user_id
+                    WHERE ss.sales_id = sc.id
+                    AND ss.deleted_at IS NULL
+                    AND u1.deleted_at IS NULL
+                    GROUP BY ss.user_id, u1.full_name, u1.email_address, ss.user_type
+                ) sales_users
+            ) AS sales_users,
+              (
+                SELECT json_agg(product_in_sales.*)
+                FROM (
                   SELECT
-                      ss.user_id as id ,ss.user_percentage as percentage, ss.user_type,u1.full_name as name,u1.email_address as email
-                  FROM sales_users as ss
-                  LEFT JOIN users AS u1 ON u1.id = ss.user_id
-                  WHERE ss.sales_id= sc.id AND ss.deleted_at IS NULL AND  u1.deleted_at IS NULL
-              ) sales_users
-          ) as sales_users,
-          (
-              SELECT json_agg(product_in_sales.*)
-              FROM (
-                  SELECT
-                      DISTINCT(p.id) ,p.product_name as name
-                  FROM product_in_sales as pis
+                    DISTINCT (p.id), p.product_name AS name
+                  FROM product_in_sales AS pis
                   LEFT JOIN products AS p ON p.id = pis.product_id
-                  WHERE sc.id= pis.sales_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
-              ) product_in_sales
-          ) as products,
-          -- Additional fields
-          SUM(rr.recognized_amount) as recognized_amount,
-          CASE
-              WHEN SUM(rr.recognized_amount) < CAST(sc.target_amount AS NUMERIC) THEN true
-              WHEN SUM(rr.recognized_amount) = CAST(sc.target_amount AS NUMERIC) THEN false
-              ELSE false
-          END AS is_partial_recognized
-        FROM
-          sales AS sc
-        LEFT JOIN
-          users AS u1 ON u1.id = sc.user_id
-        LEFT JOIN
-          customer_companies AS cus ON cus.id = sc.customer_id
-        LEFT JOIN
-          slabs AS slab ON slab.id = sc.slab_id
-        LEFT JOIN
-          users AS u2 ON u2.id = sc.transfered_back_by
-        LEFT JOIN
-          (
-              SELECT sales_id, SUM(recognized_amount::numeric) as recognized_amount
+                  WHERE sc.id = pis.sales_id AND sc.deleted_at IS NULL AND p.deleted_at IS NULL
+                ) product_in_sales
+              ) AS products,
+              -- Additional fields
+              rr.recognized_amount AS recognized_amount,
+              CASE
+                WHEN rr.recognized_amount < CAST(sc.target_amount AS NUMERIC) THEN true
+                WHEN rr.recognized_amount = CAST(sc.target_amount AS NUMERIC) THEN false
+                ELSE false
+              END AS is_partial_recognized
+            FROM sales AS sc
+            LEFT JOIN users AS u1 ON u1.id = sc.user_id
+            LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
+            LEFT JOIN slabs AS slab ON slab.id = sc.slab_id
+            LEFT JOIN users AS u2 ON u2.id = sc.transfered_back_by
+            LEFT JOIN (
+              SELECT sales_id, SUM(recognized_amount::NUMERIC) AS recognized_amount
               FROM recognized_revenue
               WHERE deleted_at IS NULL
               GROUP BY sales_id
-          ) rr ON rr.sales_id = sc.id
-        LEFT JOIN
-          sales_users AS su ON sc.id = su.sales_id
-        WHERE
-          (
-              sc.user_id IN ({var1})
-              OR
-              su.user_id IN ({var1})
-          )
-          AND sc.deleted_at is NULL
-        GROUP BY
-          sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount,
-          sc.booking_commission, sc.revenue_commission, sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by,
-          sc.archived_reason, sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at,
-          sc.user_id, sc.closed_at, sc.slab_id, sc.lead_id, cus.customer_name, cus.user_id, u1.full_name, sc.transfered_back_by,
-          slab.slab_name, u2.full_name, sc.deleted_at
-        ORDER BY
-          sc.created_at DESC;`,
+            ) rr ON rr.sales_id = sc.id
+            LEFT JOIN sales_users AS su ON sc.id = su.sales_id
+            WHERE
+              (
+                sc.user_id IN ({var1})
+                OR su.user_id IN ({var1})
+              )
+              AND sc.deleted_at IS NULL
+            GROUP BY
+              sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount,
+              sc.booking_commission, sc.revenue_commission, sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by,
+              sc.archived_reason, sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at,
+              sc.user_id, sc.closed_at, sc.slab_id, sc.lead_id, cus.customer_name, cus.user_id, u1.full_name, sc.transfered_back_by,
+              slab.slab_name, u2.full_name, sc.deleted_at,rr.recognized_amount
+            ORDER BY
+              sc.created_at DESC;`,
   "Q156": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, sc.is_overwrite,
             sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
@@ -1024,15 +1097,22 @@ const db_sql = {
                 ) customer_company_employees
             ) as lead_data,
             (
-                SELECT json_agg(sales_users.*)
-                FROM (
-                    SELECT 
-                        ss.user_id as id ,ss.user_percentage as percentage,ss.user_type ,u1.full_name as name,u1.email_address as email
-                    FROM sales_users as ss
-                    LEFT JOIN users AS u1 ON u1.id = ss.user_id
-                    WHERE ss.sales_id= sc.id AND ss.deleted_at IS NULL AND u1.deleted_at IS NULL
-                ) sales_users
-            ) as sales_users,
+              SELECT json_agg(sales_users.*)
+              FROM (
+                  SELECT 
+                      ss.user_id AS id, 
+                      SUM(ss.user_percentage) AS percentage, 
+                      ss.user_type, 
+                      u1.full_name AS name, 
+                      u1.email_address AS email
+                  FROM sales_users AS ss
+                  LEFT JOIN users AS u1 ON u1.id = ss.user_id
+                  WHERE ss.sales_id = sc.id
+                  AND ss.deleted_at IS NULL
+                  AND u1.deleted_at IS NULL
+                  GROUP BY ss.user_id, u1.full_name, u1.email_address, ss.user_type
+              ) sales_users
+          ) as sales_users,
             (
                 SELECT json_agg(product_in_sales.*)
                 FROM (
@@ -1047,7 +1127,7 @@ const db_sql = {
             CASE
                 WHEN CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) < CAST(sc.target_amount AS NUMERIC) THEN true
                 WHEN CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) = CAST(sc.target_amount AS NUMERIC) THEN false
-                ELSE true
+                ELSE false
             END AS is_partial_recognized
           FROM
             sales AS sc
@@ -1067,72 +1147,89 @@ const db_sql = {
             sc.id, cus.customer_name, u1.full_name, u1.email_address, slab.slab_name, u2.full_name, cus.user_id
           ORDER BY
             sc.created_at DESC;`,
-  "Q157": `SELECT
-            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
-            sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
-             sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
-            sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, 
-            sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
-            sc.is_service_performed, sc.committed_at,sc.service_performed_at, sc.service_perform_note,
-            cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
-            sc.transfered_back_by as transfered_back_by_id ,
-            slab.slab_name,sc.approval_status,
-            u2.full_name as tranfer_back_by_name,
-            (
-              SELECT json_agg(customer_company_employees.*)
-              FROM (
-                SELECT 
-                  customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
-                  customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
-                  customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
-                  customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
-                  customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
-                  customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                  u1.full_name as created_by,s.source,t.title,c.customer_name
-                FROM customer_company_employees 
-                LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
-                LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
-                LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
-                WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
-                  AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
-                  AND customer_company_employees.deleted_at IS NULL
-              ) customer_company_employees
-            ) as lead_data,
-            (
-              SELECT json_agg(sales_users.*)
-              FROM (
-                SELECT 
-                ss.user_id as id ,ss.user_percentage as percentage,ss.user_type ,u1.full_name as name,u1.email_address as email
-                FROM sales_users as ss
-                LEFT JOIN users AS u1 ON u1.id = ss.user_id
-                WHERE ss.sales_id= sc.id AND ss.deleted_at IS NULL AND  u1.deleted_at IS NULL
-              ) sales_users
+  "Q157": ` SELECT
+              sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
+              sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
+              sc.currency, sc.target_closing_date,sc.archived_at, sc.archived_by,sc.archived_reason,
+              sc.sales_type, sc.subscription_plan,sc.recurring_date,sc.contract,sc.transfer_reason, 
+              sc.created_at,sc.user_id as creator_id, sc.closed_at, sc.slab_id,sc.lead_id,
+              sc.is_service_performed, sc.committed_at,sc.service_performed_at, sc.service_perform_note,
+              cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,u1.email_address as creator_email,
+              sc.transfered_back_by as transfered_back_by_id ,
+              slab.slab_name,sc.approval_status,
+              u2.full_name as tranfer_back_by_name,
+              (
+                SELECT json_agg(customer_company_employees.*)
+                FROM (
+                  SELECT 
+                    customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+                    customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
+                    customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
+                    customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
+                    customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
+                    customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                    u1.full_name as created_by,s.source,t.title,c.customer_name
+                  FROM customer_company_employees 
+                  LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                  LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                  LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                  LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+                  WHERE ( customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id )
+                    AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
+                    AND customer_company_employees.deleted_at IS NULL
+                ) customer_company_employees
+              ) as lead_data,
+              (
+                SELECT json_agg(sales_users.*)
+                FROM (
+                    SELECT 
+                        ss.user_id AS id, 
+                        SUM(ss.user_percentage) AS percentage, 
+                        ss.user_type, 
+                        u1.full_name AS name, 
+                        u1.email_address AS email
+                    FROM sales_users AS ss
+                    LEFT JOIN users AS u1 ON u1.id = ss.user_id
+                    WHERE ss.sales_id = sc.id
+                    AND ss.deleted_at IS NULL
+                    AND u1.deleted_at IS NULL
+                    GROUP BY ss.user_id, u1.full_name, u1.email_address, ss.user_type
+                ) sales_users
             ) as sales_users,
-            (
-              SELECT json_agg(product_in_sales.*)
-              FROM (
-                SELECT 
-                  DISTINCT(p.id) ,p.product_name as name
-                FROM product_in_sales as pis
-                LEFT JOIN products AS p ON p.id = pis.product_id
-                WHERE sc.id= pis.sales_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
-              ) product_in_sales
-            ) as products
-          FROM
-            sales AS sc
-          LEFT JOIN
-            users AS u1 ON u1.id = sc.user_id
-          LEFT JOIN
-            customer_companies AS cus ON cus.id = sc.customer_id
-          LEFT JOIN
-            slabs AS slab ON slab.id = sc.slab_id
-          LEFT JOIN
-            users AS u2 ON u2.id = sc.transfered_back_by
-          WHERE
-            sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL AND sc.archived_at IS NULL
-          ORDER BY
-            sc.created_at DESC`,
+              (
+                SELECT json_agg(product_in_sales.*)
+                FROM (
+                  SELECT 
+                    DISTINCT(p.id) ,p.product_name as name
+                  FROM product_in_sales as pis
+                  LEFT JOIN products AS p ON p.id = pis.product_id
+                  WHERE sc.id= pis.sales_id AND sc.deleted_at IS NULL AND  p.deleted_at IS NULL
+                ) product_in_sales
+              ) as products,
+            CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) as recognized_amount,
+              CASE
+                  WHEN CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) < CAST(sc.target_amount AS NUMERIC) THEN true
+                  WHEN CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) = CAST(sc.target_amount AS NUMERIC) THEN false
+                  ELSE false
+              END AS is_partial_recognized
+            FROM
+              sales AS sc
+            LEFT JOIN
+              users AS u1 ON u1.id = sc.user_id
+            LEFT JOIN
+              customer_companies AS cus ON cus.id = sc.customer_id
+            LEFT JOIN
+              slabs AS slab ON slab.id = sc.slab_id
+            LEFT JOIN
+              users AS u2 ON u2.id = sc.transfered_back_by
+            LEFT JOIN
+              recognized_revenue AS rr ON rr.sales_id = sc.id
+            WHERE
+              sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL AND sc.archived_at IS NULL
+            GROUP BY
+              sc.id, cus.customer_name, u1.full_name, u1.email_address, slab.slab_name, u2.full_name, cus.user_id
+            ORDER BY
+              sc.created_at DESC`,
   "Q158": `SELECT
             sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
             sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
@@ -1164,15 +1261,22 @@ const db_sql = {
                 ) customer_company_employees
             ) as lead_data,
             (
-                SELECT json_agg(sales_users.*)
-                FROM (
-                    SELECT 
-                        ss.user_id as id, ss.user_percentage as percentage, ss.user_type, u1.full_name as name, u1.email_address as email
-                    FROM sales_users as ss
-                    LEFT JOIN users AS u1 ON u1.id = ss.user_id
-                    WHERE ss.sales_id = sc.id AND ss.deleted_at IS NULL AND u1.deleted_at IS NULL
-                ) sales_users
-            ) as sales_users,
+              SELECT json_agg(sales_users.*)
+              FROM (
+                  SELECT 
+                      ss.user_id AS id, 
+                      SUM(ss.user_percentage) AS percentage, 
+                      ss.user_type, 
+                      u1.full_name AS name, 
+                      u1.email_address AS email
+                  FROM sales_users AS ss
+                  LEFT JOIN users AS u1 ON u1.id = ss.user_id
+                  WHERE ss.sales_id = sc.id
+                  AND ss.deleted_at IS NULL
+                  AND u1.deleted_at IS NULL
+                  GROUP BY ss.user_id, u1.full_name, u1.email_address, ss.user_type
+              ) sales_users
+          ) as sales_users,
             (
                 SELECT json_agg(product_in_sales.*)
                 FROM (
@@ -1211,82 +1315,94 @@ const db_sql = {
           ORDER BY
             sc.created_at DESC; `,
     "Q159": `SELECT
-            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
-            sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
-            sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
-            sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at, sc.user_id as creator_id, sc.closed_at, sc.slab_id, sc.lead_id,
-            cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
-            sc.transfered_back_by as transfered_back_by_id,
-            slab.slab_name, sc.approval_status,
-            u2.full_name as tranfer_back_by_name,
-            (
+              sc.id, sc.customer_id, sc.customer_commission_split_id AS commission_split_id,
+              sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
+              sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
+              sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at, sc.user_id AS creator_id, sc.closed_at, sc.slab_id, sc.lead_id,
+              cus.customer_name, cus.user_id AS customer_creator, u1.full_name AS created_by,
+              sc.transfered_back_by AS transfered_back_by_id,
+              slab.slab_name, sc.approval_status,
+              u2.full_name AS tranfer_back_by_name,
+              (
                 SELECT json_agg(customer_company_employees.*)
                 FROM (
-                    SELECT
-                        customer_company_employees.id, customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
-                        customer_company_employees.phone_number, customer_company_employees.address, customer_company_employees.source as source_id,
-                        customer_company_employees.linkedin_url, customer_company_employees.website, customer_company_employees.targeted_value,
-                        customer_company_employees.assigned_sales_lead_to, customer_company_employees.additional_marketing_notes, customer_company_employees.creator_id,
-                        customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, customer_company_employees.emp_type,
-                        customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                        u1.full_name as created_by, s.source, t.title, c.customer_name
-                    FROM customer_company_employees
-                    LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
-                    LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
-                    LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                    LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
-                    WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
-                        AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
-                        AND customer_company_employees.deleted_at IS NULL
+                  SELECT
+                    customer_company_employees.id, customer_company_employees.full_name, customer_company_employees.title AS title_id, customer_company_employees.email_address,
+                    customer_company_employees.phone_number, customer_company_employees.address, customer_company_employees.source AS source_id,
+                    customer_company_employees.linkedin_url, customer_company_employees.website, customer_company_employees.targeted_value,
+                    customer_company_employees.assigned_sales_lead_to, customer_company_employees.additional_marketing_notes, customer_company_employees.creator_id,
+                    customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, customer_company_employees.emp_type,
+                    customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                    u1.full_name AS created_by, s.source, t.title, c.customer_name
+                  FROM customer_company_employees
+                  LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                  LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                  LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                  LEFT JOIN customer_companies AS c ON c.id = customer_company_employees.customer_company_id
+                  WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
+                    AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL
+                    AND customer_company_employees.deleted_at IS NULL
                 ) customer_company_employees
-            ) as lead_data,
-            (
+              ) AS lead_data,
+              (
                 SELECT json_agg(sales_users.*)
                 FROM (
                     SELECT 
-                        ss.user_id as id, ss.user_percentage as percentage, ss.user_type, u1.full_name as name, u1.email_address as email
-                    FROM sales_users as ss
+                        ss.user_id AS id, 
+                        SUM(ss.user_percentage) AS percentage, 
+                        ss.user_type, 
+                        u1.full_name AS name, 
+                        u1.email_address AS email
+                    FROM sales_users AS ss
                     LEFT JOIN users AS u1 ON u1.id = ss.user_id
-                    WHERE ss.sales_id = sc.id AND ss.deleted_at IS NULL AND u1.deleted_at IS NULL
+                    WHERE ss.sales_id = sc.id
+                    AND ss.deleted_at IS NULL
+                    AND u1.deleted_at IS NULL
+                    GROUP BY ss.user_id, u1.full_name, u1.email_address, ss.user_type
                 ) sales_users
-            ) as sales_users,
-            (
+            ) AS sales_users,
+              (
                 SELECT json_agg(product_in_sales.*)
                 FROM (
-                    SELECT DISTINCT(p.id), p.product_name as name
-                    FROM product_in_sales as pis
-                    LEFT JOIN products AS p ON p.id = pis.product_id
-                    WHERE sc.id = pis.sales_id AND sc.deleted_at IS NULL AND p.deleted_at IS NULL
+                  SELECT DISTINCT(p.id), p.product_name AS name
+                  FROM product_in_sales AS pis
+                  LEFT JOIN products AS p ON p.id = pis.product_id
+                  WHERE sc.id = pis.sales_id AND sc.deleted_at IS NULL AND p.deleted_at IS NULL
                 ) product_in_sales
-            ) as products,
-            COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) as recognized_amount,
-            CASE
-                WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) < CAST(sc.target_amount AS NUMERIC) THEN true
-                WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) = CAST(sc.target_amount AS NUMERIC) THEN false
+              ) AS products,
+              rr.recognized_amount AS recognized_amount,
+              CASE
+                WHEN rr.recognized_amount < CAST(sc.target_amount AS NUMERIC) THEN true
+                WHEN rr.recognized_amount = CAST(sc.target_amount AS NUMERIC) THEN false
                 ELSE false
-            END AS is_partial_recognized
-          FROM sales AS sc
-          LEFT JOIN sales_users AS su ON sc.id = su.sales_id
-          LEFT JOIN users AS u1 ON u1.id = sc.user_id
-          LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
-          LEFT JOIN slabs AS slab ON slab.id = sc.slab_id
-          LEFT JOIN users AS u2 ON u2.id = sc.transfered_back_by
-          LEFT JOIN recognized_revenue AS rr ON rr.sales_id = sc.id AND rr.deleted_at IS NULL
-          WHERE
-            (sc.user_id IN ({var1}) OR su.user_id IN ({var1}))
-            AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL AND sc.archived_at IS NULL
-          GROUP BY
-            sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite, sc.business_contact_id,
-            sc.archived_at, sc.archived_by, sc.archived_reason,
-            sc.revenue_contact_id, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.currency, sc.target_closing_date,
-            sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at, sc.user_id, sc.closed_at, sc.slab_id, sc.lead_id,
-            cus.customer_name, cus.user_id, u1.full_name,
-            sc.transfered_back_by,
-            slab.slab_name,
-            u2.full_name,
-            sc.deleted_at
-          ORDER BY
-            sc.created_at DESC;`,
+              END AS is_partial_recognized
+            FROM sales AS sc
+            LEFT JOIN sales_users AS su ON sc.id = su.sales_id
+            LEFT JOIN users AS u1 ON u1.id = sc.user_id
+            LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
+            LEFT JOIN slabs AS slab ON slab.id = sc.slab_id
+            LEFT JOIN users AS u2 ON u2.id = sc.transfered_back_by
+            LEFT JOIN (
+              SELECT sales_id, SUM(recognized_amount::NUMERIC) AS recognized_amount
+              FROM recognized_revenue
+              WHERE deleted_at IS NULL
+              GROUP BY sales_id
+            ) rr ON rr.sales_id = sc.id
+            WHERE
+              (sc.user_id IN ({var1}) OR su.user_id IN ({var1}))
+              AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL AND sc.archived_at IS NULL
+            GROUP BY
+              sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite, sc.business_contact_id,
+              sc.archived_at, sc.archived_by, sc.archived_reason,
+              sc.revenue_contact_id, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.currency, sc.target_closing_date,
+              sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at, sc.user_id, sc.closed_at, sc.slab_id, sc.lead_id,
+              cus.customer_name, cus.user_id, u1.full_name,rr.recognized_amount,
+              sc.transfered_back_by,
+              slab.slab_name,
+              u2.full_name,
+              sc.deleted_at
+            ORDER BY
+              sc.created_at DESC;`,
   "Q160": `UPDATE slabs SET deleted_at = '{var1}' WHERE slab_id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL`,
   "Q161": `SELECT * FROM slabs WHERE slab_id ='{var1}' AND deleted_at IS NULL ORDER BY slab_ctr ASC`,
   "Q162": `SELECT u.id, u.full_name, r.id as role_id,r.role_name, r.module_ids, r.reporter  FROM roles AS r 
@@ -1423,8 +1539,7 @@ const db_sql = {
               GROUP BY 
                 u.full_name
               ORDER BY 
-                count {var4}
-              LIMIT {var2} OFFSET {var3}`,
+                count {var4} `,
   "Q176": `SELECT 
               l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
               l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
@@ -1489,8 +1604,7 @@ const db_sql = {
               GROUP BY 
                 u.full_name
               ORDER BY 
-                count {var4}
-              LIMIT {var2} OFFSET {var3}`,
+                count {var4}`,
   "Q191": `SELECT * FROM lead_sources WHERE LOWER(source) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
   "Q192": `SELECT * FROM lead_titles WHERE LOWER(title) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
   "Q193": `SELECT * FROM lead_industries WHERE LOWER(industry) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
@@ -1609,8 +1723,7 @@ const db_sql = {
               GROUP BY 
                 u.full_name
               ORDER BY 
-                count {var4}
-              LIMIT {var2} OFFSET {var3}`,
+                count {var4}`,
   "Q213": `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND assigned_sales_lead_to IS NOT NULL AND emp_type = 'lead' AND pid IS NULL  AND deleted_at IS NULL`,
   "Q214": `UPDATE companies SET company_logo = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   "Q215": `UPDATE customer_company_employees SET is_rejected = '{var2}', reason = '{var3}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`,
@@ -1628,8 +1741,7 @@ const db_sql = {
             GROUP BY 
               u.full_name
             ORDER BY 
-              count {var4}
-            LIMIT {var2} OFFSET {var3}`,
+              count {var4}`,
   "Q219": `SELECT 
                 DISTINCT(c.id)
               FROM 
@@ -1652,8 +1764,7 @@ const db_sql = {
                 u.full_name,
                 c.id
               ORDER BY 
-              u.full_name {var4}
-              LIMIT {var2} OFFSET {var3}`,
+              u.full_name {var4}`,
   "Q221": `SELECT 
             sc.id as sales_commission_id,
             sc.closed_at, 
@@ -2179,7 +2290,7 @@ const db_sql = {
             sc.created_at DESC`,
   "Q250": `SELECT
             u.id, u.email_address, u.full_name, u.company_id, u.avatar, u.mobile_number,
-            u.phone_number, u.address, u.role_id, u.is_admin, u.expiry_date, u.created_at,u.is_verified,
+            u.phone_number, u.address, u.role_id, u.is_admin, u.expiry_date, u.created_at,u.is_verified, u.is_deactivated,
             u.is_main_admin, u.created_by,u.is_pro_user,
             r.role_name
           FROM
@@ -2565,159 +2676,168 @@ const db_sql = {
             ORDER BY 
               l.created_at DESC`,
     "Q300": `SELECT
-            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
-            sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
-            sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
-            sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, 
-            sc.created_at, sc.user_id as creator_id, sc.closed_at, sc.slab_id, sc.lead_id,
-            sc.is_service_performed, sc.committed_at, sc.service_performed_at, sc.service_perform_note,
-            cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by, u1.email_address as creator_email,
-            sc.transfered_back_by as transfered_back_by_id,
-            slab.slab_name, sc.approval_status,
-            u2.full_name as tranfer_back_by_name,
-            (
-                SELECT json_agg(customer_company_employees.*)
-                FROM (
-                    SELECT 
-                        customer_company_employees.id, customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
-                        customer_company_employees.phone_number, customer_company_employees.address, customer_company_employees.source as source_id,
-                        customer_company_employees.linkedin_url, customer_company_employees.website, customer_company_employees.targeted_value,
-                        customer_company_employees.assigned_sales_lead_to, customer_company_employees.additional_marketing_notes, customer_company_employees.creator_id,
-                        customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, customer_company_employees.emp_type,
-                        customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                        u1.full_name as created_by, s.source, t.title, c.customer_name
-                    FROM customer_company_employees 
-                    LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
-                    LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
-                    LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                    LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
-                    WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
-                    AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
-                    AND customer_company_employees.deleted_at IS NULL
-                ) customer_company_employees
-            ) as lead_data,
-            (
-                SELECT json_agg(sales_users.*)
-                FROM (
-                    SELECT 
-                        ss.user_id as id, ss.user_percentage as percentage, ss.user_type, u1.full_name as name, u1.email_address as email
-                    FROM sales_users as ss
-                    LEFT JOIN users AS u1 ON u1.id = ss.user_id
-                    WHERE ss.sales_id = sc.id AND ss.deleted_at IS NULL AND u1.deleted_at IS NULL
-                ) sales_users
-            ) as sales_users,
-            (
-                SELECT json_agg(product_in_sales.*)
-                FROM (
-                    SELECT 
-                        DISTINCT(p.id), p.product_name as name
-                    FROM product_in_sales as pis
-                    LEFT JOIN products AS p ON p.id = pis.product_id
-                    WHERE sc.id = pis.sales_id AND sc.deleted_at IS NULL AND p.deleted_at IS NULL
-                ) product_in_sales
-            ) as products,
-            CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) as recognized_amount,
-            CASE
-                WHEN CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) < CAST(sc.target_amount AS NUMERIC) THEN true
-                WHEN CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) = CAST(sc.target_amount AS NUMERIC) THEN false
-                ELSE true
-            END AS is_partial_recognized
-          FROM
-            sales AS sc
-          LEFT JOIN
-            users AS u1 ON u1.id = sc.user_id
-          LEFT JOIN
-            customer_companies AS cus ON cus.id = sc.customer_id
-          LEFT JOIN
-            slabs AS slab ON slab.id = sc.slab_id
-          LEFT JOIN
-            users AS u2 ON u2.id = sc.transfered_back_by
-          LEFT JOIN
-            recognized_revenue AS rr ON rr.sales_id = sc.id
-          WHERE
-            sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.sales_type = '{var2}'
-          GROUP BY
-            sc.id, cus.customer_name, u1.full_name, u1.email_address, slab.slab_name, u2.full_name, cus.user_id
-          ORDER BY
-            sc.created_at DESC;`,
-    "Q301": `SELECT
-              sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
-              sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
-              sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
-              sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at, sc.user_id as creator_id, sc.closed_at, sc.slab_id, sc.lead_id,
-              cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
-              sc.transfered_back_by as transfered_back_by_id,
-              slab.slab_name, sc.approval_status,
-              u2.full_name as tranfer_back_by_name,
-              (
-                  SELECT json_agg(customer_company_employees.*)
-                  FROM (
-                      SELECT
-                          customer_company_employees.id, customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
-                          customer_company_employees.phone_number, customer_company_employees.address, customer_company_employees.source as source_id,
-                          customer_company_employees.linkedin_url, customer_company_employees.website, customer_company_employees.targeted_value,
-                          customer_company_employees.assigned_sales_lead_to, customer_company_employees.additional_marketing_notes, customer_company_employees.creator_id,
-                          customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, customer_company_employees.emp_type,
-                          customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                          u1.full_name as created_by, s.source, t.title, c.customer_name
-                      FROM customer_company_employees
-                      LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
-                      LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
-                      LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                      LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
-                      WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
-                          AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
-                          AND customer_company_employees.deleted_at IS NULL
-                  ) customer_company_employees
-              ) as lead_data,
-              (
+                sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
+                sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
+                sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
+                sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, 
+                sc.created_at, sc.user_id as creator_id, sc.closed_at, sc.slab_id, sc.lead_id,
+                sc.is_service_performed, sc.committed_at, sc.service_performed_at, sc.service_perform_note,
+                cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by, u1.email_address as creator_email,
+                sc.transfered_back_by as transfered_back_by_id,
+                slab.slab_name, sc.approval_status,
+                u2.full_name as tranfer_back_by_name,
+                (
+                    SELECT json_agg(customer_company_employees.*)
+                    FROM (
+                        SELECT 
+                            customer_company_employees.id, customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+                            customer_company_employees.phone_number, customer_company_employees.address, customer_company_employees.source as source_id,
+                            customer_company_employees.linkedin_url, customer_company_employees.website, customer_company_employees.targeted_value,
+                            customer_company_employees.assigned_sales_lead_to, customer_company_employees.additional_marketing_notes, customer_company_employees.creator_id,
+                            customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, customer_company_employees.emp_type,
+                            customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                            u1.full_name as created_by, s.source, t.title, c.customer_name
+                        FROM customer_company_employees 
+                        LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                        LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                        LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                        LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+                        WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
+                        AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
+                        AND customer_company_employees.deleted_at IS NULL
+                    ) customer_company_employees
+                ) as lead_data,
+                (
                   SELECT json_agg(sales_users.*)
                   FROM (
                       SELECT 
-                          ss.user_id as id, ss.user_percentage as percentage, ss.user_type, u1.full_name as name, u1.email_address as email
-                      FROM sales_users as ss
+                          ss.user_id AS id, 
+                          SUM(ss.user_percentage) AS percentage, 
+                          ss.user_type, 
+                          u1.full_name AS name, 
+                          u1.email_address AS email
+                      FROM sales_users AS ss
                       LEFT JOIN users AS u1 ON u1.id = ss.user_id
-                      WHERE ss.sales_id = sc.id AND ss.deleted_at IS NULL AND u1.deleted_at IS NULL
+                      WHERE ss.sales_id = sc.id
+                      AND ss.deleted_at IS NULL
+                      AND u1.deleted_at IS NULL
+                      GROUP BY ss.user_id, u1.full_name, u1.email_address, ss.user_type
                   ) sales_users
               ) as sales_users,
-              (
-                  SELECT json_agg(product_in_sales.*)
-                  FROM (
-                      SELECT DISTINCT(p.id), p.product_name as name
-                      FROM product_in_sales as pis
-                      LEFT JOIN products AS p ON p.id = pis.product_id
-                      WHERE sc.id = pis.sales_id AND sc.deleted_at IS NULL AND p.deleted_at IS NULL
-                  ) product_in_sales
-              ) as products,
-              COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) as recognized_amount,
-              CASE
-                  WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) < CAST(sc.target_amount AS NUMERIC) THEN true
-                  WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) = CAST(sc.target_amount AS NUMERIC) THEN false
-                  ELSE false
-              END AS is_partial_recognized
-            FROM sales AS sc
-            LEFT JOIN sales_users AS su ON sc.id = su.sales_id
-            LEFT JOIN users AS u1 ON u1.id = sc.user_id
-            LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
-            LEFT JOIN slabs AS slab ON slab.id = sc.slab_id
-            LEFT JOIN users AS u2 ON u2.id = sc.transfered_back_by
-            LEFT JOIN recognized_revenue AS rr ON rr.sales_id = sc.id AND rr.deleted_at IS NULL
-            WHERE
-              (sc.user_id IN ({var1}) OR su.user_id IN ({var1}))
-              AND sc.deleted_at IS NULL AND sc.sales_type = '{var2}'
-            GROUP BY
-              sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite, sc.business_contact_id,
-              sc.archived_at, sc.archived_by, sc.archived_reason,
-              sc.revenue_contact_id, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.currency, sc.target_closing_date,
-              sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at, sc.user_id, sc.closed_at, sc.slab_id, sc.lead_id,
-              cus.customer_name, cus.user_id, u1.full_name,
-              sc.transfered_back_by,
-              slab.slab_name,
-              u2.full_name,
-              sc.deleted_at
-            ORDER BY
-              sc.created_at DESC;
-            `,
+                (
+                    SELECT json_agg(product_in_sales.*)
+                    FROM (
+                        SELECT 
+                            DISTINCT(p.id), p.product_name as name
+                        FROM product_in_sales as pis
+                        LEFT JOIN products AS p ON p.id = pis.product_id
+                        WHERE sc.id = pis.sales_id AND sc.deleted_at IS NULL AND p.deleted_at IS NULL
+                    ) product_in_sales
+                ) as products,
+                CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) as recognized_amount,
+                CASE
+                    WHEN CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) < CAST(sc.target_amount AS NUMERIC) THEN true
+                    WHEN CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) = CAST(sc.target_amount AS NUMERIC) THEN false
+                    ELSE false
+                END AS is_partial_recognized
+              FROM
+                sales AS sc
+              LEFT JOIN
+                users AS u1 ON u1.id = sc.user_id
+              LEFT JOIN
+                customer_companies AS cus ON cus.id = sc.customer_id
+              LEFT JOIN
+                slabs AS slab ON slab.id = sc.slab_id
+              LEFT JOIN
+                users AS u2 ON u2.id = sc.transfered_back_by
+              LEFT JOIN
+                recognized_revenue AS rr ON rr.sales_id = sc.id
+              WHERE
+                sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.sales_type = '{var2}'
+              GROUP BY
+                sc.id, cus.customer_name, u1.full_name, u1.email_address, slab.slab_name, u2.full_name, cus.user_id
+              ORDER BY
+                sc.created_at DESC;`,
+        "Q301": `SELECT
+        sc.id, sc.customer_id, sc.customer_commission_split_id AS commission_split_id,
+        sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
+        sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
+        sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason,
+        sc.created_at, sc.user_id AS creator_id, sc.closed_at, sc.slab_id, sc.lead_id,
+        sc.is_service_performed, sc.committed_at, sc.service_performed_at, sc.service_perform_note,
+        cus.customer_name, cus.user_id AS customer_creator, u1.full_name AS created_by, u1.email_address AS creator_email,
+        sc.transfered_back_by AS transfered_back_by_id,
+        slab.slab_name, sc.approval_status,
+        u2.full_name AS transfer_back_by_name,
+        (
+            SELECT json_agg(customer_company_employees.*)
+            FROM (
+                SELECT
+                    customer_company_employees.id, customer_company_employees.full_name, customer_company_employees.title AS title_id, customer_company_employees.email_address,
+                    customer_company_employees.phone_number, customer_company_employees.address, customer_company_employees.source AS source_id,
+                    customer_company_employees.linkedin_url, customer_company_employees.website, customer_company_employees.targeted_value,
+                    customer_company_employees.assigned_sales_lead_to, customer_company_employees.additional_marketing_notes, customer_company_employees.creator_id,
+                    customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, customer_company_employees.emp_type,
+                    customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                    u1.full_name AS created_by, s.source, t.title, c.customer_name
+                FROM customer_company_employees
+                LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                LEFT JOIN customer_companies AS c ON c.id = customer_company_employees.customer_company_id
+                WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
+                    AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL
+                    AND customer_company_employees.deleted_at IS NULL
+            ) customer_company_employees
+        ) AS lead_data,
+        (
+            SELECT json_agg(sales_users.*)
+            FROM (
+                SELECT
+                    ss.user_id AS id,
+                    SUM(ss.user_percentage) AS percentage,
+                    ss.user_type,
+                    u1.full_name AS name,
+                    u1.email_address AS email
+                FROM sales_users AS ss
+                LEFT JOIN users AS u1 ON u1.id = ss.user_id
+                WHERE ss.sales_id = sc.id
+                    AND ss.deleted_at IS NULL
+                    AND u1.deleted_at IS NULL
+                GROUP BY ss.user_id, u1.full_name, u1.email_address, ss.user_type
+            ) sales_users
+        ) AS sales_users,
+        (
+            SELECT json_agg(product_in_sales.*)
+            FROM (
+                SELECT DISTINCT(p.id), p.product_name AS name
+                FROM product_in_sales AS pis
+                LEFT JOIN products AS p ON p.id = pis.product_id
+                WHERE sc.id = pis.sales_id AND sc.deleted_at IS NULL AND p.deleted_at IS NULL
+            ) product_in_sales
+        ) AS products,
+        CAST(SUM(rr.recognized_amount::NUMERIC) AS NUMERIC) AS recognized_amount,
+        CASE
+            WHEN CAST(SUM(rr.recognized_amount::NUMERIC) AS NUMERIC) < CAST(sc.target_amount AS NUMERIC) THEN true
+            WHEN CAST(SUM(rr.recognized_amount::NUMERIC) AS NUMERIC) = CAST(sc.target_amount AS NUMERIC) THEN false
+            ELSE false
+        END AS is_partial_recognized
+    FROM
+        sales AS sc
+    LEFT JOIN users AS u1 ON u1.id = sc.user_id
+    LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
+    LEFT JOIN slabs AS slab ON slab.id = sc.slab_id
+    LEFT JOIN users AS u2 ON u2.id = sc.transfered_back_by
+    LEFT JOIN recognized_revenue AS rr ON rr.sales_id = sc.id
+    LEFT JOIN sales_users AS su ON su.sales_id = sc.id -- Add the missing join
+    WHERE
+        (sc.user_id IN ({var1})
+            OR su.user_id IN ({var1}))
+        AND sc.deleted_at IS NULL AND sc.sales_type = '{var2}'
+    GROUP BY
+        sc.id, cus.customer_name, u1.full_name, u1.email_address, slab.slab_name, u2.full_name, cus.user_id
+    ORDER BY
+        sc.created_at DESC;`,
     "Q302": `SELECT
                 sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
                 sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
@@ -2751,15 +2871,22 @@ const db_sql = {
                     ) customer_company_employees
                 ) as lead_data,
                 (
-                    SELECT json_agg(sales_users.*)
-                    FROM (
-                        SELECT 
-                            ss.user_id as id, ss.user_percentage as percentage, ss.user_type, u1.full_name as name, u1.email_address as email
-                        FROM sales_users as ss
-                        LEFT JOIN users AS u1 ON u1.id = ss.user_id
-                        WHERE ss.sales_id = sc.id AND ss.deleted_at IS NULL AND u1.deleted_at IS NULL
-                    ) sales_users
-                ) as sales_users,
+                  SELECT json_agg(sales_users.*)
+                  FROM (
+                      SELECT 
+                          ss.user_id AS id, 
+                          SUM(ss.user_percentage) AS percentage, 
+                          ss.user_type, 
+                          u1.full_name AS name, 
+                          u1.email_address AS email
+                      FROM sales_users AS ss
+                      LEFT JOIN users AS u1 ON u1.id = ss.user_id
+                      WHERE ss.sales_id = sc.id
+                      AND ss.deleted_at IS NULL
+                      AND u1.deleted_at IS NULL
+                      GROUP BY ss.user_id, u1.full_name, u1.email_address, ss.user_type
+                  ) sales_users
+              ) as sales_users,
                 (
                     SELECT json_agg(product_in_sales.*)
                     FROM (
@@ -2774,7 +2901,7 @@ const db_sql = {
                 CASE
                     WHEN COALESCE(rr.recognized_amount, 0) < CAST(sc.target_amount AS NUMERIC) THEN true
                     WHEN COALESCE(rr.recognized_amount, 0) = CAST(sc.target_amount AS NUMERIC) THEN false
-                    ELSE true
+                    ELSE false
                 END AS is_partial_recognized
               FROM
                 sales AS sc
@@ -2798,82 +2925,95 @@ const db_sql = {
               ORDER BY
                 sc.created_at DESC;`,
     "Q303": `SELECT
-                sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id,
-                sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
-                sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
-                sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at, sc.user_id as creator_id, sc.closed_at, sc.slab_id, sc.lead_id,
-                cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by,
-                sc.transfered_back_by as transfered_back_by_id,
-                slab.slab_name, sc.approval_status,
-                u2.full_name as transfer_back_by_name,
-                (
-                    SELECT json_agg(customer_company_employees.*)
-                    FROM (
-                        SELECT
-                            customer_company_employees.id, customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
-                            customer_company_employees.phone_number, customer_company_employees.address, customer_company_employees.source as source_id,
-                            customer_company_employees.linkedin_url, customer_company_employees.website, customer_company_employees.targeted_value,
-                            customer_company_employees.assigned_sales_lead_to, customer_company_employees.additional_marketing_notes, customer_company_employees.creator_id,
-                            customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, customer_company_employees.emp_type,
-                            customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
-                            u1.full_name as created_by, s.source, t.title, c.customer_name
-                        FROM customer_company_employees
-                        LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
-                        LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
-                        LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
-                        LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
-                        WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
-                            AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
-                            AND customer_company_employees.deleted_at IS NULL
-                    ) customer_company_employees
-                ) as lead_data,
-                (
-                    SELECT json_agg(sales_users.*)
-                    FROM (
-                        SELECT 
-                            ss.user_id as id, ss.user_percentage as percentage, ss.user_type, u1.full_name as name, u1.email_address as email
-                        FROM sales_users as ss
-                        LEFT JOIN users AS u1 ON u1.id = ss.user_id
-                        WHERE ss.sales_id = sc.id AND ss.deleted_at IS NULL AND u1.deleted_at IS NULL
-                    ) sales_users
-                ) as sales_users,
-                (
-                    SELECT json_agg(product_in_sales.*)
-                    FROM (
-                        SELECT DISTINCT(p.id), p.product_name as name
-                        FROM product_in_sales as pis
-                        LEFT JOIN products AS p ON p.id = pis.product_id
-                        WHERE sc.id = pis.sales_id AND sc.deleted_at IS NULL AND p.deleted_at IS NULL
-                    ) product_in_sales
-                ) as products,
-                COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) as recognized_amount,
-                CASE
-                    WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) < CAST(sc.target_amount AS NUMERIC) THEN true
-                    WHEN COALESCE(SUM(CAST(rr.recognized_amount AS NUMERIC)), 0) = CAST(sc.target_amount AS NUMERIC) THEN false
-                    ELSE false
-                END AS is_partial_recognized
-              FROM sales AS sc
-              LEFT JOIN sales_users AS su ON sc.id = su.sales_id
-              LEFT JOIN users AS u1 ON u1.id = sc.user_id
-              LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
-              LEFT JOIN slabs AS slab ON slab.id = sc.slab_id
-              LEFT JOIN users AS u2 ON u2.id = sc.transfered_back_by
-              LEFT JOIN recognized_revenue AS rr ON rr.sales_id = sc.id AND rr.deleted_at IS NULL
-              WHERE
-                (sc.user_id IN ({var1}) OR su.user_id IN ({var1}))
-                AND sc.deleted_at IS NULL AND sc.revenue_commission::decimal > 0 AND archived_at IS NULL
-              GROUP BY
-                sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite, sc.business_contact_id,
-                sc.archived_at, sc.archived_by, sc.archived_reason,
-                sc.revenue_contact_id, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.currency, sc.target_closing_date,
-                sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at, sc.user_id, sc.closed_at, sc.slab_id, sc.lead_id,
-                cus.customer_name, cus.user_id, u1.full_name,
-                sc.transfered_back_by,
-                slab.slab_name,
-                u2.full_name,
-                sc.deleted_at
-              ORDER BY
-                sc.created_at DESC;`,
+              sc.id, sc.customer_id, sc.customer_commission_split_id AS commission_split_id,
+              sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
+              sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
+              sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at, sc.user_id AS creator_id, sc.closed_at, sc.slab_id, sc.lead_id,
+              cus.customer_name, cus.user_id AS customer_creator, u1.full_name AS created_by,
+              sc.transfered_back_by AS transfered_back_by_id,
+              slab.slab_name, sc.approval_status,
+              u2.full_name AS transfer_back_by_name,
+              (
+                SELECT json_agg(customer_company_employees.*)
+                FROM (
+                  SELECT
+                    customer_company_employees.id, customer_company_employees.full_name, customer_company_employees.title AS title_id, customer_company_employees.email_address,
+                    customer_company_employees.phone_number, customer_company_employees.address, customer_company_employees.source AS source_id,
+                    customer_company_employees.linkedin_url, customer_company_employees.website, customer_company_employees.targeted_value,
+                    customer_company_employees.assigned_sales_lead_to, customer_company_employees.additional_marketing_notes, customer_company_employees.creator_id,
+                    customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, customer_company_employees.emp_type,
+                    customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                    u1.full_name AS created_by, s.source, t.title, c.customer_name
+                  FROM customer_company_employees
+                  LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                  LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                  LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                  LEFT JOIN customer_companies AS c ON c.id = customer_company_employees.customer_company_id
+                  WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
+                    AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
+                    AND customer_company_employees.deleted_at IS NULL
+                ) customer_company_employees
+              ) AS lead_data,
+              (
+                SELECT json_agg(sales_users.*)
+                FROM (
+                    SELECT 
+                        ss.user_id AS id, 
+                        SUM(ss.user_percentage) AS percentage, 
+                        ss.user_type, 
+                        u1.full_name AS name, 
+                        u1.email_address AS email
+                    FROM sales_users AS ss
+                    LEFT JOIN users AS u1 ON u1.id = ss.user_id
+                    WHERE ss.sales_id = sc.id
+                    AND ss.deleted_at IS NULL
+                    AND u1.deleted_at IS NULL
+                    GROUP BY ss.user_id, u1.full_name, u1.email_address, ss.user_type
+                ) sales_users
+            ) AS sales_users,
+              (
+                SELECT json_agg(product_in_sales.*)
+                FROM (
+                  SELECT DISTINCT(p.id), p.product_name AS name
+                  FROM product_in_sales AS pis
+                  LEFT JOIN products AS p ON p.id = pis.product_id
+                  WHERE sc.id = pis.sales_id AND sc.deleted_at IS NULL AND p.deleted_at IS NULL
+                ) product_in_sales
+              ) AS products,
+              COALESCE(rr.recognized_amount, 0) AS recognized_amount,
+              CASE
+                WHEN COALESCE(rr.recognized_amount, 0) < CAST(sc.target_amount AS NUMERIC) THEN true
+                WHEN COALESCE(rr.recognized_amount, 0) = CAST(sc.target_amount AS NUMERIC) THEN false
+                ELSE false
+              END AS is_partial_recognized
+            FROM sales AS sc
+            LEFT JOIN sales_users AS su ON sc.id = su.sales_id
+            LEFT JOIN users AS u1 ON u1.id = sc.user_id
+            LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
+            LEFT JOIN slabs AS slab ON slab.id = sc.slab_id
+            LEFT JOIN users AS u2 ON u2.id = sc.transfered_back_by
+            LEFT JOIN (
+              SELECT sales_id, SUM(CAST(recognized_amount AS NUMERIC)) AS recognized_amount
+              FROM recognized_revenue
+              WHERE deleted_at IS NULL
+              GROUP BY sales_id
+            ) AS rr ON rr.sales_id = sc.id
+            WHERE
+              (sc.user_id IN ({var1}) OR su.user_id IN ({var1}))
+              AND sc.deleted_at IS NULL AND sc.revenue_commission::DECIMAL > 0 AND sc.archived_at IS NULL
+            GROUP BY
+              sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite, sc.business_contact_id,
+              sc.archived_at, sc.archived_by, sc.archived_reason,
+              sc.revenue_contact_id, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.currency, sc.target_closing_date,
+              sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, sc.created_at, sc.user_id, sc.closed_at, sc.slab_id, sc.lead_id,
+              cus.customer_name, cus.user_id, u1.full_name,
+              sc.transfered_back_by,
+              rr.recognized_amount,
+              slab.slab_name,
+              u2.full_name,
+              sc.deleted_at
+                          ORDER BY
+                            sc.created_at DESC;`,
 
   "Q304": `SELECT 
               sc.id AS sales_commission_id,
@@ -2928,10 +3068,18 @@ const db_sql = {
                 WHERE created_by = '{var1}' AND deleted_at IS NULL
               )as users_data,
               (
-                SELECT json_agg(sales_users.id) 
-                FROM sales_users 
-                WHERE user_id = '{var1}' AND deleted_at IS NULL
-              )as sales_users,
+                SELECT json_agg(su.id)
+                FROM sales_users su
+                INNER JOIN sales s ON su.sales_id = s.id
+                WHERE su.user_id = '{var1}'
+                  AND su.deleted_at IS NULL
+                  AND s.archived_at IS NULL
+                  AND (
+                    SELECT SUM(rr.recognized_amount::numeric)
+                    FROM recognized_revenue rr
+                    WHERE rr.sales_id = s.id
+                  ) < s.target_amount::numeric
+              ) AS sales_users,
               (
                 SELECT json_agg(customer_companies.id) 
                 FROM customer_companies 
@@ -3004,7 +3152,27 @@ const db_sql = {
                 SELECT json_agg(recognized_revenue.id)
                 FROM recognized_revenue 
                 WHERE user_id = '{var1}' AND deleted_at IS NULL
-              )as recognized_revenue_data
+              )as recognized_revenue_data,
+              (
+                SELECT json_agg(pro_user_availability.id)
+                FROM pro_user_availability 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as user_availability_data,
+              (
+                SELECT json_agg(pro_scheduled_events.id)
+                FROM pro_scheduled_events 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as pro_scheduled_events_data,
+              (
+                SELECT json_agg(pro_user_events.id)
+                FROM pro_user_events 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as pro_user_events_data,
+              (
+                SELECT json_agg(pro_user_time_slot.id)
+                FROM pro_user_time_slot 
+                WHERE user_id = '{var1}' AND deleted_at IS NULL
+              )as pro_user_time_slot_data
               
             FROM users where id = '{var1}' AND deleted_at IS NULL and is_deactivated = false`,
   "Q308": `SELECT * FROM customer_company_employees 
@@ -3139,7 +3307,7 @@ const db_sql = {
             LEFT JOIN
               customer_companies AS c ON c.id = l.customer_company_id
             WHERE
-              l.company_id = '{var1}' AND l.creator_id = '{var2}' AND l.pid IS NULL  AND emp_type = '{var3}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL
+              l.company_id = '{var1}' AND l.pid IS NULL  AND emp_type = '{var2}' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL
               AND l.sync_id IS NOT NULL AND l.sync_source IS NOT NULL
             ORDER BY
               l.created_at DESC`,
@@ -3184,7 +3352,7 @@ const db_sql = {
             LEFT JOIN 
               customer_companies AS c ON c.id = l.customer_company_id
             WHERE 
-              l.company_id = '{var1}' AND l.creator_id = '{var2}' AND emp_type = '{var3}' AND l.sync_source = '{var4}' AND l.pid IS NULL AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+              l.company_id = '{var1}' AND emp_type = '{var2}' AND l.sync_source = '{var3}' AND l.pid IS NULL AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
               AND l.sync_id IS NOT NULL AND l.sync_source IS NOT NULL 
             ORDER BY 
               l.created_at DESC`,
@@ -3244,7 +3412,7 @@ const db_sql = {
               AND sc.deleted_at IS NULL`,
   "Q341": `INSERT INTO imap_credentials( email, app_password, user_id, smtp_host, smtp_port, company_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
   "Q342": `INSERT INTO pro_user_availability(schedule_name, timezone, user_id, company_id) VALUES ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
-  "Q343": `INSERT INTO pro_user_time_slot(days,start_time, end_time, availability_id, company_id, checked) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+  "Q343": `INSERT INTO pro_user_time_slot(days,start_time, end_time, availability_id, company_id, checked, user_id) VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}', '{var7}') RETURNING *`,
   "Q344": `SELECT ua.id, ua.schedule_name, ua.timezone, ua.created_at,
               ua.user_id, u.full_name,
               (
@@ -3326,7 +3494,7 @@ const db_sql = {
   "Q357": `UPDATE pro_user_events SET event_name = '{var1}', meet_link = '{var2}', description = '{var3}', duration = '{var4}', availability_id = '{var5}', updated_at = '{var7}' WHERE id = '{var6}' RETURNING *`,
   "Q358": `UPDATE pro_user_events SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
   "Q359": `SELECT assigned_to FROM forecast WHERE (id = '{var1}' OR pid = '{var1}') AND deleted_at IS NULL`,
-  // "Q360":`SELECT * from imap_credentials WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
+  "Q360":`SELECT * from imap_credentials WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
   "Q361": `UPDATE imap_credentials SET email = '{var1}', app_password = '{var2}', smtp_host = '{var3}', smtp_port = '{var4}', updated_at = '{var6}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *`,
   "Q362": `SELECT se.event_id,ue.event_name, se.date, se.start_time, se.end_time, se.lead_name, 
               se.lead_email, se.description as lead_description, 
@@ -3507,18 +3675,25 @@ const db_sql = {
                 AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') >= '{var1}'
                 AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') <= '{var2}'
                       `,
-  "Q399": `SELECT s.id, s.target_amount,s.subscription_plan, s.recurring_date, cc.customer_name
-                FROM sales AS s
-                LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
-                WHERE s.id IN   ({var3})
-                    AND s.subscription_plan = 'Monthly' 
-                    AND s.sales_type = 'Subscription' 
-                    AND s.deleted_at IS NULL
-                    AND s.archived_at IS NULl
-                    AND cc.deleted_at IS NULL
-                    AND cc.archived_at IS NULL
-                    AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') >= '{var1}'
-                    AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') <= '{var2}'
+  "Q399": `SELECT s.id, 
+              CASE WHEN s.subscription_plan = 'Monthly' THEN s.target_amount::numeric
+                  WHEN s.subscription_plan = 'Annually' THEN s.target_amount::numeric / 12
+                  ELSE 0
+              END AS target_amount,
+              s.subscription_plan,
+              s.recurring_date,
+              cc.customer_name
+            FROM sales AS s
+            LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
+            WHERE s.id IN ({var3})
+            AND (s.subscription_plan = 'Monthly' OR s.subscription_plan = 'Annually')
+            AND s.sales_type = 'Subscription'
+            AND s.deleted_at IS NULL
+            AND s.archived_at IS NULL
+            AND cc.deleted_at IS NULL
+            AND cc.archived_at IS NULL
+            AND s.recurring_date >= '{var1}'
+            AND s.recurring_date <= '{var2}'
           `,
   "Q400": `SELECT sales_ids
           FROM (
@@ -3584,38 +3759,71 @@ const db_sql = {
           GROUP BY 
             su.user_id,
             u.full_name;`,
-  "Q405": `SELECT
-            su.sales_id,
-            ARRAY_AGG(su.id) AS ids,
-            s.target_amount,
-            cc.customer_name,
-            COALESCE(fn.notes, '{}'::TEXT[]) AS notes
-          FROM
-            sales_users su
-            LEFT JOIN sales s ON su.sales_id = s.id
-            LEFT JOIN customer_companies cc ON s.customer_id = cc.id
-            LEFT JOIN (
-              SELECT sales_id, ARRAY_AGG(notes) AS notes
-              FROM follow_up_notes
-              GROUP BY sales_id
-            ) AS fn ON s.id = fn.sales_id
-          WHERE
-            su.sales_id IN ({var3})
-            AND su.user_type = 'support'
-            AND s.created_at BETWEEN '{var1}' AND '{var2}'
-            AND s.archived_at IS NULL
-            AND su.deleted_at IS NULL
-            AND s.deleted_at IS NULL
-            AND cc.deleted_at IS NULL
-            AND s.closed_at IS NULL
-          GROUP BY
-            su.sales_id,
-            su.user_type,
-            cc.customer_name,
-            fn.notes,
-            target_amount
-          ORDER BY
-            su.sales_id;`,
+  "Q405":`SELECT
+              su.sales_id,
+              ARRAY_AGG(su.user_id) AS ids,
+              s.target_amount,
+              cc.customer_name,
+              ARRAY_LENGTH(COALESCE(fn.notes, '{}'::TEXT[]), 1) AS notes
+            FROM
+              sales_users su
+              LEFT JOIN sales s ON su.sales_id = s.id
+              LEFT JOIN customer_companies cc ON s.customer_id = cc.id
+              LEFT JOIN (
+                SELECT sales_id, ARRAY_AGG(notes) AS notes
+                FROM follow_up_notes
+                WHERE deleted_at IS NULL -- Add the condition here
+                GROUP BY sales_id
+              ) AS fn ON s.id = fn.sales_id
+            WHERE
+              su.sales_id IN ({var3})
+              AND s.created_at BETWEEN '{var1}' AND '{var2}'
+              AND su.user_type = 'support'
+              AND s.archived_at IS NULL
+              AND su.deleted_at IS NULL
+              AND s.deleted_at IS NULL
+              AND cc.deleted_at IS NULL
+              AND s.closed_at IS NULL
+            GROUP BY
+              su.sales_id,
+              su.user_type,
+              cc.customer_name,
+              fn.notes,
+              target_amount
+            ORDER BY
+              su.sales_id;`  ,        
+  // "Q405": `SELECT
+  //           su.sales_id,
+  //           ARRAY_AGG(su.id) AS ids,
+  //           s.target_amount,
+  //           cc.customer_name,
+  //           COALESCE(fn.notes, '{}'::TEXT[]) AS notes
+  //         FROM
+  //           sales_users su
+  //           LEFT JOIN sales s ON su.sales_id = s.id
+  //           LEFT JOIN customer_companies cc ON s.customer_id = cc.id
+  //           LEFT JOIN (
+  //             SELECT sales_id, ARRAY_AGG(notes) AS notes
+  //             FROM follow_up_notes
+  //             GROUP BY sales_id
+  //           ) AS fn ON s.id = fn.sales_id
+  //         WHERE
+  //           su.sales_id IN ({var3})
+  //           AND su.user_type = 'captain'
+  //           AND s.created_at BETWEEN '{var1}' AND '{var2}'
+  //           AND s.archived_at IS NULL
+  //           AND su.deleted_at IS NULL
+  //           AND s.deleted_at IS NULL
+  //           AND cc.deleted_at IS NULL
+  //           AND s.closed_at IS NULL
+  //         GROUP BY
+  //           su.sales_id,
+  //           su.user_type,
+  //           cc.customer_name,
+  //           fn.notes,
+  //           target_amount
+  //         ORDER BY
+  //           su.sales_id;`,
   "Q406": `SELECT
             rr.sales_id,
             CAST(rr.recognized_amount AS VARCHAR) AS recognized_amount,
@@ -3811,7 +4019,326 @@ const db_sql = {
             LEFT JOIN sales AS sc ON sc.id = uc.sales_id
             LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
             WHERE uc.company_id = '{var1}' AND uc.deleted_at IS NULL
-            AND sc.deleted_at IS NULL`,     
+            AND sc.deleted_at IS NULL`,   
+            //after changes lead list in pro for view own
+  "Q415":`SELECT 
+            l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+            l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+            l.website,l.targeted_value,l.marketing_qualified_lead,
+            l.assigned_sales_lead_to,l.additional_marketing_notes,
+            l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.reason,l.emp_type,
+            u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name ,
+            ( 
+              SELECT  json_agg(customer_company_employees.*)
+                  FROM (
+                  SELECT 
+                    customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+                    customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
+                    customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
+                    customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
+                    customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
+                    customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                    u1.full_name as created_by,s.source,t.title,c.customer_name,u2.full_name as assigned_sales_lead_name, customer_company_employees.sync_source
+                  FROM customer_company_employees 
+                  LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                  LEFT JOIN users AS u2 ON u2.id = customer_company_employees.assigned_sales_lead_to
+                  LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                  LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                  LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+                  WHERE l.id = customer_company_employees.pid AND emp_type = 'lead' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL
+                ) customer_company_employees 
+              ) as child_lead
+          FROM 
+            customer_company_employees AS l 
+          LEFt JOIN 
+            users AS u1 ON u1.id = l.creator_id
+          LEFt JOIN 
+            users AS u2 ON u2.id = l.assigned_sales_lead_to
+          LEFt JOIN
+            lead_sources AS s ON s.id = l.source
+          LEFt JOIN
+            lead_titles AS t ON t.id = l.title
+          LEFT JOIN 
+            customer_companies AS c ON c.id = l.customer_company_id
+          WHERE 
+            (l.creator_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1})) AND l.emp_type= '{var2}' AND l.pid IS NULL AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+            AND l.sync_id IS NOT NULL AND l.sync_source IS NOT NULL
+          ORDER BY 
+            l.created_at DESC`,
+  "Q416":`SELECT 
+            l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
+            l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
+            l.website,l.targeted_value,l.marketing_qualified_lead,
+            l.assigned_sales_lead_to,l.additional_marketing_notes,
+            l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.reason,l.emp_type,
+            u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name ,
+            ( 
+              SELECT  json_agg(customer_company_employees.*)
+                  FROM (
+                  SELECT 
+                    customer_company_employees.id,customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+                    customer_company_employees.phone_number,customer_company_employees.address, customer_company_employees.source as source_id,
+                    customer_company_employees.linkedin_url,customer_company_employees.website, customer_company_employees.targeted_value,
+                    customer_company_employees.assigned_sales_lead_to,customer_company_employees.additional_marketing_notes,customer_company_employees.creator_id,
+                    customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at,customer_company_employees.emp_type,
+                    customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                    u1.full_name as created_by,s.source,t.title,c.customer_name,u2.full_name as assigned_sales_lead_name, customer_company_employees.sync_source
+                  FROM customer_company_employees 
+                  LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                  LEFT JOIN users AS u2 ON u2.id = customer_company_employees.assigned_sales_lead_to
+                  LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                  LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                  LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+                  WHERE l.id = customer_company_employees.pid AND emp_type = 'lead' AND l.deleted_at IS NULL AND u1.deleted_at IS NULL
+                ) customer_company_employees 
+              ) as child_lead
+          FROM 
+            customer_company_employees AS l 
+          LEFt JOIN 
+            users AS u1 ON u1.id = l.creator_id
+          LEFt JOIN 
+            users AS u2 ON u2.id = l.assigned_sales_lead_to
+          LEFt JOIN
+            lead_sources AS s ON s.id = l.source
+          LEFt JOIN
+            lead_titles AS t ON t.id = l.title
+          LEFT JOIN 
+            customer_companies AS c ON c.id = l.customer_company_id
+          WHERE 
+            (l.creator_id IN ({var1}) OR l.assigned_sales_lead_to IN ({var1})) AND l.emp_type= '{var2}' AND l.sync_source = '{var3}' AND l.pid IS NULL AND l.deleted_at IS NULL AND u1.deleted_at IS NULL 
+            AND l.sync_id IS NOT NULL AND l.sync_source IS NOT NULL
+          ORDER BY 
+            l.created_at DESC`,
+  "Q417": `SELECT 
+            u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
+            u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
+            u1.is_main_admin,u1.is_deactivated,u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName,
+            u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at, u1.is_pro_user
+          FROM 
+            users AS u1 
+          LEFT JOIN 
+            users AS u2 ON u2.id = u1.created_by
+          LEFT JOIN 
+            users AS u3 ON u3.id = u1.assigned_to
+          LEFT JOIN 
+            roles as r on r.id = u1.role_id
+          WHERE 
+            u1.id IN ({var1}) 
+            AND u1.deleted_at IS NULL
+            AND u1.is_deactivated = '{var2}' 
+          ORDER BY 
+            created_at DESC`,
+  "Q418": `SELECT  
+            su.user_id, 
+            u.full_name,
+            array_agg(DISTINCT su.sales_id) AS sales_ids
+          FROM 
+            sales_users su
+          LEFT JOIN 
+            users u ON su.user_id = u.id
+          LEFT JOIN
+            sales s ON su.sales_id = s.id
+          WHERE 
+            su.user_type = 'captain' AND
+            su.user_id IN ({var1}) AND su.deleted_at IS NULL
+            AND s.closed_at IS NOT NULL
+          GROUP BY 
+            su.user_id,
+            u.full_name;`,
+   "Q419": `SELECT  
+              su.user_id,
+              u.full_name,
+              array_agg(DISTINCT su.sales_id) AS sales_ids
+            FROM 
+              sales_users su
+            LEFT JOIN 
+              users u ON su.user_id = u.id
+            LEFT JOIN
+              sales s ON su.sales_id = s.id
+            WHERE 
+              su.user_type = 'captain' AND
+              su.user_id IN ({var1}) AND su.deleted_at IS NULL
+            GROUP BY 
+              su.user_id,
+              u.full_name;`,  
+              
+    "Q420": `SELECT id, company_id 
+            FROM 
+            users 
+            WHERE 
+            company_id = '{var1}' AND is_main_admin = true`,
+            //query for merge the support if occur more than once
+    "Q421":`SELECT
+            sc.id,
+            sc.customer_id,
+            sc.customer_commission_split_id AS commission_split_id,
+            sc.is_overwrite,
+            sc.qualification,
+            sc.is_qualified,
+            sc.target_amount,
+            sc.booking_commission,
+            sc.revenue_commission,
+            sc.currency,
+            sc.target_closing_date,
+            sc.archived_at,
+            sc.archived_by,
+            sc.archived_reason,
+            sc.sales_type,
+            sc.subscription_plan,
+            sc.recurring_date,
+            sc.contract,
+            sc.transfer_reason,
+            sc.created_at,
+            sc.user_id AS creator_id,
+            sc.closed_at,
+            sc.slab_id,
+            sc.lead_id,
+            sc.is_service_performed,
+            sc.committed_at,
+            sc.service_performed_at,
+            sc.service_perform_note,
+            cus.customer_name,
+            cus.user_id AS customer_creator,
+            u1.full_name AS created_by,
+            u1.email_address AS creator_email,
+            sc.transfered_back_by AS transfered_back_by_id,
+            sc.approval_status,
+            slab.slab_name,
+            u2.full_name AS tranfer_back_by_name,
+            (
+              SELECT json_agg(customer_company_employees.*)
+              FROM (
+                SELECT
+                  customer_company_employees.id,
+                  customer_company_employees.full_name,
+                  customer_company_employees.title AS title_id,
+                  customer_company_employees.email_address,
+                  customer_company_employees.phone_number,
+                  customer_company_employees.address,
+                  customer_company_employees.source AS source_id,
+                  customer_company_employees.linkedin_url,
+                  customer_company_employees.website,
+                  customer_company_employees.targeted_value,
+                  customer_company_employees.assigned_sales_lead_to,
+                  customer_company_employees.additional_marketing_notes,
+                  customer_company_employees.creator_id,
+                  customer_company_employees.reason,
+                  customer_company_employees.created_at,
+                  customer_company_employees.updated_at,
+                  customer_company_employees.emp_type,
+                  customer_company_employees.marketing_qualified_lead,
+                  customer_company_employees.is_rejected,
+                  customer_company_employees.customer_company_id,
+                  u1.full_name AS created_by,
+                  s.source,
+                  t.title,
+                  c.customer_name,
+                  u2.full_name AS lead_assigned_to
+                FROM customer_company_employees
+                LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                LEFT JOIN users AS u2 ON u2.id = customer_company_employees.assigned_sales_lead_to
+                LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                LEFT JOIN customer_companies AS c ON c.id = customer_company_employees.customer_company_id
+                WHERE (customer_company_employees.id = sc.lead_id OR
+                  customer_company_employees.id = sc.business_contact_id OR
+                  customer_company_employees.id = sc.revenue_contact_id) AND
+                  customer_company_employees.is_rejected = false AND
+                  u1.deleted_at IS NULL AND
+                  customer_company_employees.deleted_at IS NULL
+              ) customer_company_employees
+            ) AS lead_data,
+            (
+              SELECT json_agg(sales_users.*)
+              FROM (
+                SELECT
+                  ss.user_id AS id,
+                  SUM(ss.user_percentage) AS percentage,
+                  ss.user_type,
+                  u1.full_name AS name,
+                  u1.email_address AS email
+                FROM sales_users AS ss
+                LEFT JOIN users AS u1 ON u1.id = ss.user_id
+                WHERE ss.sales_id = sc.id AND
+                  ss.deleted_at IS NULL AND
+                  u1.deleted_at IS NULL
+                GROUP BY ss.user_id, ss.user_type, u1.full_name, u1.email_address
+              ) sales_users
+            ) AS sales_users,
+            (
+              SELECT json_agg(product_in_sales.*)
+              FROM (
+                SELECT DISTINCT(p.id), p.product_name AS name
+                FROM product_in_sales AS pis
+                LEFT JOIN products AS p ON p.id = pis.product_id
+                WHERE sc.id = pis.sales_id AND
+                  sc.deleted_at IS NULL AND
+                  p.deleted_at IS NULL
+              ) product_in_sales
+            ) AS products,
+            (
+              SELECT json_agg(sales_approval.*)
+              FROM (
+                SELECT
+                  sap.id,
+                  sap.percentage,
+                  sap.description,
+                  sap.sales_id,
+                  sap.company_id,
+                  sap.approver_user_id,
+                  sap.requested_user_id,
+                  sap.created_at,
+                  sap.updated_at,
+                  sap.deleted_at,
+                  sap.status,
+                  sap.reason,
+                  u1.full_name AS approver_user_name,
+                  u2.full_name AS requested_user_name
+                FROM sales_approval AS sap
+                LEFT JOIN users AS u1 ON u1.id = sap.approver_user_id
+                LEFT JOIN users AS u2 ON u2.id = sap.requested_user_id
+                WHERE sap.sales_id = sc.id AND
+                  sap.deleted_at IS NULL AND
+                  sap.status = 'Pending'
+              ) sales_approval
+            ) AS sales_approval
+          FROM sales AS sc
+          LEFT JOIN users AS u1 ON u1.id = sc.user_id
+          LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
+          LEFT JOIN slabs AS slab ON slab.id = sc.slab_id
+          LEFT JOIN users AS u2 ON u2.id = sc.transfered_back_by
+          WHERE
+            sc.company_id = '{var1}' AND
+            sc.id = '{var2}' AND
+            sc.deleted_at IS NULL
+          ORDER BY sc.created_at DESC`,
+  "Q422":`UPDATE users SET is_pro_user = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL`,
+  "Q423": `SELECT
+              sc.id,
+              su.user_id,
+              su.user_percentage,
+              su.user_type,
+              sc.customer_id,
+              sc.target_amount,
+              sc.slab_id,
+              u.full_name,
+              u.created_by
+            FROM sales AS sc
+            LEFT JOIN (
+              SELECT
+                sales_id,
+                user_id,
+                user_type,
+                SUM(user_percentage) AS user_percentage
+              FROM sales_users
+              WHERE deleted_at IS NULL
+              GROUP BY sales_id, user_id, user_type
+            ) AS su ON sc.id = su.sales_id
+            LEFT JOIN users AS u ON su.user_id = u.id
+            WHERE
+              sc.id = '{var1}'
+              AND sc.deleted_at IS NULL
+              AND u.deleted_at IS NULL;`,                
         
 }
 

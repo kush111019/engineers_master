@@ -336,7 +336,7 @@ module.exports.salesDetails = async (req, res) => {
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-            let s3 = dbScript(db_sql['Q249'], { var1: checkPermission.rows[0].company_id, var2: salesId })
+            let s3 = dbScript(db_sql['Q421'], { var1: checkPermission.rows[0].company_id, var2: salesId })
             let salesList = await connection.query(s3)
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
@@ -1118,7 +1118,7 @@ module.exports.addRecognizedRevenue = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
 
-        let s2 = dbScript(db_sql['Q114'], { var1: salesId })
+        let s2 = dbScript(db_sql['Q423'], { var1: salesId })
         let findSales = await connection.query(s2)
 
         if (findSales.rowCount > 0) {
@@ -1144,7 +1144,7 @@ module.exports.addRecognizedRevenue = async (req, res) => {
             }
 
             for (let comData of findSales.rows) {
-                let userCommission = Number(totalCommission * Number(comData.user_percentage / 100))
+                let userCommission = Number(commissionOncurrentAmount * Number(comData.user_percentage / 100))
 
                 userCommission = userCommission.toFixed(2)
 
@@ -1154,13 +1154,13 @@ module.exports.addRecognizedRevenue = async (req, res) => {
                 let s8 = dbScript(db_sql['Q339'], { var1: comData.user_id, var2: comData.id, var3: comData.user_type })
                 let findCommission = await connection.query(s8)
 
-                if (findCommission.rowCount == 0) {
+                // if (findCommission.rowCount == 0) {
                     let s7 = dbScript(db_sql['Q334'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: Number(userCommission), var5: comData.user_type })
                     let addUserCommission = await connection.query(s7);
-                } else {
-                    let s9 = dbScript(db_sql['Q337'], { var1: Number(userCommission), var2: findCommission.rows[0].id })
-                    let updateUserCommission = await connection.query(s9);
-                }
+                // } else {
+                    // let s9 = dbScript(db_sql['Q337'], { var1: Number(userCommission), var2: findCommission.rows[0].id })
+                    // let updateUserCommission = await connection.query(s9);
+                // }
 
                 let notification_typeId = findSales.rows[0].id;
                 await notificationsOperations({ type: 6, msg: 6.1, notification_typeId, notification_userId }, userId);

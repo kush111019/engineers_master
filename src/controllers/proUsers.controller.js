@@ -11,6 +11,7 @@ const { titleFn, sourceFn, industryFn, customerFnForHubspot,
 const moduleName = process.env.DASHBOARD_MODULE
 const salesModule = process.env.SALES_MODULE
 const customerModule = process.env.CUSTOMERS_MODULE
+const leadModule = process.env.LEADS_MODULE
 const { mysql_real_escape_string, mysql_real_escape_string2, tranformAvailabilityArray, getIcalObjectInstance, convertToLocal, convertToTimezone, dateFormattor1, convertTimeToTargetedTz, paginatedResults, getParentUserList, getUserAndSubUser, calculateQuarters, getQuarterMonthsDates, calculateEOLProducts } = require('../utils/helper')
 const { issueJWTForPro } = require("../utils/jwt");
 const { leadEmail2, eventScheduleMail } = require("../utils/sendMail")
@@ -279,13 +280,64 @@ module.exports.usersList = async (req, res) => {
     }
 }
 
+module.exports.usersListForGlobalAndOwn = async (req, res) => {
+    let userId = req.user.id
+    let { isProUser } = req.user
+    let s1 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
+    let checkPermission = await connection.query(s1)
+    if (checkPermission.rows[0].permission_to_view_global && isProUser) {
+        let s2 = dbScript(db_sql['Q314'], { var1: checkPermission.rows[0].company_id, var2: false })
+        findUsers = await connection.query(s2);
+
+        if (findUsers.rows.length > 0) {
+            res.json({
+                status: 200,
+                success: true,
+                message: 'Users list',
+                data: findUsers.rows
+            })
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: "Empty users list",
+                data: []
+            })
+        }
+    } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
+        let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+        let s3 = dbScript(db_sql['Q417'], { var1: roleUsers.join(","), var2: false })
+        findUsers = await connection.query(s3);
+
+        if (findUsers.rows.length > 0) {
+            res.json({
+                status: 200,
+                success: true,
+                message: 'Users list',
+                data: findUsers.rows
+            })
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: "Empty users list",
+                data: []
+            })
+        }
+    } else {
+        res.status(403).json({
+            success: false,
+            message: "UnAthorised to see sales details"
+        })
+    }
+}
+
 module.exports.connectorsList = async (req, res) => {
     try {
         let userId = req.user.id
         let { isProUser } = req.user
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        console.log(s1, "s111");
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
@@ -973,22 +1025,38 @@ module.exports.leadReSync = async (req, res) => {
                                             }
                                         } else {
                                             for (let data of response.data.records) {
-                                                if (new Date(accessData.salesforce_last_sync) < new Date(data.LastModifiedDate)) {
-                                                    //checing if the last modification date is greater then last resync date if true then updating data
-                                                    let titleId = await titleFn(data.Title, accessData.company_id)
+                                                if (accessData.salesforce_last_sync !== null) {
+                                                    if (new Date(accessData.salesforce_last_sync) < new Date(data.LastModifiedDate)) {
+                                                        //checing if the last modification date is greater then last resync date if true then updating data
+                                                        let titleId = await titleFn(data.Title, accessData.company_id)
 
-                                                    let sourceId = await sourceFn(data.LeadSource, accessData.company_id)
+                                                        let sourceId = await sourceFn(data.LeadSource, accessData.company_id)
 
-                                                    let industryId = await industryFn(data.Industry, accessData.company_id)
+                                                        let industryId = await industryFn(data.Industry, accessData.company_id)
 
-                                                    let customerId = await customerFnForsalesforce(data, accessData, industryId)
+                                                        let customerId = await customerFnForsalesforce(data, accessData, industryId)
 
-                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
-                                                    let checkLead = await connection.query(s10)
-                                                    if (checkLead.rowCount > 0) {
-                                                        let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
+                                                        let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
+                                                        let checkLead = await connection.query(s10)
+                                                        if (checkLead.rowCount > 0) {
+                                                            let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
+                                                        } else {
+                                                            let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
+                                                        }
                                                     } else {
-                                                        let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
+                                                        let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
+                                                        let checkLead = await connection.query(s10)
+                                                        if (checkLead.rowCount == 0) {
+                                                            let titleId = await titleFn(data.Title, accessData.company_id)
+
+                                                            let sourceId = await sourceFn(data.LeadSource, accessData.company_id)
+
+                                                            let industryId = await industryFn(data.Industry, accessData.company_id)
+
+                                                            let customerId = await customerFnForsalesforce(data, accessData, industryId)
+
+                                                            let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
+                                                        }
                                                     }
                                                 } else {
                                                     let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
@@ -1004,6 +1072,7 @@ module.exports.leadReSync = async (req, res) => {
 
                                                         let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
                                                     }
+
                                                 }
                                             }
                                         }
@@ -1121,26 +1190,46 @@ module.exports.leadReSync = async (req, res) => {
                         } else {
                             //if first time is inserted then updating it
                             for (let data of leadsData) {
-                                if (new Date(accessData.hubspot_last_sync) < new Date(data.updatedAt)) {
+                                if (accessData.hubspot_last_sync !== null) {
+                                    if (new Date(accessData.hubspot_last_sync) < new Date(data.updatedAt)) {
 
-                                    let titleId = await titleFn(data.properties.jobtitle, accessData.company_id)
+                                        let titleId = await titleFn(data.properties.jobtitle, accessData.company_id)
 
-                                    let sourceId = await sourceFn('', accessData.company_id)
+                                        let sourceId = await sourceFn('', accessData.company_id)
 
-                                    let industryId = await industryFn(data.properties.industry, accessData.company_id)
+                                        let industryId = await industryFn(data.properties.industry, accessData.company_id)
 
-                                    let customerId = await customerFnForHubspot(data, accessData, industryId)
+                                        let customerId = await customerFnForHubspot(data, accessData, industryId)
 
-                                    let leadName = data.properties.firstname + ' ' + data.properties.lastname
+                                        let leadName = data.properties.firstname + ' ' + data.properties.lastname
 
-                                    let s10 = dbScript(db_sql['Q322'], { var1: data.id, var2: accessData.company_id })
-                                    let checkLead = await connection.query(s10)
-                                    if (checkLead.rowCount > 0) {
-                                        let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
-                                    }
-                                    else {
-                                        //Hubspot function for inserting lead data
-                                        let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, '')
+                                        let s10 = dbScript(db_sql['Q322'], { var1: data.id, var2: accessData.company_id })
+                                        let checkLead = await connection.query(s10)
+                                        if (checkLead.rowCount > 0) {
+                                            let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
+                                        }
+                                        else {
+                                            //Hubspot function for inserting lead data
+                                            let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, '')
+                                        }
+                                    } else {
+                                        let s10 = dbScript(db_sql['Q322'], { var1: data.id, var2: accessData.company_id })
+                                        let checkLead = await connection.query(s10)
+                                        if (checkLead.rowCount == 0) {
+
+                                            let titleId = await titleFn(data.properties.jobtitle, accessData.company_id)
+
+                                            let sourceId = await sourceFn('', accessData.company_id)
+
+                                            let industryId = await industryFn(data.properties.industry, accessData.company_id)
+
+                                            let customerId = await customerFnForHubspot(data, accessData, industryId)
+
+
+                                            let leadName = data.properties.firstname + ' ' + data.properties.lastname
+
+                                            let leads = await leadFnForHubspot(leadName, titleId, sourceId, customerId, data, accessData, '')
+                                        }
                                     }
                                 } else {
                                     let s10 = dbScript(db_sql['Q322'], { var1: data.id, var2: accessData.company_id })
@@ -1214,27 +1303,76 @@ module.exports.leadReSync = async (req, res) => {
     }
 }
 
+// module.exports.proLeadsList = async (req, res) => {
+//     try {
+//         let userId = req.user.id
+//         let { isProUser } = req.user
+//         let { provider } = req.query
+//         let s1 = dbScript(db_sql['Q8'], { var1: userId })
+//         let findUser = await connection.query(s1)
+//         if (findUser.rowCount > 0 && isProUser) {
+//             let type = 'lead'
+//             let leadList
+//             //getting the lead list from the customer_comany_employees
+//             if (provider.toLowerCase() == 'all') {
+//                 //for all providers
+//                 let s2 = dbScript(db_sql['Q326'], { var1: findUser.rows[0].company_id, var2: userId, var3: type })
+//                 leadList = await connection.query(s2)
+//             } else {
+//                 //for perticular provider
+//                 let s3 = dbScript(db_sql['Q327'], { var1: findUser.rows[0].company_id, var2: userId, var3: type, var4: provider.toLowerCase() })
+//                 leadList = await connection.query(s3)
+//             }
+
+//             if (leadList.rowCount > 0) {
+//                 res.json({
+//                     status: 200,
+//                     success: true,
+//                     message: 'Leads list',
+//                     data: leadList.rows
+//                 })
+//             } else {
+//                 res.json({
+//                     status: 200,
+//                     success: false,
+//                     message: 'Empty leads list',
+//                     data: leadList.rows
+//                 })
+//             }
+//         }
+//         else {
+//             res.status(403).json({
+//                 success: false,
+//                 message: "UnAthorised"
+//             })
+//         }
+//     } catch (error) {
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }
+
 module.exports.proLeadsList = async (req, res) => {
     try {
         let userId = req.user.id
-        let { isProUser } = req.user
         let { provider } = req.query
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0 && isProUser) {
-            let type = 'lead'
+        let { isProUser } = req.user
+        let s1 = dbScript(db_sql['Q41'], { var1: leadModule, var2: userId })
+        let checkPermission = await connection.query(s1)
+        let type = 'lead';
+        if (checkPermission.rows[0].permission_to_view_global && isProUser) {
             let leadList
-            //getting the lead list from the customer_comany_employees
             if (provider.toLowerCase() == 'all') {
-                //for all providers
-                let s2 = dbScript(db_sql['Q326'], { var1: findUser.rows[0].company_id, var2: userId, var3: type })
+                let s2 = dbScript(db_sql['Q326'], { var1: checkPermission.rows[0].company_id, var2: type })
                 leadList = await connection.query(s2)
             } else {
                 //for perticular provider
-                let s3 = dbScript(db_sql['Q327'], { var1: findUser.rows[0].company_id, var2: userId, var3: type, var4: provider.toLowerCase() })
+                let s3 = dbScript(db_sql['Q327'], { var1: checkPermission.rows[0].company_id, var2: type, var3: provider.toLowerCase() })
                 leadList = await connection.query(s3)
             }
-
             if (leadList.rowCount > 0) {
                 res.json({
                     status: 200,
@@ -1248,6 +1386,34 @@ module.exports.proLeadsList = async (req, res) => {
                     success: false,
                     message: 'Empty leads list',
                     data: leadList.rows
+                })
+            }
+        } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            let findLeadList
+            if (provider.toLowerCase() == 'all') {
+                let s4 = dbScript(db_sql['Q415'], { var1: roleUsers.join(","), var2: type })
+                findLeadList = await connection.query(s4)
+                console.log(s4);
+            } else {
+                //for perticular provider
+                let s5 = dbScript(db_sql['Q416'], { var1: roleUsers.join(","), var2: type, var3: provider.toLowerCase() })
+                findLeadList = await connection.query(s5)
+            }
+
+            if (findLeadList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Leads list',
+                    data: findLeadList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty leads list',
+                    data: findLeadList.rows
                 })
             }
         }
@@ -1270,12 +1436,11 @@ module.exports.salesListForPro = async (req, res) => {
     try {
         let userId = req.user.id
         let { isProUser } = req.user
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findUser = await connection.query(s1)
-        if (findUser.rowCount > 0 && isProUser) {
-
-            let s6 = dbScript(db_sql['Q302'], { var1: findUser.rows[0].company_id })
-            let salesList = await connection.query(s6)
+        let s1 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global && isProUser) {
+            let s2 = dbScript(db_sql['Q302'], { var1: checkPermission.rows[0].company_id })
+            let salesList = await connection.query(s2)
 
             if (salesList.rowCount > 0) {
                 for (let salesData of salesList.rows) {
@@ -1305,6 +1470,37 @@ module.exports.salesListForPro = async (req, res) => {
                     data: []
                 })
             }
+        } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            let s3 = dbScript(db_sql['Q303'], { var1: roleUsers.join(",") })
+            salesList = await connection.query(s3)
+
+            if (salesList.rowCount > 0) {
+                for (let salesData of salesList.rows) {
+                    if (salesData.sales_users) {
+                        salesData.sales_users.map(value => {
+                            if (value.user_type == process.env.CAPTAIN) {
+                                value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                            } else {
+                                value.user_commission_amount = (salesData.booking_commission) ? ((Number(value.percentage) / 100) * (salesData.booking_commission)) : 0;
+                            }
+                        })
+                    }
+                }
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: 'Sales list',
+                    data: salesList.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: 'Empty sales list',
+                    data: []
+                })
+            }
         } else {
             res.status(403).json({
                 success: false,
@@ -1325,12 +1521,11 @@ module.exports.salesDetails = async (req, res) => {
     try {
         let userId = req.user.id;
         let salesId = req.query.id;
-        console.log(salesId);
         let { isProUser } = req.user
         let s2 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
         let checkPermission = await connection.query(s2)
         if (isProUser && checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
-            let s3 = dbScript(db_sql['Q249'], { var1: checkPermission.rows[0].company_id, var2: salesId })
+            let s3 = dbScript(db_sql['Q421'], { var1: checkPermission.rows[0].company_id, var2: salesId })
             let salesList = await connection.query(s3)
             for (let salesData of salesList.rows) {
                 if (salesData.sales_users) {
@@ -1368,7 +1563,7 @@ module.exports.salesDetails = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.stack,
+            message: error.message,
         })
     }
 
@@ -1992,11 +2187,11 @@ module.exports.addAvailability = async (req, res) => {
                     for (let subTs of ts.timeSlots) {
                         const { utcStart, utcEnd } = await convertToLocal(subTs.startTime, subTs.endTime, timezone);
 
-                        let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: utcStart, var3: utcEnd, var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked })
+                        let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: utcStart, var3: utcEnd, var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked, var7: userId })
                         let addTimeSlot = await connection.query(s3)
                     }
                 } else {
-                    let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: '', var3: '', var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked })
+                    let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: '', var3: '', var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked, var7: userId })
                     let addTimeSlot = await connection.query(s3)
                 }
             }
@@ -2684,6 +2879,59 @@ module.exports.salesCaptainList = async (req, res) => {
     }
 }
 
+//sales captain list for global and own
+module.exports.salesCaptainListForGlobalAndOwn = async (req, res) => {
+    let userId = req.user.id
+    let { isProUser } = req.user
+    let s1 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
+    let checkPermission = await connection.query(s1)
+    if (checkPermission.rows[0].permission_to_view_global && isProUser) {
+        let s2 = dbScript(db_sql['Q363'], { var1: checkPermission.rows[0].company_id })
+        let salesCatains = await connection.query(s2)
+
+        if (salesCatains.rowCount > 0) {
+            res.json({
+                status: 200,
+                success: true,
+                message: "Sales captain list",
+                data: salesCatains.rows
+            })
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: "Empty Sales captain list",
+                data: []
+            })
+        }
+    } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
+        let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+        let s3 = dbScript(db_sql['Q418'], { var1: roleUsers.join(",") })
+        let salesCatains = await connection.query(s3)
+
+        if (salesCatains.rowCount > 0) {
+            res.json({
+                status: 200,
+                success: true,
+                message: "Sales captain list",
+                data: salesCatains.rows
+            })
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: "Empty Sales captain list",
+                data: []
+            })
+        }
+    } else {
+        res.status(403).json({
+            success: false,
+            message: "Unathorised"
+        })
+    }
+}
+
 //for metrics
 module.exports.salesCaptainListForMetrics = async (req, res) => {
     try {
@@ -2694,6 +2942,66 @@ module.exports.salesCaptainListForMetrics = async (req, res) => {
         if (findAdmin.rowCount > 0 && isProUser) {
             let s2 = dbScript(db_sql['Q413'], { var1: findAdmin.rows[0].company_id })
             let salesCatains = await connection.query(s2)
+            if (salesCatains.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Sales captain list",
+                    data: salesCatains.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Sales captain list",
+                    data: []
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+
+//sales captain list for metrics own and global
+module.exports.salesCaptainListForMetricsGlobalAndOwn = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { isProUser } = req.user
+        let s1 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global && isProUser) {
+            let s2 = dbScript(db_sql['Q413'], { var1: checkPermission.rows[0].company_id })
+            let salesCatains = await connection.query(s2)
+            if (salesCatains.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Sales captain list",
+                    data: salesCatains.rows
+                })
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Sales captain list",
+                    data: []
+                })
+            }
+        } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0])
+            let s3 = dbScript(db_sql['Q419'], { var1: roleUsers.join(",") })
+            let salesCatains = await connection.query(s3)
             if (salesCatains.rowCount > 0) {
                 res.json({
                     status: 200,
@@ -2975,15 +3283,111 @@ module.exports.captainWiseGraph = async (req, res) => {
     }
 }
 
+// module.exports.sciiSales = async (req, res) => {
+//     try {
+//         let { page } = req.query
+//         let userId = req.user.id
+//         let { isProUser } = req.user
+//         let s1 = dbScript(db_sql['Q8'], { var1: userId })
+//         let findAdmin = await connection.query(s1)
+//         if (findAdmin.rowCount > 0 && isProUser) {
+//             let s2 = dbScript(db_sql['Q363'], { var1: findAdmin.rows[0].company_id })
+//             let salesCatains = await connection.query(s2)
+//             let sciiArr = []
+//             if (salesCatains.rowCount > 0) {
+//                 for (captain of salesCatains.rows) {
+//                     let salesIdArr = []
+//                     if (captain.sales_ids.length > 0) {
+//                         salesIdArr.push("'" + captain.sales_ids.join("','") + "'")
+//                     }
+//                     let s3 = dbScript(db_sql['Q364'], { var1: captain.user_id, var2: salesIdArr.join(",") })
+//                     let salesDetails = await connection.query(s3)
+//                     if (salesDetails.rowCount > 0) {
+//                         let days = 0
+//                         let durationDays = []
+//                         salesDetails.rows.map((detail) => {
+//                             days += Number(detail.duration_in_days)
+//                             durationDays.push(Number(detail.duration_in_days))
+//                         })
+//                         let avgClosingTime = days / salesDetails.rowCount
+//                         let aboveCount = 0;
+//                         let belowCount = 0;
+//                         let sciiCount = 0;
+//                         if (durationDays.length == 1) {
+//                             sciiCount = 1
+//                         } else {
+//                             for (let i = 0; i < durationDays.length; i++) {
+//                                 if (durationDays[i] > avgClosingTime) {
+//                                     aboveCount++;
+//                                 } else if (durationDays[i] < avgClosingTime) {
+//                                     belowCount++;
+//                                 }
+//                             }
+//                             if (aboveCount == 0 && belowCount == 0) {
+//                                 sciiCount = 0
+//                             } else if (aboveCount == 0 || belowCount == 0) {
+//                                 sciiCount = 1
+//                             } else {
+//                                 sciiCount = Number(belowCount / aboveCount)
+//                             }
+//                         }
+//                         sciiArr.push({
+//                             captain_id: captain.user_id,
+//                             captain_name: captain.full_name,
+//                             scii: sciiCount
+//                         })
+//                     }
+//                 }
+//                 if (sciiArr.length > 0) {
+//                     let result = await paginatedResults(sciiArr, page)
+//                     res.json({
+//                         status: 200,
+//                         success: true,
+//                         message: "scii list",
+//                         data: result
+//                     })
+//                 } else {
+//                     res.json({
+//                         status: 200,
+//                         success: false,
+//                         message: "Empty scii list",
+//                         data: []
+//                     })
+//                 }
+//             } else {
+//                 res.json({
+//                     status: 200,
+//                     success: false,
+//                     message: "Empty Sales captain list",
+//                     data: []
+//                 })
+//             }
+//         } else {
+//             res.status(403).json({
+//                 success: false,
+//                 message: "Unathorised"
+//             })
+//         }
+//     } catch (error) {
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }
+
+
+//scii index for global and own
 module.exports.sciiSales = async (req, res) => {
     try {
         let { page } = req.query
         let userId = req.user.id
         let { isProUser } = req.user
-        let s1 = dbScript(db_sql['Q8'], { var1: userId })
-        let findAdmin = await connection.query(s1)
-        if (findAdmin.rowCount > 0 && isProUser) {
-            let s2 = dbScript(db_sql['Q363'], { var1: findAdmin.rows[0].company_id })
+        let s1 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
+        let checkPermission = await connection.query(s1)
+        if (checkPermission.rows[0].permission_to_view_global && isProUser) {
+            let s2 = dbScript(db_sql['Q363'], { var1: checkPermission.rows[0].company_id })
             let salesCatains = await connection.query(s2)
             let sciiArr = []
             if (salesCatains.rowCount > 0) {
@@ -3054,7 +3458,81 @@ module.exports.sciiSales = async (req, res) => {
                     data: []
                 })
             }
-        } else {
+        } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
+            let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            let s2 = dbScript(db_sql['Q418'], { var1: roleUsers.join(",") })
+            let salesCatains = await connection.query(s2)
+            let sciiArr = []
+            if (salesCatains.rowCount > 0) {
+                for (captain of salesCatains.rows) {
+                    let salesIdArr = []
+                    if (captain.sales_ids.length > 0) {
+                        salesIdArr.push("'" + captain.sales_ids.join("','") + "'")
+                    }
+                    let s3 = dbScript(db_sql['Q364'], { var1: captain.user_id, var2: salesIdArr.join(",") })
+                    let salesDetails = await connection.query(s3)
+                    if (salesDetails.rowCount > 0) {
+                        let days = 0
+                        let durationDays = []
+                        salesDetails.rows.map((detail) => {
+                            days += Number(detail.duration_in_days)
+                            durationDays.push(Number(detail.duration_in_days))
+                        })
+                        let avgClosingTime = days / salesDetails.rowCount
+                        let aboveCount = 0;
+                        let belowCount = 0;
+                        let sciiCount = 0;
+                        if (durationDays.length == 1) {
+                            sciiCount = 1
+                        } else {
+                            for (let i = 0; i < durationDays.length; i++) {
+                                if (durationDays[i] > avgClosingTime) {
+                                    aboveCount++;
+                                } else if (durationDays[i] < avgClosingTime) {
+                                    belowCount++;
+                                }
+                            }
+                            if (aboveCount == 0 && belowCount == 0) {
+                                sciiCount = 0
+                            } else if (aboveCount == 0 || belowCount == 0) {
+                                sciiCount = 1
+                            } else {
+                                sciiCount = Number(belowCount / aboveCount)
+                            }
+                        }
+                        sciiArr.push({
+                            captain_id: captain.user_id,
+                            captain_name: captain.full_name,
+                            scii: sciiCount
+                        })
+                    }
+                }
+                if (sciiArr.length > 0) {
+                    let result = await paginatedResults(sciiArr, page)
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "scii list",
+                        data: result
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Empty scii list",
+                        data: []
+                    })
+                }
+            } else {
+                res.json({
+                    status: 200,
+                    success: false,
+                    message: "Empty Sales captain list",
+                    data: []
+                })
+            }
+        }
+        else {
             res.status(403).json({
                 success: false,
                 message: "Unathorised"
@@ -3231,20 +3709,31 @@ module.exports.salesMetricsReport = async (req, res) => {
             let eolSales = {}
             let revenueGap = 0;
             let totalLeakage = 0;
-            let totalLeakageAmountClosed = 0
             let totalLeakageAmountAll = 0
-
-            //converting date format to 2022-12- for yearly RR
-            let yearlyStartDate = new Date(quarters[0].start_date);
-            let yearlyEndDate = new Date(quarters[3].end_date);
-            let yearlyStartFormattedDate = yearlyStartDate.toISOString().substring(0, 10);
-            let yearlyEndFormattedDate = yearlyEndDate.toISOString().substring(0, 10);
 
             //for EOL products date format
             const Sdate = new Date(selectedStartDate);
             const Edate = new Date(selectedEndDate);
             const SformattedDate = Sdate.toISOString().substring(0, 10);
             const EformattedDate = Edate.toISOString().substring(0, 10);
+
+            //current month start date and end date
+            // Get the current date
+            const currentDate = new Date();
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const startDate = new Date(year, month, 1);
+            const endDate = new Date(year, month + 1, 0);
+            let monthlyStartFormattedDate = startDate.toISOString().substring(0, 10);
+            let monthlyEndFormattedDate = endDate.toISOString().substring(0, 10);
+
+            function formatDate(dateString) {
+                const [year, month, day] = dateString.split('-');
+                return `${month}-${day}-${year}`;
+            }
+            const formattedStartDate = formatDate(monthlyStartFormattedDate);
+            const formattedEndDate = formatDate(monthlyEndFormattedDate);
 
             if (includeStatus !== true) {
                 //lead counts
@@ -3319,10 +3808,9 @@ module.exports.salesMetricsReport = async (req, res) => {
 
                     //monthly recognized_revenue Subscription+perpetual on perticular quarter
                     let totalMonthlySubscriptionAmount = 0;
-
                     let s7 = dbScript(db_sql["Q399"], {
-                        var1: yearlyStartFormattedDate,
-                        var2: yearlyEndFormattedDate,
+                        var1: formattedStartDate,
+                        var2: formattedEndDate,
                         var3: allSalesIdArr.join(","),
                     });
                     let findMonthlyRecognizedRevenue = await connection.query(s7);
@@ -3330,7 +3818,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                         monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
                         //multiply by 12 to get one year subscription
                         monthlyRecognizedRevenue.forEach(row => {
-                            const amount = parseInt(row.target_amount);
+                            const amount = parseFloat(row.target_amount);
                             const multipliedAmount = amount * 12;
                             totalMonthlySubscriptionAmount += multipliedAmount;
                         });
@@ -3340,18 +3828,20 @@ module.exports.salesMetricsReport = async (req, res) => {
                     }
 
                     //yearly recognized_revenue Subscription+perpetual
-                    let yearlySubscriptionAmount = 0;
-                    let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
-                    let findYearlyRecognizedRevenue = await connection.query(s8);
-                    if (findYearlyRecognizedRevenue.rowCount > 0) {
-                        let yearlyData = findYearlyRecognizedRevenue.rows
-                        yearlyData.forEach(row => {
-                            yearlySubscriptionAmount += parseFloat(row.target_amount);
-                        });
-                    } else {
-                        yearlySubscriptionAmount = yearlySubscriptionAmount
-                    }
-                    yearlyRecognizedRevenue = parseFloat(yearlySubscriptionAmount + totalMonthlySubscriptionAmount)
+                    // let yearlySubscriptionAmount = 0;
+                    // let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
+                    // let findYearlyRecognizedRevenue = await connection.query(s8);
+                    // if (findYearlyRecognizedRevenue.rowCount > 0) {
+                    //     let yearlyData = findYearlyRecognizedRevenue.rows
+                    //     yearlyData.forEach(row => {
+                    //         yearlySubscriptionAmount += parseFloat(row.target_amount);
+                    //     });
+                    // } else {
+                    //     yearlySubscriptionAmount = yearlySubscriptionAmount
+                    // }
+                    // yearlyRecognizedRevenue = parseFloat(yearlySubscriptionAmount + totalMonthlySubscriptionAmount)
+
+                    yearlyRecognizedRevenue = parseFloat(totalMonthlySubscriptionAmount)
 
                     //sales leakages
 
@@ -3364,7 +3854,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                     let totalLowRiskAmount = 0
                     if (findTotalSupport.rowCount > 0) {
                         for (const sale of findTotalSupport.rows) {
-                            const isHighRisk = sale.ids.length < 2 || sale.notes.length < 0;
+                            const isHighRisk = (sale.ids.length < 2 || sale.notes < 0);
                             const salesDeals = isHighRisk ? high_risk_sales_deals : low_risk_sales_deals;
                             salesDeals.push({ salesId: sale.sales_id, salesName: sale.customer_name, amount: sale.target_amount });
                         }
@@ -3549,9 +4039,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                                 closed_sales_count: 0,
                                 winPercentage: 0,
                             },
-                            yearly_recognized_revenue: {
-                                total_amount: 0,
-                            },
+                            yearly_recognized_revenue: 0,
                             monthly_revenue: [],
                             risk_sales_deals: {
                                 high_risk_sales_deals: [],
@@ -3661,16 +4149,17 @@ module.exports.salesMetricsReport = async (req, res) => {
                     let totalMonthlySubscriptionAmount = 0;
 
                     let s7 = dbScript(db_sql["Q399"], {
-                        var1: yearlyStartFormattedDate,
-                        var2: yearlyEndFormattedDate,
+                        var1: formattedStartDate,
+                        var2: formattedEndDate,
                         var3: allSalesIdArr.join(","),
                     });
+
                     let findMonthlyRecognizedRevenue = await connection.query(s7);
                     if (findMonthlyRecognizedRevenue.rowCount > 0) {
                         monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
                         //multiply by 12 to get one year subscription
                         monthlyRecognizedRevenue.forEach(row => {
-                            const amount = parseInt(row.target_amount);
+                            const amount = parseFloat(row.target_amount);
                             const multipliedAmount = amount * 12;
                             totalMonthlySubscriptionAmount += multipliedAmount;
                         });
@@ -3680,18 +4169,18 @@ module.exports.salesMetricsReport = async (req, res) => {
                     }
 
                     //yearly recognized_revenue Subscription+perpetual
-                    let yearlySubscriptionAmount = 0;
-                    let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
-                    let findYearlyRecognizedRevenue = await connection.query(s8);
-                    if (findYearlyRecognizedRevenue.rowCount > 0) {
-                        let yearlyData = findYearlyRecognizedRevenue.rows
-                        yearlyData.forEach(row => {
-                            yearlySubscriptionAmount += parseFloat(row.target_amount);
-                        });
-                    } else {
-                        yearlySubscriptionAmount = yearlySubscriptionAmount
-                    }
-                    yearlyRecognizedRevenue = parseFloat(yearlySubscriptionAmount + totalMonthlySubscriptionAmount)
+                    // let yearlySubscriptionAmount = 0;
+                    // let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
+                    // let findYearlyRecognizedRevenue = await connection.query(s8);
+                    // if (findYearlyRecognizedRevenue.rowCount > 0) {
+                    //     let yearlyData = findYearlyRecognizedRevenue.rows
+                    //     yearlyData.forEach(row => {
+                    //         yearlySubscriptionAmount += parseFloat(row.target_amount);
+                    //     });
+                    // } else {
+                    //     yearlySubscriptionAmount = yearlySubscriptionAmount
+                    // }
+                    yearlyRecognizedRevenue = parseFloat(totalMonthlySubscriptionAmount)
 
                     //sales leakages
 
@@ -3704,7 +4193,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                     let totalLowRiskAmount = 0
                     if (findTotalSupport.rowCount > 0) {
                         for (const sale of findTotalSupport.rows) {
-                            const isHighRisk = sale.ids.length < 2 || sale.notes.length < 0;
+                            const isHighRisk = sale.ids.length < 2 || sale.notes < 0;
                             const salesDeals = isHighRisk ? high_risk_sales_deals : low_risk_sales_deals;
                             salesDeals.push({ salesId: sale.sales_id, salesName: sale.customer_name, amount: sale.target_amount });
                         }
@@ -3883,9 +4372,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                                 closed_sales_count: 0,
                                 winPercentage: 0,
                             },
-                            yearly_recognized_revenue: {
-                                total_amount: 0,
-                            },
+                            yearly_recognized_revenue: 0,
                             monthly_revenue: [],
                             risk_sales_deals: {
                                 high_risk_sales_deals: [],
@@ -3951,7 +4438,7 @@ module.exports.salesMetricsReport = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.stack,
+            message: error.message,
         });
     }
 }

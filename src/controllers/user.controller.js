@@ -517,6 +517,7 @@ module.exports.updateUser = async (req, res) => {
 
             let s5 = dbScript(db_sql['Q12'], { var1: roleId })
             let findRole = await connection.query(s5)
+            console.log(findRole.rows, "find role");
             let isAdmin = findRole.rows[0].role_name == 'Admin' ? true : false;
 
             let _dt = new Date().toISOString();
@@ -536,7 +537,7 @@ module.exports.updateUser = async (req, res) => {
                 res.json({
                     status: 400,
                     success: false,
-                    message: "Something went wrong"
+                    message: "Something went wrongOr User is deactivated"
                 })
             }
         } else {
@@ -686,7 +687,11 @@ module.exports.deactivateUserAccount = async (req, res) => {
                         findUser.rows[0].forecast_data ||
                         findUser.rows[0].forecast_audit_data ||
                         findUser.rows[0].forecast_data_data ||
-                        findUser.rows[0].recognized_revenue_data
+                        findUser.rows[0].recognized_revenue_data ||
+                        findUser.rows[0].user_availability_data ||
+                        findUser.rows[0].pro_scheduled_events_data ||
+                        findUser.rows[0].pro_user_events_data ||
+                        findUser.rows[0].pro_user_time_slot_data
                     )
                 ) {
                     await connection.query('ROLLBACK')
@@ -804,6 +809,7 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
         let {
             userId,
             newUserId,
+            isAssignProUser,
             userData
         } = req.body
         console.log(req.body);
@@ -990,8 +996,45 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
                 let s2 = dbScript(db_sql['Q309'], { var1: 'recognized_revenue', var2: 'user_id', var3: newUserId, var4: recognizedRevenueIds.join(",") })
                 let updateNewUserInRecognizedRevenue = await connection.query(s2)
             }
+            if (userData.user_availability_data) {
+                let userAvailabilityIds = []
+                userData.user_availability_data.map(item => {
+                    userAvailabilityIds.push("'" + item.toString() + "'")
+                })
+                let s2 = dbScript(db_sql['Q309'], { var1: 'pro_user_availability', var2: 'user_id', var3: newUserId, var4: userAvailabilityIds.join(",") })
+                let updateNewUserInProUserAvailability = await connection.query(s2)
+            }
+            if (userData.pro_scheduled_events_data) {
+                let scheduedEventIds = []
+                userData.pro_scheduled_events_data.map(item => {
+                    scheduedEventIds.push("'" + item.toString() + "'")
+                })
+                let s2 = dbScript(db_sql['Q309'], { var1: 'pro_scheduled_events', var2: 'user_id', var3: newUserId, var4: scheduedEventIds.join(",") })
+                let updateNewUserInProscheduedEvent = await connection.query(s2)
+            }
+            if (userData.pro_user_events_data) {
+                let proUserEventsIds = []
+                userData.pro_user_events_data.map(item => {
+                    proUserEventsIds.push("'" + item.toString() + "'")
+                })
+                let s2 = dbScript(db_sql['Q309'], { var1: 'pro_user_events', var2: 'user_id', var3: newUserId, var4: proUserEventsIds.join(",") })
+                let updateNewUserInProUserEvents = await connection.query(s2)
+            }
+            if (userData.pro_user_time_slot_data) {
+                let proUserTimeSlotIds = []
+                userData.pro_user_time_slot_data.map(item => {
+                    proUserTimeSlotIds.push("'" + item.toString() + "'")
+                })
+                let s2 = dbScript(db_sql['Q309'], { var1: 'pro_user_time_slot', var2: 'user_id', var3: newUserId, var4: proUserTimeSlotIds.join(",") })
+                let updateNewUserInProUserTimeSlots = await connection.query(s2)
+            }
 
             let _dt = new Date().toISOString();
+            if(isAssignProUser){
+            let s4 = dbScript(db_sql['Q422'], { var1: true, var2: newUserId, var3: _dt })
+            let updateNewUser = await connection.query(s4)
+            }
+
             let s4 = dbScript(db_sql['Q311'], { var1: true, var2: userId, var3: _dt, var4: newUserId })
             let updateUser = await connection.query(s4)
             if (updateUser.rowCount > 0) {
