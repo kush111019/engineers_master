@@ -3761,7 +3761,7 @@ ORDER BY
             u.full_name;`,
   "Q405":`SELECT
               su.sales_id,
-              ARRAY_AGG(su.user_id) AS ids,
+              array_remove(ARRAY_AGG(CASE WHEN su.user_type = 'support' THEN su.user_id ELSE NULL END), NULL) AS ids,
               s.target_amount,
               cc.customer_name,
               ARRAY_LENGTH(COALESCE(fn.notes, '{}'::TEXT[]), 1) AS notes
@@ -3770,15 +3770,14 @@ ORDER BY
               LEFT JOIN sales s ON su.sales_id = s.id
               LEFT JOIN customer_companies cc ON s.customer_id = cc.id
               LEFT JOIN (
-                SELECT sales_id, ARRAY_AGG(notes) AS notes
-                FROM follow_up_notes
-                WHERE deleted_at IS NULL -- Add the condition here
-                GROUP BY sales_id
+                  SELECT sales_id, ARRAY_AGG(notes) AS notes
+                  FROM follow_up_notes
+                  WHERE deleted_at IS NULL -- Add the condition here
+                  GROUP BY sales_id
               ) AS fn ON s.id = fn.sales_id
             WHERE
               su.sales_id IN ({var3})
               AND s.created_at BETWEEN '{var1}' AND '{var2}'
-              AND su.user_type = 'support'
               AND s.archived_at IS NULL
               AND su.deleted_at IS NULL
               AND s.deleted_at IS NULL
@@ -3786,7 +3785,6 @@ ORDER BY
               AND s.closed_at IS NULL
             GROUP BY
               su.sales_id,
-              su.user_type,
               cc.customer_name,
               fn.notes,
               target_amount
