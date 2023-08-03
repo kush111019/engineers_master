@@ -1,5 +1,5 @@
 const express = require('express');
-const cluster = require('cluster');
+// const cluster = require('cluster');
 const os = require('os');
 const app = express();
 const cors = require('cors');
@@ -29,12 +29,12 @@ app.use(express.static('public'))
 app.use(logger);
 
 let cronJob = cron.schedule('59 59 23 * * *', async () => {
-  if (cluster.isMaster) {
+  // if (cluster.isMaster) {
     await paymentReminder();
     await upgradeSubscriptionCronFn()
     await targetDateReminder()
     await searchLead()
-  }
+  // }
 });
 cronJob.start();
 
@@ -101,7 +101,8 @@ let server = sticky(options, () => {
   return server
 })
 server.listen(process.env.LISTEN_PORT, () => {
-  console.log((cluster.worker ? 'WORKER ' + cluster.worker.id : 'MASTER') + ' | PORT ' + process.env.LISTEN_PORT)
+  // console.log((cluster.worker ? 'WORKER ' + cluster.worker.id : 'MASTER') + ' | PORT ' + process.env.LISTEN_PORT)
+  console.log(`Server is listening on ${process.env.LISTEN_PORT}`)
 })
 
 app.use('/api/v1', Router);
