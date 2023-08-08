@@ -465,7 +465,7 @@ module.exports.showProfile = async (req, res) => {
                 checkUser.rows[0].companyName = companyData.rows[0].company_name
                 checkUser.rows[0].companyAddress = companyData.rows[0].company_address
                 checkUser.rows[0].companyLogo = companyData.rows[0].company_logo,
-                checkUser.rows[0].startDate = companyData.rows[0].quarter
+                    checkUser.rows[0].startDate = companyData.rows[0].quarter
 
             } else {
                 checkUser.rows[0].companyName = ""
@@ -909,6 +909,96 @@ module.exports.updateCompanyProfile = async (req, res) => {
             success: false,
             status: 400,
             message: error.message,
+        })
+    }
+}
+
+module.exports.uploadPlayBookProductImage = async (req, res) => {
+    try {
+        let file = req.file
+        console.log(file, "file................")
+        let path = `${process.env.PLAYBOOK_PRODUCT_IMAGE_PATH}/${file.filename}`;
+        res.json({
+            status: 201,
+            success: true,
+            message: "Product image Uploaded successfully!",
+            data: path
+        })
+
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+            data: ""
+        })
+    }
+}
+
+module.exports.uploadPlayBookVisionMission = async (req, res) => {
+    try {
+        let file = req.file
+        console.log(file, "file...................")
+        let path = `${process.env.PLAYBOOK_VISIONMISSION_IMAGE_PATH}/${file.filename}`;
+        res.json({
+            status: 201,
+            success: true,
+            message: "Vision And Mission image Uploaded successfully!",
+            data: path
+        })
+
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+            data: ""
+        })
+    }
+}
+
+module.exports.createCompanyPlaybook = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let {resources,background,visionMission,visionMissionImage,productImage,customerProfiling,leadProcesses,salesStrategies,scenarioData,salesBestPractices,id } = req.body
+        await connection.query("BEGIN")
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0 && findAdmin.rows[0].is_main_admin) {
+            console.log(findAdmin.rows)
+            let _dt = new Date().toISOString()
+            let s2 = dbScript(db_sql['Q424'], { var1 : findAdmin.rows[0].company_id, var2 : findAdmin.rows[0].id, var3 : JSON.stringify(resources), var4 : mysql_real_escape_string(background), var5 : mysql_real_escape_string(visionMission), var6 : visionMissionImage, var7 : productImage, var8 : JSON.stringify(customerProfiling), var9 :JSON.stringify(leadProcesses), var10 : mysql_real_escape_string(salesStrategies), var11: JSON.stringify(scenarioData), var12 : mysql_real_escape_string(salesBestPractices), var13 : _dt, var14 : id  })
+            console.log(s2)
+            let updateMetaData = await connection.query(s2)
+            console.log(updateMetaData.rows)
+            if (updateMetaData.rowCount > 0) {
+                res.json({
+                    success: true,
+                    status: 200,
+                    message: 'Company Play Book updated successfully',
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    success: false,
+                    status: 400,
+                    message: "Something Went Wrong",
+                    data: ""
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unauthorized",
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            success: false,
+            status: 400,
+            message: error.stack,
         })
     }
 }

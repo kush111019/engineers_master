@@ -4348,7 +4348,8 @@ ORDER BY
             WHERE
               sc.id = '{var1}'
               AND sc.deleted_at IS NULL
-              AND u.deleted_at IS NULL;`,                
+              AND u.deleted_at IS NULL;`,
+   "Q424":`UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var1}',resources = '{var3}',background = '{var4}',vision_mission = '{var5}', vision_mission_image = '{var6}', product_image = '{var7}', customer_profiling = '{var8}', lead_processes = '{var9}', sales_strategies = '{var10}', scenario_data = '{var11}', sales_best_practices = '{var12}', updated_at = '{var13}' WHERE id = '{var14}' RETURNING *`                           
         
 }
 

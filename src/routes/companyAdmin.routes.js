@@ -10,7 +10,9 @@ const {
     uploadLogo,
     uploadSalesContract,
     uploadSalesInvoice,
-    uploadLeadsFile
+    uploadLeadsFile,
+    uploadPlayBookProduct,
+    uploadPlayBookVision
 } = require('../utils/uploadfiles')
 const {checkParams} = require('../utils/helper')
 
@@ -229,5 +231,10 @@ router.get('/notifications', verifyTokenFn,checkParams, controller.notifications
 router.put('/notificationRead', verifyTokenFn,checkParams, controller.notifications.notificationRead)
 router.put('/readAllNotifications', verifyTokenFn,checkParams, controller.notifications.notificationReadAll)
 
+//........................................playbook...............................
+
+router.post('/uploadPlayBookProductImage', verifyTokenFn,checkParams, uploadPlayBookProduct.single('image'), controller.companyAdmin.uploadPlayBookProductImage);
+router.post('/uploadPlayBookVisionMission', verifyTokenFn,checkParams, uploadPlayBookVision.single('image'), controller.companyAdmin.uploadPlayBookVisionMission);
+router.put('/createCompanyPlaybook', verifyTokenFn,checkParams, controller.companyAdmin.createCompanyPlaybook);
 
 module.exports = router;
