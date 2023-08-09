@@ -7,7 +7,8 @@ const {
     welcomeEmail2,
 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { mysql_real_escape_string, verifyTokenFn, calculateQuarters } = require('../utils/helper')
+const { mysql_real_escape_string, verifyTokenFn, calculateQuarters } = require('../utils/helper');
+const { setPlayBook } = require('../../seeders/seePlayBookData');
 
 
 let createAdmin = async (bodyData, cId, res) => {
@@ -70,12 +71,13 @@ let createAdmin = async (bodyData, cId, res) => {
             })
             let updateModule = await connection.query(s8)
 
-            //updating company for config quarter
+            // updating company for config quarter
             let s9 = dbScript(db_sql['Q390'], { var1: startDate, var2: cId })
             let updateQuarter = await connection.query(s9)
 
-
-            if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0 && addConfig.rowCount > 0 && updateQuarter.rowCount > 0) {
+            let setPlayBookData = await setPlayBook(cId, saveuser.rows[0].id)
+            console.log(setPlayBookData.rows, "setPlayBook")
+            if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0 && addConfig.rowCount > 0 && updateQuarter.rowCount > 0 && setPlayBookData.rowCount > 0) {
                 await connection.query('COMMIT')
                 const payload = {
                     id: saveuser.rows[0].id,
@@ -222,7 +224,7 @@ module.exports.signUp = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.message,
+            message: error.stack,
         })
     }
 }
@@ -960,7 +962,7 @@ module.exports.uploadPlayBookVisionMission = async (req, res) => {
 module.exports.createCompanyPlaybook = async (req, res) => {
     try {
         let userId = req.user.id
-        let {resources,background,visionMission,visionMissionImage,productImage,customerProfiling,leadProcesses,salesStrategies,scenarioData,salesBestPractices,id } = req.body
+        let { resources, background, visionMission, visionMissionImage, productImage, customerProfiling, leadProcesses, salesStrategies, scenarioData, salesBestPractices, id } = req.body
         await connection.query("BEGIN")
 
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
@@ -968,10 +970,14 @@ module.exports.createCompanyPlaybook = async (req, res) => {
         if (findAdmin.rowCount > 0 && findAdmin.rows[0].is_main_admin) {
             console.log(findAdmin.rows)
             let _dt = new Date().toISOString()
-            let s2 = dbScript(db_sql['Q424'], { var1 : findAdmin.rows[0].company_id, var2 : findAdmin.rows[0].id, var3 : JSON.stringify(resources), var4 : mysql_real_escape_string(background), var5 : mysql_real_escape_string(visionMission), var6 : visionMissionImage, var7 : productImage, var8 : JSON.stringify(customerProfiling), var9 :JSON.stringify(leadProcesses), var10 : mysql_real_escape_string(salesStrategies), var11: JSON.stringify(scenarioData), var12 : mysql_real_escape_string(salesBestPractices), var13 : _dt, var14 : id  })
+            let s2 = dbScript(db_sql['Q424'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(resources), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(visionMission), var6: visionMissionImage, var7: productImage, var8: JSON.stringify(customerProfiling), var9: JSON.stringify(leadProcesses), var10: mysql_real_escape_string(salesStrategies), var11: JSON.stringify(scenarioData), var12: mysql_real_escape_string(salesBestPractices), var13: _dt, var14: id })
             console.log(s2)
             let updateMetaData = await connection.query(s2)
             console.log(updateMetaData.rows)
+
+            for (let ele of updateMetaData.rows) {
+                console.log(ele)
+            }
             if (updateMetaData.rowCount > 0) {
                 res.json({
                     success: true,
@@ -1003,5 +1009,33 @@ module.exports.createCompanyPlaybook = async (req, res) => {
     }
 }
 
+module.exports.showPlayBook = async (req, res) => {
+    try {
+        let userId = req.user.id;
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q426'],{ var1 : findAdmin.rows[0].company_id})
+            let playBookData = await connection.query(s2)
+            res.json({
+                success: true,
+                status: 200,
+                message: "data",
+                data:playBookData.rows
+            })
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unauthorized",
+            })
+        }
+    } catch (error) {
+        res.json({
+            success: false,
+            status: 400,
+            message: error.message,
+        })
+    }
+}
 
 

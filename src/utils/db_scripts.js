@@ -4349,7 +4349,47 @@ ORDER BY
               sc.id = '{var1}'
               AND sc.deleted_at IS NULL
               AND u.deleted_at IS NULL;`,
-   "Q424":`UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var1}',resources = '{var3}',background = '{var4}',vision_mission = '{var5}', vision_mission_image = '{var6}', product_image = '{var7}', customer_profiling = '{var8}', lead_processes = '{var9}', sales_strategies = '{var10}', scenario_data = '{var11}', sales_best_practices = '{var12}', updated_at = '{var13}' WHERE id = '{var14}' RETURNING *`                           
+   "Q424":`UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var1}',resources = '{var3}',background = '{var4}',vision_mission = '{var5}', vision_mission_image = '{var6}', product_image = '{var7}', customer_profiling = '{var8}', lead_processes = '{var9}', sales_strategies = '{var10}', scenario_data = '{var11}', sales_best_practices = '{var12}', updated_at = '{var13}' WHERE id = '{var14}' RETURNING *`      ,
+   "Q425":`INSERT INTO sales_playbook (company_id, user_id, resources, background, vision_mission, vision_mission_image, product_image, customer_profiling, lead_processes, sales_strategies, scenario_data, sales_best_practices)
+           VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}') RETURNING *` ,
+   "Q426":`SELECT
+            sp.id,
+            sp.resources,
+            sp.background,
+            sp.vision_mission,
+            sp.vision_mission_image,
+            sp.product_image,
+            sp.customer_profiling,
+            sp.lead_processes,
+            sp.sales_strategies,
+            sp.scenario_data,
+            sp.sales_best_practices,
+            json_agg(json_build_object(
+                'product_name', p.product_name,
+                'product_image', p.product_image,
+                'description', p.description,
+                'available_quantity', p.available_quantity,
+                'price', p.price,
+                'end_of_life', p.end_of_life,
+                'created_at', p.created_at
+            )) AS products
+          FROM
+            sales_playbook sp
+          LEFT JOIN products p ON p.company_id = sp.company_id
+          WHERE
+            sp.company_id = '{var1}'
+          GROUP BY
+            sp.id,
+            sp.resources,
+            sp.background,
+            sp.vision_mission,
+            sp.vision_mission_image,
+            sp.product_image,
+            sp.customer_profiling,
+            sp.lead_processes,
+            sp.sales_strategies,
+            sp.scenario_data,
+            sp.sales_best_practices;`                            
         
 }
 

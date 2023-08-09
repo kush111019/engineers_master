@@ -15,6 +15,7 @@ const {
     uploadPlayBookVision
 } = require('../utils/uploadfiles')
 const {checkParams} = require('../utils/helper')
+const { setPlayBook } = require('../../seeders/seePlayBookData')
 
 router.post('/upload', verifyTokenFn,checkParams, uploadAvatar.single('image'), controller.companyAdmin.upload);
 router.get('/showProfile', verifyTokenFn,checkParams, controller.companyAdmin.showProfile)
@@ -236,5 +237,12 @@ router.put('/readAllNotifications', verifyTokenFn,checkParams, controller.notifi
 router.post('/uploadPlayBookProductImage', verifyTokenFn,checkParams, uploadPlayBookProduct.single('image'), controller.companyAdmin.uploadPlayBookProductImage);
 router.post('/uploadPlayBookVisionMission', verifyTokenFn,checkParams, uploadPlayBookVision.single('image'), controller.companyAdmin.uploadPlayBookVisionMission);
 router.put('/createCompanyPlaybook', verifyTokenFn,checkParams, controller.companyAdmin.createCompanyPlaybook);
+router.get('/showPlayBook', verifyTokenFn,checkParams, controller.companyAdmin.showPlayBook);
+
+
+
+router.post('/setPlayBook',setPlayBook);
+
+
 
 module.exports = router;
