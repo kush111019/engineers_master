@@ -3,16 +3,16 @@ const { dbScript, db_sql } = require("../src/utils/db_scripts");
 const { mysql_real_escape_string } = require("../src/utils/helper");
 const connection = require("../src/database/connection");
 
-module.exports.setPlayBook = async(companyId,userId,res ) => {
+module.exports.setPlayBook = async (companyId, userId, res) => {
     let resources = [
         {
-          "Company Values":  "https://www.dummywebsite.org",
-        "Product & Pricing":"http://www.testsite123.net",
-        "Product Demos":"https://www.placeholderlink.net",
-        "Real-time Statistics":"http://www.samplelink.biz"
+            "Company Values": "https://www.dummywebsite.org",
+            "Product & Pricing": "http://www.testsite123.net",
+            "Product Demos": "https://www.placeholderlink.net",
+            "Real-time Statistics": "http://www.samplelink.biz"
         }
     ]
-    let background =  "We offer data, voice and digital services. 20+ years of management the complex services. Speed available up to 100 GPS.";
+    let background = "We offer data, voice and digital services. 20+ years of management the complex services. Speed available up to 100 GPS.";
     let visionMission = "Operation Stellar Recon is a simulated space mission designed to test and evaluate advanced orbital surveillance and analysis technologies. The primary objective of this mission is to simulate the deployment of a constellation of satellite assets for monitoring and studying celestial bodies, space debris, and other potential objects of interest within Earth's orbit.";
     let visionMissionImage = "http://app1.hirisetech.com/api/playBookVision/background.jpg";
     let productImage = "http://app1.hirisetech.com/api/playBookProduct/product.jpg";
@@ -33,20 +33,21 @@ module.exports.setPlayBook = async(companyId,userId,res ) => {
         },
         {
             "description": "Prospects is unsure about the pricing. Explain the value proposition of the product and justify the pricing.",
-            "actions": 
-            "Break down the products features and benefits Provide real-world examples of how the product has delivered value to other customers.Offer a comparison with competitor products to showcase the competitive pricing., Emphasize the long-term benefits and return on investment."
+            "actions":
+                "Break down the products features and benefits Provide real-world examples of how the product has delivered value to other customers.Offer a comparison with competitor products to showcase the competitive pricing., Emphasize the long-term benefits and return on investment."
         }
     ];
     let salesBestPractices = [
-        {"sales presentation": "EffectiveSalesTactics.com",
-        "sales strategies":"MasteringSalesStrategies.org",
-        "FAQs":"WinningSalesApproaches.net",
-        "Sales Info":"SalesMastery101.info"
-    }
+        {
+            "sales presentation": "EffectiveSalesTactics.com",
+            "sales strategies": "MasteringSalesStrategies.org",
+            "FAQs": "WinningSalesApproaches.net",
+            "Sales Info": "SalesMastery101.info"
+        }
     ]
 
-    let s1 = dbScript(db_sql['Q425'],{var1 : companyId, var2 : userId, var3 : JSON.stringify(resources), var4: mysql_real_escape_string(background), var5 : mysql_real_escape_string(visionMission), var6 : visionMissionImage, var7 : productImage, var8: JSON.stringify(customerProfiling), var9: JSON.stringify(leadProcesses), var10 : mysql_real_escape_string(salesStrategies), var11 : JSON.stringify(scenarioData), var12: JSON.stringify(salesBestPractices)})
+    let s1 = dbScript(db_sql['Q425'], { var1: companyId, var2: userId, var3: JSON.stringify(resources), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(visionMission), var6: visionMissionImage, var7: productImage, var8: JSON.stringify(customerProfiling), var9: JSON.stringify(leadProcesses), var10: mysql_real_escape_string(salesStrategies), var11: JSON.stringify(scenarioData), var12: JSON.stringify(salesBestPractices) })
     let setData = await connection.query(s1)
     return setData
-   
+
 }
