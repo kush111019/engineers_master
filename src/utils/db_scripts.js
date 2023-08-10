@@ -4363,33 +4363,72 @@ ORDER BY
             sp.lead_processes,
             sp.sales_strategies,
             sp.scenario_data,
-            sp.sales_best_practices,
-            json_agg(json_build_object(
-                'product_name', p.product_name,
-                'product_image', p.product_image,
-                'description', p.description,
-                'available_quantity', p.available_quantity,
-                'price', p.price,
-                'end_of_life', p.end_of_life,
-                'created_at', p.created_at
-            )) AS products
+            sp.sales_best_practices
           FROM
             sales_playbook sp
-          LEFT JOIN products p ON p.company_id = sp.company_id
           WHERE
-            sp.company_id = '{var1}'
-          GROUP BY
-            sp.id,
-            sp.resources,
-            sp.background,
-            sp.vision_mission,
-            sp.vision_mission_image,
-            sp.product_image,
-            sp.customer_profiling,
-            sp.lead_processes,
-            sp.sales_strategies,
-            sp.scenario_data,
-            sp.sales_best_practices;`                            
+            sp.company_id = '{var1}' AND sp.deleted_at IS NULL`,
+  "Q427":`SELECT 
+            cus.id, cus.customer_name, u.full_name AS created_by,
+            (SELECT COUNT(*) FROM sales s WHERE s.customer_id = cus.id) AS sales_count
+          FROM 
+            customer_companies AS cus 
+          LEFT JOIN 
+            users AS u ON u.id = cus.user_id  	    
+          WHERE 
+            cus.company_id = '{var1}' AND cus.deleted_at IS NULL
+            AND u.deleted_at IS NULL 
+          ORDER BY
+          sales_count DESC`,
+  "Q428":`SELECT 
+          cus.id, cus.customer_name, u.full_name AS created_by,
+          (SELECT COUNT(*) FROM sales s WHERE s.customer_id = cus.id) AS sales_count
+        FROM 
+          customer_companies AS cus 
+        LEFT JOIN 
+          users AS u ON u.id = cus.user_id  	    
+        WHERE 
+          cus.user_id IN ({var1}) AND cus.deleted_at IS NULL
+          AND u.deleted_at IS NULL 
+        ORDER BY
+        sales_count DESC`,
+  "Q429":`SELECT 
+        u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
+        u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
+        u1.is_main_admin,u1.is_deactivated,u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName,
+        u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at, u1.is_pro_user
+      FROM 
+        users AS u1 
+      LEFT JOIN 
+        users AS u2 ON u2.id = u1.created_by
+      LEFT JOIN 
+        users AS u3 ON u3.id = u1.assigned_to
+      LEFT JOIN 
+        roles as r on r.id = u1.role_id
+      WHERE 
+        u1.company_id = '{var1}' 
+        AND u1.deleted_at IS NULL
+        AND u1.is_deactivated = '{var2}' 
+      ORDER BY 
+        created_at ASC `,
+  "Q430": `SELECT 
+              u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
+              u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
+              u1.is_main_admin, u1.created_by,u1.is_deactivated, u2.full_name AS creator_name, r.role_name AS roleName,
+              u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at
+              FROM 
+                users AS u1 
+              LEFT JOIN 
+                users AS u2 ON u2.id = u1.created_by
+              LEFT JOIN 
+                users AS u3 ON u3.id = u1.assigned_to
+              LEFT JOIN 
+                roles as r on r.id = u1.role_id
+            WHERE 
+              u1.id IN ({var1}) AND u1.deleted_at IS NULL 
+              AND u1.is_deactivated = '{var2}'
+            ORDER BY 
+              created_at ASC`,                                                     
         
 }
 

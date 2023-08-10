@@ -1085,6 +1085,31 @@ CREATE TABLE public.users (
 
 ALTER TABLE public.users OWNER TO postgres;
 
+
+
+CREATE TABLE public.sales_playbook (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+	company_id uuid,
+	user_id uuid,
+    resuorces character varying,
+    background character varying,
+    vision_mission character varying,
+	vision_mission_image character varying,
+	product_image character varying,
+	customer_profiling text,
+	lead_processes text,
+	sales_strategies text,
+	scenario_data JSONB,
+	sales_best_practices text,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
+    updated_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone),
+    deleted_at timestamp with time zone DEFAULT timezone('utc'::text, NULL::timestamp with time zone)
+    
+    
+)
+
+ALTER TABLE public.sales_playbook OWNER TO postgres;
+
 --
 -- TOC entry 3573 (class 2606 OID 557692)
 -- Name: chat chat_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
