@@ -76,7 +76,6 @@ let createAdmin = async (bodyData, cId, res) => {
             let updateQuarter = await connection.query(s9)
 
             let setPlayBookData = await setPlayBook(cId, saveuser.rows[0].id)
-            console.log(setPlayBookData.rows, "setPlayBook")
             if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0 && addConfig.rowCount > 0 && updateQuarter.rowCount > 0 && setPlayBookData.rowCount > 0) {
                 await connection.query('COMMIT')
                 const payload = {
@@ -224,7 +223,7 @@ module.exports.signUp = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.stack,
+            message: error.message,
         })
     }
 }
@@ -967,13 +966,9 @@ module.exports.createCompanyPlaybook = async (req, res) => {
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0 && findAdmin.rows[0].is_main_admin) {
             let _dt = new Date().toISOString()
-            console.log(_dt, "212211")
-            let s2 = dbScript(db_sql['Q424'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(resources), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(visionMission), var6: visionMissionImage, var7: productImage, var8: JSON.stringify(customerProfiling), var9: JSON.stringify(leadProcesses), var10: mysql_real_escape_string(salesStrategies), var11: JSON.stringify(scenarioData), var12: mysql_real_escape_string(salesBestPractices), var13: _dt, var14: id })
+            let s2 = dbScript(db_sql['Q424'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(resources), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(visionMission), var6: visionMissionImage, var7: productImage, var8: JSON.stringify(customerProfiling), var9: JSON.stringify(leadProcesses), var10: mysql_real_escape_string(salesStrategies), var11: JSON.stringify(scenarioData), var12: JSON.stringify(salesBestPractices), var13: _dt, var14: id })
 
             let updateMetaData = await connection.query(s2)
-            console.log(updateMetaData.rows, "1111111111111111")
-
-           
             if (updateMetaData.rowCount > 0) {
                 await connection.query("COMMIT")
                 res.json({
@@ -1000,7 +995,7 @@ module.exports.createCompanyPlaybook = async (req, res) => {
         res.json({
             success: false,
             status: 400,
-            message: error.stack,
+            message: error.message,
         })
     }
 }
