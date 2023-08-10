@@ -7,7 +7,8 @@ const {
     welcomeEmail2,
 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { mysql_real_escape_string, verifyTokenFn, calculateQuarters } = require('../utils/helper')
+const { mysql_real_escape_string, verifyTokenFn, calculateQuarters, getUserAndSubUser } = require('../utils/helper');
+const { setPlayBook } = require('../../seeders/seePlayBookData');
 
 
 let createAdmin = async (bodyData, cId, res) => {
@@ -70,12 +71,13 @@ let createAdmin = async (bodyData, cId, res) => {
             })
             let updateModule = await connection.query(s8)
 
-            //updating company for config quarter
+            // updating company for config quarter
             let s9 = dbScript(db_sql['Q390'], { var1: startDate, var2: cId })
             let updateQuarter = await connection.query(s9)
 
-
-            if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0 && addConfig.rowCount > 0 && updateQuarter.rowCount > 0) {
+            let setPlayBookData = await setPlayBook(cId, saveuser.rows[0].id)
+            console.log(setPlayBookData.rows, "setPlayBook")
+            if (createRole.rowCount > 0 && addPermission.rowCount > 0 && saveuser.rowCount > 0 && updateModule.rowCount > 0 && addConfig.rowCount > 0 && updateQuarter.rowCount > 0 && setPlayBookData.rowCount > 0) {
                 await connection.query('COMMIT')
                 const payload = {
                     id: saveuser.rows[0].id,
@@ -222,7 +224,7 @@ module.exports.signUp = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.message,
+            message: error.stack,
         })
     }
 }
@@ -465,7 +467,7 @@ module.exports.showProfile = async (req, res) => {
                 checkUser.rows[0].companyName = companyData.rows[0].company_name
                 checkUser.rows[0].companyAddress = companyData.rows[0].company_address
                 checkUser.rows[0].companyLogo = companyData.rows[0].company_logo,
-                checkUser.rows[0].startDate = companyData.rows[0].quarter
+                    checkUser.rows[0].startDate = companyData.rows[0].quarter
 
             } else {
                 checkUser.rows[0].companyName = ""
@@ -913,5 +915,221 @@ module.exports.updateCompanyProfile = async (req, res) => {
     }
 }
 
+module.exports.uploadPlayBookProductImage = async (req, res) => {
+    try {
+        let file = req.file
+        let path = `${process.env.PLAYBOOK_PRODUCT_IMAGE_PATH}/${file.filename}`;
+        res.json({
+            status: 201,
+            success: true,
+            message: "Product image Uploaded successfully!",
+            data: path
+        })
+
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+            data: ""
+        })
+    }
+}
+
+module.exports.uploadPlayBookVisionMission = async (req, res) => {
+    try {
+        let file = req.file
+        let path = `${process.env.PLAYBOOK_VISIONMISSION_IMAGE_PATH}/${file.filename}`;
+        res.json({
+            status: 201,
+            success: true,
+            message: "Vision And Mission image Uploaded successfully!",
+            data: path
+        })
+
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+            data: ""
+        })
+    }
+}
+
+module.exports.createCompanyPlaybook = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { resources, background, visionMission, visionMissionImage, productImage, customerProfiling, leadProcesses, salesStrategies, scenarioData, salesBestPractices, id } = req.body
+        await connection.query("BEGIN")
+
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0 && findAdmin.rows[0].is_main_admin) {
+            let _dt = new Date().toISOString()
+            console.log(_dt, "212211")
+            let s2 = dbScript(db_sql['Q424'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(resources), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(visionMission), var6: visionMissionImage, var7: productImage, var8: JSON.stringify(customerProfiling), var9: JSON.stringify(leadProcesses), var10: mysql_real_escape_string(salesStrategies), var11: JSON.stringify(scenarioData), var12: mysql_real_escape_string(salesBestPractices), var13: _dt, var14: id })
+
+            let updateMetaData = await connection.query(s2)
+            console.log(updateMetaData.rows, "1111111111111111")
+
+           
+            if (updateMetaData.rowCount > 0) {
+                await connection.query("COMMIT")
+                res.json({
+                    success: true,
+                    status: 200,
+                    message: 'Company Play Book updated successfully',
+                })
+            } else {
+                await connection.query('ROLLBACK')
+                res.json({
+                    success: false,
+                    status: 400,
+                    message: "Something Went Wrong",
+                })
+            }
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unauthorized",
+            })
+        }
+    } catch (error) {
+        await connection.query('ROLLBACK')
+        res.json({
+            success: false,
+            status: 400,
+            message: error.stack,
+        })
+    }
+}
+
+module.exports.showPlayBook = async (req, res) => {
+    try {
+        let userId = req.user.id;
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q426'], { var1: findAdmin.rows[0].company_id })
+            let playBookData = await connection.query(s2)
+
+            playBookData.rows[0].resources = JSON.parse(playBookData.rows[0].resources);
+            playBookData.rows[0].customer_profiling = JSON.parse(playBookData.rows[0].customer_profiling);
+            playBookData.rows[0].sales_best_practices = JSON.parse(playBookData.rows[0].sales_best_practices);
+            let s3 = dbScript(db_sql['Q41'], { var1: process.env.PRODUCTS_MODULE, var2: userId })
+            let checkPermission = await connection.query(s3)
+            if (checkPermission.rows[0].permission_to_view_global) {
+                let s4 = dbScript(db_sql['Q84'], { var1: checkPermission.rows[0].company_id })
+                let productList = await connection.query(s4)
+                if (productList.rowCount > 0) {
+                    playBookData.rows[0].productList = productList.rows;
+                } else {
+                    playBookData.rows[0].productList = [];
+                }
+            } else if (checkPermission.rows[0].permission_to_view_own) {
+                let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+                let s5 = dbScript(db_sql['Q270'], { var1: roleUsers.join(",") })
+                let productList = await connection.query(s5)
+                if (productList.rowCount > 0) {
+                    playBookData.rows[0].productList = productList.rows;
+                } else {
+                    playBookData.rows[0].productList = [];
+                }
+            } else {
+                playBookData.rows[0]["productList"] = "You Don't Have Permission to View Products, Please Contact Your Admin."
+            }
+            let s6 = dbScript(db_sql['Q41'], { var1: process.env.CUSTOMERS_MODULE, var2: userId })
+            let checkCustomerPermission = await connection.query(s6)
+            if (checkCustomerPermission.rows[0].permission_to_view_global) {
+                let s7 = dbScript(db_sql['Q427'], { var1: checkCustomerPermission.rows[0].company_id })
+                let customerList = await connection.query(s7)
+                if (customerList.rowCount > 0) {
+                    const totalSalesCount = customerList.rows.reduce((total, company) => total + company.sales_count, 0);
+
+                    // Step 3: Calculate percentage for each company
+                    const rawPercentages = customerList.rows.map((company) => ({
+                        name: company.customer_name,
+                        rawPercentage: (company.sales_count / totalSalesCount) * 100,
+                    }));
+
+                    // Step 4: Adjust percentages to ensure the sum is 100
+                    const sumRawPercentages = rawPercentages.reduce((sum, company) => sum + company.rawPercentage, 0);
+                    const adjustedPercentages = rawPercentages.map((company) => ({
+                        name: company.name,
+                        percentage: (company.rawPercentage / sumRawPercentages) * 100,
+                    }));
+                    playBookData.rows[0].customerCompanies = adjustedPercentages
+                } else {
+                    playBookData.rows[0].customerCompanies = [];
+                }
+            } else if (checkCustomerPermission.rows[0].permission_to_view_own) {
+                let roleUsers = await getUserAndSubUser(checkCustomerPermission.rows[0]);
+                let s8 = dbScript(db_sql['Q428'], { var1: roleUsers.join(",") })
+                let customerList = await connection.query(s8)
+                if (customerList.rowCount > 0) {
+                    const totalSalesCount = customerList.rows.reduce((total, company) => total + company.sales_count, 0);
+
+                    // Step 3: Calculate percentage for each company
+                    const rawPercentages = customerList.rows.map((company) => ({
+                        name: company.customer_name,
+                        rawPercentage: (company.sales_count / totalSalesCount) * 100,
+                    }));
+
+                    // Step 4: Adjust percentages to ensure the sum is 100
+                    const sumRawPercentages = rawPercentages.reduce((sum, company) => sum + company.rawPercentage, 0);
+                    const adjustedPercentages = rawPercentages.map((company) => ({
+                        name: company.name,
+                        percentage: (company.rawPercentage / sumRawPercentages) * 100,
+                    }));
+                    playBookData.rows[0].customerCompanies = adjustedPercentages
+                } else {
+                    playBookData.rows[0].customerCompanies = [];
+                }
+            } else {
+                playBookData.rows[0].customerCompanies = "You Don't Have Permission to View Customer Companies, Please Contact Your Admin."
+            }
+            let s9 = dbScript(db_sql['Q41'], { var1: process.env.USERS_MODULE, var2: userId })
+            let checkUserPermission = await connection.query(s9)
+            if (checkUserPermission.rows[0].permission_to_view_global) {
+                let s10 = dbScript(db_sql['Q429'], { var1: checkUserPermission.rows[0].company_id, var2: false })
+                findUsers = await connection.query(s10);
+                if (findUsers.rows.length > 0) {
+                    playBookData.rows[0].teamAndRoles = findUsers.rows
+                } else {
+                    playBookData.rows[0].teamAndRoles = []
+                }
+            } else if (checkUserPermission.rows[0].permission_to_view_own) {
+                let roleUsers = await getUserAndSubUser(checkUserPermission.rows[0]);
+                let s11 = dbScript(db_sql['Q430'], { var1: roleUsers.join(","), var2: false })
+                userList = await connection.query(s11);
+                if (userList.rowCount > 0) {
+                    playBookData.rows[0].teamAndRoles = findUsers.rows
+                } else {
+                    playBookData.rows[0].teamAndRoles = []
+                }
+            } else {
+                playBookData.rows[0].teamAndRoles = "You Don't Have Permission to View Users, Please Contact Your Admin."
+            }
+            res.json({
+                success: true,
+                status: 200,
+                message: "data",
+                data: playBookData.rows
+            })
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "UnAthorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            success: false,
+            status: 400,
+            message: error.message,
+        })
+    }
+}
 
 

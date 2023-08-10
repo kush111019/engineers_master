@@ -4348,7 +4348,87 @@ ORDER BY
             WHERE
               sc.id = '{var1}'
               AND sc.deleted_at IS NULL
-              AND u.deleted_at IS NULL;`,                
+              AND u.deleted_at IS NULL;`,
+   "Q424":`UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var1}',resources = '{var3}',background = '{var4}',vision_mission = '{var5}', vision_mission_image = '{var6}', product_image = '{var7}', customer_profiling = '{var8}', lead_processes = '{var9}', sales_strategies = '{var10}', scenario_data = '{var11}', sales_best_practices = '{var12}', updated_at = '{var13}' WHERE id = '{var14}' RETURNING *`      ,
+   "Q425":`INSERT INTO sales_playbook (company_id, user_id, resources, background, vision_mission, vision_mission_image, product_image, customer_profiling, lead_processes, sales_strategies, scenario_data, sales_best_practices)
+           VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}') RETURNING *` ,
+   "Q426":`SELECT
+            sp.id,
+            sp.resources,
+            sp.background,
+            sp.vision_mission,
+            sp.vision_mission_image,
+            sp.product_image,
+            sp.customer_profiling,
+            sp.lead_processes,
+            sp.sales_strategies,
+            sp.scenario_data,
+            sp.sales_best_practices
+          FROM
+            sales_playbook sp
+          WHERE
+            sp.company_id = '{var1}' AND sp.deleted_at IS NULL`,
+  "Q427":`SELECT 
+            cus.id, cus.customer_name, u.full_name AS created_by,
+            (SELECT COUNT(*) FROM sales s WHERE s.customer_id = cus.id) AS sales_count
+          FROM 
+            customer_companies AS cus 
+          LEFT JOIN 
+            users AS u ON u.id = cus.user_id  	    
+          WHERE 
+            cus.company_id = '{var1}' AND cus.deleted_at IS NULL
+            AND u.deleted_at IS NULL 
+          ORDER BY
+          sales_count DESC`,
+  "Q428":`SELECT 
+          cus.id, cus.customer_name, u.full_name AS created_by,
+          (SELECT COUNT(*) FROM sales s WHERE s.customer_id = cus.id) AS sales_count
+        FROM 
+          customer_companies AS cus 
+        LEFT JOIN 
+          users AS u ON u.id = cus.user_id  	    
+        WHERE 
+          cus.user_id IN ({var1}) AND cus.deleted_at IS NULL
+          AND u.deleted_at IS NULL 
+        ORDER BY
+        sales_count DESC`,
+  "Q429":`SELECT 
+        u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
+        u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
+        u1.is_main_admin,u1.is_deactivated,u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName,
+        u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at, u1.is_pro_user
+      FROM 
+        users AS u1 
+      LEFT JOIN 
+        users AS u2 ON u2.id = u1.created_by
+      LEFT JOIN 
+        users AS u3 ON u3.id = u1.assigned_to
+      LEFT JOIN 
+        roles as r on r.id = u1.role_id
+      WHERE 
+        u1.company_id = '{var1}' 
+        AND u1.deleted_at IS NULL
+        AND u1.is_deactivated = '{var2}' 
+      ORDER BY 
+        created_at ASC `,
+  "Q430": `SELECT 
+              u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
+              u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
+              u1.is_main_admin, u1.created_by,u1.is_deactivated, u2.full_name AS creator_name, r.role_name AS roleName,
+              u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at
+              FROM 
+                users AS u1 
+              LEFT JOIN 
+                users AS u2 ON u2.id = u1.created_by
+              LEFT JOIN 
+                users AS u3 ON u3.id = u1.assigned_to
+              LEFT JOIN 
+                roles as r on r.id = u1.role_id
+            WHERE 
+              u1.id IN ({var1}) AND u1.deleted_at IS NULL 
+              AND u1.is_deactivated = '{var2}'
+            ORDER BY 
+              created_at ASC`,                                                     
         
 }
 

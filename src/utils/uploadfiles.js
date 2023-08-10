@@ -142,6 +142,37 @@ const uploadLeadsFile = multer({
     }
 })
 
+const storage9 = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/playBookProduct')
+    },
+    filename: function (req, file, cb) {
+        const ext = file.mimetype.split('/')[1];
+        //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        const fileName = `${Date.now()}.${ext}`
+        cb(null, fileName)
+    }
+})
+const uploadPlayBookProduct = multer({
+    storage: storage9
+})
+
+const storage10 = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/playBookVision')
+    },
+    filename: function (req, file, cb) {
+        const ext = file.mimetype.split('/')[1];
+        //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        const fileName = `${Date.now()}.${ext}`
+        cb(null, fileName)
+    }
+})
+const uploadPlayBookVision = multer({
+    storage: storage10
+})
+
+
 
 module.exports = { 
     uploadLogo, 
@@ -151,5 +182,7 @@ module.exports = {
     uploadMailAttechments,
     uploadSalesContract,
     uploadSalesInvoice,
-    uploadLeadsFile
+    uploadLeadsFile,
+    uploadPlayBookProduct,
+    uploadPlayBookVision
  };

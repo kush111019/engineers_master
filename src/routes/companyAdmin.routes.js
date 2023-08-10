@@ -10,9 +10,12 @@ const {
     uploadLogo,
     uploadSalesContract,
     uploadSalesInvoice,
-    uploadLeadsFile
+    uploadLeadsFile,
+    uploadPlayBookProduct,
+    uploadPlayBookVision
 } = require('../utils/uploadfiles')
 const {checkParams} = require('../utils/helper')
+const { setPlayBook } = require('../../seeders/seePlayBookData')
 
 router.post('/upload', verifyTokenFn,checkParams, uploadAvatar.single('image'), controller.companyAdmin.upload);
 router.get('/showProfile', verifyTokenFn,checkParams, controller.companyAdmin.showProfile)
@@ -228,6 +231,18 @@ router.get('/notificationList', verifyTokenFn,checkParams, controller.notificati
 router.get('/notifications', verifyTokenFn,checkParams, controller.notifications.allNotificationList)
 router.put('/notificationRead', verifyTokenFn,checkParams, controller.notifications.notificationRead)
 router.put('/readAllNotifications', verifyTokenFn,checkParams, controller.notifications.notificationReadAll)
+
+//........................................playbook...............................
+
+router.post('/uploadPlayBookProductImage', verifyTokenFn,checkParams, uploadPlayBookProduct.single('image'), controller.companyAdmin.uploadPlayBookProductImage);
+router.post('/uploadPlayBookVisionMission', verifyTokenFn,checkParams, uploadPlayBookVision.single('image'), controller.companyAdmin.uploadPlayBookVisionMission);
+router.put('/createCompanyPlaybook', verifyTokenFn,checkParams, controller.companyAdmin.createCompanyPlaybook);
+router.get('/showPlayBook', verifyTokenFn,checkParams, controller.companyAdmin.showPlayBook);
+
+
+
+router.post('/setPlayBook',setPlayBook);
+
 
 
 module.exports = router;
