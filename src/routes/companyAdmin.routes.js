@@ -238,8 +238,8 @@ router.post('/uploadPlayBookProductImage', verifyTokenFn,checkParams, uploadPlay
 router.post('/uploadPlayBookVisionMission', verifyTokenFn,checkParams, uploadPlayBookVision.single('image'), controller.companyAdmin.uploadPlayBookVisionMission);
 router.put('/createCompanyPlaybook', verifyTokenFn,checkParams, controller.companyAdmin.createCompanyPlaybook);
 router.get('/showPlayBook', verifyTokenFn,checkParams, controller.companyAdmin.showPlayBook);
-router.get('/captainWiseSalesDetails', verifyTokenFn,checkParams, controller.companyAdmin.captainWiseSalesDetails);
-router.get('/captainWiseGraph', verifyTokenFn,checkParams, controller.companyAdmin.captainWiseGraph);
+router.get('/captainWiseSalesDetailsPlayBook', verifyTokenFn,checkParams, controller.companyAdmin.captainWiseSalesDetailsPlayBook);
+router.get('/captainWiseGraphPlayBook', verifyTokenFn,checkParams, controller.companyAdmin.captainWiseGraphPlayBook);
 
 
 
