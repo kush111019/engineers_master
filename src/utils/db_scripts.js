@@ -4393,24 +4393,24 @@ ORDER BY
         ORDER BY
         sales_count DESC`,
   "Q429":`SELECT 
-        u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
-        u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
-        u1.is_main_admin,u1.is_deactivated,u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName,
-        u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at, u1.is_pro_user
-      FROM 
-        users AS u1 
-      LEFT JOIN 
-        users AS u2 ON u2.id = u1.created_by
-      LEFT JOIN 
-        users AS u3 ON u3.id = u1.assigned_to
-      LEFT JOIN 
-        roles as r on r.id = u1.role_id
-      WHERE 
-        u1.company_id = '{var1}' 
-        AND u1.deleted_at IS NULL
-        AND u1.is_deactivated = '{var2}' 
-      ORDER BY 
-        created_at ASC `,
+            u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
+            u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
+            u1.is_main_admin,u1.is_deactivated,u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName,
+            u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at, u1.is_pro_user
+          FROM 
+            users AS u1 
+          LEFT JOIN 
+            users AS u2 ON u2.id = u1.created_by
+          LEFT JOIN 
+            users AS u3 ON u3.id = u1.assigned_to
+          LEFT JOIN 
+            roles as r on r.id = u1.role_id
+          WHERE 
+            u1.company_id = '{var1}' 
+            AND u1.deleted_at IS NULL
+            AND u1.is_deactivated = '{var2}' 
+          ORDER BY 
+            created_at ASC `,
   "Q430": `SELECT 
               u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
               u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
@@ -4428,7 +4428,13 @@ ORDER BY
               u1.id IN ({var1}) AND u1.deleted_at IS NULL 
               AND u1.is_deactivated = '{var2}'
             ORDER BY 
-              created_at ASC`,                                                     
+              created_at ASC`,
+  "Q431": `SELECT cce.id,cce.source as source_id,cce.marketing_qualified_lead, ls.source as source_name
+            FROM customer_company_employees AS cce
+            LEFT JOIN lead_sources AS ls ON cce.source = ls.id
+            WHERE cce.company_id = '{var1}' AND cce.emp_type = 'lead'
+            AND cce.deleted_at IS NULL
+            ORDER BY source_name ASC`                                                                 
         
 }
 
