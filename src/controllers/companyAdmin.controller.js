@@ -1273,7 +1273,7 @@ module.exports.showPlayBook = async (req, res) => {
     }
 }
 
-module.exports.captainWiseSalesDetails = async (req, res) => {
+module.exports.captainWiseSalesDetailsPlayBook = async (req, res) => {
     try {
         let userId = req.user.id
             let s1 = dbScript(db_sql['Q8'], { var1: userId })
@@ -1426,7 +1426,7 @@ module.exports.captainWiseSalesDetails = async (req, res) => {
     }
 }
 
-module.exports.captainWiseGraph = async (req, res) => {
+module.exports.captainWiseGraphPlayBook = async (req, res) => {
     try {
         let userId = req.user.id
         let { page } = req.query
