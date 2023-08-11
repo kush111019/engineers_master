@@ -7,7 +7,7 @@ const {
     welcomeEmail2,
 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { mysql_real_escape_string, verifyTokenFn, calculateQuarters, getUserAndSubUser } = require('../utils/helper');
+const { mysql_real_escape_string, verifyTokenFn, calculateQuarters, getUserAndSubUser, paginatedResults } = require('../utils/helper');
 const { setPlayBook } = require('../../seeders/seePlayBookData');
 
 
@@ -914,6 +914,8 @@ module.exports.updateCompanyProfile = async (req, res) => {
     }
 }
 
+//SALES PLAYBOOK APIS
+
 module.exports.uploadPlayBookProductImage = async (req, res) => {
     try {
         let file = req.file
@@ -1089,22 +1091,166 @@ module.exports.showPlayBook = async (req, res) => {
             if (checkUserPermission.rows[0].permission_to_view_global) {
                 let s10 = dbScript(db_sql['Q429'], { var1: checkUserPermission.rows[0].company_id, var2: false })
                 findUsers = await connection.query(s10);
+
                 if (findUsers.rows.length > 0) {
-                    playBookData.rows[0].teamAndRoles = findUsers.rows
+                    let data = findUsers.rows
+                    function buildHierarchy(users) {
+                        const userMap = new Map();
+
+                        for (const user of users) {
+                            user.children = [];
+                            userMap.set(user.id, user);
+                        }
+
+                        const hierarchy = [];
+
+                        for (const user of users) {
+                            if (user.created_by === user.id) {
+                                hierarchy.push(user);
+                            } else {
+                                const parentUser = userMap.get(user.created_by);
+                                if (parentUser) {
+                                    parentUser.children.push(user);
+                                }
+                            }
+                        }
+
+                        return hierarchy;
+                    }
+
+                    function findMainAdmin(users) {
+                        return users.find(user => (user.is_main_admin === true || user.is_main_admin === true));
+                    }
+
+                    function generateHierarchyArray(user, depth = 0) {
+                        const hierarchyItem = {
+                            full_name: user.full_name,
+                            rolename: user.rolename,
+                            avatar: user.avatar,
+                            depth: depth,
+                        };
+
+                        const children = [];
+                        for (const child of user.children) {
+                            children.push(generateHierarchyArray(child, depth + 1));
+                        }
+
+                        if (children.length > 0) {
+                            hierarchyItem.children = children;
+                        }
+
+                        return hierarchyItem;
+                    }
+
+                    const mainAdmin = findMainAdmin(data);
+                    const hierarchy = buildHierarchy(data);
+                    const hierarchyArray = [];
+                    for (const user of hierarchy) {
+                        hierarchyArray.push(generateHierarchyArray(user));
+                    }
+                    playBookData.rows[0].teamAndRoles = (hierarchyArray)
+
                 } else {
                     playBookData.rows[0].teamAndRoles = []
                 }
             } else if (checkUserPermission.rows[0].permission_to_view_own) {
                 let roleUsers = await getUserAndSubUser(checkUserPermission.rows[0]);
                 let s11 = dbScript(db_sql['Q430'], { var1: roleUsers.join(","), var2: false })
-                userList = await connection.query(s11);
+                findUsers = await connection.query(s11);
                 if (userList.rowCount > 0) {
-                    playBookData.rows[0].teamAndRoles = findUsers.rows
+                    let data = findUsers.rows
+                    function buildHierarchy(users) {
+                        const userMap = new Map();
+
+                        for (const user of users) {
+                            user.children = [];
+                            userMap.set(user.id, user);
+                        }
+
+                        const hierarchy = [];
+
+                        for (const user of users) {
+                            if (user.created_by === user.id) {
+                                hierarchy.push(user);
+                            } else {
+                                const parentUser = userMap.get(user.created_by);
+                                if (parentUser) {
+                                    parentUser.children.push(user);
+                                }
+                            }
+                        }
+
+                        return hierarchy;
+                    }
+
+                    function findMainAdmin(users) {
+                        return users.find(user => (user.is_main_admin === true || user.is_main_admin === true));
+                    }
+
+                    function generateHierarchyArray(user, depth = 0) {
+                        const hierarchyItem = {
+                            full_name: user.full_name,
+                            rolename: user.rolename,
+                            avatar: user.avatar,
+                            depth: depth,
+                        };
+
+                        const children = [];
+                        for (const child of user.children) {
+                            children.push(generateHierarchyArray(child, depth + 1));
+                        }
+
+                        if (children.length > 0) {
+                            hierarchyItem.children = children;
+                        }
+
+                        return hierarchyItem;
+                    }
+
+                    const mainAdmin = findMainAdmin(data);
+                    const hierarchy = buildHierarchy(data);
+                    const hierarchyArray = [];
+                    for (const user of hierarchy) {
+                        hierarchyArray.push(generateHierarchyArray(user));
+                    }
+                    playBookData.rows[0].teamAndRoles = (hierarchyArray)
                 } else {
                     playBookData.rows[0].teamAndRoles = []
                 }
             } else {
                 playBookData.rows[0].teamAndRoles = "You Don't Have Permission to View Users, Please Contact Your Admin."
+            }
+            let s11 = dbScript(db_sql['Q431'], { var1: checkUserPermission.rows[0].company_id })
+            let qualifiedLead = await connection.query(s11)
+            if (qualifiedLead.rowCount > 0) {
+
+                let data = qualifiedLead.rows
+                const leadsBySource = data.reduce((acc, lead) => {
+                    const { source_id, source_name, marketing_qualified_lead } = lead;
+                    if (!acc[source_id]) {
+                        acc[source_id] = {
+                            source_name,
+                            total: 0,
+                            qualified: 0
+                        };
+                    }
+
+                    acc[source_id].total++;
+                    if (marketing_qualified_lead === true) {
+                        acc[source_id].qualified++;
+                    }
+                    return acc;
+                }, {});
+                // Step 3: Calculate the percentage and create an object for response
+                const response = {};
+                for (const source_id in leadsBySource) {
+                    const { source_name, total, qualified } = leadsBySource[source_id];
+                    const percentage = (qualified / total) * 100;
+                    response[source_name] = percentage.toFixed(2);
+                }
+                playBookData.rows[0].qualifiedLeads = response
+            } else {
+                playBookData.rows[0].qualifiedLeads = {}
             }
             res.json({
                 success: true,
@@ -1126,5 +1272,239 @@ module.exports.showPlayBook = async (req, res) => {
         })
     }
 }
+
+module.exports.captainWiseSalesDetails = async (req, res) => {
+    try {
+        let userId = req.user.id
+            let s1 = dbScript(db_sql['Q8'], { var1: userId })
+            let findAdmin = await connection.query(s1)
+            if (findAdmin.rowCount > 0) {
+                let s2 = dbScript(db_sql['Q366'], { var1: userId })
+                let salesIds = await connection.query(s2)
+                if (salesIds.rowCount > 0) {
+                    let salesIdArr = []
+                    salesIds.rows.map((data) => {
+                        if (data.sales_ids.length > 0) {
+                            salesIdArr.push("'" + data.sales_ids.join("','") + "'")
+                        }
+                    })
+                    let captainWiseSaleObj = {}
+                    let s3 = dbScript(db_sql['Q364'], { var1: userId, var2: salesIdArr.join(",") })
+                    let salesDetails = await connection.query(s3)
+
+                    if (salesDetails.rowCount > 0) {
+                        let s4 = dbScript(db_sql['Q365'], { var1: userId, var2: salesIdArr.join(",") })
+                        let notesCount = await connection.query(s4)
+
+                        // create map of sales details by sales ID
+                        let salesMap = {}
+                        for (let sale of salesDetails.rows) {
+                            salesMap[sale.id] = { ...sale, notes_count: 0 }
+                        }
+
+                        // update sales details with notes count
+                        for (const note of notesCount.rows) {
+                            const saleId = note.sales_id
+                            const notesCount = Number(note.notes_count)
+                            if (salesMap[saleId]) {
+                                salesMap[saleId].notes_count = notesCount
+                            }
+                        }
+
+                        // convert sales map back to array
+                        const updatedSalesDetails = Object.values(salesMap)
+
+                        // calculate aggregate note counts
+                        let notesCountArr = updatedSalesDetails.map((detail) => Number(detail.notes_count || 0))
+
+                        let count = notesCountArr.reduce((acc, val) => acc + val, 0)
+                        let avgNotesCount = count / updatedSalesDetails.length
+                        let maxNotesCount = Math.max(...notesCountArr)
+                        let minNotesCount = Math.min(...notesCountArr)
+
+                        let revenue = 0
+                        let recognizedRevenue = []
+
+                        let s5 = dbScript(db_sql['Q367'], { var1: salesIdArr.join(",") })
+                        let recognizedAmount = await connection.query(s5)
+                        if (recognizedAmount.rowCount > 0) {
+                            recognizedAmount.rows.map(amount => {
+                                revenue += Number(amount.recognized_amount)
+                                recognizedRevenue.push(Number(amount.recognized_amount))
+                            })
+                        }
+                        let days = 0
+                        let durationDay = []
+                        salesDetails.rows.map((detail) => {
+                            days += Number(detail.duration_in_days)
+                            durationDay.push(Number(detail.duration_in_days))
+                        })
+                        let avgClosingTime = days / salesDetails.rowCount
+                        let maxClosingTime = Math.max(...durationDay);
+                        let minClosingTime = Math.min(...durationDay);
+
+                        let sciiAvg = avgClosingTime;
+                        let aboveCount = 0;
+                        let belowCount = 0;
+                        let sciiCount = 0;
+                        if (durationDay.length == 1) {
+                            sciiCount = 1
+                        } else {
+                            for (let i = 0; i < durationDay.length; i++) {
+                                if (durationDay[i] > sciiAvg) {
+                                    aboveCount++;
+                                } else if (durationDay[i] < sciiAvg) {
+                                    belowCount++;
+                                }
+                            }
+                            if (aboveCount == 0 && belowCount == 0) {
+                                sciiCount = 0
+                            } else if (aboveCount == 0 || belowCount == 0) {
+                                sciiCount = 1
+                            } else {
+                                sciiCount = Number(belowCount / aboveCount)
+                            }
+                        }
+                        let avgRecognizedRevenue = revenue / salesDetails.rowCount
+                        let maxRecognizedRevenue = Math.max(...recognizedRevenue);
+                        let minRecognizedRevenue = Math.min(...recognizedRevenue);
+
+                        captainWiseSaleObj = {
+                            salesDetails: updatedSalesDetails,
+                            avgRecognizedRevenue: avgRecognizedRevenue,
+                            maxRecognizedRevenue: maxRecognizedRevenue,
+                            minRecognizedRevenue: minRecognizedRevenue,
+                            avgClosingTime: avgClosingTime.toFixed(4),
+                            maxClosingTime: maxClosingTime.toFixed(4),
+                            minClosingTime: minClosingTime.toFixed(4),
+                            avgNotesCount: avgNotesCount,
+                            maxNotesCount: maxNotesCount,
+                            minNotesCount: minNotesCount,
+                            scii: sciiCount
+                        }
+                    } else {
+                        captainWiseSaleObj = {
+                            salesDetails: [],
+                            avgRecognizedRevenue: 0,
+                            maxRecognizedRevenue: 0,
+                            minRecognizedRevenue: 0,
+                            avgClosingTime: 0,
+                            maxClosingTime: 0,
+                            minClosingTime: 0,
+                            avgNotesCount: 0,
+                            maxNotesCount: 0,
+                            minNotesCount: 0,
+                            sciiCount: 0
+                        }
+                    }
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "Captain wise sales details",
+                        data: captainWiseSaleObj
+                    })
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Sales not found",
+                    })
+                }
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+        
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
+module.exports.captainWiseGraph = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { page } = req.query
+            let s1 = dbScript(db_sql['Q8'], { var1: userId })
+            let findAdmin = await connection.query(s1)
+            if (findAdmin.rowCount > 0) {
+                let s2 = dbScript(db_sql['Q366'], { var1: userId })
+                let salesIds = await connection.query(s2)
+                if (salesIds.rowCount > 0) {
+                    let salesIdArr = []
+                    salesIds.rows.map((data) => {
+                        if (data.sales_ids.length > 0) {
+                            salesIdArr.push("'" + data.sales_ids.join("','") + "'")
+                        }
+                    })
+                    let s3 = dbScript(db_sql['Q364'], { var1: userId, var2: salesIdArr.join(",") })
+                    let salesDetails = await connection.query(s3)
+
+                    if (salesDetails.rowCount > 0) {
+                        let s4 = dbScript(db_sql['Q365'], { var1: userId, var2: salesIdArr.join(",") })
+                        let notesCount = await connection.query(s4)
+
+                        // create map of sales details by sales ID
+                        let salesMap = {}
+                        for (let sale of salesDetails.rows) {
+                            salesMap[sale.id] = { ...sale, notes_count: 0 }
+                        }
+
+                        // update sales details with notes count
+                        for (const note of notesCount.rows) {
+                            const saleId = note.sales_id
+                            const notesCount = Number(note.notes_count)
+                            if (salesMap[saleId]) {
+                                salesMap[saleId].notes_count = notesCount
+                            }
+                        }
+
+                        // convert sales map back to array
+                        const updatedSalesDetails = Object.values(salesMap)
+
+                        if (updatedSalesDetails.length > 0) {
+                            let result = await paginatedResults(updatedSalesDetails, page)
+                            res.json({
+                                status: 200,
+                                success: true,
+                                message: "Sales Details",
+                                data: result
+                            })
+                        }
+                    } else {
+                        res.json({
+                            status: 200,
+                            success: false,
+                            message: "Empty sales details",
+                            data: [],
+                        })
+                    }
+                } else {
+                    res.json({
+                        status: 200,
+                        success: false,
+                        message: "Sales not found",
+                    })
+                }
+            } else {
+                res.status(403).json({
+                    success: false,
+                    message: "Unathorised"
+                })
+            }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}
+
 
 
