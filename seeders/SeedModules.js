@@ -90,3 +90,4 @@ for(let data of modules){
 
 console.log("seed complete");
 connection.end()
+process.exit();
