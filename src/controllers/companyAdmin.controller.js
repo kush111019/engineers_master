@@ -8,7 +8,7 @@ const {
 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const { mysql_real_escape_string, verifyTokenFn, calculateQuarters, getUserAndSubUser, paginatedResults } = require('../utils/helper');
-const { setPlayBook } = require('../../seeders/seePlayBookData');
+const { setPlayBook } = require('../../seeders/seedPlayBookData');
 
 
 let createAdmin = async (bodyData, cId, res) => {
