@@ -1,11 +1,12 @@
 const { Pool } = require('pg')
 const uuid = require("node-uuid");
+require('dotenv').config();
 
 var connection = new Pool({
-    host: "localhost",
-    user:"postgres",
-    password:"postgres",
-    database: "hirise_sales1",
+    host: process.env.HOST,
+    user:process.env.DATABASE_USER,
+    password:process.env.PASSWORD,
+    database: process.env.DATABASE,
     charset: 'utf8mb4'
 });
 
@@ -79,7 +80,7 @@ let modules = [
 for(let data of modules){
     let id = uuid.v4()
     connection.query(`insert into modules (id,module_name,module_type,module_ctr ) 
-                      values('${id}','${data.moduleName}','${data.moduleType}','${module_ctr}')`, 
+                      values('${id}','${data.moduleName}','${data.moduleType}','${data.module_ctr}')`, 
     err => {
         if(err){
             throw err
@@ -89,3 +90,4 @@ for(let data of modules){
 
 console.log("seed complete");
 connection.end()
+process.exit();

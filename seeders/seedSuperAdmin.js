@@ -1,24 +1,27 @@
 const { Pool } = require('pg')
 const uuid = require("node-uuid");
 const { sha3_512 } = require('js-sha3')
+require('dotenv').config();
 
-var connection = new Pool({
-    host: "localhost",
-    user:"postgres",
-    password:"postgres",
-    database: "hirise_sales1",
+var Sconnection = new Pool({
+    host: process.env.HOST,
+    user: process.env.DATABASE_USER,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE,
     charset: 'utf8mb4'
 });
-
-connection.connect()
+Sconnection.connect()
 let id = uuid.v4()
-let encryptedPassword = sha3_512('Admin@123#')
+let email = process.env.SUPER_ADMIN_EMAIL
+let encryptedPassword = sha3_512(process.env.SUPER_ADMIN_PASS)
+
 console.log("running seed");
 
-connection.query(`insert into super_admin (id,name,email,encrypted_password) values('${id}','superadmin', 'superadmin@hirise.com', '${encryptedPassword}')`, err => {
+Sconnection.query(`insert into super_admin (id,name,email,encrypted_password) values('${id}','superadmin', '${email}', '${encryptedPassword}')`, err => {
     if(err){
         throw err
     }
     console.log("seed complete");
-    connection.end()
+    Sconnection.end();
+    process.exit();
 })
