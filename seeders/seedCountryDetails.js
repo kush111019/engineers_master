@@ -1,11 +1,12 @@
 const { Pool } = require('pg')
 const uuid = require("node-uuid");
+require('dotenv').config()
 
 var connection = new Pool({
-    host: "localhost",
-    user:"postgres",
-    password:"postgres",
-    database: "hirise_sales1",
+    host: process.env.HOST,
+    user:process.env.USER,
+    password:process.env.PASSWORD,
+    database: process.env.DATABASE,
     charset: 'utf8mb4'
 });
 
