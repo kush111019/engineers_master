@@ -1,5 +1,5 @@
 const { Pool } = require('pg')
-
+console.log(process.env.HOST,process.env.USER,process.env.PASSWORD,process.env.DATABASE)
 var connection = new Pool({
     host: process.env.HOST,
     user:process.env.USER,
