@@ -22,5 +22,6 @@ Sconnection.query(`insert into super_admin (id,name,email,encrypted_password) va
         throw err
     }
     console.log("seed complete");
-    Sconnection.end()
+    Sconnection.end();
+    process.exit();
 })

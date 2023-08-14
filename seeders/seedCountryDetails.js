@@ -43,4 +43,5 @@ for(let data of countryDetails){
 }
 
 console.log("seed complete");
-connection.end()
+connection.end();
+process.exit();
