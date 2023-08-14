@@ -2,7 +2,7 @@ const { Pool } = require('pg')
 
 var connection = new Pool({
     host: process.env.HOST,
-    user: "postgres",
+    user: process.env.DATABASE_USER,
     password: process.env.PASSWORD,
     database: process.env.DATABASE,
     charset: 'utf8mb4'
