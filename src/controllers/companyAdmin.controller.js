@@ -963,6 +963,7 @@ module.exports.createCompanyPlaybook = async (req, res) => {
         let userId = req.user.id
         let { resources, background, visionMission, visionMissionImage, productImage, customerProfiling, leadProcesses, salesStrategies, scenarioData, salesBestPractices, id } = req.body
         await connection.query("BEGIN")
+        console.log(req.body)
 
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
