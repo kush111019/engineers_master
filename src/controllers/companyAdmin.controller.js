@@ -969,7 +969,7 @@ module.exports.createCompanyPlaybook = async (req, res) => {
         if (findAdmin.rowCount > 0 && findAdmin.rows[0].is_main_admin) {
             let _dt = new Date().toISOString()
             let s2 = dbScript(db_sql['Q424'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(resources), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(visionMission), var6: visionMissionImage, var7: productImage, var8: JSON.stringify(customerProfiling), var9: JSON.stringify(leadProcesses), var10: mysql_real_escape_string(salesStrategies), var11: JSON.stringify(scenarioData), var12: JSON.stringify(salesBestPractices), var13: _dt, var14: id })
-
+console.log(s2, "s22222222")
             let updateMetaData = await connection.query(s2)
             if (updateMetaData.rowCount > 0) {
                 await connection.query("COMMIT")
@@ -997,7 +997,7 @@ module.exports.createCompanyPlaybook = async (req, res) => {
         res.json({
             success: false,
             status: 400,
-            message: error.message,
+            message: error.stack,
         })
     }
 }
