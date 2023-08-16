@@ -4369,29 +4369,28 @@ ORDER BY
           WHERE
             sp.company_id = '{var1}' AND sp.deleted_at IS NULL`,
   "Q427":`SELECT 
-            cus.id, cus.customer_name, u.full_name AS created_by,
-            (SELECT COUNT(*) FROM sales s WHERE s.customer_id = cus.id) AS sales_count
+            cus.id, cus.customer_name,
+            COALESCE((SELECT COUNT(*) FROM sales s WHERE s.customer_id = cus.id), 0) AS sales_count,
+            COALESCE((SELECT SUM(s.target_amount::numeric) FROM sales s WHERE s.customer_id = cus.id), 0) AS total_target_amount
           FROM 
-            customer_companies AS cus 
-          LEFT JOIN 
-            users AS u ON u.id = cus.user_id  	    
+            customer_companies AS cus 	    
           WHERE 
             cus.company_id = '{var1}' AND cus.deleted_at IS NULL
-            AND u.deleted_at IS NULL 
+
           ORDER BY
-          sales_count DESC`,
+            total_target_amount DESC
+            LIMIT 10`,
   "Q428":`SELECT 
-          cus.id, cus.customer_name, u.full_name AS created_by,
-          (SELECT COUNT(*) FROM sales s WHERE s.customer_id = cus.id) AS sales_count
-        FROM 
-          customer_companies AS cus 
-        LEFT JOIN 
-          users AS u ON u.id = cus.user_id  	    
-        WHERE 
-          cus.user_id IN ({var1}) AND cus.deleted_at IS NULL
-          AND u.deleted_at IS NULL 
-        ORDER BY
-        sales_count DESC`,
+            cus.id, cus.customer_name,
+          COALESCE((SELECT COUNT(*) FROM sales s WHERE s.customer_id = cus.id), 0) AS sales_count,
+          COALESCE((SELECT SUM(s.target_amount::numeric) FROM sales s WHERE s.customer_id = cus.id), 0) AS total_target_amount
+          FROM 
+            customer_companies AS cus 	    
+          WHERE 
+            cus.user_id IN ({var1}) AND cus.deleted_at IS NULL
+          ORDER BY
+          total_target_amount DESC
+          LIMIT 10`,
   "Q429":`SELECT 
             u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
             u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
