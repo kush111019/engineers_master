@@ -1251,7 +1251,7 @@ module.exports.showPlayBook = async (req, res) => {
                 }
                 playBookData.rows[0].qualifiedLeads = response
             } else {
-                playBookData.rows[0].qualifiedLeads = {}
+                playBookData.rows[0].qualifiedLeads = []
             }
             res.json({
                 success: true,
