@@ -961,7 +961,7 @@ module.exports.uploadPlayBookVisionMission = async (req, res) => {
 module.exports.createCompanyPlaybook = async (req, res) => {
     try {
         let userId = req.user.id
-        let { resources, background, visionMission, visionMissionImage, productImage, customerProfiling, leadProcesses, salesStrategies, scenarioData, salesBestPractices, id } = req.body
+        let { resources, background, vision_mission, vision_mission_image, product_image, customer_profiling, lead_processes, sales_strategies, scenario_data, sales_best_practices, id } = req.body
         await connection.query("BEGIN")
         console.log(req.body)
 
@@ -969,7 +969,7 @@ module.exports.createCompanyPlaybook = async (req, res) => {
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0 && findAdmin.rows[0].is_main_admin) {
             let _dt = new Date().toISOString()
-            let s2 = dbScript(db_sql['Q424'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(resources), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(visionMission), var6: visionMissionImage, var7: productImage, var8: JSON.stringify(customerProfiling), var9: JSON.stringify(leadProcesses), var10: mysql_real_escape_string(salesStrategies), var11: JSON.stringify(scenarioData), var12: JSON.stringify(salesBestPractices), var13: _dt, var14: id })
+            let s2 = dbScript(db_sql['Q424'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(resources), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(vision_mission), var6: vision_mission_image, var7: product_image, var8: JSON.stringify(customer_profiling), var9: JSON.stringify(lead_processes), var10: mysql_real_escape_string(sales_strategies), var11: JSON.stringify(scenario_data), var12: JSON.stringify(sales_best_practices), var13: _dt, var14: id })
 console.log(s2, "s22222222")
             let updateMetaData = await connection.query(s2)
             if (updateMetaData.rowCount > 0) {
