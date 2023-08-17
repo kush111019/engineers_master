@@ -1013,8 +1013,9 @@ module.exports.showPlayBook = async (req, res) => {
 
             playBookData.rows[0].resources = JSON.parse(playBookData.rows[0].resources);
             playBookData.rows[0].customer_profiling = JSON.parse(playBookData.rows[0].customer_profiling);
-            playBookData.rows[0].sales_best_practices = JSON.parse(playBookData.rows[0].sales_best_practices);
-            playBookData.rows[0].lead_processes = JSON.parse(playBookData.rows[0].lead_processes);
+            playBookData.rows[0].scenario_data = JSON.parse(playBookData.rows[0].scenario_data);
+            // playBookData.rows[0].sales_best_practices = JSON.parse(playBookData.rows[0].sales_best_practices);
+            // playBookData.rows[0].lead_processes = JSON.parse(playBookData.rows[0].lead_processes);
             let s3 = dbScript(db_sql['Q41'], { var1: process.env.PRODUCTS_MODULE, var2: userId })
             let checkPermission = await connection.query(s3)
             if (checkPermission.rows[0].permission_to_view_global) {
