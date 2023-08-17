@@ -969,7 +969,7 @@ module.exports.createCompanyPlaybook = async (req, res) => {
         if (findAdmin.rowCount > 0 && findAdmin.rows[0].is_main_admin) {
             let _dt = new Date().toISOString()
             let s2 = dbScript(db_sql['Q424'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(resources), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(vision_mission), var6: vision_mission_image, var7: product_image, var8: JSON.stringify(customer_profiling), var9: JSON.stringify(lead_processes), var10: mysql_real_escape_string(sales_strategies), var11: JSON.stringify(scenario_data), var12: JSON.stringify(sales_best_practices), var13: _dt, var14: id })
-console.log(s2, "s22222222")
+
             let updateMetaData = await connection.query(s2)
             if (updateMetaData.rowCount > 0) {
                 await connection.query("COMMIT")
@@ -1067,12 +1067,12 @@ module.exports.showPlayBook = async (req, res) => {
                 let s8 = dbScript(db_sql['Q428'], { var1: roleUsers.join(",") })
                 let customerList = await connection.query(s8)
                 if (customerList.rowCount > 0) {
-                    const totalSalesCount = customerList.rows.reduce((total, company) => total + company.sales_count, 0);
+                    const totalTargetAmount = customerList.rows.reduce((total, company) => total + company.total_target_amount, 0);
 
-                    // Step 3: Calculate percentage for each company
+                    // Step 3: Calculate percentage for each company based on total_target_amount
                     const rawPercentages = customerList.rows.map((company) => ({
                         name: company.customer_name,
-                        rawPercentage: (company.sales_count / totalSalesCount) * 100,
+                        rawPercentage: (company.total_target_amount / totalTargetAmount) * 100,
                     }));
 
                     // Step 4: Adjust percentages to ensure the sum is 100
@@ -1081,6 +1081,7 @@ module.exports.showPlayBook = async (req, res) => {
                         name: company.name,
                         percentage: (company.rawPercentage / sumRawPercentages) * 100,
                     }));
+
                     playBookData.rows[0].customerCompanies = adjustedPercentages
                 } else {
                     playBookData.rows[0].customerCompanies = [];
