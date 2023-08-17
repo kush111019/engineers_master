@@ -875,7 +875,7 @@ module.exports.calculateQuarters = async (startDate) => {
 //     return dates;
 // };
 
-module.exports.getQuarterMonthsDates = async(start_date, end_date) => {
+module.exports.getQuarterMonthsDates = async (start_date, end_date) => {
     const startDate = new Date(start_date);
     const endDate = new Date(end_date);
 
@@ -885,101 +885,114 @@ module.exports.getQuarterMonthsDates = async(start_date, end_date) => {
     const dates = [];
 
     for (let month = startMonth; month <= endMonth; month++) {
-      const tempDate = new Date(startDate);
-      tempDate.setMonth(month);
-      const startOfMonth = new Date(tempDate.getFullYear(), tempDate.getMonth(), 1);
-      const endOfMonth = new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0);
+        const tempDate = new Date(startDate);
+        tempDate.setMonth(month);
+        const startOfMonth = new Date(tempDate.getFullYear(), tempDate.getMonth(), 1);
+        const endOfMonth = new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0);
 
-      const formattedStartDate = new Date(startOfMonth.getTime() + 86400000).toISOString().split('T')[0];
-      const formattedEndDate = new Date(endOfMonth.getTime() + 86400000).toISOString().split('T')[0];
+        const formattedStartDate = new Date(startOfMonth.getTime() + 86400000).toISOString().split('T')[0];
+        const formattedEndDate = new Date(endOfMonth.getTime() + 86400000).toISOString().split('T')[0];
 
-      dates.push({
-        start_date: formattedStartDate,
-        end_date: formattedEndDate
-      });
+        dates.push({
+            start_date: formattedStartDate,
+            end_date: formattedEndDate
+        });
     }
     return dates;
 };
 
 
-module.exports.calculateEOLProducts = async(resultSet) => {
+module.exports.calculateEOLProducts = async (resultSet) => {
     // Object to store combined data by sales_id
-   const combinedData = {};
-   
-   // Process the result set
-   for (const result of resultSet) {
-     const { sales_id, customer_name, product_names, end_of_life, target_amount } = result;
-   
-     // If sales_id already exists in combinedData, append product_names and end_of_life
-     if (combinedData[sales_id]) {
-       combinedData[sales_id].product_names.push(...product_names);
-       combinedData[sales_id].end_of_life.push(end_of_life);
-     } else {
-       // Create a new entry in combinedData for the sales_id
-       combinedData[sales_id] = {
-         sales_id,
-         customer_name,
-         target_amount,
-         product_names: [...product_names],
-         end_of_life: [end_of_life]
-       };
-     }
-   }
-   
-   // Convert combinedData object to an array
-   const combinedResult = Object.values(combinedData);
-   
-   const highRiskEolSale = [];
-   const lowRiskEolSale = [];
-   
-   // Get the current date
-   const currentDate = new Date();
-   
-   // Iterate over each sale
-   combinedResult.forEach((sale) => {
-     const { sales_id, customer_name, product_names, end_of_life,target_amount } = sale;
-   
-     // Check if product_names and end_of_life exist
-     if (product_names && end_of_life) {
-       // Flag to track if any product is within 15 days of end_of_life
-       let isHighRisk = false;
-   
-       // Iterate over each product
-       for (let i = 0; i < product_names.length; i++) {
-         const eolDateParts = end_of_life[i].split(/[/-]/);
-         const eolDate = new Date(
-           Number(eolDateParts[2]),
-           Number(eolDateParts[0]) - 1,
-           Number(eolDateParts[1])
-         );
-   
-         // Calculate the difference in days
-         const timeDiff = eolDate.getTime() - currentDate.getTime();
-         const diffInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-   
-         // Check if the product is within 15 days of end_of_life
-         if (diffInDays <= 15) {
-           isHighRisk = true;
-           break;
-         }
-       }
-   
-       // Categorize the sale based on the end_of_life of products
-       if (isHighRisk) {
-         highRiskEolSale.push({ sales_id, customer_name, target_amount });
-       } else {
-         lowRiskEolSale.push({ sales_id, customer_name, target_amount });
-       }
-     } else {
-       // Handle the case where product_names or end_of_life is missing
-       lowRiskEolSale.push({ sales_id, customer_name, target_amount });
-     }
-   });
-   
-   
-     return { highRiskEolSale, lowRiskEolSale };
+    const combinedData = {};
+
+    // Process the result set
+    for (const result of resultSet) {
+        const { sales_id, customer_name, product_names, end_of_life, target_amount } = result;
+
+        // If sales_id already exists in combinedData, append product_names and end_of_life
+        if (combinedData[sales_id]) {
+            combinedData[sales_id].product_names.push(...product_names);
+            combinedData[sales_id].end_of_life.push(end_of_life);
+        } else {
+            // Create a new entry in combinedData for the sales_id
+            combinedData[sales_id] = {
+                sales_id,
+                customer_name,
+                target_amount,
+                product_names: [...product_names],
+                end_of_life: [end_of_life]
+            };
+        }
+    }
+
+    // Convert combinedData object to an array
+    const combinedResult = Object.values(combinedData);
+
+    const highRiskEolSale = [];
+    const lowRiskEolSale = [];
+
+    // Get the current date
+    const currentDate = new Date();
+
+    // Iterate over each sale
+    combinedResult.forEach((sale) => {
+        const { sales_id, customer_name, product_names, end_of_life, target_amount } = sale;
+
+        // Check if product_names and end_of_life exist
+        if (product_names && end_of_life) {
+            // Flag to track if any product is within 15 days of end_of_life
+            let isHighRisk = false;
+
+            // Iterate over each product
+            for (let i = 0; i < product_names.length; i++) {
+                const eolDateParts = end_of_life[i].split(/[/-]/);
+                const eolDate = new Date(
+                    Number(eolDateParts[2]),
+                    Number(eolDateParts[0]) - 1,
+                    Number(eolDateParts[1])
+                );
+
+                // Calculate the difference in days
+                const timeDiff = eolDate.getTime() - currentDate.getTime();
+                const diffInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+                // Check if the product is within 15 days of end_of_life
+                if (diffInDays <= 15) {
+                    isHighRisk = true;
+                    break;
+                }
+            }
+
+            // Categorize the sale based on the end_of_life of products
+            if (isHighRisk) {
+                highRiskEolSale.push({ sales_id, customer_name, target_amount });
+            } else {
+                lowRiskEolSale.push({ sales_id, customer_name, target_amount });
+            }
+        } else {
+            // Handle the case where product_names or end_of_life is missing
+            lowRiskEolSale.push({ sales_id, customer_name, target_amount });
+        }
+    });
+
+
+    return { highRiskEolSale, lowRiskEolSale };
 }
-  
+
+module.exports.escapedArray = (array) => {
+  let newArr = array.map(obj => {
+        const escapedObj = {};
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                escapedObj[key] = this.mysql_real_escape_string(obj[key]);
+            }
+        }
+        return escapedObj;
+    })
+    return newArr
+}
+
 
 
 
