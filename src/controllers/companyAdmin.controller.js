@@ -967,9 +967,15 @@ module.exports.createCompanyPlaybook = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0 && findAdmin.rows[0].is_main_admin) {
-
-            let escapedArrayCustomerPorfiling = escapedArray(customer_profiling)
+            // let escapedArrayCustomerPorfiling = escapedArray(customer_profiling)
             let escapedArrayScenarioData = escapedArray(scenario_data)
+
+            const escapedDataCustomerProfiling = {
+                columns: customer_profiling.columns,
+                rows: customer_profiling.rows.map(row => row.map(value => mysql_real_escape_string(value)))
+            };
+            
+            console.log(escapedDataCustomerProfiling);
 
             const escapedResourcesObject = {};
             for (const key in resources) {
@@ -978,7 +984,7 @@ module.exports.createCompanyPlaybook = async (req, res) => {
                 }
             }
             let _dt = new Date().toISOString()
-            let s2 = dbScript(db_sql['Q424'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(escapedResourcesObject), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(vision_mission), var6: vision_mission_image, var7: product_image, var8: JSON.stringify(escapedArrayCustomerPorfiling), var9: mysql_real_escape_string(lead_processes), var10: mysql_real_escape_string(sales_strategies), var11: JSON.stringify(escapedArrayScenarioData), var12: mysql_real_escape_string(sales_best_practices), var13: _dt, var14: id })
+            let s2 = dbScript(db_sql['Q424'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(escapedResourcesObject), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(vision_mission), var6: vision_mission_image, var7: product_image, var8: JSON.stringify(escapedDataCustomerProfiling), var9: mysql_real_escape_string(lead_processes), var10: mysql_real_escape_string(sales_strategies), var11: JSON.stringify(escapedArrayScenarioData), var12: mysql_real_escape_string(sales_best_practices), var13: _dt, var14: id })
 
             let updateMetaData = await connection.query(s2)
             if (updateMetaData.rowCount > 0) {
@@ -1235,7 +1241,7 @@ module.exports.showPlayBook = async (req, res) => {
             let s11 = dbScript(db_sql['Q431'], { var1: checkUserPermission.rows[0].company_id })
             let qualifiedLead = await connection.query(s11)
             if (qualifiedLead.rowCount > 0) {
-
+console.log()
                 let data = qualifiedLead.rows
                 const leadsBySource = data.reduce((acc, lead) => {
                     const { source_id, source_name, marketing_qualified_lead } = lead;
