@@ -13,7 +13,14 @@ module.exports.setPlayBook = async (companyId, userId, res) => {
     let visionMission = "<p>Operation Stellar Recon is a simulated space mission designed to test and evaluate advanced orbital surveillance and analysis' technologies. The primary objective of this mission is to simulate the deployment of a constellation of satellite assets for monitoring and studying celestial bodies, space debris, and other potential objects of interest within Earth's orbit.</p>";
     let visionMissionImage = process.env.PLAYBOOK_DEFAULT_VISIONMISSION_IMAGE_PATH;
     let productImage = process.env.PLAYBOOK_DEFAULT_PRODUCT_IMAGE_PATH;
-    let customerProfiling = "<!DOCTYPE html>\n<html>\n<head>\n  <title>Persona Table</title>\n</head>\n<body>\n\n<h1>PERSONA</h1>\n\n<table border=\"1\">\n  <thead>\n    <tr>\n      <th rowspan=\"2\">Persona</th>\n      <th colspan=\"3\">Company Size</th>\n    </tr>\n    <tr>\n      <th>Startups</th>\n      <th>Midsize</th>\n      <th>Enterprise</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td rowspan=\"3\">INDUSTRY</td>\n      <td>Industry A</td>\n      <td>Industry B</td>\n      <td>Industry C</td>\n    </tr>\n    <tr>\n      <td>Industry D</td>\n      <td>Industry E</td>\n      <td>Industry F</td>\n    </tr>\n    <tr>\n      <td>Industry G</td>\n      <td>Industry H</td>\n      <td>Industry I</td>\n    </tr>\n    <tr>\n      <td rowspan=\"3\">PAIN POINTS</td>\n      <td>Pain Point A</td>\n      <td>Pain Point B</td>\n      <td>Pain Point C</td>\n    </tr>\n    <tr>\n      <td>Pain Point D</td>\n      <td>Pain Point E</td>\n      <td>Pain Point F</td>\n    </tr>\n    <tr>\n      <td>Pain Point G</td>\n      <td>Pain Point H</td>\n      <td>Pain Point I</td>\n    </tr>\n    <tr>\n      <td rowspan=\"3\">POINT OF CONTACT</td>\n      <td>Contact A</td>\n      <td>Contact B</td>\n      <td>Contact C</td>\n    </tr>\n    <tr>\n      <td>Contact D</td>\n      <td>Contact E</td>\n      <td>Contact F</td>\n    </tr>\n    <tr>\n      <td>Contact G</td>\n      <td>Contact H</td>\n      <td>Contact I</td>\n    </tr>\n  </tbody>\n</table>\n\n</body>\n</html>"
+    let customerProfiling = [
+        {
+            "persona": "Test",
+            "startups": "<p>Tests</p>",
+            "midsize": "<p>Test</p>",
+            "enterprise": "<p>Tests for you</p>"
+        }
+    ]
     let leadProcesses =  "<p>inbound selling<p/>\n<p>inbound selling</p>";
     let salesStrategies = "<p>Understand Your Customer: Take the time to thoroughly understand your target audience's needs, preferences, pain points, and buying behaviors. Tailor your approach and messaging to address their specific concerns.Build Relationships: Focus on building strong, genuine relationships with your customers. Develop trust and rapport by being responsive, reliable, and providing excellent customer service.Value Proposition: Clearly communicate the unique value and benefits your product or service offers. Show how it can solve your customer's problems or enhance their lives.</p>";
     let scenarioData = [
