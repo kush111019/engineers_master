@@ -7,7 +7,7 @@ const {
     welcomeEmail2,
 } = require("../utils/sendMail")
 const { db_sql, dbScript } = require('../utils/db_scripts');
-const { mysql_real_escape_string, verifyTokenFn, calculateQuarters, getUserAndSubUser, paginatedResults } = require('../utils/helper');
+const { mysql_real_escape_string, verifyTokenFn, calculateQuarters, getUserAndSubUser, paginatedResults, escapedArray } = require('../utils/helper');
 const { setPlayBook } = require('../../seeders/seedPlayBookData');
 
 
@@ -967,8 +967,18 @@ module.exports.createCompanyPlaybook = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0 && findAdmin.rows[0].is_main_admin) {
+
+            let escapedArrayCustomerPorfiling = escapedArray(customer_profiling)
+            let escapedArrayScenarioData = escapedArray(scenario_data)
+
+            const escapedResourcesObject = {};
+            for (const key in resources) {
+                if (resources.hasOwnProperty(key)) {
+                    escapedResourcesObject[key] = mysql_real_escape_string(resources[key]);
+                }
+            }
             let _dt = new Date().toISOString()
-            let s2 = dbScript(db_sql['Q424'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(resources), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(vision_mission), var6: vision_mission_image, var7: product_image, var8: JSON.stringify(customer_profiling), var9: mysql_real_escape_string(lead_processes), var10: mysql_real_escape_string(sales_strategies), var11: JSON.stringify(scenario_data), var12: mysql_real_escape_string(sales_best_practices), var13: _dt, var14: id })
+            let s2 = dbScript(db_sql['Q424'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(escapedResourcesObject), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(vision_mission), var6: vision_mission_image, var7: product_image, var8: JSON.stringify(escapedArrayCustomerPorfiling), var9: mysql_real_escape_string(lead_processes), var10: mysql_real_escape_string(sales_strategies), var11: JSON.stringify(escapedArrayScenarioData), var12: mysql_real_escape_string(sales_best_practices), var13: _dt, var14: id })
 
             let updateMetaData = await connection.query(s2)
             if (updateMetaData.rowCount > 0) {
@@ -1010,9 +1020,8 @@ module.exports.showPlayBook = async (req, res) => {
         if (findAdmin.rowCount > 0) {
             let s2 = dbScript(db_sql['Q426'], { var1: findAdmin.rows[0].company_id })
             let playBookData = await connection.query(s2)
-console.log(playBookData.rows)
             playBookData.rows[0].resources = JSON.parse(playBookData.rows[0].resources);
-            playBookData.rows[0].customer_profiling = JSON.parse(playBookData.rows[0].customer_profiling);
+            // playBookData.rows[0].customer_profiling = JSON.parse(playBookData.rows[0].customer_profiling);
             // playBookData.rows[0].sales_best_practices = JSON.parse(playBookData.rows[0].sales_best_practices);
             // playBookData.rows[0].lead_processes = JSON.parse(playBookData.rows[0].lead_processes);
             let s3 = dbScript(db_sql['Q41'], { var1: process.env.PRODUCTS_MODULE, var2: userId })
