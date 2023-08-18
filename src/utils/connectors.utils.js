@@ -22,7 +22,7 @@ module.exports.sourceFn = async (source, company_id) => {
     let s5 = dbScript(db_sql['Q191'], { var1: (source !== '') ? source : 'hubspot', var2: company_id })
     let findSource = await connection.query(s5)
     if (findSource.rowCount == 0) {
-        let s6 = dbScript(db_sql['Q186'], { var1: 'hubspot', var2: company_id })
+        let s6 = dbScript(db_sql['Q186'], { var1: source, var2: company_id })
         let insertSource = await connection.query(s6)
         return sourceId = insertSource.rows[0].id
     } else {
