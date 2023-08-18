@@ -4486,7 +4486,13 @@ ORDER BY
             q2_target_amount DESC,
             q3_target_amount DESC,
             q4_target_amount DESC
-          LIMIT 5`                                                                                     
+          LIMIT 5`,
+  "Q434":`SELECT cce.id,cce.source as source_id,cce.marketing_qualified_lead, ls.source as source_name
+          FROM customer_company_employees AS cce
+          LEFT JOIN lead_sources AS ls ON cce.source = ls.id
+          WHERE cce.creator_id IN ({var1}) AND cce.emp_type = 'lead'
+          AND cce.deleted_at IS NULL
+          ORDER BY source_name ASC`                                                                                             
         
 }
 
