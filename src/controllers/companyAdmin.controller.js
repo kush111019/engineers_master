@@ -1250,7 +1250,7 @@ module.exports.showPlayBook = async (req, res) => {
             } else {
                 playBookData.rows[0].teamAndRoles = "You Don't Have Permission to View Users, Please Contact Your Admin."
             }
-            let s11 = dbScript(db_sql['Q41'], { var1: process.env.USERS_MODULE, var2: userId })
+            let s11 = dbScript(db_sql['Q41'], { var1: process.env.LEADS_MODULE, var2: userId })
             let checkLeadPermission = await connection.query(s11)
             if (checkLeadPermission.rows[0].permission_to_view_global) {
                 let s12 = dbScript(db_sql['Q431'], { var1: checkLeadPermission.rows[0].company_id })
@@ -1318,7 +1318,7 @@ module.exports.showPlayBook = async (req, res) => {
                     playBookData.rows[0].qualifiedLeads = []
                 }
             } else {
-                playBookData.rows[0].qualifiedLeads = []
+                playBookData.rows[0].qualifiedLeads = "You Don't Have Permission to View Leads, Please Contact Your Admin."
             }
 
             res.json({
