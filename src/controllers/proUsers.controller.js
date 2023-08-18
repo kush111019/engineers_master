@@ -1013,9 +1013,9 @@ module.exports.leadReSync = async (req, res) => {
                                         if (findSyncLead.rowCount == 0) {
                                             for (let data of response.data.records) {
                                                 let titleId = await titleFn(data.Title, accessData.company_id)
-
+console.log(data.LeadSource, "data.LeadSource in prouser controller in finitial insertion")
                                                 let sourceId = await sourceFn(data.LeadSource, accessData.company_id)
-
+console.log(sourceId, "11111111111111")
                                                 let industryId = await industryFn(data.Industry, accessData.company_id)
 
                                                 let customerId = await customerFnForsalesforce(data, accessData, industryId)
@@ -1029,7 +1029,7 @@ module.exports.leadReSync = async (req, res) => {
                                                     if (new Date(accessData.salesforce_last_sync) < new Date(data.LastModifiedDate)) {
                                                         //checing if the last modification date is greater then last resync date if true then updating data
                                                         let titleId = await titleFn(data.Title, accessData.company_id)
-
+                                                        console.log(data.LeadSource, "data.LeadSource in prouser controller in finitial insertion")
                                                         let sourceId = await sourceFn(data.LeadSource, accessData.company_id)
 
                                                         let industryId = await industryFn(data.Industry, accessData.company_id)

@@ -17,6 +17,7 @@ module.exports.titleFn = async (jobtitle, company_id) => {
 }
 
 module.exports.sourceFn = async (source, company_id) => {
+    console.log(source, "source")
     let sourceId = '';
     let s5 = dbScript(db_sql['Q191'], { var1: (source !== '') ? source : 'hubspot', var2: company_id })
     let findSource = await connection.query(s5)
