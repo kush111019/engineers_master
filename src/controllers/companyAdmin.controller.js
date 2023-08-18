@@ -1062,7 +1062,8 @@ module.exports.showPlayBook = async (req, res) => {
                     playBookData.rows[0].topProductList = [];
                 }
             } else {
-                playBookData.rows[0]["productList"] = "You Don't Have Permission to View Products, Please Contact Your Admin."
+                playBookData.rows[0].productList = []
+                playBookData.rows[0].topProductList = []
             }
             let s6 = dbScript(db_sql['Q41'], { var1: process.env.CUSTOMERS_MODULE, var2: userId })
             let checkCustomerPermission = await connection.query(s6)
@@ -1114,7 +1115,7 @@ module.exports.showPlayBook = async (req, res) => {
                     playBookData.rows[0].customerCompanies = [];
                 }
             } else {
-                playBookData.rows[0].customerCompanies = "You Don't Have Permission to View Customer Companies, Please Contact Your Admin."
+                playBookData.rows[0].customerCompanies = []
             }
             let s9 = dbScript(db_sql['Q41'], { var1: process.env.USERS_MODULE, var2: userId })
             let checkUserPermission = await connection.query(s9)
@@ -1248,7 +1249,7 @@ module.exports.showPlayBook = async (req, res) => {
                     playBookData.rows[0].teamAndRoles = []
                 }
             } else {
-                playBookData.rows[0].teamAndRoles = "You Don't Have Permission to View Users, Please Contact Your Admin."
+                playBookData.rows[0].teamAndRoles = []
             }
             let s11 = dbScript(db_sql['Q41'], { var1: process.env.LEADS_MODULE, var2: userId })
             let checkLeadPermission = await connection.query(s11)
@@ -1318,7 +1319,7 @@ module.exports.showPlayBook = async (req, res) => {
                     playBookData.rows[0].qualifiedLeads = []
                 }
             } else {
-                playBookData.rows[0].qualifiedLeads = "You Don't Have Permission to View Leads, Please Contact Your Admin."
+                playBookData.rows[0].qualifiedLeads = []
             }
 
             res.json({
