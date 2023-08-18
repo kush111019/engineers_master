@@ -580,7 +580,6 @@ module.exports.callback = async (req, res) => {
             }
             if (provider.toLowerCase() == 'salesforce') {
                 //generating access token using authorization code for salesforce
-console.log(provider, "provider")
                 await connection.query('BEGIN')
                 const authorizationCode = code; // The code received from the redirect URL
                 const data = new FormData();
@@ -596,16 +595,13 @@ console.log(provider, "provider")
                     }
                 })
                     .then(async (response) => {
-console.log(response, "response")
                         const expiresIn = 7200; // Default expiration time for Salesforce access tokens
                         const issuedAt = new Date(parseInt(response.data.issued_at));
                         const expirationTime = new Date(issuedAt.getTime() + expiresIn * 1000).toISOString();
 
                         let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
                         let getConnectors = await connection.query(s2)
-                        console.log(getConnectors.rows, "getConnectors")
                         if (getConnectors.rowCount == 0) {
-                            console.log("in ifffff")
                             //sotring the access token if not already stored
                             let s3 = dbScript(db_sql['Q321'], { var1: userId, var2: findUser.rows[0].company_id, var3: response.data.access_token, var4: true, var5: response.data.refresh_token, var6: expirationTime })
                             let storeAccessToken = await connection.query(s3)
@@ -625,7 +621,6 @@ console.log(response, "response")
                                 })
                             }
                         } else {
-                            console.log("in elseeeee")
                             //updating the access token if already stored
                             let _dt = new Date().toISOString()
                             let s4 = dbScript(db_sql['Q325'], { var1: response.data.access_token, var2: true, var3: response.data.refresh_token, var4: expirationTime, var5: userId, var6: findUser.rows[0].company_id })
@@ -1017,9 +1012,7 @@ module.exports.leadReSync = async (req, res) => {
                                         if (findSyncLead.rowCount == 0) {
                                             for (let data of response.data.records) {
                                                 let titleId = await titleFn(data.Title, accessData.company_id)
-console.log(data.LeadSource, "data.LeadSource in prouser controller in finitial insertion")
                                                 let sourceId = await sourceFn(data.LeadSource, accessData.company_id)
-console.log(sourceId, "11111111111111")
                                                 let industryId = await industryFn(data.Industry, accessData.company_id)
 
                                                 let customerId = await customerFnForsalesforce(data, accessData, industryId)
@@ -1033,7 +1026,6 @@ console.log(sourceId, "11111111111111")
                                                     if (new Date(accessData.salesforce_last_sync) < new Date(data.LastModifiedDate)) {
                                                         //checing if the last modification date is greater then last resync date if true then updating data
                                                         let titleId = await titleFn(data.Title, accessData.company_id)
-                                                        console.log(data.LeadSource, "data.LeadSource in prouser controller in finitial insertion")
                                                         let sourceId = await sourceFn(data.LeadSource, accessData.company_id)
 
                                                         let industryId = await industryFn(data.Industry, accessData.company_id)
@@ -1398,7 +1390,6 @@ module.exports.proLeadsList = async (req, res) => {
             if (provider.toLowerCase() == 'all') {
                 let s4 = dbScript(db_sql['Q415'], { var1: roleUsers.join(","), var2: type })
                 findLeadList = await connection.query(s4)
-                console.log(s4);
             } else {
                 //for perticular provider
                 let s5 = dbScript(db_sql['Q416'], { var1: roleUsers.join(","), var2: type, var3: provider.toLowerCase() })

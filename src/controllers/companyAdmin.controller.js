@@ -1187,7 +1187,7 @@ module.exports.showPlayBook = async (req, res) => {
                 let roleUsers = await getUserAndSubUser(checkUserPermission.rows[0]);
                 let s11 = dbScript(db_sql['Q430'], { var1: roleUsers.join(","), var2: false })
                 findUsers = await connection.query(s11);
-                if (userList.rowCount > 0) {
+                if (findUsers.rowCount > 0) {
                     let data = findUsers.rows
                     function buildHierarchy(users) {
                         const userMap = new Map();
