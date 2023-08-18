@@ -4433,7 +4433,60 @@ ORDER BY
             LEFT JOIN lead_sources AS ls ON cce.source = ls.id
             WHERE cce.company_id = '{var1}' AND cce.emp_type = 'lead'
             AND cce.deleted_at IS NULL
-            ORDER BY source_name ASC`                                                                 
+            ORDER BY source_name ASC`,
+  "Q432":`SELECT
+            p.id AS product_id,
+            p.product_name,
+            -- Sum of target_amount for Q1 (January to March)
+            SUM(CASE WHEN s.created_at >= '2023-01-01' AND s.created_at < '2023-03-31' THEN s.target_amount::numeric ELSE 0 END) AS q1_target_amount,
+            -- Sum of target_amount for Q2 (April to June)
+            SUM(CASE WHEN s.created_at >= '2023-04-01' AND s.created_at < '2023-06-30' THEN s.target_amount::numeric ELSE 0 END) AS q2_target_amount,
+            -- Sum of target_amount for Q3 (July to September)
+            SUM(CASE WHEN s.created_at >= '2023-07-01' AND s.created_at < '2023-09-30' THEN s.target_amount::numeric ELSE 0 END) AS q3_target_amount,
+            -- Sum of target_amount for Q4 (October to December)
+            SUM(CASE WHEN s.created_at >= '2023-10-01' AND s.created_at < '2024-12-31' THEN s.target_amount::numeric ELSE 0 END) AS q4_target_amount
+          FROM
+            products AS p
+          LEFT JOIN
+            product_in_sales AS pis ON p.id = pis.product_id
+          LEFT JOIN
+            sales AS s ON pis.sales_id = s.id
+          WHERE
+            p.company_id = '{var1}' AND p.deleted_at IS NULL
+          GROUP BY
+            p.id, p.product_name
+          ORDER BY
+            q1_target_amount DESC,
+            q2_target_amount DESC,
+            q3_target_amount DESC,
+            q4_target_amount DESC
+          LIMIT 10   `,
+  "Q433":`SELECT
+            p.id AS product_id,
+            p.product_name,
+            SUM(CASE WHEN s.created_at >= '2023-01-01' AND s.created_at < '2023-03-31' THEN s.target_amount::numeric ELSE 0 END) AS q1_target_amount,
+           
+            SUM(CASE WHEN s.created_at >= '2023-04-01' AND s.created_at < '2023-06-30' THEN s.target_amount::numeric ELSE 0 END) AS q2_target_amount,
+           
+            SUM(CASE WHEN s.created_at >= '2023-07-01' AND s.created_at < '2023-09-30' THEN s.target_amount::numeric ELSE 0 END) AS q3_target_amount,
+            
+            SUM(CASE WHEN s.created_at >= '2023-10-01' AND s.created_at < '2024-12-31' THEN s.target_amount::numeric ELSE 0 END) AS q4_target_amount
+          FROM
+            products AS p
+          LEFT JOIN
+            product_in_sales AS pis ON p.id = pis.product_id
+          LEFT JOIN
+            sales AS s ON pis.sales_id = s.id
+          WHERE
+            p.user_id IN  ({var1}) AND p.deleted_at IS NULL
+          GROUP BY
+            p.id, p.product_name
+          ORDER BY
+            q1_target_amount DESC,
+            q2_target_amount DESC,
+            q3_target_amount DESC,
+            q4_target_amount DESC
+          LIMIT 10  `                                                                                     
         
 }
 

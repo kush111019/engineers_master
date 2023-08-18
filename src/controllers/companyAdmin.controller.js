@@ -974,8 +974,6 @@ module.exports.createCompanyPlaybook = async (req, res) => {
                 columns: customer_profiling.columns,
                 rows: customer_profiling.rows.map(row => row.map(value => mysql_real_escape_string(value)))
             };
-            
-            console.log(escapedDataCustomerProfiling);
 
             const escapedResourcesObject = {};
             for (const key in resources) {
@@ -1040,6 +1038,13 @@ module.exports.showPlayBook = async (req, res) => {
                 } else {
                     playBookData.rows[0].productList = [];
                 }
+                let s5 = dbScript(db_sql['Q432'], { var1: checkPermission.rows[0].company_id })
+                let topProductList = await connection.query(s5)
+                if (topProductList.rowCount > 0) {
+                    playBookData.rows[0].topProductList = topProductList.rows;
+                } else {
+                    playBookData.rows[0].topProductList = [];
+                }
             } else if (checkPermission.rows[0].permission_to_view_own) {
                 let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
                 let s5 = dbScript(db_sql['Q270'], { var1: roleUsers.join(",") })
@@ -1048,6 +1053,13 @@ module.exports.showPlayBook = async (req, res) => {
                     playBookData.rows[0].productList = productList.rows;
                 } else {
                     playBookData.rows[0].productList = [];
+                }
+                let s6 = dbScript(db_sql['Q433'], { var1: roleUsers.join(",") })
+                let topProductList = await connection.query(s6)
+                if (topProductList.rowCount > 0) {
+                    playBookData.rows[0].topProductList = topProductList.rows;
+                } else {
+                    playBookData.rows[0].topProductList = [];
                 }
             } else {
                 playBookData.rows[0]["productList"] = "You Don't Have Permission to View Products, Please Contact Your Admin."
@@ -1241,7 +1253,6 @@ module.exports.showPlayBook = async (req, res) => {
             let s11 = dbScript(db_sql['Q431'], { var1: checkUserPermission.rows[0].company_id })
             let qualifiedLead = await connection.query(s11)
             if (qualifiedLead.rowCount > 0) {
-console.log()
                 let data = qualifiedLead.rows
                 const leadsBySource = data.reduce((acc, lead) => {
                     const { source_id, source_name, marketing_qualified_lead } = lead;
