@@ -1250,37 +1250,77 @@ module.exports.showPlayBook = async (req, res) => {
             } else {
                 playBookData.rows[0].teamAndRoles = "You Don't Have Permission to View Users, Please Contact Your Admin."
             }
-            let s11 = dbScript(db_sql['Q431'], { var1: checkUserPermission.rows[0].company_id })
-            let qualifiedLead = await connection.query(s11)
-            if (qualifiedLead.rowCount > 0) {
-                let data = qualifiedLead.rows
-                const leadsBySource = data.reduce((acc, lead) => {
-                    const { source_id, source_name, marketing_qualified_lead } = lead;
-                    if (!acc[source_id]) {
-                        acc[source_id] = {
-                            source_name,
-                            total: 0,
-                            qualified: 0
-                        };
-                    }
+            let s11 = dbScript(db_sql['Q41'], { var1: process.env.USERS_MODULE, var2: userId })
+            let checkLeadPermission = await connection.query(s11)
+            if (checkLeadPermission.rows[0].permission_to_view_global) {
+                let s12 = dbScript(db_sql['Q431'], { var1: checkLeadPermission.rows[0].company_id })
+                let qualifiedLead = await connection.query(s12)
+                if (qualifiedLead.rowCount > 0) {
+                    let data = qualifiedLead.rows
+                    const leadsBySource = data.reduce((acc, lead) => {
+                        const { source_id, source_name, marketing_qualified_lead } = lead;
+                        if (!acc[source_id]) {
+                            acc[source_id] = {
+                                source_name,
+                                total: 0,
+                                qualified: 0
+                            };
+                        }
 
-                    acc[source_id].total++;
-                    if (marketing_qualified_lead === true) {
-                        acc[source_id].qualified++;
-                    }
-                    return acc;
-                }, {});
+                        acc[source_id].total++;
+                        if (marketing_qualified_lead === true) {
+                            acc[source_id].qualified++;
+                        }
+                        return acc;
+                    }, {});
 
-                const response = [];
-                for (const source_id in leadsBySource) {
-                    const { source_name, total, qualified } = leadsBySource[source_id];
-                    const percentage = ((qualified / total) * 100).toFixed(2);
-                    response.push({ name: source_name, percentage: percentage });
+                    const response = [];
+                    for (const source_id in leadsBySource) {
+                        const { source_name, total, qualified } = leadsBySource[source_id];
+                        const percentage = ((qualified / total) * 100).toFixed(2);
+                        response.push({ name: source_name, percentage: percentage });
+                    }
+                    playBookData.rows[0].qualifiedLeads = response
+                } else {
+                    playBookData.rows[0].qualifiedLeads = []
                 }
-                playBookData.rows[0].qualifiedLeads = response
+            } else if (checkLeadPermission.rows[0].permission_to_view_own) {
+                let roleUsers = await getUserAndSubUser(checkLeadPermission.rows[0]);
+                let s12 = dbScript(db_sql['Q434'], { var1: roleUsers.join(",") })
+                let qualifiedLead = await connection.query(s12)
+                if (qualifiedLead.rowCount > 0) {
+                    let data = qualifiedLead.rows
+                    const leadsBySource = data.reduce((acc, lead) => {
+                        const { source_id, source_name, marketing_qualified_lead } = lead;
+                        if (!acc[source_id]) {
+                            acc[source_id] = {
+                                source_name,
+                                total: 0,
+                                qualified: 0
+                            };
+                        }
+
+                        acc[source_id].total++;
+                        if (marketing_qualified_lead === true) {
+                            acc[source_id].qualified++;
+                        }
+                        return acc;
+                    }, {});
+
+                    const response = [];
+                    for (const source_id in leadsBySource) {
+                        const { source_name, total, qualified } = leadsBySource[source_id];
+                        const percentage = ((qualified / total) * 100).toFixed(2);
+                        response.push({ name: source_name, percentage: percentage });
+                    }
+                    playBookData.rows[0].qualifiedLeads = response
+                } else {
+                    playBookData.rows[0].qualifiedLeads = []
+                }
             } else {
                 playBookData.rows[0].qualifiedLeads = []
             }
+
             res.json({
                 success: true,
                 status: 200,
