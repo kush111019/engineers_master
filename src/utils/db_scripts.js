@@ -4460,7 +4460,7 @@ ORDER BY
             q2_target_amount DESC,
             q3_target_amount DESC,
             q4_target_amount DESC
-          LIMIT 10   `,
+          LIMIT 5   `,
   "Q433":`SELECT
             p.id AS product_id,
             p.product_name,
@@ -4486,7 +4486,7 @@ ORDER BY
             q2_target_amount DESC,
             q3_target_amount DESC,
             q4_target_amount DESC
-          LIMIT 10  `                                                                                     
+          LIMIT 5`                                                                                     
         
 }
 
