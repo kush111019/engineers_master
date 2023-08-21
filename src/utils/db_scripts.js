@@ -1225,7 +1225,7 @@ ORDER BY
             LEFT JOIN
               recognized_revenue AS rr ON rr.sales_id = sc.id
             WHERE
-              sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL AND sc.archived_at IS NULL
+              sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
             GROUP BY
               sc.id, cus.customer_name, u1.full_name, u1.email_address, slab.slab_name, u2.full_name, cus.user_id
             ORDER BY
@@ -1390,7 +1390,7 @@ ORDER BY
             ) rr ON rr.sales_id = sc.id
             WHERE
               (sc.user_id IN ({var1}) OR su.user_id IN ({var1}))
-              AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL AND sc.archived_at IS NULL
+              AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
             GROUP BY
               sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite, sc.business_contact_id,
               sc.archived_at, sc.archived_by, sc.archived_reason,
