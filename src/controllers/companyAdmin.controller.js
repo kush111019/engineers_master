@@ -1022,13 +1022,14 @@ module.exports.showPlayBook = async (req, res) => {
         let s0 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s0)
         if (findAdmin.rowCount > 0) {
+
             let s1 = dbScript(db_sql['Q9'], { var1: findAdmin.rows[0].company_id })
             let findQuarterDates = await connection.query(s1)
             let allDates = await calculateQuarters(findQuarterDates.rows[0].quarter)
 
             let s2 = dbScript(db_sql['Q426'], { var1: findAdmin.rows[0].company_id })
             let playBookData = await connection.query(s2)
-            
+
             playBookData.rows[0].resources = JSON.parse(playBookData.rows[0].resources);
             playBookData.rows[0].customer_profiling = JSON.parse(playBookData.rows[0].customer_profiling);
 
@@ -1194,7 +1195,7 @@ module.exports.captainWiseSalesDetailsPlayBook = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0) {
-            let s2 = dbScript(db_sql['Q366'], { var1: userId })
+            let s2 = dbScript(db_sql['Q431'], { var1: findAdmin.rows[0].company_id })
             let salesIds = await connection.query(s2)
             if (salesIds.rowCount > 0) {
                 let salesIdArr = []
@@ -1204,13 +1205,11 @@ module.exports.captainWiseSalesDetailsPlayBook = async (req, res) => {
                     }
                 })
                 let captainWiseSaleObj = {}
-                let s3 = dbScript(db_sql['Q364'], { var1: userId, var2: salesIdArr.join(",") })
+                let s3 = dbScript(db_sql['Q432'], { var2: salesIdArr.join(",") })
                 let salesDetails = await connection.query(s3)
-
                 if (salesDetails.rowCount > 0) {
-                    let s4 = dbScript(db_sql['Q365'], { var1: userId, var2: salesIdArr.join(",") })
+                    let s4 = dbScript(db_sql['Q433'], { var2: salesIdArr.join(",") })
                     let notesCount = await connection.query(s4)
-
                     // create map of sales details by sales ID
                     let salesMap = {}
                     for (let sale of salesDetails.rows) {
@@ -1336,7 +1335,7 @@ module.exports.captainWiseSalesDetailsPlayBook = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.message,
+            message: error.stack,
         })
     }
 }
@@ -1348,7 +1347,7 @@ module.exports.captainWiseGraphPlayBook = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0) {
-            let s2 = dbScript(db_sql['Q366'], { var1: userId })
+            let s2 = dbScript(db_sql['Q431'], { var1: findAdmin.rows[0].company_id })
             let salesIds = await connection.query(s2)
             if (salesIds.rowCount > 0) {
                 let salesIdArr = []
@@ -1357,13 +1356,12 @@ module.exports.captainWiseGraphPlayBook = async (req, res) => {
                         salesIdArr.push("'" + data.sales_ids.join("','") + "'")
                     }
                 })
-                let s3 = dbScript(db_sql['Q364'], { var1: userId, var2: salesIdArr.join(",") })
+
+                let s3 = dbScript(db_sql['Q432'], { var2: salesIdArr.join(",") })
                 let salesDetails = await connection.query(s3)
-
                 if (salesDetails.rowCount > 0) {
-                    let s4 = dbScript(db_sql['Q365'], { var1: userId, var2: salesIdArr.join(",") })
+                    let s4 = dbScript(db_sql['Q433'], { var2: salesIdArr.join(",") })
                     let notesCount = await connection.query(s4)
-
                     // create map of sales details by sales ID
                     let salesMap = {}
                     for (let sale of salesDetails.rows) {
@@ -1416,7 +1414,7 @@ module.exports.captainWiseGraphPlayBook = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.message,
+            message: error.stack,
         })
     }
 }
