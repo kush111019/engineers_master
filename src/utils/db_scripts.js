@@ -4381,17 +4381,6 @@ ORDER BY
             total_target_amount DESC
             LIMIT 10`,
   "Q428":`SELECT 
-            cus.id, cus.customer_name,
-          COALESCE((SELECT COUNT(*) FROM sales s WHERE s.customer_id = cus.id), 0) AS sales_count,
-          COALESCE((SELECT SUM(s.target_amount::numeric) FROM sales s WHERE s.customer_id = cus.id), 0) AS total_target_amount
-          FROM 
-            customer_companies AS cus 	    
-          WHERE 
-            cus.user_id IN ({var1}) AND cus.deleted_at IS NULL
-          ORDER BY
-          total_target_amount DESC
-          LIMIT 10`,
-  "Q429":`SELECT 
             u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
             u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
             u1.is_main_admin,u1.is_deactivated,u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName,
@@ -4410,41 +4399,23 @@ ORDER BY
             AND u1.is_deactivated = '{var2}' 
           ORDER BY 
             created_at ASC `,
-  "Q430": `SELECT 
-              u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
-              u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
-              u1.is_main_admin, u1.created_by,u1.is_deactivated, u2.full_name AS creator_name, r.role_name AS roleName,
-              u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at
-              FROM 
-                users AS u1 
-              LEFT JOIN 
-                users AS u2 ON u2.id = u1.created_by
-              LEFT JOIN 
-                users AS u3 ON u3.id = u1.assigned_to
-              LEFT JOIN 
-                roles as r on r.id = u1.role_id
-            WHERE 
-              u1.id IN ({var1}) AND u1.deleted_at IS NULL 
-              AND u1.is_deactivated = '{var2}'
-            ORDER BY 
-              created_at ASC`,
-  "Q431": `SELECT cce.id,cce.source as source_id,cce.marketing_qualified_lead, ls.source as source_name
+  "Q429": `SELECT cce.id,cce.source as source_id,cce.marketing_qualified_lead, ls.source as source_name
             FROM customer_company_employees AS cce
             LEFT JOIN lead_sources AS ls ON cce.source = ls.id
             WHERE cce.company_id = '{var1}' AND cce.emp_type = 'lead'
             AND cce.deleted_at IS NULL
             ORDER BY source_name ASC`,
-  "Q432":`SELECT
+  "Q430":`SELECT
             p.id AS product_id,
             p.product_name,
             -- Sum of target_amount for Q1 (January to March)
-            SUM(CASE WHEN s.created_at >= '2023-01-01' AND s.created_at < '2023-03-31' THEN s.target_amount::numeric ELSE 0 END) AS q1_target_amount,
+            SUM(CASE WHEN s.created_at >= '{var1}' AND s.created_at < '{var2}' THEN s.target_amount::numeric ELSE 0 END) AS q1_target_amount,
             -- Sum of target_amount for Q2 (April to June)
-            SUM(CASE WHEN s.created_at >= '2023-04-01' AND s.created_at < '2023-06-30' THEN s.target_amount::numeric ELSE 0 END) AS q2_target_amount,
+            SUM(CASE WHEN s.created_at >= '{var3}' AND s.created_at < '{var4}' THEN s.target_amount::numeric ELSE 0 END) AS q2_target_amount,
             -- Sum of target_amount for Q3 (July to September)
-            SUM(CASE WHEN s.created_at >= '2023-07-01' AND s.created_at < '2023-09-30' THEN s.target_amount::numeric ELSE 0 END) AS q3_target_amount,
+            SUM(CASE WHEN s.created_at >= '{var5}' AND s.created_at < '{var6}' THEN s.target_amount::numeric ELSE 0 END) AS q3_target_amount,
             -- Sum of target_amount for Q4 (October to December)
-            SUM(CASE WHEN s.created_at >= '2023-10-01' AND s.created_at < '2024-12-31' THEN s.target_amount::numeric ELSE 0 END) AS q4_target_amount
+            SUM(CASE WHEN s.created_at >= '{var7}' AND s.created_at < '{var8}' THEN s.target_amount::numeric ELSE 0 END) AS q4_target_amount
           FROM
             products AS p
           LEFT JOIN
@@ -4452,7 +4423,7 @@ ORDER BY
           LEFT JOIN
             sales AS s ON pis.sales_id = s.id
           WHERE
-            p.company_id = '{var1}' AND p.deleted_at IS NULL
+            p.company_id = '{var9}' AND p.deleted_at IS NULL
           GROUP BY
             p.id, p.product_name
           ORDER BY
@@ -4460,39 +4431,7 @@ ORDER BY
             q2_target_amount DESC,
             q3_target_amount DESC,
             q4_target_amount DESC
-          LIMIT 5   `,
-  "Q433":`SELECT
-            p.id AS product_id,
-            p.product_name,
-            SUM(CASE WHEN s.created_at >= '2023-01-01' AND s.created_at < '2023-03-31' THEN s.target_amount::numeric ELSE 0 END) AS q1_target_amount,
-           
-            SUM(CASE WHEN s.created_at >= '2023-04-01' AND s.created_at < '2023-06-30' THEN s.target_amount::numeric ELSE 0 END) AS q2_target_amount,
-           
-            SUM(CASE WHEN s.created_at >= '2023-07-01' AND s.created_at < '2023-09-30' THEN s.target_amount::numeric ELSE 0 END) AS q3_target_amount,
-            
-            SUM(CASE WHEN s.created_at >= '2023-10-01' AND s.created_at < '2024-12-31' THEN s.target_amount::numeric ELSE 0 END) AS q4_target_amount
-          FROM
-            products AS p
-          LEFT JOIN
-            product_in_sales AS pis ON p.id = pis.product_id
-          LEFT JOIN
-            sales AS s ON pis.sales_id = s.id
-          WHERE
-            p.user_id IN  ({var1}) AND p.deleted_at IS NULL
-          GROUP BY
-            p.id, p.product_name
-          ORDER BY
-            q1_target_amount DESC,
-            q2_target_amount DESC,
-            q3_target_amount DESC,
-            q4_target_amount DESC
-          LIMIT 5`,
-  "Q434":`SELECT cce.id,cce.source as source_id,cce.marketing_qualified_lead, ls.source as source_name
-          FROM customer_company_employees AS cce
-          LEFT JOIN lead_sources AS ls ON cce.source = ls.id
-          WHERE cce.creator_id IN ({var1}) AND cce.emp_type = 'lead'
-          AND cce.deleted_at IS NULL
-          ORDER BY source_name ASC`                                                                                             
+          LIMIT 5   `                                                                                          
         
 }
 
