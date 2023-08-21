@@ -971,17 +971,19 @@ module.exports.leadReSync = async (req, res) => {
                                 'Content-Type': 'application/x-www-form-urlencoded'
                             }
                         };
-
+console.log("here gotttt")
                         axios.post('https://login.salesforce.com/services/oauth2/token', data, config)
                             .then(async (res) => {
+                                console.log(res, "res")
                                 const expiresIn = 7200; // Default expiration time for Salesforce access tokens
                                 const issuedAt = new Date(parseInt(res.data.issued_at));
                                 const expirationTime = new Date(issuedAt.getTime() + expiresIn * 1000).toISOString();
 
                                 accessToken = res.data.access_token
-
+console.log(accessToken,"access")
                                 let s4 = dbScript(db_sql['Q325'], { var1: res.data.access_token, var2: true, var3: accessData.salesforce_refresh_token, var4: expirationTime, var5: accessData.user_id, var6: accessData.company_id })
                                 let storeAccessToken = await connection.query(s4)
+                                console.log(storeAccessToken.rows, "storeAccessToken")
                             })
                             .catch((err) => {
                                 console.error('Authorization error:', err.message);
