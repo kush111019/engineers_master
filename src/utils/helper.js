@@ -826,7 +826,6 @@ module.exports.calculateCommission = async (slabId, amount) => {
 }
 
 module.exports.calculateQuarters = async (startDate) => {
-    console.log(startDate);
     const quarters = [];
     const startUtcDate = new Date(startDate);
     const startLocalDate = new Date(startUtcDate.toLocaleDateString());
