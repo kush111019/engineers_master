@@ -1322,6 +1322,7 @@ module.exports.captainWiseSalesDetailsPlayBook = async (req, res) => {
                     status: 200,
                     success: false,
                     message: "Sales not found",
+                    data: []
                 })
             }
         } else {
@@ -1402,6 +1403,7 @@ module.exports.captainWiseGraphPlayBook = async (req, res) => {
                     status: 200,
                     success: false,
                     message: "Sales not found",
+                    data:[]
                 })
             }
         } else {
