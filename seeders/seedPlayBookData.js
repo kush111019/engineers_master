@@ -5,7 +5,7 @@ const connection = require("../src/database/connection");
 
 module.exports.setPlayBook = async (companyId, userId, res) => {
     let resources = {
-        "documentations": "<p>https://www.dummywebsite.org</p>\n<p>http://www.testsite123.net</p>",
+        "documentations": "<p>https://www.dummywebsite.org</p><p>http://www.testsite123.net</p>",
         "sales_stacks": "<phttp://www.samplelink.biz</p>"
     }
    
@@ -47,9 +47,9 @@ module.exports.setPlayBook = async (companyId, userId, res) => {
             "actions": "<p>Break down the products features and benefits Provide real-world examples of how the product has delivered value to other customers.Offer a comparison with competitor products to showcase the competitive pricing., Emphasize the long-term benefits and return on investment.</p>"
         }
     ];
-    let salesBestPractices = "<p>sales presentation</p>\n<p>sales strategies</p>\n<p>FAQs</p>\n<p>Sales Info</p>"
+    let salesBestPractices = "<p>sales presentation</p><p>sales strategies</p><p>FAQs</p><p>Sales Info</p>"
 
-    let s1 = dbScript(db_sql['Q425'], { var1: companyId, var2: userId, var3: JSON.stringify(resources), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(visionMission), var6: visionMissionImage, var7: productImage, var8: JSON.stringify(customerProfiling), var9: mysql_real_escape_string(leadProcesses), var10: mysql_real_escape_string(salesStrategies), var11: JSON.stringify(scenarioData), var12: JSON.stringify(salesBestPractices) })
+    let s1 = dbScript(db_sql['Q425'], { var1: companyId, var2: userId, var3: JSON.stringify(resources), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(visionMission), var6: visionMissionImage, var7: productImage, var8: JSON.stringify(customerProfiling), var9: mysql_real_escape_string(leadProcesses), var10: mysql_real_escape_string(salesStrategies), var11: JSON.stringify(scenarioData), var12: mysql_real_escape_string(salesBestPractices) })
     let setData = await connection.query(s1)
     return setData
 
