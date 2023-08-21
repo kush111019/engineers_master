@@ -4431,7 +4431,46 @@ ORDER BY
             q2_target_amount DESC,
             q3_target_amount DESC,
             q4_target_amount DESC
-          LIMIT 5   `                                                                                          
+          LIMIT 5   `,
+  "Q431":`SELECT  
+            su.user_id, 
+            u.full_name,
+            array_agg(DISTINCT su.sales_id) AS sales_ids  
+          FROM 
+            sales_users su
+          LEFT JOIN 
+            users u ON su.user_id = u.id
+          LEFT JOIN
+            sales s ON su.sales_id = s.id
+          WHERE 
+            su.user_type = 'captain' AND
+            su.company_id = '{var1}' AND su.deleted_at IS NULL
+            AND s.closed_at IS NOT NULL
+          GROUP BY 
+            su.user_id,
+            u.full_name;`,
+  "Q432": `SELECT
+            DISTINCT(s.id),
+            c.customer_name,
+            s.created_at,
+            s.closed_at,
+            (DATE_PART('epoch', s.closed_at) - DATE_PART('epoch', s.created_at)) / 86400.0 AS duration_in_days
+          FROM
+            sales s
+            LEFT JOIN sales_users su ON s.id = su.sales_id 
+            LEFT JOIN users u ON su.user_id = u.id
+            LEFT JOIN customer_companies c ON s.customer_id = c.id
+          WHERE
+          s.id IN ({var2})
+            AND s.closed_at IS NOT NULL
+          GROUP BY
+            s.id,
+            c.customer_name,
+            s.created_at,
+            s.closed_at
+          ORDER BY
+            s.id ASC`,
+  "Q433": `select sales_id,COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) GROUP BY sales_id`,                                                                                                              
         
 }
 
