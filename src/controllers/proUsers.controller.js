@@ -955,6 +955,8 @@ module.exports.leadReSync = async (req, res) => {
                     let expiryDate = new Date(accessData.salesforce_expiry)
                     let accessToken = ''
                     if (expiryDate < curDate) {
+                        console.log(expiryDate < curDate,"expiryDate < curDate")
+                        console.log(accessData.salesforce_refresh_token,"accessData.salesforce_refresh_token")
                         ////if current date is greater than expiry date then we are generating the access token using refresh token
                         const data = qs.stringify({
                             'grant_type': 'refresh_token',
