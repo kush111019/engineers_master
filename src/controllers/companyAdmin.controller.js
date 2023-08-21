@@ -1184,7 +1184,7 @@ module.exports.showPlayBook = async (req, res) => {
         res.json({
             success: false,
             status: 400,
-            message: error.stack,
+            message: error.message,
         })
     }
 }
@@ -1336,7 +1336,7 @@ module.exports.captainWiseSalesDetailsPlayBook = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.stack,
+            message: error.message,
         })
     }
 }
@@ -1416,7 +1416,7 @@ module.exports.captainWiseGraphPlayBook = async (req, res) => {
         res.json({
             status: 400,
             success: false,
-            message: error.stack,
+            message: error.message,
         })
     }
 }
