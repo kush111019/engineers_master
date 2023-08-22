@@ -961,7 +961,7 @@ module.exports.uploadPlayBookVisionMission = async (req, res) => {
 module.exports.createCompanyPlaybook = async (req, res) => {
     try {
         let userId = req.user.id
-        let { resources, background, vision_mission, vision_mission_image, product_image, customer_profiling, lead_processes, sales_strategies, scenario_data, sales_best_practices, id } = req.body
+        let { resources, background, vision_mission, vision_mission_image, product_image, customer_profiling, lead_processes, sales_strategies, scenario_data, sales_best_practices,sales_best_practices_image, id } = req.body
         await connection.query("BEGIN")
 
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
@@ -982,7 +982,7 @@ module.exports.createCompanyPlaybook = async (req, res) => {
                 }
             }
             let _dt = new Date().toISOString()
-            let s2 = dbScript(db_sql['Q424'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(escapedResourcesObject), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(vision_mission), var6: vision_mission_image, var7: product_image, var8: JSON.stringify(escapedDataCustomerProfiling), var9: mysql_real_escape_string(lead_processes), var10: mysql_real_escape_string(sales_strategies), var11: JSON.stringify(escapedArrayScenarioData), var12: mysql_real_escape_string(sales_best_practices), var13: _dt, var14: id })
+            let s2 = dbScript(db_sql['Q424'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(escapedResourcesObject), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(vision_mission), var6: vision_mission_image, var7: product_image, var8: JSON.stringify(escapedDataCustomerProfiling), var9: mysql_real_escape_string(lead_processes), var10: mysql_real_escape_string(sales_strategies), var11: JSON.stringify(escapedArrayScenarioData), var12: mysql_real_escape_string(sales_best_practices), var13: _dt, var14: id, var15 : sales_best_practices_image })
 
             let updateMetaData = await connection.query(s2)
             if (updateMetaData.rowCount > 0) {
@@ -1040,8 +1040,8 @@ module.exports.showPlayBook = async (req, res) => {
             } else {
                 playBookData.rows[0].productList = [];
             }
-
-            let s4 = dbScript(db_sql['Q430'], { var1: allDates[0].start_date, var2: allDates[0].end_date, var3: allDates[1].start_date, var4: allDates[1].end_date, var5: allDates[2].start_date, var6: allDates[2].end_date, var7: allDates[3].start_date, var8: allDates[3].end_date, var9: findAdmin.rows[0].company_id })
+console.log(allDates[0].start_date,allDates[3].end_date)
+            let s4 = dbScript(db_sql['Q430'], { var1: allDates[0].start_date, var2: allDates[3].end_date, var3: findAdmin.rows[0].company_id })
             let topProductList = await connection.query(s4)
             if (topProductList.rowCount > 0) {
                 playBookData.rows[0].topProductList = topProductList.rows;
@@ -1417,6 +1417,29 @@ module.exports.captainWiseGraphPlayBook = async (req, res) => {
             status: 400,
             success: false,
             message: error.message,
+        })
+    }
+}
+
+
+module.exports.uploadPlayBookBestPractices = async (req, res) => {
+    try {
+        let file = req.file
+        let path = `${process.env.PLAYBOOK_BEST_PRACTICES_IMAGE_PATH}/${file.filename}`;
+        console.log(path)
+        res.json({
+            status: 201,
+            success: true,
+            message: "Vision And Mission image Uploaded successfully!",
+            data: path
+        })
+
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+            data: ""
         })
     }
 }

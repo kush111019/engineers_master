@@ -172,6 +172,21 @@ const uploadPlayBookVision = multer({
     storage: storage10
 })
 
+const storage11 = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/playBookBestPractices')
+    },
+    filename: function (req, file, cb) {
+        const ext = file.mimetype.split('/')[1];
+        //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        const fileName = `${Date.now()}.${ext}`
+        cb(null, fileName)
+    }
+})
+const uploadPlayBookSalesBestPractices = multer({
+    storage: storage11
+})
+
 
 
 module.exports = { 
@@ -184,5 +199,6 @@ module.exports = {
     uploadSalesInvoice,
     uploadLeadsFile,
     uploadPlayBookProduct,
-    uploadPlayBookVision
+    uploadPlayBookVision,
+    uploadPlayBookSalesBestPractices
  };

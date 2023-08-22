@@ -13,6 +13,7 @@ module.exports.setPlayBook = async (companyId, userId, res) => {
     let visionMission = "<p>Operation Stellar Recon is a simulated space mission designed to test and evaluate advanced orbital surveillance and analysis' technologies. The primary objective of this mission is to simulate the deployment of a constellation of satellite assets for monitoring and studying celestial bodies, space debris, and other potential objects of interest within Earth's orbit.</p>";
     let visionMissionImage = process.env.PLAYBOOK_DEFAULT_VISIONMISSION_IMAGE_PATH;
     let productImage = process.env.PLAYBOOK_DEFAULT_PRODUCT_IMAGE_PATH;
+    let bestPracticeImage = process.env.PLAYBOOK_DEFAULT_BEST_PRACTICES_IMAGE_PATH
     let customerProfiling = {
         "columns": [
             "PERSONA",
@@ -49,7 +50,7 @@ module.exports.setPlayBook = async (companyId, userId, res) => {
     ];
     let salesBestPractices = "<p>sales presentation</p><p>sales strategies</p><p>FAQs</p><p>Sales Info</p>"
 
-    let s1 = dbScript(db_sql['Q425'], { var1: companyId, var2: userId, var3: JSON.stringify(resources), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(visionMission), var6: visionMissionImage, var7: productImage, var8: JSON.stringify(customerProfiling), var9: mysql_real_escape_string(leadProcesses), var10: mysql_real_escape_string(salesStrategies), var11: JSON.stringify(scenarioData), var12: mysql_real_escape_string(salesBestPractices) })
+    let s1 = dbScript(db_sql['Q425'], { var1: companyId, var2: userId, var3: JSON.stringify(resources), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(visionMission), var6: visionMissionImage, var7: productImage, var8: JSON.stringify(customerProfiling), var9: mysql_real_escape_string(leadProcesses), var10: mysql_real_escape_string(salesStrategies), var11: JSON.stringify(scenarioData), var12: mysql_real_escape_string(salesBestPractices), var13 : bestPracticeImage })
     let setData = await connection.query(s1)
     return setData
 
