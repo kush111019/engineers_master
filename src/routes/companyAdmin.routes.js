@@ -12,7 +12,8 @@ const {
     uploadSalesInvoice,
     uploadLeadsFile,
     uploadPlayBookProduct,
-    uploadPlayBookVision
+    uploadPlayBookVision,
+    uploadPlayBookSalesBestPractices
 } = require('../utils/uploadfiles')
 const {checkParams} = require('../utils/helper')
 const { setPlayBook } = require('../../seeders/seedPlayBookData')
@@ -236,6 +237,7 @@ router.put('/readAllNotifications', verifyTokenFn,checkParams, controller.notifi
 
 router.post('/uploadPlayBookProductImage', verifyTokenFn,checkParams, uploadPlayBookProduct.single('image'), controller.companyAdmin.uploadPlayBookProductImage);
 router.post('/uploadPlayBookVisionMission', verifyTokenFn,checkParams, uploadPlayBookVision.single('image'), controller.companyAdmin.uploadPlayBookVisionMission);
+router.post('/uploadPlayBookBestPractices', verifyTokenFn,checkParams, uploadPlayBookSalesBestPractices.single('image'), controller.companyAdmin.uploadPlayBookBestPractices);
 router.put('/createCompanyPlaybook', verifyTokenFn,checkParams, controller.companyAdmin.createCompanyPlaybook);
 router.get('/showPlayBook', verifyTokenFn,checkParams, controller.companyAdmin.showPlayBook);
 router.get('/captainWiseSalesDetailsPlayBook', verifyTokenFn,checkParams, controller.companyAdmin.captainWiseSalesDetailsPlayBook);

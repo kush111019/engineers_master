@@ -4349,9 +4349,9 @@ ORDER BY
               sc.id = '{var1}'
               AND sc.deleted_at IS NULL
               AND u.deleted_at IS NULL;`,
-   "Q424":`UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var1}',resources = '{var3}',background = '{var4}',vision_mission = '{var5}', vision_mission_image = '{var6}', product_image = '{var7}', customer_profiling = '{var8}', lead_processes = '{var9}', sales_strategies = '{var10}', scenario_data = '{var11}', sales_best_practices = '{var12}', updated_at = '{var13}' WHERE id = '{var14}' RETURNING *`      ,
-   "Q425":`INSERT INTO sales_playbook (company_id, user_id, resources, background, vision_mission, vision_mission_image, product_image, customer_profiling, lead_processes, sales_strategies, scenario_data, sales_best_practices)
-           VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}') RETURNING *` ,
+   "Q424":`UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var1}',resources = '{var3}',background = '{var4}',vision_mission = '{var5}', vision_mission_image = '{var6}', product_image = '{var7}', customer_profiling = '{var8}', lead_processes = '{var9}', sales_strategies = '{var10}', scenario_data = '{var11}', sales_best_practices = '{var12}',sales_best_practices_image = '{var15}', updated_at = '{var13}' WHERE id = '{var14}' RETURNING *`      ,
+   "Q425":`INSERT INTO sales_playbook (company_id, user_id, resources, background, vision_mission, vision_mission_image, product_image, customer_profiling, lead_processes, sales_strategies, scenario_data, sales_best_practices,sales_best_practices_image)
+           VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}', '{var13}') RETURNING *` ,
    "Q426":`SELECT
             sp.id,
             sp.resources,
@@ -4363,7 +4363,8 @@ ORDER BY
             sp.lead_processes,
             sp.sales_strategies,
             sp.scenario_data,
-            sp.sales_best_practices
+            sp.sales_best_practices,
+            sp.sales_best_practices_image
           FROM
             sales_playbook sp
           WHERE
@@ -4409,13 +4410,7 @@ ORDER BY
             p.id AS product_id,
             p.product_name,
             -- Sum of target_amount for Q1 (January to March)
-            SUM(CASE WHEN s.created_at >= '{var1}' AND s.created_at < '{var2}' THEN s.target_amount::numeric ELSE 0 END) AS q1_target_amount,
-            -- Sum of target_amount for Q2 (April to June)
-            SUM(CASE WHEN s.created_at >= '{var3}' AND s.created_at < '{var4}' THEN s.target_amount::numeric ELSE 0 END) AS q2_target_amount,
-            -- Sum of target_amount for Q3 (July to September)
-            SUM(CASE WHEN s.created_at >= '{var5}' AND s.created_at < '{var6}' THEN s.target_amount::numeric ELSE 0 END) AS q3_target_amount,
-            -- Sum of target_amount for Q4 (October to December)
-            SUM(CASE WHEN s.created_at >= '{var7}' AND s.created_at < '{var8}' THEN s.target_amount::numeric ELSE 0 END) AS q4_target_amount
+            SUM(CASE WHEN s.created_at >= '{var1}' AND s.created_at < '{var2}' THEN s.target_amount::numeric ELSE 0 END) AS total_target_amount
           FROM
             products AS p
           LEFT JOIN
@@ -4423,15 +4418,12 @@ ORDER BY
           LEFT JOIN
             sales AS s ON pis.sales_id = s.id
           WHERE
-            p.company_id = '{var9}' AND p.deleted_at IS NULL
+            p.company_id = '{var3}' AND p.deleted_at IS NULL
           GROUP BY
             p.id, p.product_name
           ORDER BY
-            q1_target_amount DESC,
-            q2_target_amount DESC,
-            q3_target_amount DESC,
-            q4_target_amount DESC
-          LIMIT 5   `,
+            total_target_amount DESC
+          LIMIT 10   `,
   "Q431":`SELECT  
             su.user_id, 
             u.full_name,
