@@ -1430,7 +1430,7 @@ module.exports.uploadPlayBookBestPractices = async (req, res) => {
         res.json({
             status: 201,
             success: true,
-            message: "Vision And Mission image Uploaded successfully!",
+            message: "Sales Best Practices image Uploaded successfully!",
             data: path
         })
 
