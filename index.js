@@ -22,8 +22,12 @@ app.use(
     crossOriginResourcePolicy: false,
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Parse JSON-encoded bodies
+app.use(express.json({ limit: '50mb' }));
+
+// Parse URL-encoded bodies
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
 app.use(express.static('uploads'))
 app.use(express.static('public'))
 app.use(logger);

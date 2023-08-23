@@ -1225,7 +1225,7 @@ ORDER BY
             LEFT JOIN
               recognized_revenue AS rr ON rr.sales_id = sc.id
             WHERE
-              sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL AND sc.archived_at IS NULL
+              sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
             GROUP BY
               sc.id, cus.customer_name, u1.full_name, u1.email_address, slab.slab_name, u2.full_name, cus.user_id
             ORDER BY
@@ -1390,7 +1390,7 @@ ORDER BY
             ) rr ON rr.sales_id = sc.id
             WHERE
               (sc.user_id IN ({var1}) OR su.user_id IN ({var1}))
-              AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL AND sc.archived_at IS NULL
+              AND sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
             GROUP BY
               sc.id, sc.customer_id, sc.customer_commission_split_id, sc.is_overwrite, sc.business_contact_id,
               sc.archived_at, sc.archived_by, sc.archived_reason,
@@ -4349,9 +4349,9 @@ ORDER BY
               sc.id = '{var1}'
               AND sc.deleted_at IS NULL
               AND u.deleted_at IS NULL;`,
-   "Q424":`UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var1}',resources = '{var3}',background = '{var4}',vision_mission = '{var5}', vision_mission_image = '{var6}', product_image = '{var7}', customer_profiling = '{var8}', lead_processes = '{var9}', sales_strategies = '{var10}', scenario_data = '{var11}', sales_best_practices = '{var12}', updated_at = '{var13}' WHERE id = '{var14}' RETURNING *`      ,
-   "Q425":`INSERT INTO sales_playbook (company_id, user_id, resources, background, vision_mission, vision_mission_image, product_image, customer_profiling, lead_processes, sales_strategies, scenario_data, sales_best_practices)
-           VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}') RETURNING *` ,
+   "Q424":`UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var1}',resources = '{var3}',background = '{var4}',vision_mission = '{var5}', vision_mission_image = '{var6}', product_image = '{var7}', customer_profiling = '{var8}', lead_processes = '{var9}', sales_strategies = '{var10}', scenario_data = '{var11}', sales_best_practices = '{var12}',sales_best_practices_image = '{var15}', updated_at = '{var13}' WHERE id = '{var14}' RETURNING *`      ,
+   "Q425":`INSERT INTO sales_playbook (company_id, user_id, resources, background, vision_mission, vision_mission_image, product_image, customer_profiling, lead_processes, sales_strategies, scenario_data, sales_best_practices,sales_best_practices_image)
+           VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}', '{var13}') RETURNING *` ,
    "Q426":`SELECT
             sp.id,
             sp.resources,
@@ -4363,36 +4363,25 @@ ORDER BY
             sp.lead_processes,
             sp.sales_strategies,
             sp.scenario_data,
-            sp.sales_best_practices
+            sp.sales_best_practices,
+            sp.sales_best_practices_image
           FROM
             sales_playbook sp
           WHERE
             sp.company_id = '{var1}' AND sp.deleted_at IS NULL`,
   "Q427":`SELECT 
-            cus.id, cus.customer_name, u.full_name AS created_by,
-            (SELECT COUNT(*) FROM sales s WHERE s.customer_id = cus.id) AS sales_count
+            cus.id, cus.customer_name,
+            COALESCE((SELECT COUNT(*) FROM sales s WHERE s.customer_id = cus.id), 0) AS sales_count,
+            COALESCE((SELECT SUM(s.target_amount::numeric) FROM sales s WHERE s.customer_id = cus.id), 0) AS total_target_amount
           FROM 
-            customer_companies AS cus 
-          LEFT JOIN 
-            users AS u ON u.id = cus.user_id  	    
+            customer_companies AS cus 	    
           WHERE 
             cus.company_id = '{var1}' AND cus.deleted_at IS NULL
-            AND u.deleted_at IS NULL 
+
           ORDER BY
-          sales_count DESC`,
+            total_target_amount DESC
+            LIMIT 10`,
   "Q428":`SELECT 
-          cus.id, cus.customer_name, u.full_name AS created_by,
-          (SELECT COUNT(*) FROM sales s WHERE s.customer_id = cus.id) AS sales_count
-        FROM 
-          customer_companies AS cus 
-        LEFT JOIN 
-          users AS u ON u.id = cus.user_id  	    
-        WHERE 
-          cus.user_id IN ({var1}) AND cus.deleted_at IS NULL
-          AND u.deleted_at IS NULL 
-        ORDER BY
-        sales_count DESC`,
-  "Q429":`SELECT 
             u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
             u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
             u1.is_main_admin,u1.is_deactivated,u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName,
@@ -4411,30 +4400,69 @@ ORDER BY
             AND u1.is_deactivated = '{var2}' 
           ORDER BY 
             created_at ASC `,
-  "Q430": `SELECT 
-              u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
-              u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
-              u1.is_main_admin, u1.created_by,u1.is_deactivated, u2.full_name AS creator_name, r.role_name AS roleName,
-              u1.assigned_to,u3.full_name as assigned_user_name, u1.updated_at
-              FROM 
-                users AS u1 
-              LEFT JOIN 
-                users AS u2 ON u2.id = u1.created_by
-              LEFT JOIN 
-                users AS u3 ON u3.id = u1.assigned_to
-              LEFT JOIN 
-                roles as r on r.id = u1.role_id
-            WHERE 
-              u1.id IN ({var1}) AND u1.deleted_at IS NULL 
-              AND u1.is_deactivated = '{var2}'
-            ORDER BY 
-              created_at ASC`,
-  "Q431": `SELECT cce.id,cce.source as source_id,cce.marketing_qualified_lead, ls.source as source_name
+  "Q429": `SELECT cce.id,cce.source as source_id,cce.marketing_qualified_lead, ls.source as source_name
             FROM customer_company_employees AS cce
             LEFT JOIN lead_sources AS ls ON cce.source = ls.id
             WHERE cce.company_id = '{var1}' AND cce.emp_type = 'lead'
             AND cce.deleted_at IS NULL
-            ORDER BY source_name ASC`                                                                 
+            ORDER BY source_name ASC`,
+  "Q430":`SELECT
+            p.id AS product_id,
+            p.product_name,
+            -- Sum of target_amount for Q1 (January to March)
+            SUM(CASE WHEN s.created_at >= '{var1}' AND s.created_at < '{var2}' THEN s.target_amount::numeric ELSE 0 END) AS total_target_amount
+          FROM
+            products AS p
+          LEFT JOIN
+            product_in_sales AS pis ON p.id = pis.product_id
+          LEFT JOIN
+            sales AS s ON pis.sales_id = s.id
+          WHERE
+            p.company_id = '{var3}' AND p.deleted_at IS NULL
+          GROUP BY
+            p.id, p.product_name
+          ORDER BY
+            total_target_amount DESC
+          LIMIT 10   `,
+  "Q431":`SELECT  
+            su.user_id, 
+            u.full_name,
+            array_agg(DISTINCT su.sales_id) AS sales_ids  
+          FROM 
+            sales_users su
+          LEFT JOIN 
+            users u ON su.user_id = u.id
+          LEFT JOIN
+            sales s ON su.sales_id = s.id
+          WHERE 
+            su.user_type = 'captain' AND
+            su.company_id = '{var1}' AND su.deleted_at IS NULL
+            AND s.closed_at IS NOT NULL
+          GROUP BY 
+            su.user_id,
+            u.full_name;`,
+  "Q432": `SELECT
+            DISTINCT(s.id),
+            c.customer_name,
+            s.created_at,
+            s.closed_at,
+            (DATE_PART('epoch', s.closed_at) - DATE_PART('epoch', s.created_at)) / 86400.0 AS duration_in_days
+          FROM
+            sales s
+            LEFT JOIN sales_users su ON s.id = su.sales_id 
+            LEFT JOIN users u ON su.user_id = u.id
+            LEFT JOIN customer_companies c ON s.customer_id = c.id
+          WHERE
+          s.id IN ({var2})
+            AND s.closed_at IS NOT NULL
+          GROUP BY
+            s.id,
+            c.customer_name,
+            s.created_at,
+            s.closed_at
+          ORDER BY
+            s.id ASC`,
+  "Q433": `select sales_id,COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) GROUP BY sales_id`,                                                                                                              
         
 }
 

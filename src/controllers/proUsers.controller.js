@@ -580,7 +580,6 @@ module.exports.callback = async (req, res) => {
             }
             if (provider.toLowerCase() == 'salesforce') {
                 //generating access token using authorization code for salesforce
-
                 await connection.query('BEGIN')
                 const authorizationCode = code; // The code received from the redirect URL
                 const data = new FormData();
@@ -596,7 +595,6 @@ module.exports.callback = async (req, res) => {
                     }
                 })
                     .then(async (response) => {
-
                         const expiresIn = 7200; // Default expiration time for Salesforce access tokens
                         const issuedAt = new Date(parseInt(response.data.issued_at));
                         const expirationTime = new Date(issuedAt.getTime() + expiresIn * 1000).toISOString();
@@ -645,6 +643,7 @@ module.exports.callback = async (req, res) => {
                         }
                     })
                     .catch((error) => {
+                        console.log(error)
                         console.error(error.response.data);
                     });
             }
@@ -970,7 +969,6 @@ module.exports.leadReSync = async (req, res) => {
                                 'Content-Type': 'application/x-www-form-urlencoded'
                             }
                         };
-
                         axios.post('https://login.salesforce.com/services/oauth2/token', data, config)
                             .then(async (res) => {
                                 const expiresIn = 7200; // Default expiration time for Salesforce access tokens
@@ -978,7 +976,6 @@ module.exports.leadReSync = async (req, res) => {
                                 const expirationTime = new Date(issuedAt.getTime() + expiresIn * 1000).toISOString();
 
                                 accessToken = res.data.access_token
-
                                 let s4 = dbScript(db_sql['Q325'], { var1: res.data.access_token, var2: true, var3: accessData.salesforce_refresh_token, var4: expirationTime, var5: accessData.user_id, var6: accessData.company_id })
                                 let storeAccessToken = await connection.query(s4)
                             })
@@ -1013,9 +1010,7 @@ module.exports.leadReSync = async (req, res) => {
                                         if (findSyncLead.rowCount == 0) {
                                             for (let data of response.data.records) {
                                                 let titleId = await titleFn(data.Title, accessData.company_id)
-
                                                 let sourceId = await sourceFn(data.LeadSource, accessData.company_id)
-
                                                 let industryId = await industryFn(data.Industry, accessData.company_id)
 
                                                 let customerId = await customerFnForsalesforce(data, accessData, industryId)
@@ -1029,7 +1024,6 @@ module.exports.leadReSync = async (req, res) => {
                                                     if (new Date(accessData.salesforce_last_sync) < new Date(data.LastModifiedDate)) {
                                                         //checing if the last modification date is greater then last resync date if true then updating data
                                                         let titleId = await titleFn(data.Title, accessData.company_id)
-
                                                         let sourceId = await sourceFn(data.LeadSource, accessData.company_id)
 
                                                         let industryId = await industryFn(data.Industry, accessData.company_id)
@@ -1394,7 +1388,6 @@ module.exports.proLeadsList = async (req, res) => {
             if (provider.toLowerCase() == 'all') {
                 let s4 = dbScript(db_sql['Q415'], { var1: roleUsers.join(","), var2: type })
                 findLeadList = await connection.query(s4)
-                console.log(s4);
             } else {
                 //for perticular provider
                 let s5 = dbScript(db_sql['Q416'], { var1: roleUsers.join(","), var2: type, var3: provider.toLowerCase() })
