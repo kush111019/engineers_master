@@ -967,111 +967,140 @@ module.exports.createCompanyPlaybook = async (req, res) => {
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0 && findAdmin.rows[0].is_main_admin) {
-            let s3;
+            let updateMetaData;
             if (background) {
-                s3 = dbScript(db_sql['Q434'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(background), })
+               let s3 = dbScript(db_sql['Q434'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(background), var4: mysql_real_escape_string(id) })
+               updateMetaData = await connection.query(s3)
             }
             if (vision_mission) {
-                s3 = dbScript(db_sql['Q435'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(vision_mission), })
+                let s3 = dbScript(db_sql['Q435'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(vision_mission), var4: mysql_real_escape_string(id) })
+                 updateMetaData = await connection.query(s3)
             }
             if (documentation_title) {
-                s3 = dbScript(db_sql['Q436'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(documentation_title) })
+                let s3 = dbScript(db_sql['Q436'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(documentation_title) , var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (vision_mission_image) {
-                s3 = dbScript(db_sql['Q437'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(vision_mission_image), })
+                let s3 = dbScript(db_sql['Q437'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(vision_mission_image),var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (product_image) {
-                s3 = dbScript(db_sql['Q438'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(product_image), })
+                let s3 = dbScript(db_sql['Q438'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(product_image), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (customer_profiling && typeof customer_profiling === 'object') {
                 const escapedDataCustomerProfiling = {
                     columns: customer_profiling.columns,
                     rows: customer_profiling.rows.map(row => row.map(value => mysql_real_escape_string(value)))
                 };
-                s3 = dbScript(db_sql['Q439'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(escapedDataCustomerProfiling) })
+                let s3 = dbScript(db_sql['Q439'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(escapedDataCustomerProfiling) , var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (lead_processes) {
-                s3 = dbScript(db_sql['Q440'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(lead_processes), })
+                let s3 = dbScript(db_sql['Q440'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(lead_processes), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (sales_strategies) {
-                s3 = dbScript(db_sql['Q441'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_strategies), })
+                let s3 = dbScript(db_sql['Q441'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_strategies), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (scenario_data) {
                 let escapedArrayScenarioData = escapedArray(scenario_data)
-                s3 = dbScript(db_sql['Q442'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(escapedArrayScenarioData), })
+                let s3 = dbScript(db_sql['Q442'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(escapedArrayScenarioData), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (sales_best_practices) {
-                s3 = dbScript(db_sql['Q443'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_best_practices), })
+                let s3 = dbScript(db_sql['Q443'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_best_practices), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (sales_best_practices_image) {
-                s3 = dbScript(db_sql['Q444'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_best_practices_image), })
+                let s3 = dbScript(db_sql['Q444'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_best_practices_image), var4: mysql_real_escape_string(id)})
+                updateMetaData = await connection.query(s3)
             }
             if (id) {
-                s3 = dbScript(db_sql['Q445'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(id) })
+                let s3 = dbScript(db_sql['Q445'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(id) , var4: mysql_real_escape_string(id)})
+                updateMetaData = await connection.query(s3)
             }
             if (documentation) {
-                s3 = dbScript(db_sql['Q446'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(documentation), })
+                let s3 = dbScript(db_sql['Q446'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(documentation), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (sales_stack) {
-                s3 = dbScript(db_sql['Q447'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_stack) })
+                let s3 = dbScript(db_sql['Q447'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_stack), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (sales_stack_title) {
-                s3 = dbScript(db_sql['Q448'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_stack_title), })
+                let s3 = dbScript(db_sql['Q448'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_stack_title), var4: mysql_real_escape_string(id)})
+                updateMetaData = await connection.query(s3)
             }
             if (resources_title) {
-                s3 = dbScript(db_sql['Q449'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(resources_title) })
+                let s3 = dbScript(db_sql['Q449'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(resources_title), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if ( vision_mission_title) {
-                s3 = dbScript(db_sql['Q450'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(vision_mission_title), })
+                let s3 = dbScript(db_sql['Q450'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(vision_mission_title), var4: mysql_real_escape_string(id)})
+                updateMetaData = await connection.query(s3)
             }
             if (background_title) {
-                s3 = dbScript(db_sql['Q451'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(background_title), })
+                let s3 = dbScript(db_sql['Q451'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(background_title), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (company_overview_title) {
-                s3 = dbScript(db_sql['Q452'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(company_overview_title), })
+                let s3 = dbScript(db_sql['Q452'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(company_overview_title), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (product_pricing_title) {
-                s3 = dbScript(db_sql['Q453'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(product_pricing_title), })
+                let s3 = dbScript(db_sql['Q453'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(product_pricing_title), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (customer_profiling_title) {
-                s3 = dbScript(db_sql['Q454'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(customer_profiling_title), })
+                let s3 = dbScript(db_sql['Q454'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(customer_profiling_title), var4: mysql_real_escape_string(id)})
+                updateMetaData = await connection.query(s3)
             }
             if (sales_processes_title) {
-                s3 = dbScript(db_sql['Q455'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_processes_title), })
+                let s3 = dbScript(db_sql['Q455'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_processes_title), var4: mysql_real_escape_string(id)})
+                updateMetaData = await connection.query(s3)
             }
             if (qualified_lead_title) {
-                s3 = dbScript(db_sql['Q456'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(qualified_lead_title), })
+                let  s3 = dbScript(db_sql['Q456'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(qualified_lead_title), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (lead_processes_title) {
-                s3 = dbScript(db_sql['Q457'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(lead_processes_title), })
+                let s3 = dbScript(db_sql['Q457'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(lead_processes_title), var4: mysql_real_escape_string(id)})
+                updateMetaData = await connection.query(s3)
             }
             if (sales_strategies_title) {
-                s3 = dbScript(db_sql['Q458'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_strategies_title), })
+                let s3 = dbScript(db_sql['Q458'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_strategies_title), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (top_customer_title) {
-                s3 = dbScript(db_sql['Q459'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(top_customer_title), })
+                let s3 = dbScript(db_sql['Q459'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(top_customer_title), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (top_product_title) {
-                s3 = dbScript(db_sql['Q460'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(top_product_title), })
+                let s3 = dbScript(db_sql['Q460'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(top_product_title), var4: mysql_real_escape_string(id)})
+                updateMetaData = await connection.query(s3)
             }
             if (sales_analysis_title) {
-                s3 = dbScript(db_sql['Q461'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_analysis_title), })
+                let s3 = dbScript(db_sql['Q461'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_analysis_title), var4: mysql_real_escape_string(id)})
+                updateMetaData = await connection.query(s3)
             }
             if (sales_scenarios_title) {
-                s3 = dbScript(db_sql['Q462'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_scenarios_title), })
+                let s3 = dbScript(db_sql['Q462'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_scenarios_title), var4: mysql_real_escape_string(id)})
+                updateMetaData = await connection.query(s3)
             }
             if (team_role_title) {
-                s3 = dbScript(db_sql['Q463'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(team_role_title) })
+                let s3 = dbScript(db_sql['Q463'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(team_role_title), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             if (sales_best_practice_title) {
-                s3 = dbScript(db_sql['Q464'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_best_practice_title) })
+                let s3 = dbScript(db_sql['Q464'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: mysql_real_escape_string(sales_best_practice_title), var4: mysql_real_escape_string(id) })
+                updateMetaData = await connection.query(s3)
             }
             // let escapedArrayCustomerPorfiling = escapedArray(customer_profiling)
-            // 
             // let _dt = new Date().toISOString()
             // let s2 = dbScript(db_sql['Q424'], { var1: findAdmin.rows[0].company_id, var2: findAdmin.rows[0].id, var3: JSON.stringify(escapedResourcesObject), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(vision_mission), var6: vision_mission_image, var7: product_image, var8: JSON.stringify(escapedDataCustomerProfiling), var9: mysql_real_escape_string(lead_processes), var10: mysql_real_escape_string(sales_strategies), var11: JSON.stringify(escapedArrayScenarioData), var12: mysql_real_escape_string(sales_best_practices), var13: _dt, var14: id, var15 : sales_best_practices_image })
-
-            let updateMetaData = await connection.query(s3)
+            //  updateMetaData = await connection.query(s3)
             if (updateMetaData.rowCount > 0) {
                 await connection.query("COMMIT")
                 res.json({
@@ -1107,6 +1136,7 @@ module.exports.createCompanyPlaybook = async (req, res) => {
 module.exports.showPlayBook = async (req, res) => {
     try {
         let userId = req.user.id;
+        console.log("USERID ", userId);
         let s0 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s0)
         if (findAdmin.rowCount > 0) {
