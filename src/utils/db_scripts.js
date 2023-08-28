@@ -4364,7 +4364,9 @@ ORDER BY
             sp.sales_strategies,
             sp.scenario_data,
             sp.sales_best_practices,
-            sp.sales_best_practices_image
+            sp.sales_best_practices_image,
+            sp.documentation,
+            sp.sales_stack
           FROM
             sales_playbook sp
           WHERE
