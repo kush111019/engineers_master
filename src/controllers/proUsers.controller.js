@@ -1968,7 +1968,7 @@ module.exports.sendEmailToLead = async (req, res) => {
                 let insertLeadEmail;
                 for (const bulkEmail of leadEmail ) {
                     if(eventId){
-                        let s3 = dbScript(db_sql['Q466'], { var1: userId, var2: eventId, var3: bulkEmail, var4: templateName, var5: mysql_real_escape_string2(template), var6: description })
+                        let s3 = dbScript(db_sql['Q466'], { var1: userId, var2: eventId, var3: bulkEmail, var4: templateName, var5: mysql_real_escape_string(template), var6: description })
                         insertLeadEmail = await connection.query(s3)
                     }
                 }
