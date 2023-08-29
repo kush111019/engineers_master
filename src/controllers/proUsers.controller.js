@@ -2023,9 +2023,10 @@ module.exports.getEmailToLead = async (req, res) => {
                 })
             } else {
                 res.json({
-                    status: 404,
-                    success: false,
+                    status: 200,
+                    success: true,
                     message: "No Email Found",
+                    data:[]
                 })
             }
         } else {
