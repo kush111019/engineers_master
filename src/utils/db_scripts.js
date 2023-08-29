@@ -4430,6 +4430,7 @@ ORDER BY
   "Q430": `SELECT
             p.id AS product_id,
             p.product_name,
+            p.product_image,
             -- Sum of target_amount for Q1 (January to March)
             SUM(CASE WHEN s.created_at >= '{var1}' AND s.created_at < '{var2}' THEN s.target_amount::numeric ELSE 0 END) AS total_target_amount
           FROM
