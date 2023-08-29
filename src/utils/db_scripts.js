@@ -4384,7 +4384,8 @@ ORDER BY
             sp.sales_best_practices,
             sp.sales_best_practice_title,
             sp.scenario_data,
-            sp.sales_best_practices_image
+            sp.sales_best_practices_image,
+            sp.sales_presentation_title
           FROM
             sales_playbook sp
           WHERE
@@ -4514,6 +4515,7 @@ ORDER BY
   "Q462": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_scenarios_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
   "Q463": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',team_role_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
   "Q464": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_best_practice_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q465": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_presentation_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
 }
 
 function dbScript(template, variables) {
