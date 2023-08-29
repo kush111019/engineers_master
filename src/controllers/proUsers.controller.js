@@ -1939,7 +1939,7 @@ module.exports.sendEmailToLead = async (req, res) => {
     try {
         let userId = req.user.id
         let { isProUser } = req.user
-        let { template, leadEmail, templateName, description } = req.body
+        let { template, leadEmail, templateName, description, eventId } = req.body
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0 && isProUser) {
@@ -1954,7 +1954,6 @@ module.exports.sendEmailToLead = async (req, res) => {
                 credentialObj.smtpHost = findCreds.rows[0].smtp_host
                 credentialObj.smtpPort = findCreds.rows[0].smtp_port
 
-
                 // checking if emailTemplate is contains {content} section
                 if (!template.includes('{content}')) {
                     // throw new Error('Email template does not contain {content} section.');
@@ -1966,7 +1965,15 @@ module.exports.sendEmailToLead = async (req, res) => {
                 }
                 //replacing the content of the template from the description when sending the mail to lead
                 const result = template.replace('{content}', description);
-
+                let insertLeadEmail;
+                for (const bulkEmail of leadEmail ) {
+                    if(eventId){
+                        let s3 = dbScript(db_sql['Q466'], { var1: userId, var2: eventId, var3: bulkEmail, var4: templateName, var5: template, var6: description })
+                        insertLeadEmail = await connection.query(s3)
+                    }
+                }
+                //SENDER LIST
+                //USERID, SENDER_ID_LIST, TEMPLATE_ID, DESCRIPTION, IS_OPEN, IS_BOOKED
                 await leadEmail2(leadEmail, result, templateName, credentialObj);
                 res.json({
                     status: 200,
@@ -1982,6 +1989,45 @@ module.exports.sendEmailToLead = async (req, res) => {
                 })
             }
 
+        } else {
+            res.status(403).json({
+                success: false,
+                message: "Unathorised"
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+//get email to lead
+module.exports.getEmailToLead = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let eventId = req.query.eventId
+        let s1 = dbScript(db_sql['Q8'], { var1: userId })
+        let findAdmin = await connection.query(s1)
+        if (findAdmin.rowCount > 0) {
+            let s2 = dbScript(db_sql['Q467'], { var1: userId, var2: eventId })
+            let eventList = await connection.query(s2)
+            if (eventList.rowCount > 0) {
+                res.json({
+                    status: 200,
+                    success: true,
+                    message: "Email Send List Show Successfully",
+                    data: eventList.rows
+                })
+            } else {
+                res.json({
+                    status: 404,
+                    success: false,
+                    message: "No Email Found",
+                })
+            }
         } else {
             res.status(403).json({
                 success: false,
@@ -2348,7 +2394,7 @@ module.exports.updateAvailability = async (req, res) => {
                         for (let subTs of ts.timeSlot) {
                             // converting local time to utc time
                             const { utcStart, utcEnd } = await convertToLocal(subTs.startTime, subTs.endTime, timezone);
-                            let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: utcStart, var3: utcEnd, var4: availabilityId, var5: findAdmin.rows[0].company_id, var6: ts.checked, var7: userId})
+                            let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: utcStart, var3: utcEnd, var4: availabilityId, var5: findAdmin.rows[0].company_id, var6: ts.checked, var7: userId })
                             let addTimeSlot = await connection.query(s3)
                         }
                     } else {

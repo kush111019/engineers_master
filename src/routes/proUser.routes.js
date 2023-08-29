@@ -26,6 +26,7 @@ router.put('/deleteEmailTemplate',verifyTokenFnForPro,checkParams,controller.pro
 router.post('/addSmtpCreds',verifyTokenFnForPro,checkParams, controller.proUser.addSmtpCreds)
 router.get('/credentialList', verifyTokenFnForPro,checkParams, controller.proUser.credentialList)
 router.post('/sendEmailToLead', verifyTokenFnForPro,checkParams,controller.proUser.sendEmailToLead)
+router.get('/getEmailToLead', verifyTokenFnForPro,checkParams,controller.proUser.getEmailToLead)
 
 //event and calendar for pro
 router.post('/createEvent',verifyTokenFnForPro,checkParams,controller.proUser.createEvent)

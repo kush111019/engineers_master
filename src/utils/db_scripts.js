@@ -4517,7 +4517,10 @@ ORDER BY
   "Q463": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',team_role_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
   "Q464": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_best_practice_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
   "Q465": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_presentation_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q466": `INSERT INTO event_sender_list( user_id, event_id, lead_email, template_name, template, description) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+  "Q467": `SELECT * FROM event_sender_list WHERE user_id = '{var1}' AND event_id = '{var2}'`,
 }
+
 
 function dbScript(template, variables) {
   if (variables != null && Object.keys(variables).length > 0) {
