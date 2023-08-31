@@ -117,7 +117,12 @@ module.exports.marketingDashboard = async (req, res) => {
                     }
                 });
             });
-            const LeadCount = Object.values(counts);
+            let LeadCount = Object.values(counts);
+            if(orderBy === 'asc') {
+                LeadCount = LeadCount.sort((a, b) => parseFloat(a.count) - parseFloat(b.count));
+            } else {
+                LeadCount = LeadCount.sort((a, b) => parseFloat(b.count) - parseFloat(a.count));
+            }
             let paginatedArr = await paginatedResults(LeadCount, page)
             res.json({
                 status: 200,
