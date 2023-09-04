@@ -3702,6 +3702,7 @@ ORDER BY
             AND s.sales_type = 'Subscription'
             AND s.deleted_at IS NULL
             AND s.archived_at IS NULL
+            AND s.closed_at IS NOT NULL
             AND cc.deleted_at IS NULL
             AND cc.archived_at IS NULL
             AND s.recurring_date >= '{var1}'
