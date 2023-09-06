@@ -1238,7 +1238,7 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                                     companyName: companyData.company_name,
                                     companyAddress: companyData.company_address,
                                     companyLogo: companyData.company_logo,
-                                    status: subscription.status,
+                                    status: "active",
                                     createdAt: companyData.created_at,
                                     isLocked : companyData.is_locked
                                 })
@@ -1248,7 +1248,7 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                                     companyName: companyData.company_name,
                                     companyAddress: companyData.company_address,
                                     companyLogo: companyData.company_logo,
-                                    status: subscription.status,
+                                    status: "canceled",
                                     createdAt: companyData.created_at,
                                     isLocked : companyData.is_locked
                                 })
