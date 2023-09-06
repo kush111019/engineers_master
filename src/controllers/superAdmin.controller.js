@@ -1219,10 +1219,8 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
         let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
-
             let s2 = dbScript(db_sql['Q89'], {})
             let companies = await connection.query(s2)
-
             if (companies.rowCount > 0) {
                 let activeCompanies = []
                 let canceledCompanies = []
@@ -1230,29 +1228,31 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                     let s3 = dbScript(db_sql['Q97'], { var1: companyData.id })
                     let transaction = await connection.query(s3);
                     if (transaction.rowCount > 0) {
-                        const subscription = await stripe.subscriptions.retrieve(
-                            transaction.rows[0].stripe_subscription_id
-                        );
-                        if (subscription.status == 'active') {
-                            activeCompanies.push({
-                                companyId: companyData.id,
-                                companyName: companyData.company_name,
-                                companyAddress: companyData.company_address,
-                                companyLogo: companyData.company_logo,
-                                status: subscription.status,
-                                createdAt: companyData.created_at,
-                                isLocked : companyData.is_locked
-                            })
-                        } else if (subscription.status == 'canceled') {
-                            canceledCompanies.push({
-                                companyId: companyData.id,
-                                companyName: companyData.company_name,
-                                companyAddress: companyData.company_address,
-                                companyLogo: companyData.company_logo,
-                                status: subscription.status,
-                                createdAt: companyData.created_at,
-                                isLocked : companyData.is_locked
-                            })
+                        for (transactionData of transaction.rows) {
+                            const subscription = await stripe.subscriptions.retrieve(
+                                transaction.rows[0].stripe_subscription_id
+                            );
+                            if (transactionData.is_canceled === false ) {
+                                activeCompanies.push({
+                                    companyId: companyData.id,
+                                    companyName: companyData.company_name,
+                                    companyAddress: companyData.company_address,
+                                    companyLogo: companyData.company_logo,
+                                    status: subscription.status,
+                                    createdAt: companyData.created_at,
+                                    isLocked : companyData.is_locked
+                                })
+                            } else if (transactionData.is_canceled === true) {
+                                canceledCompanies.push({
+                                    companyId: companyData.id,
+                                    companyName: companyData.company_name,
+                                    companyAddress: companyData.company_address,
+                                    companyLogo: companyData.company_logo,
+                                    status: subscription.status,
+                                    createdAt: companyData.created_at,
+                                    isLocked : companyData.is_locked
+                                })
+                            }
                         }
                     }
                 }
@@ -1277,7 +1277,6 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                         }
                     })
                 }
-
             } else {
                 res.json({
                     status: 200,
@@ -1286,8 +1285,6 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                     data: []
                 })
             }
-
-
         } else {
             res.json({
                 status: 400,
