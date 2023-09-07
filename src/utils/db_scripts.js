@@ -827,18 +827,29 @@ ORDER BY
                 id, company_name, company_logo, company_address, is_imap_enable, created_at, is_locked 
               FROM companies 
               WHERE deleted_at IS NULL AND created_at BETWEEN '{var1}' AND '{var2}' AND is_locked = false`,
-  "Q146": `SELECT 
-                  sc.id AS sales_commission_id, 
-                  SUM(sc.target_amount::DECIMAL) as amount,
-                  sc.closed_at, sc.slab_id
-                FROM
-                  sales AS sc 
-                WHERE 
-                  sc.company_id = '{var1}' AND 
-                  sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
-                GROUP BY 
-                  sc.closed_at,
-                  sc.id, sc.slab_id`,
+  "Q146": `SELECT
+      sc.company_id,
+      sc.id AS sales_commission_id,
+          SUM(
+            CASE
+              WHEN sc.archived_at IS NULL THEN sc.target_amount::DECIMAL
+              ELSE 0  -- Ignore other cases
+            END
+          ) AS amount,
+          sc.closed_at,
+          sc.slab_id
+        FROM
+          sales AS sc
+        WHERE
+          sc.company_id = '{var1}' AND
+          sc.deleted_at IS NULL AND
+          sc.closed_at IS NOT NULL
+        GROUP BY
+        sc.company_id,
+          sc.closed_at,
+          sc.id,
+          sc.slab_id
+          `,
   "Q147": `SELECT id, closer_percentage, supporter_percentage, deleted_at FROM commission_split WHERE company_id ='{var1}'`,
   "Q148": `SELECT
                 s.slab_id, s.slab_name, s.commission_split_id, c.closer_percentage,c.supporter_percentage,
@@ -4351,8 +4362,8 @@ ORDER BY
               AND sc.deleted_at IS NULL
               AND u.deleted_at IS NULL;`,
   "Q424": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',resources = '{var3}',background = '{var4}',vision_mission = '{var5}', vision_mission_image = '{var6}', product_image = '{var7}', customer_profiling = '{var8}', lead_processes = '{var9}', sales_strategies = '{var10}', scenario_data = '{var11}', sales_best_practices = '{var12}',sales_best_practices_image = '{var15}', updated_at = '{var13}' WHERE id = '{var14}' RETURNING *`,
-  "Q425": `INSERT INTO sales_playbook (company_id, user_id, resources, background, vision_mission, vision_mission_image, product_image, customer_profiling, lead_processes, sales_strategies, scenario_data, sales_best_practices,sales_best_practices_image)
-           VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}', '{var13}') RETURNING *` ,
+  "Q425": `INSERT INTO sales_playbook (company_id, user_id, background, vision_mission, vision_mission_image, product_image, customer_profiling, lead_processes, sales_strategies, scenario_data, sales_best_practices, sales_best_practices_image, resources_title,documentation,documentation_title,sales_stack,sales_stack_title,company_overview_title,background_title,vision_mission_title,product_pricing_title,customer_profiling_title,sales_processes_title,lead_processes_title,sales_strategies_title,qualified_lead_title,top_customer_title,top_product_title,sales_analysis_title,sales_scenarios_title,team_role_title,sales_best_practice_title,sales_presentation_title)
+           VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}', '{var13}','{var14}','{var15}','{var16}','{var17}','{var18}','{var19}','{var20}','{var21}','{var22}','{var23}','{var24}','{var25}','{var26}','{var27}','{var28}','{var29}','{var30}','{var31}','{var32}','{var33}') RETURNING *` ,
   "Q426": `SELECT
             sp.id,
             sp.resources,
@@ -4520,8 +4531,18 @@ ORDER BY
   "Q465": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_presentation_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
   "Q466": `INSERT INTO event_sender_list( user_id, event_id, lead_email, template_name, template, description) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
   "Q467": `SELECT * FROM event_sender_list WHERE user_id = '{var1}' AND event_id = '{var2}'`,
+  "Q468": `SELECT company_id, TO_CHAR(SUM(replace(recognized_amount, ',', '')::NUMERIC), 'FM9,999,999') AS amount
+    FROM recognized_revenue
+    WHERE sales_id IN (
+        SELECT id
+        FROM sales
+        WHERE archived_at IS NOT NULL AND closed_at IS NOT NULL
+            AND company_id = '{var1}'
+    )
+    AND deleted_at IS NULL
+    GROUP BY company_id`
 }
-
+;
 
 function dbScript(template, variables) {
   if (variables != null && Object.keys(variables).length > 0) {
