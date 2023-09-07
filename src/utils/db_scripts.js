@@ -717,7 +717,7 @@ ORDER BY
   "Q104": `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade  FROM transactions WHERE plan_id = '{var1}' AND deleted_at IS NULL`,
   "Q105": `UPDATE transactions SET stripe_customer_id = '{var1}', stripe_subscription_id = '{var2}', 
               stripe_card_id = '{var3}', stripe_token_id = '{var4}', stripe_charge_id = '{var5}', 
-              expiry_date = '{var6}', updated_at = '{var7}', total_amount = '{var9}', immediate_upgrade = '{var10}', payment_receipt = '{var11}', user_count = '{var12}', plan_id = '{var13}', upgraded_transaction_id = '{var14}', pro_user_count = '{var15}'  WHERE id = '{var8}' AND deleted_at IS NULL RETURNING *`,
+              expiry_date = '{var6}', updated_at = '{var7}', total_amount = '{var9}', immediate_upgrade = '{var10}', payment_receipt = '{var11}', user_count = '{var12}', plan_id = '{var13}', upgraded_transaction_id = '{var14}', pro_user_count = '{var15}' , is_canceled = '{var16}'  WHERE id = '{var8}' AND deleted_at IS NULL RETURNING *`,
   "Q106": `UPDATE transactions SET is_canceled = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
   "Q107": `SELECT id, chat_name, is_group_chat, last_message, group_admin,user_a, user_b, 
               created_at FROM chat 

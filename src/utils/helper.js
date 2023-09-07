@@ -206,7 +206,7 @@ module.exports.immediateUpgradeSubFn = async (req, res, user, transaction) => {
                 var3: card.id, var4: token.id, var5: charge.id, var6: subscription.current_period_end,
                 var7: _dt, var8: transaction.rows[0].id, var9: Math.round(totalAmount), var10: true,
                 var11: charge.receipt_url, var12: userCount, var13: planId, var14: "",
-                var15: proUserCount
+                var15: proUserCount, var16: false
             })
             let updateTransaction = await connection.query(s3)
 
@@ -308,7 +308,7 @@ module.exports.laterUpgradeSubFn = async (req, res, user, transaction) => {
             })
             let createUpgradedTransaction = await connection.query(s3)
 
-            let s4 = dbScript(db_sql['Q105'], { var1: transaction.rows[0].stripe_customer_id, var2: transaction.rows[0].stripe_subscription_id, var3: transaction.rows[0].stripe_card_id, var4: transaction.rows[0].stripe_token_id, var5: transaction.rows[0].stripe_charge_id, var6: transaction.rows[0].expiry_date, var7: _dt, var8: transaction.rows[0].id, var9: transaction.rows[0].total_amount, var10: false, var11: transaction.rows[0].payment_receipt, var12: transaction.rows[0].user_count, var13: transaction.rows[0].plan_id, var14: createUpgradedTransaction.rows[0].id, var15: proUserCount })
+            let s4 = dbScript(db_sql['Q105'], { var1: transaction.rows[0].stripe_customer_id, var2: transaction.rows[0].stripe_subscription_id, var3: transaction.rows[0].stripe_card_id, var4: transaction.rows[0].stripe_token_id, var5: transaction.rows[0].stripe_charge_id, var6: transaction.rows[0].expiry_date, var7: _dt, var8: transaction.rows[0].id, var9: transaction.rows[0].total_amount, var10: false, var11: transaction.rows[0].payment_receipt, var12: transaction.rows[0].user_count, var13: transaction.rows[0].plan_id, var14: createUpgradedTransaction.rows[0].id, var15: proUserCount , var16: false })
             let updateTransaction = await connection.query(s4)
 
             if (createUpgradedTransaction.rowCount > 0 && updateTransaction.rowCount > 0) {
