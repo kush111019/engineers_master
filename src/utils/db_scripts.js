@@ -499,7 +499,7 @@ WHERE
   sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.archived_at IS NOT NULL
 ORDER BY
   sc.created_at DESC;`,
-    "Q73": `SELECT
+  "Q73": `SELECT
               sc.id, sc.customer_id, sc.customer_commission_split_id AS commission_split_id,
               sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
               sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
@@ -717,7 +717,7 @@ ORDER BY
   "Q104": `SELECT id, user_id, company_id, plan_id, stripe_customer_id, payment_status, expiry_date,user_count,stripe_subscription_id, stripe_card_id, stripe_token_id, stripe_charge_id, total_amount, immediate_upgrade  FROM transactions WHERE plan_id = '{var1}' AND deleted_at IS NULL`,
   "Q105": `UPDATE transactions SET stripe_customer_id = '{var1}', stripe_subscription_id = '{var2}', 
               stripe_card_id = '{var3}', stripe_token_id = '{var4}', stripe_charge_id = '{var5}', 
-              expiry_date = '{var6}', updated_at = '{var7}', total_amount = '{var9}', immediate_upgrade = '{var10}', payment_receipt = '{var11}', user_count = '{var12}', plan_id = '{var13}', upgraded_transaction_id = '{var14}', pro_user_count = '{var15}'  WHERE id = '{var8}' AND deleted_at IS NULL RETURNING *`,
+              expiry_date = '{var6}', updated_at = '{var7}', total_amount = '{var9}', immediate_upgrade = '{var10}', payment_receipt = '{var11}', user_count = '{var12}', plan_id = '{var13}', upgraded_transaction_id = '{var14}', pro_user_count = '{var15}' , is_canceled = '{var16}'  WHERE id = '{var8}' AND deleted_at IS NULL RETURNING *`,
   "Q106": `UPDATE transactions SET is_canceled = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
   "Q107": `SELECT id, chat_name, is_group_chat, last_message, group_admin,user_a, user_b, 
               created_at FROM chat 
@@ -827,18 +827,29 @@ ORDER BY
                 id, company_name, company_logo, company_address, is_imap_enable, created_at, is_locked 
               FROM companies 
               WHERE deleted_at IS NULL AND created_at BETWEEN '{var1}' AND '{var2}' AND is_locked = false`,
-  "Q146": `SELECT 
-                  sc.id AS sales_commission_id, 
-                  SUM(sc.target_amount::DECIMAL) as amount,
-                  sc.closed_at, sc.slab_id
-                FROM
-                  sales AS sc 
-                WHERE 
-                  sc.company_id = '{var1}' AND 
-                  sc.deleted_at IS NULL AND sc.closed_at IS NOT NULL
-                GROUP BY 
-                  sc.closed_at,
-                  sc.id, sc.slab_id`,
+  "Q146": `SELECT
+      sc.company_id,
+      sc.id AS sales_commission_id,
+          SUM(
+            CASE
+              WHEN sc.archived_at IS NULL THEN sc.target_amount::DECIMAL
+              ELSE 0  -- Ignore other cases
+            END
+          ) AS amount,
+          sc.closed_at,
+          sc.slab_id
+        FROM
+          sales AS sc
+        WHERE
+          sc.company_id = '{var1}' AND
+          sc.deleted_at IS NULL AND
+          sc.closed_at IS NOT NULL
+        GROUP BY
+        sc.company_id,
+          sc.closed_at,
+          sc.id,
+          sc.slab_id
+          `,
   "Q147": `SELECT id, closer_percentage, supporter_percentage, deleted_at FROM commission_split WHERE company_id ='{var1}'`,
   "Q148": `SELECT
                 s.slab_id, s.slab_name, s.commission_split_id, c.closer_percentage,c.supporter_percentage,
@@ -1314,7 +1325,7 @@ ORDER BY
             sc.deleted_at
           ORDER BY
             sc.created_at DESC; `,
-    "Q159": `SELECT
+  "Q159": `SELECT
               sc.id, sc.customer_id, sc.customer_commission_split_id AS commission_split_id,
               sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
               sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
@@ -2675,7 +2686,7 @@ ORDER BY
                 AND l.is_converted = FALSE
             ORDER BY 
               l.created_at DESC`,
-    "Q300": `SELECT
+  "Q300": `SELECT
                 sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
                 sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
                 sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
@@ -2758,7 +2769,7 @@ ORDER BY
                 sc.id, cus.customer_name, u1.full_name, u1.email_address, slab.slab_name, u2.full_name, cus.user_id
               ORDER BY
                 sc.created_at DESC;`,
-        "Q301": `SELECT
+  "Q301": `SELECT
         sc.id, sc.customer_id, sc.customer_commission_split_id AS commission_split_id,
         sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
         sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
@@ -2838,7 +2849,7 @@ ORDER BY
         sc.id, cus.customer_name, u1.full_name, u1.email_address, slab.slab_name, u2.full_name, cus.user_id
     ORDER BY
         sc.created_at DESC;`,
-    "Q302": `SELECT
+  "Q302": `SELECT
                 sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
                 sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
                 sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
@@ -2924,7 +2935,7 @@ ORDER BY
                 sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.revenue_commission::decimal > 0 
               ORDER BY
                 sc.created_at DESC;`,
-    "Q303": `SELECT
+  "Q303": `SELECT
               sc.id, sc.customer_id, sc.customer_commission_split_id AS commission_split_id,
               sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
               sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
@@ -3506,7 +3517,7 @@ ORDER BY
   "Q357": `UPDATE pro_user_events SET event_name = '{var1}', meet_link = '{var2}', description = '{var3}', duration = '{var4}', availability_id = '{var5}', updated_at = '{var7}' WHERE id = '{var6}' RETURNING *`,
   "Q358": `UPDATE pro_user_events SET deleted_at = '{var1}' WHERE id = '{var2}' RETURNING *`,
   "Q359": `SELECT assigned_to FROM forecast WHERE (id = '{var1}' OR pid = '{var1}') AND deleted_at IS NULL`,
-  "Q360":`SELECT * from imap_credentials WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
+  "Q360": `SELECT * from imap_credentials WHERE user_id = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL`,
   "Q361": `UPDATE imap_credentials SET email = '{var1}', app_password = '{var2}', smtp_host = '{var3}', smtp_port = '{var4}', updated_at = '{var6}' WHERE id = '{var5}' AND deleted_at IS NULL RETURNING *`,
   "Q362": `SELECT se.event_id,ue.event_name, se.date, se.start_time, se.end_time, se.lead_name, 
               se.lead_email, se.description as lead_description, 
@@ -3600,7 +3611,7 @@ ORDER BY
   "Q390": `UPDATE companies SET quarter = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
   "Q393": `SELECT start_date FROM pro_quarter_config WHERE company_id = '{var1}' AND quarter = '{var2}' AND deleted_at IS NULL`,
   "Q394": `UPDATE companies SET company_address = '{var1}', updated_at = '{var2}', quarter = '{var4}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
-  "Q395":`SELECT
+  "Q395": `SELECT
             COUNT(*) AS total_lead_count,
             COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS converted_lead_count
           FROM
@@ -3635,46 +3646,46 @@ ORDER BY
               created_at BETWEEN '{var1}' AND '{var2}'
               AND id IN ({var3})
               AND deleted_at IS NULL;` ,
-//   "Q398": `SELECT COALESCE(SUM(rr.recognized_amount::numeric), 0) AS total_amount
-//             FROM recognized_revenue AS rr
-//             WHERE rr.sales_id IN ({var3})
-//             AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') >= '{var1}'
-//             AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') <= '{var2}'
-//             AND rr.deleted_at IS NULL;
-//             `,
-// "Q399": `WITH months AS (
-//             SELECT 
-//               1 AS month_number, 
-//               TO_TIMESTAMP('{var1}', 'YYYY-MM-DD') AS start_date, 
-//               TO_TIMESTAMP('{var2}', 'YYYY-MM-DD') AS end_date
-//             UNION
-//             SELECT 
-//               2 AS month_number, 
-//               TO_TIMESTAMP('{var3}', 'YYYY-MM-DD') AS start_date, 
-//               TO_TIMESTAMP('{var4}', 'YYYY-MM-DD') AS end_date
-//             UNION
-//             SELECT 
-//               3 AS month_number, 
-//               TO_TIMESTAMP('{var5}', 'YYYY-MM-DD') AS start_date, 
-//               TO_TIMESTAMP('{var6}', 'YYYY-MM-DD') AS end_date
-//           )
-//           SELECT 
-//             COALESCE(SUM(r.recognized_amount::numeric), 0) AS total_amount,
-//             m.month_number,
-//             to_char(m.start_date, 'Month') AS start_month,
-//             to_char(m.end_date, 'Month') AS end_month
-//           FROM 
-//             months m
-//           LEFT JOIN 
-//             recognized_revenue r ON r.sales_id IN ({var7})
-//             AND TO_DATE(r.recognized_date, 'MM-DD-YYYY') BETWEEN m.start_date AND m.end_date
-//             AND r.deleted_at IS NULL
-//           GROUP BY 
-//             m.month_number, start_month, end_month
-//           ORDER BY 
-//             m.month_number;
-//           `,
-"Q398": `SELECT s.id, s.target_amount,s.subscription_plan, s.recurring_date, cc.customer_name
+  //   "Q398": `SELECT COALESCE(SUM(rr.recognized_amount::numeric), 0) AS total_amount
+  //             FROM recognized_revenue AS rr
+  //             WHERE rr.sales_id IN ({var3})
+  //             AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') >= '{var1}'
+  //             AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') <= '{var2}'
+  //             AND rr.deleted_at IS NULL;
+  //             `,
+  // "Q399": `WITH months AS (
+  //             SELECT 
+  //               1 AS month_number, 
+  //               TO_TIMESTAMP('{var1}', 'YYYY-MM-DD') AS start_date, 
+  //               TO_TIMESTAMP('{var2}', 'YYYY-MM-DD') AS end_date
+  //             UNION
+  //             SELECT 
+  //               2 AS month_number, 
+  //               TO_TIMESTAMP('{var3}', 'YYYY-MM-DD') AS start_date, 
+  //               TO_TIMESTAMP('{var4}', 'YYYY-MM-DD') AS end_date
+  //             UNION
+  //             SELECT 
+  //               3 AS month_number, 
+  //               TO_TIMESTAMP('{var5}', 'YYYY-MM-DD') AS start_date, 
+  //               TO_TIMESTAMP('{var6}', 'YYYY-MM-DD') AS end_date
+  //           )
+  //           SELECT 
+  //             COALESCE(SUM(r.recognized_amount::numeric), 0) AS total_amount,
+  //             m.month_number,
+  //             to_char(m.start_date, 'Month') AS start_month,
+  //             to_char(m.end_date, 'Month') AS end_month
+  //           FROM 
+  //             months m
+  //           LEFT JOIN 
+  //             recognized_revenue r ON r.sales_id IN ({var7})
+  //             AND TO_DATE(r.recognized_date, 'MM-DD-YYYY') BETWEEN m.start_date AND m.end_date
+  //             AND r.deleted_at IS NULL
+  //           GROUP BY 
+  //             m.month_number, start_month, end_month
+  //           ORDER BY 
+  //             m.month_number;
+  //           `,
+  "Q398": `SELECT s.id, s.target_amount,s.subscription_plan, s.recurring_date, cc.customer_name
             FROM sales AS s
             LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
             WHERE s.id IN ({var3})
@@ -3702,6 +3713,7 @@ ORDER BY
             AND s.sales_type = 'Subscription'
             AND s.deleted_at IS NULL
             AND s.archived_at IS NULL
+            AND s.closed_at IS NOT NULL
             AND cc.deleted_at IS NULL
             AND cc.archived_at IS NULL
             AND s.recurring_date >= '{var1}'
@@ -3771,7 +3783,7 @@ ORDER BY
           GROUP BY 
             su.user_id,
             u.full_name;`,
-  "Q405":`SELECT
+  "Q405": `SELECT
               su.sales_id,
               array_remove(ARRAY_AGG(CASE WHEN su.user_type = 'support' THEN su.user_id ELSE NULL END), NULL) AS ids,
               s.target_amount,
@@ -3801,7 +3813,7 @@ ORDER BY
               fn.notes,
               target_amount
             ORDER BY
-              su.sales_id;`  ,        
+              su.sales_id;`  ,
   // "Q405": `SELECT
   //           su.sales_id,
   //           ARRAY_AGG(su.id) AS ids,
@@ -3937,7 +3949,7 @@ ORDER BY
             pis.product_id,
             pis.sales_id,
           p.end_of_life;`,
- //this was query number 302 now it's 412 that is being used in listForProUser
+  //this was query number 302 now it's 412 that is being used in listForProUser
   "Q412": `SELECT
         sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
         sc.is_overwrite,sc.qualification, sc.is_qualified, sc.target_amount,sc.booking_commission,sc.revenue_commission,
@@ -4029,9 +4041,9 @@ ORDER BY
             LEFT JOIN sales AS sc ON sc.id = uc.sales_id
             LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
             WHERE uc.company_id = '{var1}' AND uc.deleted_at IS NULL
-            AND sc.deleted_at IS NULL`,   
-            //after changes lead list in pro for view own
-  "Q415":`SELECT 
+            AND sc.deleted_at IS NULL`,
+  //after changes lead list in pro for view own
+  "Q415": `SELECT 
             l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
             l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
             l.website,l.targeted_value,l.marketing_qualified_lead,
@@ -4075,7 +4087,7 @@ ORDER BY
             AND l.sync_id IS NOT NULL AND l.sync_source IS NOT NULL
           ORDER BY 
             l.created_at DESC`,
-  "Q416":`SELECT 
+  "Q416": `SELECT 
             l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
             l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
             l.website,l.targeted_value,l.marketing_qualified_lead,
@@ -4155,7 +4167,7 @@ ORDER BY
           GROUP BY 
             su.user_id,
             u.full_name;`,
-   "Q419": `SELECT  
+  "Q419": `SELECT  
               su.user_id,
               u.full_name,
               array_agg(DISTINCT su.sales_id) AS sales_ids
@@ -4170,15 +4182,15 @@ ORDER BY
               su.user_id IN ({var1}) AND su.deleted_at IS NULL
             GROUP BY 
               su.user_id,
-              u.full_name;`,  
-              
-    "Q420": `SELECT id, company_id 
+              u.full_name;`,
+
+  "Q420": `SELECT id, company_id 
             FROM 
             users 
             WHERE 
             company_id = '{var1}' AND is_main_admin = true`,
-            //query for merge the support if occur more than once
-    "Q421":`SELECT
+  //query for merge the support if occur more than once
+  "Q421": `SELECT
             sc.id,
             sc.customer_id,
             sc.customer_commission_split_id AS commission_split_id,
@@ -4322,7 +4334,7 @@ ORDER BY
             sc.id = '{var2}' AND
             sc.deleted_at IS NULL
           ORDER BY sc.created_at DESC`,
-  "Q422":`UPDATE users SET is_pro_user = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL`,
+  "Q422": `UPDATE users SET is_pro_user = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL`,
   "Q423": `SELECT
               sc.id,
               su.user_id,
@@ -4349,27 +4361,48 @@ ORDER BY
               sc.id = '{var1}'
               AND sc.deleted_at IS NULL
               AND u.deleted_at IS NULL;`,
-   "Q424":`UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var1}',resources = '{var3}',background = '{var4}',vision_mission = '{var5}', vision_mission_image = '{var6}', product_image = '{var7}', customer_profiling = '{var8}', lead_processes = '{var9}', sales_strategies = '{var10}', scenario_data = '{var11}', sales_best_practices = '{var12}',sales_best_practices_image = '{var15}', updated_at = '{var13}' WHERE id = '{var14}' RETURNING *`      ,
-   "Q425":`INSERT INTO sales_playbook (company_id, user_id, resources, background, vision_mission, vision_mission_image, product_image, customer_profiling, lead_processes, sales_strategies, scenario_data, sales_best_practices,sales_best_practices_image)
-           VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}', '{var13}') RETURNING *` ,
-   "Q426":`SELECT
+  "Q424": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',resources = '{var3}',background = '{var4}',vision_mission = '{var5}', vision_mission_image = '{var6}', product_image = '{var7}', customer_profiling = '{var8}', lead_processes = '{var9}', sales_strategies = '{var10}', scenario_data = '{var11}', sales_best_practices = '{var12}',sales_best_practices_image = '{var15}', updated_at = '{var13}' WHERE id = '{var14}' RETURNING *`,
+  "Q425": `INSERT INTO sales_playbook (company_id, user_id, background, vision_mission, vision_mission_image, product_image, customer_profiling, lead_processes, sales_strategies, scenario_data, sales_best_practices, sales_best_practices_image, resources_title,documentation,documentation_title,sales_stack,sales_stack_title,company_overview_title,background_title,vision_mission_title,product_pricing_title,customer_profiling_title,sales_processes_title,lead_processes_title,sales_strategies_title,qualified_lead_title,top_customer_title,top_product_title,sales_analysis_title,sales_scenarios_title,team_role_title,sales_best_practice_title,sales_presentation_title)
+           VALUES ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}','{var10}','{var11}','{var12}', '{var13}','{var14}','{var15}','{var16}','{var17}','{var18}','{var19}','{var20}','{var21}','{var22}','{var23}','{var24}','{var25}','{var26}','{var27}','{var28}','{var29}','{var30}','{var31}','{var32}','{var33}') RETURNING *` ,
+  "Q426": `SELECT
             sp.id,
             sp.resources,
+            sp.resources_title,
+            sp.documentation,
+            sp.documentation_title,
+            sp.sales_stack,
+            sp.sales_stack_title,
+            sp.company_overview_title, 
             sp.background,
+            sp.background_title,
             sp.vision_mission,
+            sp.vision_mission_title,
             sp.vision_mission_image,
+            sp.product_pricing_title, 
             sp.product_image,
             sp.customer_profiling,
+            sp.customer_profiling_title,
+            sp.sales_processes_title, 
             sp.lead_processes,
+            sp.lead_processes_title,
             sp.sales_strategies,
-            sp.scenario_data,
+            sp.sales_strategies_title,
+            sp.qualified_lead_title,
+            sp.top_customer_title,
+            sp.top_product_title,
+            sp.sales_analysis_title,
+            sp.sales_scenarios_title, 
+            sp.team_role_title,
             sp.sales_best_practices,
-            sp.sales_best_practices_image
+            sp.sales_best_practice_title,
+            sp.scenario_data,
+            sp.sales_best_practices_image,
+            sp.sales_presentation_title
           FROM
             sales_playbook sp
           WHERE
             sp.company_id = '{var1}' AND sp.deleted_at IS NULL`,
-  "Q427":`SELECT 
+  "Q427": `SELECT 
             cus.id, cus.customer_name,
             COALESCE((SELECT COUNT(*) FROM sales s WHERE s.customer_id = cus.id), 0) AS sales_count,
             COALESCE((SELECT SUM(s.target_amount::numeric) FROM sales s WHERE s.customer_id = cus.id), 0) AS total_target_amount
@@ -4381,7 +4414,7 @@ ORDER BY
           ORDER BY
             total_target_amount DESC
             LIMIT 10`,
-  "Q428":`SELECT 
+  "Q428": `SELECT 
             u1.id, u1.email_address, u1.full_name, u1.company_id, u1.avatar, u1.mobile_number, 
             u1.phone_number, u1.address, u1.role_id, u1.is_admin, u1.expiry_date, u1.created_at,u1.is_verified, 
             u1.is_main_admin,u1.is_deactivated,u1.created_by, u2.full_name AS creator_name , r.role_name AS roleName,
@@ -4406,9 +4439,10 @@ ORDER BY
             WHERE cce.company_id = '{var1}' AND cce.emp_type = 'lead'
             AND cce.deleted_at IS NULL
             ORDER BY source_name ASC`,
-  "Q430":`SELECT
+  "Q430": `SELECT
             p.id AS product_id,
             p.product_name,
+            p.product_image,
             -- Sum of target_amount for Q1 (January to March)
             SUM(CASE WHEN s.created_at >= '{var1}' AND s.created_at < '{var2}' THEN s.target_amount::numeric ELSE 0 END) AS total_target_amount
           FROM
@@ -4424,7 +4458,7 @@ ORDER BY
           ORDER BY
             total_target_amount DESC
           LIMIT 10   `,
-  "Q431":`SELECT  
+  "Q431": `SELECT  
             su.user_id, 
             u.full_name,
             array_agg(DISTINCT su.sales_id) AS sales_ids  
@@ -4462,9 +4496,53 @@ ORDER BY
             s.closed_at
           ORDER BY
             s.id ASC`,
-  "Q433": `select sales_id,COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) GROUP BY sales_id`,                                                                                                              
-        
+  "Q433": `select sales_id,COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) GROUP BY sales_id`,
+  "Q434": `UPDATE sales_playbook SET company_id = '{var1}', user_id = '{var2}', background = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q435": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',vision_mission = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q436": `UPDATE sales_playbook SET company_id = '{var1}', user_id = '{var2}', documentation_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q437": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',vision_mission_image = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q438": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',product_image = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q439": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',customer_profiling = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q440": `UPDATE sales_playbook SET company_id = '{var1}', user_id = '{var2}', lead_processes = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q441": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_strategies = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q442": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',scenario_data = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q443": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_best_practices = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q444": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_best_practices_image = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q445": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',id = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q446": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',documentation = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q447": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_stack = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q448": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_stack_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q449": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',resources_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q450": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',vision_mission_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q451": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',background_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q452": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',company_overview_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q453": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',product_pricing_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q454": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',customer_profiling_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q455": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_processes_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q456": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',qualified_lead_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q457": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',lead_processes_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q458": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_strategies_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q459": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',top_customer_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q460": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',top_product_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q461": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_analysis_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q462": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_scenarios_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q463": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',team_role_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q464": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_best_practice_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q465": `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',sales_presentation_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
+  "Q466": `INSERT INTO event_sender_list( user_id, event_id, lead_email, template_name, template, description) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
+  "Q467": `SELECT * FROM event_sender_list WHERE user_id = '{var1}' AND event_id = '{var2}'`,
+  "Q468": `SELECT company_id, TO_CHAR(SUM(replace(recognized_amount, ',', '')::NUMERIC), 'FM9,999,999') AS amount
+    FROM recognized_revenue
+    WHERE sales_id IN (
+        SELECT id
+        FROM sales
+        WHERE archived_at IS NOT NULL AND closed_at IS NOT NULL
+            AND company_id = '{var1}'
+    )
+    AND deleted_at IS NULL
+    GROUP BY company_id`
 }
+;
 
 function dbScript(template, variables) {
   if (variables != null && Object.keys(variables).length > 0) {

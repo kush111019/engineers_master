@@ -270,12 +270,12 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
         let { companyId, page, orderBy, startDate, endDate } = req.query
         let limit = 10;
         let offset = (page - 1) * limit
-        if((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')){
-            let s4 = dbScript(db_sql['Q80'], { var1: companyId, var2: limit, var3 : offset, var4 : startDate, var5 : endDate })
+        if ((startDate != undefined || startDate != '') && (endDate != undefined || endDate != '')) {
+            let s4 = dbScript(db_sql['Q80'], { var1: companyId, var2: limit, var3: offset, var4: startDate, var5: endDate })
             let salesData = await connection.query(s4)
             let salesPerRep = []
             if (salesData.rowCount > 0) {
-                for(let sales of salesData.rows){
+                for (let sales of salesData.rows) {
                     let revenuePerSales = {}
                     revenuePerSales.sales_rep = sales.sales_rep
                     let s5 = dbScript(db_sql['Q256'], { var1: sales.sales_id })
@@ -283,12 +283,12 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
 
                     if (recognizedRevenueData.rowCount > 0) {
                         revenuePerSales.revenue = (recognizedRevenueData.rows[0].amount) ? Number(recognizedRevenueData.rows[0].amount) : 0
-                    }else{
+                    } else {
                         revenuePerSales.revenue = 0
                     }
                     salesPerRep.push(revenuePerSales)
                 }
-                if(salesPerRep.length > 0){
+                if (salesPerRep.length > 0) {
                     let returnData = await reduceArrayWithName1(salesPerRep)
                     if (orderBy.toLowerCase() == 'asc') {
                         returnData = returnData.sort((a, b) => {
@@ -305,7 +305,7 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
                         message: "Revenue per user",
                         data: returnData
                     })
-                }else{
+                } else {
                     res.json({
                         status: 200,
                         success: true,
@@ -313,7 +313,7 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
                         data: salesPerRep
                     })
                 }
-                
+
             } else {
                 res.json({
                     status: 200,
@@ -322,7 +322,7 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
                     data: salesData.rows
                 })
             }
-        }else{
+        } else {
             res.json({
                 status: 400,
                 success: false,
@@ -338,7 +338,7 @@ module.exports.userWiseCompanyRevenue = async (req, res) => {
     }
 }
 
-module.exports.lockOrUnlockCompany = async(req, res) => {
+module.exports.lockOrUnlockCompany = async (req, res) => {
     try {
         let { companyId, isLocked } = req.query
 
@@ -346,33 +346,33 @@ module.exports.lockOrUnlockCompany = async(req, res) => {
 
         let _dt = new Date().toISOString()
 
-        let s1 = dbScript(db_sql['Q224'],{var1 : isLocked, var2 : _dt, var3 : companyId})
+        let s1 = dbScript(db_sql['Q224'], { var1: isLocked, var2: _dt, var3: companyId })
         let lockUnlockCompany = await connection.query(s1)
 
-        let s2 = dbScript(db_sql['Q225'],{var1 : isLocked ,var2 : companyId, var3 : _dt})
+        let s2 = dbScript(db_sql['Q225'], { var1: isLocked, var2: companyId, var3: _dt })
         let lockUnlockUsers = await connection.query(s2)
 
-        if(lockUnlockCompany.rowCount > 0 && lockUnlockUsers.rowCount > 0){
+        if (lockUnlockCompany.rowCount > 0 && lockUnlockUsers.rowCount > 0) {
             let lock = (isLocked == 'true') ? "Locked" : "Unlocked"
             await connection.query('COMMIT')
             res.json({
-                status : 200,
-                success : true,
-                message : `Company ${lock} successfully`
+                status: 200,
+                success: true,
+                message: `Company ${lock} successfully`
             })
-        }else{
+        } else {
             await connection.query('ROLLBACK')
             res.json({
-                status : 400,
-                success : false,
-                message : "Something went wrong"
+                status: 400,
+                success: false,
+                message: "Something went wrong"
             })
         }
     } catch (error) {
         res.json({
-            status : 400,
-            success : false,
-            message : error.message
+            status: 400,
+            success: false,
+            message: error.message
         })
     }
 }
@@ -386,7 +386,7 @@ module.exports.dashboard = async (req, res) => {
         endDate = new Date(endDate)
         endDate.setHours(23, 59, 59, 999)
         let eDate = new Date(endDate).toISOString()
-        let s1 = dbScript(db_sql['Q145'], {var1: sDate, var2: eDate})
+        let s1 = dbScript(db_sql['Q145'], { var1: sDate, var2: eDate })
         let companyData = await connection.query(s1)
         if (companyData.rowCount > 0) {
             let revenueCommission = []
@@ -394,15 +394,14 @@ module.exports.dashboard = async (req, res) => {
                 let targetAmount = 0;
                 let commission = 0;
                 let revenueCommissionObj = {}
-
                 let s3 = dbScript(db_sql['Q146'], { var1: comData.id })
                 let salesData = await connection.query(s3)
+                let s4 = dbScript(db_sql['Q468'], { var1: comData.id })
+                let salesArchive = await connection.query(s4)
                 if (salesData.rowCount > 0) {
                     for (let data of salesData.rows) {
-
                         let s2 = dbScript(db_sql['Q161'], { var1: data.slab_id })
                         let slab = await connection.query(s2)
-
                         targetAmount = targetAmount + Number(data.amount)
                         if (slab.rowCount > 0) {
                             let remainingAmount = Number(data.amount);
@@ -413,8 +412,8 @@ module.exports.dashboard = async (req, res) => {
                                 let slab_maxAmount = Number(slab.rows[i].max_amount)
                                 let slab_minAmount = Number(slab.rows[i].min_amount)
                                 if (slab.rows[i].is_max) {
-                                     // Reached the last slab
-                                     amount += ((slab_percentage / 100) * remainingAmount)
+                                    // Reached the last slab
+                                    amount += ((slab_percentage / 100) * remainingAmount)
                                     break;
                                 }
                                 else {
@@ -432,22 +431,25 @@ module.exports.dashboard = async (req, res) => {
                             commission = commission + amount
                         }
                     }
+                    if(salesArchive && salesArchive.rows && salesArchive.rows[0]){
+                        let archivedAmount = Number(salesArchive.rows[0].amount.replaceAll(",",''))
+                        targetAmount = targetAmount + archivedAmount
+                    }
                     revenueCommissionObj.name = comData.company_name
                     revenueCommissionObj.revenue = Number(targetAmount)
                     revenueCommissionObj.commission = Number(commission)
                     revenueCommissionObj.date = comData.created_at
                     revenueCommission.push(revenueCommissionObj)
                 }
-                
             }
             if (revenueCommission.length > 0) {
                 let paginatedArr = await paginatedResults(revenueCommission, page)
-                if(orderBy.toLowerCase() == 'asc'){
-                    paginatedArr = paginatedArr.sort((a,b) => {
+                if (orderBy.toLowerCase() == 'asc') {
+                    paginatedArr = paginatedArr.sort((a, b) => {
                         return a.revenue - b.revenue
                     })
-                }else{
-                    paginatedArr = paginatedArr.sort((a,b) => {
+                } else {
+                    paginatedArr = paginatedArr.sort((a, b) => {
                         return b.revenue - a.revenue
                     })
                 }
@@ -510,12 +512,12 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                 let totalClosedRevenue = 0;
                 let totalClosedCommission = 0;
 
-                if (salesData.rowCount > 0 ) {
+                if (salesData.rowCount > 0) {
                     for (let data of salesData.rows) {
 
                         let s2 = dbScript(db_sql['Q161'], { var1: data.slab_id })
                         let slab = await connection.query(s2)
-                        
+
                         if (data.closed_at == null) {
                             totalExpectedRevenue = Number(totalExpectedRevenue) + Number(data.amount);
                             let expectedRemainingAmount = Number(data.amount);
@@ -526,8 +528,8 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                                 let slab_maxAmount = Number(slab.rows[i].max_amount)
                                 let slab_minAmount = Number(slab.rows[i].min_amount)
                                 if (slab.rows[i].is_max) {
-                                     // Reached the last slab
-                                     expectedCommission += ((slab_percentage / 100) * expectedRemainingAmount)
+                                    // Reached the last slab
+                                    expectedCommission += ((slab_percentage / 100) * expectedRemainingAmount)
                                     break;
                                 }
                                 else {
@@ -554,7 +556,7 @@ module.exports.totalExpectedRevenueCounts = async (req, res) => {
                                 let slab_maxAmount = Number(slab.rows[i].max_amount)
                                 let slab_minAmount = Number(slab.rows[i].min_amount)
                                 if (slab.rows[i].is_max) {
-                                     // Reached the last slab
+                                    // Reached the last slab
                                     commission += ((slab_percentage / 100) * remainingAmount)
                                     break;
                                 }
@@ -671,7 +673,7 @@ module.exports.addPlan = async (req, res) => {
 
             let s2 = dbScript(db_sql['Q91'], {
                 var1: product.id, var2: product.name,
-                var3: product.description, var4: product.active, var5: price1.id, var6: price1.unit_amount, var7: price2.id, var8: price2.unit_amount,var9 : price3.id,var10 : price3.unit_amount,var11: price1.recurring.interval, var12: price1.currency
+                var3: product.description, var4: product.active, var5: price1.id, var6: price1.unit_amount, var7: price2.id, var8: price2.unit_amount, var9: price3.id, var10: price3.unit_amount, var11: price1.recurring.interval, var12: price1.currency
             })
             let addPlan = await connection.query(s2)
             if (addPlan.rowCount > 0) {
@@ -888,12 +890,12 @@ module.exports.addConfig = async (req, res) => {
 
         let { trialDays, trialUsers } = req.body
         let sAEmail = req.user.email
-        
+
         await connection.query('BEGIN')
         let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
-            let s2 = dbScript(db_sql['Q100'], { var1: trialDays , var2 : trialUsers})
+            let s2 = dbScript(db_sql['Q100'], { var1: trialDays, var2: trialUsers })
             let addConfig = await connection.query(s2)
             if (addConfig.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -1017,9 +1019,9 @@ module.exports.allTrialAndSubcribedCompaniesList = async (req, res) => {
                             planInterval: plan.rows[0].interval,
                             PlanExpiryDate: expiryDate,
                             maxUserCount: (Number(transactions.rows[0].user_count) + 1),
-                            actualUserCount : actualUserCount.rows[0].actual_count,
-                            totalAmount : Number(transactions.rows[0].total_amount)/100,
-                            isLocked : companyData.is_locked
+                            actualUserCount: actualUserCount.rows[0].actual_count,
+                            totalAmount: Number(transactions.rows[0].total_amount) / 100,
+                            isLocked: companyData.is_locked
                         })
                     }
                 } else {
@@ -1036,9 +1038,9 @@ module.exports.allTrialAndSubcribedCompaniesList = async (req, res) => {
                         planInterval: `${configList.rows[0].trial_days} days`,
                         PlanExpiryDate: expiryDate,
                         maxUserCount: companyData.user_count,
-                        actualUserCount : actualUserCount.rows[0].actual_count,
-                        totalAmount : 0,
-                        isLocked : companyData.is_locked
+                        actualUserCount: actualUserCount.rows[0].actual_count,
+                        totalAmount: 0,
+                        isLocked: companyData.is_locked
                     })
                 }
             }
@@ -1082,7 +1084,7 @@ module.exports.allTrialAndSubcribedCompaniesList = async (req, res) => {
 
 }
 
-module.exports.trialCompaniesList = async(req, res) => {
+module.exports.trialCompaniesList = async (req, res) => {
     try {
         let s1 = dbScript(db_sql['Q89'], {})
         let companies = await connection.query(s1)
@@ -1096,7 +1098,7 @@ module.exports.trialCompaniesList = async(req, res) => {
                 let actualUserCount = await connection.query(s3)
                 let s4 = dbScript(db_sql['Q97'], { var1: companyData.id })
                 let transactions = await connection.query(s4)
-                if(transactions.rowCount == 0){
+                if (transactions.rowCount == 0) {
                     trialCompanies.push({
                         companyId: companyData.id,
                         companyName: companyData.company_name,
@@ -1108,20 +1110,20 @@ module.exports.trialCompaniesList = async(req, res) => {
                         planInterval: `${configList.rows[0].trial_days} days`,
                         PlanExpiryDate: new Date(companyData.expiry_date),
                         maxUserCount: companyData.user_count,
-                        actualUserCount : actualUserCount.rows[0].actual_count,
-                        totalAmount : 0,
-                        isLocked : companyData.is_locked
+                        actualUserCount: actualUserCount.rows[0].actual_count,
+                        totalAmount: 0,
+                        isLocked: companyData.is_locked
                     })
                 }
             }
-            if(trialCompanies.length > 0){
+            if (trialCompanies.length > 0) {
                 res.json({
                     status: 200,
                     success: true,
                     message: 'Trial companies List',
                     data: trialCompanies
                 })
-            }else{
+            } else {
                 res.json({
                     status: 200,
                     success: false,
@@ -1129,7 +1131,7 @@ module.exports.trialCompaniesList = async(req, res) => {
                     data: []
                 })
             }
-        }else{
+        } else {
             res.json({
                 status: 200,
                 success: false,
@@ -1173,9 +1175,9 @@ module.exports.subcribedCompaniesList = async (req, res) => {
                             planInterval: plan.rows[0].interval,
                             PlanExpiryDate: expiryDate,
                             maxUserCount: (Number(transactions.rows[0].user_count) + 1),
-                            actualUserCount : actualUserCount.rows[0].actual_count,
-                            totalAmount : Number(transactions.rows[0].total_amount)/100,
-                            isLocked : companyData.is_locked
+                            actualUserCount: actualUserCount.rows[0].actual_count,
+                            totalAmount: Number(transactions.rows[0].total_amount) / 100,
+                            isLocked: companyData.is_locked
                         })
                     }
                 }
@@ -1219,10 +1221,8 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
         let s1 = dbScript(db_sql['Q88'], { var1: sAEmail })
         let checkSuperAdmin = await connection.query(s1)
         if (checkSuperAdmin.rowCount > 0) {
-
             let s2 = dbScript(db_sql['Q89'], {})
             let companies = await connection.query(s2)
-
             if (companies.rowCount > 0) {
                 let activeCompanies = []
                 let canceledCompanies = []
@@ -1230,29 +1230,31 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                     let s3 = dbScript(db_sql['Q97'], { var1: companyData.id })
                     let transaction = await connection.query(s3);
                     if (transaction.rowCount > 0) {
-                        const subscription = await stripe.subscriptions.retrieve(
-                            transaction.rows[0].stripe_subscription_id
-                        );
-                        if (subscription.status == 'active') {
-                            activeCompanies.push({
-                                companyId: companyData.id,
-                                companyName: companyData.company_name,
-                                companyAddress: companyData.company_address,
-                                companyLogo: companyData.company_logo,
-                                status: subscription.status,
-                                createdAt: companyData.created_at,
-                                isLocked : companyData.is_locked
-                            })
-                        } else if (subscription.status == 'canceled') {
-                            canceledCompanies.push({
-                                companyId: companyData.id,
-                                companyName: companyData.company_name,
-                                companyAddress: companyData.company_address,
-                                companyLogo: companyData.company_logo,
-                                status: subscription.status,
-                                createdAt: companyData.created_at,
-                                isLocked : companyData.is_locked
-                            })
+                        for (transactionData of transaction.rows) {
+                            const subscription = await stripe.subscriptions.retrieve(
+                                transaction.rows[0].stripe_subscription_id
+                            );
+                            if (transactionData.is_canceled === false) {
+                                activeCompanies.push({
+                                    companyId: companyData.id,
+                                    companyName: companyData.company_name,
+                                    companyAddress: companyData.company_address,
+                                    companyLogo: companyData.company_logo,
+                                    status: "active",
+                                    createdAt: companyData.created_at,
+                                    isLocked: companyData.is_locked
+                                })
+                            } else if (transactionData.is_canceled === true) {
+                                canceledCompanies.push({
+                                    companyId: companyData.id,
+                                    companyName: companyData.company_name,
+                                    companyAddress: companyData.company_address,
+                                    companyLogo: companyData.company_logo,
+                                    status: "canceled",
+                                    createdAt: companyData.created_at,
+                                    isLocked: companyData.is_locked
+                                })
+                            }
                         }
                     }
                 }
@@ -1277,7 +1279,6 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                         }
                     })
                 }
-
             } else {
                 res.json({
                     status: 200,
@@ -1286,8 +1287,6 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                     data: []
                 })
             }
-
-
         } else {
             res.json({
                 status: 400,
@@ -1450,10 +1449,10 @@ module.exports.enableDisableImapService = async (req, res) => {
         if (checkSuperAdmin.rowCount > 0) {
 
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q133'],{var1 : isImapEnable, var2 : _dt, var3 : companyId})
+            let s2 = dbScript(db_sql['Q133'], { var1: isImapEnable, var2: _dt, var3: companyId })
             let updateImapService = await connection.query(s2)
 
-            if(updateImapService.rowCount > 0){
+            if (updateImapService.rowCount > 0) {
                 let enableOrDisable = (isImapEnable == true) ? 'enabled' : 'disabled'
                 await connection.query('COMMIT')
                 res.json({
@@ -1462,7 +1461,7 @@ module.exports.enableDisableImapService = async (req, res) => {
                     message: `Imap service ${enableOrDisable}`,
                     data: ""
                 })
-            }else{
+            } else {
                 await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
@@ -1485,7 +1484,7 @@ module.exports.enableDisableImapService = async (req, res) => {
             status: 400,
             success: false,
             message: error.message,
-        }) 
+        })
     }
 }
 
@@ -1504,10 +1503,10 @@ module.exports.enableDisableMarketingService = async (req, res) => {
         if (checkSuperAdmin.rowCount > 0) {
 
             let _dt = new Date().toISOString();
-            let s2 = dbScript(db_sql['Q195'],{var1 : isMarketingEnable, var2 : _dt, var3 : companyId})
+            let s2 = dbScript(db_sql['Q195'], { var1: isMarketingEnable, var2: _dt, var3: companyId })
             let updateMarketingService = await connection.query(s2)
 
-            if(updateMarketingService.rowCount > 0){
+            if (updateMarketingService.rowCount > 0) {
                 let enableOrDisable = (isMarketingEnable == true) ? 'enabled' : 'disabled'
                 await connection.query('COMMIT')
                 res.json({
@@ -1516,7 +1515,7 @@ module.exports.enableDisableMarketingService = async (req, res) => {
                     message: `Marketing service ${enableOrDisable}`,
                     data: ""
                 })
-            }else{
+            } else {
                 await connection.query('ROLLBACK')
                 res.json({
                     status: 400,
@@ -1539,28 +1538,28 @@ module.exports.enableDisableMarketingService = async (req, res) => {
             status: 400,
             success: false,
             message: error.message,
-        }) 
+        })
     }
 }
 //--------------------------------Contact us Mail List---------------------------------
 
-module.exports.contactUsQueriesList = async(req, res) => {
+module.exports.contactUsQueriesList = async (req, res) => {
     try {
         let s1 = dbScript(db_sql['Q163'], {})
         let queries = await connection.query(s1)
-        if(queries.rowCount > 0){
+        if (queries.rowCount > 0) {
             res.json({
                 status: 200,
                 success: true,
                 message: "Queries List",
-                data : queries.rows
+                data: queries.rows
             })
-        }else{
+        } else {
             res.json({
                 status: 200,
                 success: false,
                 message: "Empty Queries List",
-                data : []
+                data: []
             })
         }
     } catch (error) {
