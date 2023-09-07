@@ -4,11 +4,6 @@ const { mysql_real_escape_string } = require("../src/utils/helper");
 const connection = require("../src/database/connection");
 
 module.exports.setPlayBook = async (companyId, userId, res) => {
-    let resources = {
-        "documentations": "<p>https://www.dummywebsite.org</p><p>http://www.testsite123.net</p>",
-        "sales_stacks": "<phttp://www.samplelink.biz</p>"
-    }
-   
     let background = "<p>We offer's data, voice and digital services. 20+ years of management the complex services. Speed available up to 100 GPS.</p>";
     let visionMission = "<p>Operation Stellar Recon is a simulated space mission designed to test and evaluate advanced orbital surveillance and analysis' technologies. The primary objective of this mission is to simulate the deployment of a constellation of satellite assets for monitoring and studying celestial bodies, space debris, and other potential objects of interest within Earth's orbit.</p>";
     let visionMissionImage = process.env.PLAYBOOK_DEFAULT_VISIONMISSION_IMAGE_PATH;
@@ -49,8 +44,28 @@ module.exports.setPlayBook = async (companyId, userId, res) => {
         }
     ];
     let salesBestPractices = "<p>sales presentation</p><p>sales strategies</p><p>FAQs</p><p>Sales Info</p>"
-
-    let s1 = dbScript(db_sql['Q425'], { var1: companyId, var2: userId, var3: JSON.stringify(resources), var4: mysql_real_escape_string(background), var5: mysql_real_escape_string(visionMission), var6: visionMissionImage, var7: productImage, var8: JSON.stringify(customerProfiling), var9: mysql_real_escape_string(leadProcesses), var10: mysql_real_escape_string(salesStrategies), var11: JSON.stringify(scenarioData), var12: mysql_real_escape_string(salesBestPractices), var13 : bestPracticeImage })
+    let resourceTitle = "Resources";
+    let documentation  = "<p>https://www.dummywebsite.org</p><p>http://www.testsite123.net</p>";
+    let documentationTitle = "Documentations";
+    let salesStack =  "<p>http://www.samplelink.biz</p>";
+    let salesStackTitle = "Sales Stack";
+    let companyOverviewTitle = "Company Overview";
+    let backgroundTitle =  "Background";
+    let visionMissionTitle =  "Vision Mission";
+    let productPricingTitle = "Product Pricing";
+    let customerProfilingTitle =  "Customer Profiling";
+    let salesProcessesTitle = "Sales Processes";
+    let leadProcessesTitle =  "Lead Processes";
+    let salesStrategiesTitle =  "Sales Strategy";
+    let qualifiedLeadTitle =  "Qualified Lead";
+    let topCustomerTitle = "Top Customer";
+    let topProductTitle =  "Top Product";
+    let salesAnalysisTitle = "Sales Analysis";
+    let salesScenariosTitle =  "Sales Scenarios";
+    let teamRoleTitle =  "Team Role";
+    let salesBestPracticeTitle = "Sales Best Practice";
+    let salesPresentationTitle = "Sales Presentation";
+    let s1 = dbScript(db_sql['Q425'], { var1: companyId, var2: userId, var3: mysql_real_escape_string(background), var4: mysql_real_escape_string(visionMission), var5: visionMissionImage, var6: productImage, var7: JSON.stringify(customerProfiling), var8: mysql_real_escape_string(leadProcesses), var9: mysql_real_escape_string(salesStrategies), var10: JSON.stringify(scenarioData), var11: mysql_real_escape_string(salesBestPractices), var12 : bestPracticeImage, var13: mysql_real_escape_string(resourceTitle),var14: mysql_real_escape_string(documentation),var15: mysql_real_escape_string(documentationTitle),var16: mysql_real_escape_string(salesStack) , var17: mysql_real_escape_string(salesStackTitle),var18: mysql_real_escape_string(companyOverviewTitle),var19: mysql_real_escape_string(backgroundTitle),var20: mysql_real_escape_string(visionMissionTitle),var21: mysql_real_escape_string(productPricingTitle) ,var22: mysql_real_escape_string(customerProfilingTitle),var23: mysql_real_escape_string(salesProcessesTitle) , var24: mysql_real_escape_string(leadProcessesTitle) , var25: mysql_real_escape_string(salesStrategiesTitle),var26: mysql_real_escape_string(qualifiedLeadTitle),var27: mysql_real_escape_string(topCustomerTitle),var28: mysql_real_escape_string(topProductTitle),var29: mysql_real_escape_string(salesAnalysisTitle),var30: mysql_real_escape_string(salesScenariosTitle),var31: mysql_real_escape_string(teamRoleTitle),var32: mysql_real_escape_string(salesBestPracticeTitle),var33: mysql_real_escape_string(salesPresentationTitle)})
     let setData = await connection.query(s1)
     return setData
 
