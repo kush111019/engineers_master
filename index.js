@@ -93,6 +93,7 @@ let server = sticky(options, () => {
       } finally {
         newMessageReceived.users.forEach((user) => {
           console.log(user,"00000000000000000000000000000000000000000")
+          console.log(newMessageReceived,"00000000000000000000000000000000000000000")
           if (user.id == newMessageReceived.sender.id) return;
           socket.in(user.id).emit("message received", newMessageReceived);
         });
