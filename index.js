@@ -34,10 +34,10 @@ app.use(logger);
 
 let cronJob = cron.schedule('59 59 23 * * *', async () => {
   // if (cluster.isMaster) {
-    await paymentReminder();
-    await upgradeSubscriptionCronFn()
-    await targetDateReminder()
-    await searchLead()
+  await paymentReminder();
+  await upgradeSubscriptionCronFn()
+  await targetDateReminder()
+  await searchLead()
   // }
 });
 cronJob.start();
@@ -65,7 +65,7 @@ let server = sticky(options, () => {
         "*"
       ]
     },
-    transports: ['websocket','polling'],
+    transports: ['websocket', 'polling'],
     allowEIO3: true
   });
 
@@ -92,13 +92,13 @@ let server = sticky(options, () => {
         console.error("Error in 'new message' event handler:", error);
       } finally {
         newMessageReceived.users.forEach((user) => {
-          // console.log(user,"00000000000000000000000000000000000000000")
-          // console.log(newMessageReceived,"1111111111111111111111111111111")
           if (user.id == newMessageReceived.sender.id) return;
+          console.log(user.id, newMessageReceived.sender.id, "000000000000000000000000000")
           socket.in(user.id).emit("message received", newMessageReceived, (error) => {
             if (error) {
               console.error("Error emitting message:", error);
             } else {
+              console.log(user.id, newMessageReceived.sender.id, "1111111111111111111111111111111")
               console.log("Message emitted successfully.");
             }
           });
