@@ -92,12 +92,16 @@ let server = sticky(options, () => {
         console.error("Error in 'new message' event handler:", error);
       } finally {
         newMessageReceived.users.forEach((user) => {
-          console.log(user,"00000000000000000000000000000000000000000")
-          console.log(newMessageReceived,"1111111111111111111111111111111")
+          // console.log(user,"00000000000000000000000000000000000000000")
+          // console.log(newMessageReceived,"1111111111111111111111111111111")
           if (user.id == newMessageReceived.sender.id) return;
-          console.log(newMessageReceived,"333333333333333333333333333333333")
-          socket.in(user.id).emit("message received", newMessageReceived);
-          console.log(newMessageReceived,"4444444444444444444444444444444444")
+          socket.in(user.id).emit("message received", newMessageReceived, (error) => {
+            if (error) {
+              console.error("Error emitting message:", error);
+            } else {
+              console.log("Message emitted successfully.");
+            }
+          });
         });
       }
     });
