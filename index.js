@@ -81,29 +81,28 @@ let server = sticky(options, () => {
       console.log("User Joined Room: " + room);
     });
 
-    // socket.on("new message", (newMessageReceived) => {
-    //   try {
-    //     if (!newMessageReceived.users) throw new Error("chat.users not defined");
-    //     newMessageReceived.users.forEach((user) => {
-    //       console.log(user, "user");
-    //       console.log(newMessageReceived, "newMessageReceived");
-    //       if (user.id == newMessageReceived.sender.id) return;
-    //       socket.in(user.id).emit("message received", newMessageReceived);
-    //     });
-    //   } catch (error) {
-    //     console.error("Error in 'new message' event handler:", error);
-    //   }
-    // });
-    
-    socket.on("new message", (newMessageRecieved) => {
-      if (!newMessageRecieved.users) return console.log("chat.users not defined");
-
-      newMessageRecieved.users.forEach((user) => {
-        if (user.id == newMessageRecieved.sender.id) return;
-
-        socket.in(user.id).emit("message recieved", newMessageRecieved);
-      });
+    socket.on("new message", (newMessageReceived) => {
+      try {
+        if (!newMessageReceived.users) return console.log("chat.users not defined")
+        newMessageReceived.users.forEach((user) => {
+          if (user.id == newMessageReceived.sender.id) return;
+          socket.in(user.id).emit("message received", newMessageReceived);
+        });
+      } catch (error) {
+        console.error("Error in 'new message' event handler:", error);
+      }
     });
+    
+    
+    // socket.on("new message", (newMessageRecieved) => {
+    //   if (!newMessageRecieved.users) return console.log("chat.users not defined");
+
+    //   newMessageRecieved.users.forEach((user) => {
+    //     if (user.id == newMessageRecieved.sender.id) return;
+
+    //     socket.in(user.id).emit("message recieved", newMessageRecieved);
+    //   });
+    // });
 
     // socket for notification
     socket.on("newNotification", (newNotificationRecieved) => {
