@@ -80,15 +80,28 @@ let server = sticky(options, () => {
       socket.join(room);
       console.log("User Joined Room: " + room);
     });
-    socket.on("new message", (newMessageRecieved) => {
-      if (!newMessageRecieved.users) return console.log("chat.users not defined");
-
-      newMessageRecieved.users.forEach((user) => {
-        if (user.id == newMessageRecieved.sender.id) return;
-
-        socket.in(user.id).emit("message recieved", newMessageRecieved);
+    try {
+      console.log("hello from try")
+    } catch (error) {
+      console.error("Error emitting message:", error); 
+    } finally {
+      socket.on("new message", (newMessageRecieved) => {
+        if (!newMessageRecieved.users) return console.log("chat.users not defined");
+        newMessageRecieved.users.forEach((user) => {
+          if (user.id == newMessageRecieved.sender.id) return;
+          socket.in(user.id).emit("message recieved", newMessageRecieved);
+        });
       });
-    });
+    }
+    // socket.on("new message", (newMessageRecieved) => {
+    //   if (!newMessageRecieved.users) return console.log("chat.users not defined");
+
+    //   newMessageRecieved.users.forEach((user) => {
+    //     if (user.id == newMessageRecieved.sender.id) return;
+
+    //     socket.in(user.id).emit("message recieved", newMessageRecieved);
+    //   });
+    // });
 
     // socket for notification
     socket.on("newNotification", (newNotificationRecieved) => {
