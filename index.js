@@ -81,39 +81,19 @@ let server = sticky(options, () => {
       console.log("User Joined Room: " + room);
     });
 
-    socket.on("new message", (newMessageReceived) => {
-      try {
-        if (!newMessageReceived.users) return console.log("chat.users not defined")
-        newMessageReceived.users.forEach((user) => {
-          if (user.id == newMessageReceived.sender.id) return;
-          socket.in(user.id).emit("message received", newMessageReceived);
+    socket.on("new message", (newMessageRecieved) => {
+      if (!newMessageRecieved.users) return console.log("chat.users not defined");
+      newMessageRecieved.users.forEach((user) => {
+        if (user.id == newMessageRecieved.sender.id) return;
+        socket.in(user.id).emit("message received", newMessageRecieved, (error) => {
+          if (error) {
+            console.error("Error emitting message:", error);
+          } else {
+            console.log("Message emitted successfully.");
+          }
         });
-      } catch (error) {
-        console.error("Error in 'new message' event handler:", error);
-      } finally {
-        newMessageReceived.users.forEach((user) => {
-          if (user.id == newMessageReceived.sender.id) return;
-          console.log(user.id, newMessageReceived.sender.id, "000000000000000000000000000")
-          socket.in(user.id).emit("message received", newMessageReceived, (error) => {
-            if (error) {
-              console.error("Error emitting message:", error);
-            } else {
-              console.log(user.id, newMessageReceived.sender.id, "1111111111111111111111111111111")
-              console.log("Message emitted successfully.");
-            }
-          });
-        });
-      }
+      });
     });
-    // socket.on("new message", (newMessageRecieved) => {
-    //   if (!newMessageRecieved.users) return console.log("chat.users not defined");
-
-    //   newMessageRecieved.users.forEach((user) => {
-    //     if (user.id == newMessageRecieved.sender.id) return;
-
-    //     socket.in(user.id).emit("message recieved", newMessageRecieved);
-    //   });
-    // });
 
     // socket for notification
     socket.on("newNotification", (newNotificationRecieved) => {
