@@ -84,7 +84,7 @@ let server = sticky(options, () => {
     socket.on("new message", (newMessageRecieved) => {
       if (!newMessageRecieved.users) return console.log("chat.users not defined");
       console.log(newMessageRecieved,"0000000000000000000000000000000000000000000000")
-      socket.to(newMessageRecieved.chatId).emit("message received", newMessageRecieved);
+      io.to(newMessageRecieved.chatId).emit("message received", newMessageRecieved);
     });
 
 
