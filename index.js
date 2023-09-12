@@ -83,12 +83,12 @@ let server = sticky(options, () => {
 
     socket.on("new message", (newMessageRecieved) => {
       if (!newMessageRecieved.users) return console.log("chat.users not defined");
+      console.log(newMessageRecieved,"===================================================")
       newMessageRecieved.users.forEach((user) => {
         if (user.id == newMessageRecieved.sender.id) return;
-        socket.in(user.id).emit("message recieved", newMessageRecieved);
+        io.to(user.id).emit("message recieved", newMessageRecieved);
       });
-    });;
-
+    });
 
     // socket for notification
     socket.on("newNotification", (newNotificationRecieved) => {
