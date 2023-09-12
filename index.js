@@ -83,16 +83,11 @@ let server = sticky(options, () => {
 
     socket.on("new message", (newMessageRecieved) => {
       if (!newMessageRecieved.users) return console.log("chat.users not defined");
-      console.log(newMessageRecieved,"0000000000000000000000000000000000000000000000")
-      socket.in(newMessageRecieved.chatId).emit("message received", newMessageRecieved, (error) => {
-        if (error) {
-          console.error("Error emitting message:", error);
-        } else {
-          console.log("Message emitted successfully.");
-        }
+      newMessageRecieved.users.forEach((user) => {
+        if (user.id == newMessageRecieved.sender.id) return;
+        socket.in(user.id).emit("message recieved", newMessageRecieved);
       });
-    });
-
+    });;
 
 
     // socket for notification
