@@ -81,24 +81,13 @@ let server = sticky(options, () => {
       console.log("User Joined Room: " + room);
     });
 
-    socket.on("new message", (newMessageReceived) => {
-      try {
-        if (!newMessageReceived.users) return console.log("chat.users not defined");
-        console.log(newMessageReceived, "newMessageReceived===================================================");
-        newMessageReceived.users.forEach((user) => {
-          if (user.id == newMessageReceived.sender.id) return;
-          const targetSocket = io.sockets.sockets.get(user.id);
-          console.log(targetSocket, "targetSocket===================================================");
-          if (targetSocket) {
-            targetSocket.emit("message recieved", newMessageReceived);
-            console.log("emit successfull===================================================");
-          } else {
-            console.error(`Socket for user ${user.id} not found`);
-          }
-        });
-      } catch (error) {
-        console.error("Error in handling 'new message' event:", error);
-      }
+    socket.on("new message", (newMessageRecieved) => {
+      if (!newMessageRecieved.users) return console.log("chat.users not defined");
+      console.log(newMessageRecieved,"===================================================")
+      newMessageRecieved.users.forEach((user) => {
+        if (user.id == newMessageRecieved.sender.id) return;
+        io.to(user.id).emit("message recieved", newMessageRecieved);
+      });
     });
 
     // socket for notification
