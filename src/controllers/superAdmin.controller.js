@@ -1247,7 +1247,7 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                                     companyName: companyData.company_name,
                                     companyAddress: companyData.company_address,
                                     companyLogo: companyData.company_logo,
-                                    status: "canceled",
+                                    status: "cancelled",
                                     createdAt: companyData.created_at,
                                     isLocked: companyData.is_locked
                                 })
