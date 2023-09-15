@@ -1231,9 +1231,6 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                     let transaction = await connection.query(s3);
                     if (transaction.rowCount > 0) {
                         for (transactionData of transaction.rows) {
-                            const subscription = await stripe.subscriptions.retrieve(
-                                transaction.rows[0].stripe_subscription_id
-                            );
                             if (transactionData.is_canceled === false) {
                                 activeCompanies.push({
                                     companyId: companyData.id,
@@ -1250,7 +1247,7 @@ module.exports.activeAndCanceledCompanies = async (req, res) => {
                                     companyName: companyData.company_name,
                                     companyAddress: companyData.company_address,
                                     companyLogo: companyData.company_logo,
-                                    status: "canceled",
+                                    status: "cancelled",
                                     createdAt: companyData.created_at,
                                     isLocked: companyData.is_locked
                                 })

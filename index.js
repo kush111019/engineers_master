@@ -34,10 +34,10 @@ app.use(logger);
 
 let cronJob = cron.schedule('59 59 23 * * *', async () => {
   // if (cluster.isMaster) {
-    await paymentReminder();
-    await upgradeSubscriptionCronFn()
-    await targetDateReminder()
-    await searchLead()
+  await paymentReminder();
+  await upgradeSubscriptionCronFn()
+  await targetDateReminder()
+  await searchLead()
   // }
 });
 cronJob.start();
@@ -65,7 +65,7 @@ let server = sticky(options, () => {
         "*"
       ]
     },
-    transports: ['websocket','polling'],
+    transports: ['websocket', 'polling'],
     allowEIO3: true
   });
 
@@ -80,13 +80,13 @@ let server = sticky(options, () => {
       socket.join(room);
       console.log("User Joined Room: " + room);
     });
+
     socket.on("new message", (newMessageRecieved) => {
       if (!newMessageRecieved.users) return console.log("chat.users not defined");
-
+      console.log(newMessageRecieved,"===================================================")
       newMessageRecieved.users.forEach((user) => {
         if (user.id == newMessageRecieved.sender.id) return;
-
-        socket.in(user.id).emit("message recieved", newMessageRecieved);
+        io.to(user.id).emit("message recieved", newMessageRecieved);
       });
     });
 
