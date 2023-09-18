@@ -4540,7 +4540,8 @@ ORDER BY
             AND company_id = '{var1}'
     )
     AND deleted_at IS NULL
-    GROUP BY company_id`
+    GROUP BY company_id`,
+  "Q469": `SELECT * FROM sales WHERE user_id = '{var1}' AND deleted_at IS NULL`
 }
 ;
 
