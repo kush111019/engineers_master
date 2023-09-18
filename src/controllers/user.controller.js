@@ -620,11 +620,15 @@ module.exports.deleteUser = async (req, res) => {
         if (checkPermission.rows[0].permission_to_delete) {
             let s5 = dbScript(db_sql['Q469'], {var1 : userId})
             let checkUserInSales = await connection.query(s5)
-            if(checkUserInSales.rowCount > 0) {
+            let s6 = dbScript(db_sql['Q470'], {var1 : userId})
+            let checkUserInCustomerCompanyEmployee = await connection.query(s6)
+            let s7 = dbScript(db_sql['Q471'], {var1 : userId})
+            let checkUserInForecast = await connection.query(s7)
+            if(checkUserInSales.rowCount > 0 && checkUserInCustomerCompanyEmployee.rowCount > 0 && checkUserInForecast.rowCount > 0) {
                 return res.json({
                     status: 200,
                     success: false,
-                    message: "Can not delete this user, because it is used in sales"
+                    message: "Can not delete this user, because it is used in sales/customer company employee/forecast"
                 })
             }
             let _dt = new Date().toISOString();

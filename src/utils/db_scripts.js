@@ -4541,7 +4541,9 @@ ORDER BY
     )
     AND deleted_at IS NULL
     GROUP BY company_id`,
-  "Q469": `SELECT * FROM sales WHERE user_id = '{var1}' AND deleted_at IS NULL`
+  "Q469": `SELECT * FROM sales WHERE user_id = '{var1}' AND deleted_at IS NULL`,
+  "Q470": `SELECT * FROM customer_company_employees WHERE assigned_sales_lead_to = '{var1}' AND deleted_at IS NULL`,
+  "Q471": `SELECT * FROM forecast WHERE assigned_to = '{var1}' AND deleted_at IS NULL`
 }
 ;
 
