@@ -613,12 +613,21 @@ module.exports.deleteUser = async (req, res) => {
         } = req.body
 
         await connection.query('BEGIN')
+        let s5 = dbScript(db_sql['Q469'], {var1 : userId})
+        let checkUserInSales = await connection.query(s5)
+        if(checkUserInSales) {
+            return res.json({
+                status: 200,
+                success: false,
+                message: "Can not delete this user, because it is used in sales"
+            })
+        }
         //check user all permission's
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
             let _dt = new Date().toISOString();
-            //update user status to deleted
+            
             let s4 = dbScript(db_sql['Q23'], { var1: _dt, var2: userId, var3: checkPermission.rows[0].company_id })
             let updateUser = await connection.query(s4)
 
