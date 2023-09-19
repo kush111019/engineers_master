@@ -526,7 +526,7 @@ module.exports.updateUser = async (req, res) => {
             let s4 = dbScript(db_sql['Q22'], { var1: mysql_real_escape_string(emailAddress), var2: mysql_real_escape_string(name), var3: mobileNumber, var4: mysql_real_escape_string(address), var5: roleId, var6: userId, var7: _dt, var8: avatar, var9: checkPermission.rows[0].company_id, var10: isAdmin, var11: isProUser })
             let updateUser = await connection.query(s4)
             if (updateUser.rowCount > 0) {
-            await connection.query('COMMIT')
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
@@ -574,7 +574,7 @@ module.exports.lockUserAccount = async (req, res) => {
             let s4 = dbScript(db_sql['Q30'], { var1: isLocked, var2: userId, var3: _dt })
             let updateUser = await connection.query(s4)
             if (updateUser.rowCount > 0) {
-            await connection.query('COMMIT')
+                await connection.query('COMMIT')
                 res.json({
                     status: 200,
                     success: true,
@@ -613,43 +613,41 @@ module.exports.deleteUser = async (req, res) => {
         } = req.body
 
         await connection.query('BEGIN')
-
         //check user all permission's
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: id })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_delete) {
-            let s5 = dbScript(db_sql['Q469'], {var1 : userId})
+            let s5 = dbScript(db_sql['Q469'], { var1: userId })
             let checkUserInSales = await connection.query(s5)
-            let s6 = dbScript(db_sql['Q470'], {var1 : userId})
+            let s6 = dbScript(db_sql['Q470'], { var1: userId })
             let checkUserInCustomerCompanyEmployee = await connection.query(s6)
-            let s7 = dbScript(db_sql['Q471'], {var1 : userId})
+            let s7 = dbScript(db_sql['Q471'], { var1: userId })
             let checkUserInForecast = await connection.query(s7)
-            if(checkUserInSales.rowCount > 0 && checkUserInCustomerCompanyEmployee.rowCount > 0 && checkUserInForecast.rowCount > 0) {
+            if (checkUserInSales.rows.length > 0 || checkUserInCustomerCompanyEmployee.rows.length > 0 || checkUserInForecast.rows.length > 0) {
                 return res.json({
                     status: 200,
                     success: false,
                     message: "Can not delete this user, because it is used in sales/customer company employee/forecast"
                 })
-            }
-            let _dt = new Date().toISOString();
-            
-            let s4 = dbScript(db_sql['Q23'], { var1: _dt, var2: userId, var3: checkPermission.rows[0].company_id })
-            let updateUser = await connection.query(s4)
-
-            if (updateUser.rowCount > 0) {
-                await connection.query('COMMIT')
-                res.json({
-                    status: 200,
-                    success: true,
-                    message: "User deleted successfully"
-                })
             } else {
-                await connection.query('ROLLBACK')
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Something went wrong"
-                })
+                let _dt = new Date().toISOString();
+                let s4 = dbScript(db_sql['Q23'], { var1: _dt, var2: userId, var3: checkPermission.rows[0].company_id })
+                let updateUser = await connection.query(s4)
+                if (updateUser.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 200,
+                        success: true,
+                        message: "User deleted successfully"
+                    })
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    })
+                }
             }
         } else {
             res.status(403).json({
@@ -1044,9 +1042,9 @@ module.exports.AssigneSaleOrLeadToNewUser = async (req, res) => {
             }
 
             let _dt = new Date().toISOString();
-            if(isAssignProUser){
-            let s4 = dbScript(db_sql['Q422'], { var1: true, var2: newUserId, var3: _dt })
-            let updateNewUser = await connection.query(s4)
+            if (isAssignProUser) {
+                let s4 = dbScript(db_sql['Q422'], { var1: true, var2: newUserId, var3: _dt })
+                let updateNewUser = await connection.query(s4)
             }
 
             let s4 = dbScript(db_sql['Q311'], { var1: true, var2: userId, var3: _dt, var4: newUserId })
