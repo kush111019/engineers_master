@@ -4543,7 +4543,20 @@ ORDER BY
     GROUP BY company_id`,
   "Q469": `SELECT * FROM sales WHERE user_id = '{var1}' AND deleted_at IS NULL`,
   "Q470": `SELECT * FROM customer_company_employees WHERE assigned_sales_lead_to = '{var1}' AND deleted_at IS NULL`,
-  "Q471": `SELECT * FROM forecast WHERE assigned_to = '{var1}' AND deleted_at IS NULL`
+  "Q471": `SELECT * FROM forecast WHERE assigned_to = '{var1}' AND deleted_at IS NULL`,
+  "Q472": `SELECT
+            u.id, u.email_address, u.full_name, u.company_id, u.avatar, u.mobile_number,
+            u.phone_number, u.address, u.role_id, u.is_admin, u.expiry_date, u.created_at, u.deleted_at,u.is_verified, u.is_deactivated,
+            u.is_main_admin, u.created_by,u.is_pro_user,
+            r.role_name
+          FROM
+            users as u
+          LEFT JOIN
+            roles as r ON r.id = u.role_id
+          WHERE
+            u.company_id = '{var1}' AND u.id = '{var2}'
+          ORDER BY
+            u.created_at DESC`,
 }
 ;
 
