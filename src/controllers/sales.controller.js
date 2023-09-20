@@ -1133,12 +1133,10 @@ module.exports.addRecognizedRevenue = async (req, res) => {
             //add RecognizeRevenue in db
             let s3 = dbScript(db_sql['Q230'], { var1: date, var2: amount, var3: targetAmount, var4: mysql_real_escape_string(notes), var5: invoice, var6: salesId, var7: checkPermission.rows[0].id, var8: checkPermission.rows[0].company_id })
             let addRecognizeRevenue = await connection.query(s3)
-            console.log(addRecognizeRevenue, "000000000000000000000000000000000000000000000000000")
 
             //get Recognized Revenue total that submitted
             let s5 = dbScript(db_sql['Q256'], { var1: salesId })
             let recognizeRevenue = await connection.query(s5)
-            console.log(recognizeRevenue, "111111111111111111111111111111111111111111111111")
 
             let totalCommission = await calculateCommission(findSales.rows[0].slab_id, recognizeRevenue.rows[0].amount)
 
@@ -1151,7 +1149,6 @@ module.exports.addRecognizedRevenue = async (req, res) => {
             } else {
                 commissionOncurrentAmount = Number(totalCommission)
             }
-            console.log(findSales.rows, "222222222222222222222222222222222222222222")
 
             for (let comData of findSales.rows) {
                 let userCommission = Number(commissionOncurrentAmount * Number(comData.user_percentage / 100))
@@ -1163,6 +1160,7 @@ module.exports.addRecognizedRevenue = async (req, res) => {
 
                 let s8 = dbScript(db_sql['Q339'], { var1: comData.user_id, var2: comData.id, var3: comData.user_type })
                 let findCommission = await connection.query(s8)
+                console.log(findCommission, "222222222222222222222222222222222222222222")
 
                 // if (findCommission.rowCount == 0) {
                     let s7 = dbScript(db_sql['Q334'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: Number(userCommission), var5: comData.user_type })
