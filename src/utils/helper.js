@@ -609,8 +609,11 @@ module.exports.notificationsOperations = async (nfData, userId) => {
             // console.log(notificationsData, "1111111111111111111111111111111111111");
             //for getting captain and support user email's address
             let s2 = dbScript(db_sql['Q8'], { var1: id })
-            let findUserEmail = await connection.query(s2)
-            emailArray.push(findUserEmail.rows[0].email_address)
+            console.log(s2, "00000000000000000000000000000000000000");
+            let findUserEmail = await connection.query(s2);
+            if (findUserEmail.rows[0].email_address) {
+                emailArray.push(findUserEmail.rows[0].email_address)
+            }
         }
         if (process.env.isLocalEmail == 'true') {
             await notificationMail2(emailArray, userName + notificationEnum.notificationMsg[nfData.msg])
