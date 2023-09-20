@@ -128,7 +128,7 @@ const db_sql = {
               ORDER BY 
                 created_at desc`,
   "Q40": `UPDATE sales SET closed_at = '{var1}', updated_at = '{var2}', contract = '{var4}' WHERE id = '{var3}' RETURNING *`,
-  "Q41": `SELECT u.id, u.company_id, u.role_id, u.avatar, u.full_name,u.email_address,u.mobile_number,u.phone_number,u.address,u.is_verified,u.created_by,
+  "Q41": `SELECT u.id, u.company_id, u.role_id, u.avatar, u.full_name,u?.email_address,u.mobile_number,u.phone_number,u.address,u.is_verified,u.created_by,
               m.id AS module_id, m.module_name, m.module_type, p.id AS permission_id, p.permission_to_view_global, p.permission_to_view_own,
               p.permission_to_create, p.permission_to_update, p.permission_to_delete
               FROM modules AS m 
