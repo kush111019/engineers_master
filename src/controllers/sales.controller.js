@@ -1117,11 +1117,17 @@ module.exports.addRecognizedRevenue = async (req, res) => {
 
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
-        console.log(checkPermission , "000000000000000000000000000000000000000000000000000")
-
+        // console.log(checkPermission , "000000000000000000000000000000000000000000000000000")
+        if(checkPermission.rows[0].email_address) {
+            return res.json({
+                status: 204,
+                success: false,
+                message: "Email not found",
+            })
+        }
         let s2 = dbScript(db_sql['Q423'], { var1: salesId })
         let findSales = await connection.query(s2)
-
+        console.log(findSales, "findSalesfindSalesfindSalesfindSales")
         if (findSales.rowCount > 0) {
             let targetAmount = Number(findSales.rows[0].target_amount)
             //add RecognizeRevenue in db
