@@ -1153,11 +1153,16 @@ module.exports.addRecognizedRevenue = async (req, res) => {
             for (let comData of findSales.rows) {
                 let userCommission = Number(commissionOncurrentAmount * Number(comData.user_percentage / 100))
 
-                userCommission = userCommission.toFixed(2)
-
+                userCommission = userCommission.toFixed(2);
                 let notification_userId = [];
-                notification_userId.push(comData.created_by)
-
+                let s4 = dbScript(db_sql['Q472'], { var1: checkPermission.rows[0].company_id, var2: comData.created_by })
+                let findUsers = await connection.query(s4);
+                if (findUsers.rows.length > 0) {
+                    if (!findUsers.rows[0].deleted_at) {
+                        notification_userId.push(comData.created_by)
+                    }
+                }
+                console.log(notification_userId, "5555555555555555555555555555555555");
                 let s8 = dbScript(db_sql['Q339'], { var1: comData.user_id, var2: comData.id, var3: comData.user_type })
                 let findCommission = await connection.query(s8)
 

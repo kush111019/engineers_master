@@ -596,7 +596,6 @@ module.exports.notificationsOperations = async (nfData, userId) => {
     let emailArray = [];
     if (nfData.notification_userId.length > 0) {
         let userName = '';
-        console.log(nfData.notification_userId, "nfData.notification_userId");
         for (let id of nfData.notification_userId) {
             //getting user name for create msg with name
             let s0 = dbScript(db_sql['Q8'], { var1: userId })
