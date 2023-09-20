@@ -1214,6 +1214,7 @@ module.exports.recognizedRevenueList = async (req, res) => {
         let { salesId } = req.query
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
+        console.log(checkPermission,"00000000000000000000000000000000000000000000000000000000000000")
         if (checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
             let s2 = dbScript(db_sql['Q231'], { var1: salesId })
             let recognizedList = await connection.query(s2)
