@@ -1149,7 +1149,7 @@ module.exports.addRecognizedRevenue = async (req, res) => {
             } else {
                 commissionOncurrentAmount = Number(totalCommission)
             }
-
+            console.log(findSales.rows, "5555555555555555555555555555555555");
             for (let comData of findSales.rows) {
                 let userCommission = Number(commissionOncurrentAmount * Number(comData.user_percentage / 100))
 
