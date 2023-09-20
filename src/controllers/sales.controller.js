@@ -1117,14 +1117,6 @@ module.exports.addRecognizedRevenue = async (req, res) => {
 
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
-        // console.log(checkPermission.rows[0].email_address , "000000000000000000000000000000000000000000000000000")
-        if(!checkPermission.rows[0].email_address) {
-            return res.json({
-                status: 204,
-                success: false,
-                message: "Email not found",
-            })
-        }
         let s2 = dbScript(db_sql['Q423'], { var1: salesId })
         let findSales = await connection.query(s2);
         
@@ -1149,7 +1141,6 @@ module.exports.addRecognizedRevenue = async (req, res) => {
             } else {
                 commissionOncurrentAmount = Number(totalCommission)
             }
-            console.log(findSales.rows, "5555555555555555555555555555555555");
             for (let comData of findSales.rows) {
                 let userCommission = Number(commissionOncurrentAmount * Number(comData.user_percentage / 100))
 
@@ -1162,7 +1153,6 @@ module.exports.addRecognizedRevenue = async (req, res) => {
                         notification_userId.push(comData.created_by)
                     }
                 }
-                console.log(notification_userId, "5555555555555555555555555555555555");
                 let s8 = dbScript(db_sql['Q339'], { var1: comData.user_id, var2: comData.id, var3: comData.user_type })
                 let findCommission = await connection.query(s8)
 
