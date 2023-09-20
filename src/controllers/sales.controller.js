@@ -1160,11 +1160,11 @@ module.exports.addRecognizedRevenue = async (req, res) => {
 
                 let s8 = dbScript(db_sql['Q339'], { var1: comData.user_id, var2: comData.id, var3: comData.user_type })
                 let findCommission = await connection.query(s8)
-                console.log(findCommission, "222222222222222222222222222222222222222222")
 
                 // if (findCommission.rowCount == 0) {
                     let s7 = dbScript(db_sql['Q334'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: Number(userCommission), var5: comData.user_type })
                     let addUserCommission = await connection.query(s7);
+                    console.log(addUserCommission, "00000000000000000000000000000000")
                 // } else {
                     // let s9 = dbScript(db_sql['Q337'], { var1: Number(userCommission), var2: findCommission.rows[0].id })
                     // let updateUserCommission = await connection.query(s9);
@@ -1179,10 +1179,12 @@ module.exports.addRecognizedRevenue = async (req, res) => {
 
                 let s10 = dbScript(db_sql['Q374'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: Number(recognizedUserCommission), var5: comData.user_type, var6: date, var7: amount })
                 let addRecognizedCommission = await connection.query(s10)
+                console.log(addRecognizedCommission, "11111111111111111111111")
             }
 
             let s6 = dbScript(db_sql['Q253'], { var1: totalCommission, var2: salesId })
             let updateSalesData = await connection.query(s6)
+            console.log(updateSalesData, "222222222222222222222222222")
 
 
             if (addRecognizeRevenue.rowCount > 0) {
