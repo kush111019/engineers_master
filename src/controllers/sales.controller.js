@@ -1164,7 +1164,6 @@ module.exports.addRecognizedRevenue = async (req, res) => {
                 // if (findCommission.rowCount == 0) {
                     let s7 = dbScript(db_sql['Q334'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: Number(userCommission), var5: comData.user_type })
                     let addUserCommission = await connection.query(s7);
-                    console.log(addUserCommission, "00000000000000000000000000000000")
                 // } else {
                     // let s9 = dbScript(db_sql['Q337'], { var1: Number(userCommission), var2: findCommission.rows[0].id })
                     // let updateUserCommission = await connection.query(s9);
@@ -1176,6 +1175,7 @@ module.exports.addRecognizedRevenue = async (req, res) => {
                 let recognizedUserCommission = Number(commissionOncurrentAmount * Number(comData.user_percentage / 100))
 
                 recognizedUserCommission = recognizedUserCommission.toFixed(2)
+                console.log(recognizedUserCommission, "00000000000000000000000000000000")
 
                 let s10 = dbScript(db_sql['Q374'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: Number(recognizedUserCommission), var5: comData.user_type, var6: date, var7: amount })
                 let addRecognizedCommission = await connection.query(s10)
