@@ -4179,7 +4179,7 @@ ORDER BY
               sales s ON su.sales_id = s.id
             WHERE 
               su.user_type = 'captain' AND
-              su.user_id IN ({var1}) AND su.deleted_at IS NULL
+              su.user_id IN ({var1}) AND su.deleted_at IS NULL AND u.deleted_at IS NULL
             GROUP BY 
               su.user_id,
               u.full_name;`,
