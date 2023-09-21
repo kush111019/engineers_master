@@ -4168,21 +4168,22 @@ ORDER BY
             su.user_id,
             u.full_name;`,
   "Q419": `SELECT  
-              su.user_id,
-              u.full_name,
-              array_agg(DISTINCT su.sales_id) AS sales_ids
-            FROM 
-              sales_users su
-            LEFT JOIN 
-              users u ON su.user_id = u.id
-            LEFT JOIN
-              sales s ON su.sales_id = s.id
-            WHERE 
-              su.user_type = 'captain' AND
-              su.user_id IN ({var1}) AND su.deleted_at IS NULL AND u.deleted_at IS NULL
-            GROUP BY 
-              su.user_id,
-              u.full_name;`,
+  su.user_id,
+  u.full_name,
+  array_agg(DISTINCT su.sales_id) AS sales_ids
+FROM 
+  sales_users su
+LEFT JOIN 
+  users u ON su.user_id = u.id AND u.deleted_at IS NULL
+LEFT JOIN
+  sales s ON su.sales_id = s.id
+WHERE 
+  su.user_type = 'captain' 
+  AND su.user_id IN ({var1}) 
+  AND su.deleted_at IS NULL
+GROUP BY 
+  su.user_id,
+  u.full_name`,
 
   "Q420": `SELECT id, company_id 
             FROM 
@@ -4558,7 +4559,7 @@ ORDER BY
           ORDER BY
             u.created_at DESC`,
 }
-;
+  ;
 
 function dbScript(template, variables) {
   if (variables != null && Object.keys(variables).length > 0) {
