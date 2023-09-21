@@ -4017,21 +4017,23 @@ ORDER BY
       ORDER BY
         sc.created_at DESC`,
   "Q413": `SELECT  
-      su.user_id,
-      u.full_name,
-      array_agg(DISTINCT su.sales_id) AS sales_ids
-    FROM 
-      sales_users su
-    LEFT JOIN 
-      users u ON su.user_id = u.id
-    LEFT JOIN
-      sales s ON su.sales_id = s.id
-    WHERE 
-      su.user_type = 'captain' AND
-      su.company_id = '{var1}' AND su.deleted_at IS NULL
-    GROUP BY 
-      su.user_id,
-      u.full_name;`,
+  su.user_id,
+  u.full_name,
+  array_agg(DISTINCT su.sales_id) AS sales_ids
+FROM 
+  sales_users su
+LEFT JOIN 
+  users u ON su.user_id = u.id
+LEFT JOIN
+  sales s ON su.sales_id = s.id
+WHERE 
+  su.user_type = 'captain' 
+  AND su.company_id = '{var1}' 
+  AND su.deleted_at IS NULL
+  AND u.deleted_at IS NULL
+GROUP BY 
+  su.user_id,
+  u.full_name;`,
   "Q414": `SELECT 
               DISTINCT(uc.id), uc.user_id,u.full_name,uc.user_type, uc.total_commission_amount, 
               uc.bonus_amount, uc.notes,
