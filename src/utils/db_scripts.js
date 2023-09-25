@@ -4017,21 +4017,23 @@ ORDER BY
       ORDER BY
         sc.created_at DESC`,
   "Q413": `SELECT  
-      su.user_id,
-      u.full_name,
-      array_agg(DISTINCT su.sales_id) AS sales_ids
-    FROM 
-      sales_users su
-    LEFT JOIN 
-      users u ON su.user_id = u.id
-    LEFT JOIN
-      sales s ON su.sales_id = s.id
-    WHERE 
-      su.user_type = 'captain' AND
-      su.company_id = '{var1}' AND su.deleted_at IS NULL
-    GROUP BY 
-      su.user_id,
-      u.full_name;`,
+  su.user_id,
+  u.full_name,
+  array_agg(DISTINCT su.sales_id) AS sales_ids
+FROM 
+  sales_users su
+LEFT JOIN 
+  users u ON su.user_id = u.id
+LEFT JOIN
+  sales s ON su.sales_id = s.id
+WHERE 
+  su.user_type = 'captain' 
+  AND su.company_id = '{var1}' 
+  AND su.deleted_at IS NULL
+  AND u.deleted_at IS NULL
+GROUP BY 
+  su.user_id,
+  u.full_name;`,
   "Q414": `SELECT 
               DISTINCT(uc.id), uc.user_id,u.full_name,uc.user_type, uc.total_commission_amount, 
               uc.bonus_amount, uc.notes,
@@ -4168,21 +4170,22 @@ ORDER BY
             su.user_id,
             u.full_name;`,
   "Q419": `SELECT  
-              su.user_id,
-              u.full_name,
-              array_agg(DISTINCT su.sales_id) AS sales_ids
-            FROM 
-              sales_users su
-            LEFT JOIN 
-              users u ON su.user_id = u.id
-            LEFT JOIN
-              sales s ON su.sales_id = s.id
-            WHERE 
-              su.user_type = 'captain' AND
-              su.user_id IN ({var1}) AND su.deleted_at IS NULL
-            GROUP BY 
-              su.user_id,
-              u.full_name;`,
+  su.user_id,
+  u.full_name,
+  array_agg(DISTINCT su.sales_id) AS sales_ids
+FROM 
+  sales_users su
+LEFT JOIN 
+  users u ON su.user_id = u.id AND u.deleted_at IS NULL
+LEFT JOIN
+  sales s ON su.sales_id = s.id
+WHERE 
+  su.user_type = 'captain' 
+  AND su.user_id IN ({var1}) 
+  AND su.deleted_at IS NULL
+GROUP BY 
+  su.user_id,
+  u.full_name`,
 
   "Q420": `SELECT id, company_id 
             FROM 
@@ -4540,9 +4543,25 @@ ORDER BY
             AND company_id = '{var1}'
     )
     AND deleted_at IS NULL
-    GROUP BY company_id`
+    GROUP BY company_id`,
+  "Q469": `SELECT * FROM sales WHERE user_id = '{var1}' AND deleted_at IS NULL`,
+  "Q470": `SELECT * FROM customer_company_employees WHERE assigned_sales_lead_to = '{var1}' AND deleted_at IS NULL`,
+  "Q471": `SELECT * FROM forecast WHERE assigned_to = '{var1}' AND deleted_at IS NULL`,
+  "Q472": `SELECT
+            u.id, u.email_address, u.full_name, u.company_id, u.avatar, u.mobile_number,
+            u.phone_number, u.address, u.role_id, u.is_admin, u.expiry_date, u.created_at, u.deleted_at,u.is_verified, u.is_deactivated,
+            u.is_main_admin, u.created_by,u.is_pro_user,
+            r.role_name
+          FROM
+            users as u
+          LEFT JOIN
+            roles as r ON r.id = u.role_id
+          WHERE
+            u.company_id = '{var1}' AND u.id = '{var2}'
+          ORDER BY
+            u.created_at DESC`,
 }
-;
+  ;
 
 function dbScript(template, variables) {
   if (variables != null && Object.keys(variables).length > 0) {

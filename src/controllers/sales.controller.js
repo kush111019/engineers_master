@@ -1117,10 +1117,9 @@ module.exports.addRecognizedRevenue = async (req, res) => {
 
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
-
         let s2 = dbScript(db_sql['Q423'], { var1: salesId })
-        let findSales = await connection.query(s2)
-
+        let findSales = await connection.query(s2);
+        
         if (findSales.rowCount > 0) {
             let targetAmount = Number(findSales.rows[0].target_amount)
             //add RecognizeRevenue in db
@@ -1142,15 +1141,18 @@ module.exports.addRecognizedRevenue = async (req, res) => {
             } else {
                 commissionOncurrentAmount = Number(totalCommission)
             }
-
             for (let comData of findSales.rows) {
                 let userCommission = Number(commissionOncurrentAmount * Number(comData.user_percentage / 100))
 
-                userCommission = userCommission.toFixed(2)
-
+                userCommission = userCommission.toFixed(2);
                 let notification_userId = [];
-                notification_userId.push(comData.created_by)
-
+                let s4 = dbScript(db_sql['Q472'], { var1: checkPermission.rows[0].company_id, var2: comData.created_by })
+                let findUsers = await connection.query(s4);
+                if (findUsers.rows.length > 0) {
+                    if (!findUsers.rows[0].deleted_at) {
+                        notification_userId.push(comData.created_by)
+                    }
+                }
                 let s8 = dbScript(db_sql['Q339'], { var1: comData.user_id, var2: comData.id, var3: comData.user_type })
                 let findCommission = await connection.query(s8)
 

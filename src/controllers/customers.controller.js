@@ -42,7 +42,7 @@ module.exports.createCustomer = async (req, res) => {
                 }
                 let _dt = new Date().toISOString();
                 let s7 = dbScript(db_sql['Q279'], { var1:_dt, var2: checkPermission.rows[0].company_id })
-                updateStatusInCompany = await connection.query(s7)
+                let updateStatusInCompany = await connection.query(s7)
                 await connection.query('COMMIT')
                 createCustomer.rows[0].customer_contacts = []
                 res.json({
@@ -99,11 +99,13 @@ module.exports.createCustomerWithLead = async (req, res) => {
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_create) {
-
             if(leadTitleId == ''){
                 let s3 = dbScript(db_sql['Q178'], { var1: mysql_real_escape_string(leadTitle), var2: checkPermission.rows[0].company_id })
                 let addTitle = await connection.query(s3)
                 leadTitleId = addTitle.rows[0].id;
+                let _dt = new Date().toISOString()
+                let s4 = dbScript(db_sql['Q278'], { var1: _dt, var2: checkPermission.rows[0].company_id })
+                let updateIsLeadCreated = await connection.query(s4)
             }
 
             if(leadSourceId == ''){
@@ -119,7 +121,12 @@ module.exports.createCustomerWithLead = async (req, res) => {
             }
 
             let s2 = dbScript(db_sql['Q36'], { var1:checkPermission.rows[0].id, var2: mysql_real_escape_string(customerName), var3: checkPermission.rows[0].company_id, var4: mysql_real_escape_string(address), var5: currency, var6: industryId })
-            let createCustomer = await connection.query(s2)
+            let createCustomer = await connection.query(s2);
+
+            let _dt = new Date().toISOString();
+            let s7 = dbScript(db_sql['Q279'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+            let updateStatusInCompany = await connection.query(s7)
+
             if (createCustomer.rowCount > 0) {
                 if (customerContact.length > 0) {
                     for (let contactData of customerContact) {
