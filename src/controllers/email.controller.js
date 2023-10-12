@@ -205,7 +205,7 @@ module.exports.inbox = async(req, res) => {
                         toMail : inboxData.to_mail,
                         fromMail : inboxData.from_mail,
                         fromName : inboxData.from_name,
-                        fromImage : `${process.env.PATH}/companyLogo/defaultEmailLogo.png`,
+                        fromImage : process.env.DEFAULT_EMAIL_LOGO,
                         mailDate : inboxData.mail_date,
                         subject : inboxData.subject,
                         text : text,
@@ -268,7 +268,7 @@ module.exports.uploadMailAttechment = async (req, res) => {
         let files = req.files
         uploadedArr = []
         for(let item of files){
-            let path = `${process.env.PATH}/mailAttachments/${item.filename}`
+            let path = `${process.env.MAIL_ATTECHMENT_PATH}/${item.filename}`
             uploadedArr.push(
                 {
                     filename : item.originalname,

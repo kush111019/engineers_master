@@ -177,7 +177,7 @@ module.exports.addUser = async (req, res) => {
         } = req.body
 
         await connection.query('BEGIN')
-        avatar = (avatar == "") ? `${process.env.PATH}/companyLogo/user.jpg` : avatar;
+        avatar = (avatar == "") ? process.env.DEFAULT_LOGO : avatar;
 
         //let id = uuid.v4()
         // first check user email is exits in our data base or not
