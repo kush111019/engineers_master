@@ -19,7 +19,7 @@ module.exports.setPlayBook = async (companyId, userId, res) => {
         "rows": [
             [
                 "<p>INDUSTRY</p>",
-                "<p>IT, Ecommerce, Networking</p>",
+                "<p>IT, E-commerce, Networking</p>",
                 "<p>Any Industry</p>",
                 "<p>Any Industry</p>"
             ],
