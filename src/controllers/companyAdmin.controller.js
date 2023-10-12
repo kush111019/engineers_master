@@ -22,7 +22,7 @@ let createAdmin = async (bodyData, cId, res) => {
         startDate
     } = bodyData
     await connection.query('BEGIN')
-    let avatar = `${process.env.PATH}/companyLogo/user.jpg`;
+    let avatar = process.env.DEFAULT_LOGO;
 
     let s3 = dbScript(db_sql['Q4'], { var1: emailAddress })
     let findUser = await connection.query(s3)
@@ -145,7 +145,7 @@ let createAdmin = async (bodyData, cId, res) => {
 module.exports.uploadLogo = async (req, res) => {
     try {
         let file = req.file
-        let path = `${process.env.PATH}/companyLogo/${file.filename}`;
+        let path = `${process.env.COMPANY_LOGO_LINK}/${file.filename}`;
         res.json({
             status: 201,
             success: true,
@@ -556,7 +556,7 @@ module.exports.changePassword = async (req, res) => {
 module.exports.upload = async (req, res) => {
     try {
         let file = req.file
-        let path = `${process.env.PATH}/avatar/${file.filename}`;
+        let path = `${process.env.AVATAR_LOGO_LINK}/${file.filename}`;
         res.json({
             success: true,
             status: 201,
@@ -919,7 +919,7 @@ module.exports.updateCompanyProfile = async (req, res) => {
 module.exports.uploadPlayBookProductImage = async (req, res) => {
     try {
         let file = req.file
-        let path = `${process.env.PATH}/playBookProduct/${file.filename}`;
+        let path = `${process.env.PLAYBOOK_PRODUCT_IMAGE_PATH}/${file.filename}`;
         res.json({
             status: 201,
             success: true,
@@ -940,7 +940,7 @@ module.exports.uploadPlayBookProductImage = async (req, res) => {
 module.exports.uploadPlayBookVisionMission = async (req, res) => {
     try {
         let file = req.file
-        let path = `${process.env.PATH}/playBookVision/${file.filename}`;
+        let path = `${process.env.PLAYBOOK_VISIONMISSION_IMAGE_PATH}/${file.filename}`;
         res.json({
             status: 201,
             success: true,
@@ -1542,7 +1542,7 @@ module.exports.captainWiseGraphPlayBook = async (req, res) => {
 module.exports.uploadPlayBookBestPractices = async (req, res) => {
     try {
         let file = req.file
-        let path = `${process.env.PATH}/playBookBestPractices/${file.filename}`;
+        let path = `${process.env.PLAYBOOK_BEST_PRACTICES_IMAGE_PATH}/${file.filename}`;
         console.log(path)
         res.json({
             status: 201,

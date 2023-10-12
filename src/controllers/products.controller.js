@@ -18,7 +18,7 @@ module.exports.addProduct = async (req, res) => {
             currency
         } = req.body
 
-        productImage = (productImage == "") ? `${process.env.PATH}/productImages/defaultproductImage.png` : productImage;
+        productImage = (productImage == "") ? process.env.DEFAULT_PRODUCT_IMAGE : productImage;
         await connection.query('BEGIN')
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
@@ -86,7 +86,7 @@ module.exports.updateProduct = async (req, res) => {
             currency
         } = req.body
         await connection.query('BEGIN')
-        productImage = (productImage == "") ? `${process.env.PATH}/productImages/defaultproductImage.png` : productImage;
+        productImage = (productImage == "") ? process.env.DEFAULT_PRODUCT_IMAGE : productImage;
 
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
@@ -239,7 +239,7 @@ module.exports.deleteProduct = async (req, res) => {
 module.exports.uploadProductImage = async (req, res) => {
     try {
         let file = req.file
-        let path = `${process.env.PATH}/productImages/${file.filename}`;
+        let path = `${process.env.PRODUCT_IMAGE_PATH}/${file.filename}`;
         res.json({
             status: 201,
             success: true,
@@ -287,7 +287,7 @@ module.exports.uploadProductFile = async (req, res) => {
                             let s3 = dbScript(db_sql['Q134'], { var1: row[0], var2: checkPermission.rows[0].company_id })
                             let findProduct = await connection.query(s3)
                             if (findProduct.rowCount == 0) {
-                                (row[1] == "") ? row[1] = `${process.env.PATH}/productImages/defaultproductImage.png` : row[1];
+                                (row[1] == "") ? row[1] = process.env.DEFAULT_PRODUCT_IMAGE : row[1];
                                 //unique id for every row 
                                
                                 let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: userId })

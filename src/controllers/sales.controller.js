@@ -762,7 +762,7 @@ module.exports.deleteNote = async (req, res) => {
 module.exports.uploadSalesContract = async (req, res) => {
     try {
         let file = req.file
-        let path = `${process.env.PATH}/salesContract/${file.filename}`;
+        let path = `${process.env.SALES_CONTRACT_LINK}/${file.filename}`;
         res.json({
             success: true,
             status: 200,
@@ -1093,7 +1093,7 @@ module.exports.transferBackList = async (req, res) => {
 module.exports.uploadSalesInvoice = async (req, res) => {
     try {
         let file = req.file
-        let path = `${process.env.PATH}/salesInvoice/${file.filename}`;
+        let path = `${process.env.SALES_INVOICE_LINK}/${file.filename}`;
         res.json({
             success: true,
             status: 200,
