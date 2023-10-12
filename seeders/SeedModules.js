@@ -10,7 +10,7 @@ var connection = new Pool({
     charset: 'utf8mb4'
 });
 
-connection.connect()
+connection.connect();
 
 console.log("running seed");
 
