@@ -20,5 +20,9 @@ Upload schema(hirise_sales_schema.sql) to the database
 2. `pkg index.js -o sales-service`
 3. `./sales-service`
 
+# commands to execute bundle node.js code in linux
+1. `chmod +x index-linux`
+2. `./index-linux`
+
 # test server
-`URL/api` -> To check weather server is running and database is connected or not
+1. `URL/api` -> To check weather server is running and database is connected or not
