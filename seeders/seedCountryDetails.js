@@ -32,13 +32,13 @@ let countryDetails = [
 for(let data of countryDetails){
     let id = uuid.v4()
     connection.query(`insert into country_details (id,country_name,country_value,
-                      currency_name,currency_symbol,date_format) 
+                      currency_name,currency_symbol,date_format)
                       values('${id}','${data.countryName}','${data.countryValue}',
-                      '${data.currencyName}','${data.currencySymbol}','${data.dateFormat}')`, 
+                      '${data.currencyName}','${data.currencySymbol}','${data.dateFormat}')`,
     err => {
         if(err){
             throw err
-        }  
+        }
     })
 }
 

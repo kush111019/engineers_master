@@ -6,9 +6,9 @@ const connection = require("../src/database/connection");
 module.exports.setPlayBook = async (companyId, userId, res) => {
     let background = "<p>We offer's data, voice and digital services. 20+ years of management the complex services. Speed available up to 100 GPS.</p>";
     let visionMission = "<p>Operation Stellar Recon is a simulated space mission designed to test and evaluate advanced orbital surveillance and analysis' technologies. The primary objective of this mission is to simulate the deployment of a constellation of satellite assets for monitoring and studying celestial bodies, space debris, and other potential objects of interest within Earth's orbit.</p>";
-    let visionMissionImage = process.env.PLAYBOOK_DEFAULT_VISIONMISSION_IMAGE_PATH;
-    let productImage = process.env.PLAYBOOK_DEFAULT_PRODUCT_IMAGE_PATH;
-    let bestPracticeImage = process.env.PLAYBOOK_DEFAULT_BEST_PRACTICES_IMAGE_PATH
+    let visionMissionImage = `${process.env.PATH}/playBookVision/background.jpg`;
+    let productImage = `${process.env.PORT}/playBookProduct/product.jpg`;
+    let bestPracticeImage = `${process.env.PATH}/playBookBestPractices/default_best_practice.png`
     let customerProfiling = {
         "columns": [
             "PERSONA",
@@ -19,7 +19,7 @@ module.exports.setPlayBook = async (companyId, userId, res) => {
         "rows": [
             [
                 "<p>INDUSTRY</p>",
-                "<p>IT, Ecommerce, Networking</p>",
+                "<p>IT, E-commerce, Networking</p>",
                 "<p>Any Industry</p>",
                 "<p>Any Industry</p>"
             ],

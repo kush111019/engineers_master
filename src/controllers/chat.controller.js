@@ -141,7 +141,7 @@ module.exports.fetchChats = async (req, res) => {
                                 chatData.push({
                                     id: chats.rows[0].id,
                                     chatName: chats.rows[0].chat_name,
-                                    profile: process.env.DEFAULT_GROUP_LOGO,
+                                    profile: `${process.env.PATH}/companyLogo/groupLogo.jpg`,
                                     isGroupChat: chats.rows[0].is_group_chat,
                                     groupAdmin: chats.rows[0].group_admin,
                                     users: findGroupMembers.rows,
@@ -211,7 +211,7 @@ module.exports.fetchChats = async (req, res) => {
                             chatData.push({
                                 id: gChat.id,
                                 chatName: gChat.chat_name,
-                                profile: process.env.DEFAULT_GROUP_LOGO,
+                                profile: `${process.env.PATH}/companyLogo/groupLogo.jpg`,
                                 isGroupChat: gChat.is_group_chat,
                                 groupAdmin: gChat.group_admin,
                                 users: chatMembers.rows,
@@ -231,7 +231,7 @@ module.exports.fetchChats = async (req, res) => {
                             chatData.push({
                                 id: gChat.id,
                                 chatName: gChat.chat_name,
-                                profile: process.env.DEFAULT_GROUP_LOGO,
+                                profile: `${process.env.PATH}/companyLogo/groupLogo.jpg`,
                                 isGroupChat: gChat.is_group_chat,
                                 groupAdmin: gChat.group_admin,
                                 users: chatMembers.rows,
@@ -385,7 +385,7 @@ module.exports.createGroupChat = async (req, res) => {
                 let groupChatData = {
                     id: createGroup.rows[0].id,
                     chatName: createGroup.rows[0].chat_name,
-                    profile: process.env.DEFAULT_GROUP_LOGO,
+                    profile: `${process.env.PATH}/companyLogo/groupLogo.jpg`,
                     isGroupChat: isGroupChat,
                     groupAdmin: checkAdmin.rows[0],
                     users: usersArr
@@ -520,7 +520,7 @@ module.exports.sendMessage = async (req, res) => {
                 if (messageDetails.rowCount > 0) {
                     let userArr = []
                     if (messageDetails.rows[0].is_group_chat == true) {
-                        profile = process.env.DEFAULT_GROUP_LOGO
+                        profile = `${process.env.PATH}/companyLogo/groupLogo.jpg`
                         let s8 = dbScript(db_sql['Q113'], { var1: chatId })
                         let findGroupMembers = await connection.query(s8)
                         for (let members of findGroupMembers.rows) {
