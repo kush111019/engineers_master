@@ -1492,5 +1492,31 @@ ALTER TABLE ONLY public.users
 
 --
 -- PostgreSQL database dump complete
+
+
+
+SELECT
+    p.id AS product_id,
+    p.product_name,
+    -- Sum of target_amount for Q1 (January to March)
+    SUM(CASE WHEN s.created_at >= '2023-01-01' AND s.created_at < '2023-04-01' THEN s.target_amount::numeric ELSE 0 END) AS q1_target_amount,
+    -- Sum of target_amount for Q2 (April to June)
+    SUM(CASE WHEN s.created_at >= '2023-04-01' AND s.created_at < '2023-07-01' THEN s.target_amount::numeric ELSE 0 END) AS q2_target_amount,
+    -- Sum of target_amount for Q3 (July to September)
+    SUM(CASE WHEN s.created_at >= '2023-07-01' AND s.created_at < '2023-10-01' THEN s.target_amount::numeric ELSE 0 END) AS q3_target_amount,
+    -- Sum of target_amount for Q4 (October to December)
+    SUM(CASE WHEN s.created_at >= '2023-10-01' AND s.created_at < '2024-01-01' THEN s.target_amount::numeric ELSE 0 END) AS q4_target_amount
+FROM
+    products AS p
+LEFT JOIN
+    product_in_sales AS pis ON p.id = pis.product_id
+LEFT JOIN
+    sales AS s ON pis.sales_id = s.id
+WHERE
+    p.company_id = '4049d7da-1f99-459f-9ba1-6f936fb02eb2' AND p.deleted_at IS NULL
+GROUP BY
+    p.id, p.product_name
+ORDER BY
+    p.created_at DESC;
 --
 
