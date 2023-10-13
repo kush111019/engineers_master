@@ -445,6 +445,7 @@ module.exports.uploadLeadFile = async (req, res) => {
     try {
         let userId = req.user.id
         let file = req.file
+        console.log(file)
         await connection.query('BEGIN')
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
