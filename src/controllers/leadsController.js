@@ -445,7 +445,6 @@ module.exports.uploadLeadFile = async (req, res) => {
     try {
         let userId = req.user.id
         let file = req.file
-        console.log(file)
         await connection.query('BEGIN')
         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s2)
@@ -474,11 +473,9 @@ module.exports.uploadLeadFile = async (req, res) => {
                             let titleId = '';
                             let s3 = dbScript(db_sql['Q192'], { var1: row[8], var2: checkPermission.rows[0].company_id })
                             let findTitle = await connection.query(s3)
-                            console.log(findTitle , "00000000000000000000000000000")
                             if (findTitle.rowCount == 0) {
                                 let s4 = dbScript(db_sql['Q178'], { var1: row[8], var2: checkPermission.rows[0].company_id })
                                 let insertTitle = await connection.query(s4)
-                                console.log(insertTitle.rows[0] , "11111111111111111111111111111111111")
                                 titleId = insertTitle.rows[0].id
                             } else {
                                 titleId = findTitle.rows[0].id
