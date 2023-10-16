@@ -80,7 +80,7 @@ let server = sticky(options, () => {
       socket.join(room);
       console.log("User Joined Room: " + room);
     });
-
+ 
     socket.on("new message", (newMessageRecieved) => {
       if (!newMessageRecieved.users) return console.log("chat.users not defined");
       console.log(newMessageRecieved,"===================================================")
