@@ -8,9 +8,9 @@ Upload schema(hirise_sales_schema.sql) to the database
 `For host, database, SMTP, Stripe Publisher key and SECRET_KEY,  and URL's`
 
 # run the seeder commands
-1. `node seedSuperAdmin`
-2. `node seedModules`
-3. `node seedCountryDetails`
+1. `npm run seedSuperAdmin`
+2. `npm run seedModules`
+3. `npm run seedCountryDetails`
 
 # run server
 `npm start`
