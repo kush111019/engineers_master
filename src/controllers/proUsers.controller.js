@@ -1127,7 +1127,7 @@ module.exports.leadReSync = async (req, res) => {
                                     }
                                 })
                                 .catch(async (error) => {
-                                    console.log("catch error2" , "99999999999999999999999999999")
+                                    console.log("catch error2" , error);
                                     await connection.query('ROLLBACK')
                                     res.json({
                                         status: 400,
