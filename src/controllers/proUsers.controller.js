@@ -741,7 +741,7 @@ module.exports.searchLead = async () => {
                         .then(response => {
                             //searching lead with given below query
                             const apiUrl = `${response.data.urls.custom_domain}` + `${process.env.SALESFORCE_API_VERSION}`;
-                            const query = 'SELECT uniqueId__c,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
+                            const query = 'SELECT Id,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
                             axios({
                                 method: 'get',
                                 url: `${apiUrl}query/?q=${query}`,
@@ -780,7 +780,7 @@ module.exports.searchLead = async () => {
 
                                                     let customerId = await customerFnForsalesforce(data, accessData, industryId)
 
-                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.Id, var2: accessData.company_id })
                                                     let checkLead = await connection.query(s10)
                                                     if (checkLead.rowCount > 0) {
                                                         let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
@@ -788,7 +788,7 @@ module.exports.searchLead = async () => {
                                                         let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
                                                     }
                                                 } else {
-                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.Id, var2: accessData.company_id })
                                                     let checkLead = await connection.query(s10)
                                                     if (checkLead.rowCount == 0) {
                                                         let titleId = await titleFn(data.Title, accessData.company_id)
@@ -974,6 +974,7 @@ module.exports.leadReSync = async (req, res) => {
             if (provider.toLowerCase() == 'salesforce' && accessData.salesforce_status) {
                 console.log("inside salesforce" , "000000000000000000000000000")
                 await connection.query('BEGIN')
+                console.log(accessData.salesforce_refresh_token , "0101001010")
                 try {
                     let curDate = new Date();
                     let expiryDate = new Date(accessData.salesforce_expiry)
@@ -1019,7 +1020,7 @@ module.exports.leadReSync = async (req, res) => {
                         //re syncing the leads data using below query parameters
                         .then(response => {
                             const apiUrl = `${response.data.urls.custom_domain}` + `${process.env.SALESFORCE_API_VERSION}`;
-                            const query = 'SELECT uniqueId__c,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
+                            const query = 'SELECT Id,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
                             axios({
                                 method: 'get',
                                 url: `${apiUrl}query/?q=${query}`,
@@ -1057,7 +1058,7 @@ module.exports.leadReSync = async (req, res) => {
 
                                                         let customerId = await customerFnForsalesforce(data, accessData, industryId)
 
-                                                        let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
+                                                        let s10 = dbScript(db_sql['Q322'], { var1: data.Id, var2: accessData.company_id })
                                                         let checkLead = await connection.query(s10)
                                                         if (checkLead.rowCount > 0) {
                                                             let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
@@ -1066,7 +1067,7 @@ module.exports.leadReSync = async (req, res) => {
                                                         }
                                                         console.log("check" , "444444444444444444444444444444444")
                                                     } else {
-                                                        let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
+                                                        let s10 = dbScript(db_sql['Q322'], { var1: data.Id, var2: accessData.company_id })
                                                         let checkLead = await connection.query(s10)
                                                         if (checkLead.rowCount == 0) {
                                                             console.log(checkLead, "55555555555555555555555555555")
@@ -1082,7 +1083,7 @@ module.exports.leadReSync = async (req, res) => {
                                                         }
                                                     }
                                                 } else {
-                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.Id, var2: accessData.company_id })
                                                     let checkLead = await connection.query(s10)
                                                     if (checkLead.rowCount == 0) {
                                                         console.log(checkLead , "666666666666666666666666666")
