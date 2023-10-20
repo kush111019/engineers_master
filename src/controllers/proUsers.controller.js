@@ -972,6 +972,7 @@ module.exports.leadReSync = async (req, res) => {
         let getConnectors = await connection.query(s2)
         for (let accessData of getConnectors.rows) {
             if (provider.toLowerCase() == 'salesforce' && accessData.salesforce_status) {
+                console.log("inside salesforce" , "000000000000000000000000000")
                 await connection.query('BEGIN')
                 try {
                     let curDate = new Date();
@@ -1001,6 +1002,7 @@ module.exports.leadReSync = async (req, res) => {
                                 accessToken = res.data.access_token
                                 let s4 = dbScript(db_sql['Q325'], { var1: res.data.access_token, var2: true, var3: accessData.salesforce_refresh_token, var4: expirationTime, var5: accessData.user_id, var6: accessData.company_id })
                                 let storeAccessToken = await connection.query(s4)
+                                console.log(storeAccessToken , "11111111111111111111111111111111111")
                             })
                             .catch((err) => {
                                 console.error('Authorization error:', err.message);
@@ -1029,6 +1031,7 @@ module.exports.leadReSync = async (req, res) => {
                                     if (response.data.records.length > 0) {
                                         let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
                                         let findSyncLead = await connection.query(s1)
+                                        console.log(findSyncLead , "2222222222222222222222222222222")
                                         //Initial insertion
                                         if (findSyncLead.rowCount == 0) {
                                             for (let data of response.data.records) {
@@ -1040,6 +1043,7 @@ module.exports.leadReSync = async (req, res) => {
 
 
                                                 let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
+                                                console.log(leads , "333333333333333333333333333333333")
                                             }
                                         } else {
                                             for (let data of response.data.records) {
@@ -1060,10 +1064,12 @@ module.exports.leadReSync = async (req, res) => {
                                                         } else {
                                                             let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
                                                         }
+                                                        console.log("check" , "444444444444444444444444444444444")
                                                     } else {
                                                         let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
                                                         let checkLead = await connection.query(s10)
                                                         if (checkLead.rowCount == 0) {
+                                                            console.log(checkLead, "55555555555555555555555555555")
                                                             let titleId = await titleFn(data.Title, accessData.company_id)
 
                                                             let sourceId = await sourceFn(data.LeadSource, accessData.company_id)
@@ -1079,6 +1085,7 @@ module.exports.leadReSync = async (req, res) => {
                                                     let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
                                                     let checkLead = await connection.query(s10)
                                                     if (checkLead.rowCount == 0) {
+                                                        console.log(checkLead , "666666666666666666666666666")
                                                         let titleId = await titleFn(data.Title, accessData.company_id)
 
                                                         let sourceId = await sourceFn(data.LeadSource, accessData.company_id)
@@ -1099,8 +1106,9 @@ module.exports.leadReSync = async (req, res) => {
 
                                         let s11 = dbScript(db_sql['Q324'], { var0: 'salesforce_last_sync', var1: _dt, var2: _dt, var3: accessData.user_id, var4: accessData.company_id })
                                         let updateLastSyncDate = await connection.query(s11)
-
+                                        console.log(updateLastSyncDate , "77777777777777777777777777")
                                         if (updateStatusInCompany.rowCount > 0) {
+                                            console.log(updateStatusInCompany , "8888888888888888888888888888888" )
                                             await connection.query('COMMIT')
                                             res.json({
                                                 status: 200,
@@ -1108,6 +1116,7 @@ module.exports.leadReSync = async (req, res) => {
                                                 message: "Salesforce leads synced successfully"
                                             })
                                         } else {
+                                            console.log("catch error1" , "99999999999999999999999999999")
                                             await connection.query('ROLLBACK')
                                             res.json({
                                                 status: 400,
@@ -1118,6 +1127,7 @@ module.exports.leadReSync = async (req, res) => {
                                     }
                                 })
                                 .catch(async (error) => {
+                                    console.log("catch error2" , "99999999999999999999999999999")
                                     await connection.query('ROLLBACK')
                                     res.json({
                                         status: 400,
@@ -1127,6 +1137,7 @@ module.exports.leadReSync = async (req, res) => {
                                 });
                         })
                         .catch(async (error) => {
+                            console.log("catch error3" , "99999999999999999999999999999")
                             await connection.query('ROLLBACK')
                             res.json({
                                 status: 400,
@@ -1135,6 +1146,7 @@ module.exports.leadReSync = async (req, res) => {
                             })
                         });
                 } catch (error) {
+                    console.log("catch error4" , "99999999999999999999999999999")
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
