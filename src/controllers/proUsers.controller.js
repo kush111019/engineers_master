@@ -974,6 +974,7 @@ module.exports.leadReSync = async (req, res) => {
             if (provider.toLowerCase() == 'salesforce' && accessData.salesforce_status) {
                 console.log("inside salesforce" , "000000000000000000000000000")
                 await connection.query('BEGIN')
+                console.log(accessData.salesforce_refresh_token , "0101001010")
                 try {
                     let curDate = new Date();
                     let expiryDate = new Date(accessData.salesforce_expiry)
