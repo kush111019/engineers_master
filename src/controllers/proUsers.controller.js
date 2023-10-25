@@ -49,7 +49,7 @@ module.exports.proUserLogin = async (req, res) => {
                                 configuration.dateFormat = admin.rows[0].date_format,
                                 configuration.beforeClosingDays = (admin.rows[0].before_closing_days) ? admin.rows[0].before_closing_days : '',
                                 configuration.afterClosingDays = (admin.rows[0].after_closing_days) ? admin.rows[0].after_closing_days : ''
-// fetching imap_credentail for the admin 
+                            // fetching imap_credentail for the admin 
                             let s2 = dbScript(db_sql['Q125'], { var1: admin.rows[0].id, var2: admin.rows[0].company_id })
                             let imapCreds = await connection.query(s2)
                             let isImapCred = (imapCreds.rowCount == 0) ? false : true
@@ -198,7 +198,7 @@ module.exports.changePassword = async (req, res) => {
         let user = await connection.query(s1)
         if (user.rows.length > 0 && isProUser) {
             if (user.rows[0].encrypted_password == oldPassword) {
-// updating the encrypted password
+                // updating the encrypted password
                 let _dt = new Date().toISOString();
                 let s2 = dbScript(db_sql['Q5'], { var1: user.rows[0].id, var2: newPassword, var3: _dt, var4: user.rows[0].company_id })
                 let updatePass = await connection.query(s2)
@@ -291,7 +291,7 @@ module.exports.usersList = async (req, res) => {
 module.exports.usersListForGlobalAndOwn = async (req, res) => {
     let userId = req.user.id
     let { isProUser } = req.user
-     // checking different permission to create data linked with modules table
+    // checking different permission to create data linked with modules table
     let s1 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
     let checkPermission = await connection.query(s1)
     if (checkPermission.rows[0].permission_to_view_global && isProUser) {
@@ -349,7 +349,7 @@ module.exports.connectorsList = async (req, res) => {
         let userId = req.user.id
         let { isProUser } = req.user
         await connection.query('BEGIN')
-         // checking different permission to create data linked with modules table
+        // checking different permission to create data linked with modules table
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0 && isProUser) {
@@ -429,7 +429,8 @@ module.exports.authUrl = async (req, res) => {
 
         //AuthUrl for linkedin
         if (provider.toLowerCase() == 'linkedin') {
-            let scope = ['r_liteprofile', 'r_emailaddress'];
+            // let scope = ['r_liteprofile', 'r_emailaddress'];
+            let scope = ['w_member_social']
             const authUrl = LinkedIn.auth.authorize(scope, 'state');
             res.json({
                 status: 200,
@@ -447,7 +448,7 @@ module.exports.authUrl = async (req, res) => {
                 success: true,
                 data: authUrl,
             })
-        }   
+        }
         //AuthUrl for salesforce
         if (provider.toLowerCase() == 'salesforce') {
             const conn = new Connection({
@@ -712,7 +713,7 @@ module.exports.searchLead = async () => {
                                 'Content-Type': 'application/x-www-form-urlencoded'
                             }
                         };
-// code for the oauth
+                        // code for the oauth
                         axios.post('https://login.salesforce.com/services/oauth2/token', data, config)
                             .then(async (res) => {
                                 const expiresIn = 7200; // Default expiration time for Salesforce access tokens
@@ -1391,7 +1392,7 @@ module.exports.proLeadsList = async (req, res) => {
         let userId = req.user.id
         let { provider } = req.query
         let { isProUser } = req.user
-         // checking different permission to create data linked with modules table
+        // checking different permission to create data linked with modules table
         let s1 = dbScript(db_sql['Q41'], { var1: leadModule, var2: userId })
         let checkPermission = await connection.query(s1)
         let type = 'lead';
@@ -1468,7 +1469,7 @@ module.exports.salesListForPro = async (req, res) => {
     try {
         let userId = req.user.id
         let { isProUser } = req.user
-         // checking different permission to create data linked with modules table
+        // checking different permission to create data linked with modules table
         let s1 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global && isProUser) {
@@ -1557,7 +1558,7 @@ module.exports.salesDetails = async (req, res) => {
         let userId = req.user.id;
         let salesId = req.query.id;
         let { isProUser } = req.user
-         // checking different permission to create data linked with modules table
+        // checking different permission to create data linked with modules table
         let s2 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
         let checkPermission = await connection.query(s2)
         if (isProUser && checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
@@ -1609,7 +1610,7 @@ module.exports.salesDetails = async (req, res) => {
 module.exports.getUpperLevelUserList = async (req, res) => {
     try {
         let userId = req.user.id
-         // checking different permission to create data linked with modules table
+        // checking different permission to create data linked with modules table
         let s1 = dbScript(db_sql['Q41'], { var1: customerModule, var2: userId })
         let checkPermission = await connection.query(s1)
         // fetching data from roles
@@ -2081,7 +2082,7 @@ module.exports.getEmailToLead = async (req, res) => {
                     status: 200,
                     success: true,
                     message: "No Email Found",
-                    data:[]
+                    data: []
                 })
             }
         } else {
@@ -2286,7 +2287,7 @@ module.exports.addAvailability = async (req, res) => {
                 if (ts.checked) {
                     for (let subTs of ts.timeSlots) {
                         const { utcStart, utcEnd } = await convertToLocal(subTs.startTime, subTs.endTime, timezone);
-// inseting time into pro_user_time_slot for the availability check
+                        // inseting time into pro_user_time_slot for the availability check
                         let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: utcStart, var3: utcEnd, var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked, var7: userId })
                         let addTimeSlot = await connection.query(s3)
                     }
