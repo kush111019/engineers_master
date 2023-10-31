@@ -1434,35 +1434,11 @@ ORDER BY
             (full_name, title, email_address, phone_number,source, customer_company_id, creator_id, company_id,emp_type)
            VALUES
             ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') RETURNING *`,
-            "Q169": `INSERT INTO customer_company_employees (full_name, title, email_address, phone_number,
-              address, source, linkedin_url, website, targeted_value, marketing_qualified_lead,
-              assigned_sales_lead_to, additional_marketing_notes, creator_id, company_id, customer_company_id, emp_type, sync_id, sync_source, pid)
-          SELECT '{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}', '{var10}', '{var11}', '{var12}', '{var13}', '{var14}', '{var15}', '{var16}', '{var17}', '{var18}', '{var19}'
-          WHERE NOT EXISTS (
-            SELECT 1
-            FROM customer_company_employees
-            WHERE 
-              email_address = '{var3}' OR
-              full_name <> '{var1}' OR
-              title <> '{var2}' OR
-              phone_number <> '{var4}' OR
-              address <> '{var5}' OR
-              source <> '{var6}' OR
-              linkedin_url <> '{var7}' OR
-              website <> '{var8}' OR
-              targeted_value <> '{var9}' OR
-              marketing_qualified_lead <> '{var10}' OR
-              assigned_sales_lead_to <> '{var11}' OR
-              additional_marketing_notes <> '{var12}' OR
-              creator_id <> '{var13}' OR
-              company_id <> '{var14}' OR
-              customer_company_id <> '{var15}' OR
-              emp_type <> '{var16}' OR
-              sync_id <> '{var17}' OR
-              sync_source <> '{var18}' OR
-              pid <> '{var19}'
-          )
-          RETURNING *`,
+  "Q169": `INSERT INTO customer_company_employees (full_name,title,email_address,phone_number,
+              address,source,linkedin_url,website,targeted_value,marketing_qualified_lead,
+              assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type, sync_id, sync_source,pid)
+              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
+              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}', '{var18}','{var19}') RETURNING *`,
   "Q170": `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
@@ -3635,31 +3611,31 @@ ORDER BY
   "Q393": `SELECT start_date FROM pro_quarter_config WHERE company_id = '{var1}' AND quarter = '{var2}' AND deleted_at IS NULL`,
   "Q394": `UPDATE companies SET company_address = '{var1}', updated_at = '{var2}', quarter = '{var4}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
   "Q395": `SELECT
-            COUNT(*) AS total_lead_count,
-            COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS converted_lead_count
+            count(*) as total_lead_count,
+            sum(CASE WHEN su1.user_id = '{var3}' AND s1.closed_at IS NOT NULL THEN 1 ELSE 0 END) as converted_lead_count
           FROM
-            customer_company_employees
+            sales s
+          INNER JOIN sales_users su ON su.sales_id = s.id AND su.user_type = 'captain'
+          LEFT JOIN sales s1 ON su.sales_id = s1.id
+          LEFT JOIN sales_users su1 ON su1.sales_id = s1.id AND su1.user_type = 'captain'
           WHERE
-            creator_id = '{var3}'
-            AND created_at >= '{var1}'
-            AND created_at <= '{var2}'
-            AND title IS NOT NULL
-            AND pid IS NULL
-            AND assigned_sales_lead_to IS NOT NULL
-            AND deleted_at IS NULL` ,
+            su.user_id = '{var3}'
+            AND s.created_at >= '{var1}'
+            AND s.created_at <= '{var2}'
+            AND s.deleted_at IS NULL`,
   "Q396": `SELECT
-              COUNT(*) AS total_lead_count,
-              COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END),0) AS converted_lead_count
-            FROM
-              customer_company_employees
-            WHERE
-              creator_id IN ({var3})
-              AND created_at >= '{var1}'
-              AND created_at <= '{var2}'
-              AND title IS NOT NULL
-              AND pid IS NULL
-              AND assigned_sales_lead_to IS NOT NULL
-              AND deleted_at IS NULL` ,
+            count(*) as total_lead_count,
+            sum(CASE WHEN su1.user_id IN ({var3}) AND s1.closed_at IS NOT NULL THEN 1 ELSE 0 END) as converted_lead_count
+          FROM
+            sales s
+          INNER JOIN sales_users su ON su.sales_id = s.id AND su.user_type = 'captain'
+          LEFT JOIN sales s1 ON su.sales_id = s1.id
+          LEFT JOIN sales_users su1 ON su1.sales_id = s1.id AND su1.user_type = 'captain'
+          WHERE
+            su.user_id IN ({var3})
+            AND s.created_at >= '{var1}'
+            AND s.created_at <= '{var2}'
+            AND s.deleted_at IS NULL` ,
   "Q397": `SELECT
               COUNT(*) AS total_sales_count,
               COALESCE(SUM(CASE WHEN closed_at IS NOT NULL THEN 1 ELSE 0 END), 0) AS closed_sales_count
