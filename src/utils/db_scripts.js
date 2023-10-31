@@ -1434,35 +1434,11 @@ ORDER BY
             (full_name, title, email_address, phone_number,source, customer_company_id, creator_id, company_id,emp_type)
            VALUES
             ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') RETURNING *`,
-            "Q169": `INSERT INTO customer_company_employees (full_name, title, email_address, phone_number,
-              address, source, linkedin_url, website, targeted_value, marketing_qualified_lead,
-              assigned_sales_lead_to, additional_marketing_notes, creator_id, company_id, customer_company_id, emp_type, sync_id, sync_source, pid)
-          SELECT '{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}', '{var9}', '{var10}', '{var11}', '{var12}', '{var13}', '{var14}', '{var15}', '{var16}', '{var17}', '{var18}', '{var19}'
-          WHERE NOT EXISTS (
-            SELECT 1
-            FROM customer_company_employees
-            WHERE 
-              email_address = '{var3}' OR
-              full_name <> '{var1}' OR
-              title <> '{var2}' OR
-              phone_number <> '{var4}' OR
-              address <> '{var5}' OR
-              source <> '{var6}' OR
-              linkedin_url <> '{var7}' OR
-              website <> '{var8}' OR
-              targeted_value <> '{var9}' OR
-              marketing_qualified_lead <> '{var10}' OR
-              assigned_sales_lead_to <> '{var11}' OR
-              additional_marketing_notes <> '{var12}' OR
-              creator_id <> '{var13}' OR
-              company_id <> '{var14}' OR
-              customer_company_id <> '{var15}' OR
-              emp_type <> '{var16}' OR
-              sync_id <> '{var17}' OR
-              sync_source <> '{var18}' OR
-              pid <> '{var19}'
-          )
-          RETURNING *`,
+  "Q169": `INSERT INTO customer_company_employees (full_name,title,email_address,phone_number,
+              address,source,linkedin_url,website,targeted_value,marketing_qualified_lead,
+              assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type, sync_id, sync_source,pid)
+              VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
+              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}', '{var18}','{var19}') RETURNING *`,
   "Q170": `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
@@ -3640,7 +3616,7 @@ ORDER BY
           FROM
             customer_company_employees
           WHERE
-            creator_id = '{var3}'
+            assigned_sales_lead_to = '{var3}'
             AND created_at >= '{var1}'
             AND created_at <= '{var2}'
             AND title IS NOT NULL
@@ -3653,7 +3629,7 @@ ORDER BY
             FROM
               customer_company_employees
             WHERE
-              creator_id IN ({var3})
+              assigned_sales_lead_to IN ({var3})
               AND created_at >= '{var1}'
               AND created_at <= '{var2}'
               AND title IS NOT NULL
