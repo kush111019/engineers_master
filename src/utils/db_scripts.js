@@ -3611,31 +3611,31 @@ ORDER BY
   "Q393": `SELECT start_date FROM pro_quarter_config WHERE company_id = '{var1}' AND quarter = '{var2}' AND deleted_at IS NULL`,
   "Q394": `UPDATE companies SET company_address = '{var1}', updated_at = '{var2}', quarter = '{var4}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
   "Q395": `SELECT
-            COUNT(*) AS total_lead_count,
-            COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS converted_lead_count
+            count(*) as total_lead_count,
+            sum(CASE WHEN su1.user_id = '{var3}' AND s1.closed_at IS NOT NULL THEN 1 ELSE 0 END) as converted_lead_count
           FROM
-            customer_company_employees
+            sales s
+          INNER JOIN sales_users su ON su.sales_id = s.id AND su.user_type = 'captain'
+          LEFT JOIN sales s1 ON su.sales_id = s1.id
+          LEFT JOIN sales_users su1 ON su1.sales_id = s1.id AND su1.user_type = 'captain'
           WHERE
-            assigned_sales_lead_to = '{var3}'
-            AND created_at >= '{var1}'
-            AND created_at <= '{var2}'
-            AND title IS NOT NULL
-            AND pid IS NULL
-            AND assigned_sales_lead_to IS NOT NULL
-            AND deleted_at IS NULL` ,
+            su.user_id = '{var3}'
+            AND s.created_at >= '{var1}'
+            AND s.created_at <= '{var2}'
+            AND s.deleted_at IS NULL`,
   "Q396": `SELECT
-              COUNT(*) AS total_lead_count,
-              COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END),0) AS converted_lead_count
-            FROM
-              customer_company_employees
-            WHERE
-              assigned_sales_lead_to IN ({var3})
-              AND created_at >= '{var1}'
-              AND created_at <= '{var2}'
-              AND title IS NOT NULL
-              AND pid IS NULL
-              AND assigned_sales_lead_to IS NOT NULL
-              AND deleted_at IS NULL` ,
+            count(*) as total_lead_count,
+            sum(CASE WHEN su1.user_id IN ({var3}) AND s1.closed_at IS NOT NULL THEN 1 ELSE 0 END) as converted_lead_count
+          FROM
+            sales s
+          INNER JOIN sales_users su ON su.sales_id = s.id AND su.user_type = 'captain'
+          LEFT JOIN sales s1 ON su.sales_id = s1.id
+          LEFT JOIN sales_users su1 ON su1.sales_id = s1.id AND su1.user_type = 'captain'
+          WHERE
+            su.user_id IN ({var3})
+            AND s.created_at >= '{var1}'
+            AND s.created_at <= '{var2}'
+            AND s.deleted_at IS NULL` ,
   "Q397": `SELECT
               COUNT(*) AS total_sales_count,
               COALESCE(SUM(CASE WHEN closed_at IS NOT NULL THEN 1 ELSE 0 END), 0) AS closed_sales_count
