@@ -3733,27 +3733,55 @@ ORDER BY
           ) subquery
           WHERE sales_ids IS NOT NULL AND array_length(sales_ids, 1) > 0 `,
   "Q401": `SELECT
-            COUNT(*) AS total_sales_activities,
-            COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS total_deals_created
-          FROM
-            customer_company_employees
+            count(*) as total_deals_created,
+            (
+              SELECT
+                count(*)
+              from
+                follow_up_notes f
+                JOIN sales s1 on s1.id = f.sales_id
+                JOIN sales_users su1 ON s1.id = su1.sales_id
+              WHERE
+                su1.user_type = 'captain'
+                AND su1.user_id = '{var3}'
+                AND s1.created_at >= '{var1}'
+                AND s1.created_at <= '{var2}'
+                AND s1.deleted_at IS NULL
+            ) AS total_sales_activities
+          from
+            sales s
+            JOIN sales_users su ON s.id = su.sales_id
           WHERE
-            creator_id = '{var3}'
-            AND created_at >= '{var1}'
-            AND created_at <= '{var2}'
-            AND source IS NOT NULL
-            AND deleted_at IS NULL;` ,
+            su.user_type = 'captain'
+            AND su.user_id = '{var3}'
+            AND s.created_at >= '{var1}'
+            AND s.created_at <= '{var2}'
+            AND s.deleted_at IS NULL;` ,
   "Q402": `SELECT
-          COUNT(*) AS total_sales_activities,
-            COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS total_deals_created
-          FROM
-            customer_company_employees
+            count(*) as total_deals_created,
+            (
+              SELECT
+                count(*)
+              from
+                follow_up_notes f
+                JOIN sales s1 on s1.id = f.sales_id
+                JOIN sales_users su1 ON s1.id = su1.sales_id
+              WHERE
+                su1.user_type = 'captain'
+                AND su1.user_id IN ({var3})
+                AND s1.created_at >= '{var1}'
+                AND s1.created_at <= '{var2}'
+                AND s1.deleted_at IS NULL
+            ) AS total_sales_activities
+          from
+            sales s
+            JOIN sales_users su ON s.id = su.sales_id
           WHERE
-            creator_id IN ({var3})
-            AND created_at >= '{var1}'
-            AND created_at <= '{var2}'
-            AND source IS NOT NULL
-            AND deleted_at IS NULL;`,
+            su.user_type = 'captain'
+            AND su.user_id IN ({var3})
+            AND s.created_at >= '{var1}'
+            AND s.created_at <= '{var2}'
+            AND s.deleted_at IS NULL;`,
   "Q403": `SELECT su.sales_id, ARRAY_AGG(su.id) AS ids, cc.customer_name
           FROM sales_users su
           LEFT JOIN sales s ON su.sales_id = s.id
