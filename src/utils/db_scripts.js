@@ -1439,16 +1439,15 @@ ORDER BY
               assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type, sync_id, sync_source,pid)
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
               '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}', '{var18}','{var19}') RETURNING *`,
-
   "Q170": `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,
                 l.created_at,l.is_converted,l.is_rejected,l.reason,
-                u1.full_name AS creator_name, c.customer_name ,
+                u1.full_name AS creator_name, c.customer_name,
                 u2.full_name as assigned_sales_lead_name,
-                ( 
+                (
                   SELECT  json_agg(customer_company_employees.*)
                       FROM (
                       SELECT 
@@ -3612,31 +3611,31 @@ ORDER BY
   "Q393": `SELECT start_date FROM pro_quarter_config WHERE company_id = '{var1}' AND quarter = '{var2}' AND deleted_at IS NULL`,
   "Q394": `UPDATE companies SET company_address = '{var1}', updated_at = '{var2}', quarter = '{var4}' WHERE id = '{var3}' AND deleted_at IS NULL RETURNING *`,
   "Q395": `SELECT
-            COUNT(*) AS total_lead_count,
-            COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS converted_lead_count
+            count(*) as total_lead_count,
+            sum(CASE WHEN su1.user_id = '{var3}' AND s1.closed_at IS NOT NULL THEN 1 ELSE 0 END) as converted_lead_count
           FROM
-            customer_company_employees
+            sales s
+          INNER JOIN sales_users su ON su.sales_id = s.id AND su.user_type = 'captain'
+          LEFT JOIN sales s1 ON su.sales_id = s1.id
+          LEFT JOIN sales_users su1 ON su1.sales_id = s1.id AND su1.user_type = 'captain'
           WHERE
-            creator_id = '{var3}'
-            AND created_at >= '{var1}'
-            AND created_at <= '{var2}'
-            AND title IS NOT NULL
-            AND pid IS NULL
-            AND assigned_sales_lead_to IS NOT NULL
-            AND deleted_at IS NULL` ,
+            su.user_id = '{var3}'
+            AND s.created_at >= '{var1}'
+            AND s.created_at <= '{var2}'
+            AND s.deleted_at IS NULL`,
   "Q396": `SELECT
-              COUNT(*) AS total_lead_count,
-              COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END),0) AS converted_lead_count
-            FROM
-              customer_company_employees
-            WHERE
-              creator_id IN ({var3})
-              AND created_at >= '{var1}'
-              AND created_at <= '{var2}'
-              AND title IS NOT NULL
-              AND pid IS NULL
-              AND assigned_sales_lead_to IS NOT NULL
-              AND deleted_at IS NULL` ,
+            count(*) as total_lead_count,
+            sum(CASE WHEN su1.user_id IN ({var3}) AND s1.closed_at IS NOT NULL THEN 1 ELSE 0 END) as converted_lead_count
+          FROM
+            sales s
+          INNER JOIN sales_users su ON su.sales_id = s.id AND su.user_type = 'captain'
+          LEFT JOIN sales s1 ON su.sales_id = s1.id
+          LEFT JOIN sales_users su1 ON su1.sales_id = s1.id AND su1.user_type = 'captain'
+          WHERE
+            su.user_id IN ({var3})
+            AND s.created_at >= '{var1}'
+            AND s.created_at <= '{var2}'
+            AND s.deleted_at IS NULL` ,
   "Q397": `SELECT
               COUNT(*) AS total_sales_count,
               COALESCE(SUM(CASE WHEN closed_at IS NOT NULL THEN 1 ELSE 0 END), 0) AS closed_sales_count
@@ -3705,6 +3704,7 @@ ORDER BY
               END AS target_amount,
               s.subscription_plan,
               s.recurring_date,
+              s.closed_at,
               cc.customer_name
             FROM sales AS s
             LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
@@ -3713,12 +3713,11 @@ ORDER BY
             AND s.sales_type = 'Subscription'
             AND s.deleted_at IS NULL
             AND s.archived_at IS NULL
-            AND s.closed_at IS NOT NULL
             AND cc.deleted_at IS NULL
             AND cc.archived_at IS NULL
-            AND s.recurring_date >= '{var1}'
-            AND s.recurring_date <= '{var2}'
-          `,
+            AND s.closed_at >= '{var1}'
+            AND s.closed_at  <= '{var2}'`,
+
   "Q400": `SELECT sales_ids
           FROM (
             SELECT array_agg(DISTINCT su.sales_id) AS sales_ids
@@ -3734,27 +3733,55 @@ ORDER BY
           ) subquery
           WHERE sales_ids IS NOT NULL AND array_length(sales_ids, 1) > 0 `,
   "Q401": `SELECT
-            COUNT(*) AS total_sales_activities,
-            COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS total_deals_created
-          FROM
-            customer_company_employees
+            count(*) as total_deals_created,
+            (
+              SELECT
+                count(*)
+              from
+                follow_up_notes f
+                JOIN sales s1 on s1.id = f.sales_id
+                JOIN sales_users su1 ON s1.id = su1.sales_id
+              WHERE
+                su1.user_type = 'captain'
+                AND su1.user_id = '{var3}'
+                AND s1.created_at >= '{var1}'
+                AND s1.created_at <= '{var2}'
+                AND s1.deleted_at IS NULL
+            ) AS total_sales_activities
+          from
+            sales s
+            JOIN sales_users su ON s.id = su.sales_id
           WHERE
-            creator_id = '{var3}'
-            AND created_at >= '{var1}'
-            AND created_at <= '{var2}'
-            AND source IS NOT NULL
-            AND deleted_at IS NULL;` ,
+            su.user_type = 'captain'
+            AND su.user_id = '{var3}'
+            AND s.created_at >= '{var1}'
+            AND s.created_at <= '{var2}'
+            AND s.deleted_at IS NULL;` ,
   "Q402": `SELECT
-          COUNT(*) AS total_sales_activities,
-            COALESCE(SUM(CASE WHEN is_converted = true THEN 1 ELSE 0 END), 0) AS total_deals_created
-          FROM
-            customer_company_employees
+            count(*) as total_deals_created,
+            (
+              SELECT
+                count(*)
+              from
+                follow_up_notes f
+                JOIN sales s1 on s1.id = f.sales_id
+                JOIN sales_users su1 ON s1.id = su1.sales_id
+              WHERE
+                su1.user_type = 'captain'
+                AND su1.user_id IN ({var3})
+                AND s1.created_at >= '{var1}'
+                AND s1.created_at <= '{var2}'
+                AND s1.deleted_at IS NULL
+            ) AS total_sales_activities
+          from
+            sales s
+            JOIN sales_users su ON s.id = su.sales_id
           WHERE
-            creator_id IN ({var3})
-            AND created_at >= '{var1}'
-            AND created_at <= '{var2}'
-            AND source IS NOT NULL
-            AND deleted_at IS NULL;`,
+            su.user_type = 'captain'
+            AND su.user_id IN ({var3})
+            AND s.created_at >= '{var1}'
+            AND s.created_at <= '{var2}'
+            AND s.deleted_at IS NULL;`,
   "Q403": `SELECT su.sales_id, ARRAY_AGG(su.id) AS ids, cc.customer_name
           FROM sales_users su
           LEFT JOIN sales s ON su.sales_id = s.id
@@ -3767,20 +3794,20 @@ ORDER BY
             AND cc.deleted_at IS NULL
           GROUP BY su.sales_id, su.user_type, cc.customer_name
           ORDER BY su.sales_id`,
-  "Q404": `SELECT  
-            su.user_id, 
+  "Q404": `SELECT
+            su.user_id,
             u.full_name,
             array_agg(DISTINCT su.sales_id) AS sales_ids
-          FROM 
+          FROM
             sales_users su
-          LEFT JOIN 
+          LEFT JOIN
             users u ON su.user_id = u.id
           LEFT JOIN
             sales s ON su.sales_id = s.id
-          WHERE 
+          WHERE
             su.user_type = 'captain' AND
             su.user_id = '{var1}' AND su.deleted_at IS NULL
-          GROUP BY 
+          GROUP BY
             su.user_id,
             u.full_name;`,
   "Q405": `SELECT
@@ -4560,6 +4587,218 @@ GROUP BY
             u.company_id = '{var1}' AND u.id = '{var2}'
           ORDER BY
             u.created_at DESC`,
+  "Q473": `SELECT
+            sc.id, sc.customer_id, sc.customer_commission_split_id as commission_split_id, 
+            sc.is_overwrite, sc.qualification, sc.is_qualified, sc.target_amount, sc.booking_commission, sc.revenue_commission,
+            sc.currency, sc.target_closing_date, sc.archived_at, sc.archived_by, sc.archived_reason,
+            sc.sales_type, sc.subscription_plan, sc.recurring_date, sc.contract, sc.transfer_reason, 
+            sc.created_at, sc.user_id as creator_id, sc.closed_at, sc.slab_id, sc.lead_id,
+            sc.is_service_performed, sc.committed_at, sc.service_performed_at, sc.service_perform_note,
+            cus.customer_name, cus.user_id as customer_creator, u1.full_name as created_by, u1.email_address as creator_email,
+            sc.transfered_back_by as transfered_back_by_id,
+            slab.slab_name, sc.approval_status,
+            u2.full_name as transfer_back_by_name,
+            (
+                SELECT json_agg(customer_company_employees.*)
+                FROM (
+                    SELECT 
+                        customer_company_employees.id, customer_company_employees.full_name, customer_company_employees.title as title_id, customer_company_employees.email_address,
+                        customer_company_employees.phone_number, customer_company_employees.address, customer_company_employees.source as source_id,
+                        customer_company_employees.linkedin_url, customer_company_employees.website, customer_company_employees.targeted_value,
+                        customer_company_employees.assigned_sales_lead_to, customer_company_employees.additional_marketing_notes, customer_company_employees.creator_id,
+                        customer_company_employees.reason, customer_company_employees.created_at, customer_company_employees.updated_at, customer_company_employees.emp_type,
+                        customer_company_employees.marketing_qualified_lead, customer_company_employees.is_rejected, customer_company_employees.customer_company_id,
+                        u1.full_name as created_by, s.source, t.title, c.customer_name
+                    FROM customer_company_employees 
+                    LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                    LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                    LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                    LEFT JOIN customer_companies as c ON c.id = customer_company_employees.customer_company_id
+                    WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
+                    AND customer_company_employees.is_rejected = false AND u1.deleted_at IS NULL  
+                    AND customer_company_employees.deleted_at IS NULL
+                ) customer_company_employees
+            ) as lead_data,
+            (
+                SELECT json_agg(sales_users.*)
+                FROM (
+                    SELECT 
+                        ss.user_id AS id, 
+                        SUM(ss.user_percentage) AS percentage, 
+                        ss.user_type, 
+                        u1.full_name AS name, 
+                        u1.email_address AS email
+                    FROM sales_users AS ss
+                    LEFT JOIN users AS u1 ON u1.id = ss.user_id
+                    WHERE ss.sales_id = sc.id
+                    AND ss.deleted_at IS NULL
+                    AND u1.deleted_at IS NULL
+                    GROUP BY ss.user_id, u1.full_name, u1.email_address, ss.user_type
+                ) sales_users
+            ) as sales_users,
+            (
+                SELECT json_agg(product_in_sales.*)
+                FROM (
+                    SELECT 
+                        DISTINCT(p.id), p.product_name as name
+                    FROM product_in_sales as pis
+                    LEFT JOIN products AS p ON p.id = pis.product_id
+                    WHERE sc.id = pis.sales_id AND sc.deleted_at IS NULL AND p.deleted_at IS NULL
+                ) product_in_sales
+            ) as products,
+            COALESCE(rr.recognized_amount, 0) as recognized_amount,
+            CASE
+                WHEN COALESCE(rr.recognized_amount, 0) < CAST(sc.target_amount AS NUMERIC) THEN true
+                ELSE false
+            END AS is_partial_recognized
+        FROM
+            sales AS sc
+        LEFT JOIN
+            users AS u1 ON u1.id = sc.user_id
+        LEFT JOIN
+            customer_companies AS cus ON cus.id = sc.customer_id
+        LEFT JOIN
+            slabs AS slab ON slab.id = sc.slab_id
+        LEFT JOIN
+            users AS u2 ON u2.id = sc.transfered_back_by
+        LEFT JOIN
+            (
+                SELECT sales_id, SUM(recognized_amount::numeric) as recognized_amount
+                FROM recognized_revenue
+                WHERE deleted_at IS NULL
+                GROUP BY sales_id
+            ) rr ON rr.sales_id = sc.id
+        WHERE
+            sc.company_id = '{var1}' AND sc.deleted_at IS NULL AND sc.revenue_commission::decimal > 0
+            AND COALESCE(rr.recognized_amount, 0) < CAST(sc.target_amount AS NUMERIC)
+        ORDER BY
+            sc.created_at DESC
+        `,
+  "Q474": `SELECT 
+        sc.id, 
+        sc.customer_id, 
+        sc.customer_commission_split_id AS commission_split_id, 
+        sc.is_overwrite, 
+        sc.qualification, 
+        sc.is_qualified, 
+        sc.target_amount, 
+        sc.booking_commission, 
+        sc.revenue_commission, 
+        sc.currency, 
+        sc.target_closing_date, 
+        sc.archived_at, 
+        sc.archived_by, 
+        sc.archived_reason, 
+        sc.sales_type, 
+        sc.subscription_plan, 
+        sc.recurring_date, 
+        sc.contract, 
+        sc.transfer_reason,  -- Added transfer_reason column
+        sc.created_at, 
+        sc.user_id AS creator_id, 
+        sc.closed_at, 
+        sc.slab_id, 
+        sc.is_service_performed, 
+        sc.committed_at, 
+        sc.service_performed_at, 
+        sc.service_perform_note, 
+        cus.customer_name, 
+        cus.user_id AS customer_creator, 
+        u1.full_name AS created_by, 
+        u1.email_address AS creator_email, 
+        sc.transfered_back_by AS transfered_back_by_id, 
+        slab.slab_name, 
+        sc.approval_status, 
+        u2.full_name AS tranfer_back_by_name,
+        (
+            SELECT json_agg(customer_company_employees.*)
+            FROM (
+                SELECT 
+                    customer_company_employees.id, 
+                    customer_company_employees.full_name, 
+                    customer_company_employees.title AS title_id, 
+                    customer_company_employees.email_address, 
+                    customer_company_employees.phone_number, 
+                    customer_company_employees.address, 
+                    customer_company_employees.source AS source_id, 
+                    customer_company_employees.linkedin_url, 
+                    customer_company_employees.website, 
+                    customer_company_employees.targeted_value, 
+                    customer_company_employees.assigned_sales_lead_to, 
+                    customer_company_employees.additional_marketing_notes, 
+                    customer_company_employees.creator_id, 
+                    customer_company_employees.reason, 
+                    customer_company_employees.created_at, 
+                    customer_company_employees.updated_at, 
+                    customer_company_employees.emp_type, 
+                    customer_company_employees.marketing_qualified_lead, 
+                    customer_company_employees.is_rejected, 
+                    customer_company_employees.customer_company_id, 
+                    u1.full_name AS created_by, 
+                    s.source, 
+                    t.title, 
+                    c.customer_name
+                FROM customer_company_employees
+                LEFT JOIN users AS u1 ON u1.id = customer_company_employees.creator_id
+                LEFT JOIN lead_sources AS s ON s.id = customer_company_employees.source
+                LEFT JOIN lead_titles AS t ON t.id = customer_company_employees.title
+                LEFT JOIN customer_companies AS c ON c.id = customer_company_employees.customer_company_id
+                WHERE (customer_company_employees.id = sc.lead_id OR customer_company_employees.id = sc.business_contact_id OR customer_company_employees.id = sc.revenue_contact_id)
+                AND customer_company_employees.is_rejected = false
+                AND u1.deleted_at IS NULL
+                AND customer_company_employees.deleted_at IS NULL
+            ) customer_company_employees
+        ) AS lead_data,
+        (
+            SELECT json_agg(sales_users.*)
+            FROM (
+                SELECT 
+                    ss.user_id AS id, 
+                    SUM(ss.user_percentage) AS percentage, 
+                    ss.user_type, 
+                    u1.full_name AS name, 
+                    u1.email_address AS email
+                FROM sales_users AS ss
+                LEFT JOIN users AS u1 ON u1.id = ss.user_id
+                WHERE ss.sales_id = sc.id
+                AND ss.deleted_at IS NULL
+                AND u1.deleted_at IS NULL
+                GROUP BY ss.user_id, u1.full_name, u1.email_address, ss.user_type
+            ) sales_users
+        ) AS sales_users,
+        (
+            SELECT json_agg(product_in_sales.*)
+            FROM (
+                SELECT DISTINCT(p.id), p.product_name AS name
+                FROM product_in_sales AS pis
+                LEFT JOIN products AS p ON p.id = pis.product_id
+                WHERE sc.id = pis.sales_id
+                AND sc.deleted_at IS NULL
+                AND p.deleted_at IS NULL
+            ) product_in_sales
+        ) AS products,
+        CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) AS recognized_amount,
+        CASE
+            WHEN sc.closed_at IS NOT NULL THEN 
+                CASE
+                    WHEN CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) < CAST(sc.target_amount AS NUMERIC) THEN true
+                    WHEN CAST(SUM(rr.recognized_amount::numeric) AS NUMERIC) = CAST(sc.target_amount AS NUMERIC) THEN false
+                    ELSE false
+                END
+            ELSE null
+        END AS is_partial_recognized
+    FROM sales AS sc
+    LEFT JOIN users AS u1 ON u1.id = sc.user_id
+    LEFT JOIN customer_companies AS cus ON cus.id = sc.customer_id
+    LEFT JOIN slabs AS slab ON slab.id = sc.slab_id
+    LEFT JOIN users AS u2 ON u2.id = sc.transfered_back_by
+    LEFT JOIN recognized_revenue AS rr ON rr.sales_id = sc.id
+    WHERE sc.company_id = '{var1}'
+    AND sc.deleted_at IS NULL
+    AND sc.transfer_reason IS NOT NULL  -- Add this condition to filter records with non-null transfer_reason
+    GROUP BY sc.id, cus.customer_name, u1.full_name, u1.email_address, slab.slab_name, u2.full_name, cus.user_id
+    ORDER BY sc.created_at DESC;
+    `
 }
   ;
 

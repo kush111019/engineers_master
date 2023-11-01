@@ -30,9 +30,11 @@ const oauth2Client = new OAuth2({
 //Hubspot auth client
 const hubspotClient = new hubspot.Client({ developerApiKey: process.env.HUBSPOT_API_KEY })
 
+// api for the proUserLogin
 module.exports.proUserLogin = async (req, res) => {
     try {
         let { emailAddress, password } = req.body;
+        // fetch detailed user information, including their company details, role, and configuration
         let s1 = dbScript(db_sql['Q329'], { var1: mysql_real_escape_string(emailAddress) })
         let admin = await connection.query(s1)
         if (admin.rows.length > 0) {
@@ -47,7 +49,7 @@ module.exports.proUserLogin = async (req, res) => {
                                 configuration.dateFormat = admin.rows[0].date_format,
                                 configuration.beforeClosingDays = (admin.rows[0].before_closing_days) ? admin.rows[0].before_closing_days : '',
                                 configuration.afterClosingDays = (admin.rows[0].after_closing_days) ? admin.rows[0].after_closing_days : ''
-
+                            // fetching imap_credentail for the admin 
                             let s2 = dbScript(db_sql['Q125'], { var1: admin.rows[0].id, var2: admin.rows[0].company_id })
                             let imapCreds = await connection.query(s2)
                             let isImapCred = (imapCreds.rowCount == 0) ? false : true
@@ -55,6 +57,7 @@ module.exports.proUserLogin = async (req, res) => {
                             let moduleId = JSON.parse(admin.rows[0].module_ids)
                             let modulePemissions = []
                             for (let data of moduleId) {
+                                // checking different permission to create
                                 let s3 = dbScript(db_sql['Q58'], { var1: data, var2: admin.rows[0].role_id })
                                 let findModulePermissions = await connection.query(s3)
                                 modulePemissions.push({
@@ -140,13 +143,16 @@ module.exports.proUserLogin = async (req, res) => {
     }
 }
 
+// api to see proUserProfile
 module.exports.showProfile = async (req, res) => {
     try {
         let userId = req.user.id
         let { isProUser } = req.user
+        // checking user existence
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let checkUser = await connection.query(s1)
         if (checkUser.rows.length > 0 && isProUser) {
+            // fetching comapny data linked with companies table
             let s2 = dbScript(db_sql['Q9'], { var1: checkUser.rows[0].company_id })
             let companyData = await connection.query(s2)
             if (companyData.rowCount > 0) {
@@ -187,11 +193,12 @@ module.exports.changePassword = async (req, res) => {
         let { isProUser } = req.user
         const { oldPassword, newPassword } = req.body;
         await connection.query('BEGIN')
+        // checking for the user existence
         let s1 = dbScript(db_sql['Q4'], { var1: userEmail })
         let user = await connection.query(s1)
         if (user.rows.length > 0 && isProUser) {
             if (user.rows[0].encrypted_password == oldPassword) {
-
+                // updating the encrypted password
                 let _dt = new Date().toISOString();
                 let s2 = dbScript(db_sql['Q5'], { var1: user.rows[0].id, var2: newPassword, var3: _dt, var4: user.rows[0].company_id })
                 let updatePass = await connection.query(s2)
@@ -280,12 +287,15 @@ module.exports.usersList = async (req, res) => {
     }
 }
 
+// user list for different permission api
 module.exports.usersListForGlobalAndOwn = async (req, res) => {
     let userId = req.user.id
     let { isProUser } = req.user
+    // checking different permission to create data linked with modules table
     let s1 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
     let checkPermission = await connection.query(s1)
     if (checkPermission.rows[0].permission_to_view_global && isProUser) {
+        // fetching the user data 
         let s2 = dbScript(db_sql['Q314'], { var1: checkPermission.rows[0].company_id, var2: false })
         findUsers = await connection.query(s2);
 
@@ -306,6 +316,7 @@ module.exports.usersListForGlobalAndOwn = async (req, res) => {
         }
     } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
         let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+        // fetching user with different conditions
         let s3 = dbScript(db_sql['Q417'], { var1: roleUsers.join(","), var2: false })
         findUsers = await connection.query(s3);
 
@@ -332,14 +343,17 @@ module.exports.usersListForGlobalAndOwn = async (req, res) => {
     }
 }
 
+// api to fetch connectors list
 module.exports.connectorsList = async (req, res) => {
     try {
         let userId = req.user.id
         let { isProUser } = req.user
         await connection.query('BEGIN')
+        // checking different permission to create data linked with modules table
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0 && isProUser) {
+            // fetching the data from connectors using userId and comapnyId matched
             let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
             let getConnectors = await connection.query(s2)
             let connectorsArr = []
@@ -408,13 +422,15 @@ module.exports.connectorsList = async (req, res) => {
     }
 }
 
+
 module.exports.authUrl = async (req, res) => {
     try {
         let { provider } = req.query
 
         //AuthUrl for linkedin
         if (provider.toLowerCase() == 'linkedin') {
-            let scope = ['r_liteprofile', 'r_emailaddress'];
+            // let scope = ['r_liteprofile', 'r_emailaddress'];
+            let scope = ['w_member_social']
             const authUrl = LinkedIn.auth.authorize(scope, 'state');
             res.json({
                 status: 200,
@@ -425,7 +441,7 @@ module.exports.authUrl = async (req, res) => {
 
         //AuthUrl for hubspot
         if (provider.toLowerCase() == 'hubspot') {
-            const scope = ['content']
+            const scope = ['content tickets e-commerce crm.objects.contacts.read crm.objects.custom.read crm.objects.custom.write media_bridge.read crm.objects.goals.read']
             const authUrl = hubspotClient.oauth.getAuthorizationUrl(process.env.HUBSPOT_CLIENT_ID, process.env.REDIRECT_URL, scope)
             res.json({
                 status: 200,
@@ -465,6 +481,7 @@ module.exports.callback = async (req, res) => {
         let userId = req.user.id
         let { isProUser } = req.user
         const { code, state, provider } = req.query;
+        // checking for user existence
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0 && isProUser) {
@@ -480,9 +497,11 @@ module.exports.callback = async (req, res) => {
                         })
                     }
                     const accessToken = results.access_token;
+                    // fetching the data from connectors using userId and comapnyId
                     let s2 = dbScript(db_sql['Q317'], { var1: userId, var2: findUser.rows[0].company_id })
                     let getConnectors = await connection.query(s2)
                     if (getConnectors.rowCount == 0) {
+                        // inserting data into connectors with userId and comapnyId
                         let s3 = dbScript(db_sql['Q316'], { var1: userId, var2: findUser.rows[0].company_id, var3: accessToken, var4: true })
                         let storeAccessToken = await connection.query(s3)
                         if (storeAccessToken.rowCount > 0) {
@@ -502,6 +521,7 @@ module.exports.callback = async (req, res) => {
                         }
                     } else {
                         let _dt = new Date().toISOString()
+                        // updaint connectors data with accessToken and different fields
                         let s4 = dbScript(db_sql['Q319'], { var1: 'linked_in_token', var2: accessToken, var3: 'linked_in_status', var4: true, var5: _dt, var6: userId, var7: findUser.rows[0].company_id })
                         let storeAccessToken = await connection.query(s4)
                         if (storeAccessToken.rowCount > 0) {
@@ -522,6 +542,7 @@ module.exports.callback = async (req, res) => {
                     }
                 });
             }
+            // same logic for the hubspot
             if (provider.toLowerCase() == 'hubspot') {
                 await connection.query('BEGIN')
                 //generating access token using authorization code for hubspot
@@ -664,7 +685,9 @@ module.exports.callback = async (req, res) => {
     }
 };
 
+// api for the lead search
 module.exports.searchLead = async () => {
+    // fetching data from companies matching with connectors logic
     let s1 = dbScript(db_sql['Q318'], {})
     let findAccessToken = await connection.query(s1)
     if (findAccessToken.rowCount > 0) {
@@ -690,7 +713,7 @@ module.exports.searchLead = async () => {
                                 'Content-Type': 'application/x-www-form-urlencoded'
                             }
                         };
-
+                        // code for the oauth
                         axios.post('https://login.salesforce.com/services/oauth2/token', data, config)
                             .then(async (res) => {
                                 const expiresIn = 7200; // Default expiration time for Salesforce access tokens
@@ -719,7 +742,7 @@ module.exports.searchLead = async () => {
                         .then(response => {
                             //searching lead with given below query
                             const apiUrl = `${response.data.urls.custom_domain}` + `${process.env.SALESFORCE_API_VERSION}`;
-                            const query = 'SELECT uniqueId__c,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
+                            const query = 'SELECT Id,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
                             axios({
                                 method: 'get',
                                 url: `${apiUrl}query/?q=${query}`,
@@ -758,7 +781,7 @@ module.exports.searchLead = async () => {
 
                                                     let customerId = await customerFnForsalesforce(data, accessData, industryId)
 
-                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.Id, var2: accessData.company_id })
                                                     let checkLead = await connection.query(s10)
                                                     if (checkLead.rowCount > 0) {
                                                         let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
@@ -766,7 +789,7 @@ module.exports.searchLead = async () => {
                                                         let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
                                                     }
                                                 } else {
-                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.Id, var2: accessData.company_id })
                                                     let checkLead = await connection.query(s10)
                                                     if (checkLead.rowCount == 0) {
                                                         let titleId = await titleFn(data.Title, accessData.company_id)
@@ -942,6 +965,7 @@ module.exports.leadReSync = async (req, res) => {
     let userId = req.user.id
     let { isProUser } = req.user
     const { provider } = req.query;
+    // checking user existence
     let s1 = dbScript(db_sql['Q8'], { var1: userId })
     let findUser = await connection.query(s1)
     if (findUser.rowCount > 0 && isProUser) {
@@ -949,7 +973,9 @@ module.exports.leadReSync = async (req, res) => {
         let getConnectors = await connection.query(s2)
         for (let accessData of getConnectors.rows) {
             if (provider.toLowerCase() == 'salesforce' && accessData.salesforce_status) {
+         
                 await connection.query('BEGIN')
+              
                 try {
                     let curDate = new Date();
                     let expiryDate = new Date(accessData.salesforce_expiry)
@@ -978,6 +1004,7 @@ module.exports.leadReSync = async (req, res) => {
                                 accessToken = res.data.access_token
                                 let s4 = dbScript(db_sql['Q325'], { var1: res.data.access_token, var2: true, var3: accessData.salesforce_refresh_token, var4: expirationTime, var5: accessData.user_id, var6: accessData.company_id })
                                 let storeAccessToken = await connection.query(s4)
+                          
                             })
                             .catch((err) => {
                                 console.error('Authorization error:', err.message);
@@ -994,7 +1021,7 @@ module.exports.leadReSync = async (req, res) => {
                         //re syncing the leads data using below query parameters
                         .then(response => {
                             const apiUrl = `${response.data.urls.custom_domain}` + `${process.env.SALESFORCE_API_VERSION}`;
-                            const query = 'SELECT uniqueId__c,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
+                            const query = 'SELECT Id,Name,Title,Company,Street,City,State,Country,Address,Phone,Email,Website,Description,LeadSource,Industry,LastModifiedDate,createdDate FROM Lead';
                             axios({
                                 method: 'get',
                                 url: `${apiUrl}query/?q=${query}`,
@@ -1006,6 +1033,7 @@ module.exports.leadReSync = async (req, res) => {
                                     if (response.data.records.length > 0) {
                                         let s1 = dbScript(db_sql['Q308'], { var1: accessData.company_id })
                                         let findSyncLead = await connection.query(s1)
+                                
                                         //Initial insertion
                                         if (findSyncLead.rowCount == 0) {
                                             for (let data of response.data.records) {
@@ -1017,6 +1045,7 @@ module.exports.leadReSync = async (req, res) => {
 
 
                                                 let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
+                                                
                                             }
                                         } else {
                                             for (let data of response.data.records) {
@@ -1030,17 +1059,19 @@ module.exports.leadReSync = async (req, res) => {
 
                                                         let customerId = await customerFnForsalesforce(data, accessData, industryId)
 
-                                                        let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
+                                                        let s10 = dbScript(db_sql['Q322'], { var1: data.Id, var2: accessData.company_id })
                                                         let checkLead = await connection.query(s10)
                                                         if (checkLead.rowCount > 0) {
                                                             let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, checkLead.rows[0].id)
                                                         } else {
                                                             let leads = await leadFnForsalesforce(titleId, sourceId, customerId, data, accessData, '')
                                                         }
+                                                    
                                                     } else {
-                                                        let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
+                                                        let s10 = dbScript(db_sql['Q322'], { var1: data.Id, var2: accessData.company_id })
                                                         let checkLead = await connection.query(s10)
                                                         if (checkLead.rowCount == 0) {
+                                                     
                                                             let titleId = await titleFn(data.Title, accessData.company_id)
 
                                                             let sourceId = await sourceFn(data.LeadSource, accessData.company_id)
@@ -1053,9 +1084,10 @@ module.exports.leadReSync = async (req, res) => {
                                                         }
                                                     }
                                                 } else {
-                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.uniqueId__c, var2: accessData.company_id })
+                                                    let s10 = dbScript(db_sql['Q322'], { var1: data.Id, var2: accessData.company_id })
                                                     let checkLead = await connection.query(s10)
                                                     if (checkLead.rowCount == 0) {
+                                                
                                                         let titleId = await titleFn(data.Title, accessData.company_id)
 
                                                         let sourceId = await sourceFn(data.LeadSource, accessData.company_id)
@@ -1076,8 +1108,9 @@ module.exports.leadReSync = async (req, res) => {
 
                                         let s11 = dbScript(db_sql['Q324'], { var0: 'salesforce_last_sync', var1: _dt, var2: _dt, var3: accessData.user_id, var4: accessData.company_id })
                                         let updateLastSyncDate = await connection.query(s11)
-
+                                  
                                         if (updateStatusInCompany.rowCount > 0) {
+                                
                                             await connection.query('COMMIT')
                                             res.json({
                                                 status: 200,
@@ -1085,6 +1118,7 @@ module.exports.leadReSync = async (req, res) => {
                                                 message: "Salesforce leads synced successfully"
                                             })
                                         } else {
+                                
                                             await connection.query('ROLLBACK')
                                             res.json({
                                                 status: 400,
@@ -1095,6 +1129,7 @@ module.exports.leadReSync = async (req, res) => {
                                     }
                                 })
                                 .catch(async (error) => {
+                           
                                     await connection.query('ROLLBACK')
                                     res.json({
                                         status: 400,
@@ -1104,6 +1139,7 @@ module.exports.leadReSync = async (req, res) => {
                                 });
                         })
                         .catch(async (error) => {
+                       
                             await connection.query('ROLLBACK')
                             res.json({
                                 status: 400,
@@ -1112,6 +1148,7 @@ module.exports.leadReSync = async (req, res) => {
                             })
                         });
                 } catch (error) {
+             
                     await connection.query('ROLLBACK')
                     res.json({
                         status: 400,
@@ -1349,11 +1386,13 @@ module.exports.leadReSync = async (req, res) => {
 //     }
 // }
 
+// api to fetch proLeadsList
 module.exports.proLeadsList = async (req, res) => {
     try {
         let userId = req.user.id
         let { provider } = req.query
         let { isProUser } = req.user
+        // checking different permission to create data linked with modules table
         let s1 = dbScript(db_sql['Q41'], { var1: leadModule, var2: userId })
         let checkPermission = await connection.query(s1)
         let type = 'lead';
@@ -1425,13 +1464,16 @@ module.exports.proLeadsList = async (req, res) => {
     }
 }
 
+// sales list api for proUser
 module.exports.salesListForPro = async (req, res) => {
     try {
         let userId = req.user.id
         let { isProUser } = req.user
+        // checking different permission to create data linked with modules table
         let s1 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
         let checkPermission = await connection.query(s1)
         if (checkPermission.rows[0].permission_to_view_global && isProUser) {
+            //detailed information about sales records, associated entities, and their financial details. It allows for the retrieval of data related to a specific company.
             let s2 = dbScript(db_sql['Q302'], { var1: checkPermission.rows[0].company_id })
             let salesList = await connection.query(s2)
 
@@ -1465,6 +1507,7 @@ module.exports.salesListForPro = async (req, res) => {
             }
         } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
+            //detailed information about sales records, associated entities, and their financial details. It allows for the retrieval of data related to a specific company.
             let s3 = dbScript(db_sql['Q303'], { var1: roleUsers.join(",") })
             salesList = await connection.query(s3)
 
@@ -1515,6 +1558,7 @@ module.exports.salesDetails = async (req, res) => {
         let userId = req.user.id;
         let salesId = req.query.id;
         let { isProUser } = req.user
+        // checking different permission to create data linked with modules table
         let s2 = dbScript(db_sql['Q41'], { var1: salesModule, var2: userId })
         let checkPermission = await connection.query(s2)
         if (isProUser && checkPermission.rows[0].permission_to_view_global || checkPermission.rows[0].permission_to_view_own) {
@@ -1562,11 +1606,14 @@ module.exports.salesDetails = async (req, res) => {
 
 }
 
+// api to fetch userList of upperlevel
 module.exports.getUpperLevelUserList = async (req, res) => {
     try {
         let userId = req.user.id
+        // checking different permission to create data linked with modules table
         let s1 = dbScript(db_sql['Q41'], { var1: customerModule, var2: userId })
         let checkPermission = await connection.query(s1)
+        // fetching data from roles
         let s2 = dbScript(db_sql['Q12'], { var1: checkPermission.rows[0].role_id })
         let roleData = await connection.query(s2)
         if (roleData.rows[0].reporter) {
@@ -1607,6 +1654,7 @@ module.exports.recognizationDetailsPro = async (req, res) => {
         let userId = req.user.id
         let { isProUser } = req.user
         let { salesId } = req.query;
+        // checking for user existence
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0 && isProUser) {
@@ -1786,13 +1834,16 @@ module.exports.emailTemplateList = async (req, res) => {
     try {
         let userId = req.user.id
         let { isProUser } = req.user
+        // checking for user existence
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0 && isProUser) {
+            // fetching data from companies linked with comapanies table
             let s6 = dbScript(db_sql['Q9'], { var1: findUser.rows[0].company_id })
             let company = await connection.query(s6)
             let s2 = dbScript(db_sql['Q331'], { var1: userId, var2: findUser.rows[0].company_id })
             let templateList = await connection.query(s2)
+            // fetchin data from email_templates according to is_master
             let s3 = dbScript(db_sql['Q371'], {})
             let masterTemplate = await connection.query(s3)
             if (templateList.rowCount > 0 || masterTemplate.rowCount > 0) {
@@ -1895,10 +1946,12 @@ module.exports.deleteEmailTemplate = async (req, res) => {
         let { isProUser } = req.user
         let { templateId } = req.query
         await connection.query('BEGIN')
+        // checking for user existence
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findUser = await connection.query(s1)
         if (findUser.rowCount > 0 && isProUser) {
             let _dt = new Date().toISOString();
+            // updating email_templates table
             let s2 = dbScript(db_sql['Q333'], { var1: templateId, var2: _dt })
             let deleteTemplate = await connection.query(s2)
             if (deleteTemplate.rowCount > 0) {
@@ -1940,6 +1993,7 @@ module.exports.sendEmailToLead = async (req, res) => {
         let userId = req.user.id
         let { isProUser } = req.user
         let { template, leadEmail, templateName, description, eventId } = req.body
+        // checking email existence
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0 && isProUser) {
@@ -2009,9 +2063,11 @@ module.exports.getEmailToLead = async (req, res) => {
     try {
         let userId = req.user.id
         let eventId = req.query.eventId
+        // checking email existence
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rowCount > 0) {
+            // fetching data from event_sender_list list for the user
             let s2 = dbScript(db_sql['Q467'], { var1: userId, var2: eventId })
             let eventList = await connection.query(s2)
             if (eventList.rowCount > 0) {
@@ -2026,7 +2082,7 @@ module.exports.getEmailToLead = async (req, res) => {
                     status: 200,
                     success: true,
                     message: "No Email Found",
-                    data:[]
+                    data: []
                 })
             }
         } else {
@@ -2051,6 +2107,7 @@ module.exports.addSmtpCreds = async (req, res) => {
         let { isProUser } = req.user
         let { email, appPassword, smtpHost, smtpPort } = req.body
         await connection.query('BEGIN')
+        // checking user existence
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0 && isProUser) {
@@ -2107,6 +2164,7 @@ module.exports.addSmtpCreds = async (req, res) => {
                     }
                 } else {
                     let _dt = new Date().toISOString()
+                    // updating imap_credentila for the matching email
                     let s5 = dbScript(db_sql['Q361'], { var1: email, var2: encryptedAppPassword, var3: smtpHost, var4: smtpPort, var5: findSmtpcreds.rows[0].id, var6: _dt })
                     let updateCreds = await connection.query(s5)
                     if (updateCreds.rowCount > 0) {
@@ -2154,10 +2212,12 @@ module.exports.credentialList = async (req, res) => {
     try {
         let userId = req.user.id
         let { isProUser } = req.user
+        // checking user existence
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
 
         if (findAdmin.rows.length > 0 && isProUser) {
+            // fetching imap_credentials data
             let s2 = dbScript(db_sql['Q125'], { var1: findAdmin.rows[0].id, var2: findAdmin.rows[0].company_id })
             let credentials = await connection.query(s2)
 
@@ -2216,6 +2276,7 @@ module.exports.addAvailability = async (req, res) => {
         await connection.query('BEGIN')
         let userId = req.user.id
         let { isProUser } = req.user
+        // checking for user existence
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0 && isProUser) {
@@ -2226,7 +2287,7 @@ module.exports.addAvailability = async (req, res) => {
                 if (ts.checked) {
                     for (let subTs of ts.timeSlots) {
                         const { utcStart, utcEnd } = await convertToLocal(subTs.startTime, subTs.endTime, timezone);
-
+                        // inseting time into pro_user_time_slot for the availability check
                         let s3 = dbScript(db_sql['Q343'], { var1: dayName, var2: utcStart, var3: utcEnd, var4: createAvailability.rows[0].id, var5: findAdmin.rows[0].company_id, var6: ts.checked, var7: userId })
                         let addTimeSlot = await connection.query(s3)
                     }
@@ -2272,6 +2333,7 @@ module.exports.availableTimeList = async (req, res) => {
     try {
         let userId = req.user.id
         let { isProUser } = req.user
+        // checking user existence
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0 && isProUser) {
@@ -2279,6 +2341,7 @@ module.exports.availableTimeList = async (req, res) => {
             let availability = await connection.query(s2)
             if (availability.rowCount > 0) {
                 for (let item of availability.rows) {
+                    // fetching data from pro_user_events for the availability using id
                     let s3 = dbScript(db_sql['Q370'], { var1: item.id })
                     let findAvailability = await connection.query(s3)
                     if (findAvailability.rowCount > 0) {
@@ -2380,10 +2443,12 @@ module.exports.updateAvailability = async (req, res) => {
         await connection.query('BEGIN')
         let userId = req.user.id
         let { isProUser } = req.user
+        // checking user existence
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0 && isProUser) {
             let _dt = new Date().toISOString()
+            // updating the availbiliy of the pro user
             let s2 = dbScript(db_sql['Q352'], { var1: mysql_real_escape_string(scheduleName), var2: timezone, var3: availabilityId, var4: _dt })
             let updateAvailability = await connection.query(s2)
             if (updateAvailability.rowCount > 0) {
@@ -2440,6 +2505,7 @@ module.exports.deleteAvalability = async (req, res) => {
         await connection.query('BEGIN')
         let userId = req.user.id
         let { isProUser } = req.user
+        // checking for user existence
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0 && isProUser) {
@@ -2447,6 +2513,7 @@ module.exports.deleteAvalability = async (req, res) => {
             let s2 = dbScript(db_sql['Q354'], { var1: _dt, var2: availabilityId })
             let deleteAvailability = await connection.query(s2)
             if (deleteAvailability.rowCount > 0) {
+                // updating pro user time slot for the availability
                 let s3 = dbScript(db_sql['Q355'], { var1: _dt, var2: availabilityId })
                 let deleteTimeSlots = await connection.query(s3)
                 if (deleteTimeSlots.rowCount > 0) {
@@ -2495,6 +2562,7 @@ module.exports.deleteTimeSlot = async (req, res) => {
         await connection.query('BEGIN')
         let userId = req.user.id
         let { isProUser } = req.user
+        // checking for user existence
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0 && isProUser) {
@@ -2539,9 +2607,11 @@ module.exports.createEvent = async (req, res) => {
         let { isProUser } = req.user
         let { eventName, meetLink, description, duration, availabilityId } = req.body
         await connection.query('BEGIN')
+        // checking for the user existence
         let s1 = dbScript(db_sql['Q8'], { var1: userId })
         let findAdmin = await connection.query(s1)
         if (findAdmin.rows.length > 0 && isProUser) {
+            // inserting the event data into pro_user_time_slot 
             let s2 = dbScript(db_sql['Q345'], { var1: mysql_real_escape_string(eventName), var2: meetLink, var3: mysql_real_escape_string(description), var4: userId, var5: findAdmin.rows[0].company_id, var6: duration, var7: availabilityId })
             let addEvent = await connection.query(s2)
             if (addEvent.rowCount > 0) {
@@ -3849,8 +3919,8 @@ module.exports.salesMetricsReport = async (req, res) => {
                     //monthly recognized_revenue Subscription+perpetual on perticular quarter
                     let totalMonthlySubscriptionAmount = 0;
                     let s7 = dbScript(db_sql["Q399"], {
-                        var1: formattedStartDate,
-                        var2: formattedEndDate,
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
                         var3: allSalesIdArr.join(","),
                     });
                     let findMonthlyRecognizedRevenue = await connection.query(s7);
@@ -3861,6 +3931,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                             const amount = parseFloat(row.target_amount);
                             const multipliedAmount = amount * 12;
                             totalMonthlySubscriptionAmount += multipliedAmount;
+                            // row.target_amount = row.target_amount * 3;
                         });
                     } else {
                         monthlyRecognizedRevenue = []
@@ -4189,8 +4260,8 @@ module.exports.salesMetricsReport = async (req, res) => {
                     let totalMonthlySubscriptionAmount = 0;
 
                     let s7 = dbScript(db_sql["Q399"], {
-                        var1: formattedStartDate,
-                        var2: formattedEndDate,
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
                         var3: allSalesIdArr.join(","),
                     });
 
@@ -4202,6 +4273,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                             const amount = parseFloat(row.target_amount);
                             const multipliedAmount = amount * 12;
                             totalMonthlySubscriptionAmount += multipliedAmount;
+                            // row.target_amount = row.target_amount * 3;
                         });
                     } else {
                         monthlyRecognizedRevenue = []

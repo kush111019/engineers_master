@@ -48,8 +48,7 @@ let options = {
     num: 1
 }
 
-
-var ports = [10550, 10551, 10552, 10553, 10554];
+var ports = [3003];
 var servers = [];
 const httpServer = require('http');
 require('events').EventEmitter.defaultMaxListeners = Infinity;
