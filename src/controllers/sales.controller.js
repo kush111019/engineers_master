@@ -227,7 +227,14 @@ module.exports.allSalesList = async (req, res) => {
                 let s7 = dbScript(db_sql['Q72'], { var1: checkPermission.rows[0].company_id })
                 salesList = await connection.query(s7)
             }
-
+            if(status =='partialRecognized') {
+                let s8 = dbScript(db_sql['Q473'] , { var1: checkPermission.rows[0].company_id })
+                salesList = await connection.query(s8)
+            }
+            if(status == 'transferredBack') {
+                let s9 = dbScript(db_sql['Q474'] , { var1: checkPermission.rows[0].company_id })
+                salesList = await connection.query(s9)
+            }
             if (salesList.rowCount > 0) {
                 for (let salesData of salesList.rows) {
                     if (salesData.sales_users) {
