@@ -3929,7 +3929,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                         //multiply by 12 to get one year subscription
                         monthlyRecognizedRevenue.forEach(row => {
                             const amount = parseFloat(row.target_amount);
-                            const multipliedAmount = amount * 12;
+                            const multipliedAmount = amount * 4;
                             totalMonthlySubscriptionAmount += multipliedAmount;
                         });
                     } else {
@@ -4259,8 +4259,8 @@ module.exports.salesMetricsReport = async (req, res) => {
                     let totalMonthlySubscriptionAmount = 0;
 
                     let s7 = dbScript(db_sql["Q399"], {
-                        var1: formattedStartDate,
-                        var2: formattedEndDate,
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
                         var3: allSalesIdArr.join(","),
                     });
 
@@ -4270,7 +4270,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                         //multiply by 12 to get one year subscription
                         monthlyRecognizedRevenue.forEach(row => {
                             const amount = parseFloat(row.target_amount);
-                            const multipliedAmount = amount * 12;
+                            const multipliedAmount = amount * 4;
                             totalMonthlySubscriptionAmount += multipliedAmount;
                         });
                     } else {
