@@ -44,73 +44,76 @@ cronJob.start();
 
 let options = {
   proxy: false,
-  num: os.cpus().length
+    //num: os.cpus().length
+    num: 1
 }
 
-// const socketOptions = {
-//   key: readFileSync("/etc/ssl/private/hirisetech.com.key"),
-//   cert: readFileSync("/etc/ssl/private/hirisetech.com.crt")
-// }
+var ports = [3003];
+var servers = [];
+const httpServer = require('http');
+require('events').EventEmitter.defaultMaxListeners = Infinity;
 
-const http = require('http').createServer(app)
-
-let server = sticky(options, () => {
-  let server = http.listen();
-  let io = require("socket.io")(server, {
-    path: "/socket.io/",
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST"],
-      allowedHeaders: [
-        "*"
-      ]
-    },
-    transports: ['websocket', 'polling'],
-    allowEIO3: true
-  });
-
-  io.on("connection", (socket) => {
-    console.log("Connected to socket.io");
-    socket.on("setup", (userData) => {
-      socket.join(userData.id);
-      socket.emit("connected");
+ports.forEach((port) => {
+  const http = httpServer.createServer(app)
+  //let server = sticky(options, () => {
+    //let server = http.listen();
+    let io = require("socket.io")(http, {
+      path: "/socket.io/",
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+        allowedHeaders: [
+          "*"
+        ]
+      },
+      transports: ['websocket', 'polling'],
+      allowEIO3: true
     });
 
-    socket.on("join chat", (room) => {
-      socket.join(room);
-      console.log("User Joined Room: " + room);
-    });
- 
-    socket.on("new message", (newMessageRecieved) => {
-      if (!newMessageRecieved.users) return console.log("chat.users not defined");
-      console.log(newMessageRecieved,"===================================================")
-      newMessageRecieved.users.forEach((user) => {
-        if (user.id == newMessageRecieved.sender.id) return;
-        io.to(user.id).emit("message recieved", newMessageRecieved);
+    io.on("connection", (socket) => {
+      console.log("Connected to socket.io");
+      socket.on("setup", (userData) => {
+        socket.join(userData.id);
+        socket.emit("connected");
+      });
+
+      socket.on("join chat", (room) => {
+        socket.join(room);
+        console.log("User Joined Room: " + room);
+      });
+      socket.on("new message", (newMessageRecieved) => {
+        if (!newMessageRecieved.users) return console.log("chat.users not defined");
+        console.log(newMessageRecieved,"===================================================")
+        newMessageRecieved.users.forEach((user) => {
+          if (user.id == newMessageRecieved.sender.id) return;
+          io.to(user.id).emit("message recieved", newMessageRecieved);
+        });
+      });
+
+      // socket for notification
+      socket.on("newNotification", (newNotificationRecieved) => {
+        if (!newNotificationRecieved.id) return console.log("notification not defined");
+        let checkNotification = instantNotificationsList(newNotificationRecieved, socket)
+      });
+
+      socket.off("setup", () => {
+        console.log("USER DISCONNECTED");
+        socket.leave(userData.id);
       });
     });
 
-    // socket for notification
-    socket.on("newNotification", (newNotificationRecieved) => {
-      if (!newNotificationRecieved.id) return console.log("notification not defined");
-      let checkNotification = instantNotificationsList(newNotificationRecieved, socket)
-    });
+    //return server
+  //})
+  http.listen(port, () => {
+    // console.log((cluster.worker ? 'WORKER ' + cluster.worker.id : 'MASTER') + ' | PORT ' + process.env.LISTEN_PORT)
+    console.log(`Server is listening on ${port}`)
+  })
+  servers.push(http);
+});
 
-    socket.off("setup", () => {
-      console.log("USER DISCONNECTED");
-      socket.leave(userData.id);
-    });
-  });
-
-  return server
-})
-server.listen(process.env.LISTEN_PORT, () => {
-  // console.log((cluster.worker ? 'WORKER ' + cluster.worker.id : 'MASTER') + ' | PORT ' + process.env.LISTEN_PORT)
-  console.log(`Server is listening on ${process.env.LISTEN_PORT}`)
-})
 
 app.use('/api/v1', Router);
 
-app.get('/api', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.status(200).json({ msg: 'OK' });
 });
