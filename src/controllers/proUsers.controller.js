@@ -3852,6 +3852,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                     var2: selectedEndDate,
                     var3: captainId,
                 });
+		console.log(s3);
                 let findLeadCounts = await connection.query(s3);
                 if (findLeadCounts.rowCount > 0) {
                     leadCounts.total_lead_count = Number(findLeadCounts.rows[0].total_lead_count);
@@ -3923,6 +3924,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                         var2: selectedEndDate,
                         var3: allSalesIdArr.join(","),
                     });
+		    console.log(s7);
                     let findMonthlyRecognizedRevenue = await connection.query(s7);
                     if (findMonthlyRecognizedRevenue.rowCount > 0) {
                         monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
