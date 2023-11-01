@@ -3712,12 +3712,11 @@ ORDER BY
             AND s.sales_type = 'Subscription'
             AND s.deleted_at IS NULL
             AND s.archived_at IS NULL
-            AND s.closed_at IS NOT NULL
             AND cc.deleted_at IS NULL
             AND cc.archived_at IS NULL
-            AND s.recurring_date >= '{var1}'
-            AND s.recurring_date <= '{var2}'
-          `,
+            AND s.closed_at >= '{var1}'
+            AND s.closed_at  <= '{var2}'`,
+
   "Q400": `SELECT sales_ids
           FROM (
             SELECT array_agg(DISTINCT su.sales_id) AS sales_ids
@@ -3794,20 +3793,20 @@ ORDER BY
             AND cc.deleted_at IS NULL
           GROUP BY su.sales_id, su.user_type, cc.customer_name
           ORDER BY su.sales_id`,
-  "Q404": `SELECT  
-            su.user_id, 
+  "Q404": `SELECT
+            su.user_id,
             u.full_name,
             array_agg(DISTINCT su.sales_id) AS sales_ids
-          FROM 
+          FROM
             sales_users su
-          LEFT JOIN 
+          LEFT JOIN
             users u ON su.user_id = u.id
           LEFT JOIN
             sales s ON su.sales_id = s.id
-          WHERE 
+          WHERE
             su.user_type = 'captain' AND
             su.user_id = '{var1}' AND su.deleted_at IS NULL
-          GROUP BY 
+          GROUP BY
             su.user_id,
             u.full_name;`,
   "Q405": `SELECT
