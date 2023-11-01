@@ -3704,6 +3704,7 @@ ORDER BY
               END AS target_amount,
               s.subscription_plan,
               s.recurring_date,
+              s.closed_at,
               cc.customer_name
             FROM sales AS s
             LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
