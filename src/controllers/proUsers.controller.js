@@ -3852,6 +3852,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                     var2: selectedEndDate,
                     var3: captainId,
                 });
+		console.log(s3);
                 let findLeadCounts = await connection.query(s3);
                 if (findLeadCounts.rowCount > 0) {
                     leadCounts.total_lead_count = Number(findLeadCounts.rows[0].total_lead_count);
@@ -3919,10 +3920,11 @@ module.exports.salesMetricsReport = async (req, res) => {
                     //monthly recognized_revenue Subscription+perpetual on perticular quarter
                     let totalMonthlySubscriptionAmount = 0;
                     let s7 = dbScript(db_sql["Q399"], {
-                        var1: formattedStartDate,
-                        var2: formattedEndDate,
+                        var1: selectedStartDate,
+                        var2: selectedEndDate,
                         var3: allSalesIdArr.join(","),
                     });
+		    console.log(s7);
                     let findMonthlyRecognizedRevenue = await connection.query(s7);
                     if (findMonthlyRecognizedRevenue.rowCount > 0) {
                         monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
