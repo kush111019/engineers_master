@@ -3928,7 +3928,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                         monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
                         //multiply by 12 to get one year subscription
                         monthlyRecognizedRevenue.forEach(row => {
-                            const amount = parseFloat(row.target_amount);
+                            const amount = parseFloat(row.target_amount) * 3;
                             const multipliedAmount = amount * 4;
                             totalMonthlySubscriptionAmount += multipliedAmount;
                         });
@@ -4269,7 +4269,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                         monthlyRecognizedRevenue = findMonthlyRecognizedRevenue.rows
                         //multiply by 12 to get one year subscription
                         monthlyRecognizedRevenue.forEach(row => {
-                            const amount = parseFloat(row.target_amount);
+                            const amount = parseFloat(row.target_amount) * 3;
                             const multipliedAmount = amount * 4;
                             totalMonthlySubscriptionAmount += multipliedAmount;
                         });
