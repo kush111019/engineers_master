@@ -3645,13 +3645,13 @@ ORDER BY
               created_at BETWEEN '{var1}' AND '{var2}'
               AND id IN ({var3})
               AND deleted_at IS NULL;` ,
-  //   "Q398": `SELECT COALESCE(SUM(rr.recognized_amount::numeric), 0) AS total_amount
-  //             FROM recognized_revenue AS rr
-  //             WHERE rr.sales_id IN ({var3})
-  //             AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') >= '{var1}'
-  //             AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') <= '{var2}'
-  //             AND rr.deleted_at IS NULL;
-  //             `,
+    "Q398": `SELECT COALESCE(SUM(rr.recognized_amount::numeric), 0) AS total_amount
+              FROM recognized_revenue AS rr
+              WHERE rr.sales_id IN ({var3})
+              AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') >= '{var1}'
+              AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') <= '{var2}'
+              AND rr.deleted_at IS NULL;
+              `,
   // "Q399": `WITH months AS (
   //             SELECT 
   //               1 AS month_number, 
@@ -3684,20 +3684,23 @@ ORDER BY
   //           ORDER BY 
   //             m.month_number;
   //           `,
-  "Q398": `SELECT s.id, s.target_amount,s.subscription_plan, s.recurring_date, cc.customer_name
+  "Q398": `SELECT s.id,
+            CASE WHEN s.subscription_plan = 'Monthly' THEN s.target_amount::numeric * 12
+                WHEN s.subscription_plan = 'Annually' THEN s.target_amount::numeric
+                ELSE 0
+            END AS target_amount,s.subscription_plan, s.recurring_date, cc.customer_name
             FROM sales AS s
             LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
             WHERE s.id IN ({var3})
-                AND s.subscription_plan = 'Annually' 
-                AND s.sales_type = 'Subscription' 
+                AND s.sales_type = 'Subscription'
                 AND s.deleted_at IS NULL
-                AND s.archived_at IS NULl
+                AND s.archived_at IS NULL
                 AND cc.deleted_at IS NULL
                 AND cc.archived_at IS NULL
-                AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') >= '{var1}'
-                AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') <= '{var2}'
+                AND s.closed_at >= '{var1}'
+                AND s.closed_at <= '{var2}'
                       `,
-  "Q399": `SELECT s.id, 
+  "Q399": `SELECT s.id,
               CASE WHEN s.subscription_plan = 'Monthly' THEN s.target_amount::numeric
                   WHEN s.subscription_plan = 'Annually' THEN s.target_amount::numeric / 12
                   ELSE 0
