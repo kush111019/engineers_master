@@ -4130,7 +4130,20 @@ module.exports.salesMetricsReport = async (req, res) => {
                         revenueGap = 0 - Number(yearlyRecognizedRevenue)
                     }
 
-                    totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount))
+                    const combinedArray = [
+                        ...closingDateSlippage.high_risk_sales,
+                        ...closingDateSlippage.low_risk_sales,
+                        ...eolSales.high_risk_sales,
+                        ...eolSales.low_risk_sales,
+                        ...missingRR.high_risk_sales,
+                        ...missingRR.low_risk_sales,
+                        ...risk_sales_deals.high_risk_sales,
+                        ...risk_sales_deals.low_risk_sales
+                      ];
+
+                    // totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount));
+
+                    totalLeakageAmountAll = calculateTotalTargetAmount(combinedArray);
 
                 }
                 else {
@@ -4466,7 +4479,20 @@ module.exports.salesMetricsReport = async (req, res) => {
                         revenueGap = 0 - Number(yearlyRecognizedRevenue)
                     }
 
-                    totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount))
+                    const combinedArray = [
+                        ...closingDateSlippage.high_risk_sales,
+                        ...closingDateSlippage.low_risk_sales,
+                        ...eolSales.high_risk_sales,
+                        ...eolSales.low_risk_sales,
+                        ...missingRR.high_risk_sales,
+                        ...missingRR.low_risk_sales,
+                        ...risk_sales_deals.high_risk_sales,
+                        ...risk_sales_deals.low_risk_sales
+                      ];
+
+                    // totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount));
+
+                    totalLeakageAmountAll = calculateTotalTargetAmount(combinedArray);
                 } else {
                     res.json({
                         status: 200,
@@ -4554,6 +4580,24 @@ module.exports.salesMetricsReport = async (req, res) => {
         });
     }
 }
+
+function calculateTotalTargetAmount(arrays) {
+    const salesIdMap = new Map();
+    let totalTargetAmount = 0;
+    for (const key in arrays) {
+      if (arrays.hasOwnProperty(key)) {
+        const array = arrays[key];
+        array.forEach((item) => {
+          const { sales_id, target_amount } = item;
+          if (!salesIdMap.has(sales_id)) {
+            salesIdMap.set(sales_id, true);
+            totalTargetAmount += parseFloat(target_amount);
+          }
+        });
+      }
+    }
+    return totalTargetAmount;
+  }
 
 module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
     try {
