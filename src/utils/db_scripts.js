@@ -3684,7 +3684,11 @@ ORDER BY
   //           ORDER BY 
   //             m.month_number;
   //           `,
-  "Q398": `SELECT s.id, s.target_amount,s.subscription_plan, s.recurring_date, cc.customer_name
+  "Q398": `SELECT s.id,
+            CASE WHEN s.subscription_plan = 'Monthly' THEN s.target_amount::numeric * 12
+                WHEN s.subscription_plan = 'Annually' THEN s.target_amount::numeric
+                ELSE 0
+            END AS target_amount,s.subscription_plan, s.recurring_date, cc.customer_name
             FROM sales AS s
             LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
             WHERE s.id IN ({var3})
