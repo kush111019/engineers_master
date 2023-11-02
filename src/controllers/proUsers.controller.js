@@ -4581,23 +4581,29 @@ module.exports.salesMetricsReport = async (req, res) => {
     }
 }
 
-function calculateTotalTargetAmount(arrays) {
-    const salesIdMap = new Map();
-    let totalTargetAmount = 0;
-    for (const key in arrays) {
-      if (arrays.hasOwnProperty(key)) {
-        const array = arrays[key];
-        array.forEach((item) => {
-          const { sales_id, target_amount } = item;
-          if (!salesIdMap.has(sales_id)) {
-            salesIdMap.set(sales_id, true);
-            totalTargetAmount += parseFloat(target_amount);
-          }
-        });
+function calculateTotalTargetAmount(data) {
+    const salesIdMap = {};
+    // Loop through the array and aggregate target_amount and amount for each unique salesId
+    data.forEach(item => {
+      const salesId = item.salesId || item.sales_id;
+      if (salesId in salesIdMap) {
+        // If the salesId already exists in the map, add target_amount and amount
+        salesIdMap[salesId].target_amount += parseInt(item.target_amount || item.amount || 0);
+      } else {
+        // If the salesId is not in the map, initialize a new entry
+        salesIdMap[salesId] = {
+          target_amount: parseInt(item.target_amount || item.amount || 0),
+        };
       }
+    });
+
+    // Calculate the totalTargetAmount
+    let totalTargetAmount = 0;
+    for (const salesId in salesIdMap) {
+      totalTargetAmount += salesIdMap[salesId].target_amount;
     }
     return totalTargetAmount;
-  }
+}
 
 module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
     try {
