@@ -3645,13 +3645,13 @@ ORDER BY
               created_at BETWEEN '{var1}' AND '{var2}'
               AND id IN ({var3})
               AND deleted_at IS NULL;` ,
-  //   "Q398": `SELECT COALESCE(SUM(rr.recognized_amount::numeric), 0) AS total_amount
-  //             FROM recognized_revenue AS rr
-  //             WHERE rr.sales_id IN ({var3})
-  //             AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') >= '{var1}'
-  //             AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') <= '{var2}'
-  //             AND rr.deleted_at IS NULL;
-  //             `,
+    "Q398": `SELECT COALESCE(SUM(rr.recognized_amount::numeric), 0) AS total_amount
+              FROM recognized_revenue AS rr
+              WHERE rr.sales_id IN ({var3})
+              AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') >= '{var1}'
+              AND TO_DATE(rr.recognized_date, 'MM-DD-YYYY') <= '{var2}'
+              AND rr.deleted_at IS NULL;
+              `,
   // "Q399": `WITH months AS (
   //             SELECT 
   //               1 AS month_number, 

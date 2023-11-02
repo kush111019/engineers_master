@@ -3939,18 +3939,18 @@ module.exports.salesMetricsReport = async (req, res) => {
                     }
 
                     //yearly recognized_revenue Subscription+perpetual
-                    // let yearlySubscriptionAmount = 0;
-                    // let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
-                    // let findYearlyRecognizedRevenue = await connection.query(s8);
-                    // if (findYearlyRecognizedRevenue.rowCount > 0) {
-                    //     let yearlyData = findYearlyRecognizedRevenue.rows
-                    //     yearlyData.forEach(row => {
-                    //         yearlySubscriptionAmount += parseFloat(row.target_amount);
-                    //     });
-                    // } else {
-                    //     yearlySubscriptionAmount = yearlySubscriptionAmount
-                    // }
-                    // yearlyRecognizedRevenue = parseFloat(yearlySubscriptionAmount + totalMonthlySubscriptionAmount)
+                    let yearlySubscriptionAmount = 0;
+                    let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
+                    let findYearlyRecognizedRevenue = await connection.query(s8);
+                    if (findYearlyRecognizedRevenue.rowCount > 0) {
+                        let yearlyData = findYearlyRecognizedRevenue.rows
+                        yearlyData.forEach(row => {
+                            yearlySubscriptionAmount += parseFloat(row.target_amount);
+                        });
+                    } else {
+                        yearlySubscriptionAmount = yearlySubscriptionAmount
+                    }
+                    let totalYearlyRecognizedRevenue = parseFloat(yearlySubscriptionAmount + totalMonthlySubscriptionAmount)
 
                     yearlyRecognizedRevenue = parseFloat(totalMonthlySubscriptionAmount)
 
@@ -4474,9 +4474,9 @@ module.exports.salesMetricsReport = async (req, res) => {
                         for (let amount of findForecastAmount.rows) {
                             totalForecaseAmount += Number(amount.amount)
                         }
-                        revenueGap = totalForecaseAmount - Number(yearlyRecognizedRevenue)
+                        revenueGap = totalForecaseAmount - Number(totalYearlyRecognizedRevenue)
                     } else {
-                        revenueGap = 0 - Number(yearlyRecognizedRevenue)
+                        revenueGap = 0 - Number(totalYearlyRecognizedRevenue)
                     }
 
                     // const combinedArray = [
