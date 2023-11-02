@@ -3939,6 +3939,17 @@ module.exports.salesMetricsReport = async (req, res) => {
                     }
 
                     //yearly recognized_revenue Subscription+perpetual
+                    const currentYear = new Date().getFullYear();
+
+                    // Create the start date of the year
+                    const yearStartDate = new Date(currentYear, 0, 1).toISOString().substring(0, 10; // Month is 0-based, so 0 is January
+
+                    // Create the end date of the year
+                    const yearEndDate = new Date(currentYear, 11, 31).toISOString().substring(0, 10;
+
+                    let yearlyStartFormattedDate = formatDate(yearStartDate);
+                    let yearlyEndFormattedDate   = formatDate(yearEndDate);
+
                     let yearlySubscriptionAmount = 0;
                     let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
                     let findYearlyRecognizedRevenue = await connection.query(s8);
@@ -4125,9 +4136,9 @@ module.exports.salesMetricsReport = async (req, res) => {
                         for (let amount of findForecastAmount.rows) {
                             totalForecaseAmount += Number(amount.amount)
                         }
-                        revenueGap = totalForecaseAmount - Number(yearlyRecognizedRevenue)
+                        revenueGap = totalForecaseAmount - Number(totalYearlyRecognizedRevenue)
                     } else {
-                        revenueGap = 0 - Number(yearlyRecognizedRevenue)
+                        revenueGap = 0 - Number(totalYearlyRecognizedRevenue)
                     }
 
                     // const combinedArray = [
@@ -4474,9 +4485,9 @@ module.exports.salesMetricsReport = async (req, res) => {
                         for (let amount of findForecastAmount.rows) {
                             totalForecaseAmount += Number(amount.amount)
                         }
-                        revenueGap = totalForecaseAmount - Number(totalYearlyRecognizedRevenue)
+                        revenueGap = totalForecaseAmount - Number(yearlyRecognizedRevenue)
                     } else {
-                        revenueGap = 0 - Number(totalYearlyRecognizedRevenue)
+                        revenueGap = 0 - Number(yearlyRecognizedRevenue)
                     }
 
                     // const combinedArray = [
