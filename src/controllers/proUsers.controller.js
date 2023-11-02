@@ -4130,20 +4130,20 @@ module.exports.salesMetricsReport = async (req, res) => {
                         revenueGap = 0 - Number(yearlyRecognizedRevenue)
                     }
 
-                    const combinedArray = [
-                        ...closingDateSlippage.high_risk_sales,
-                        ...closingDateSlippage.low_risk_sales,
-                        ...eolSales.highRiskEolSale,
-                        ...eolSales.lowRiskEolSale,
-                        ...missingRR.high_risk_missing_rr,
-                        ...missingRR.low_risk_missing_rr,
-                        ...risk_sales_deals.high_risk_sales_deals,
-                        ...risk_sales_deals.low_risk_sales_deals
-                      ];
+                    // const combinedArray = [
+                    //     ...closingDateSlippage.high_risk_sales,
+                    //     ...closingDateSlippage.low_risk_sales,
+                    //     ...eolSales.highRiskEolSale,
+                    //     ...eolSales.lowRiskEolSale,
+                    //     ...missingRR.high_risk_missing_rr,
+                    //     ...missingRR.low_risk_missing_rr,
+                    //     ...risk_sales_deals.high_risk_sales_deals,
+                    //     ...risk_sales_deals.low_risk_sales_deals
+                    // ];
 
-                    // totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount));
+                    totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount));
 
-                    totalLeakageAmountAll = calculateTotalTargetAmount(combinedArray);
+                    // totalLeakageAmountAll = calculateTotalTargetAmount(combinedArray);
 
                 }
                 else {
@@ -4479,20 +4479,20 @@ module.exports.salesMetricsReport = async (req, res) => {
                         revenueGap = 0 - Number(yearlyRecognizedRevenue)
                     }
 
-                    const combinedArray = [
-                        ...closingDateSlippage.high_risk_sales,
-                        ...closingDateSlippage.low_risk_sales,
-                        ...eolSales.highRiskEolSale,
-                        ...eolSales.lowRiskEolSale,
-                        ...missingRR.high_risk_missing_rr,
-                        ...missingRR.low_risk_missing_rr,
-                        ...risk_sales_deals.high_risk_sales_deals,
-                        ...risk_sales_deals.low_risk_sales_deals
-                    ];
+                    // const combinedArray = [
+                    //     ...closingDateSlippage.high_risk_sales,
+                    //     ...closingDateSlippage.low_risk_sales,
+                    //     ...eolSales.highRiskEolSale,
+                    //     ...eolSales.lowRiskEolSale,
+                    //     ...missingRR.high_risk_missing_rr,
+                    //     ...missingRR.low_risk_missing_rr,
+                    //     ...risk_sales_deals.high_risk_sales_deals,
+                    //     ...risk_sales_deals.low_risk_sales_deals
+                    // ];
 
-                    // totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount));
+                    totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount));
 
-                    totalLeakageAmountAll = calculateTotalTargetAmount(combinedArray);
+                    // totalLeakageAmountAll = calculateTotalTargetAmount(combinedArray);
                 } else {
                     res.json({
                         status: 200,
@@ -4580,30 +4580,31 @@ module.exports.salesMetricsReport = async (req, res) => {
         });
     }
 }
-
-function calculateTotalTargetAmount(data) {
-    const salesIdMap = {};
-    // Loop through the array and aggregate target_amount and amount for each unique salesId
-    data.forEach(item => {
-      const salesId = item.salesId || item.sales_id;
-      if (salesId in salesIdMap) {
-        // If the salesId already exists in the map, add target_amount and amount
-        salesIdMap[salesId].target_amount += parseInt(item.target_amount || item.amount || 0);
-      } else {
-        // If the salesId is not in the map, initialize a new entry
-        salesIdMap[salesId] = {
-          target_amount: parseInt(item.target_amount || item.amount || 0),
-        };
-      }
-    });
-
-    // Calculate the totalTargetAmount
-    let totalTargetAmount = 0;
-    for (const salesId in salesIdMap) {
-      totalTargetAmount += salesIdMap[salesId].target_amount;
-    }
-    return totalTargetAmount;
-}
+// function calculateTotalTargetAmount(data) {
+//     const salesIdMap = {};
+  
+//     // Loop through the array and aggregate target_amount and amount for each unique salesId
+//     data.forEach(item => {
+//       const salesId = item.salesId || item.sales_id;
+//       if (salesId in salesIdMap) {
+//         // If the salesId already exists in the map, add target_amount and amount
+//         salesIdMap[salesId].target_amount += parseInt(item.target_amount || 0);
+//       } else {
+//         // If the salesId is not in the map, initialize a new entry
+//         salesIdMap[salesId] = {
+//           target_amount: parseInt(item.target_amount || 0),
+//         };
+//       }
+//     });
+  
+//     // Calculate the totalTargetAmount and totalAmount
+//     let totalTargetAmount = 0;
+//     for (const salesId in salesIdMap) {
+//       totalTargetAmount += salesIdMap[salesId].target_amount;
+//     }
+  
+//     return totalTargetAmount;
+// }
 
 module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
     try {
