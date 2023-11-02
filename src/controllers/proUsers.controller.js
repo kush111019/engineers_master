@@ -3939,31 +3939,27 @@ module.exports.salesMetricsReport = async (req, res) => {
                     }
 
                     // //yearly recognized_revenue Subscription+perpetual
-                    // const currentYear = new Date().getFullYear();
+                    const currentYear = new Date().getFullYear();
 
-                    // // Create the start date of the year
-                    // const yearStartDate = new Date(currentYear, 0, 1).toISOString().substring(0, 10; // Month is 0-based, so 0 is January
+                    // Create the start date of the year
+                    const yearlyStartFormattedDate = new Date(currentYear, 0, 1).toISOString().substring(0, 10); // Month is 0-based, so 0 is January
 
-                    // // Create the end date of the year
-                    // const yearEndDate = new Date(currentYear, 11, 31).toISOString().substring(0, 10;
+                    // Create the end date of the year
+                    const yearlyEndFormattedDate = new Date(currentYear, 11, 31).toISOString().substring(0, 10);
 
-                    // let yearlyStartFormattedDate = formayearStartDate;
-                    // let yearlyEndFormattedDate   = yearEndDate;
+                    let yearlySubscriptionAmount = 0;
+                    let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
+                    let findYearlyRecognizedRevenue = await connection.query(s8);
+                    if (findYearlyRecognizedRevenue.rowCount > 0) {
+                        let yearlyData = findYearlyRecognizedRevenue.rows
+                        yearlyData.forEach(row => {
+                            yearlySubscriptionAmount += parseFloat(row.target_amount);
+                        });
+                    }
 
-                    // let yearlySubscriptionAmount = 0;
-                    // let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
-                    // let findYearlyRecognizedRevenue = await connection.query(s8);
-                    // if (findYearlyRecognizedRevenue.rowCount > 0) {
-                    //     let yearlyData = findYearlyRecognizedRevenue.rows
-                    //     yearlyData.forEach(row => {
-                    //         yearlySubscriptionAmount += parseFloat(row.target_amount);
-                    //     });
-                    // } else {
-                    //     yearlySubscriptionAmount = yearlySubscriptionAmount
-                    // }
-                    // let totalYearlyRecognizedRevenue = parseFloat(yearlySubscriptionAmount + totalMonthlySubscriptionAmount)
+                    let totalYearlyRecognizedRevenue = parseFloat(yearlySubscriptionAmount + totalMonthlySubscriptionAmount)
 
-                    // yearlyRecognizedRevenue = parseFloat(totalMonthlySubscriptionAmount)
+                    yearlyRecognizedRevenue = parseFloat(totalMonthlySubscriptionAmount)
 
                     //sales leakages
 
@@ -4136,25 +4132,25 @@ module.exports.salesMetricsReport = async (req, res) => {
                         for (let amount of findForecastAmount.rows) {
                             totalForecaseAmount += Number(amount.amount)
                         }
-                        revenueGap = totalForecaseAmount - Number(yearlyRecognizedRevenue)
+                        revenueGap = totalForecaseAmount - Number(totalYearlyRecognizedRevenue)
                     } else {
-                        revenueGap = 0 - Number(yearlyRecognizedRevenue)
+                        revenueGap = 0 - Number(totalYearlyRecognizedRevenue)
                     }
 
-                    // const combinedArray = [
-                    //     ...closingDateSlippage.high_risk_sales,
-                    //     ...closingDateSlippage.low_risk_sales,
-                    //     ...eolSales.highRiskEolSale,
-                    //     ...eolSales.lowRiskEolSale,
-                    //     ...missingRR.high_risk_missing_rr,
-                    //     ...missingRR.low_risk_missing_rr,
-                    //     ...risk_sales_deals.high_risk_sales_deals,
-                    //     ...risk_sales_deals.low_risk_sales_deals
-                    // ];
+                    const combinedArray = [
+                        ...closingDateSlippage.high_risk_sales,
+                        ...closingDateSlippage.low_risk_sales,
+                        ...eolSales.highRiskEolSale,
+                        ...eolSales.lowRiskEolSale,
+                        ...missingRR.high_risk_missing_rr,
+                        ...missingRR.low_risk_missing_rr,
+                        ...risk_sales_deals.high_risk_sales_deals,
+                        ...risk_sales_deals.low_risk_sales_deals
+                    ];
 
-                    totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount));
+                    //totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount));
 
-                    // totalLeakageAmountAll = calculateTotalTargetAmount(combinedArray);
+                    totalLeakageAmountAll = calculateTotalTargetAmount(combinedArray);
 
                 }
                 else {
@@ -4304,18 +4300,25 @@ module.exports.salesMetricsReport = async (req, res) => {
                         totalMonthlySubscriptionAmount = 0;
                     }
 
+                    // //yearly recognized_revenue Subscription+perpetual
+                    const currentYear = new Date().getFullYear();
+
+                    // Create the start date of the year
+                    const yearlyStartFormattedDate = new Date(currentYear, 0, 1).toISOString().substring(0, 10); // Month is 0-based, so 0 is January
+
+                    // Create the end date of the year
+                    const yearlyEndFormattedDate = new Date(currentYear, 11, 31).toISOString().substring(0, 10);
+
                     //yearly recognized_revenue Subscription+perpetual
-                    // let yearlySubscriptionAmount = 0;
-                    // let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
-                    // let findYearlyRecognizedRevenue = await connection.query(s8);
-                    // if (findYearlyRecognizedRevenue.rowCount > 0) {
-                    //     let yearlyData = findYearlyRecognizedRevenue.rows
-                    //     yearlyData.forEach(row => {
-                    //         yearlySubscriptionAmount += parseFloat(row.target_amount);
-                    //     });
-                    // } else {
-                    //     yearlySubscriptionAmount = yearlySubscriptionAmount
-                    // }
+                    let totalYearlyRecognizedRevenue = 0;
+                    let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
+                    let findYearlyRecognizedRevenue = await connection.query(s8);
+                    if (findYearlyRecognizedRevenue.rowCount > 0) {
+                        let yearlyData = findYearlyRecognizedRevenue.rows
+                        yearlyData.forEach(row => {
+                            totalYearlyRecognizedRevenue += parseFloat(row.target_amount);
+                        });
+                    }
                     yearlyRecognizedRevenue = parseFloat(totalMonthlySubscriptionAmount)
 
                     //sales leakages
@@ -4485,25 +4488,25 @@ module.exports.salesMetricsReport = async (req, res) => {
                         for (let amount of findForecastAmount.rows) {
                             totalForecaseAmount += Number(amount.amount)
                         }
-                        revenueGap = totalForecaseAmount - Number(yearlyRecognizedRevenue)
+                        revenueGap = totalForecaseAmount - Number(totalYearlyRecognizedRevenue)
                     } else {
-                        revenueGap = 0 - Number(yearlyRecognizedRevenue)
+                        revenueGap = 0 - Number(totalYearlyRecognizedRevenue)
                     }
 
-                    // const combinedArray = [
-                    //     ...closingDateSlippage.high_risk_sales,
-                    //     ...closingDateSlippage.low_risk_sales,
-                    //     ...eolSales.highRiskEolSale,
-                    //     ...eolSales.lowRiskEolSale,
-                    //     ...missingRR.high_risk_missing_rr,
-                    //     ...missingRR.low_risk_missing_rr,
-                    //     ...risk_sales_deals.high_risk_sales_deals,
-                    //     ...risk_sales_deals.low_risk_sales_deals
-                    // ];
+                    const combinedArray = [
+                        ...closingDateSlippage.high_risk_sales,
+                        ...closingDateSlippage.low_risk_sales,
+                        ...eolSales.highRiskEolSale,
+                        ...eolSales.lowRiskEolSale,
+                        ...missingRR.high_risk_missing_rr,
+                        ...missingRR.low_risk_missing_rr,
+                        ...risk_sales_deals.high_risk_sales_deals,
+                        ...risk_sales_deals.low_risk_sales_deals
+                    ];
 
-                    totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount));
+                    //totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount));
 
-                    // totalLeakageAmountAll = calculateTotalTargetAmount(combinedArray);
+                    totalLeakageAmountAll = calculateTotalTargetAmount(combinedArray);
                 } else {
                     res.json({
                         status: 200,
@@ -4591,31 +4594,28 @@ module.exports.salesMetricsReport = async (req, res) => {
         });
     }
 }
-// function calculateTotalTargetAmount(data) {
-//     const salesIdMap = {};
-  
-//     // Loop through the array and aggregate target_amount and amount for each unique salesId
-//     data.forEach(item => {
-//       const salesId = item.salesId || item.sales_id;
-//       if (salesId in salesIdMap) {
-//         // If the salesId already exists in the map, add target_amount and amount
-//         salesIdMap[salesId].target_amount += parseInt(item.target_amount || 0);
-//       } else {
-//         // If the salesId is not in the map, initialize a new entry
-//         salesIdMap[salesId] = {
-//           target_amount: parseInt(item.target_amount || 0),
-//         };
-//       }
-//     });
-  
-//     // Calculate the totalTargetAmount and totalAmount
-//     let totalTargetAmount = 0;
-//     for (const salesId in salesIdMap) {
-//       totalTargetAmount += salesIdMap[salesId].target_amount;
-//     }
-  
-//     return totalTargetAmount;
-// }
+function calculateTotalTargetAmount(data) {
+    const salesIdMap = {};
+    // Loop through the array and aggregate target_amount and amount for each unique salesId
+    data.forEach(item => {
+      const salesId = item.salesId || item.sales_id;
+      if (salesId in salesIdMap) {
+        // If the salesId already exists in the map, add target_amount and amount
+        salesIdMap[salesId].target_amount += parseInt(item.target_amount || 0);
+      } else {
+        // If the salesId is not in the map, initialize a new entry
+        salesIdMap[salesId] = {
+          target_amount: parseInt(item.target_amount || 0),
+        };
+      }
+    });
+    // Calculate the totalTargetAmount and totalAmount
+    let totalTargetAmount = 0;
+    for (const salesId in salesIdMap) {
+      totalTargetAmount += salesIdMap[salesId].target_amount;
+    }
+    return totalTargetAmount;
+}
 
 module.exports.getAllApiDeatilsRelatedSales = async (req, res) => {
     try {

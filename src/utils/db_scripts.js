@@ -3688,16 +3688,15 @@ ORDER BY
             FROM sales AS s
             LEFT JOIN customer_companies AS cc ON s.customer_id = cc.id
             WHERE s.id IN ({var3})
-                AND s.subscription_plan = 'Annually' 
-                AND s.sales_type = 'Subscription' 
+                AND s.sales_type = 'Subscription'
                 AND s.deleted_at IS NULL
-                AND s.archived_at IS NULl
+                AND s.archived_at IS NULL
                 AND cc.deleted_at IS NULL
                 AND cc.archived_at IS NULL
-                AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') >= '{var1}'
-                AND TO_DATE(s.recurring_date, 'MM-DD-YYYY') <= '{var2}'
+                AND s.closed_at >= '{var1}'
+                AND s.closed_at <= '{var2}'
                       `,
-  "Q399": `SELECT s.id, 
+  "Q399": `SELECT s.id,
               CASE WHEN s.subscription_plan = 'Monthly' THEN s.target_amount::numeric
                   WHEN s.subscription_plan = 'Annually' THEN s.target_amount::numeric / 12
                   ELSE 0
