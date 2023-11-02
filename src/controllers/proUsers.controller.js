@@ -3942,10 +3942,10 @@ module.exports.salesMetricsReport = async (req, res) => {
                     const currentYear = new Date().getFullYear();
 
                     // Create the start date of the year
-                    const yearStartDate = new Date(currentYear, 0, 1).toISOString().substring(0, 10; // Month is 0-based, so 0 is January
+                    const yearStartDate = new Date(currentYear, 0, 1).toISOString().substring(0, 10); // Month is 0-based, so 0 is January
 
                     // Create the end date of the year
-                    const yearEndDate = new Date(currentYear, 11, 31).toISOString().substring(0, 10;
+                    const yearEndDate = new Date(currentYear, 11, 31).toISOString().substring(0, 10);
 
                     let yearlyStartFormattedDate = formatDate(yearStartDate);
                     let yearlyEndFormattedDate   = formatDate(yearEndDate);
