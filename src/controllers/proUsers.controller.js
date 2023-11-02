@@ -4133,12 +4133,12 @@ module.exports.salesMetricsReport = async (req, res) => {
                     const combinedArray = [
                         ...closingDateSlippage.high_risk_sales,
                         ...closingDateSlippage.low_risk_sales,
-                        ...eolSales.high_risk_sales,
-                        ...eolSales.low_risk_sales,
-                        ...missingRR.high_risk_sales,
-                        ...missingRR.low_risk_sales,
-                        ...risk_sales_deals.high_risk_sales,
-                        ...risk_sales_deals.low_risk_sales
+                        ...eolSales.highRiskEolSale,
+                        ...eolSales.lowRiskEolSale,
+                        ...missingRR.high_risk_missing_rr,
+                        ...missingRR.low_risk_missing_rr,
+                        ...risk_sales_deals.high_risk_sales_deals,
+                        ...risk_sales_deals.low_risk_sales_deals
                       ];
 
                     // totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount));
@@ -4482,13 +4482,13 @@ module.exports.salesMetricsReport = async (req, res) => {
                     const combinedArray = [
                         ...closingDateSlippage.high_risk_sales,
                         ...closingDateSlippage.low_risk_sales,
-                        ...eolSales.high_risk_sales,
-                        ...eolSales.low_risk_sales,
-                        ...missingRR.high_risk_sales,
-                        ...missingRR.low_risk_sales,
-                        ...risk_sales_deals.high_risk_sales,
-                        ...risk_sales_deals.low_risk_sales
-                      ];
+                        ...eolSales.highRiskEolSale,
+                        ...eolSales.lowRiskEolSale,
+                        ...missingRR.high_risk_missing_rr,
+                        ...missingRR.low_risk_missing_rr,
+                        ...risk_sales_deals.high_risk_sales_deals,
+                        ...risk_sales_deals.low_risk_sales_deals
+                    ];
 
                     // totalLeakageAmountAll = (Number(totalHighRiskAmount) + Number(totalLowRiskAmount) + Number(totalLowRiskRR) + Number(totalHighRiskRR) + Number(totalLowRiskSlippageAmount) + Number(totalHighRiskSlippageAmount) + Number(totalLowRiskEolMissingAmount) + Number(totalHighRiskEolMissingAmount));
 
