@@ -4339,8 +4339,8 @@ module.exports.salesMetricsReport = async (req, res) => {
                         totalHighRiskAmount = high_risk_sales_deals.reduce((total, sale) => total + parseInt(sale.amount), 0);
                         totalLowRiskAmount = low_risk_sales_deals.reduce((total, sale) => total + parseInt(sale.amount), 0);
 
-                        risk_sales_deals.high_risk_sales_deals = high_risk_sales_deals;
-                        risk_sales_deals.low_risk_sales_deals = low_risk_sales_deals;
+                        risk_sales_deals.high_risk_sales_deals = high_risk_sales_deals.filter((hr) => hr?.amount?.toString() != 0);
+                        risk_sales_deals.low_risk_sales_deals = low_risk_sales_deals.filter((hr) => hr?.amount?.toString() != 0);
                         risk_sales_deals.total_high_risk_amount = totalHighRiskAmount;
                         risk_sales_deals.total_low_risk_amount = totalLowRiskAmount;
                         risk_sales_deals.total_sales_deals_amount = totalHighRiskAmount + totalLowRiskAmount;
@@ -4395,8 +4395,8 @@ module.exports.salesMetricsReport = async (req, res) => {
                             totalLowRiskRR += parseInt(item.amount);
                         });
 
-                        missingRR.high_risk_missing_rr = high_risk_missing_rr;
-                        missingRR.low_risk_missing_rr = Object.values(low_risk_missing_rr);
+                        missingRR.high_risk_missing_rr = high_risk_missing_rr.filter((hr) => hr?.amount?.toString() != 0);;
+                        missingRR.low_risk_missing_rr = Object.values(low_risk_missing_rr).filter((hr) => hr?.amount?.toString() != 0);;
                     } else {
                         missingRR.high_risk_missing_rr = [];
                         missingRR.low_risk_missing_rr = [];
@@ -4449,8 +4449,8 @@ module.exports.salesMetricsReport = async (req, res) => {
                         totalHighRiskSlippageAmount = high_risk_sales.reduce((total, sale) => total + parseInt(sale.missing_amount), 0);
                         totalLowRiskSlippageAmount = low_risk_sales.reduce((total, sale) => total + parseInt(sale.missing_amount), 0);
 
-                        closingDateSlippage.high_risk_sales = high_risk_sales
-                        closingDateSlippage.low_risk_sales = low_risk_sales
+                        closingDateSlippage.high_risk_sales = high_risk_sales.filter((hr) => hr?.amount?.toString() != 0);
+                        closingDateSlippage.low_risk_sales = low_risk_sales.filter((hr) => hr?.amount?.toString() != 0);
                         closingDateSlippage.total_high_risk_slippage_amount = totalHighRiskSlippageAmount
                         closingDateSlippage.total_low_risk_slippage_amount = totalLowRiskSlippageAmount
                         closingDateSlippage.all_total_slippage_amount = Number(totalHighRiskSlippageAmount + totalLowRiskSlippageAmount)
@@ -4597,22 +4597,23 @@ module.exports.salesMetricsReport = async (req, res) => {
 function calculateTotalTargetAmount(data) {
     const salesIdMap = {};
     // Loop through the array and aggregate target_amount and amount for each unique salesId
+    // data = data.filter((d) => d?.amount != '0');
     data.forEach(item => {
-      const salesId = item.salesId || item.sales_id;
-      if (salesId in salesIdMap) {
-        // If the salesId already exists in the map, add target_amount and amount
-        salesIdMap[salesId].target_amount += parseInt(item.target_amount || 0);
-      } else {
-        // If the salesId is not in the map, initialize a new entry
-        salesIdMap[salesId] = {
-          target_amount: parseInt(item.target_amount || 0),
-        };
-      }
+        const salesId = item.salesId || item.sales_id;
+        if (salesId in salesIdMap) {
+            // If the salesId already exists in the map, add target_amount and amount
+            salesIdMap[salesId].amount += parseInt(item.amount || 0);
+        } else {
+            // If the salesId is not in the map, initialize a new entry
+            salesIdMap[salesId] = {
+                amount: parseInt(item.amount || 0),
+            };
+        }
     });
     // Calculate the totalTargetAmount and totalAmount
     let totalTargetAmount = 0;
     for (const salesId in salesIdMap) {
-      totalTargetAmount += salesIdMap[salesId].target_amount;
+      totalTargetAmount += salesIdMap[salesId].amount;
     }
     return totalTargetAmount;
 }
