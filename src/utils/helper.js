@@ -565,7 +565,7 @@ module.exports.getMinutesBetweenDates = async (startDate, endDate) => {
 // get child roles and their user's list from this function 
 module.exports.getUserAndSubUser = async (userData) => {
     let roleIds = []
-    roleIds.push(userData.role_id)
+    roleIds.push(userData.role_id);
     let getRoles = async (id) => {
         let s1 = dbScript(db_sql['Q16'], { var1: id })
         let getChild = await connection.query(s1);
@@ -578,14 +578,16 @@ module.exports.getUserAndSubUser = async (userData) => {
             }
         }
     }
-    await getRoles(userData.role_id)
+    await getRoles(userData.role_id);
     let returnData = [];
-    returnData.push("'" + userData.id.toString() + "'")
+    returnData.push("'" + userData.id.toString() + "'");
     for (let id of roleIds) {
         let s2 = dbScript(db_sql['Q243'], { var1: id })
         let getUserData = await connection.query(s2);
-        if (getUserData.rowCount > 0 && getUserData.rows[0].role_id != userData.role_id) {
-            returnData.push("'" + getUserData.rows[0].id.toString() + "'")
+        for(let item of getUserData.rows){
+            if (item.role_id != userData.role_id) {
+                returnData.push("'" + getUserData.rows[0].id.toString() + "'")
+            }
         }
     }
     return returnData

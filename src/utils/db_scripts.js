@@ -2213,7 +2213,7 @@ ORDER BY
               WHERE 
                 sales_id = '{var1}'`,
   "Q242": `UPDATE users SET session_time = '{var2}' WHERE id = '{var1}' RETURNING *`,
-  "Q243": `SELECT * FROM  users  WHERE role_id = '{var1}' and deleted_at IS NULL `,
+  "Q243": `SELECT * FROM  users  WHERE role_id = '{var1}' and deleted_at IS NULL and is_deactivated='false'`,
   "Q244": `SELECT * FROM  users  WHERE role_id = '{var1}' and id = '{var2}' and deleted_at IS NULL `,
   "Q245": `INSERT INTO notifications(title, type_id,user_id,type) VALUES ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
   "Q246": `SELECT * FROM  notifications WHERE user_id= '{var1}' and is_read= false and deleted_at IS NULL ORDER BY created_at DESC`,
@@ -3698,8 +3698,7 @@ ORDER BY
                 AND cc.deleted_at IS NULL
                 AND cc.archived_at IS NULL
                 AND s.closed_at >= '{var1}'
-                AND s.closed_at <= '{var2}'
-                      `,
+                AND s.closed_at <= '{var2}'`,
   "Q399": `SELECT s.id,
               CASE WHEN s.subscription_plan = 'Monthly' THEN s.target_amount::numeric
                   WHEN s.subscription_plan = 'Annually' THEN s.target_amount::numeric / 12

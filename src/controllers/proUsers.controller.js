@@ -4314,7 +4314,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                     let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
                     let findYearlyRecognizedRevenue = await connection.query(s8);
                     if (findYearlyRecognizedRevenue.rowCount > 0) {
-                        let yearlyData = findYearlyRecognizedRevenue.rows
+                        let yearlyData = findYearlyRecognizedRevenue.rows;
                         yearlyData.forEach(row => {
                             totalYearlyRecognizedRevenue += parseFloat(row.target_amount);
                         });
