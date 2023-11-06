@@ -84,6 +84,7 @@ router.put('/deletecommissionSplit', verifyTokenFn,checkParams, controller.commi
 //-------------------------------------Products---------------------------------------------
 
 router.post('/addProduct', verifyTokenFn,checkParams, controller.products.addProduct)
+router.post('/productNotes', verifyTokenFn,checkParams, controller.products.productNotes)
 router.put('/updateProduct', verifyTokenFn,checkParams, controller.products.updateProduct)
 router.get('/productList', verifyTokenFn,checkParams, controller.products.productList)
 router.put('/deleteProduct', verifyTokenFn,checkParams, controller.products.deleteProduct)

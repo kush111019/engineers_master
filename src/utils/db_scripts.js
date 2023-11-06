@@ -4800,7 +4800,13 @@ GROUP BY
     AND sc.transfer_reason IS NOT NULL  -- Add this condition to filter records with non-null transfer_reason
     GROUP BY sc.id, cus.customer_name, u1.full_name, u1.email_address, slab.slab_name, u2.full_name, cus.user_id
     ORDER BY sc.created_at DESC;
-    `
+    `,
+  "Q475": `SELECT s.id, ce.full_name, fn.notes, fn.created_at
+              FROM product_in_sales ps
+              JOIN follow_up_notes fn ON ps.sales_id = fn.sales_id 
+              JOIN sales s ON s.id=ps.sales_id
+              JOIN customer_company_employees ce ON ce.id=s.lead_id
+              WHERE fn.notes_type IN ('2') and ps.product_id='{var1}';`
 }
   ;
 
