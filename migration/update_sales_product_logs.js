@@ -11,7 +11,13 @@ var connection = new Pool({
 });
 
 connection.query(
-  `ALTER TABLE follow_up_notes ADD COLUMN notes_type VARCHAR(255) DEFAULT '1';`,
+  `DO $$
+  BEGIN
+      IF NOT EXISTS (SELECT column_name FROM information_schema.columns WHERE table_name = 'follow_up_notes' AND column_name = 'notes_type') THEN
+          ALTER TABLE follow_up_notes
+          ADD COLUMN notes_type VARCHAR(255) DEFAULT '1';
+      END IF;
+  END $$;`,
   (err) => {
     if (err) {
       throw err;
