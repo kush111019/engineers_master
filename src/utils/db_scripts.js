@@ -4801,11 +4801,12 @@ GROUP BY
     GROUP BY sc.id, cus.customer_name, u1.full_name, u1.email_address, slab.slab_name, u2.full_name, cus.user_id
     ORDER BY sc.created_at DESC;
     `,
-  "Q475": `SELECT DISTINCT s.id, ce.full_name, fn.notes, fn.created_at
+  "Q475": `SELECT DISTINCT s.id, ce.full_name, c.customer_name, ce.title, fn.notes, fn.created_at
             FROM product_in_sales ps
             JOIN follow_up_notes fn ON ps.sales_id = fn.sales_id 
             JOIN sales s ON s.id = ps.sales_id
             JOIN customer_company_employees ce ON ce.id = s.lead_id
+            JOIN customer_companies c ON ce.customer_company_id=c.id
             WHERE fn.notes_type LIKE '%2%' and ps.product_id='{var1}';`
 }
   ;
