@@ -641,12 +641,12 @@ module.exports.salesLogsList = async (req, res) => {
 module.exports.addfollowUpNotes = async (req, res) => {
     try {
         let userId = req.user.id
-        let { note, salesCommissionId } = req.body
+        let { note, salesCommissionId, notes_type } = req.body
         await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_create) {
-            let s4 = dbScript(db_sql['Q31'], { var1: salesCommissionId, var2: checkPermission.rows[0].company_id, var3: userId, var4: mysql_real_escape_string(note) })
+            let s4 = dbScript(db_sql['Q31'], { var1: salesCommissionId, var2: checkPermission.rows[0].company_id, var3: userId, var4: mysql_real_escape_string(note), var5: mysql_real_escape_string(notes_type) })
             let addNote = await connection.query(s4)
             if (addNote.rowCount > 0) {
                 await connection.query('COMMIT')

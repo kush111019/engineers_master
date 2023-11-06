@@ -70,7 +70,7 @@ const db_sql = {
   "Q28": `UPDATE permissions SET deleted_at = '{var2}' WHERE role_id = '{var1}' AND deleted_at IS NULL RETURNING * `,
   "Q29": `UPDATE slabs SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL`,
   "Q30": `UPDATE users SET is_locked = '{var1}', updated_at = '{var3}' WHERE company_id = '{var2}' AND is_main_admin = false AND deleted_at IS NULL RETURNING * `,
-  "Q31": `INSERT INTO follow_up_notes (sales_id, company_id, user_id, notes) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
+  "Q31": `INSERT INTO follow_up_notes (sales_id, company_id, user_id, notes, notes_type) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
   "Q32": `SELECT f.id, f.notes, f.created_at, f.user_id, u.full_name, u.avatar 
               FROM follow_up_notes as f
               LEFT JOIN users AS u ON u.id = f.user_id
