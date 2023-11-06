@@ -9,8 +9,9 @@ Upload schema(hirise_sales_schema.sql) to the database
 
 # run the seeder commands
 1. `npm run seedSuperAdmin`
-2. `npm run seedModules`
-3. `npm run seedCountryDetails`
+2. `npm run migration`
+3. `npm run seedModules`
+4. `npm run seedCountryDetails`
 
 # run server
 `npm start`
