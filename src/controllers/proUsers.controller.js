@@ -3947,17 +3947,15 @@ module.exports.salesMetricsReport = async (req, res) => {
                     // Create the end date of the year
                     const yearlyEndFormattedDate = new Date(currentYear, 11, 31).toISOString().substring(0, 10);
 
-                    let yearlySubscriptionAmount = 0;
+                    let totalYearlyRecognizedRevenue = 0;
                     let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
                     let findYearlyRecognizedRevenue = await connection.query(s8);
                     if (findYearlyRecognizedRevenue.rowCount > 0) {
                         let yearlyData = findYearlyRecognizedRevenue.rows
                         yearlyData.forEach(row => {
-                            yearlySubscriptionAmount += parseFloat(row.target_amount);
+                            totalYearlyRecognizedRevenue += parseFloat(row.target_amount);
                         });
                     }
-
-                    let totalYearlyRecognizedRevenue = parseFloat(yearlySubscriptionAmount + totalMonthlySubscriptionAmount)
 
                     yearlyRecognizedRevenue = parseFloat(totalMonthlySubscriptionAmount)
 
@@ -4314,7 +4312,7 @@ module.exports.salesMetricsReport = async (req, res) => {
                     let s8 = dbScript(db_sql["Q398"], { var1: yearlyStartFormattedDate, var2: yearlyEndFormattedDate, var3: allSalesIdArr.join(",") });
                     let findYearlyRecognizedRevenue = await connection.query(s8);
                     if (findYearlyRecognizedRevenue.rowCount > 0) {
-                        let yearlyData = findYearlyRecognizedRevenue.rows
+                        let yearlyData = findYearlyRecognizedRevenue.rows;
                         yearlyData.forEach(row => {
                             totalYearlyRecognizedRevenue += parseFloat(row.target_amount);
                         });

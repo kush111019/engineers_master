@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.js",
+    "migration": "node migration/index.js",
     "seedSuperAdmin": "node seeders/seedSuperAdmin.js",
     "seedModules": "node seeders/seedModules.js",
     "seedCountryDetails": "node seeders/seedCountryDetails.js"

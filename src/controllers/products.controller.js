@@ -355,3 +355,34 @@ module.exports.uploadProductFile = async (req, res) => {
         })
     }
 }
+
+module.exports.productNotes = async (req, res) => {
+    try {
+        let {
+            id
+        } = req.body
+        let s1 = dbScript(db_sql['Q475'], { var1: id })
+        let followupNotes = await connection.query(s1)
+        if (followupNotes.rowCount > 0) {
+            res.json({
+                status: 200,
+                success: true,
+                message: "Product Follow Up Notes List",
+                data: followupNotes.rows
+            })
+        } else {
+            res.json({
+                status: 200,
+                success: false,
+                message: "Empty product follow notes list",
+                data: []
+            })
+        }
+    } catch (error) {
+        res.json({
+            status: 400,
+            success: false,
+            message: error.message,
+        })
+    }
+}

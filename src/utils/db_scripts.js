@@ -70,8 +70,8 @@ const db_sql = {
   "Q28": `UPDATE permissions SET deleted_at = '{var2}' WHERE role_id = '{var1}' AND deleted_at IS NULL RETURNING * `,
   "Q29": `UPDATE slabs SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL`,
   "Q30": `UPDATE users SET is_locked = '{var1}', updated_at = '{var3}' WHERE company_id = '{var2}' AND is_main_admin = false AND deleted_at IS NULL RETURNING * `,
-  "Q31": `INSERT INTO follow_up_notes (sales_id, company_id, user_id, notes) VALUES('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
-  "Q32": `SELECT f.id, f.notes, f.created_at, f.user_id, u.full_name, u.avatar 
+  "Q31": `INSERT INTO follow_up_notes (sales_id, company_id, user_id, notes, notes_type) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
+  "Q32": `SELECT f.id, f.notes, f.notes_type, f.created_at, f.user_id, u.full_name, u.avatar 
               FROM follow_up_notes as f
               LEFT JOIN users AS u ON u.id = f.user_id
               WHERE sales_id = '{var1}' AND f.deleted_at IS NULL ORDER BY created_at DESC`,
@@ -2213,7 +2213,7 @@ ORDER BY
               WHERE 
                 sales_id = '{var1}'`,
   "Q242": `UPDATE users SET session_time = '{var2}' WHERE id = '{var1}' RETURNING *`,
-  "Q243": `SELECT * FROM  users  WHERE role_id = '{var1}' and deleted_at IS NULL `,
+  "Q243": `SELECT * FROM  users  WHERE role_id = '{var1}' and deleted_at IS NULL and is_deactivated='false'`,
   "Q244": `SELECT * FROM  users  WHERE role_id = '{var1}' and id = '{var2}' and deleted_at IS NULL `,
   "Q245": `INSERT INTO notifications(title, type_id,user_id,type) VALUES ('{var1}','{var2}','{var3}','{var4}') RETURNING *`,
   "Q246": `SELECT * FROM  notifications WHERE user_id= '{var1}' and is_read= false and deleted_at IS NULL ORDER BY created_at DESC`,
@@ -3698,8 +3698,7 @@ ORDER BY
                 AND cc.deleted_at IS NULL
                 AND cc.archived_at IS NULL
                 AND s.closed_at >= '{var1}'
-                AND s.closed_at <= '{var2}'
-                      `,
+                AND s.closed_at <= '{var2}'`,
   "Q399": `SELECT s.id,
               CASE WHEN s.subscription_plan = 'Monthly' THEN s.target_amount::numeric
                   WHEN s.subscription_plan = 'Annually' THEN s.target_amount::numeric / 12
@@ -4801,7 +4800,25 @@ GROUP BY
     AND sc.transfer_reason IS NOT NULL  -- Add this condition to filter records with non-null transfer_reason
     GROUP BY sc.id, cus.customer_name, u1.full_name, u1.email_address, slab.slab_name, u2.full_name, cus.user_id
     ORDER BY sc.created_at DESC;
-    `
+    `,
+  // "Q475": `SELECT DISTINCT s.id, ce.full_name, c.customer_name, ce.title, fn.notes, fn.created_at
+  //           FROM product_in_sales ps
+  //           JOIN follow_up_notes fn ON ps.sales_id = fn.sales_id 
+  //           JOIN sales s ON s.id = ps.sales_id
+  //           JOIN customer_company_employees ce ON ce.id = s.lead_id
+  //           JOIN customer_companies c ON ce.customer_company_id=c.id
+  //           WHERE fn.notes_type LIKE '%2%' and ps.product_id='{var1}';`
+  "Q475": `WITH relevant_sales AS (
+              SELECT DISTINCT ps.sales_id
+              FROM product_in_sales ps
+              WHERE ps.product_id = '{var1}'
+          )
+          SELECT s.id, ce.full_name, c.customer_name, ce.title, fn.notes, fn.created_at
+          FROM sales s
+          JOIN customer_company_employees ce ON ce.id = s.lead_id
+          JOIN customer_companies c ON c.id = ce.customer_company_id
+          JOIN relevant_sales rs ON rs.sales_id = s.id
+          JOIN follow_up_notes fn ON fn.sales_id = rs.sales_id AND fn.notes_type LIKE '%2';`
 }
   ;
 
