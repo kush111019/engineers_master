@@ -1,20 +1,21 @@
 const express = require('express');
-// const cluster = require('cluster');
 const os = require('os');
 const app = express();
 const cors = require('cors');
 const helmet = require('helmet')
-// const cron = require('node-cron');
-// const { readFileSync } = require("fs");
 require('dotenv').config()
 const logger = require('./middleware/logger');
-// const { paymentReminder, upgradeSubscriptionCronFn } = require('./src/utils/paymentReminder')
-// const { targetDateReminder } = require('./src/utils/salesTargetDateReminder')
-// const { searchLead } = require('./src/controllers/proUsers.controller')
 require('./src/database/connection')
 const Router = require('./src/routes/index');
 const sticky = require('socketio-sticky-session')
 const { instantNotificationsList } = require('./src/utils/helper')
+
+// Checks for --port and if it has a value
+if (process.argv.length != 3) {
+  console.error('Expected argument: --port=<PORT_NUMBER>');
+  process.exit(1);
+}
+const port = process.argv[2];
 
 app.use(cors());
 app.use(
@@ -32,98 +33,61 @@ app.use(express.static('uploads'))
 app.use(express.static('public'))
 app.use(logger);
 
-// let cronJob = cron.schedule('59 59 23 * * *', async () => {
-//   // if (cluster.isMaster) {
-//   await paymentReminder();
-//   await upgradeSubscriptionCronFn()
-//   await targetDateReminder()
-//   await searchLead()
-//   // }
-// });
-// cronJob.start();
-
-let options = {
-  proxy: false,
-    //num: os.cpus().length
-    num: 1
-}
-
-
-// Checks for --custom and if it has a value
-const customIndex = process.argv.indexOf('--port');
-let portValue;
-
-if (customIndex > -1) {
-  // Retrieve the value after --custom
-  portValue = process.argv[customIndex + 1];
-}
-
-const port = (portValue || '3003');
-
-// var ports = [custom];
 var servers = [];
 const httpServer = require('http');
 require('events').EventEmitter.defaultMaxListeners = Infinity;
 
+const http = httpServer.createServer(app)
+let io = require("socket.io")(http, {
+  path: "/socket.io/",
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+    allowedHeaders: [
+      "*"
+    ]
+  },
+  transports: ['websocket', 'polling'],
+  allowEIO3: true
+});
 
+io.on("connection", (socket) => {
+  console.log("Connected to socket.io");
+  socket.on("setup", (userData) => {
+    socket.join(userData.id);
+    socket.emit("connected");
+  });
 
-// ports.forEach((port) => {
-  const http = httpServer.createServer(app)
-  //let server = sticky(options, () => {
-    //let server = http.listen();
-    let io = require("socket.io")(http, {
-      path: "/socket.io/",
-      cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
-        allowedHeaders: [
-          "*"
-        ]
-      },
-      transports: ['websocket', 'polling'],
-      allowEIO3: true
+  socket.on("join chat", (room) => {
+    socket.join(room);
+    console.log("User Joined Room: " + room);
+  });
+  socket.on("new message", (newMessageRecieved) => {
+    if (!newMessageRecieved.users) return console.log("chat.users not defined");
+    console.log(newMessageRecieved,"===================================================")
+    newMessageRecieved.users.forEach((user) => {
+      if (user.id == newMessageRecieved.sender.id) return;
+      io.to(user.id).emit("message recieved", newMessageRecieved);
     });
+  });
 
-    io.on("connection", (socket) => {
-      console.log("Connected to socket.io");
-      socket.on("setup", (userData) => {
-        socket.join(userData.id);
-        socket.emit("connected");
-      });
+  // socket for notification
+  socket.on("newNotification", (newNotificationRecieved) => {
+    if (!newNotificationRecieved.id) return console.log("notification not defined");
+    let checkNotification = instantNotificationsList(newNotificationRecieved, socket)
+  });
 
-      socket.on("join chat", (room) => {
-        socket.join(room);
-        console.log("User Joined Room: " + room);
-      });
-      socket.on("new message", (newMessageRecieved) => {
-        if (!newMessageRecieved.users) return console.log("chat.users not defined");
-        console.log(newMessageRecieved,"===================================================")
-        newMessageRecieved.users.forEach((user) => {
-          if (user.id == newMessageRecieved.sender.id) return;
-          io.to(user.id).emit("message recieved", newMessageRecieved);
-        });
-      });
+  socket.off("setup", () => {
+    console.log("USER DISCONNECTED");
+    socket.leave(userData.id);
+  });
+});
 
-      // socket for notification
-      socket.on("newNotification", (newNotificationRecieved) => {
-        if (!newNotificationRecieved.id) return console.log("notification not defined");
-        let checkNotification = instantNotificationsList(newNotificationRecieved, socket)
-      });
-
-      socket.off("setup", () => {
-        console.log("USER DISCONNECTED");
-        socket.leave(userData.id);
-      });
-    });
-
-    //return server
-  //})
-  http.listen(port, () => {
-    // console.log((cluster.worker ? 'WORKER ' + cluster.worker.id : 'MASTER') + ' | PORT ' + process.env.LISTEN_PORT)
-    console.log(`Server is listening on ${port}`)
-  })
-  servers.push(http);
-// });
+http.listen(port, () => {
+  // console.log((cluster.worker ? 'WORKER ' + cluster.worker.id : 'MASTER') + ' | PORT ' + process.env.LISTEN_PORT)
+  console.log(`Server is listening on ${port}`)
+})
+servers.push(http);
 
 
 app.use('/api/v1', Router);
