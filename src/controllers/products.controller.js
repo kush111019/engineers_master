@@ -362,7 +362,7 @@ module.exports.productNotes = async (req, res) => {
             id
         } = req.body
         let s1 = dbScript(db_sql['Q475'], { var1: id })
-        let followupNotes = await connection.query(s1)
+        let followupNotes = await connection.query(s1);
         if (followupNotes.rowCount > 0) {
             res.json({
                 status: 200,
