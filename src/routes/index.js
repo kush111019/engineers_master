@@ -20,7 +20,8 @@ router.post('/auth/resetPassword',checkParams,controller.companyAdmin.resetPassw
 router.post('/auth/proUserLogin',checkParams,controller.proUser.proUserLogin)
 router.post('/auth/contactUs', checkParams,controller.contactUs.contactUs)
 
-router.get('/plansList',checkParams,controller.payment.plansList)
+router.get('/plansList',checkParams, controller.payment.plansList);
+router.get('/cron',  controller.cron.job);
 
 router.get('/countryDetails',verifyTokenFn, checkParams,controller.companyAdmin.countryDetails)
 
