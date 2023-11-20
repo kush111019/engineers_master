@@ -20,6 +20,7 @@ const leads = require('./leadsController')
 const marketingStrategy = require('./merketingStrategy.controller')
 const notifications = require('./notifications.controller')
 const proUser = require('./proUsers.controller')
+const cron = require('./cron.controller')
 
 
 const controller = { 
@@ -44,7 +45,8 @@ const controller = {
     leads,
     marketingStrategy,
     notifications,
-    proUser
+    proUser,
+    cron
 }
 
 module.exports = controller

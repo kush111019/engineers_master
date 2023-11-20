@@ -4,17 +4,17 @@ const os = require('os');
 const app = express();
 const cors = require('cors');
 const helmet = require('helmet')
-const cron = require('node-cron');
+// const cron = require('node-cron');
 // const { readFileSync } = require("fs");
 require('dotenv').config()
 const logger = require('./middleware/logger');
-const { paymentReminder, upgradeSubscriptionCronFn } = require('./src/utils/paymentReminder')
-const { targetDateReminder } = require('./src/utils/salesTargetDateReminder')
+// const { paymentReminder, upgradeSubscriptionCronFn } = require('./src/utils/paymentReminder')
+// const { targetDateReminder } = require('./src/utils/salesTargetDateReminder')
+// const { searchLead } = require('./src/controllers/proUsers.controller')
 require('./src/database/connection')
 const Router = require('./src/routes/index');
 const sticky = require('socketio-sticky-session')
 const { instantNotificationsList } = require('./src/utils/helper')
-const { searchLead } = require('./src/controllers/proUsers.controller')
 
 app.use(cors());
 app.use(
@@ -32,15 +32,15 @@ app.use(express.static('uploads'))
 app.use(express.static('public'))
 app.use(logger);
 
-let cronJob = cron.schedule('59 59 23 * * *', async () => {
-  // if (cluster.isMaster) {
-  await paymentReminder();
-  await upgradeSubscriptionCronFn()
-  await targetDateReminder()
-  await searchLead()
-  // }
-});
-cronJob.start();
+// let cronJob = cron.schedule('59 59 23 * * *', async () => {
+//   // if (cluster.isMaster) {
+//   await paymentReminder();
+//   await upgradeSubscriptionCronFn()
+//   await targetDateReminder()
+//   await searchLead()
+//   // }
+// });
+// cronJob.start();
 
 let options = {
   proxy: false,
@@ -48,12 +48,26 @@ let options = {
     num: 1
 }
 
-var ports = [3003];
+
+// Checks for --custom and if it has a value
+const customIndex = process.argv.indexOf('--port');
+let portValue;
+
+if (customIndex > -1) {
+  // Retrieve the value after --custom
+  portValue = process.argv[customIndex + 1];
+}
+
+const port = (portValue || '3003');
+
+// var ports = [custom];
 var servers = [];
 const httpServer = require('http');
 require('events').EventEmitter.defaultMaxListeners = Infinity;
 
-ports.forEach((port) => {
+
+
+// ports.forEach((port) => {
   const http = httpServer.createServer(app)
   //let server = sticky(options, () => {
     //let server = http.listen();
@@ -109,7 +123,7 @@ ports.forEach((port) => {
     console.log(`Server is listening on ${port}`)
   })
   servers.push(http);
-});
+// });
 
 
 app.use('/api/v1', Router);
