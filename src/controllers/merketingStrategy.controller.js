@@ -883,3 +883,53 @@ module.exports.finalizeBudget = async (req, res) => {
     });
   }
 };
+
+module.exports.marketingActivities = async (req, res) => {
+  try {
+    let userId = req.user.id;
+    let s1 = dbScript(db_sql["Q41"], { var1: moduleName, var2: userId });
+    let checkPermission = await connection.query(s1);
+    if (checkPermission.rows[0].permission_to_view_own) {
+      let s1 = dbScript(db_sql["Q476"], {
+        var1: checkPermission.rows[0].company_id,
+      });
+      let marketingActivities = await connection.query(s1);
+      if (marketingActivities.rowCount > 0) {
+        res.json({
+          status: 200,
+          success: true,
+          message: "Marketing activities list",
+          data: marketingActivities.rows,
+        });
+      } else {
+        res.json({
+          status: 400,
+          success: false,
+          message: "No data found",
+        });
+      }
+    }
+    // let s1 = dbScript(db_sql["Q476"]);
+    // let marketingActivities = await connection.query(s1);
+    // if (marketingActivities.rowCount > 0) {
+    //   res.json({
+    //     status: 200,
+    //     success: true,
+    //     message: "Marketing activities list",
+    //     data: marketingActivities,
+    //   });
+    // } else {
+    //   res.json({
+    //     status: 400,
+    //     success: false,
+    //     message: "No data found",
+    //   });
+    // }
+  } catch (error) {
+    res.json({
+      status: 400,
+      success: false,
+      message: error.message,
+    });
+  }
+};

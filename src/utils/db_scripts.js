@@ -1434,9 +1434,9 @@ ORDER BY
             ('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}','{var7}','{var8}','{var9}') RETURNING *`,
   Q169: `INSERT INTO customer_company_employees (full_name,title,email_address,phone_number,
               address,source,linkedin_url,website,targeted_value,marketing_qualified_lead,
-              assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type, sync_id, sync_source,pid)
+              assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type, sync_id, sync_source,pid,marketing_activities)
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
-              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}', '{var18}','{var19}') RETURNING *`,
+              '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}', '{var18}','{var19}' , '{var20}') RETURNING *`,
   Q170: `SELECT 
                 l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
@@ -1529,7 +1529,7 @@ ORDER BY
   Q172: `UPDATE customer_company_employees SET full_name = '{var2}', title = '{var3}',email_address = '{var4}',phone_number = '{var5}',
               address = '{var6}',source = '{var7}',linkedin_url = '{var8}',website = '{var9}',targeted_value = '{var10}',
               marketing_qualified_lead = '{var11}',assigned_sales_lead_to = '{var12}',additional_marketing_notes = '{var13}',
-              updated_at = '{var14}', customer_company_id = '{var15}' WHERE id = '{var1}' AND deleted_at is null`,
+              updated_at = '{var14}', customer_company_id = '{var15}', marketing_activities = '{var16}' WHERE id = '{var1}' AND deleted_at is null`,
 
   Q173: `UPDATE customer_company_employees SET deleted_at = '{var2}' WHERE id = '{var1}' AND deleted_at is null RETURNING *`,
 
@@ -4817,6 +4817,21 @@ GROUP BY
           JOIN customer_companies c ON c.id = ce.customer_company_id
           JOIN relevant_sales rs ON rs.sales_id = s.id
           JOIN follow_up_notes fn ON fn.sales_id = rs.sales_id AND fn.notes_type LIKE '%2';`,
+
+  Q476: `SELECT md.id, md.title, md.amount
+  FROM marketing_budget m
+  JOIN marketing_budget_description md ON m.id = md.budget_id
+  WHERE md.company_id=  '{var1}' and m.is_finalize=true;`,
+  Q477: `select * from customer_company_employees where email_address = '{var1}'`,
+  Q478: `INSERT INTO customer_company_employees (full_name,title,email_address,phone_number,
+    address,source,linkedin_url,website,targeted_value,marketing_qualified_lead,
+    assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type, sync_id, sync_source,pid,marketing_activities)
+    VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
+    '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}', '{var18}','{var19}' , '{var20}') RETURNING *`,
+  Q479: `SELECT * FROM marketing_budget_description WHERE title LIKE '%{var1}%' AND company_id = {var2}`,
+  Q480: `UPDATE customer_company_employees
+  SET marketing_activities = '{var1}'
+  WHERE email_address = '{var2}' returning *`,
 };
 function dbScript(template, variables) {
   if (variables != null && Object.keys(variables).length > 0) {
