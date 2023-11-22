@@ -4833,6 +4833,9 @@ GROUP BY
   SET marketing_activities = '{var1}'
   WHERE email_address = '{var2}' returning *`,
   Q481: `SELECT * FROM customer_company_employees WHERE marketing_activities LIKE '%{var1}%'`,
+  Q482: `SELECT * FROM lead_titles WHERE id = '{var1}'`,
+  Q483: `SELECT * FROM companies WHERE id = '{var1}'`,
+  Q484: `SELECT * FROM lead_sources WHERE id = '{var1}'`,
 };
 function dbScript(template, variables) {
   if (variables != null && Object.keys(variables).length > 0) {
