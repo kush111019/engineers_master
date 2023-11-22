@@ -4841,7 +4841,7 @@ GROUP BY
    lead_sources AS ls ON ls.id = cce.source
    WHERE
   cce.marketing_activities LIKE '%{var1}%'`,
-  Q481: `UPDATE follow_up_notes
+  Q482: `UPDATE follow_up_notes
   SET sales_id = '{var1}'
   WHERE lead_id = '{var2}' returning *`,
 };

@@ -120,8 +120,9 @@ module.exports.createSales = async (req, res) => {
             let createSales = await connection.query(s5);
 
             //Update Logs
-            let sul = dbScript(db_sql['Q481'], { var1: createSales.rows[0].id, var2: leadId });
-            await connection.query(sul);
+            let sul = dbScript(db_sql['Q482'], { var1: createSales.rows[0].id, var2: leadId });
+            let insertSalesId = await connection.query(sul);
+            console.log(insertSalesId)
 
             let salesUsersForLog = [];
             let s7 = dbScript(db_sql['Q57'], { var1: captainId, var2: Number(captainPercentage), var3: process.env.CAPTAIN, var4: commissionSplitId, var5: createSales.rows[0].id, var6: checkPermission.rows[0].company_id })
