@@ -1551,7 +1551,7 @@ ORDER BY
   Q176: `SELECT 
               l.id, l.full_name,l.title AS title_id,t.title AS title_name,l.email_address,l.phone_number,
               l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
-              l.website,l.targeted_value,l.marketing_qualified_lead,
+              l.website,l.targeted_value,l.marketing_qualified_lead,l.marketing_activities,
               l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
               u1.full_name AS creator_name, c.customer_name , u2.full_name as assigned_sales_lead_name, sc.id AS sales_id
             FROM 
@@ -4832,6 +4832,15 @@ GROUP BY
   Q480: `UPDATE customer_company_employees
   SET marketing_activities = '{var1}'
   WHERE email_address = '{var2}' returning *`,
+  Q481: `SELECT cce.full_name, cce.title, cce.email_address, cce.source, cce.created_at, lt.title, c.company_name, ls.source
+  FROM  customer_company_employees AS cce JOIN 
+ lead_titles AS lt ON lt.id = cce.title
+  JOIN
+   companies AS c ON c.id = cce.company_id
+ JOIN
+   lead_sources AS ls ON ls.id = cce.source
+   WHERE
+  cce.marketing_activities LIKE '%{var1}%'`,
   Q481: `UPDATE follow_up_notes
   SET sales_id = '{var1}'
   WHERE lead_id = '{var2}' returning *`,
