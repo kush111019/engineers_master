@@ -117,7 +117,11 @@ module.exports.createSales = async (req, res) => {
             let _dt = new Date().toISOString();
 
             let s5 = dbScript(db_sql['Q53'], { var1: customerId, var2: commissionSplitId, var3: is_overwrite, var4: checkPermission.rows[0].company_id, var5: businessId, var6: revenueId, var7: mysql_real_escape_string(qualification), var8: is_qualified, var9: targetAmount, var10: targetClosingDate, var11: salesType, var12: subscriptionPlan, var13: recurringDate, var14: currency, var15: userId, var16: slabId, var17: leadId, var18: totalCommission, var19: is_qualified ? _dt : 'null', var20: is_service_performed, var21: mysql_real_escape_string(service_perform_note), var22: is_service_performed ? _dt : 'null' })
-            let createSales = await connection.query(s5)
+            let createSales = await connection.query(s5);
+
+            //Update Logs
+            let sul = dbScript(db_sql['Q481'], { var1: createSales.rows[0].id, var2: leadId });
+            await connection.query(sul);
 
             let salesUsersForLog = [];
             let s7 = dbScript(db_sql['Q57'], { var1: captainId, var2: Number(captainPercentage), var3: process.env.CAPTAIN, var4: commissionSplitId, var5: createSales.rows[0].id, var6: checkPermission.rows[0].company_id })
@@ -227,12 +231,12 @@ module.exports.allSalesList = async (req, res) => {
                 let s7 = dbScript(db_sql['Q72'], { var1: checkPermission.rows[0].company_id })
                 salesList = await connection.query(s7)
             }
-            if(status =='partialRecognized') {
-                let s8 = dbScript(db_sql['Q473'] , { var1: checkPermission.rows[0].company_id })
+            if (status == 'partialRecognized') {
+                let s8 = dbScript(db_sql['Q473'], { var1: checkPermission.rows[0].company_id })
                 salesList = await connection.query(s8)
             }
-            if(status == 'transferredBack') {
-                let s9 = dbScript(db_sql['Q474'] , { var1: checkPermission.rows[0].company_id })
+            if (status == 'transferredBack') {
+                let s9 = dbScript(db_sql['Q474'], { var1: checkPermission.rows[0].company_id })
                 salesList = await connection.query(s9)
             }
             if (salesList.rowCount > 0) {
@@ -641,12 +645,14 @@ module.exports.salesLogsList = async (req, res) => {
 module.exports.addfollowUpNotes = async (req, res) => {
     try {
         let userId = req.user.id
-        let { note, salesCommissionId, notes_type } = req.body
+        let { note, salesCommissionId, leadId, notes_type } = req.body
         await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_create) {
-            let s4 = dbScript(db_sql['Q31'], { var1: salesCommissionId, var2: checkPermission.rows[0].company_id, var3: userId, var4: mysql_real_escape_string(note), var5: mysql_real_escape_string(notes_type) })
+            const tmpLeadId = leadId ? leadId : null;
+            const tmpSalesCommissionId = salesCommissionId ? salesCommissionId : null;
+            let s4 = dbScript(db_sql['Q31'], { var1: tmpSalesCommissionId, var2: checkPermission.rows[0].company_id, var3: userId, var4: mysql_real_escape_string(note), var5: mysql_real_escape_string(notes_type), var6: tmpLeadId })
             let addNote = await connection.query(s4)
             if (addNote.rowCount > 0) {
                 await connection.query('COMMIT')
@@ -1126,7 +1132,7 @@ module.exports.addRecognizedRevenue = async (req, res) => {
         let checkPermission = await connection.query(s1)
         let s2 = dbScript(db_sql['Q423'], { var1: salesId })
         let findSales = await connection.query(s2);
-        
+
         if (findSales.rowCount > 0) {
             let targetAmount = Number(findSales.rows[0].target_amount)
             //add RecognizeRevenue in db
@@ -1164,11 +1170,11 @@ module.exports.addRecognizedRevenue = async (req, res) => {
                 let findCommission = await connection.query(s8)
 
                 // if (findCommission.rowCount == 0) {
-                    let s7 = dbScript(db_sql['Q334'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: Number(userCommission), var5: comData.user_type })
-                    let addUserCommission = await connection.query(s7);
+                let s7 = dbScript(db_sql['Q334'], { var1: comData.user_id, var2: comData.id, var3: checkPermission.rows[0].company_id, var4: Number(userCommission), var5: comData.user_type })
+                let addUserCommission = await connection.query(s7);
                 // } else {
-                    // let s9 = dbScript(db_sql['Q337'], { var1: Number(userCommission), var2: findCommission.rows[0].id })
-                    // let updateUserCommission = await connection.query(s9);
+                // let s9 = dbScript(db_sql['Q337'], { var1: Number(userCommission), var2: findCommission.rows[0].id })
+                // let updateUserCommission = await connection.query(s9);
                 // }
 
                 let notification_typeId = findSales.rows[0].id;
@@ -1558,7 +1564,7 @@ module.exports.userCommissionList = async (req, res) => {
         let userId = req.user.id
         let s1 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s1)
-        if(checkPermission.rows[0].permission_to_view_global){
+        if (checkPermission.rows[0].permission_to_view_global) {
             let s1 = dbScript(db_sql['Q414'], { var1: checkPermission.rows[0].company_id })
             let commissionList = await connection.query(s1)
 
@@ -1577,7 +1583,7 @@ module.exports.userCommissionList = async (req, res) => {
                     data: []
                 })
             }
-        }else if (checkPermission.rows[0].permission_to_view_own) {
+        } else if (checkPermission.rows[0].permission_to_view_own) {
             let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
             let s1 = dbScript(db_sql['Q335'], { var1: roleUsers.join(","), var2: checkPermission.rows[0].company_id })
             let commissionList = await connection.query(s1)
@@ -1597,7 +1603,7 @@ module.exports.userCommissionList = async (req, res) => {
                     data: []
                 })
             }
-        }else {
+        } else {
             res.status(403).json({
                 success: false,
                 message: "UnAthorised"

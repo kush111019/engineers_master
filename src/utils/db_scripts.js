@@ -68,11 +68,11 @@ const db_sql = {
   Q28: `UPDATE permissions SET deleted_at = '{var2}' WHERE role_id = '{var1}' AND deleted_at IS NULL RETURNING * `,
   Q29: `UPDATE slabs SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL`,
   Q30: `UPDATE users SET is_locked = '{var1}', updated_at = '{var3}' WHERE company_id = '{var2}' AND is_main_admin = false AND deleted_at IS NULL RETURNING * `,
-  Q31: `INSERT INTO follow_up_notes (sales_id, company_id, user_id, notes, notes_type) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
+  Q31: `INSERT INTO follow_up_notes (sales_id, company_id, user_id, notes, notes_type, lead_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
   Q32: `SELECT f.id, f.notes, f.notes_type, f.created_at, f.user_id, u.full_name, u.avatar 
               FROM follow_up_notes as f
               LEFT JOIN users AS u ON u.id = f.user_id
-              WHERE sales_id = '{var1}' AND f.deleted_at IS NULL ORDER BY created_at DESC`,
+              WHERE (sales_id = '{var1}' OR lead_id = '{var1}') AND f.deleted_at IS NULL ORDER BY created_at DESC`,
   Q33: `UPDATE permissions SET user_id = '{var2}' WHERE role_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   Q34: `UPDATE roles SET module_ids = '{var1}' , updated_at = '{var2}' WHERE id = '{var3}' RETURNING * `,
   Q35: `SELECT m.id, m.module_name, p.permission_to_view_global,p.permission_to_view_own,
@@ -4832,6 +4832,9 @@ GROUP BY
   Q480: `UPDATE customer_company_employees
   SET marketing_activities = '{var1}'
   WHERE email_address = '{var2}' returning *`,
+  Q481: `UPDATE follow_up_notes
+  SET sales_id = '{var1}'
+  WHERE lead_id = '{var2}' returning *`,
 };
 function dbScript(template, variables) {
   if (variables != null && Object.keys(variables).length > 0) {
