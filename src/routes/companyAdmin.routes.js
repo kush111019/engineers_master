@@ -928,6 +928,12 @@ router.put(
   checkParams,
   controller.configuration.deleteLeadSource
 );
+router.post(
+  "/fetchMarketingActivitiesLeads",
+  verifyTokenFn,
+  checkParams,
+  controller.leads.viewLeads
+);
 
 //----------------------------------------Notifications------------------------------------
 router.get(
