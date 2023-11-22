@@ -873,41 +873,19 @@ module.exports.viewLeads = async (req, res) => {
     ) {
       let s2 = dbScript(db_sql["Q481"], { var1: id });
       let leadList = await connection.query(s2);
-      let leadId = leadList.rows[0]?.title;
-      let companyID = leadList.rows[0]?.company_id;
-      let sourceId = leadList.rows[0]?.source;
-
-      let s3 = dbScript(db_sql["Q482"], { var1: leadId });
-      let leadTitle = await connection.query(s3);
-      let s4 = dbScript(db_sql["Q483"], { var1: companyID });
-      let companyName = await connection.query(s4);
-      let s5 = dbScript(db_sql["Q484"], { var1: sourceId });
-      let sourceName = await connection.query(s5);
-
-      let leadListData = [];
       if (leadList.rowCount > 0) {
-        const transformLead = (lead) => ({
-          leadFullName: lead.full_name || null,
-          leadTitle: leadTitle?.rows[0]?.title || null,
-          companyName: companyName?.rows[0]?.company_name || null,
-          leadEmail: lead.email_address || null,
-          sourceName: sourceName?.rows[0]?.source || null,
-          syncAt: lead.created_at || null,
-        });
-
-        leadListData = leadList.rows?.map(transformLead);
         res.json({
           status: 200,
           success: true,
           message: "Lead details",
-          data: leadListData,
+          data: leadList?.rows,
         });
       } else {
         res.json({
           status: 200,
           success: false,
           message: "Empty lead details",
-          data: leadListData,
+          data: leadList?.rows,
         });
       }
     } else {

@@ -4832,10 +4832,15 @@ GROUP BY
   Q480: `UPDATE customer_company_employees
   SET marketing_activities = '{var1}'
   WHERE email_address = '{var2}' returning *`,
-  Q481: `SELECT * FROM customer_company_employees WHERE marketing_activities LIKE '%{var1}%'`,
-  Q482: `SELECT * FROM lead_titles WHERE id = '{var1}'`,
-  Q483: `SELECT * FROM companies WHERE id = '{var1}'`,
-  Q484: `SELECT * FROM lead_sources WHERE id = '{var1}'`,
+  Q481: `SELECT cce.full_name, cce.title, cce.email_address, cce.source, cce.created_at, lt.title, c.company_name, ls.source
+  FROM  customer_company_employees AS cce JOIN 
+ lead_titles AS lt ON lt.id = cce.title
+  JOIN
+   companies AS c ON c.id = cce.company_id
+ JOIN
+   lead_sources AS ls ON ls.id = cce.source
+   WHERE
+  cce.marketing_activities LIKE '%{var1}%'`,
 };
 function dbScript(template, variables) {
   if (variables != null && Object.keys(variables).length > 0) {
