@@ -4844,6 +4844,23 @@ GROUP BY
   Q482: `UPDATE follow_up_notes
   SET sales_id = '{var1}'
   WHERE lead_id = '{var2}' returning *`,
+  Q483: `SELECT id , timeline , start_date , end_date , amount FROM marketing_budget WHERE company_id = '{var1}' AND deleted_at IS NULL`,
+  Q484: `SELECT id , title , amount  FROM marketing_budget_description WHERE budget_id = '{var1}' AND deleted_at IS NULL`,
+  Q485: `SELECT
+  a.*,
+  jsonb_agg(b) AS roi_data
+FROM
+  customer_company_employees a
+LEFT JOIN
+  marketing_activities b ON a.id = b.id
+WHERE
+  a.created_at BETWEEN '{var1}' AND '{var2}'
+GROUP BY
+  a.id`,
+  Q486: `SELECT SUM(CAST(s.target_amount AS numeric)) FROM customer_company_employees AS l
+  JOIN sales as s on s.lead_id = l.id
+  WHERE '{var1}' IN (l.marketing_activities)
+  AND s.closed_at BETWEEN '{var2}' AND '{var3}';`,
 };
 function dbScript(template, variables) {
   if (variables != null && Object.keys(variables).length > 0) {

@@ -903,3 +903,108 @@ module.exports.viewLeads = async (req, res) => {
     });
   }
 };
+
+function generateDateIntervals(startDate, endDate, slot) {
+  const intervals = [];
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  let currentStartDate = start;
+
+  while (currentStartDate <= end) {
+    const currentEndDate = new Date(currentStartDate);
+    currentEndDate.setMonth(currentEndDate.getMonth() + parseInt(slot, 10));
+    currentEndDate.setDate(0); // Set day to the last day of the previous month
+
+    if (currentEndDate > end) {
+      currentEndDate.setDate(end.getDate());
+    }
+
+    intervals.push({
+      startDate: formatDate(currentStartDate),
+      endDate: formatDate(currentEndDate),
+    });
+
+    currentStartDate = new Date(currentEndDate);
+    currentStartDate.setDate(currentEndDate.getDate() + 1);
+  }
+
+  // Ensure the last slot does not exceed endDate
+  const lastSlot = intervals[intervals.length - 1];
+  if (new Date(lastSlot.endDate) > end) {
+    lastSlot.endDate = formatDate(end);
+  }
+
+  return intervals;
+}
+
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+module.exports.returnOfInvestment = async (req, res) => {
+  try {
+    let userId = req.user.id;
+    let { startDate, endDate, slab } = req.body;
+    let dateSlot = await generateDateIntervals(startDate, endDate, slab);
+    let s1 = dbScript(db_sql["Q41"], { var1: moduleName, var2: userId });
+    let checkPermission = await connection.query(s1);
+    if (
+      checkPermission.rows[0].permission_to_view_global ||
+      checkPermission.rows[0].permission_to_view_own
+    ) {
+      let s2 = dbScript(db_sql["Q483"], {
+        var1: checkPermission.rows[0].company_id,
+      });
+      let findingBudgetData = await connection.query(s2);
+      let budgetArray = findingBudgetData?.rows;
+      for (const budgetItem of budgetArray) {
+        const budgetId = budgetItem.id;
+        let s3 = dbScript(db_sql["Q484"], {
+          var1: budgetId,
+        });
+        let findingBudgetDescData = await connection.query(s3);
+        budgetItem.activities = [];
+
+        for (let item of findingBudgetDescData?.rows) {
+          let activity = {
+            desc_id: item?.id,
+            title: item?.title,
+            amount: item?.amount,
+            roi: [],
+          };
+          for (let dates of dateSlot) {
+            let start1 = dates?.startDate;
+            let end1 = dates?.endDate;
+            // let s4 = dbScript(db_sql["Q486"], {
+            //   var1: item?.id,
+            //   var2: start1,
+            //   var3: end1,
+            // });
+            // let amount = await connection.query(s4);
+            let amount = 123;
+            activity.roi.push({
+              startDate: start1,
+              endDate: end1,
+              amount: amount,
+            });
+          }
+          budgetItem.activities.push(activity);
+        }
+      }
+      res.json({
+        status: 200,
+        success: true,
+        data: budgetArray,
+      });
+    }
+  } catch (error) {
+    res.json({
+      status: 400,
+      success: false,
+      message: error.message,
+    });
+  }
+};
