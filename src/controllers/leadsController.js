@@ -983,6 +983,7 @@ module.exports.returnOfInvestment = async (req, res) => {
               var2: start1,
               var3: end1,
             });
+            console.log("s4 ", s4);
             let amount = await connection.query(s4);
             // let amount = 123;
             activity.roi.push({
