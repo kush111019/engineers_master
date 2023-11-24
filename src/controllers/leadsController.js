@@ -978,13 +978,13 @@ module.exports.returnOfInvestment = async (req, res) => {
           for (let dates of dateSlot) {
             let start1 = dates?.startDate;
             let end1 = dates?.endDate;
-            // let s4 = dbScript(db_sql["Q486"], {
-            //   var1: item?.id,
-            //   var2: start1,
-            //   var3: end1,
-            // });
-            // let amount = await connection.query(s4);
-            let amount = 123;
+            let s4 = dbScript(db_sql["Q486"], {
+              var1: item?.id,
+              var2: start1,
+              var3: end1,
+            });
+            let amount = await connection.query(s4);
+            // let amount = 123;
             activity.roi.push({
               startDate: start1,
               endDate: end1,
