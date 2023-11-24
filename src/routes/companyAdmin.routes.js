@@ -934,6 +934,12 @@ router.post(
   checkParams,
   controller.leads.viewLeads
 );
+router.post(
+  "/returnOfInvestment",
+  verifyTokenFn,
+  checkParams,
+  controller.leads.returnOfInvestment
+);
 
 //----------------------------------------Notifications------------------------------------
 router.get(
