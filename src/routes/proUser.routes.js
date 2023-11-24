@@ -60,6 +60,6 @@ router.get('/usersListForGlobalAndOwn', verifyTokenFnForPro,checkParams, control
 router.get('/salesCaptainListForGlobalAndOwn', verifyTokenFnForPro,checkParams, controller.proUser.salesCaptainListForGlobalAndOwn)
 router.get('/salesCaptainListForMetricsGlobalAndOwn', verifyTokenFnForPro,checkParams, controller.proUser.salesCaptainListForMetricsGlobalAndOwn)
 
-router.post("/returnOfInvestment", verifyTokenFn, checkParams, controller.proUser.returnOfInvestment);
+router.post("/returnOfInvestment", verifyTokenFnForPro, checkParams, controller.proUser.returnOfInvestment);
 
 module.exports = router;
