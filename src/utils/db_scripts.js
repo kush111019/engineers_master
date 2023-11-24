@@ -4859,7 +4859,7 @@ GROUP BY
   a.id`,
   Q486: `SELECT SUM(CAST(s.target_amount AS numeric)) FROM customer_company_employees AS l
   JOIN sales as s on s.lead_id = l.id
-  WHERE '{var1}' IN (l.marketing_activities)
+  WHERE l.marketing_activities LIKE '%{var1}%';
   AND s.closed_at BETWEEN '{var2}' AND '{var3}';`,
 };
 function dbScript(template, variables) {
