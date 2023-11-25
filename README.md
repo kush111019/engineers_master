@@ -16,6 +16,12 @@ Upload schema(hirise_sales_schema.sql) to the database
 # run server
 `npm start`
 
+# run with port
+`node index.js --port 3001`
+
+# cron URL
+GET - `<URL>/api/v1/cron`
+
 # if you want to build a package
 1. `npm install -g pkg`
 2. `pkg index.js -o sales-service`
