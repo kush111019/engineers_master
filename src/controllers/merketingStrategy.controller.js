@@ -525,6 +525,8 @@ module.exports.deleteBudget = async (req, res) => {
     if (checkPermission.rows[0].permission_to_delete) {
       let _dt = new Date().toISOString();
 
+      //Need to check if budget is assign to the leads or not
+
       let s2 = dbScript(db_sql["Q203"], { var1: budgetId, var2: _dt });
       let deleteBudget = await connection.query(s2);
 
@@ -552,7 +554,7 @@ module.exports.deleteBudget = async (req, res) => {
     } else {
       res.status(403).json({
         success: false,
-        message: "Unathorised",
+        message: "Unauthorized",
       });
     }
   } catch (error) {

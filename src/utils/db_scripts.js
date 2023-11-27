@@ -4841,9 +4841,7 @@ GROUP BY
    lead_sources AS ls ON ls.id = cce.source
    WHERE
   cce.marketing_activities LIKE '%{var1}%'`,
-  Q482: `UPDATE follow_up_notes
-  SET sales_id = '{var1}'
-  WHERE lead_id = '{var2}' returning *`,
+  Q482: `UPDATE follow_up_notes SET sales_id = '{var1}' WHERE lead_id = '{var2}' and sales_id IS NULL returning *`,
   Q483: `SELECT id , timeline , start_date , end_date , amount FROM marketing_budget WHERE company_id = '{var1}' AND deleted_at IS NULL`,
   Q484: `SELECT id , title , amount  FROM marketing_budget_description WHERE budget_id = '{var1}' AND deleted_at IS NULL`,
   Q485: `SELECT
