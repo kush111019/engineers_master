@@ -103,6 +103,10 @@ module.exports.createLead = async (req, res) => {
         updateStatusInCompany = await connection.query(s3);
 
         if (createLead.rowCount > 0 && updateStatusInCompany.rowCount > 0) {
+
+          //Leads Activity
+          createLeadActivity(createLead.rows[0].id, "Lead Created", checkPermission.rows[0].company_id, "", "");
+
           await connection.query("COMMIT");
           res.status(201).json({
             status: 201,
@@ -898,4 +902,15 @@ module.exports.viewLeads = async (req, res) => {
       message: error.message,
     });
   }
+};
+
+module.exports.createLeadActivity = async (lead_id, message, company_id, type_id, type) => { 
+  let Q1 = dbScript(db_sql["Q487"], {
+    var1: lead_id,
+    var2: message,
+    var3: company_id,
+    var4: type_id,
+    var5: type,
+  });
+  return await connection.query(Q1);
 };
