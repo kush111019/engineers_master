@@ -464,6 +464,9 @@ module.exports.rejectLead = async (req, res) => {
         );
 
         if (rejectLead.rowCount > 0) {
+          //Leads Activity
+          await createLeadActivity(createLead.rows[0].id, "Lead Rejected", checkPermission.rows[0].company_id, userId, "user");
+
           await connection.query("COMMIT");
           res.json({
             status: 200,
@@ -912,6 +915,7 @@ const createLeadActivity = async (lead_id, message, company_id, type_id, type) =
     var4: type_id,
     var5: type,
   });
-  console.log("Q1", Q1);
   return await connection.query(Q1);
 };
+
+module.exports.LeadActivityCreate = createLeadActivity;
