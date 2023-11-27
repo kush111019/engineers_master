@@ -103,6 +103,10 @@ module.exports.createLead = async (req, res) => {
         updateStatusInCompany = await connection.query(s3);
 
         if (createLead.rowCount > 0 && updateStatusInCompany.rowCount > 0) {
+
+          //Leads Activity
+          await createLeadActivity(createLead.rows[0].id, "Lead Created", checkPermission.rows[0].company_id, "", "");
+
           await connection.query("COMMIT");
           res.status(201).json({
             status: 201,
@@ -342,6 +346,7 @@ module.exports.updateLead = async (req, res) => {
       assignedSalesLeadTo,
       additionalMarketingNotes,
       marketing_activities,
+      messages
     } = req.body;
 
     //add notification deatils
@@ -398,6 +403,9 @@ module.exports.updateLead = async (req, res) => {
       );
 
       if (updateLead.rowCount > 0) {
+
+        await createLeadActivity(leadId, messages, checkPermission.rows[0].company_id, "", "");
+
         await connection.query("COMMIT");
         res.json({
           status: 200,
@@ -460,6 +468,9 @@ module.exports.rejectLead = async (req, res) => {
         );
 
         if (rejectLead.rowCount > 0) {
+          //Leads Activity
+          await createLeadActivity(createLead.rows[0].id, "Lead Rejected", checkPermission.rows[0].company_id, userId, "user");
+
           await connection.query("COMMIT");
           res.json({
             status: 200,
@@ -899,3 +910,16 @@ module.exports.viewLeads = async (req, res) => {
     });
   }
 };
+
+const createLeadActivity = async (lead_id, message, company_id, type_id, type) => { 
+  let Q1 = dbScript(db_sql["Q487"], {
+    var1: lead_id,
+    var2: message,
+    var3: company_id,
+    var4: type_id,
+    var5: type,
+  });
+  return await connection.query(Q1);
+};
+
+module.exports.LeadActivityCreate = createLeadActivity;

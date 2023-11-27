@@ -4,6 +4,7 @@ const { mysql_real_escape_string, getUserAndSubUser, notificationsOperations, ca
 const moduleName = process.env.SALES_MODULE
 const customerModule = process.env.CUSTOMERS_MODULE
 const userModule = process.env.USERS_MODULE
+const { LeadActivityCreate } = require("./leadsController");
 
 
 module.exports.customerListforSales = async (req, res) => {
@@ -164,6 +165,7 @@ module.exports.createSales = async (req, res) => {
                 // add notification in notification list
                 notification_typeId = createSales.rows[0].id;
                 await notificationsOperations({ type: 1, msg: 1.1, notification_typeId, notification_userId }, userId);
+                await LeadActivityCreate(leadId, "Sales Created", checkPermission.rows[0].company_id, createSales.rows[0].id, "sales");
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,
@@ -656,6 +658,11 @@ module.exports.addfollowUpNotes = async (req, res) => {
             let s4 = dbScript(db_sql['Q31'], { var1: tmpSalesCommissionId, var2: checkPermission.rows[0].company_id, var3: userId, var4: mysql_real_escape_string(note), var5: mysql_real_escape_string(notes_type), var6: tmpLeadId })
             let addNote = await connection.query(s4)
             if (addNote.rowCount > 0) {
+
+                if(leadId) {
+                    await LeadActivityCreate(leadId, "Follow up notes added", checkPermission.rows[0].company_id, tmpSalesCommissionId ? tmpSalesCommissionId : "", tmpSalesCommissionId ? "sales" : "");
+                }
+
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,

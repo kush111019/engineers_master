@@ -5967,3 +5967,32 @@ module.exports.returnOfInvestment = async (req, res) => {
     });
   }
 };
+
+module.exports.leadActivities = async (req, res) => {
+  try {
+    let userId = req.user.id;
+    let { leadId } = req.body;
+    let s1 = dbScript(db_sql["Q41"], { var1: moduleName, var2: userId });
+    let checkPermission = await connection.query(s1);
+    if (
+      checkPermission.rows[0].permission_to_view_global ||
+      checkPermission.rows[0].permission_to_view_own
+    ) {
+      let Q1 = dbScript(db_sql["Q488"], {
+        var1: leadId,
+      });
+      const leadActivities = await connection.query(Q1);
+      res.json({
+        status: 200,
+        success: true,
+        data: leadActivities.rows,
+      });
+    }
+  } catch (error) {
+    res.json({
+      status: 400,
+      success: false,
+      message: error.message,
+    });
+  }
+};
