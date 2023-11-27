@@ -4828,37 +4828,35 @@ GROUP BY
     assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type, sync_id, sync_source,pid,marketing_activities)
     VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
     '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}', '{var18}','{var19}' , '{var20}') RETURNING *`,
-  Q479: `SELECT * FROM marketing_budget_description WHERE title LIKE '%{var1}%' AND company_id = {var2} and m.deleted_at IS NULL`,
-  Q480: `UPDATE customer_company_employees
-  SET marketing_activities = '{var1}'
-  WHERE email_address = '{var2}' returning *`,
+  Q479: `SELECT id, title FROM marketing_budget_description WHERE title LIKE '%{var1}%' AND company_id = {var2} and m.deleted_at IS NULL`,
+  Q480: `UPDATE customer_company_employees SET marketing_activities = '{var1}' WHERE email_address = '{var2}' returning *`,
   Q481: `SELECT cce.full_name, cce.title, cce.email_address, cce.source, cce.created_at, lt.title, c.company_name, ls.source
-  FROM  customer_company_employees AS cce JOIN 
- lead_titles AS lt ON lt.id = cce.title
-  JOIN
-   companies AS c ON c.id = cce.company_id
- JOIN
-   lead_sources AS ls ON ls.id = cce.source
-   WHERE
-  cce.marketing_activities LIKE '%{var1}%'`,
+            FROM  customer_company_employees AS cce JOIN 
+          lead_titles AS lt ON lt.id = cce.title
+            JOIN
+            companies AS c ON c.id = cce.company_id
+          JOIN
+            lead_sources AS ls ON ls.id = cce.source
+            WHERE
+            cce.marketing_activities LIKE '%{var1}%'`,
   Q482: `UPDATE follow_up_notes SET sales_id = '{var1}' WHERE lead_id = '{var2}' and sales_id IS NULL returning *`,
   Q483: `SELECT id , timeline , start_date , end_date , amount FROM marketing_budget WHERE company_id = '{var1}' AND deleted_at IS NULL`,
   Q484: `SELECT id , title , amount  FROM marketing_budget_description WHERE budget_id = '{var1}' AND deleted_at IS NULL`,
   Q485: `SELECT
-  a.*,
-  jsonb_agg(b) AS roi_data
-FROM
-  customer_company_employees a
-LEFT JOIN
-  marketing_activities b ON a.id = b.id
-WHERE
-  a.created_at BETWEEN '{var1}' AND '{var2}'
-GROUP BY
-  a.id`,
+          a.*,
+          jsonb_agg(b) AS roi_data
+        FROM
+          customer_company_employees a
+        LEFT JOIN
+          marketing_activities b ON a.id = b.id
+        WHERE
+          a.created_at BETWEEN '{var1}' AND '{var2}'
+        GROUP BY
+          a.id`,
   Q486: `SELECT SUM(CAST(s.target_amount AS numeric)) FROM customer_company_employees AS l
-  JOIN sales as s on s.lead_id = l.id
-  WHERE l.marketing_activities LIKE '%{var1}%'
-  AND s.closed_at BETWEEN '{var2}' AND '{var3}';`,
+          JOIN sales as s on s.lead_id = l.id
+          WHERE l.marketing_activities LIKE '%{var1}%'
+          AND s.closed_at BETWEEN '{var2}' AND '{var3}';`,
 };
 function dbScript(template, variables) {
   if (variables != null && Object.keys(variables).length > 0) {

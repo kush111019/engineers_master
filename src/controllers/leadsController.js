@@ -585,6 +585,9 @@ module.exports.uploadLeadFile = async (req, res) => {
                 if (row.length > 0) {
                   let s14 = dbScript(db_sql["Q477"], { var1: row[1] });
                   let checkExistingMail = await connection.query(s14);
+                  //check if email is exist or not
+
+                  //if not exists
                   if (checkExistingMail.rowCount == 0) {
                     let titleId = "";
                     let s3 = dbScript(db_sql["Q192"], {
@@ -740,19 +743,15 @@ module.exports.uploadLeadFile = async (req, res) => {
                       });
                     }
                   } else {
+                    //IF email exists in the database.
                     let checkComma = row[14].includes(",");
                     let uniqueArrayofIds = "";
+
+                    //Check if we already have some
                     if (checkComma) {
                       // let idArray = [];
                       let splitMarketingActivities = row[14].split(",");
-                      let s16 = dbScript(db_sql["Q477"], {
-                        var1: row[1],
-                      });
-                      fetchIdOfMarketingActivities = await connection.query(
-                        s16
-                      );
-                      let idArray =
-                        fetchIdOfMarketingActivities.rows[0].marketing_activities
+                      let idArray = checkExistingMail.rows[0].marketing_activities
                           .replace(/\s/g, "")
                           .split(",");
                       const queryPromises = splitMarketingActivities.map(
@@ -764,7 +763,9 @@ module.exports.uploadLeadFile = async (req, res) => {
 
                           let findId = await connection.query(s15);
 
-                          idArray.push(findId.rows[0]?.id);
+                          if(findId?.rows?.length > 0) {
+                            idArray.push(findId.rows[0]?.id);
+                          }
                         }
                       );
 
@@ -776,20 +777,15 @@ module.exports.uploadLeadFile = async (req, res) => {
                         var1: uniqueArrayofIds,
                         var2: row[1],
                       });
-                      let updateMarketingActivities = await connection.query(
-                        s17
-                      );
+                      console.log("s17 - 1", s17);
+                      await connection.query(s17);
                     } else {
-                      let s16 = dbScript(db_sql["Q477"], {
-                        var1: row[1],
-                      });
-                      fetchIdOfMarketingActivities = await connection.query(
-                        s16
-                      );
-                      let idArray =
-                        fetchIdOfMarketingActivities.rows[0].marketing_activities
-                          .replace(/\s/g, "")
-                          .split(",");
+                      let idArray = [];
+
+                      if(checkExistingMail.rows[0].marketing_activities){
+                        idArray.push(checkExistingMail.rows[0].marketing_activities);
+                      }
+
                       let s15 = dbScript(db_sql["Q479"], {
                         var1: mysql_real_escape_string(row[14]),
                         var2: `'${checkPermission.rows[0].company_id}'`,
@@ -799,12 +795,12 @@ module.exports.uploadLeadFile = async (req, res) => {
                       uniqueArrayofIds = Array.from(new Set(idArray)).join(
                         ", "
                       );
-
                       let s17 = dbScript(db_sql["Q480"], {
                         var1: uniqueArrayofIds,
                         var2: row[1],
                       });
-                      let updateMarketingActivities = await connection.query(
+                      console.log("s17 - 2",s17);
+                      await connection.query(
                         s17
                       );
                     }
