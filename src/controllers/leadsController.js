@@ -904,7 +904,7 @@ module.exports.viewLeads = async (req, res) => {
   }
 };
 
-module.exports.createLeadActivity = async (lead_id, message, company_id, type_id, type) => { 
+const createLeadActivity = async (lead_id, message, company_id, type_id, type) => { 
   let Q1 = dbScript(db_sql["Q487"], {
     var1: lead_id,
     var2: message,
