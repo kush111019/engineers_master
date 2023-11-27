@@ -11,11 +11,11 @@ const sticky = require('socketio-sticky-session')
 const { instantNotificationsList } = require('./src/utils/helper')
 
 // Checks for --port and if it has a value
-if (process.argv.length != 3) {
+if (process.argv.length != 4) {
   console.error('Expected argument: --port=<PORT_NUMBER>');
   process.exit(1);
 }
-const port = process.argv[2];
+const port = process.argv[3];
 
 app.use(cors());
 app.use(
