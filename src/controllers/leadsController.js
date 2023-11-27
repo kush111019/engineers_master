@@ -346,6 +346,7 @@ module.exports.updateLead = async (req, res) => {
       assignedSalesLeadTo,
       additionalMarketingNotes,
       marketing_activities,
+      messages
     } = req.body;
 
     //add notification deatils
@@ -402,6 +403,9 @@ module.exports.updateLead = async (req, res) => {
       );
 
       if (updateLead.rowCount > 0) {
+
+        await createLeadActivity(leadId, messages, checkPermission.rows[0].company_id, "", "");
+
         await connection.query("COMMIT");
         res.json({
           status: 200,
