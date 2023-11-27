@@ -1947,28 +1947,51 @@ module.exports.leadReSync = async (req, res) => {
 module.exports.proLeadsList = async (req, res) => {
   try {
     let userId = req.user.id;
-    let { provider } = req.query;
+    let { status } = req.query;
     let { isProUser } = req.user;
     // checking different permission to create data linked with modules table
     let s1 = dbScript(db_sql["Q41"], { var1: leadModule, var2: userId });
     let checkPermission = await connection.query(s1);
     let type = "lead";
+
     if (checkPermission.rows[0].permission_to_view_global && isProUser) {
       let leadList;
-      if (provider.toLowerCase() == "all") {
-        let s2 = dbScript(db_sql["Q326"], {
+      if (status.toLowerCase() == "all") {
+        let s2 = dbScript(db_sql["Q170"], {
           var1: checkPermission.rows[0].company_id,
           var2: type,
         });
         leadList = await connection.query(s2);
-      } else {
-        //for perticular provider
-        let s3 = dbScript(db_sql["Q327"], {
+      } else if (status.toLowerCase() == "rejected") {
+        let s3 = dbScript(db_sql["Q232"], {
           var1: checkPermission.rows[0].company_id,
           var2: type,
-          var3: provider.toLowerCase(),
         });
         leadList = await connection.query(s3);
+      } else if (status.toLowerCase() == "qualified") {
+        let s4 = dbScript(db_sql["Q233"], {
+          var1: checkPermission.rows[0].company_id,
+          var2: type,
+        });
+        leadList = await connection.query(s4);
+      } else if (status.toLowerCase() == "converted") {
+        let s5 = dbScript(db_sql["Q234"], {
+          var1: checkPermission.rows[0].company_id,
+          var2: type,
+        });
+        leadList = await connection.query(s5);
+      } else if (status.toLowerCase() == "assigned") {
+        let s6 = dbScript(db_sql["Q238"], {
+          var1: checkPermission.rows[0].id,
+          var2: type,
+        });
+        leadList = await connection.query(s6);
+      } else if (status.toLowerCase() == "not-converted") {
+        let s7 = dbScript(db_sql["Q298"], {
+          var1: checkPermission.rows[0].company_id,
+          var2: type,
+        });
+        leadList = await connection.query(s7);
       }
       if (leadList.rowCount > 0) {
         res.json({
@@ -1988,22 +2011,43 @@ module.exports.proLeadsList = async (req, res) => {
     } else if (checkPermission.rows[0].permission_to_view_own && isProUser) {
       let roleUsers = await getUserAndSubUser(checkPermission.rows[0]);
       let findLeadList;
-      if (provider.toLowerCase() == "all") {
-        let s4 = dbScript(db_sql["Q415"], {
+      if (status.toLowerCase() == "all") {
+        let s4 = dbScript(db_sql["Q171"], {
           var1: roleUsers.join(","),
           var2: type,
         });
         findLeadList = await connection.query(s4);
-      } else {
-        //for perticular provider
-        let s5 = dbScript(db_sql["Q416"], {
+      } else if (status.toLowerCase() == "rejected") {
+        let s5 = dbScript(db_sql["Q235"], {
           var1: roleUsers.join(","),
           var2: type,
-          var3: provider.toLowerCase(),
         });
         findLeadList = await connection.query(s5);
+      } else if (status.toLowerCase() == "qualified") {
+        let s5 = dbScript(db_sql["Q236"], {
+          var1: roleUsers.join(","),
+          var2: type,
+        });
+        findLeadList = await connection.query(s5);
+      } else if (status.toLowerCase() == "converted") {
+        let s5 = dbScript(db_sql["Q237"], {
+          var1: roleUsers.join(","),
+          var2: type,
+        });
+        findLeadList = await connection.query(s5);
+      } else if (status.toLowerCase() == "assigned") {
+        let s6 = dbScript(db_sql["Q239"], {
+          var1: roleUsers.join(","),
+          var2: type,
+        });
+        findLeadList = await connection.query(s6);
+      } else if (status.toLowerCase() == "not-converted") {
+        let s7 = dbScript(db_sql["Q299"], {
+          var1: roleUsers.join(","),
+          var2: type,
+        });
+        findLeadList = await connection.query(s7);
       }
-
       if (findLeadList.rowCount > 0) {
         res.json({
           status: 200,
@@ -2022,7 +2066,7 @@ module.exports.proLeadsList = async (req, res) => {
     } else {
       res.status(403).json({
         success: false,
-        message: "UnAuthorized",
+        message: "UnAthorised",
       });
     }
   } catch (error) {
