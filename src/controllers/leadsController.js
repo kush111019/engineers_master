@@ -912,5 +912,6 @@ module.exports.createLeadActivity = async (lead_id, message, company_id, type_id
     var4: type_id,
     var5: type,
   });
-  return await connection.query(Q1);
+  console.log("Q1", Q1);
+  await connection.query(Q1);
 };
