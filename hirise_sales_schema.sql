@@ -223,6 +223,7 @@ CREATE TABLE "public"."customer_company_employees" (
     "sync_id" character varying,
     "sync_source" character varying,
     "pid" uuid,
+    "marketing_activities" character varying(255) DEFAULT '',
     CONSTRAINT "customer_company_employees_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
@@ -239,6 +240,23 @@ CREATE INDEX "customer_company_employees_id" ON "public"."customer_company_emplo
 CREATE INDEX "customer_company_employees_source" ON "public"."customer_company_employees" USING btree ("source");
 
 CREATE INDEX "customer_company_employees_title" ON "public"."customer_company_employees" USING btree ("title");
+
+
+DROP TABLE IF EXISTS "customer_company_employees_activity";
+CREATE TABLE "public"."customer_company_employees_activity" (
+    "id" uuid DEFAULT uuid_generate_v4() NOT NULL,
+    "customer_company_employees_id" character varying,
+    "created_at" timestamptz DEFAULT timezone('utc', now()),
+    "message" character varying,
+    "company_id" uuid,
+    "type_id" character varying,
+    "type" character varying,
+    CONSTRAINT "customer_company_employees_activity_pkey" PRIMARY KEY ("id")
+) WITH (oids = false);
+
+CREATE INDEX "customer_company_employees_activity_company_id" ON "public"."customer_company_employees_activity" USING btree ("company_id");
+
+CREATE INDEX "customer_company_employees_activity_id" ON "public"."customer_company_employees_activity" USING btree ("id");
 
 
 DROP TABLE IF EXISTS "email_templates";
@@ -311,6 +329,8 @@ CREATE TABLE "public"."follow_up_notes" (
     "created_at" timestamptz DEFAULT timezone('utc', now()),
     "updated_at" timestamptz DEFAULT timezone('utc'::text, NULL),
     "deleted_at" timestamptz DEFAULT timezone('utc'::text, NULL),
+    "notes_type" character varying(255) DEFAULT '1',
+    "lead_id" uuid,
     CONSTRAINT "follow_up_notes_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
@@ -576,6 +596,7 @@ CREATE TABLE "public"."marketing_budget_logs" (
     "deleted_at" timestamptz DEFAULT timezone('utc'::text, NULL),
     "is_finalize" boolean DEFAULT false NOT NULL,
     "company_id" uuid,
+    "edit_logs" character varying(255) DEFAULT '',
     CONSTRAINT "marketing_budget_logs_id_pkey" PRIMARY KEY ("id")
 ) WITH (oids = false);
 
@@ -1322,35 +1343,4 @@ CREATE INDEX "users_id" ON "public"."users" USING btree ("id");
 CREATE INDEX "users_role_id" ON "public"."users" USING btree ("role_id");
 
 
--- Completed on 2023-03-31 18:02:46
-
---
--- PostgreSQL database dump complete
-
-
-
-SELECT
-    p.id AS product_id,
-    p.product_name,
-    -- Sum of target_amount for Q1 (January to March)
-    SUM(CASE WHEN s.created_at >= '2023-01-01' AND s.created_at < '2023-04-01' THEN s.target_amount::numeric ELSE 0 END) AS q1_target_amount,
-    -- Sum of target_amount for Q2 (April to June)
-    SUM(CASE WHEN s.created_at >= '2023-04-01' AND s.created_at < '2023-07-01' THEN s.target_amount::numeric ELSE 0 END) AS q2_target_amount,
-    -- Sum of target_amount for Q3 (July to September)
-    SUM(CASE WHEN s.created_at >= '2023-07-01' AND s.created_at < '2023-10-01' THEN s.target_amount::numeric ELSE 0 END) AS q3_target_amount,
-    -- Sum of target_amount for Q4 (October to December)
-    SUM(CASE WHEN s.created_at >= '2023-10-01' AND s.created_at < '2024-01-01' THEN s.target_amount::numeric ELSE 0 END) AS q4_target_amount
-FROM
-    products AS p
-LEFT JOIN
-    product_in_sales AS pis ON p.id = pis.product_id
-LEFT JOIN
-    sales AS s ON pis.sales_id = s.id
-WHERE
-    p.company_id = '4049d7da-1f99-459f-9ba1-6f936fb02eb2' AND p.deleted_at IS NULL
-GROUP BY
-    p.id, p.product_name
-ORDER BY
-    p.created_at DESC;
---
-
+-- 2023-11-27 10:53:43.090198+00
