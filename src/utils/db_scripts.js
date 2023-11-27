@@ -4859,7 +4859,7 @@ GROUP BY
           AND s.closed_at BETWEEN '{var2}' AND '{var3}';`,
   Q487: `INSERT INTO customer_company_employees_activity(customer_company_employees_id, message, company_id, type_id, type)
             VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *;`,
-  Q488: `SELECT id, message, type_id, type
+  Q488: `SELECT id, message, type_id, type, created_at
           FROM customer_company_employees_activity
           WHERE customer_company_employees_id='{var1}' ORDER By created_at asc;`,
 };

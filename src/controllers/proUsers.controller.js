@@ -2022,7 +2022,7 @@ module.exports.proLeadsList = async (req, res) => {
     } else {
       res.status(403).json({
         success: false,
-        message: "UnAthorised",
+        message: "UnAuthorized",
       });
     }
   } catch (error) {
