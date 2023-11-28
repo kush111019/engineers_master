@@ -913,7 +913,6 @@ module.exports.viewLeads = async (req, res) => {
 
 const createLeadActivity = async (leadId, salesId, userId, message, companyId, pId) => {
   let s4 = dbScript(db_sql['Q31'], { var1: salesId, var2: companyId, var3: userId, var4: mysql_real_escape_string(message), var5: mysql_real_escape_string("3"), var6: leadId, var7: pId });
-  console.log("s4 ", s4);
   return await connection.query(s4);
 };
 
