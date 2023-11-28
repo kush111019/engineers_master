@@ -166,7 +166,9 @@ module.exports.createSales = async (req, res) => {
                 notification_typeId = createSales.rows[0].id;
                 await notificationsOperations({ type: 1, msg: 1.1, notification_typeId, notification_userId }, userId);
 
+                console.log("products ", products);
                 for(let pid of products) {
+                    console.log("pid ", pid);
                     await LeadActivityCreate(leadId, createSales.rows[0].id. userId, "Sales Created", checkPermission.rows[0].company_id, pid);
                 }
 
