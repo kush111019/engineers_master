@@ -168,8 +168,8 @@ module.exports.createSales = async (req, res) => {
 
                 console.log("products ", products);
                 for(let pid of products) {
-                    console.log("pid ", leadId, createSales.rows[0].id. userId, "Sales Created", checkPermission.rows[0].company_id, pid);
-                    await LeadActivityCreate(leadId, createSales.rows[0].id. userId, "Sales Created", checkPermission.rows[0].company_id, pid);
+                    console.log("pid ", leadId, notification_typeId, userId, "Sales Created", checkPermission.rows[0].company_id, pid);
+                    await LeadActivityCreate(leadId, notification_typeId, userId, "Sales Created", checkPermission.rows[0].company_id, pid);
                 }
 
                 await connection.query('COMMIT')
