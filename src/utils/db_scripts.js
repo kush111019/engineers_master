@@ -72,7 +72,7 @@ const db_sql = {
   Q32: `SELECT f.id, f.notes, f.notes_type, f.created_at, f.user_id, u.full_name, u.avatar, p.id as product_id, p.product_name
               FROM customer_company_employees_activities as f
               LEFT JOIN users AS u ON u.id = f.user_id
-              LEFT JOIN product AS p on p.id = f.product_id
+              LEFT JOIN products AS p on p.id = f.product_id
               WHERE (sales_id = '{var1}' OR lead_id = '{var1}') AND f.deleted_at IS NULL ORDER BY created_at DESC`,
   Q33: `UPDATE permissions SET user_id = '{var2}' WHERE role_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   Q34: `UPDATE roles SET module_ids = '{var1}' , updated_at = '{var2}' WHERE id = '{var3}' RETURNING * `,
