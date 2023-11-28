@@ -165,7 +165,11 @@ module.exports.createSales = async (req, res) => {
                 // add notification in notification list
                 notification_typeId = createSales.rows[0].id;
                 await notificationsOperations({ type: 1, msg: 1.1, notification_typeId, notification_userId }, userId);
-                await LeadActivityCreate(leadId, "Sales Created", checkPermission.rows[0].company_id, createSales.rows[0].id, "sales");
+
+                for(let pid of products) {
+                    await LeadActivityCreate(leadId, createSales.rows[0].id. userId, "Sales Created", checkPermission.rows[0].company_id, pid);
+                }
+
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,
@@ -648,29 +652,37 @@ module.exports.salesLogsList = async (req, res) => {
 module.exports.addfollowUpNotes = async (req, res) => {
     try {
         let userId = req.user.id
-        let { note, salesCommissionId, leadId, notes_type } = req.body
+        let { note, salesCommissionId, leadId, notes_type, product_id } = req.body
         await connection.query('BEGIN')
         let s3 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
         let checkPermission = await connection.query(s3)
         if (checkPermission.rows[0].permission_to_create) {
             const tmpLeadId = leadId ? leadId : null;
             const tmpSalesCommissionId = salesCommissionId ? salesCommissionId : null;
-            let s4 = dbScript(db_sql['Q31'], { var1: tmpSalesCommissionId, var2: checkPermission.rows[0].company_id, var3: userId, var4: mysql_real_escape_string(note), var5: mysql_real_escape_string(notes_type), var6: tmpLeadId })
-            let addNote = await connection.query(s4)
-            if (addNote.rowCount > 0) {
-
-                if(leadId) {
-                    await LeadActivityCreate(leadId, "Follow up notes added", checkPermission.rows[0].company_id, tmpSalesCommissionId ? tmpSalesCommissionId : "", tmpSalesCommissionId ? "sales" : "");
+            let insertDone = 0;
+            if(product_id.length > 0) {
+                for(let pid of product_id) {
+                    let s4 = dbScript(db_sql['Q31'], { var1: tmpSalesCommissionId, var2: checkPermission.rows[0].company_id, var3: userId, var4: mysql_real_escape_string(note), var5: mysql_real_escape_string(notes_type), var6: tmpLeadId, var7: pid });
+                    let addNote = await connection.query(s4)
+                    if (addNote.rowCount > 0) {
+                        insertDone = 1;
+                    }
                 }
-
+            } else {
+                let s4 = dbScript(db_sql['Q31'], { var1: tmpSalesCommissionId, var2: checkPermission.rows[0].company_id, var3: userId, var4: mysql_real_escape_string(note), var5: mysql_real_escape_string(notes_type), var6: tmpLeadId, var7: null })
+                let addNote = await connection.query(s4)
+                if (addNote.rowCount > 0) {
+                    insertDone = 1;
+                }
+            }
+            if(insertDone != 0) {
                 await connection.query('COMMIT')
                 res.json({
                     status: 201,
                     success: true,
                     message: "Note created successfully"
                 })
-
-            } else {
+            }else {
                 await connection.query('ROLLBACK')
                 res.json({
                     status: 400,

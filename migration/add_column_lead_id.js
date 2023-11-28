@@ -17,8 +17,8 @@ pool
       .query(
         `DO $$
       BEGIN
-          IF NOT EXISTS (SELECT column_name FROM information_schema.columns WHERE table_name = 'follow_up_notes' AND column_name = 'lead_id') THEN
-          ALTER TABLE follow_up_notes
+          IF NOT EXISTS (SELECT column_name FROM information_schema.columns WHERE table_name = 'customer_company_employees_activities' AND column_name = 'lead_id') THEN
+          ALTER TABLE customer_company_employees_activities
           ADD COLUMN lead_id UUID DEFAULT NULL;
           END IF;
       END $$;`
@@ -26,12 +26,10 @@ pool
       .then((res) => {
         console.log("Column added successfully:", res);
         client.release(); // Release the client back to the pool
-        process.exit();
       })
       .catch((err) => {
         console.error("Error adding column:", err);
         client.release(); // Release the client back to the pool
-        process.exit();
       });
   })
   .catch((err) => {

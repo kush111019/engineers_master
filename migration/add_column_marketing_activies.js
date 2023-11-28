@@ -26,12 +26,10 @@ pool
       .then((res) => {
         console.log("Column added successfully:", res);
         client.release(); // Release the client back to the pool
-        process.exit();
       })
       .catch((err) => {
         console.error("Error adding column:", err);
         client.release(); // Release the client back to the pool
-        process.exit();
       });
   })
   .catch((err) => {

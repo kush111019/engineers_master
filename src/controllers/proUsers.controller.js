@@ -5978,7 +5978,7 @@ module.exports.leadActivities = async (req, res) => {
       checkPermission.rows[0].permission_to_view_global ||
       checkPermission.rows[0].permission_to_view_own
     ) {
-      let Q1 = dbScript(db_sql["Q488"], {
+      let Q1 = dbScript(db_sql["Q32"], {
         var1: leadId,
       });
       const leadActivities = await connection.query(Q1);

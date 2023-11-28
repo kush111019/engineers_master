@@ -17,18 +17,19 @@ pool
       .query(
         `DO $$
       BEGIN
-          IF NOT EXISTS (SELECT column_name FROM information_schema.columns WHERE table_name = 'marketing_budget_logs' AND column_name = 'edit_logs') THEN
-              ALTER TABLE marketing_budget_logs
-              ADD COLUMN edit_logs VARCHAR(255) DEFAULT '';
+          IF NOT EXISTS (SELECT column_name FROM information_schema.columns WHERE table_name = 'customer_company_employees_activities' AND column_name = 'product_id') THEN
+              ALTER TABLE customer_company_employees_activities
+              ADD COLUMN product_id UUID DEFAULT NULL;
           END IF;
       END $$;`
       )
       .then((res) => {
         console.log("Column added successfully:", res);
+        client.release(); // Release the client back to the pool
       })
       .catch((err) => {
         console.error("Error adding column:", err);
-        client.release(); // Release the client back to the pool
+        client.release();
       });
   })
   .catch((err) => {

@@ -68,10 +68,11 @@ const db_sql = {
   Q28: `UPDATE permissions SET deleted_at = '{var2}' WHERE role_id = '{var1}' AND deleted_at IS NULL RETURNING * `,
   Q29: `UPDATE slabs SET deleted_at = '{var1}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL`,
   Q30: `UPDATE users SET is_locked = '{var1}', updated_at = '{var3}' WHERE company_id = '{var2}' AND is_main_admin = false AND deleted_at IS NULL RETURNING * `,
-  Q31: `INSERT INTO follow_up_notes (sales_id, company_id, user_id, notes, notes_type, lead_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}') RETURNING *`,
-  Q32: `SELECT f.id, f.notes, f.notes_type, f.created_at, f.user_id, u.full_name, u.avatar 
-              FROM follow_up_notes as f
+  Q31: `INSERT INTO customer_company_employees_activities (sales_id, company_id, user_id, notes, notes_type, lead_id, product_id) VALUES('{var1}','{var2}','{var3}','{var4}','{var5}','{var6}', ,'{var7}') RETURNING *`,
+  Q32: `SELECT f.id, f.notes, f.notes_type, f.created_at, f.user_id, u.full_name, u.avatar, p.id as product_id, p.product_name
+              FROM customer_company_employees_activities as f
               LEFT JOIN users AS u ON u.id = f.user_id
+              LEFT JOIN product AS p on p.id = f.product_id
               WHERE (sales_id = '{var1}' OR lead_id = '{var1}') AND f.deleted_at IS NULL ORDER BY created_at DESC`,
   Q33: `UPDATE permissions SET user_id = '{var2}' WHERE role_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   Q34: `UPDATE roles SET module_ids = '{var1}' , updated_at = '{var2}' WHERE id = '{var3}' RETURNING * `,
@@ -365,7 +366,7 @@ const db_sql = {
             user_id = '{var1}', user_percentage = '{var2}', commission_split_id = '{var3}', updated_at = '{var4}'
           WHERE 
             sales_id = '{var5}' AND company_id = '{var6}' AND user_type='{var7}' AND deleted_at IS NULL RETURNING *`,
-  Q64: `UPDATE follow_up_notes SET deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL`,
+  Q64: `UPDATE customer_company_employees_activities SET deleted_at = '{var1}' WHERE id = '{var2}' AND deleted_at IS NULL`,
   Q65: `INSERT INTO forecast(timeline, amount, start_date,end_date,pid, assigned_to, created_by, company_id ,is_accepted)
               VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}','{var9}') RETURNING * `,
   Q66: `SELECT 
@@ -3563,7 +3564,7 @@ ORDER BY
               s.closed_at
             ORDER BY
               s.id ASC`,
-  Q365: `select sales_id,COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) AND user_id = '{var1}' GROUP BY sales_id`,
+  Q365: `select sales_id,COUNT(id) AS notes_count from customer_company_employees_activities where sales_id IN ({var2}) AND user_id = '{var1}' GROUP BY sales_id`,
   Q366: `SELECT  
             su.user_id, 
             u.full_name,
@@ -3738,7 +3739,7 @@ ORDER BY
               SELECT
                 count(*)
               from
-                follow_up_notes f
+                customer_company_employees_activities f
                 JOIN sales s1 on s1.id = f.sales_id
                 JOIN sales_users su1 ON s1.id = su1.sales_id
               WHERE
@@ -3763,7 +3764,7 @@ ORDER BY
               SELECT
                 count(*)
               from
-                follow_up_notes f
+                customer_company_employees_activities f
                 JOIN sales s1 on s1.id = f.sales_id
                 JOIN sales_users su1 ON s1.id = su1.sales_id
               WHERE
@@ -3822,7 +3823,7 @@ ORDER BY
               LEFT JOIN customer_companies cc ON s.customer_id = cc.id
               LEFT JOIN (
                   SELECT sales_id, ARRAY_AGG(notes) AS notes
-                  FROM follow_up_notes
+                  FROM customer_company_employees_activities
                   WHERE deleted_at IS NULL -- Add the condition here
                   GROUP BY sales_id
               ) AS fn ON s.id = fn.sales_id
@@ -3853,7 +3854,7 @@ ORDER BY
   //           LEFT JOIN customer_companies cc ON s.customer_id = cc.id
   //           LEFT JOIN (
   //             SELECT sales_id, ARRAY_AGG(notes) AS notes
-  //             FROM follow_up_notes
+  //             FROM customer_company_employees_activities
   //             GROUP BY sales_id
   //           ) AS fn ON s.id = fn.sales_id
   //         WHERE
@@ -4526,7 +4527,7 @@ GROUP BY
             s.closed_at
           ORDER BY
             s.id ASC`,
-  Q433: `select sales_id,COUNT(id) AS notes_count from follow_up_notes where sales_id IN ({var2}) GROUP BY sales_id`,
+  Q433: `select sales_id,COUNT(id) AS notes_count from customer_company_employees_activities where sales_id IN ({var2}) GROUP BY sales_id`,
   Q434: `UPDATE sales_playbook SET company_id = '{var1}', user_id = '{var2}', background = '{var3}' WHERE id = '{var4}' RETURNING *`,
   Q435: `UPDATE sales_playbook SET company_id = '{var1}',user_id = '{var2}',vision_mission = '{var3}' WHERE id = '{var4}' RETURNING *`,
   Q436: `UPDATE sales_playbook SET company_id = '{var1}', user_id = '{var2}', documentation_title = '{var3}' WHERE id = '{var4}' RETURNING *`,
@@ -4801,7 +4802,7 @@ GROUP BY
     `,
   // "Q475": `SELECT DISTINCT s.id, ce.full_name, c.customer_name, ce.title, fn.notes, fn.created_at
   //           FROM product_in_sales ps
-  //           JOIN follow_up_notes fn ON ps.sales_id = fn.sales_id
+  //           JOIN customer_company_employees_activities fn ON ps.sales_id = fn.sales_id
   //           JOIN sales s ON s.id = ps.sales_id
   //           JOIN customer_company_employees ce ON ce.id = s.lead_id
   //           JOIN customer_companies c ON ce.customer_company_id=c.id
@@ -4816,7 +4817,7 @@ GROUP BY
           JOIN customer_company_employees ce ON ce.id = s.lead_id
           JOIN customer_companies c ON c.id = ce.customer_company_id
           JOIN relevant_sales rs ON rs.sales_id = s.id
-          JOIN follow_up_notes fn ON fn.sales_id = rs.sales_id AND fn.notes_type LIKE '%2';`,
+          JOIN customer_company_employees_activities fn ON fn.sales_id = rs.sales_id AND fn.notes_type LIKE '%2';`,
 
   Q476: `SELECT md.id, md.title, md.amount
   FROM marketing_budget m
@@ -4839,7 +4840,7 @@ GROUP BY
             lead_sources AS ls ON ls.id = cce.source
             WHERE
             cce.marketing_activities LIKE '%{var1}%'`,
-  Q482: `UPDATE follow_up_notes SET sales_id = '{var1}' WHERE lead_id = '{var2}' and sales_id IS NULL returning *`,
+  Q482: `UPDATE customer_company_employees_activities SET sales_id = '{var1}' WHERE lead_id = '{var2}' and sales_id IS NULL returning *`,
   Q483: `SELECT id , timeline , start_date , end_date , amount FROM marketing_budget WHERE company_id = '{var1}' AND deleted_at IS NULL`,
   Q484: `SELECT id , title , amount  FROM marketing_budget_description WHERE budget_id = '{var1}' AND deleted_at IS NULL`,
   Q485: `SELECT
@@ -4857,11 +4858,6 @@ GROUP BY
           JOIN sales as s on s.lead_id = l.id
           WHERE l.marketing_activities LIKE '%{var1}%'
           AND s.closed_at BETWEEN '{var2}' AND '{var3}';`,
-  Q487: `INSERT INTO customer_company_employees_activity(customer_company_employees_id, message, company_id, type_id, type)
-            VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *;`,
-  Q488: `SELECT id, message, type_id, type, created_at
-          FROM customer_company_employees_activity
-          WHERE customer_company_employees_id='{var1}' ORDER By created_at asc;`,
 };
 function dbScript(template, variables) {
   if (variables != null && Object.keys(variables).length > 0) {

@@ -105,7 +105,7 @@ module.exports.createLead = async (req, res) => {
         if (createLead.rowCount > 0 && updateStatusInCompany.rowCount > 0) {
 
           //Leads Activity
-          await createLeadActivity(createLead.rows[0].id, "Lead Created", checkPermission.rows[0].company_id, "", "");
+          await createLeadActivity(createLead.rows[0].id, null, userId, "Lead Created", checkPermission.rows[0].company_id, "");
 
           await connection.query("COMMIT");
           res.status(201).json({
@@ -404,7 +404,7 @@ module.exports.updateLead = async (req, res) => {
 
       if (updateLead.rowCount > 0) {
 
-        await createLeadActivity(leadId, messages, checkPermission.rows[0].company_id, "", "");
+        await createLeadActivity(leadId, null, userId, messages, checkPermission.rows[0].company_id, null);
 
         await connection.query("COMMIT");
         res.json({
@@ -469,7 +469,7 @@ module.exports.rejectLead = async (req, res) => {
 
         if (rejectLead.rowCount > 0) {
           //Leads Activity
-          await createLeadActivity(createLead.rows[0].id, "Lead Rejected", checkPermission.rows[0].company_id, userId, "user");
+          await createLeadActivity(createLead.rows[0].id, null, userId, "Lead Rejected", checkPermission.rows[0].company_id, null);
 
           await connection.query("COMMIT");
           res.json({
@@ -911,15 +911,9 @@ module.exports.viewLeads = async (req, res) => {
   }
 };
 
-const createLeadActivity = async (lead_id, message, company_id, type_id, type) => { 
-  let Q1 = dbScript(db_sql["Q487"], {
-    var1: lead_id,
-    var2: message,
-    var3: company_id,
-    var4: type_id,
-    var5: type,
-  });
-  return await connection.query(Q1);
+const createLeadActivity = async (leadId, salesId, userId, message, companyId, pId) => {
+  let s4 = dbScript(db_sql['Q31'], { var1: salesId, var2: companyId, var3: userId, var4: mysql_real_escape_string(message), var5: mysql_real_escape_string("3"), var6: leadId, var7: pId });
+  return await connection.query(s4);
 };
 
 module.exports.LeadActivityCreate = createLeadActivity;
