@@ -105,7 +105,7 @@ module.exports.createLead = async (req, res) => {
         if (createLead.rowCount > 0 && updateStatusInCompany.rowCount > 0) {
 
           //Leads Activity
-          await createLeadActivity(createLead.rows[0].id, null, userId, "Lead Created", checkPermission.rows[0].company_id, "");
+          await createLeadActivity(createLead.rows[0].id, null, userId, "Lead Created", checkPermission.rows[0].company_id, null);
 
           await connection.query("COMMIT");
           res.status(201).json({
