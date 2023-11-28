@@ -52,7 +52,7 @@ const oauth2Client = new OAuth2({
   redirectUri: process.env.REDIRECT_URL, // Your redirect URL
 });
 
-//Hubspot auth client
+//HubSpot auth client
 const hubspotClient = new hubspot.Client({
   developerApiKey: process.env.HUBSPOT_API_KEY,
 });
@@ -2245,7 +2245,7 @@ module.exports.salesDetails = async (req, res) => {
   }
 };
 
-// api to fetch userList of upperlevel
+// api to fetch userList of upper level
 module.exports.getUpperLevelUserList = async (req, res) => {
   try {
     let userId = req.user.id;
@@ -5654,6 +5654,7 @@ module.exports.salesMetricsReport = async (req, res) => {
     });
   }
 };
+
 function calculateTotalTargetAmount(data) {
   const salesIdMap = {};
   // Loop through the array and aggregate target_amount and amount for each unique salesId

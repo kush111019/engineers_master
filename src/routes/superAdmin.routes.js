@@ -44,4 +44,18 @@ router.put('/enableDisableMarketingService', verifyTokenFn1, checkParams, contro
 //----------------------------Contact us Queries List-------------------------
 router.get('/contactUsQueriesList', verifyTokenFn1, checkParams,controller.superAdmin.contactUsQueriesList)
 
+//-------------------------------Events for Super Admin-------------------------
+router.post('/addAvailability', verifyTokenFn1, checkParams, controller.superAdmin.addAvailability);
+router.get('/listAvailability', verifyTokenFn1, checkParams, controller.superAdmin.listAvailability);
+router.get('/detailAvailability', verifyTokenFn1, checkParams, controller.superAdmin.detailAvailability);
+router.put('/updateAvailability', verifyTokenFn1, checkParams, controller.superAdmin.updateAvailability);
+router.put('/deleteAvailability', verifyTokenFn1, checkParams, controller.superAdmin.deleteAvailability);
+
+router.post('/addEvents', verifyTokenFn1, checkParams, controller.superAdmin.addEvents);
+router.get('/listEvents', verifyTokenFn1, checkParams, controller.superAdmin.listEvents);
+router.put('/updateEvents', verifyTokenFn1, checkParams, controller.superAdmin.updateEvents);
+router.put('/deleteEvents', verifyTokenFn1, checkParams, controller.superAdmin.deleteEvents);
+
+router.get('/scheduledEvents', verifyTokenFn1, checkParams, controller.superAdmin.scheduledEvents);
+
 module.exports = router;
