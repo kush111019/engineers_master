@@ -1,8 +1,9 @@
 const connection = require("../database/connection");
-const uuid = require("node-uuid");
+// const uuid = require("node-uuid");
 const { issueJWT } = require("../utils/jwt");
 const { resetPasswordMail, resetPasswordMail2 } = require("../utils/sendMail");
 const { db_sql, dbScript } = require("../utils/db_scripts");
+const { mysql_real_escape_string } = require('../utils/helper');
 const {
   verifyTokenFn,
   paginatedResults,
