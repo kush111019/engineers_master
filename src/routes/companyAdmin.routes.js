@@ -786,7 +786,6 @@ router.post(
   "/uploadLeadsFile",
   verifyTokenFn,
   checkParams,
-  uploadLeadsFile.single("file"),
   controller.leads.uploadLeadFile
 );
 
