@@ -573,7 +573,6 @@ module.exports.uploadLeadFile = async (req, res) => {
     let checkPermission = await connection.query(s2);
 
     if (checkPermission.rows[0].permission_to_create) {
-      
       uploadLeadsFile(req, res, async  (err) => {
           if (err) {
             return res.json({
@@ -582,6 +581,9 @@ module.exports.uploadLeadFile = async (req, res) => {
               message: err.message,
             });
           }
+          console.log("req ", req);
+          console.log("res ", res);
+          console.log("file ", file);
           if (fs.existsSync(file.path)) {
             let promise = new Promise((resolve, reject) => {
             let stream = fs.createReadStream(file.path);
