@@ -2,8 +2,11 @@ const connection = require('../database/connection')
 const { db_sql, dbScript } = require('../utils/db_scripts');
 const { mysql_real_escape_string ,getUserAndSubUser} = require('../utils/helper')
 const fs = require("fs");
+const { promisify } = require('util');
+const unlinkAsync = promisify(fs.unlink);
 const fastcsv = require("fast-csv");
 const moduleName = process.env.PRODUCTS_MODULE
+const { uploadProductFile } = require('../utils/uploadfiles');
 
 module.exports.addProduct = async (req, res) => {
     try {
@@ -257,94 +260,168 @@ module.exports.uploadProductImage = async (req, res) => {
     }
 }
 
+// module.exports.uploadProductFile = async (req, res) => {
+//     try {
+//         let userId = req.user.id
+//         let file = req.file
+//         await connection.query('BEGIN')
+//         let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
+//         let checkPermission = await connection.query(s2)
+//         if (checkPermission.rows[0].permission_to_create) {
+//             uploadProductFile(req, res, async  (err) => {
+//                 let promise = new Promise((resolve, reject) => {
+//                     let stream = fs.createReadStream(req.file.path);
+//                     let csvData = [];
+//                     //.on('data') is triggered when a record is parsed,
+//                     // so we will get the record (data) in the handler function.
+//                     // Each record is pushed to csvData array.
+//                     //on('end') is triggered after the parsing is done,
+//                     // at the time that we have all records.
+//                     let csvStream = fastcsv.parse().on("data", (data) => {
+//                         csvData.push(data)
+//                     }).on("end", () => {
+//                         // remove the first line: header
+//                         csvData.shift();
+//                         // connect to the PostgreSQL database
+//                         // insert csvData into DB 
+//                         csvData.forEach(async (row) => {
+//                             //defualt product image 
+//                             if (row.length > 0) {
+//                                 let s3 = dbScript(db_sql['Q134'], { var1: row[0], var2: checkPermission.rows[0].company_id })
+//                                 let findProduct = await connection.query(s3)
+//                                 if (findProduct.rowCount == 0) {
+//                                     (row[1] == "") ? row[1] = process.env.DEFAULT_PRODUCT_IMAGE : row[1];
+//                                     //unique id for every row
+//                                     let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: userId })
+//                                     connection.query(s4, row, async(err, res) => {
+//                                         if (err) {
+//                                             await connection.query('ROLLBACk')
+//                                             return res.json({
+//                                                 status: 400,
+//                                                 success: false,
+//                                                 message: "Something went wrong"
+//                                             })
+//                                         }
+//                                     });
+//                                 }
+//                             }
+//                         });
+//                     })
+//                     let exportedData = stream.pipe(csvStream);
+//                     if (exportedData) {
+//                         resolve(file);
+//                     } else {
+//                         reject(false)
+//                     }
+//                 })
+//                 promise.then((file) => {
+//                     fs.unlink(file.path, (err) => {
+//                         if (err) {
+//                             throw err
+//                         }
+//                     })
+//                 }).catch(err => {
+//                     throw err
+//                 })
+//                 let _dt = new Date().toISOString();
+//                 let s7 = dbScript(db_sql['Q280'], { var1:_dt, var2: checkPermission.rows[0].company_id })
+//                 updateStatusInCompany = await connection.query(s7)
+//                 if(updateStatusInCompany.rowCount > 0){
+//                     await connection.query('COMMIT')
+//                     res.json({
+//                         status: 201,
+//                         success: true,
+//                         message: "Products exported to DB"
+//                     })
+//                 }else{
+//                     await connection.query('ROLLBACK')
+//                     res.json({
+//                         status: 400,
+//                         success: false,
+//                         message: "Something went wrong"
+//                     })
+//                 }
+//             });
+//         } else {
+//             res.status(403).json({
+//                 success: false,
+//                 message: "Unathorised"
+//             })
+//         }
+//     } catch (error) {
+//         await connection.query('ROLLBACK')
+//         res.json({
+//             status: 400,
+//             success: false,
+//             message: error.message,
+//         })
+//     }
+// }
+
 module.exports.uploadProductFile = async (req, res) => {
     try {
-        let userId = req.user.id
-        let file = req.file
-        await connection.query('BEGIN')
-        let s2 = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId })
-        let checkPermission = await connection.query(s2)
-        if (checkPermission.rows[0].permission_to_create) {
+        const userId = req.user.id;
+        const file = req.file;
+        await connection.query('BEGIN');
 
-            let promise = new Promise((resolve, reject) => {
-                let stream = fs.createReadStream(file.path);
-                let csvData = [];
-                //.on('data') is triggered when a record is parsed,
-                // so we will get the record (data) in the handler function.
-                // Each record is pushed to csvData array.
-                //on('end') is triggered after the parsing is done,
-                // at the time that we have all records.
-                let csvStream = fastcsv.parse().on("data", (data) => {
-                    csvData.push(data)
-                }).on("end", () => {
-                    // remove the first line: header
-                    csvData.shift();
-                    // connect to the PostgreSQL database
-                    // insert csvData into DB 
-                    csvData.forEach(async (row) => {
-                        //defualt product image 
-                        if (row.length > 0) {
-                            let s3 = dbScript(db_sql['Q134'], { var1: row[0], var2: checkPermission.rows[0].company_id })
-                            let findProduct = await connection.query(s3)
-                            if (findProduct.rowCount == 0) {
-                                (row[1] == "") ? row[1] = process.env.DEFAULT_PRODUCT_IMAGE : row[1];
-                                //unique id for every row 
-                               
-                                let s4 = dbScript(db_sql['Q87'], { var1: checkPermission.rows[0].company_id, var2: userId })
-                                connection.query(s4, row, async(err, res) => {
-                                    if (err) {
-                                        await connection.query('ROLLBACk')
-                                        return res.json({
-                                            status: 400,
-                                            success: false,
-                                            message: "Something went wrong"
-                                        })
-                                    }
-                                });
-                            }
+        const checkPermissionQuery = dbScript(db_sql['Q41'], { var1: moduleName, var2: userId });
+        const checkPermissionResult = await connection.query(checkPermissionQuery);
+        const { permission_to_create, company_id } = checkPermissionResult.rows[0];
+
+        if (permission_to_create) {
+            const uploadProductFileAsync = util.promisify(uploadProductFile);
+            await uploadProductFileAsync(req, res);
+
+            const stream = fs.createReadStream(file.path);
+            const csvData = [];
+
+            const csvStream = fastcsv.parse().on("data", (data) => {
+                csvData.push(data);
+            }).on("end", async () => {
+                csvData.shift();
+
+                for (const row of csvData) {
+                    if (row.length > 0) {
+                        const findProductQuery = dbScript(db_sql['Q134'], { var1: row[0], var2: company_id });
+                        const findProductResult = await connection.query(findProductQuery);
+
+                        if (findProductResult.rowCount === 0) {
+                            row[1] = row[1] === "" ? process.env.DEFAULT_PRODUCT_IMAGE : row[1];
+
+                            const insertRowQuery = dbScript(db_sql['Q87'], { var1: company_id, var2: userId });
+                            await connection.query(insertRowQuery, row);
                         }
-                    });
-                })
-                let exportedData = stream.pipe(csvStream);
-                if (exportedData) {
-                    resolve(file);
-                } else {
-                    reject(false)
-                }
-            })
-            promise.then((file) => {
-                fs.unlink(file.path, (err) => {
-                    if (err) {
-                        throw err
                     }
-                })
-            }).catch(err => {
-                throw err
-            })
+                }
 
-            let _dt = new Date().toISOString();
-            let s7 = dbScript(db_sql['Q280'], { var1:_dt, var2: checkPermission.rows[0].company_id })
-            updateStatusInCompany = await connection.query(s7)
-            if(updateStatusInCompany.rowCount > 0){
-                await connection.query('COMMIT')
-                res.json({
-                    status: 201,
-                    success: true,
-                    message: "Products exported to DB"
-                })
-            }else{
-                await connection.query('ROLLBACK')
-                res.json({
-                    status: 400,
-                    success: false,
-                    message: "Something went wrong"
-                })
-            }
+                const updateStatusQuery = dbScript(db_sql['Q280'], { var1: new Date().toISOString(), var2: company_id });
+                const updateStatusInCompany = await connection.query(updateStatusQuery);
+
+                if (updateStatusInCompany.rowCount > 0) {
+                    await connection.query('COMMIT')
+                    res.json({
+                        status: 201,
+                        success: true,
+                        message: "Products exported to DB"
+                    });
+                } else {
+                    await connection.query('ROLLBACK')
+                    res.json({
+                        status: 400,
+                        success: false,
+                        message: "Something went wrong"
+                    });
+                }
+            });
+
+            stream.pipe(csvStream);
+
+            await unlinkAsync(file.path);
         } else {
             res.status(403).json({
                 success: false,
-                message: "Unathorised"
-            })
+                message: "Unauthorized"
+            });
         }
     } catch (error) {
         await connection.query('ROLLBACK')
@@ -352,7 +429,7 @@ module.exports.uploadProductFile = async (req, res) => {
             status: 400,
             success: false,
             message: error.message,
-        })
+        });
     }
 }
 

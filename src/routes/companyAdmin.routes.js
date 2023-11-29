@@ -324,7 +324,6 @@ router.post(
   "/uploadProductFile",
   verifyTokenFn,
   checkParams,
-  uploadProductFile.single("file"),
   controller.products.uploadProductFile
 );
 
