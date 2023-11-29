@@ -581,9 +581,6 @@ module.exports.uploadLeadFile = async (req, res) => {
               message: err.message,
             });
           }
-          console.log("req ", req);
-          console.log("res ", res);
-          console.log("file ", req.file);
           if (fs.existsSync(req.file.path)) {
             let promise = new Promise((resolve, reject) => {
             let stream = fs.createReadStream(req.file.path);
@@ -604,7 +601,7 @@ module.exports.uploadLeadFile = async (req, res) => {
                 // connect to the PostgreSQL database
                 // insert csvData into DB
                 csvData.forEach(async (row, index) => {
-                  //defualt product image
+                  //default product image
                   if (row[1] !== "") {
                     if (row.length > 0) {
                       let s14 = dbScript(db_sql["Q477"], { var1: row[1] });
@@ -845,6 +842,7 @@ module.exports.uploadLeadFile = async (req, res) => {
           promise
             .then((file) => {
               fs.unlink(file.path, (err) => {
+                console.log("Err 2 ", err);
                 if (err) {
                   res.json({
                     status: 400,
@@ -861,6 +859,7 @@ module.exports.uploadLeadFile = async (req, res) => {
               });
             })
             .catch((err) => {
+              console.log("Err 1 ", err);
               res.json({
                 status: 400,
                 success: false,
@@ -872,7 +871,7 @@ module.exports.uploadLeadFile = async (req, res) => {
     } else {
       res.status(403).json({
         success: false,
-        message: "Unathorised",
+        message: "Unauthorized",
       });
     }
   } catch (error) {
