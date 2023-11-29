@@ -825,7 +825,7 @@ module.exports.eventScheduleMail = async (creatorName, creatorEmail, eventName, 
     // Specify the fields in the email.
     let mailOptions = {
         from: senderAddress,
-        to: toAddresses || 'kkarda77@gmail.com',
+        to: toAddresses || process.env.SMTP_EMAIL,
         subject: subject,
         cc: ccAddresses,
         bcc: bccAddresses,
