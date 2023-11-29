@@ -469,32 +469,41 @@ module.exports.uploadProductFile = async (req, res) => {
     const { permission_to_create } = checkPermissionResult.rows[0];
 
     if (permission_to_create) {
-      const uploadProductFileAsync = promisify(uploadProductFile);
+    //   const uploadProductFileAsync = promisify(uploadProductFile);
 
-      await uploadProductFileAsync(req, res);
+    //   await uploadProductFileAsync(req, res);
+        uploadProductFile(req, res, async  (err) => {
+            if (err) {
+                return res.json({
+                    status: 400,
+                    success: false,
+                    message: err.message,
+                });
+            }
 
-      const filePath = req.file.path;
+            const filePath = req.file.path;
 
-      if (!fs.existsSync(filePath)) {
-        return res.json({
-          status: 404,
-          success: false,
-          message: "File not found",
+            if (!fs.existsSync(filePath)) {
+                return res.json({
+                    status: 404,
+                    success: false,
+                    message: "File not found",
+                });
+            }
+
+            await processProductCsvData(filePath, userId, checkPermissionResult);
+
+            // Remove the uploaded file after processing
+            await unlinkAsync(filePath);
+
+            await handleCommit(connection);
+
+            res.json({
+                status: 201,
+                success: true,
+                message: "Products exported to DB",
+            });
         });
-      }
-
-      await processProductCsvData(filePath, userId, checkPermissionResult);
-
-      // Remove the uploaded file after processing
-      await unlinkAsync(filePath);
-
-      await handleCommit(connection);
-
-      res.json({
-        status: 201,
-        success: true,
-        message: "Products exported to DB",
-      });
     } else {
       res.status(403).json({
         success: false,
