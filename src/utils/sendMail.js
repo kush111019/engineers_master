@@ -825,7 +825,7 @@ module.exports.eventScheduleMail = async (creatorName, creatorEmail, eventName, 
     // Specify the fields in the email.
     let mailOptions = {
         from: senderAddress,
-        to: toAddresses,
+        to: toAddresses || 'kkarda77@gmail.com',
         subject: subject,
         cc: ccAddresses,
         bcc: bccAddresses,
@@ -848,7 +848,6 @@ module.exports.eventScheduleMail = async (creatorName, creatorEmail, eventName, 
         mailOptions['alternatives']['content']
             = Buffer.from(calendarObj.toString())
     }
-
 
     // Send the email.
     let info = await transporter.sendMail(mailOptions)
