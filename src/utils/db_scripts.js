@@ -1657,6 +1657,11 @@ ORDER BY
               ORDER BY 
                 timeline ASC`,
   Q203: `UPDATE marketing_budget SET deleted_at = '{var2}' where id = '{var1}' AND deleted_at IS NULL RETURNING *`,
+  Q2031: `SELECT DISTINCT cce.id
+            FROM customer_company_employees cce
+            JOIN marketing_budget_description mbd ON cce.marketing_activities LIKE CONCAT('%', mbd.id, '%')
+            JOIN marketing_budget mb ON mbd.budget_id= mb.id
+            WHERE mb.id = '{var1}';`,
   Q204: `UPDATE marketing_budget_description SET deleted_at = '{var2}' where budget_id = '{var1}' AND deleted_at IS NULL RETURNING *`,
   Q205: `SELECT 
                 b.id, b.timeline, b.amount, b.start_date,

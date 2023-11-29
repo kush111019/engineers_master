@@ -527,6 +527,19 @@ module.exports.deleteBudget = async (req, res) => {
 
       //Need to check if budget is assign to the leads or not
       //budgetId -> budgetDescription -> budgetDesction ID -> customer_company_employees exists hai ya nhi.
+      let sc = dbScript(db_sql["Q2031"], { var1: budgetId });
+      console.log(sc);
+
+      let budgetData = await connection.query(sc);
+
+      if(budgetData.rows.length > 0 ){
+        res.json({
+          status: 400,
+          success: false,
+          message: "Sorry, this budget is assigned to leads",
+        });
+        return false;
+      }
 
       let s2 = dbScript(db_sql["Q203"], { var1: budgetId, var2: _dt });
       let deleteBudget = await connection.query(s2);
