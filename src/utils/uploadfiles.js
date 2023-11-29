@@ -62,7 +62,7 @@ const uploadProductFile = multer({
   fileFilter: function (req, file, cb) {
     checkFileType(file, cb);
   },
-});
+}).single("file");
 function checkFileType(file, cb) {
   // Allowed ext
   const filetypes = /csv/;
@@ -122,15 +122,6 @@ const uploadSalesInvoice = multer({
   storage: storage7,
 });
 
-// const storage8 = multer.diskStorage({
-//     destination:  'uploads',
-//     filename: function (req, file, cb) {
-//         let x= file.originalname.split(".")
-//         let fileName = x[0]
-//         let ext = path.extname(file.originalname);
-//         cb(null, `${fileName}-${Date.now()}${ext}`)
-//     }
-// })
 const storage8 = multer.diskStorage({
   destination: "uploads",
   filename: function (req, file, cb) {
@@ -139,12 +130,6 @@ const storage8 = multer.diskStorage({
     cb(null, `${fileName}-${Date.now()}${ext}`);
   },
 });
-// const uploadLeadsFile = multer({
-//     storage: storage8,
-//     fileFilter: function(req,file, cb){
-//         checkFileType(file, cb);
-//     }
-// })
 const uploadLeadsFile = multer({
   storage: storage8,
   fileFilter: function (req, file, cb) {
