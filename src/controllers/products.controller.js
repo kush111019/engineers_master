@@ -369,7 +369,7 @@ module.exports.uploadProductFile = async (req, res) => {
         const { permission_to_create, company_id } = checkPermissionResult.rows[0];
 
         if (permission_to_create) {
-            const uploadProductFileAsync = util.promisify(uploadProductFile);
+            const uploadProductFileAsync = promisify(uploadProductFile);
             await uploadProductFileAsync(req, res);
 
             const stream = fs.createReadStream(file.path);
