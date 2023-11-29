@@ -1707,10 +1707,7 @@ module.exports.addAvailability = async (req, res) => {
 
 module.exports.listAvailability = async (req, res) => {
   try {
-    let s2 = dbScript(db_sql["Q344"], {
-      var1: null,
-      var2: null,
-    });
+    let s2 = dbScript(db_sql["Q3441"]);
     let availability = await connection.query(s2);
     if (availability.rowCount > 0) {
       for (let item of availability.rows) {

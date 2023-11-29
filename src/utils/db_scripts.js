@@ -3444,6 +3444,15 @@ ORDER BY
             FROM pro_user_availability as ua
             LEFT JOIN users as u ON u.id = ua.user_id
             WHERE ua.user_id = '{var1}' AND ua.company_id = '{var2}' AND ua.deleted_at IS NULL`,
+  Q3441: `SELECT id, schedule_name, timezone, created_at,
+            user_id,
+            (
+              SELECT json_agg(pro_user_time_slot.*)
+              FROM pro_user_time_slot
+              WHERE id = pro_user_time_slot.availability_id AND deleted_at IS NULL
+            )as time_slots
+          FROM pro_user_availability
+          WHERE user_id IS NULL AND company_id IS NULL AND deleted_at IS NULL`,
   Q345: `INSERT INTO pro_user_events(event_name, meet_link, description, user_id, company_id, duration, availability_id) VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}') RETURNING *`,
   Q346: `SELECT pe.id, pe.event_name, pe.meet_link, pe.description,pe.duration, pe.event_url, 
             pe.availability_id,pe.user_id,pe.company_id,pe.created_at,pe.updated_at,
