@@ -3,13 +3,22 @@ const connection = require("../database/connection");
 const { issueJWT } = require("../utils/jwt");
 const { resetPasswordMail, resetPasswordMail2 } = require("../utils/sendMail");
 const { db_sql, dbScript } = require("../utils/db_scripts");
-const { mysql_real_escape_string } = require('../utils/helper');
+const {
+  mysql_real_escape_string,
+  tranformAvailabilityArray,
+  convertToLocal,
+  convertToTimezone,
+  paginatedResults,
+} = require('../utils/helper');
 const {
   verifyTokenFn,
   paginatedResults,
   reduceArrayWithName1,
+  convertToLocal
 } = require("../utils/helper");
 const stripe = require("stripe")(process.env.SECRET_KEY);
+const { daysEnum } = require("../utils/notificationEnum");
+
 
 module.exports.login = async (req, res) => {
   try {
