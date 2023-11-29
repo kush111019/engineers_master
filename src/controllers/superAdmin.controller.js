@@ -9,10 +9,7 @@ const {
   convertToLocal,
   convertToTimezone,
   paginatedResults,
-} = require('../utils/helper');
-const {
   verifyTokenFn,
-  paginatedResults,
   reduceArrayWithName1,
   convertToLocal
 } = require("../utils/helper");
