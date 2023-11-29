@@ -1961,10 +1961,7 @@ module.exports.addEvents = async (req, res) => {
 
 module.exports.listEvents = async (req, res) => {
   try {
-    let s2 = dbScript(db_sql["Q346"], {
-      var1: null,
-      var2: null,
-    });
+    let s2 = dbScript(db_sql["Q3461"]);
     let eventList = await connection.query(s2);
     if (eventList.rowCount > 0) {
       for (let event of eventList.rows) {

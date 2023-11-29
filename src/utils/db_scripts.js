@@ -3460,6 +3460,12 @@ ORDER BY
            FROM pro_user_events AS pe
            WHERE pe.user_id = '{var1}' AND pe.company_id = '{var2}' 
            AND pe.deleted_at IS NULL `,
+  Q3461: `SELECT pe.id, pe.event_name, pe.meet_link, pe.description,pe.duration, pe.event_url, 
+            pe.availability_id,pe.user_id,pe.company_id,pe.created_at,pe.updated_at,
+            pe.deleted_at
+          FROM pro_user_events AS pe
+          WHERE pe.user_id IS NULL AND pe.company_id IS NULL
+          AND pe.deleted_at IS NULL`,
   Q347: `UPDATE pro_user_events SET event_url = '{var1}' WHERE id = '{var2}' RETURNING *`,
   Q348: `SELECT e.id AS event_id, e.event_name, e.meet_link, e.description, e.event_url,
                 e.duration, e.availability_id, e.company_id, 
