@@ -11,7 +11,6 @@ const {
   paginatedResults,
   verifyTokenFn,
   reduceArrayWithName1,
-  convertToLocal
 } = require("../utils/helper");
 const stripe = require("stripe")(process.env.SECRET_KEY);
 const { daysEnum } = require("../utils/notificationEnum");
