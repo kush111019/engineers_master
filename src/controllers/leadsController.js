@@ -566,7 +566,7 @@ module.exports.deleteLead = async (req, res) => {
   }
 };
 
-const processCsvData = async (filePath, userId) => {
+const processCsvData = async (filePath, userId, checkPermission) => {
   const stream = fs.createReadStream(filePath);
   const csvData = await parseCsv(stream);
 
@@ -856,7 +856,7 @@ module.exports.uploadLeadFile = async (req, res) => {
           });
         }
 
-        await processCsvData(filePath, userId);
+        await processCsvData(filePath, userId, checkPermission);
 
         // Remove the uploaded file after processing
         await unlinkAsync(filePath);
