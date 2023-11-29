@@ -583,10 +583,10 @@ module.exports.uploadLeadFile = async (req, res) => {
           }
           console.log("req ", req);
           console.log("res ", res);
-          console.log("file ", res.file);
-          if (fs.existsSync(res.file.path)) {
+          console.log("file ", req.file);
+          if (fs.existsSync(req.file.path)) {
             let promise = new Promise((resolve, reject) => {
-            let stream = fs.createReadStream(res.file.path);
+            let stream = fs.createReadStream(req.file.path);
             let csvData = [];
             //.on('data') is triggered when a record is parsed,
             // so we will get the record (data) in the handler function.
