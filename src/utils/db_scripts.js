@@ -4843,14 +4843,14 @@ GROUP BY
   FROM marketing_budget m
   JOIN marketing_budget_description md ON m.id = md.budget_id
   WHERE md.company_id=  '{var1}' and m.is_finalize=true and m.deleted_at IS NULL;`,
-  Q477: `select * from customer_company_employees where email_address = '{var1}'`,
+  Q477: `select * from customer_company_employees where email_address = '{var1}' and company_id='{var2}'`,
   Q478: `INSERT INTO customer_company_employees (full_name,title,email_address,phone_number,
     address,source,linkedin_url,website,targeted_value,marketing_qualified_lead,
     assigned_sales_lead_to,additional_marketing_notes,creator_id,company_id, customer_company_id,emp_type, sync_id, sync_source,pid,marketing_activities)
     VALUES('{var1}', '{var2}', '{var3}', '{var4}', '{var5}', '{var6}', '{var7}', '{var8}',
     '{var9}','{var10}','{var11}', '{var12}', '{var13}', '{var14}', '{var15}','{var16}', '{var17}', '{var18}','{var19}' , '{var20}') RETURNING *`,
   Q479: `SELECT id, title FROM marketing_budget_description WHERE title LIKE '%{var1}%' AND company_id = {var2} and deleted_at IS NULL`,
-  Q480: `UPDATE customer_company_employees SET marketing_activities = '{var1}' WHERE email_address = '{var2}' returning *`,
+  Q480: `UPDATE customer_company_employees SET marketing_activities = '{var1}' WHERE email_address = '{var2}' and company_id='{var3}' returning *`,
   Q481: `SELECT cce.full_name, cce.title, cce.email_address, cce.source, cce.created_at, lt.title, c.company_name, ls.source
             FROM  customer_company_employees AS cce JOIN 
           lead_titles AS lt ON lt.id = cce.title

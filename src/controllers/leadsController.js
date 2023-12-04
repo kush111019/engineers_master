@@ -576,7 +576,7 @@ const processCsvData = async (filePath, userId, checkPermission) => {
     // Process each row in the CSV data
     if (row[1] !== "") {
       if (row.length > 0) {
-        let s14 = dbScript(db_sql["Q477"], { var1: row[1] });
+        let s14 = dbScript(db_sql["Q477"], { var1: row[1], var2: checkPermission.rows[0].company_id, });
         let checkExistingMail = await connection.query(s14);
         //check if email is exist or not
 
@@ -769,6 +769,7 @@ const processCsvData = async (filePath, userId, checkPermission) => {
             let s17 = dbScript(db_sql["Q480"], {
               var1: uniqueArrayofIds,
               var2: row[1],
+              var3: checkPermission.rows[0].company_id,
             });
             console.log("s17 - 1", s17);
             await connection.query(s17);
@@ -791,8 +792,8 @@ const processCsvData = async (filePath, userId, checkPermission) => {
             let s17 = dbScript(db_sql["Q480"], {
               var1: uniqueArrayofIds,
               var2: row[1],
+              var3: checkPermission.rows[0].company_id,
             });
-            console.log("s17 - 2",s17);
             await connection.query(
               s17
             );
