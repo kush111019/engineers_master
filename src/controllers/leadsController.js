@@ -653,33 +653,35 @@ const processCsvData = async (filePath, userId, checkPermission) => {
           } else {
             customerId = findCustomer.rows[0].id;
           }
-          let checkComma = row[14].includes(",");
           let uniqueArrayofIds = "";
-          if (checkComma) {
-            let splitMarketingActivities = row[14].split(",");
-            let idArray = [];
-            const queryPromises = splitMarketingActivities.map(
-              async (data) => {
-                let s15 = dbScript(db_sql["Q479"], {
-                  var1: mysql_real_escape_string(data.trim()),
-                  var2: `'${checkPermission.rows[0].company_id}'`,
-                });
-                let findId = await connection.query(s15);
+          if(row[14].trim() !== ""){
+            let checkComma = row[14].includes(",");
+            if (checkComma) {
+              let splitMarketingActivities = row[14].split(",");
+              let idArray = [];
+              const queryPromises = splitMarketingActivities.map(
+                async (data) => {
+                  let s15 = dbScript(db_sql["Q479"], {
+                    var1: mysql_real_escape_string(data.trim()),
+                    var2: `'${checkPermission.rows[0].company_id}'`,
+                  });
+                  let findId = await connection.query(s15);
 
-                idArray.push(findId.rows[0]?.id);
-              }
-            );
-            await Promise.all(queryPromises);
-            uniqueArrayofIds = Array.from(new Set(idArray)).join(
-              ", "
-            );
-          } else {
-            let s15 = dbScript(db_sql["Q479"], {
-              var1: mysql_real_escape_string(row[14]),
-              var2: `'${checkPermission.rows[0].company_id}'`,
-            });
-            let findId = await connection.query(s15);
-            uniqueArrayofIds = findId.rows[0]?.id;
+                  idArray.push(findId.rows[0]?.id);
+                }
+              );
+              await Promise.all(queryPromises);
+              uniqueArrayofIds = Array.from(new Set(idArray)).join(
+                ", "
+              );
+            } else {
+              let s15 = dbScript(db_sql["Q479"], {
+                var1: mysql_real_escape_string(row[14]),
+                var2: `'${checkPermission.rows[0].company_id}'`,
+              });
+              let findId = await connection.query(s15);
+              uniqueArrayofIds = findId.rows[0]?.id;
+            }
           }
 
           let s10 = dbScript(db_sql["Q478"], {
