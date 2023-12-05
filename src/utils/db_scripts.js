@@ -783,7 +783,7 @@ ORDER BY
               LEFT JOIN companies AS c ON c.id = u.company_id
               LEFT JOIN roles AS r ON r.id = u.role_id 
               LEFT JOIN configurations AS con ON con.company_id = u.company_id
-              WHERE LOWER(email_address) = LOWER('{var1}') AND u.deleted_at IS NULL 
+              WHERE LOWER(email_address) = LOWER(TRIM('{var1}')) AND u.deleted_at IS NULL 
               AND c.deleted_at IS NULL AND r.deleted_at IS NULL AND con.deleted_at IS NULL`,
   Q133: `UPDATE companies SET is_imap_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   Q134: `SELECT id, product_name, product_image, description, available_quantity, price, end_of_life, currency, company_id, created_at, updated_at FROM products WHERE product_name = '{var1}' AND company_id = '{var2}' AND deleted_at IS NULL ORDER BY created_at desc `,
@@ -1614,9 +1614,9 @@ ORDER BY
                 u.full_name
               ORDER BY 
                 count {var4}`,
-  Q191: `SELECT * FROM lead_sources WHERE LOWER(source) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
-  Q192: `SELECT * FROM lead_titles WHERE LOWER(title) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
-  Q193: `SELECT * FROM lead_industries WHERE LOWER(industry) = LOWER('{var1}') and company_id = '{var2}' AND deleted_at IS NULL`,
+  Q191: `SELECT * FROM lead_sources WHERE LOWER(source) = LOWER(TRIM('{var1}')) and company_id = '{var2}' AND deleted_at IS NULL`,
+  Q192: `SELECT * FROM lead_titles WHERE LOWER(title) = LOWER(TRIM('{var1}')) and company_id = '{var2}' AND deleted_at IS NULL`,
+  Q193: `SELECT * FROM lead_industries WHERE LOWER(industry) = LOWER(TRIM('{var1}')) and company_id = '{var2}' AND deleted_at IS NULL`,
   Q194: `SELECT COUNT(*) from customer_company_employees WHERE company_id = '{var1}' AND emp_type = 'lead' AND pid IS NULL AND marketing_qualified_lead = true AND deleted_at IS NULL`,
   Q195: `UPDATE companies SET is_marketing_enable = '{var1}', updated_at = '{var2}' WHERE id = '{var3}' RETURNING *`,
   Q196: `UPDATE companies SET expiry_date = '{var1}', updated_at = '{var3}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING *`,
@@ -3207,7 +3207,7 @@ ORDER BY
   Q310: `UPDATE {var1} set {var2} = '{var3}' WHERE id IN ({var4}) AND {var5} = '{var6}' AND deleted_at IS NULL`,
   Q311: `UPDATE users SET is_deactivated = '{var1}', updated_at = '{var3}', assigned_to = '{var4}' WHERE id = '{var2}' AND deleted_at IS NULL RETURNING * `,
   Q312: `SELECT * FROM customer_companies 
-             WHERE LOWER(customer_name) = LOWER('{var1}') 
+             WHERE LOWER(customer_name) = LOWER(TRIM('{var1}')) 
                 AND company_id = '{var2}'
                 AND deleted_at IS NULL`,
   Q313: `UPDATE customer_companies SET archived_at = '{var1}', reason = '{var4}' WHERE id = '{var2}' AND company_id = '{var3}' AND deleted_at IS NULL RETURNING *`,
@@ -3391,7 +3391,7 @@ ORDER BY
               LEFT JOIN companies AS c ON c.id = u.company_id
               LEFT JOIN roles AS r ON r.id = u.role_id 
               LEFT JOIN configurations AS con ON con.company_id = u.company_id
-            WHERE LOWER(email_address) = LOWER('{var1}') AND u.is_pro_user = true AND u.deleted_at IS NULL 
+            WHERE LOWER(email_address) = LOWER(TRIM('{var1}')) AND u.is_pro_user = true AND u.deleted_at IS NULL 
               AND c.deleted_at IS NULL AND r.deleted_at IS NULL AND con.deleted_at IS NULL`,
   Q330: `INSERT INTO email_templates(user_id, company_id, template, template_name, json_template)
              VALUES('{var1}','{var2}','{var3}','{var4}','{var5}') RETURNING *`,
