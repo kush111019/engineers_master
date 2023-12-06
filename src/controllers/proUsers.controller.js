@@ -4807,6 +4807,7 @@ module.exports.salesMetricsReport = async (req, res) => {
             }
           });
 
+          console.log("3.1");
           //counts of total sales count and converted sales count and won deals count
           let s6 = dbScript(db_sql["Q397"], {
             var1: selectedStartDate,
@@ -4830,6 +4831,7 @@ module.exports.salesMetricsReport = async (req, res) => {
             totalAndWonDealCount.winPercentage = 0;
           }
 
+          console.log("3.2");
           //monthly recognized_revenue Subscription+perpetual on perticular quarter
           let totalMonthlySubscriptionAmount = 0;
           let s7 = dbScript(db_sql["Q399"], {
@@ -4865,6 +4867,7 @@ module.exports.salesMetricsReport = async (req, res) => {
             .toISOString()
             .substring(0, 10);
 
+          console.log("3.3");
           let totalYearlyRecognizedRevenue = 0;
           let s8 = dbScript(db_sql["Q398"], {
             var1: yearlyStartFormattedDate,
@@ -4883,6 +4886,7 @@ module.exports.salesMetricsReport = async (req, res) => {
 
           //sales leakages
 
+          console.log("3.4");
           //find sales deals
           let s9 = dbScript(db_sql["Q405"], {
             var1: selectedStartDate,
@@ -4929,6 +4933,7 @@ module.exports.salesMetricsReport = async (req, res) => {
             risk_sales_deals.total_sales_deals_amount = 0;
           }
 
+          console.log("3.5");
           //finding missing rr
           let s10 = dbScript(db_sql["Q406"], {
             var1: selectedStartDate,
@@ -4995,6 +5000,7 @@ module.exports.salesMetricsReport = async (req, res) => {
           missingRR.all_total_missing_rr = totalHighRiskRR + totalLowRiskRR;
           totalLeakageAmountClosed = totalHighRiskRR + totalLowRiskRR;
 
+          console.log("3.6");
           //find slippage date
           let s11 = dbScript(db_sql["Q408"], {
             var1: selectedStartDate,
@@ -5068,6 +5074,7 @@ module.exports.salesMetricsReport = async (req, res) => {
             closingDateSlippage.all_total_slippage_amount = 0;
           }
 
+          console.log("3.7");
           //EOL products
           let s12 = dbScript(db_sql["Q411"], {
             var1: allSalesIdArr.join(","),
@@ -5101,6 +5108,7 @@ module.exports.salesMetricsReport = async (req, res) => {
             totalHighRiskEolMissingAmount + totalLowRiskEolMissingAmount
           );
 
+          console.log("3.8");
           let s13 = dbScript(db_sql["Q407"], { var1: captainId });
           let findForecastAmount = await connection.query(s13);
           let totalForecaseAmount = 0;
