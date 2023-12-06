@@ -5070,7 +5070,6 @@ module.exports.salesMetricsReport = async (req, res) => {
             var2: SformattedDate,
             var3: EformattedDate,
           });
-          console.log("3.7 ", s12);
           let findEOLProduct = await connection.query(s12);
           if (findEOLProduct.rowCount > 0) {
             let findEOLSales = await calculateEOLProducts(findEOLProduct.rows);
