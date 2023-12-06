@@ -5916,15 +5916,11 @@ module.exports.returnOfInvestment = async (req, res) => {
       checkPermission.rows[0].permission_to_view_global ||
       checkPermission.rows[0].permission_to_view_own
     ) {
-      // const formattedStartDate = new Date(startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
-      // const formattedEndDate = new Date(endDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
-
       let s2 = dbScript(db_sql["Q483"], {
         var1: checkPermission.rows[0].company_id,
         var2: startDate,
         var3: endDate
       });
-      console.log(s2);
       let findingBudgetData = await connection.query(s2);
       let budgetArray = findingBudgetData?.rows;
       for (const budgetItem of budgetArray) {
