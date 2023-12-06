@@ -5924,6 +5924,7 @@ module.exports.returnOfInvestment = async (req, res) => {
         var2: formattedStartDate,
         var3: formattedEndDate
       });
+      console.log(s2);
       let findingBudgetData = await connection.query(s2);
       let budgetArray = findingBudgetData?.rows;
       for (const budgetItem of budgetArray) {
