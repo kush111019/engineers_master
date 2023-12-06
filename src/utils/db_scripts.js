@@ -3984,7 +3984,8 @@ ORDER BY
             customer_companies cc ON s.customer_id = cc.id
           WHERE
             s.id IN ({var1})
-            AND TO_DATE(p.end_of_life, 'MM-DD-YYYY') BETWEEN DATE '{var2}' AND DATE '{var3}'
+            AND p.end_of_life <> ''
+            AND TO_CHAR(p.end_of_life::date, 'YYYY-MM-DD') >= '{var2}' AND TO_CHAR(p.end_of_life::date, 'YYYY-MM-DD') <= '{var3}'
             AND s.closed_at IS NULL
             AND s.archived_at IS NULL
             AND s.deleted_at IS NULL
