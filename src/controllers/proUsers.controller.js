@@ -4738,8 +4738,8 @@ module.exports.salesMetricsReport = async (req, res) => {
         const [year, month, day] = dateString.split("-");
         return `${month}-${day}-${year}`;
       }
-      const formattedStartDate = formatDate(monthlyStartFormattedDate);
-      const formattedEndDate = formatDate(monthlyEndFormattedDate);
+      // const formattedStartDate = formatDate(monthlyStartFormattedDate);
+      // const formattedEndDate = formatDate(monthlyEndFormattedDate);
 
       if (includeStatus !== true) {
         //lead counts
@@ -5916,8 +5916,13 @@ module.exports.returnOfInvestment = async (req, res) => {
       checkPermission.rows[0].permission_to_view_global ||
       checkPermission.rows[0].permission_to_view_own
     ) {
+      const formattedStartDate = new Date(startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+      const formattedEndDate = new Date(endDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+
       let s2 = dbScript(db_sql["Q483"], {
         var1: checkPermission.rows[0].company_id,
+        var2: formattedStartDate,
+        var3: formattedEndDate
       });
       let findingBudgetData = await connection.query(s2);
       let budgetArray = findingBudgetData?.rows;

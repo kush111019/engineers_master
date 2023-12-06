@@ -4861,7 +4861,7 @@ GROUP BY
             WHERE
             cce.marketing_activities LIKE '%{var1}%'`,
   Q482: `UPDATE customer_company_employees_activities SET sales_id = '{var1}' WHERE lead_id = '{var2}' and sales_id IS NULL returning *`,
-  Q483: `SELECT id , timeline , start_date , end_date , amount FROM marketing_budget WHERE company_id = '{var1}' AND deleted_at IS NULL`,
+  Q483: `SELECT id , timeline , start_date , end_date , amount FROM marketing_budget WHERE company_id = '{var1}' AND AND TO_CHAR(start_date::date, 'MM-DD-YYYY') >= '{var2}' AND TO_CHAR(end_date::date, 'MM-DD-YYYY') <= '{var3}' AND deleted_at IS NULL`,
   Q484: `SELECT id , title , amount  FROM marketing_budget_description WHERE budget_id = '{var1}' AND deleted_at IS NULL`,
   Q485: `SELECT
           a.*,
