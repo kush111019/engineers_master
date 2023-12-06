@@ -4699,10 +4699,10 @@ module.exports.salesMetricsReport = async (req, res) => {
         }
       }
 
-      let findMonthsDateOfQuarter = await getQuarterMonthsDates(
-        selectedStartDate,
-        selectedEndDate
-      );
+      // let findMonthsDateOfQuarter = await getQuarterMonthsDates(
+      //   selectedStartDate,
+      //   selectedEndDate
+      // );
 
       let leadCounts = {};
       let salesActivities = {};
@@ -4734,15 +4734,16 @@ module.exports.salesMetricsReport = async (req, res) => {
       let monthlyStartFormattedDate = startDate.toISOString().substring(0, 10);
       let monthlyEndFormattedDate = endDate.toISOString().substring(0, 10);
 
-      function formatDate(dateString) {
-        const [year, month, day] = dateString.split("-");
-        return `${month}-${day}-${year}`;
-      }
+      // function formatDate(dateString) {
+      //   const [year, month, day] = dateString.split("-");
+      //   return `${month}-${day}-${year}`;
+      // }
       // const formattedStartDate = formatDate(monthlyStartFormattedDate);
       // const formattedEndDate = formatDate(monthlyEndFormattedDate);
 
       if (includeStatus !== true) {
         //lead counts
+        console.log("1");
         let s3 = dbScript(db_sql["Q395"], {
           var1: selectedStartDate,
           var2: selectedEndDate,
@@ -4769,6 +4770,7 @@ module.exports.salesMetricsReport = async (req, res) => {
           leadCounts.convertedLeadPercentage = 0;
         }
 
+        console.log("2");
         //sales activity
         let s4 = dbScript(db_sql["Q401"], {
           var1: selectedStartDate,
@@ -4793,6 +4795,7 @@ module.exports.salesMetricsReport = async (req, res) => {
           salesActivities.activity_per_deal = 0;
         }
 
+        console.log("3");
         //finding total open and closed sales in which captainId is captain
         let s5 = dbScript(db_sql["Q404"], { var1: captainId });
         let allSalesIds = await connection.query(s5);
@@ -5177,6 +5180,8 @@ module.exports.salesMetricsReport = async (req, res) => {
             },
           });
         }
+
+        console.log("4");
       } else {
         let s14 = dbScript(db_sql["Q8"], { var1: captainId });
         let findPermission = await connection.query(s14);
