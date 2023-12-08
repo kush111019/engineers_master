@@ -387,6 +387,17 @@ module.exports.dataCreationStatus = async (req, res) => {
             let companyData = await connection.query(s4)
 
             if (companyData.rowCount > 0) {
+
+                const onboardingData = companyData.rows;
+
+                let s5 = dbScript(db_sql['Q2841'], { var1: checkPermission.rows[0].company_id })
+                let marketingData = await connection.query(s5);
+                if(marketingData.rows > 0 && marketingData.rows[0].count) {
+                    onboardingData[0].is_budget_created = true;
+                } else {
+                    onboardingData[0].is_budget_created = true;
+                }
+
                 res.json({
                     status: 200,
                     success: true,

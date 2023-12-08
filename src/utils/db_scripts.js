@@ -2555,9 +2555,10 @@ ORDER BY
   Q282: `UPDATE companies SET updated_at = '{var1}', is_slabs_created = true WHERE id = '{var2}' RETURNING *`,
 
   Q283: `UPDATE forecast SET updated_at = '{var1}', is_accepted = true WHERE id = '{var2}' RETURNING *`,
-  Q284: `SELECT 
+  Q2841: `SELECT count(id) from marketing_budget WHERE company_id = '{var1}' AND deleted_at IS NULL`,
+  Q284: `SELECT
               is_roles_created, is_users_created, is_leads_created, is_customers_created,
-              is_products_created, is_commissions_created, is_slabs_created 
+              is_products_created, is_commissions_created, is_slabs_created
             FROM companies WHERE id = '{var1}' AND deleted_at IS NULL`,
   Q285: `SELECT id FROM customer_company_employees WHERE title = '{var1}' AND deleted_at IS NULL`,
   Q286: `SELECT id FROM customer_company_employees WHERE source = '{var1}' AND deleted_at IS NULL`,
