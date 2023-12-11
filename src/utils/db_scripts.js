@@ -1444,7 +1444,7 @@ ORDER BY
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,
                 l.created_at,l.is_converted,l.is_rejected,l.reason,
-                u1.full_name AS creator_name, c.customer_name,
+                u1.full_name AS creator_name, c.customer_name, c.currency,
                 u2.full_name as assigned_sales_lead_name,
                 (
                   SELECT  json_agg(customer_company_employees.*)
@@ -1489,7 +1489,7 @@ ORDER BY
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.reason,l.emp_type,
-                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name ,
+                u1.full_name AS creator_name,  c.customer_name, c.currency, u2.full_name as assigned_sales_lead_name ,
                 ( 
                   SELECT  json_agg(customer_company_employees.*)
                       FROM (
@@ -1554,7 +1554,7 @@ ORDER BY
               l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
               l.website,l.targeted_value,l.marketing_qualified_lead,l.marketing_activities,
               l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-              u1.full_name AS creator_name, c.customer_name , u2.full_name as assigned_sales_lead_name, sc.id AS sales_id
+              u1.full_name AS creator_name, c.customer_name, c.currency, u2.full_name as assigned_sales_lead_name, sc.id AS sales_id
             FROM 
               customer_company_employees AS l
             LEFt JOIN 
@@ -1842,7 +1842,7 @@ ORDER BY
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,
                 l.created_at,l.is_converted,l.is_rejected,l.reason,
-                u1.full_name AS creator_name , c.customer_name ,u2.full_name as assigned_sales_lead_name,
+                u1.full_name AS creator_name , c.customer_name,  c.currency, u2.full_name as assigned_sales_lead_name,
                 ( 
                   SELECT  json_agg(customer_company_employees.*)
                       FROM (
@@ -1886,7 +1886,7 @@ ORDER BY
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name ,c.customer_name , u2.full_name as assigned_sales_lead_name,
+                u1.full_name AS creator_name ,c.customer_name, c.currency, u2.full_name as assigned_sales_lead_name,
                 ( 
                   SELECT  json_agg(customer_company_employees.*)
                       FROM (
@@ -1930,7 +1930,7 @@ ORDER BY
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name,c.customer_name , u2.full_name as assigned_sales_lead_name ,
+                u1.full_name AS creator_name,c.customer_name, c.currency, u2.full_name as assigned_sales_lead_name ,
                 ( 
                   SELECT  json_agg(customer_company_employees.*)
                       FROM (
@@ -1974,7 +1974,7 @@ ORDER BY
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.reason,l.emp_type,
-                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name ,
+                u1.full_name AS creator_name,  c.customer_name, c.currency, u2.full_name as assigned_sales_lead_name ,
                 ( 
                   SELECT  json_agg(customer_company_employees.*)
                       FROM (
@@ -2021,7 +2021,7 @@ ORDER BY
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
-                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name ,
+                u1.full_name AS creator_name,  c.customer_name, c.currency, u2.full_name as assigned_sales_lead_name ,
                 ( 
                   SELECT  json_agg(customer_company_employees.*)
                       FROM (
@@ -2067,7 +2067,7 @@ ORDER BY
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
-                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name ,
+                u1.full_name AS creator_name,  c.customer_name, c.currency, u2.full_name as assigned_sales_lead_name ,
                 ( 
                   SELECT  json_agg(customer_company_employees.*)
                       FROM (
@@ -2112,7 +2112,7 @@ ORDER BY
                 l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-                u1.full_name AS creator_name, c.customer_name, u2.full_name as assigned_sales_lead_name,
+                u1.full_name AS creator_name, c.customer_name, c.currency, u2.full_name as assigned_sales_lead_name,
                 ( 
                   SELECT  json_agg(customer_company_employees.*) :: TEXT
                       FROM (
@@ -2157,7 +2157,7 @@ ORDER BY
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
-                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name ,
+                u1.full_name AS creator_name,  c.customer_name, c.currency, u2.full_name as assigned_sales_lead_name ,
                 ( 
                   SELECT  json_agg(customer_company_employees.*)
                       FROM (
@@ -2605,7 +2605,7 @@ ORDER BY
               l.address,l.customer_company_id,l.source AS source_id,s.source AS source_name,l.linkedin_url,
               l.website,l.targeted_value,l.marketing_qualified_lead,
               l.assigned_sales_lead_to,l.additional_marketing_notes,l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,
-              u1.full_name AS creator_name,c.customer_name , u2.full_name as assigned_sales_lead_name ,
+              u1.full_name AS creator_name,c.customer_name, c.currency, u2.full_name as assigned_sales_lead_name ,
               ( 
                 SELECT  json_agg(customer_company_employees.*)
                     FROM (
@@ -2650,7 +2650,7 @@ ORDER BY
                 l.website,l.targeted_value,l.marketing_qualified_lead,
                 l.assigned_sales_lead_to,l.additional_marketing_notes,
                 l.creator_id,l.company_id,l.created_at,l.is_converted,l.is_rejected,l.emp_type,
-                u1.full_name AS creator_name,  c.customer_name , u2.full_name as assigned_sales_lead_name ,
+                u1.full_name AS creator_name,  c.customer_name, c.currency, u2.full_name as assigned_sales_lead_name ,
                 ( 
                   SELECT  json_agg(customer_company_employees.*)
                       FROM (
