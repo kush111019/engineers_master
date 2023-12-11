@@ -5918,9 +5918,7 @@ module.exports.returnOfInvestment = async (req, res) => {
       checkPermission.rows[0].permission_to_view_own
     ) {
       let s2 = dbScript(db_sql["Q483"], {
-        var1: checkPermission.rows[0].company_id,
-        var2: startDate,
-        var3: endDate
+        var1: checkPermission.rows[0].company_id
       });
       let findingBudgetData = await connection.query(s2);
       let budgetArray = findingBudgetData?.rows;
