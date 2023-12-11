@@ -2695,7 +2695,7 @@ module.exports.sendEmailToLead = async (req, res) => {
               var3: bulkEmail,
               var4: templateName,
               var5: mysql_real_escape_string2(result),
-              var6: description,
+              var6: mysql_real_escape_string2(description),
             });
             insertLeadEmail = await connection.query(s3);
           }
