@@ -5911,6 +5911,7 @@ module.exports.returnOfInvestment = async (req, res) => {
     let userId = req.user.id;
     let { startDate, endDate, slab } = req.body;
     let dateSlot = generateDateIntervals(startDate, endDate, slab);
+    console.log(dateSlot);
     let s1 = dbScript(db_sql["Q41"], { var1: moduleName, var2: userId });
     let checkPermission = await connection.query(s1);
     if (
