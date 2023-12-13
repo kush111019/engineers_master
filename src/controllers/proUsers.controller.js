@@ -5888,8 +5888,8 @@ const generateDateIntervals = (startDate, endDate, slot) => {
       startDate: formatDate(currentStartDate),
       endDate: formatDate(currentEndDate),
     });
-    currentStartDate = new Date(currentEndDate);
-    currentStartDate.setDate(currentEndDate.getDate() + 1);
+    // currentStartDate = new Date(currentEndDate);
+    // currentStartDate.setDate(currentEndDate.getDate() + 1);
   }
   // Ensure the last slot does not exceed endDate
   const lastSlot = intervals[intervals.length - 1];
